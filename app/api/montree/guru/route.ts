@@ -6,13 +6,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS, getModelForTier } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
-import { buildConversationalPrompt } from '@/lib/montree/guru/conversational-prompt';
+import { buildConversationalPrompt, buildCelebrationContext, type ProactiveContext } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
+import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
+import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
 const MAX_TOOL_ROUNDS = 3;
@@ -74,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    const { child_id, question, classroom_id, teacher_id, role, conversational } = body;
+    let { child_id, question, classroom_id, teacher_id, role, conversational } = body;
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -89,17 +91,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    if (question.length < 5) {
+    // Handle greeting trigger — Portal auto-greeting on app open
+    const isGreetingTrigger = question === '__greeting__';
+    // Proactive context is computed during greeting and passed through to prompt builders
+    let greetingProactiveContext: ProactiveContext | undefined;
+
+    if (isGreetingTrigger) {
+      const supabaseForGreeting = getSupabase();
+
+      // Fetch child settings + focus works count + last interaction in parallel
+      const [childSettingsResult, focusWorksResult, lastInteractionResult] = await Promise.all([
+        supabaseForGreeting.from('montree_children').select('settings').eq('id', child_id).single(),
+        supabaseForGreeting.from('montree_child_work_progress').select('id', { count: 'exact', head: true }).eq('child_id', child_id).eq('is_focus', true),
+        supabaseForGreeting.from('montree_guru_interactions').select('asked_at').eq('child_id', child_id).order('asked_at', { ascending: false }).limit(1).single(),
+      ]);
+
+      const greetingSettings = (childSettingsResult.data?.settings as Record<string, unknown>) || {};
+      const focusWorksCount = focusWorksResult.count || 0;
+      const shelfEmpty = focusWorksCount === 0;
+
+      // Calculate days since last interaction
+      let daysSinceLastInteraction = 0;
+      if (lastInteractionResult.data?.asked_at) {
+        const lastDate = new Date(lastInteractionResult.data.asked_at as string);
+        daysSinceLastInteraction = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      const now = new Date();
+      const dayOfWeek = now.getUTCDay(); // 0 = Sunday
+
+      // Issue #20: Strict boolean check (don't rely on as-cast + ??)
+      const intakeComplete = greetingSettings.guru_intake_complete === true;
+      const nextCheckin = greetingSettings.guru_next_checkin as string | null;
+      const isCheckinDue = nextCheckin ? new Date(nextCheckin) <= new Date() : false;
+
+      // Build proactive context for prompt builders
+      greetingProactiveContext = {
+        shelfEmpty,
+        daysSinceLastInteraction,
+        dayOfWeek,
+        // celebrationContext will be computed after childContext is built (needs progress data)
+      };
+
+      // Priority: SETUP (empty shelf) > INTAKE > CHECKIN > REFLECTION > NORMAL
+      // Note: childContext isn't built yet at this point, so we use generic text.
+      // The prompt builder will inject the child's name from childContext later.
+      if (shelfEmpty && intakeComplete) {
+        question = 'I just opened the app and my shelf is empty. Help me build my child\'s first shelf!';
+      } else if (!intakeComplete) {
+        question = 'This is our first conversation. Please greet me warmly and introduce yourself, then ask about my child — their name, personality, interests, and what I\'d like to work on.';
+      } else if (isCheckinDue) {
+        question = 'I just opened the app and it\'s time for our weekly check-in. Please greet me warmly and start the check-in process.';
+      } else if (daysSinceLastInteraction >= 5 || dayOfWeek === 0) {
+        question = `I just opened the app after ${daysSinceLastInteraction} days. Give me a warm greeting and invite me to reflect on how things have been going.`;
+      } else {
+        question = 'I just opened the app. Give me a warm, brief greeting and ask how things are going.';
+      }
+      // Force conversational mode for greetings
+      conversational = true;
+    }
+
+    if (!isGreetingTrigger && question.length < 5) {
       return NextResponse.json(
         { success: false, error: 'Question is too short. Please provide more detail.' },
         { status: 400 }
       );
     }
 
-    // Phase 6: Widened from 1000 to 2000 to support detailed questions
-    if (question.length > 2000) {
+    // Parents can send long emotional messages — no limit for conversational mode
+    // Teachers still have a reasonable cap
+    const maxQuestionLength = conversational ? 20000 : 5000;
+    if (question.length > maxQuestionLength) {
       return NextResponse.json(
-        { success: false, error: 'Question is too long. Please be more concise.' },
+        { success: false, error: 'Message is too long. Please try breaking it into smaller messages.' },
         { status: 400 }
       );
     }
@@ -109,47 +172,93 @@ export async function POST(request: NextRequest) {
     // --- Freemium gate for homeschool parents (principals skip this) ---
     // FEATURE FLAG: Set GURU_FREEMIUM_ENABLED=true on Railway to activate paywall.
     // When false (default), all homeschool parents get unlimited Guru for free.
-    // Principals always get unlimited access.
+    // Principals always get unlimited access. Teachers always get unlimited access.
+    //
+    // DAILY LIMITS (not monthly — feels unlimited to normal users, caps power users):
+    //   Free trial: 3 messages/day for 7 days from signup, then paywall
+    //   Haiku ($5/mo): 10 messages/day  → max 300/mo, cost ~$3.60/mo = healthy margin
+    //   Sonnet ($20/mo): 5 messages/day → max 150/mo, cost ~$6.75/mo = great margin
     const freemiumEnabled = process.env.GURU_FREEMIUM_ENABLED === 'true';
     const teacherId = teacher_id || auth.userId;
     let isParentRole = false;
     let shouldIncrementPrompt = false;
+    let guruTier: 'haiku' | 'sonnet' = 'sonnet'; // Default to sonnet
     if (isPrincipal) {
       // Principals get unlimited access, skip all freemium checks
     } else if (teacherId) {
       const { data: teacherData } = await supabase
         .from('montree_teachers')
-        .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end')
+        .select('role, guru_plan, guru_subscription_status, guru_current_period_end, guru_tier, created_at')
         .eq('id', teacherId)
         .single();
 
       const t = teacherData as Record<string, unknown> | null;
+      // Extract guru tier (haiku or sonnet)
+      const tierFromDb = t?.guru_tier as string;
+      if (tierFromDb === 'haiku' || tierFromDb === 'sonnet') {
+        guruTier = tierFromDb;
+      }
+
       if (t?.role === 'homeschool_parent') {
         isParentRole = true;
 
         if (freemiumEnabled) {
           const plan = t.guru_plan as string || 'free';
-          const promptsUsed = t.guru_prompts_used as number || 0;
           const subStatus = t.guru_subscription_status as string || 'none';
           const periodEnd = t.guru_current_period_end as string | null;
 
           const isPaid = plan !== 'free' && subStatus === 'active' &&
             (!periodEnd || new Date(periodEnd) > new Date());
 
-          if (!isPaid && promptsUsed >= 3) {
-            return NextResponse.json({
-              success: false,
-              error: 'guru_limit_reached',
-              prompts_used: promptsUsed,
-              prompts_limit: 3,
-              message: 'You\'ve used your 3 free Guru sessions. Upgrade to Guru for unlimited advice.',
-            }, { status: 403 });
+          // Check if free trial has expired (7 days from signup)
+          if (!isPaid) {
+            const createdAt = t.created_at as string | null;
+            if (createdAt) {
+              const signupDate = new Date(createdAt);
+              const daysSinceSignup = (Date.now() - signupDate.getTime()) / (1000 * 60 * 60 * 24);
+              if (daysSinceSignup > 7) {
+                return NextResponse.json({
+                  success: false,
+                  error: 'guru_trial_expired',
+                  message: 'Your 7-day free trial has ended. Subscribe to keep chatting with your Guru — plans start at $5/month.',
+                }, { status: 403 });
+              }
+            }
           }
 
-          // Flag to increment counter AFTER successful AI response
-          if (!isPaid) {
-            shouldIncrementPrompt = true;
+          // Daily limit based on tier
+          const dailyLimit = !isPaid ? 3 : guruTier === 'haiku' ? 10 : 5;
+
+          // Count today's messages from interactions table (no counter drift)
+          // Issue HC#1: Use UTC midnight for consistent daily boundary regardless of server timezone
+          const now = new Date();
+          const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+          // Issue HC#2: Race condition between count and AI call — accepted risk.
+          // Window is ~2-5s (AI response time). Worst case: 1 extra message per day.
+          // Cost impact: $0.01-$0.05. Not worth advisory locks for this use case.
+          const { count: todayCount, error: countError } = await supabase
+            .from('montree_guru_interactions')
+            .select('id', { count: 'exact', head: true })
+            .eq('teacher_id', teacherId)
+            .gte('asked_at', todayStartUTC.toISOString());
+
+          const messagesUsedToday = countError ? 0 : (todayCount || 0);
+
+          if (messagesUsedToday >= dailyLimit) {
+            const tierName = !isPaid ? 'free trial' : guruTier === 'haiku' ? 'Haiku' : 'Sonnet';
+            return NextResponse.json({
+              success: false,
+              error: 'guru_daily_limit_reached',
+              messages_used_today: messagesUsedToday,
+              daily_limit: dailyLimit,
+              message: !isPaid
+                ? `You've used your ${dailyLimit} free messages for today. Come back tomorrow, or subscribe for up to 10 messages per day starting at $5/month.`
+                : `You've used your ${dailyLimit} ${tierName} messages for today. Come back tomorrow — your limit resets at midnight UTC.`,
+            }, { status: 429 });
           }
+
+          // Flag to increment counter AFTER successful AI response (for backward compat)
+          shouldIncrementPrompt = true;
         }
         // When freemiumEnabled=false, skip gate entirely — unlimited access
       }
@@ -186,8 +295,58 @@ export async function POST(request: NextRequest) {
       // Check if this is the first message (no conversation history)
       const isFirstMessage = !childContext.past_interactions || childContext.past_interactions.length === 0;
 
-      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings);
+      // Fetch self-learning intelligence (both brain wisdom + cross-family patterns)
+      const childAgeMonths = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
+      const activeAreas = childContext.focus_works?.map(fw => fw.area) || [];
+      const parentConf = (childSettings?.guru_parent_current_state as Record<string, unknown>)?.confidence_level as string | undefined;
+
+      // Issue #25: Ensure savedConcerns is always a valid array
+      const safeConcerns = Array.isArray(savedConcerns) ? savedConcerns : [];
+
+      // Issue #21: Log errors instead of silently swallowing
+      const [brainWisdom, crossFamilyPatterns] = await Promise.all([
+        getRelevantBrainWisdom({
+          childAgeMonths,
+          areas: activeAreas,
+          concerns: safeConcerns,
+          parentConfidence: parentConf,
+        }).catch(err => {
+          console.warn('[Guru] Brain wisdom fetch failed:', err instanceof Error ? err.message : String(err));
+          return '';
+        }),
+        getRelevantPatterns({
+          age_months: childAgeMonths,
+          areas_active: activeAreas,
+          recent_concerns: safeConcerns,
+        }).catch(err => {
+          console.warn('[Guru] Pattern fetch failed:', err instanceof Error ? err.message : String(err));
+          return '';
+        }),
+      ]);
+
+      // Compute celebration context if we have proactive data (greeting trigger)
+      let proactiveForPrompt: ProactiveContext | undefined = greetingProactiveContext;
+      if (proactiveForPrompt && childContext.past_interactions) {
+        const celebrationText = buildCelebrationContext(childContext, childContext.past_interactions as Array<{
+          question: string;
+          response_insight: string;
+          asked_at: string;
+          context_snapshot?: Record<string, unknown>;
+        }>);
+        if (celebrationText) {
+          proactiveForPrompt = { ...proactiveForPrompt, celebrationContext: celebrationText };
+        }
+      }
+
+      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt);
       systemPrompt = convPrompt.systemPrompt;
+      // Inject self-learning intelligence into system prompt
+      if (brainWisdom) {
+        systemPrompt += '\n\n' + brainWisdom;
+      }
+      if (crossFamilyPatterns) {
+        systemPrompt += '\n\n' + crossFamilyPatterns;
+      }
       userPrompt = convPrompt.userPrompt;
     } else {
       const structured = buildGuruPrompt(question, childContext, knowledge, {
@@ -236,11 +395,17 @@ export async function POST(request: NextRequest) {
         { role: 'user' as const, content: userPrompt },
       ];
 
+      // Select model and token limit based on guru tier
+      // Issue #33: getModelForTier already has a default case, but guard at call site too
+      const guruModel = getModelForTier(guruTier) || AI_MODEL;
+      // Conversational mode needs higher token limits for tool-use + emotional responses
+      const guruMaxTokens = guruTier === 'sonnet' ? 4096 : 3072;
+
       // First Claude call — may return tool_use blocks
       let response = await withTimeout(
         anthropic.messages.create({
-          model: AI_MODEL,
-          max_tokens: 2048,
+          model: guruModel,
+          max_tokens: guruMaxTokens,
           system: systemPrompt,
           tools: GURU_TOOLS,
           tool_choice: { type: "auto" },
@@ -298,8 +463,8 @@ export async function POST(request: NextRequest) {
 
         response = await withTimeout(
           anthropic.messages.create({
-            model: AI_MODEL,
-            max_tokens: 2048,
+            model: guruModel,
+            max_tokens: guruMaxTokens,
             system: systemPrompt,
             tools: GURU_TOOLS,
             tool_choice: { type: "auto" },
@@ -329,33 +494,38 @@ export async function POST(request: NextRequest) {
           : "I tried to make some changes but ran into issues. Could you try again?";
       }
 
-      // Log cost estimate
-      const { input_tokens, output_tokens } = response.usage;
-      const estCost = (input_tokens * 3 + output_tokens * 15) / 1_000_000;
-      console.log(`[Guru] Tool rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+      // Log cost estimate (Haiku: $0.80/$4.00 per 1M, Sonnet: $3/$15 per 1M)
+      const { input_tokens = 0, output_tokens = 0 } = response.usage || {};
+      const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+      const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+      console.log(`[Guru] Model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
       const processingTime = Date.now() - startTime;
 
       // Save interaction
+      // Issue DA#1: Use resolved teacherId (not raw body teacher_id) so daily count query matches
       const { data: saved, error: saveError } = await supabase
         .from('montree_guru_interactions')
         .insert({
           child_id,
-          teacher_id: teacher_id || null,
+          teacher_id: teacherId || null,
           classroom_id: classroom_id || childContext.classroom_id,
           question,
           question_type: 'chat',
           context_snapshot: {
             child_name: childContext.name,
             age: `${childContext.age_years}y ${childContext.age_months}m`,
+            mastered_count: childContext.mastered_count || 0,
             conversational: true,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
+            guru_tier: guruTier,
+            est_cost: estCost,
           },
           response_insight: responseText,
           sources_used: knowledge.sources_used,
           processing_time_ms: processingTime,
-          model_used: AI_MODEL,
+          model_used: guruModel,
         })
         .select('id')
         .single();
@@ -364,18 +534,36 @@ export async function POST(request: NextRequest) {
         console.error('[Guru] Failed to save chat interaction:', saveError);
       }
 
-      // Increment free trial if needed
-      if (shouldIncrementPrompt && teacherId) {
-        const { data: fresh } = await supabase
-          .from('montree_teachers')
-          .select('guru_prompts_used')
-          .eq('id', teacherId)
-          .single();
-        const currentCount = (fresh as Record<string, unknown> | null)?.guru_prompts_used as number || 0;
-        await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
-          .update({ guru_prompts_used: currentCount + 1 })
-          .eq('id', teacherId);
+      // Self-learning: feed this conversation into both pattern database AND brain
+      // Fire-and-forget — never blocks the response
+      if (actionsTaken.length > 0) {
+        learnFromConversation(child_id, childAgeMonths).catch(err =>
+          console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
+        );
       }
+
+      // Record learning for the brain (every conversation, not just tool-use ones)
+      // Only record if save succeeded — need a valid conversation_id
+      if (!saveError) {
+        recordLearning({
+          conversation_id: saved?.id as string | undefined,
+          child_age_months: childAgeMonths,
+          areas: activeAreas,
+          learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
+          description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
+          context: `Child ${childContext.name || 'unknown'}, ${childAgeMonths}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
+          tags: [
+            ...activeAreas.map(a => a.replace('practical_life', 'practical')),
+            `age_${Math.round(childAgeMonths / 12)}`,
+            ...safeConcerns.map(c => typeof c === 'string' ? c.replace(/[^a-z]/gi, '_').toLowerCase() : ''),
+          ].filter(Boolean),
+        }).catch(err =>
+          console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
+        );
+      }
+
+      // Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
+      // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
       return NextResponse.json({
         success: true,
@@ -414,13 +602,14 @@ export async function POST(request: NextRequest) {
       .from('montree_guru_interactions')
       .insert({
         child_id,
-        teacher_id: teacher_id || null,
+        teacher_id: teacherId || null, // Issue DA#1: Use resolved teacherId so daily count query matches
         classroom_id: classroom_id || childContext.classroom_id,
         question,
         question_type: detectQuestionType(question),
         context_snapshot: {
           child_name: childContext.name,
           age: `${childContext.age_years}y ${childContext.age_months}m`,
+          mastered_count: childContext.mastered_count || 0,
           has_mental_profile: !!childContext.mental_profile,
           observations_count: childContext.recent_observations.length,
           notes_count: childContext.teacher_notes.length,
@@ -442,20 +631,29 @@ export async function POST(request: NextRequest) {
       console.error('[Guru] Failed to save interaction:', saveError);
     }
 
-    // 7. Increment free-trial counter AFTER successful AI response
-    // (Not before — if AI call fails, user shouldn't lose a free prompt)
-    if (shouldIncrementPrompt && teacherId) {
-      // Re-read current count to avoid race conditions, then increment
-      const { data: fresh } = await supabase
-        .from('montree_teachers')
-        .select('guru_prompts_used')
-        .eq('id', teacherId)
-        .single();
-      const currentCount = (fresh as Record<string, unknown> | null)?.guru_prompts_used as number || 0;
-      await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
-        .update({ guru_prompts_used: currentCount + 1 })
-        .eq('id', teacherId);
+    // Self-learning: feed teacher conversations into the brain too
+    if (!saveError) {
+      const childAgeMonths = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
+      const activeAreas = childContext.focus_works?.map(fw => fw.area) || [];
+      recordLearning({
+        conversation_id: saved?.id as string | undefined,
+        child_age_months: childAgeMonths,
+        areas: activeAreas,
+        learning_type: 'insight',
+        description: `Q: ${question.slice(0, 150)}... → A: ${(parsed.insight || '').slice(0, 200)}...`,
+        context: `Teacher mode. Child ${childContext.name || 'unknown'}, ${childAgeMonths}mo. Type: ${detectQuestionType(question)}`,
+        tags: [
+          ...activeAreas.map(a => a.replace('practical_life', 'practical')),
+          `age_${Math.round(childAgeMonths / 12)}`,
+          'teacher_mode',
+        ].filter(Boolean),
+      }).catch(err =>
+        console.error('[Guru] Brain learning error (structured):', err instanceof Error ? err.message : String(err))
+      );
     }
+
+    // 7. Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
+    // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
     // 8. Return response
     return NextResponse.json({

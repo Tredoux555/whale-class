@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect } from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface MediaCardProps {
   media: MontreeMedia;
@@ -36,6 +37,7 @@ export default function MediaCard({
   onDelete,
   showActions = true,
 }: MediaCardProps) {
+  const { t } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(thumbnailUrl || null);
   const [loading, setLoading] = useState(!thumbnailUrl);
   const [error, setError] = useState(false);
@@ -76,10 +78,10 @@ export default function MediaCard({
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return t('media.justNow');
+    if (diffMins < 60) return t('media.minutesAgo').replace('{m}', diffMins.toString());
+    if (diffHours < 24) return t('media.hoursAgo').replace('{h}', diffHours.toString());
+    if (diffDays < 7) return t('media.daysAgo').replace('{d}', diffDays.toString());
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -174,7 +176,7 @@ export default function MediaCard({
         {/* Untagged indicator */}
         {!media.child_id && (
           <div className="absolute top-2 left-2 px-2 py-0.5 bg-yellow-500 text-white text-xs font-medium rounded-full">
-            Untagged
+            {t('media.untagged')}
           </div>
         )}
       </button>

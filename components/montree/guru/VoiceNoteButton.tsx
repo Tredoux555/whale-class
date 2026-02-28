@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface VoiceNoteButtonProps {
   onTranscription: (text: string) => void;
@@ -8,6 +9,7 @@ interface VoiceNoteButtonProps {
 }
 
 export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNoteButtonProps) {
+  const { t } = useI18n();
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
 
         if (blob.size < 100) {
-          setError('Recording too short');
+          setError(t('voice.recordingTooShort'));
           return;
         }
 
@@ -65,10 +67,10 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
           if (data.success && data.text) {
             onTranscription(data.text);
           } else {
-            setError(data.error || 'Transcription failed');
+            setError(data.error || t('voice.transcriptionFailed'));
           }
         } catch {
-          setError('Failed to transcribe');
+          setError(t('voice.failedToTranscribe'));
         } finally {
           setTranscribing(false);
         }
@@ -79,12 +81,12 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
       setRecording(true);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'NotAllowedError') {
-        setError('Microphone access denied');
+        setError(t('voice.microphoneAccessDenied'));
       } else {
-        setError('Could not access microphone');
+        setError(t('voice.couldNotAccessMicrophone'));
       }
     }
-  }, [onTranscription]);
+  }, [onTranscription, t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -114,8 +116,8 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
             ? 'bg-gray-300 cursor-wait'
             : 'bg-emerald-100 hover:bg-emerald-200 active:bg-emerald-300'
         } disabled:opacity-50`}
-        title={recording ? 'Tap to stop' : transcribing ? 'Transcribing...' : 'Tap to speak'}
-        aria-label={recording ? 'Stop recording' : 'Start voice recording'}
+        title={recording ? t('voice.tapToStop') : transcribing ? t('voice.transcribing') : t('voice.tapToSpeak')}
+        aria-label={recording ? t('voice.stopRecording') : t('voice.startRecording')}
       >
         {recording ? (
           <span className="text-white text-lg">⏹</span>
@@ -128,13 +130,13 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
 
       {recording && (
         <span className="text-xs text-red-500 font-medium animate-pulse">
-          Listening...
+          {t('voice.listening')}
         </span>
       )}
 
       {transcribing && (
         <span className="text-xs text-gray-500">
-          Transcribing...
+          {t('voice.transcribing')}
         </span>
       )}
 

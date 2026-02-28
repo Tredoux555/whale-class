@@ -6,6 +6,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Child {
   id: string;
@@ -41,20 +42,25 @@ interface HomeActivity {
 
 export default function ParentWeeklyReviewPage() {
   return (
-    <Suspense fallback={<LoadingScreen />}>
+    <Suspense fallback={<LoadingScreenWrapper />}>
       <ParentWeeklyReviewContent />
     </Suspense>
   );
 }
 
-function LoadingScreen() {
+function LoadingScreenWrapper() {
+  const { t } = useI18n();
+  return <LoadingScreen t={t} />;
+}
+
+function LoadingScreen({ t }: { t: (key: string) => string }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4 animate-pulse">
           <span className="text-3xl">📊</span>
         </div>
-        <p className="text-gray-600 font-medium">Loading report...</p>
+        <p className="text-gray-600 font-medium">{t('parentWeeklyReview.loadingReport')}</p>
       </div>
     </div>
   );
@@ -63,12 +69,13 @@ function LoadingScreen() {
 function ParentWeeklyReviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [child, setChild] = useState<Child | null>(null);
   const [analysis, setAnalysis] = useState<WeeklyAnalysis | null>(null);
   const [homeActivities, setHomeActivities] = useState<HomeActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   // Week navigation
   const [availableWeeks, setAvailableWeeks] = useState<string[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>('');
@@ -108,7 +115,7 @@ function ParentWeeklyReviewContent() {
       setSelectedWeek(data.analysis?.week_start || '');
     } catch (err) {
       console.error('Failed to fetch report:', err);
-      setError('Network error. Please try again.');
+      setError(t('parentWeeklyReview.errorNetwork'));
     } finally {
       setLoading(false);
     }
@@ -204,17 +211,17 @@ function ParentWeeklyReviewContent() {
     return info[period] || { name: period, icon: '⭐', description: 'A special time for learning!' };
   };
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen t={t} />;
 
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">😕</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Oops!</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentWeeklyReview.errorTitle')}</h2>
           <p className="text-gray-500 mb-4">{error}</p>
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
-            ← Back to Dashboard
+            ← {t('common.backToDashboard')}
           </Link>
         </div>
       </div>
@@ -226,12 +233,12 @@ function ParentWeeklyReviewContent() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">📊</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">No Report Yet</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentWeeklyReview.noReportTitle')}</h2>
           <p className="text-gray-500 mb-4">
-            Your child&apos;s weekly report will appear here once the teacher generates it.
+            {t('parentWeeklyReview.noReportDescription')}
           </p>
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
-            ← Back to Dashboard
+            ← {t('common.backToDashboard')}
           </Link>
         </div>
       </div>
@@ -244,15 +251,15 @@ function ParentWeeklyReviewContent() {
       <header className="bg-white/80 backdrop-blur-sm border-b border-emerald-100 sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link 
-              href="/montree/parent/dashboard" 
+            <Link
+              href="/montree/parent/dashboard"
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
             >
               <span>←</span>
-              <span className="text-sm">Dashboard</span>
+              <span className="text-sm">{t('parentWeeklyReview.dashboard')}</span>
             </Link>
             <div className="text-center">
-              <h1 className="text-lg font-bold text-gray-900">Weekly Report</h1>
+              <h1 className="text-lg font-bold text-gray-900">{t('parentWeeklyReview.weeklyReport')}</h1>
               <p className="text-xs text-gray-500">{child.name}</p>
             </div>
             <div className="w-16" /> {/* Spacer for alignment */}
@@ -324,7 +331,7 @@ function ParentWeeklyReviewContent() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
             <div className="flex items-center gap-3 mb-3">
               <span className="text-2xl">🎯</span>
-              <h3 className="font-bold text-gray-900">Focus & Concentration</h3>
+              <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.focusTitle')}</h3>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
@@ -342,11 +349,11 @@ function ParentWeeklyReviewContent() {
               </span>
             </div>
             <p className="text-sm text-gray-500 mt-2">
-              {analysis.concentration_score >= 80 
-                ? '🌟 Excellent focus this week! Your child showed deep engagement.'
+              {analysis.concentration_score >= 80
+                ? t('parentWeeklyReview.focusExcellent')
                 : analysis.concentration_score >= 60
-                ? '👍 Good concentration. Continuing to build those focus skills!'
-                : '🌱 Building focus takes time. Every week brings growth!'}
+                ? t('parentWeeklyReview.focusGood')
+                : t('parentWeeklyReview.focusBuilding')}
             </p>
           </div>
         )}
@@ -357,8 +364,8 @@ function ParentWeeklyReviewContent() {
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">✨</span>
               <div>
-                <h3 className="font-bold text-gray-900">Special Learning Windows</h3>
-                <p className="text-sm text-gray-500">What your child is naturally drawn to</p>
+                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.sensitivePeriodTitle')}</h3>
+                <p className="text-sm text-gray-500">{t('parentWeeklyReview.sensitivePeriodSubtitle')}</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -383,7 +390,7 @@ function ParentWeeklyReviewContent() {
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-emerald-100">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">📊</span>
-              <h3 className="font-bold text-gray-900">Learning Areas This Week</h3>
+              <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.learningAreasTitle')}</h3>
             </div>
             <div className="space-y-3">
               {Object.entries(analysis.area_distribution)
@@ -393,7 +400,7 @@ function ParentWeeklyReviewContent() {
                   <span className="text-xl w-8">{getAreaIcon(area)}</span>
                   <span className="flex-1 text-gray-700">{getAreaName(area)}</span>
                   <span className="text-sm font-medium text-gray-500">
-                    {count} {count === 1 ? 'work' : 'works'}
+                    {count} {count === 1 ? t('parentWeeklyReview.work') : t('parentWeeklyReview.works')}
                   </span>
                 </div>
               ))}
@@ -407,8 +414,8 @@ function ParentWeeklyReviewContent() {
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">🏠</span>
               <div>
-                <h3 className="font-bold text-gray-900">Activities to Try at Home</h3>
-                <p className="text-sm text-gray-500">Simple ways to extend the learning</p>
+                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.homeActivitiesTitle')}</h3>
+                <p className="text-sm text-gray-500">{t('parentWeeklyReview.homeActivitiesSubtitle')}</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -421,7 +428,7 @@ function ParentWeeklyReviewContent() {
                       <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
                       {activity.materials && (
                         <p className="text-xs text-blue-600 mt-2">
-                          <strong>You&apos;ll need:</strong> {activity.materials}
+                          <strong>{t('parentWeeklyReview.youllNeed')}:</strong> {activity.materials}
                         </p>
                       )}
                     </div>
@@ -438,8 +445,8 @@ function ParentWeeklyReviewContent() {
             <div className="flex items-center gap-3 mb-4">
               <span className="text-2xl">🎯</span>
               <div>
-                <h3 className="font-bold text-gray-900">Coming Up Next</h3>
-                <p className="text-sm text-gray-500">What we&apos;re planning for {child.name}</p>
+                <h3 className="font-bold text-gray-900">{t('parentWeeklyReview.comingUpNextTitle')}</h3>
+                <p className="text-sm text-gray-500">{t('parentWeeklyReview.comingUpNextSubtitle').replace('{childName}', child.name)}</p>
               </div>
             </div>
             <div className="space-y-3">
@@ -459,17 +466,17 @@ function ParentWeeklyReviewContent() {
         {/* Footer */}
         <div className="text-center py-4">
           <p className="text-sm text-gray-400">
-            Report generated {new Date(analysis.created_at).toLocaleDateString('en-US', {
+            {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString('en-US', {
               month: 'long',
               day: 'numeric',
               year: 'numeric'
             })}
           </p>
-          <Link 
-            href="/montree/parent/dashboard" 
+          <Link
+            href="/montree/parent/dashboard"
             className="inline-block mt-3 text-emerald-600 hover:underline"
           >
-            ← Back to Dashboard
+            ← {t('common.backToDashboard')}
           </Link>
         </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface HighlightItem {
   work: string;
@@ -46,8 +47,9 @@ interface ReportData {
 export default function ParentReportPage() {
   const router = useRouter();
   const params = useParams();
+  const { t } = useI18n();
   const reportId = params.reportId as string;
-  
+
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState('');
@@ -79,7 +81,7 @@ export default function ParentReportPage() {
       
       setReport(data.report);
     } catch (err) {
-      setError('Connection error');
+      setError(t('common.connectionError'));
     } finally {
       setLoading(false);
     }
@@ -120,7 +122,7 @@ export default function ParentReportPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">📊</div>
-          <p className="text-gray-600">Loading report...</p>
+          <p className="text-gray-600">{t('parentReport.loading')}</p>
         </div>
       </div>
     );
@@ -131,9 +133,9 @@ export default function ParentReportPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="bg-white rounded-2xl p-8 shadow-xl text-center">
           <div className="text-4xl mb-4">❌</div>
-          <p className="text-red-600 mb-4">{error || 'Report not found'}</p>
+          <p className="text-red-600 mb-4">{error || t('parentReport.notFound')}</p>
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline">
-            ← Back to Dashboard
+            ← {t('common.backToDashboard')}
           </Link>
         </div>
       </div>
@@ -167,7 +169,7 @@ export default function ParentReportPage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-4">
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline text-sm flex items-center gap-1">
-            ← Back to Dashboard
+            ← {t('common.backToDashboard')}
           </Link>
         </div>
       </header>
@@ -180,7 +182,7 @@ export default function ParentReportPage() {
               {childName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">{childName}'s Weekly Report</h1>
+              <h1 className="text-xl font-bold text-gray-800">{childName}'s {t('parentReport.weeklyReport')}</h1>
               <p className="text-gray-500">{formatWeekDisplay()}</p>
             </div>
           </div>
@@ -196,7 +198,7 @@ export default function ParentReportPage() {
         {report.highlights && report.highlights.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>⭐</span> This Week's Highlights
+              <span>⭐</span> {t('parentReport.highlights')}
             </h2>
             <ul className="space-y-2">
               {report.highlights.map((item, i) => {
@@ -216,7 +218,7 @@ export default function ParentReportPage() {
         {report.areas_of_growth && report.areas_of_growth.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>🌱</span> Areas of Growth
+              <span>🌱</span> {t('parentReport.areasOfGrowth')}
             </h2>
             <ul className="space-y-2">
               {report.areas_of_growth.map((item, i) => (
@@ -233,7 +235,7 @@ export default function ParentReportPage() {
         {report.works_completed && report.works_completed.length > 0 && (
           <div className="space-y-4">
             <h2 className="font-bold text-gray-800 flex items-center gap-2 px-2">
-              <span>📋</span> Works This Week ({report.works_completed.length})
+              <span>📋</span> {t('parentReport.worksThisWeek')} ({report.works_completed.length})
             </h2>
             {report.works_completed.map((work, i) => (
               <div key={i} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
@@ -262,7 +264,7 @@ export default function ParentReportPage() {
                       <button
                         onClick={() => downloadPhoto(work.photo_url!, work.work_name)}
                         className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm"
-                        title="Save photo"
+                        title={t('common.save')}
                       >
                         ⬇
                       </button>
@@ -281,7 +283,7 @@ export default function ParentReportPage() {
                     </p>
                     {work.why_it_matters && (
                       <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                        <p className="text-xs font-semibold text-emerald-700 mb-1">💡 Why it matters</p>
+                        <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('parentReport.whyItMatters')}</p>
                         <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
                       </div>
                     )}
@@ -305,7 +307,7 @@ export default function ParentReportPage() {
         {report.all_photos && report.all_photos.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>📸</span> Photos This Week ({report.all_photos.length})
+              <span>📸</span> {t('parentReport.photosThisWeek')} ({report.all_photos.length})
             </h2>
             <div className="grid grid-cols-2 gap-3">
               {report.all_photos.map((photo, i) => (
@@ -319,7 +321,7 @@ export default function ParentReportPage() {
                     <button
                       onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
                       className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
-                      title="Save photo"
+                      title={t('common.save')}
                     >
                       ⬇
                     </button>
@@ -339,7 +341,7 @@ export default function ParentReportPage() {
         {report.recommendations && report.recommendations.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>💡</span> Recommendations for Home
+              <span>💡</span> {t('parentReport.recommendationsForHome')}
             </h2>
             <ul className="space-y-2">
               {report.recommendations.map((item, i) => (
@@ -354,7 +356,7 @@ export default function ParentReportPage() {
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-500 py-4">
-          Report generated {new Date(report.created_at).toLocaleDateString()}
+          {t('parentReport.reportGenerated')} {new Date(report.created_at).toLocaleDateString()}
         </div>
       </main>
     </div>

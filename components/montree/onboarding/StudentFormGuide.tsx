@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================================
 // StudentFormGuide — Cartoon speech-bubble guided tour
@@ -27,11 +28,11 @@ interface GuideStep {
   actionLabel?: string; // Manual button text (null = no button)
 }
 
-const STEPS: GuideStep[] = [
+const getSTEPS = (t: any): GuideStep[] => [
   {
     key: 'name',
     selector: '[data-guide="name"]',
-    getMessage: (p) => `Let's start with a name! Type your ${p ? "child's" : "student's"} name here.`,
+    getMessage: (p) => t('guide.studentForm.name'),
     position: 'right',
     autoAdvance: 'input',
     autoAdvanceDebounce: 800,
@@ -39,93 +40,90 @@ const STEPS: GuideStep[] = [
   {
     key: 'age',
     selector: '[data-guide="age"]',
-    getMessage: () => 'How old is this little one? Select their age here.',
+    getMessage: () => t('guide.studentForm.age'),
     position: 'right',
     autoAdvance: 'change',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'gender',
     selector: '[data-guide="gender"]',
-    getMessage: () => 'Boy or girl?',
+    getMessage: () => t('guide.studentForm.gender'),
     position: 'right',
     autoAdvance: 'change',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'tenure',
     selector: '[data-guide="tenure"]',
-    getMessage: (p) => `How long has this ${p ? 'child' : 'student'} been in your ${p ? 'home program' : 'classroom'}?`,
+    getMessage: (p) => t('guide.studentForm.tenure'),
     position: 'right',
     autoAdvance: 'change',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'curriculum-section',
     selector: '[data-guide="curriculum-section"]',
-    getMessage: (p) =>
-      `Set your ${p ? "child's" : "student's"} current work in each area. Everything before it gets marked as mastered automatically — your progress reports are instantly up to date!`,
+    getMessage: (p) => t('guide.studentForm.curriculum'),
     position: 'bottom',
-    actionLabel: 'Got it!',
+    actionLabel: t('guide.common.gotIt'),
   },
   {
     key: 'area-practical_life',
     selector: '[data-guide="area-practical_life"]',
-    getMessage: (p) => `What's this ${p ? 'child' : 'student'} working on in Practical Life?`,
+    getMessage: (p) => t('guide.studentForm.areaPracticalLife'),
     position: 'bottom',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'area-sensorial',
     selector: '[data-guide="area-sensorial"]',
-    getMessage: () => 'How about Sensorial?',
+    getMessage: () => t('guide.studentForm.areaSensorial'),
     position: 'bottom',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'area-mathematics',
     selector: '[data-guide="area-mathematics"]',
-    getMessage: () => 'And Math?',
+    getMessage: () => t('guide.studentForm.areaMathematics'),
     position: 'bottom',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'area-language',
     selector: '[data-guide="area-language"]',
-    getMessage: () => 'What about Language?',
+    getMessage: () => t('guide.studentForm.areaLanguage'),
     position: 'bottom',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'area-cultural',
     selector: '[data-guide="area-cultural"]',
-    getMessage: () => 'And finally Culture?',
+    getMessage: () => t('guide.studentForm.areaCultural'),
     position: 'bottom',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'profile-notes',
     selector: '[data-guide="profile-notes"]',
     getMessage: (_p, childName) => {
       const name = childName?.trim() ? childName.split(' ')[0] : 'this child';
-      return `Now for something special! Tell Guru about ${name} — personality, strengths, challenges, interests. Every note you record shapes their profile, and Guru uses all of it when giving advice or generating reports.`;
+      return t('guide.studentForm.profileNotes').replace('{name}', name);
     },
     position: 'top',
-    actionLabel: 'Got it!',
+    actionLabel: t('guide.common.gotIt'),
   },
   {
     key: 'add-another',
     selector: '[data-guide="add-another"]',
-    getMessage: (p) =>
-      `Got more ${p ? 'children' : 'students'}? Add them all here and save everyone at once. Hit Save All when you're ready!`,
+    getMessage: (p) => t('guide.studentForm.addAnother'),
     position: 'top',
-    actionLabel: 'Next →',
+    actionLabel: t('guide.common.next'),
   },
   {
     key: 'save-all',
     selector: '[data-guide="save-all"]',
-    getMessage: (p) =>
-      `Hit Save All and let's head to your ${p ? 'home' : 'classroom'} — the best part is coming up!`,
+    getMessage: (p) => t('guide.studentForm.saveAll'),
     position: 'top',
   },
 ];
@@ -242,6 +240,7 @@ export default function StudentFormGuide({
   isHomeschoolParent: isParent,
   childName,
 }: StudentFormGuideProps) {
+  const { t } = useI18n();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -249,6 +248,7 @@ export default function StudentFormGuide({
   const stepRef = useRef(currentStep);
   stepRef.current = currentStep;
 
+  const STEPS = getSTEPS(t);
   const step = STEPS[currentStep];
 
   // ---- Advance to next step ----
@@ -429,7 +429,7 @@ export default function StudentFormGuide({
                 onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
                 onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
               >
-                ← Back
+                ← {t('guide.common.back')}
               </button>
             ) : (
               <div />
@@ -449,7 +449,7 @@ export default function StudentFormGuide({
                   padding: 0,
                 }}
               >
-                Skip tour
+                {t('guide.common.skipTour')}
               </button>
 
               {currentStep < STEPS.length - 1 && (
@@ -519,7 +519,7 @@ export default function StudentFormGuide({
                 onClick={goBack}
                 style={{ background: 'none', border: '1px solid rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: 500, padding: '5px 12px', borderRadius: 8, cursor: 'pointer' }}
               >
-                ← Back
+                ← {t('guide.common.back')}
               </button>
             ) : <div />}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -527,7 +527,7 @@ export default function StudentFormGuide({
                 onClick={() => { setDismissed(true); onSkip(); }}
                 style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: 11, cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
               >
-                Skip tour
+                {t('guide.common.skipTour')}
               </button>
               {currentStep < STEPS.length - 1 && (
                 <button

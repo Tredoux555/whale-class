@@ -1,5 +1,7 @@
 'use client';
 
+import { useI18n } from '@/lib/montree/i18n';
+
 interface WelcomeModalProps {
   teacherName: string;
   isOpen: boolean;
@@ -11,6 +13,7 @@ export default function WelcomeModal({
   isOpen,
   onClose,
 }: WelcomeModalProps) {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -36,13 +39,13 @@ export default function WelcomeModal({
           <div className="text-center mb-6">
             <div className="text-7xl mb-4 animate-bounce">👋</div>
             <h2 className="text-3xl font-bold text-gray-800">
-              Welcome, <span className="text-emerald-600">{teacherName}</span>!
+              {t('welcome.title').replace('{name}', teacherName)}
             </h2>
           </div>
 
           {/* Content */}
           <p className="text-center text-gray-600 mb-8 leading-relaxed">
-            Let's get your classroom set up. The first step is adding your students so you can start tracking their progress.
+            {t('welcome.message')}
           </p>
 
           {/* CTA Button */}
@@ -50,7 +53,7 @@ export default function WelcomeModal({
             onClick={onClose}
             className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-all active:scale-95"
           >
-            Add My First Student
+            {t('welcome.cta')}
           </button>
         </div>
       </div>

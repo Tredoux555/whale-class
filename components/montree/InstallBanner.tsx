@@ -5,8 +5,10 @@
 
 import { useState, useEffect } from 'react';
 import { usePWA } from '@/lib/montree/usePWA';
+import { useI18n } from '@/lib/montree/i18n';
 
 export default function InstallBanner() {
+  const { t } = useI18n();
   const { isInstallable, isInstalled, promptInstall } = usePWA();
   const [dismissed, setDismissed] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -58,10 +60,10 @@ export default function InstallBanner() {
         {/* Text */}
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-gray-800 text-sm">
-            Install Montree
+            {t('installBanner.title')}
           </p>
           <p className="text-xs text-gray-500 truncate">
-            Add to home screen for quick access
+            {t('installBanner.subtitle')}
           </p>
         </div>
         
@@ -71,13 +73,13 @@ export default function InstallBanner() {
             onClick={handleDismiss}
             className="text-gray-400 hover:text-gray-600 text-sm px-2"
           >
-            Later
+            {t('installBanner.later')}
           </button>
           <button
             onClick={handleInstall}
             className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
           >
-            Install
+            {t('installBanner.install')}
           </button>
         </div>
       </div>

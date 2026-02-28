@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const { data: teacher } = await supabase
       .from('montree_teachers')
-      .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end')
+      .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end, guru_tier')
       .eq('id', auth.userId)
       .single();
 
@@ -48,15 +48,24 @@ export async function GET(request: NextRequest) {
     const isPaid = plan !== 'free' && subStatus === 'active' &&
       (!periodEnd || new Date(periodEnd) > new Date());
 
+    // Free trial users don't have a tier yet — show null so frontend can display both options
+    const tier = isPaid ? ((t.guru_tier as string) || 'sonnet') : null;
+    const monthlyLimit = isPaid ? 30 : 10;
+
     return NextResponse.json({
       success: true,
       guru_access: isPaid ? 'paid' : 'free_trial',
       role,
+      tier,
       prompts_used: promptsUsed,
-      prompts_limit: 3,
-      prompts_remaining: isPaid ? null : Math.max(0, 3 - promptsUsed),
-      is_locked: !isPaid && promptsUsed >= 3,
+      prompts_limit: monthlyLimit,
+      prompts_remaining: Math.max(0, monthlyLimit - promptsUsed),
+      is_locked: promptsUsed >= monthlyLimit,
       subscription_status: subStatus,
+      pricing: {
+        haiku: { price: 5, prompts: 30, description: 'Quick, focused Montessori advice' },
+        sonnet: { price: 20, prompts: 30, description: 'Deep therapeutic support + pattern detection' },
+      },
     });
 
   } catch (error) {

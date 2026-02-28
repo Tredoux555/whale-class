@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import MediaGallery from '@/components/montree/media/MediaGallery';
 import PhotoDetailView from '@/components/montree/media/PhotoDetailView';
 import PhotoEditModal from '@/components/montree/media/PhotoEditModal';
@@ -28,6 +29,7 @@ interface GroupedPhotos {
 export default function GalleryPage() {
   const params = useParams();
   const childId = params.childId as string;
+  const { t } = useI18n();
 
   // State
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
@@ -77,7 +79,7 @@ export default function GalleryPage() {
       })
       .catch(err => {
         console.error('Error fetching photos:', err);
-        toast.error('Failed to load photos');
+        toast.error(t('gallery.loadPhotosError'));
       })
       .finally(() => setLoading(false));
   }, [childId]);
@@ -167,12 +169,12 @@ export default function GalleryPage() {
       }
 
       setPhotos(photos.filter(p => p.id !== photoToDelete.id));
-      toast.success('Photo deleted successfully');
+      toast.success(t('gallery.photoDeletedSuccessfully'));
       setPhotoToDelete(null);
       setSelectedPhoto(null);
     } catch (err) {
       console.error('Delete error:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to delete photo');
+      toast.error(err instanceof Error ? err.message : t('gallery.deletePhotoError'));
     } finally {
       setIsDeleting(false);
     }
@@ -195,13 +197,13 @@ export default function GalleryPage() {
       }
 
       setPhotos(photos.filter(p => !selectedIds.has(p.id)));
-      toast.success(`${selectedIds.size} photo${selectedIds.size !== 1 ? 's' : ''} deleted successfully`);
+      toast.success(t('gallery.photosDeletedSuccessfully').replace('{count}', selectedIds.size.toString()));
       setSelectedIds(new Set());
       setShowBulkDeleteConfirm(false);
       setSelectionMode(false);
     } catch (err) {
       console.error('Bulk delete error:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to delete photos');
+      toast.error(err instanceof Error ? err.message : t('gallery.deletePhotosError'));
     } finally {
       setIsDeleting(false);
     }
@@ -222,8 +224,8 @@ export default function GalleryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{childName ? `${childName}'s Gallery` : 'Photo Gallery'}</h1>
-          <p className="text-sm text-gray-500 mt-1">{photos.length} photos total</p>
+          <h1 className="text-2xl font-bold text-gray-900">{childName ? `${childName}'s ${t('gallery.gallery')}` : t('gallery.photoGallery')}</h1>
+          <p className="text-sm text-gray-500 mt-1">{photos.length} {t('gallery.photosTotal')}</p>
         </div>
 
         {/* Selection mode toggle */}
@@ -239,7 +241,7 @@ export default function GalleryPage() {
                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }`}
           >
-            {selectionMode ? '✓ Select' : 'Select'}
+            {selectionMode ? `✓ ${t('gallery.select')}` : t('gallery.select')}
           </button>
         )}
       </div>
@@ -258,7 +260,7 @@ export default function GalleryPage() {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          All Photos
+          {t('gallery.allPhotos')}
         </button>
 
         <button
@@ -275,7 +277,7 @@ export default function GalleryPage() {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          By Area
+          {t('gallery.byArea')}
         </button>
 
         <button
@@ -292,7 +294,7 @@ export default function GalleryPage() {
               : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
           }`}
         >
-          By Work
+          {t('gallery.byWork')}
         </button>
       </div>
 
@@ -314,7 +316,7 @@ export default function GalleryPage() {
               >
                 <AreaBadge area={area || ''} size="xs" />
                 <span>{config.name}</span>
-                <span className="text-xs opacity-75">({count})</span>
+                <span className="text-xs opacity-75">({count} {count !== 1 ? t('gallery.photos') : t('gallery.photo')})</span>
               </button>
             );
           })}
@@ -336,7 +338,7 @@ export default function GalleryPage() {
                 }`}
               >
                 <span className="truncate">{work}</span>
-                <span className="text-xs opacity-75 ml-1">({count})</span>
+                <span className="text-xs opacity-75 ml-1">({count} {count !== 1 ? t('gallery.photos') : t('gallery.photo')})</span>
               </button>
             );
           })}
@@ -347,30 +349,30 @@ export default function GalleryPage() {
       {selectionMode && selectedIds.size > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
           <div className="text-sm font-medium text-blue-900">
-            {selectedIds.size} photo{selectedIds.size !== 1 ? 's' : ''} selected
+            {selectedIds.size} {selectedIds.size !== 1 ? t('gallery.photosSelected') : t('gallery.photoSelected')}
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleSelectAll}
               className="text-sm px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
             >
-              {selectedIds.size === filteredPhotos.length ? 'Deselect All' : 'Select All'}
+              {selectedIds.size === filteredPhotos.length ? t('gallery.deselectAll') : t('gallery.selectAll')}
             </button>
             <button
               onClick={() => {
                 // TODO: Wire to reports later
-                toast.success(`Selected ${selectedIds.size} photos for report`);
+                toast.success(t('gallery.addedToReport').replace('{count}', selectedIds.size.toString()));
                 setSelectionMode(false);
               }}
               className="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Add to Report
+              {t('gallery.addToReport')}
             </button>
             <button
               onClick={() => setShowBulkDeleteConfirm(true)}
               className="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
             >
-              🗑️ Delete Selected
+              🗑️ {t('gallery.deleteSelected')}
             </button>
           </div>
         </div>
@@ -383,7 +385,7 @@ export default function GalleryPage() {
           {Object.keys(groupedPhotos || {}).length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-3">📷</div>
-              <p className="text-gray-500">No photos yet</p>
+              <p className="text-gray-500">{t('gallery.noPhotos')}</p>
             </div>
           ) : (
             Object.entries(groupedPhotos || {}).map(([groupKey, items]) => {
@@ -401,7 +403,7 @@ export default function GalleryPage() {
                         <p className="text-xs text-gray-500">{areaConfig.name}</p>
                       </div>
                       <span className="text-xs bg-white px-2 py-1 rounded-full text-gray-600 font-medium">
-                        {items.length} photo{items.length !== 1 ? 's' : ''}
+                        {items.length} {items.length !== 1 ? t('gallery.photos') : t('gallery.photo')}
                       </span>
                     </div>
                   </div>
@@ -414,7 +416,7 @@ export default function GalleryPage() {
                       onMediaClick={selectionMode ? undefined : setSelectedPhoto}
                       onMediaEdit={(media) => setEditingPhoto(media as GalleryItem)}
                       onMediaDelete={(media) => setPhotoToDelete(media as GalleryItem)}
-                      emptyMessage="No photos"
+                      emptyMessage={t('gallery.noPhotos')}
                       selectedIds={selectedIds}
                       onSelectionChange={handleSelectionChange}
                       selectionMode={selectionMode}
@@ -435,7 +437,7 @@ export default function GalleryPage() {
             onMediaClick={selectionMode ? undefined : setSelectedPhoto}
             onMediaEdit={(media) => setEditingPhoto(media as GalleryItem)}
             onMediaDelete={(media) => setPhotoToDelete(media as GalleryItem)}
-            emptyMessage={loading ? 'Loading photos...' : 'No photos in this filter'}
+            emptyMessage={loading ? t('gallery.loadingPhotos') : t('gallery.noPhotosInFilter')}
             selectedIds={selectedIds}
             onSelectionChange={handleSelectionChange}
             selectionMode={selectionMode}

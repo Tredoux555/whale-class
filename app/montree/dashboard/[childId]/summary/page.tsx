@@ -8,6 +8,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
@@ -59,6 +60,7 @@ export default function TeacherSummaryPage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
+  const { t } = useI18n();
 
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<SummaryData | null>(null);
@@ -92,7 +94,7 @@ export default function TeacherSummaryPage() {
       const childData = await childRes.json();
 
       if (!childData.children || childData.children.length === 0) {
-        setError('Child not found');
+        setError(t('summary.childNotFound'));
         setLoading(false);
         return;
       }
@@ -138,7 +140,7 @@ export default function TeacherSummaryPage() {
 
       setSummary({
         child,
-        period: period === 'week' ? 'Past 7 Days' : 'Past 30 Days',
+        period: period === 'week' ? t('summary.past7Days') : t('summary.past30Days'),
         totalWorksThisPeriod: progress.length,
         areasWorked,
         areasNeglected: neglected,
@@ -147,7 +149,7 @@ export default function TeacherSummaryPage() {
       });
     } catch (err) {
       console.error('Failed to fetch summary:', err);
-      setError('Failed to load summary');
+      setError(t('summary.loadError'));
     } finally {
       setLoading(false);
     }
@@ -183,14 +185,14 @@ export default function TeacherSummaryPage() {
 
       if (data.success && data.insight) {
         setAiInsight(data.insight);
-        toast.success('AI insights generated!');
+        toast.success(t('summary.insightsGenerated'));
       } else {
-        setError(data.error || 'Failed to generate insights');
-        toast.error('Failed to generate AI insights');
+        setError(data.error || t('summary.insightsGenerateFailed'));
+        toast.error(t('summary.insightsGenerateFailed'));
       }
     } catch (err) {
       console.error('AI insight error:', err);
-      toast.error('Failed to connect to AI service');
+      toast.error(t('summary.aiConnectError'));
     } finally {
       setLoadingAi(false);
     }
@@ -221,7 +223,7 @@ export default function TeacherSummaryPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-500 border-t-transparent mb-4" />
-          <p className="text-gray-600">Loading summary...</p>
+          <p className="text-gray-600">{t('summary.loading')}</p>
         </div>
       </div>
     );
@@ -232,12 +234,12 @@ export default function TeacherSummaryPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
         <div className="text-center p-6">
           <div className="text-4xl mb-4">❌</div>
-          <p className="text-gray-600 mb-4">{error || 'Failed to load summary'}</p>
+          <p className="text-gray-600 mb-4">{error || t('summary.loadError')}</p>
           <button
             onClick={() => router.back()}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg"
           >
-            Go Back
+            {t('summary.goBack')}
           </button>
         </div>
       </div>
@@ -267,7 +269,7 @@ export default function TeacherSummaryPage() {
                 period === 'week' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
               }`}
             >
-              Week
+              {t('summary.week')}
             </button>
             <button
               onClick={() => setPeriod('month')}
@@ -275,7 +277,7 @@ export default function TeacherSummaryPage() {
                 period === 'month' ? 'bg-white shadow-sm' : 'hover:bg-gray-200'
               }`}
             >
-              Month
+              {t('summary.month')}
             </button>
           </div>
         </div>
@@ -284,34 +286,34 @@ export default function TeacherSummaryPage() {
       <main className="p-4 space-y-4 pb-24">
         {/* Overview Stats */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">📊 Overview</h2>
+          <h2 className="font-bold text-gray-700 mb-3">📊 {t('summary.overview')}</h2>
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center p-3 bg-blue-50 rounded-xl">
               <div className="text-2xl font-bold text-blue-600">
                 {summary.totalWorksThisPeriod}
               </div>
-              <div className="text-xs text-gray-500">Total Activities</div>
+              <div className="text-xs text-gray-500">{t('summary.totalActivities')}</div>
             </div>
             <div className="text-center p-3 bg-green-50 rounded-xl">
               <div className="text-2xl font-bold text-green-600">
                 {summary.statusBreakdown.mastered}
               </div>
-              <div className="text-xs text-gray-500">Mastered</div>
+              <div className="text-xs text-gray-500">{t('summary.mastered')}</div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-xl">
               <div className="text-2xl font-bold text-purple-600">
                 {summary.areasWorked.length}
               </div>
-              <div className="text-xs text-gray-500">Areas Covered</div>
+              <div className="text-xs text-gray-500">{t('summary.areasCovered')}</div>
             </div>
           </div>
         </div>
 
         {/* Areas Worked */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">✅ Areas Worked On</h2>
+          <h2 className="font-bold text-gray-700 mb-3">✅ {t('summary.areasWorkedOn')}</h2>
           {summary.areasWorked.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">No work recorded this period</p>
+            <p className="text-gray-400 text-center py-4">{t('summary.noWorkThisPeriod')}</p>
           ) : (
             <div className="space-y-2">
               {summary.areasWorked.map(area => (
@@ -323,7 +325,7 @@ export default function TeacherSummaryPage() {
                     <span className="font-medium flex items-center gap-1.5">
                       <AreaBadge area={area.area} size="xs" /> {formatAreaName(area.area)}
                     </span>
-                    <span className="text-sm font-bold">{area.count} activities</span>
+                    <span className="text-sm font-bold">{area.count} {t('summary.activities')}</span>
                   </div>
                   <div className="text-sm opacity-80">
                     {area.works.slice(0, 3).join(', ')}
@@ -338,9 +340,9 @@ export default function TeacherSummaryPage() {
         {/* Neglected Areas */}
         {summary.areasNeglected.length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm border-l-4 border-amber-400">
-            <h2 className="font-bold text-gray-700 mb-3">⚠️ Areas to Consider</h2>
+            <h2 className="font-bold text-gray-700 mb-3">⚠️ {t('summary.areasToConsider')}</h2>
             <p className="text-sm text-gray-600 mb-2">
-              These areas haven&apos;t been worked on this {period}:
+              {t('summary.areasNotWorked').replace('{period}', period)}
             </p>
             <div className="flex flex-wrap gap-2">
               {summary.areasNeglected.map(area => (
@@ -357,10 +359,10 @@ export default function TeacherSummaryPage() {
 
         {/* Status Breakdown */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="font-bold text-gray-700 mb-3">📈 Progress Breakdown</h2>
+          <h2 className="font-bold text-gray-700 mb-3">📈 {t('summary.progressBreakdown')}</h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Presented</span>
+              <span className="text-sm text-gray-600">{t('summary.presented')}</span>
               <div className="flex items-center gap-2">
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -376,7 +378,7 @@ export default function TeacherSummaryPage() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Practicing</span>
+              <span className="text-sm text-gray-600">{t('summary.practicing')}</span>
               <div className="flex items-center gap-2">
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -392,7 +394,7 @@ export default function TeacherSummaryPage() {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Mastered</span>
+              <span className="text-sm text-gray-600">{t('summary.mastered')}</span>
               <div className="flex items-center gap-2">
                 <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
@@ -413,7 +415,7 @@ export default function TeacherSummaryPage() {
         {/* AI Insights */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-gray-700">🤖 Guru Insights</h2>
+            <h2 className="font-bold text-gray-700">🤖 {t('summary.guruInsights')}</h2>
             <button
               onClick={generateAiInsight}
               disabled={loadingAi}
@@ -422,12 +424,12 @@ export default function TeacherSummaryPage() {
               {loadingAi ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Thinking...</span>
+                  <span>{t('summary.thinking')}</span>
                 </>
               ) : aiInsight ? (
-                <>🔄 Regenerate</>
+                <>🔄 {t('summary.regenerate')}</>
               ) : (
-                <>✨ Ask Guru</>
+                <>✨ {t('summary.askGuru')}</>
               )}
             </button>
           </div>
@@ -439,7 +441,7 @@ export default function TeacherSummaryPage() {
           ) : (
             <div className="p-4 bg-gray-50 rounded-xl text-center text-gray-400">
               <p className="text-sm">
-                Click &quot;Ask Guru&quot; to get AI-powered insights about this child&apos;s progress
+                {t('summary.askGuruPrompt')}
               </p>
             </div>
           )}
@@ -448,7 +450,7 @@ export default function TeacherSummaryPage() {
         {/* Recent Activity */}
         {summary.recentProgress.length > 0 && (
           <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <h2 className="font-bold text-gray-700 mb-3">🕐 Recent Activity</h2>
+            <h2 className="font-bold text-gray-700 mb-3">🕐 {t('summary.recentActivity')}</h2>
             <div className="space-y-2">
               {summary.recentProgress.map((p, i) => (
                 <div

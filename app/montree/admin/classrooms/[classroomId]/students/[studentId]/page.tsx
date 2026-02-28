@@ -5,6 +5,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface AreaProgress {
   area: string;
@@ -66,6 +67,7 @@ const AREA_NAMES: Record<string, string> = {
 export default function StudentDetailPage({ params }: { params: Promise<{ classroomId: string; studentId: string }> }) {
   const { classroomId, studentId } = use(params);
   const router = useRouter();
+  const { t } = useI18n();
 
   const [student, setStudent] = useState<{ name: string; photo_url: string | null; age: number | null } | null>(null);
   const [classroomName, setClassroomName] = useState('');
@@ -124,7 +126,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         if (s) setStudent({ name: s.name, photo_url: s.photo_url, age: s.age });
       }
     } catch {
-      toast.error('Failed to load student data');
+      toast.error(t('admin.errors.failedToLoadStudentData'));
     } finally {
       setLoading(false);
     }
@@ -148,7 +150,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
       const data = await res.json();
       setGuruResponse(data);
     } catch {
-      setGuruResponse({ success: false, error: 'Failed to get response. Please try again.' });
+      setGuruResponse({ success: false, error: t('admin.errors.failedToGetResponse') });
     } finally {
       setGuruLoading(false);
     }
@@ -165,7 +167,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Copied to clipboard');
+    toast.success(t('admin.messages.copiedToClipboard'));
   };
 
   const formatGuruForCopy = () => {
@@ -244,10 +246,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         >
           {guruLoading ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">🧠</span> Generating Report...
+              <span className="animate-spin">🧠</span> {t('admin.states.generatingReport')}
             </span>
           ) : (
-            <span>🤖 Generate Report for Parent</span>
+            <span>🤖 {t('admin.actions.generateReportForParent')}</span>
           )}
         </button>
 
@@ -257,7 +259,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
             {guruLoading && !guruResponse && (
               <div className="text-center py-8">
                 <div className="text-4xl animate-bounce mb-3">🧠</div>
-                <p className="text-emerald-300">Analyzing {student?.name}&apos;s progress...</p>
+                <p className="text-emerald-300">{t('admin.messages.analyzingProgress').replace('{name}', student?.name || 'Student')}</p>
               </div>
             )}
 
@@ -266,7 +268,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 {/* Insight */}
                 {guruResponse.insight && (
                   <div>
-                    <h3 className="text-emerald-400 text-sm font-medium mb-1">💡 Summary</h3>
+                    <h3 className="text-emerald-400 text-sm font-medium mb-1">💡 {t('admin.labels.summary')}</h3>
                     <p className="text-white/90 text-sm leading-relaxed">{guruResponse.insight}</p>
                   </div>
                 )}
@@ -274,7 +276,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 {/* Action Plan */}
                 {guruResponse.action_plan && guruResponse.action_plan.length > 0 && (
                   <div>
-                    <h3 className="text-emerald-400 text-sm font-medium mb-2">📋 Suggestions for Home</h3>
+                    <h3 className="text-emerald-400 text-sm font-medium mb-2">📋 {t('admin.labels.suggestionsForHome')}</h3>
                     <div className="space-y-2">
                       {guruResponse.action_plan.map((a, i) => (
                         <div key={i} className="flex gap-2 text-sm">
@@ -292,7 +294,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 {/* Timeline */}
                 {guruResponse.timeline && (
                   <div className="bg-amber-500/10 rounded-lg p-3">
-                    <h3 className="text-amber-400 text-xs font-medium mb-1">⏰ Timeline</h3>
+                    <h3 className="text-amber-400 text-xs font-medium mb-1">⏰ {t('admin.labels.timeline')}</h3>
                     <p className="text-white/80 text-sm">{guruResponse.timeline}</p>
                   </div>
                 )}
@@ -300,7 +302,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                 {/* Parent Talking Point */}
                 {guruResponse.parent_talking_point && (
                   <div className="bg-emerald-500/10 rounded-lg p-3">
-                    <h3 className="text-emerald-400 text-xs font-medium mb-1">💬 Say This to the Parent</h3>
+                    <h3 className="text-emerald-400 text-xs font-medium mb-1">💬 {t('admin.labels.sayToParent')}</h3>
                     <p className="text-white/90 text-sm italic">&ldquo;{guruResponse.parent_talking_point}&rdquo;</p>
                   </div>
                 )}
@@ -311,7 +313,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                     onClick={() => copyToClipboard(formatGuruForCopy())}
                     className={`px-4 py-2 rounded-lg text-sm font-medium ${copied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'}`}
                   >
-                    {copied ? '✓ Copied!' : '📋 Copy Summary'}
+                    {copied ? '✓ ' + t('admin.actions.copied') : '📋 ' + t('admin.actions.copySummary')}
                   </button>
                 </div>
 
@@ -323,7 +325,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                       value={guruQuestion}
                       onChange={e => setGuruQuestion(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter' && guruQuestion.trim()) askGuru(guruQuestion); }}
-                      placeholder="Ask a follow-up question..."
+                      placeholder={t('admin.form.askFollowUpQuestion')}
                       className="flex-1 px-4 py-2 bg-black/20 border border-white/20 rounded-xl text-white text-sm placeholder:text-white/30"
                     />
                     <button
@@ -331,7 +333,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                       disabled={guruLoading || !guruQuestion.trim()}
                       className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50"
                     >
-                      Ask
+                      {t('admin.actions.ask')}
                     </button>
                   </div>
                 </div>
@@ -340,8 +342,8 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
             {guruResponse && !guruResponse.success && (
               <div className="text-center py-4">
-                <p className="text-red-300 text-sm">{guruResponse.error || 'Something went wrong'}</p>
-                <button onClick={generateQuickReport} className="mt-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm">Try Again</button>
+                <p className="text-red-300 text-sm">{guruResponse.error || t('admin.errors.somethingWentWrong')}</p>
+                <button onClick={generateQuickReport} className="mt-2 px-4 py-2 bg-white/10 text-white rounded-lg text-sm">{t('admin.actions.tryAgain')}</button>
               </div>
             )}
           </div>
@@ -350,7 +352,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         {/* Progress Bars */}
         {summary?.areas && summary.areas.length > 0 && (
           <div className="bg-white/10 rounded-2xl p-5">
-            <h2 className="text-white font-semibold mb-4">Progress by Area</h2>
+            <h2 className="text-white font-semibold mb-4">{t('admin.sections.progressByArea')}</h2>
             <div className="space-y-3">
               {summary.areas.map(area => (
                 <div key={area.area}>
@@ -368,7 +370,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                     />
                   </div>
                   {area.currentWork && (
-                    <p className="text-white/40 text-xs mt-0.5">Currently: {area.currentWork.name}</p>
+                    <p className="text-white/40 text-xs mt-0.5">{t('admin.labels.currently')}: {area.currentWork.name}</p>
                   )}
                 </div>
               ))}
@@ -377,7 +379,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
               {summary.overall && (
                 <div className="border-t border-white/10 pt-3 mt-3">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-white font-semibold text-sm">Overall</span>
+                    <span className="text-white font-semibold text-sm">{t('admin.labels.overall')}</span>
                     <span className="text-emerald-300 text-sm font-medium">{summary.overall.percent}%</span>
                   </div>
                   <div className="h-3 bg-white/10 rounded-full overflow-hidden">
@@ -391,9 +393,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
 
         {/* Reports Sent to Parents */}
         <div className="bg-white/10 rounded-2xl p-5">
-          <h2 className="text-white font-semibold mb-4">Reports Sent to Parents</h2>
+          <h2 className="text-white font-semibold mb-4">{t('admin.sections.reportsSentToParents')}</h2>
           {reports.length === 0 ? (
-            <p className="text-white/50 text-sm text-center py-4">No reports sent yet</p>
+            <p className="text-white/50 text-sm text-center py-4">{t('admin.emptyStates.noReportsSent')}</p>
           ) : (
             <div className="space-y-2">
               {reports.map(report => {
@@ -411,10 +413,10 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                       className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/5"
                     >
                       <div>
-                        <span className="text-white text-sm font-medium">Week of {weekStart} – {weekEnd}</span>
+                        <span className="text-white text-sm font-medium">{t('admin.labels.weekOf')} {weekStart} – {weekEnd}</span>
                         <div className="flex items-center gap-2 mt-0.5">
-                          {sentDate && <span className="text-emerald-300/60 text-xs">Sent {sentDate}</span>}
-                          <span className="text-white/40 text-xs">{works.length} works</span>
+                          {sentDate && <span className="text-emerald-300/60 text-xs">{t('admin.labels.sent')} {sentDate}</span>}
+                          <span className="text-white/40 text-xs">{works.length} {t('admin.labels.works')}</span>
                         </div>
                       </div>
                       <span className={`text-white/50 transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
@@ -427,7 +429,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: AREA_COLORS[w.area?.toLowerCase()] || '#6b7280' }} />
                             <span className="text-white/80">{w.name}</span>
                             <span className="text-white/40">
-                              {w.status === 3 ? '⭐ Mastered' : w.status === 2 ? '🔄 Practicing' : '📋 Presented'}
+                              {w.status === 3 ? '⭐ ' + t('admin.states.mastered') : w.status === 2 ? '🔄 ' + t('admin.states.practicing') : '📋 ' + t('admin.states.presented')}
                             </span>
                           </div>
                         ))}
@@ -443,7 +445,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
         {/* Quick Questions for Guru */}
         {!showGuru && (
           <div className="bg-white/5 rounded-2xl p-4">
-            <p className="text-white/50 text-xs mb-3">Quick questions for the Guru:</p>
+            <p className="text-white/50 text-xs mb-3">{t('admin.labels.quickQuestionsForGuru')}:</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {[
                 `How is ${student?.name || 'this child'} doing overall?`,

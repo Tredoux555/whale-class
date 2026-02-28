@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 import { Work, AREA_COLORS } from './types';
 import AreaBadge from '../shared/AreaBadge';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ export default function CurriculumWorkList({
   stopAutoScroll,
   onWorkUpdated,
 }: CurriculumWorkListProps) {
+  const { t } = useI18n();
   // Scroll to highlighted work when it changes (from search)
   useEffect(() => {
     if (!highlightedWorkId) return;
@@ -71,7 +73,7 @@ export default function CurriculumWorkList({
         </h3>
         <span className="text-xs text-gray-400 flex items-center gap-1">
           {reordering && <span className="animate-spin">⏳</span>}
-          ↕️ Drag to reorder
+          ↕️ {t('curriculum.dragToReorder')}
         </span>
       </div>
       <div
@@ -130,7 +132,7 @@ export default function CurriculumWorkList({
                 {/* Delete button */}
                 <button onClick={() => onDeleteWork(work)}
                   className="w-8 h-8 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center hover:bg-red-100 hover:text-red-600"
-                  title="Delete work">
+                  title={t('curriculum.deleteWork')}>
                   🗑️
                 </button>
               </div>
@@ -165,6 +167,7 @@ function ExpandedWorkDetails({
   onOpenFullDetails?: (workName: string) => void;
   onWorkUpdated?: () => void;
 }) {
+  const { t } = useI18n();
   const [uploading, setUploading] = useState(false);
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState(work.photo_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -174,7 +177,7 @@ function ExpandedWorkDetails({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Photo too large (max 10MB)');
+      toast.error(t('curriculum.photoTooLarge'));
       return;
     }
 
@@ -192,13 +195,13 @@ function ExpandedWorkDetails({
       const data = await res.json();
       if (res.ok && data.photo_url) {
         setCurrentPhotoUrl(data.photo_url);
-        toast.success('Photo added!');
+        toast.success(t('curriculum.photoAdded'));
         onWorkUpdated?.();
       } else {
-        toast.error(data.error || 'Failed to upload');
+        toast.error(data.error || t('curriculum.failedToUpload'));
       }
     } catch {
-      toast.error('Upload failed');
+      toast.error(t('curriculum.uploadFailed'));
     }
     setUploading(false);
     // Reset the input so the same file can be re-selected
@@ -206,7 +209,7 @@ function ExpandedWorkDetails({
   };
 
   const handleRemovePhoto = async () => {
-    if (!confirm('Remove this photo?')) return;
+    if (!confirm(t('curriculum.removePhotoConfirm'))) return;
     try {
       const res = await fetch('/api/montree/curriculum/photo', {
         method: 'DELETE',
@@ -215,11 +218,11 @@ function ExpandedWorkDetails({
       });
       if (res.ok) {
         setCurrentPhotoUrl(null);
-        toast.success('Photo removed');
+        toast.success(t('curriculum.photoRemoved'));
         onWorkUpdated?.();
       }
     } catch {
-      toast.error('Failed to remove photo');
+      toast.error(t('curriculum.failedToRemovePhoto'));
     }
   };
 
@@ -233,11 +236,11 @@ function ExpandedWorkDetails({
             <button
               onClick={handleRemovePhoto}
               className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm"
-              title="Remove photo"
+              title={t('curriculum.removePhoto')}
             >
               ×
             </button>
-            <label className="absolute bottom-1 right-1 w-6 h-6 bg-white/90 text-gray-600 rounded-full text-xs flex items-center justify-center cursor-pointer sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm hover:bg-white" title="Change photo">
+            <label className="absolute bottom-1 right-1 w-6 h-6 bg-white/90 text-gray-600 rounded-full text-xs flex items-center justify-center cursor-pointer sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow-sm hover:bg-white" title={t('curriculum.changePhoto')}>
               📷
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
             </label>
@@ -245,11 +248,11 @@ function ExpandedWorkDetails({
         ) : (
           <label className={`flex flex-col items-center justify-center w-32 h-24 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${uploading ? 'border-emerald-300 bg-emerald-50' : 'border-gray-200 hover:border-emerald-400 hover:bg-emerald-50/50'}`}>
             {uploading ? (
-              <span className="text-sm text-emerald-600 animate-pulse">Uploading...</span>
+              <span className="text-sm text-emerald-600 animate-pulse">{t('curriculum.uploading')}</span>
             ) : (
               <>
                 <span className="text-xl">📷</span>
-                <span className="text-xs text-gray-400 mt-1">Add Photo</span>
+                <span className="text-xs text-gray-400 mt-1">{t('curriculum.addPhoto')}</span>
               </>
             )}
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" disabled={uploading} />
@@ -262,7 +265,7 @@ function ExpandedWorkDetails({
             <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 rounded-xl border border-amber-200">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-bold text-amber-800 text-sm flex items-center gap-1">
-                  ⚡ Quick Guide
+                  ⚡ {t('curriculum.quickGuide')}
                 </p>
                 <a
                   href={`https://youtube.com/results?search_query=${encodeURIComponent('montessori ' + work.name + ' presentation')}`}
@@ -270,7 +273,7 @@ function ExpandedWorkDetails({
                   rel="noopener noreferrer"
                   className="flex items-center gap-1 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors"
                 >
-                  🎬 Video
+                  🎬 {t('curriculum.video')}
                 </a>
               </div>
               <div className="text-xs text-amber-900 space-y-0.5">
@@ -291,7 +294,7 @@ function ExpandedWorkDetails({
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-colors"
         >
-          🎬 Watch Presentation Video
+          🎬 {t('curriculum.watchPresentationVideo')}
         </a>
       )}
 
@@ -301,14 +304,14 @@ function ExpandedWorkDetails({
           onClick={() => onOpenFullDetails(work.name)}
           className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-700 active:scale-[0.98] transition-all shadow-sm"
         >
-          📚 Full Details
+          📚 {t('curriculum.fullDetails')}
         </button>
       )}
 
       {/* Teacher Notes (if any) */}
       {work.teacher_notes && (
         <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-          <p className="font-semibold text-yellow-700 text-xs mb-1">📝 Teacher Notes</p>
+          <p className="font-semibold text-yellow-700 text-xs mb-1">📝 {t('curriculum.teacherNotes')}</p>
           <p className="text-sm text-yellow-800">{work.teacher_notes}</p>
         </div>
       )}
@@ -316,7 +319,7 @@ function ExpandedWorkDetails({
       {/* Parent Description */}
       {work.parent_description && (
         <div className="bg-emerald-50 p-3 rounded-lg">
-          <p className="font-semibold text-emerald-700 text-xs mb-1">👨‍👩‍👧 For Parents</p>
+          <p className="font-semibold text-emerald-700 text-xs mb-1">👨‍👩‍👧 {t('curriculum.forParents')}</p>
           <p className="text-sm text-emerald-800">{work.parent_description}</p>
         </div>
       )}
@@ -325,7 +328,7 @@ function ExpandedWorkDetails({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
         {work.direct_aims?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🎯 Direct Aims</p>
+            <p className="font-semibold text-gray-700 mb-1">🎯 {t('curriculum.directAims')}</p>
             <ul className="text-gray-600 space-y-0.5">
               {work.direct_aims.map((aim: string, i: number) => (
                 <li key={i} className="text-xs">• {aim}</li>
@@ -336,7 +339,7 @@ function ExpandedWorkDetails({
 
         {work.indirect_aims?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🌱 Indirect Aims</p>
+            <p className="font-semibold text-gray-700 mb-1">🌱 {t('curriculum.indirectAims')}</p>
             <ul className="text-gray-600 space-y-0.5">
               {work.indirect_aims.map((aim: string, i: number) => (
                 <li key={i} className="text-xs">• {aim}</li>
@@ -347,7 +350,7 @@ function ExpandedWorkDetails({
 
         {work.materials?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">🧰 Materials</p>
+            <p className="font-semibold text-gray-700 mb-1">🧰 {t('curriculum.materials')}</p>
             <ul className="text-gray-600 space-y-0.5">
               {work.materials.map((item: string, i: number) => (
                 <li key={i} className="text-xs">• {item}</li>
@@ -358,7 +361,7 @@ function ExpandedWorkDetails({
 
         {work.prerequisites?.length > 0 && (
           <div>
-            <p className="font-semibold text-gray-700 mb-1">✅ Prerequisites</p>
+            <p className="font-semibold text-gray-700 mb-1">✅ {t('curriculum.prerequisites')}</p>
             <ul className="text-gray-600 space-y-0.5">
               {work.prerequisites.map((item: string, i: number) => (
                 <li key={i} className="text-xs">• {item}</li>
@@ -370,7 +373,7 @@ function ExpandedWorkDetails({
 
       {work.why_it_matters && (
         <div className="bg-blue-50 p-3 rounded-lg">
-          <p className="font-semibold text-blue-700 text-xs mb-1">💡 Why It Matters</p>
+          <p className="font-semibold text-blue-700 text-xs mb-1">💡 {t('curriculum.whyItMatters')}</p>
           <p className="text-sm text-blue-800">{work.why_it_matters}</p>
         </div>
       )}
@@ -379,12 +382,12 @@ function ExpandedWorkDetails({
       <div className="flex flex-wrap gap-2">
         {work.age_range && (
           <span className="text-xs px-2 py-1 bg-gray-200 text-gray-700 rounded-full">
-            Age: {work.age_range}
+            {t('curriculum.age')}: {work.age_range}
           </span>
         )}
         {work.control_of_error && (
           <span className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full">
-            Control: {work.control_of_error}
+            {t('curriculum.control')}: {work.control_of_error}
           </span>
         )}
       </div>

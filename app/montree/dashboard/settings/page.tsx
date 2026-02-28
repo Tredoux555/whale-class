@@ -7,15 +7,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { getSession, clearSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 
 const SETTINGS_ITEMS = [
-  { emoji: '🖼️', title: 'Media Gallery', desc: 'View captured photos', href: '/montree/dashboard/media' },
-  { emoji: '📊', title: 'Reports', desc: 'View student reports', href: '/montree/dashboard/reports' },
-  { emoji: '🎮', title: 'Curriculum Games', desc: 'Practice activities', href: '/montree/dashboard/games' },
+  { emoji: '🖼️', key: 'settings.mediaGallery', descKey: 'settings.mediaGalleryDesc', href: '/montree/dashboard/media' },
+  { emoji: '📊', key: 'settings.reports', descKey: 'settings.reportsDesc', href: '/montree/dashboard/reports' },
+  { emoji: '🎮', key: 'settings.games', descKey: 'settings.gamesDesc', href: '/montree/dashboard/games' },
 ];
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [teacherName, setTeacherName] = useState('');
   const [classroomName, setClassroomName] = useState('');
   const [classroomIcon, setClassroomIcon] = useState('🌳');
@@ -40,7 +42,7 @@ export default function SettingsPage() {
       {/* Sub-header */}
       <div className="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-2">
         <span className="text-xl">⚙️</span>
-        <h1 className="font-bold text-gray-800">Settings</h1>
+        <h1 className="font-bold text-gray-800">{t('settings.title')}</h1>
       </div>
 
       <main className="p-4 max-w-lg mx-auto space-y-6">
@@ -53,14 +55,14 @@ export default function SettingsPage() {
             <div className="flex-1">
               <div className="text-gray-900 font-bold text-lg">{teacherName || 'Teacher'}</div>
               <div className="text-gray-500 text-sm">{classroomName}</div>
-              <div className="text-emerald-600 text-xs mt-1">✓ Active</div>
+              <div className="text-emerald-600 text-xs mt-1">✓ {t('settings.active')}</div>
             </div>
           </div>
         </div>
 
         {/* Settings List */}
         <div className="space-y-2">
-          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1">Quick Access</h3>
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1">{t('settings.quickAccess')}</h3>
           {SETTINGS_ITEMS.map((item) => (
             <Link
               key={item.href}
@@ -71,8 +73,8 @@ export default function SettingsPage() {
                 <span className="text-2xl">{item.emoji}</span>
               </div>
               <div className="flex-1">
-                <div className="text-gray-800 font-medium">{item.title}</div>
-                <div className="text-gray-500 text-sm">{item.desc}</div>
+                <div className="text-gray-800 font-medium">{t(item.key)}</div>
+                <div className="text-gray-500 text-sm">{t(item.descKey)}</div>
               </div>
               <span className="text-gray-300 group-hover:text-emerald-500 transition-colors">→</span>
             </Link>
@@ -81,17 +83,17 @@ export default function SettingsPage() {
 
         {/* Sign Out */}
         <div className="pt-4 border-t border-gray-200">
-          <button 
+          <button
             onClick={handleSignOut}
             className="w-full flex items-center justify-center gap-2 bg-red-50 border border-red-200 rounded-xl p-4 text-red-600 font-medium hover:bg-red-100 transition-all"
           >
-            🚪 Sign Out
+            🚪 {t('settings.signOut')}
           </button>
         </div>
 
         {/* Version */}
         <div className="text-center text-gray-400 text-xs pt-4">
-          Montree v1.0 • Made for teachers, by teachers 🌳
+          {t('settings.version')} 🌳
         </div>
       </main>
     </div>

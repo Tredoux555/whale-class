@@ -6,6 +6,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================
 // TYPES
@@ -33,6 +34,7 @@ export default function CameraCapture({
   facingMode = 'environment',
   allowVideo = true,
 }: CameraCaptureProps) {
+  const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -120,16 +122,16 @@ export default function CameraCapture({
     } catch (err) {
       console.error('Camera error:', err);
 
-      let errorMessage = 'Failed to access camera';
+      let errorMessage = t('camera.error.failed');
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError') {
-          errorMessage = 'Camera access denied. Please allow camera permissions in your browser settings.';
+          errorMessage = t('camera.error.denied');
         } else if (err.name === 'NotFoundError') {
-          errorMessage = 'No camera found on this device.';
+          errorMessage = t('camera.error.notFound');
         } else if (err.name === 'NotReadableError') {
-          errorMessage = 'Camera is in use by another application.';
+          errorMessage = t('camera.error.inUse');
         } else if (err.name === 'OverconstrainedError') {
-          errorMessage = 'Camera does not support the requested settings. Trying again...';
+          errorMessage = t('camera.error.unsupported');
         }
       }
 
@@ -177,7 +179,7 @@ export default function CameraCapture({
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          setError('Failed to capture photo');
+          setError(t('camera.error.captureFailed'));
           return;
         }
 
@@ -263,7 +265,7 @@ export default function CameraCapture({
       }, 1000);
     } catch (err) {
       console.error('Recording error:', err);
-      setError('Failed to start recording. Your browser may not support video recording.');
+      setError(t('camera.error.recordingFailed'));
     }
   }, []);
 
@@ -352,7 +354,7 @@ export default function CameraCapture({
                 : 'text-white hover:bg-white/20'
             }`}
           >
-            📷 Photo
+            📷 {t('camera.photo')}
           </button>
           <button
             onClick={() => handleModeChange('video')}
@@ -362,7 +364,7 @@ export default function CameraCapture({
                 : 'text-white hover:bg-white/20'
             }`}
           >
-            🎥 Video
+            🎥 {t('camera.video')}
           </button>
         </div>
       )}
@@ -370,7 +372,7 @@ export default function CameraCapture({
       {/* Camera indicator (top right) */}
       {!isCaptured && (
         <div className="absolute top-4 right-4 z-10 px-3 py-1.5 bg-black/50 rounded-full text-white text-xs font-medium">
-          {currentFacing === 'user' ? '🤳 Front' : '📷 Back'}
+          {currentFacing === 'user' ? `🤳 ${t('camera.front')}` : `📷 ${t('camera.back')}`}
         </div>
       )}
 
@@ -394,7 +396,7 @@ export default function CameraCapture({
               onClick={() => startCamera(currentFacing, captureMode === 'video')}
               className="px-6 py-3 bg-blue-500 rounded-xl font-medium hover:bg-blue-600 transition-colors"
             >
-              Try Again
+              {t('camera.tryAgain')}
             </button>
           </div>
         ) : isCaptured && previewUrl ? (
@@ -430,7 +432,7 @@ export default function CameraCapture({
               <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                 <div className="flex flex-col items-center text-white">
                   <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4" />
-                  <p className="text-lg">Starting camera...</p>
+                  <p className="text-lg">{t('camera.starting')}</p>
                 </div>
               </div>
             )}
@@ -448,7 +450,7 @@ export default function CameraCapture({
               className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
             >
               <span className="text-xl">↺</span>
-              <span>Retake</span>
+              <span>{t('camera.retake')}</span>
             </button>
 
             <button
@@ -456,7 +458,7 @@ export default function CameraCapture({
               className="flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-colors"
             >
               <span className="text-xl">✓</span>
-              <span>Use {captureMode === 'photo' ? 'Photo' : 'Video'}</span>
+              <span>{t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}</span>
             </button>
           </div>
         ) : (

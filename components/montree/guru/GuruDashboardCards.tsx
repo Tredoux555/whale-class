@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 
 interface GuruDashboardCardsProps {
@@ -19,6 +20,7 @@ interface DashboardData {
 }
 
 export default function GuruDashboardCards({ childId, childName }: GuruDashboardCardsProps) {
+  const { t } = useI18n();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dismissedNudge, setDismissedNudge] = useState(false);
@@ -61,10 +63,10 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
         setPlan(result.plan);
         setPlanExpanded(true);
       } else {
-        setPlanError(result.error || 'Could not generate plan');
+        setPlanError(result.error || t('guru.couldNotGeneratePlan'));
       }
     } catch {
-      setPlanError('Failed to connect');
+      setPlanError(t('guru.failedConnect'));
     } finally {
       setPlanLoading(false);
     }
@@ -111,18 +113,18 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
             <div className="flex items-center gap-3">
               <span className="text-2xl">🌿</span>
               <div>
-                <h3 className="text-white font-bold text-lg">Today&apos;s Plan</h3>
-                <p className="text-white/70 text-xs">Your Montessori guide for {childName}</p>
+                <h3 className="text-white font-bold text-lg">{t('guru.todayPlan')}</h3>
+                <p className="text-white/70 text-xs">{t('guru.montessoriGuideFor').replace('{name}', childName)}</p>
               </div>
             </div>
             {!plan && !planLoading && (
               <button onClick={fetchDailyPlan} className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-medium rounded-lg transition-colors">
-                Generate Plan
+                {t('guru.generatePlan')}
               </button>
             )}
             {plan && (
               <button onClick={() => setPlanExpanded(!planExpanded)} className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white text-sm rounded-lg transition-colors">
-                {planExpanded ? 'Collapse' : 'Expand'}
+                {planExpanded ? t('guru.collapse') : t('guru.expand')}
               </button>
             )}
           </div>
@@ -130,17 +132,17 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
         {planLoading && (
           <div className="px-5 py-8 text-center">
             <div className="animate-pulse text-3xl mb-3">🌱</div>
-            <p className="text-[#0D3330]/60 text-sm">Preparing {childName}&apos;s plan...</p>
+            <p className="text-[#0D3330]/60 text-sm">{t('guru.preparingPlan').replace('{name}', childName)}</p>
           </div>
         )}
         {planError && (
           <div className="px-5 py-4">
             <p className="text-red-600 text-sm">{planError}</p>
-            <button onClick={fetchDailyPlan} className="text-[#0D3330] underline text-sm mt-1">Try again</button>
+            <button onClick={fetchDailyPlan} className="text-[#0D3330] underline text-sm mt-1">{t('common.tryAgain')}</button>
           </div>
         )}
         {plan && planExpanded && <div className="px-5 py-4 max-h-[60vh] overflow-y-auto">{renderPlan(plan)}</div>}
-        {plan && !planExpanded && <div className="px-5 py-3"><p className="text-[#0D3330]/60 text-sm">✅ Today&apos;s plan is ready — tap Expand to see it</p></div>}
+        {plan && !planExpanded && <div className="px-5 py-3"><p className="text-[#0D3330]/60 text-sm">✅ {t('guru.planReadyExpand')}</p></div>}
       </div>
 
       {/* END-OF-DAY NUDGE — from summary, dismissible */}
@@ -154,7 +156,7 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
           <div className="flex items-start gap-3 pr-6">
             <span className="text-xl flex-shrink-0">🌅</span>
             <div>
-              <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>{childName}&apos;s Day</h4>
+              <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>{childName} {t('guru.day')}</h4>
               <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>{data.endOfDay.nudge}</p>
             </div>
           </div>
@@ -173,7 +175,7 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
             <span className="text-xl flex-shrink-0">{data.suggestion.type === 'inactive' ? '💤' : '🌱'}</span>
             <div>
               <h4 className={`text-sm font-semibold ${HOME_THEME.headingText} mb-1`}>
-                {data.suggestion.type === 'inactive' ? `Missing ${childName}!` : `A gentle nudge about ${childName}`}
+                {data.suggestion.type === 'inactive' ? t('guru.missing').replace('{name}', childName) : t('guru.gentleNudgeAbout').replace('{name}', childName)}
               </h4>
               <p className={`text-sm leading-relaxed ${HOME_THEME.textPrimary}`}>{data.suggestion.text}</p>
             </div>
@@ -190,7 +192,7 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
           >
             <div className="flex items-center gap-2">
               <span className="text-lg">📊</span>
-              <span className={`text-sm font-semibold ${HOME_THEME.headingText}`}>{childName}&apos;s Week in Review</span>
+              <span className={`text-sm font-semibold ${HOME_THEME.headingText}`}>{childName} {t('guru.weekInReview')}</span>
             </div>
             <span className={`text-sm ${HOME_THEME.subtleText} transition-transform ${weeklyExpanded ? 'rotate-180' : ''}`}>▼</span>
           </button>

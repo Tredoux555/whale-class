@@ -7,6 +7,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import VoiceNoteButton from './VoiceNoteButton';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface QuickGuruFABProps {
   childId: string;
@@ -14,6 +15,7 @@ interface QuickGuruFABProps {
 }
 
 export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string | null>(null);
@@ -42,10 +44,10 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
       if (data.success) {
         setAnswer(data.answer);
       } else {
-        setAnswer('Sorry, I couldn\'t answer that right now. Try tapping a concern card for more help!');
+        setAnswer(t('guru.couldNotAnswer'));
       }
     } catch {
-      setAnswer('Something went wrong. Please try again.');
+      setAnswer(t('guru.somethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
         <button
           onClick={handleOpen}
           className={`fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full ${HOME_THEME.primaryBtn} ${HOME_THEME.primaryBtnShadow} flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95`}
-          aria-label="Ask the Guru"
+          aria-label={t('guru.askTheGuru')}
         >
           🌿
         </button>
@@ -85,7 +87,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
             <div className={`${HOME_THEME.headerBg} text-white px-4 py-3 flex items-center justify-between`}>
               <div className="flex items-center gap-2">
                 <span className="text-lg">🌿</span>
-                <span className="font-semibold text-sm">Quick Question about {childName}</span>
+                <span className="font-semibold text-sm">{t('guru.quickQuestion').replace('{name}', childName)}</span>
               </div>
               <button
                 onClick={handleClose}
@@ -104,7 +106,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                  placeholder={`Ask anything about ${childName}...`}
+                  placeholder={t('guru.askAnything').replace('{name}', childName)}
                   maxLength={500}
                   className={`flex-1 px-4 py-2.5 rounded-full border ${HOME_THEME.inputBorder} ${HOME_THEME.inputBg} ${HOME_THEME.inputFocus} text-sm ${HOME_THEME.headingText} placeholder:text-[#0D3330]/30 outline-none`}
                   disabled={loading}
@@ -115,7 +117,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
                   disabled={!question.trim() || loading}
                   className={`px-4 py-2.5 rounded-full ${HOME_THEME.primaryBtn} text-sm font-medium disabled:opacity-40 transition-all`}
                 >
-                  {loading ? '...' : 'Ask'}
+                  {loading ? '...' : t('guru.ask')}
                 </button>
               </div>
 
@@ -125,7 +127,7 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <span className="animate-bounce text-lg">🌿</span>
-                      <span className={`text-sm ${HOME_THEME.subtleText}`}>Thinking...</span>
+                      <span className={`text-sm ${HOME_THEME.subtleText}`}>{t('guru.thinking')}</span>
                     </div>
                   ) : (
                     <p className={`text-sm ${HOME_THEME.headingText} leading-relaxed`}>{answer}</p>

@@ -2,6 +2,7 @@
 
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { AreaConfig } from '@/components/montree/curriculum/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 export interface CurriculumWork {
   id: string;
@@ -42,6 +43,7 @@ export default function WorkPickerModal({
   onAddWork,
   getAreaConfig,
 }: WorkPickerModalProps) {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -56,7 +58,7 @@ export default function WorkPickerModal({
         <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-lg">
-              {selectedArea ? getAreaConfig(selectedArea).name : 'Add Extra Work'}
+              {selectedArea ? getAreaConfig(selectedArea).name : t('workPicker.addExtraWork')}
             </h3>
             <button
               onClick={() => { onClose(); setSelectedArea(null); }}
@@ -71,7 +73,7 @@ export default function WorkPickerModal({
           {loadingCurriculum ? (
             <div className="text-center py-8">
               <div className="animate-bounce text-3xl mb-2">📚</div>
-              <p className="text-gray-500">Loading curriculum...</p>
+              <p className="text-gray-500">{t('workPicker.loading')}</p>
             </div>
           ) : !selectedArea ? (
             <div className="grid grid-cols-2 gap-3">
@@ -84,7 +86,7 @@ export default function WorkPickerModal({
                   <span className="text-3xl block mb-2">{config.icon}</span>
                   <span className="font-medium text-gray-800">{config.name}</span>
                   <span className="text-xs text-gray-500 block">
-                    {curriculum[key]?.length || curriculum[key === 'mathematics' ? 'math' : key]?.length || 0} works
+                    {(curriculum[key]?.length || curriculum[key === 'mathematics' ? 'math' : key]?.length || 0)} {t('workPicker.works')}
                   </span>
                 </button>
               ))}
@@ -92,7 +94,7 @@ export default function WorkPickerModal({
           ) : (
             <div className="space-y-2">
               <button onClick={() => setSelectedArea(null)} className="text-emerald-600 text-sm mb-2">
-                ← Back to areas
+                ← {t('workPicker.backToAreas')}
               </button>
               {(curriculum[selectedArea] || curriculum[selectedArea === 'mathematics' ? 'math' : selectedArea] || []).map((work, i) => {
                 const isAdded = allWorks.some(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
@@ -109,7 +111,7 @@ export default function WorkPickerModal({
                       <p className="font-medium text-gray-800">{work.name}</p>
                     </div>
                     {isAdded ? (
-                      <span className="text-xs text-gray-400">Added ✓</span>
+                      <span className="text-xs text-gray-400">{t('workPicker.added')} ✓</span>
                     ) : (
                       <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-lg">+</span>
                     )}

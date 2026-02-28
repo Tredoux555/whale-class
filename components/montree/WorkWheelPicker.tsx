@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { getClassroomId } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Work {
   id: string;
@@ -36,6 +37,7 @@ export default function WorkWheelPicker({
   onAddExtra,
   onWorkAdded,
 }: WorkWheelPickerProps) {
+  const { t } = useI18n();
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -173,18 +175,18 @@ export default function WorkWheelPicker({
             {areaConfig.icon}
           </span>
           <h2 className="font-bold text-xl mb-2">{areaConfig.name}</h2>
-          <p className="text-white/70 mb-6">No works available in this area yet.</p>
+          <p className="text-white/70 mb-6">{t('workWheel.noWorksAvailable')}</p>
           <button
             onClick={() => setShowAddForm(true)}
             className="px-6 py-3 bg-white/20 rounded-xl text-white font-semibold hover:bg-white/30 transition-colors"
           >
-            ➕ Add First Work
+            ➕ {t('workWheel.addFirstWork')}
           </button>
           <button
             onClick={onClose}
             className="block mx-auto mt-4 text-white/60 hover:text-white"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>
@@ -312,7 +314,7 @@ export default function WorkWheelPicker({
               type="text"
               value={newWorkName}
               onChange={(e) => setNewWorkName(e.target.value)}
-              placeholder="Work name..."
+              placeholder={t('workWheel.workNamePlaceholder')}
               autoFocus
               className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/50 border border-white/30 focus:outline-none focus:border-white/60"
               onKeyDown={(e) => {
@@ -338,7 +340,7 @@ export default function WorkWheelPicker({
                     : 'bg-white/10 text-white/60'
                 }`}
               >
-                End of list
+                {t('workWheel.endOfList')}
               </button>
             </div>
 
@@ -358,7 +360,7 @@ export default function WorkWheelPicker({
                       >
                         {areaConfig.icon}
                       </span>
-                      <h2 className="font-bold text-lg mt-1">Insert after position...</h2>
+                      <h2 className="font-bold text-lg mt-1">{t('workWheel.insertAfterPosition')}</h2>
                     </div>
                     <div className="w-10" />
                   </div>
@@ -415,14 +417,14 @@ export default function WorkWheelPicker({
                 onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
                 className="flex-1 py-3 bg-white/20 text-white font-medium rounded-xl"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddWork}
                 disabled={!newWorkName.trim() || isAdding}
                 className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl disabled:opacity-50"
               >
-                {isAdding ? 'Adding...' : 'Add Work'}
+                {isAdding ? t('common.adding') : t('workWheel.addWork')}
               </button>
             </div>
           </div>
@@ -439,7 +441,7 @@ export default function WorkWheelPicker({
               disabled={!selectedWork || !onAddExtra}
               className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
             >
-              Add Work
+              {t('workWheel.addWork')}
             </button>
 
             {/* Selected work name display */}
@@ -452,7 +454,7 @@ export default function WorkWheelPicker({
               onClick={() => setShowAddForm(true)}
               className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
             >
-              + Add custom work to {areaConfig.name}
+              + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
             </button>
           </>
         )}

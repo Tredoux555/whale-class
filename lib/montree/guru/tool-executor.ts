@@ -30,6 +30,17 @@ export interface ToolResult {
   message: string;
 }
 
+// Helper: fetch current settings for read-merge-write pattern
+async function getChildSettingsForUpdate(childId: string): Promise<Record<string, unknown>> {
+  const supabase = getSupabase();
+  const { data: child } = await supabase
+    .from('montree_children')
+    .select('settings')
+    .eq('id', childId)
+    .single();
+  return (child?.settings as Record<string, unknown>) || {};
+}
+
 export async function executeTool(
   toolName: string,
   input: Record<string, unknown>,
@@ -165,13 +176,24 @@ export async function executeTool(
         return { success: false, message: `Invalid behavior_function: ${behaviorFunc}` };
       }
 
+      // Build enhanced observation with emotional/temporal context
+      const enhancedDescription = [
+        input.behavior_description as string,
+        input.emotional_state ? `[Emotional state: ${input.emotional_state}]` : '',
+        input.preceding_activity ? `[Preceding: ${input.preceding_activity}]` : '',
+        input.time_of_day ? `[Time: ${input.time_of_day}]` : '',
+        input.possible_triggers ? `[Possible triggers: ${(input.possible_triggers as string[]).join(', ')}]` : '',
+        input.related_works ? `[Related works: ${(input.related_works as string[]).join(', ')}]` : '',
+        input.developmental_note ? `[Dev note: ${input.developmental_note}]` : '',
+      ].filter(Boolean).join(' ');
+
       const { error } = await supabase
         .from('montree_behavioral_observations')
         .insert({
           child_id: childId,
           classroom_id: null,    // Explicit null — home observations have no classroom
           observed_by: null,     // UUID column — null for guru-created observations
-          behavior_description: input.behavior_description as string,
+          behavior_description: enhancedDescription.slice(0, 4000), // Extended limit for enhanced data
           behavior_function: behaviorFunc,
           activity_during: (input.activity_during as string) || null,
         });
@@ -226,6 +248,106 @@ export async function executeTool(
       });
 
       return { success: true, message: 'Child profile saved' };
+    }
+
+    case 'save_parent_state': {
+      const themes = input.emotional_themes as string[];
+      const confidence = input.confidence_level as string;
+      if (!themes || !confidence) return { success: false, message: 'Missing emotional_themes or confidence_level' };
+
+      // Validate confidence enum
+      const validConfidence = ['very_low', 'low', 'moderate', 'high', 'very_high'];
+      if (!validConfidence.includes(confidence)) {
+        return { success: false, message: `Invalid confidence_level: ${confidence}` };
+      }
+
+      const newState: Record<string, unknown> = {
+        emotional_themes: themes.slice(0, 10), // Cap at 10 themes
+        confidence_level: confidence,
+        stress_indicators: (input.stress_indicators as string[])?.slice(0, 10) || [],
+        support_needed: (input.support_needed as string) || null,
+        notes: (input.notes as string)?.slice(0, 500) || null,
+        updated_at: new Date().toISOString(),
+      };
+
+      // Save as current state
+      const currentSettings = await getChildSettingsForUpdate(childId);
+      const parentStates = (currentSettings.guru_parent_states as Array<Record<string, unknown>>) || [];
+      parentStates.push(newState);
+      // Keep last 20 states (FIFO)
+      const trimmedStates = parentStates.slice(-20);
+
+      await updateChildSettings(childId, {
+        guru_parent_current_state: newState,
+        guru_parent_states: trimmedStates,
+      });
+
+      return { success: true, message: 'Parent state recorded' };
+    }
+
+    case 'save_developmental_insight': {
+      const insightType = input.insight_type as string;
+      const description = input.description as string;
+      if (!insightType || !description) return { success: false, message: 'Missing insight_type or description' };
+
+      const validTypes = ['correlation', 'milestone', 'prediction', 'concern'];
+      if (!validTypes.includes(insightType)) {
+        return { success: false, message: `Invalid insight_type: ${insightType}` };
+      }
+
+      const insight: Record<string, unknown> = {
+        insight_type: insightType,
+        description: description.slice(0, 1000),
+        related_works: (input.related_works as string[])?.slice(0, 10) || [],
+        related_behaviors: (input.related_behaviors as string[])?.slice(0, 10) || [],
+        confidence: (input.confidence as string) || 'speculative',
+        recommendation: (input.recommendation as string)?.slice(0, 500) || null,
+        recorded_at: new Date().toISOString(),
+      };
+
+      const currentSettings = await getChildSettingsForUpdate(childId);
+      const insights = (currentSettings.guru_developmental_insights as Array<Record<string, unknown>>) || [];
+      insights.push(insight);
+      // Keep last 30 insights
+      const trimmedInsights = insights.slice(-30);
+
+      await updateChildSettings(childId, {
+        guru_developmental_insights: trimmedInsights,
+      });
+
+      return { success: true, message: `Pattern recorded: ${insightType}` };
+    }
+
+    case 'track_guidance_outcome': {
+      const guidance = input.guidance_given as string;
+      const outcome = input.outcome as string;
+      if (!guidance || !outcome) return { success: false, message: 'Missing guidance_given or outcome' };
+
+      const validOutcomes = ['worked_well', 'partially_worked', 'didnt_work', 'not_tried'];
+      if (!validOutcomes.includes(outcome)) {
+        return { success: false, message: `Invalid outcome: ${outcome}` };
+      }
+
+      const entry: Record<string, unknown> = {
+        guidance_given: guidance.slice(0, 500),
+        outcome,
+        parent_confidence_after: (input.parent_confidence_after as string) || 'unchanged',
+        notes: (input.notes as string)?.slice(0, 500) || null,
+        recorded_at: new Date().toISOString(),
+      };
+
+      const currentSettings = await getChildSettingsForUpdate(childId);
+      const outcomes = (currentSettings.guru_guidance_outcomes as Array<Record<string, unknown>>) || [];
+      outcomes.push(entry);
+      // Keep last 50 outcomes
+      const trimmedOutcomes = outcomes.slice(-50);
+
+      await updateChildSettings(childId, {
+        guru_guidance_outcomes: trimmedOutcomes,
+      });
+
+      const emoji = outcome === 'worked_well' ? '✅' : outcome === 'didnt_work' ? '❌' : '📝';
+      return { success: true, message: `${emoji} Outcome recorded` };
     }
 
     default:

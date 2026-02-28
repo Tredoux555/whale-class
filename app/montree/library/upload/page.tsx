@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 const AREA_OPTIONS = [
   { key: 'practical_life', name: 'Practical Life', color: '#ec4899', icon: 'P' },
@@ -13,6 +14,7 @@ const AREA_OPTIONS = [
 ];
 
 export default function UploadPage() {
+  const { t } = useI18n();
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +39,7 @@ export default function UploadPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !area) {
-      setError('Please add a name and pick an area.');
+      setError(t('library.uploadValidation'));
       return;
     }
 
@@ -71,12 +73,12 @@ export default function UploadPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to submit');
+        throw new Error(data.error || t('library.uploadFailed'));
       }
 
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message || 'Something went wrong.');
+      setError(err.message || t('library.uploadError'));
     }
     setSubmitting(false);
   };
@@ -86,16 +88,16 @@ export default function UploadPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl p-8 max-w-sm text-center shadow-sm">
           <div className="text-5xl mb-4">🎉</div>
-          <h2 className="text-xl font-bold text-gray-900">Work Submitted!</h2>
+          <h2 className="text-xl font-bold text-gray-900">{t('library.workSubmitted')}</h2>
           <p className="text-gray-500 mt-2 text-sm">
-            Thank you for sharing! It will appear once reviewed.
+            {t('library.submittedMessage')}
           </p>
           <div className="flex gap-3 mt-6">
             <Link href="/montree/library/browse" className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium text-center hover:bg-gray-200 text-sm">
-              Browse
+              {t('library.browse')}
             </Link>
             <button onClick={() => { setSubmitted(false); setTitle(''); setDescription(''); setPhotos([]); setArea(''); }} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 text-sm">
-              Share Another
+              {t('library.shareAnother')}
             </button>
           </div>
         </div>
@@ -107,8 +109,8 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-[#0D3330] text-white px-4 py-4">
         <div className="max-w-lg mx-auto">
-          <Link href="/montree/library/browse" className="text-emerald-300 text-sm hover:underline">← Back</Link>
-          <h1 className="text-xl font-bold mt-1">Share a Work</h1>
+          <Link href="/montree/library/browse" className="text-emerald-300 text-sm hover:underline">← {t('library.back')}</Link>
+          <h1 className="text-xl font-bold mt-1">{t('library.shareWork')}</h1>
         </div>
       </header>
 
@@ -119,7 +121,7 @@ export default function UploadPage() {
 
         {/* Area — big tappable pills */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Area *</label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">{t('library.area')} *</label>
           <div className="flex flex-wrap gap-2">
             {AREA_OPTIONS.map(opt => (
               <button
@@ -142,13 +144,13 @@ export default function UploadPage() {
 
         {/* Work name */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Work Name *</label>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">{t('library.workName')} *</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none text-gray-800"
-            placeholder="e.g. Sandpaper Letters"
+            placeholder={t('library.workNamePlaceholder')}
             required
             maxLength={200}
           />
@@ -156,20 +158,20 @@ export default function UploadPage() {
 
         {/* Short description — optional */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Quick Note <span className="text-gray-400 font-normal">(optional)</span></label>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">{t('library.quickNote')} <span className="text-gray-400 font-normal">{t('library.optional')}</span></label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none text-gray-800"
             rows={2}
-            placeholder="Anything other teachers should know?"
+            placeholder={t('library.quickNotePlaceholder')}
             maxLength={500}
           />
         </div>
 
         {/* Photos — simple */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">Photos <span className="text-gray-400 font-normal">(up to 5)</span></label>
+          <label className="text-sm font-medium text-gray-700 mb-2 block">{t('library.photos')} <span className="text-gray-400 font-normal">{t('library.upTo5')}</span></label>
 
           {photos.length > 0 && (
             <div className="flex gap-2 flex-wrap mb-3">
@@ -184,7 +186,7 @@ export default function UploadPage() {
 
           {photos.length < 5 && (
             <label className="flex items-center justify-center w-full py-4 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50 transition-colors">
-              <span className="text-gray-400 text-sm">+ Add Photos</span>
+              <span className="text-gray-400 text-sm">+ {t('library.addPhotos')}</span>
               <input type="file" accept="image/*" multiple onChange={handlePhotoAdd} className="hidden" />
             </label>
           )}
@@ -192,13 +194,13 @@ export default function UploadPage() {
 
         {/* Your name — optional */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-1 block">Your Name <span className="text-gray-400 font-normal">(optional)</span></label>
+          <label className="text-sm font-medium text-gray-700 mb-1 block">{t('library.yourName')} <span className="text-gray-400 font-normal">{t('library.optional')}</span></label>
           <input
             type="text"
             value={contributorName}
             onChange={e => setContributorName(e.target.value)}
             className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none text-gray-800"
-            placeholder="e.g. Sarah"
+            placeholder={t('library.yourNamePlaceholder')}
           />
         </div>
 
@@ -208,7 +210,7 @@ export default function UploadPage() {
           disabled={submitting || !title || !area}
           className="w-full py-4 bg-[#0D3330] text-white rounded-xl font-medium text-lg disabled:opacity-40 hover:bg-[#164440] transition-colors"
         >
-          {submitting ? 'Sharing...' : 'Share Work'}
+          {submitting ? t('library.sharing') : t('library.shareWork')}
         </button>
       </form>
     </div>

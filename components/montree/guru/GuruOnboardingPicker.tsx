@@ -4,6 +4,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 import { getAllConcerns } from '@/lib/montree/guru/concern-mappings';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 
@@ -17,6 +18,7 @@ const MAX_CONCERNS = 3;
 const concerns = getAllConcerns();
 
 export default function GuruOnboardingPicker({ childId, childName, onComplete }: GuruOnboardingPickerProps) {
+  const { t } = useI18n();
   const [selected, setSelected] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +52,10 @@ export default function GuruOnboardingPicker({ childId, childName, onComplete }:
       if (data.success) {
         onComplete(selected);
       } else {
-        setError(data.error || 'Failed to save');
+        setError(data.error || t('guru.failedSave'));
       }
     } catch {
-      setError('Connection failed');
+      setError(t('guru.connectionFailed'));
     } finally {
       setSaving(false);
     }
@@ -65,10 +67,10 @@ export default function GuruOnboardingPicker({ childId, childName, onComplete }:
       <div className="px-5 pt-8 pb-4 text-center">
         <div className="text-4xl mb-3">🌿</div>
         <h1 className={`text-xl font-bold ${HOME_THEME.headingText}`}>
-          Welcome to {firstName}&apos;s Guide
+          {t('guru.onboardingTitle').replace('{name}', firstName)}
         </h1>
         <p className={`text-sm ${HOME_THEME.subtleText} mt-2 max-w-xs mx-auto`}>
-          Tell me what matters most so I can give you the best guidance for {firstName}
+          {t('guru.onboardingSubtitle').replace('{name}', firstName)}
         </p>
       </div>
 
@@ -76,11 +78,11 @@ export default function GuruOnboardingPicker({ childId, childName, onComplete }:
       <div className="px-5 pb-2">
         <p className={`text-xs text-center ${HOME_THEME.labelText}`}>
           {selected.length === 0 ? (
-            `Pick up to ${MAX_CONCERNS} concerns`
+            t('guru.pickConcerns').replace('{max}', MAX_CONCERNS.toString())
           ) : (
             <span>
               <span className="font-semibold text-[#0D3330]">{selected.length}</span>
-              {' '}of {MAX_CONCERNS} selected
+              {' '}{t('guru.ofConcernSelected').replace('{max}', MAX_CONCERNS.toString())}
             </span>
           )}
         </p>
@@ -138,13 +140,13 @@ export default function GuruOnboardingPicker({ childId, childName, onComplete }:
           disabled={selected.length === 0 || saving}
           className={`w-full py-3.5 rounded-xl font-semibold text-white transition-all active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed ${HOME_THEME.primaryBtn} ${HOME_THEME.primaryBtnShadow}`}
         >
-          {saving ? 'Starting...' : selected.length === 0 ? 'Select at least one concern' : "Let's Begin 🌱"}
+          {saving ? t('guru.starting') : selected.length === 0 ? t('guru.selectAtLeastOne') : `${t('guru.letBegin')} 🌱`}
         </button>
         <button
           onClick={() => onComplete([])}
           className={`w-full mt-2 py-2 text-sm ${HOME_THEME.subtleText} hover:text-[#0D3330]`}
         >
-          Skip for now
+          {t('guru.skipForNow')}
         </button>
       </div>
     </div>

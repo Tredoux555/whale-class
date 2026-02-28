@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface WeekViewGuideProps {
   isVisible: boolean;
@@ -59,6 +60,7 @@ export default function WeekViewGuide({
   onCloseWheelPicker,
   onNavigateHome,
 }: WeekViewGuideProps) {
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -70,8 +72,8 @@ export default function WeekViewGuide({
     {
       key: 'focus-block',
       target: '[data-tutorial="focus-section"]',
-      message: `Welcome to your ${label}'s dashboard — this is where all the magic happens! Let me show you around.`,
-      buttonText: 'Let\'s go!',
+      message: t('guide.weekView.focusBlock'),
+      buttonText: t('guide.weekView.letsGo'),
       onAdvance: onExpandFirstWork,
       showGPB: true,
     },
@@ -79,8 +81,8 @@ export default function WeekViewGuide({
     {
       key: 'work-name',
       target: '[data-guide="first-work-name"]',
-      message: 'Each work expands to show everything you need — guides, videos, notes, and progress.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.workName'),
+      buttonText: t('guide.common.gotIt'),
       onReverse: onCollapseFirstWork,
       showGPB: true,
       delayMs: 400,
@@ -89,8 +91,8 @@ export default function WeekViewGuide({
     {
       key: 'quick-guide-btn',
       target: '[data-guide="quick-guide-btn"]',
-      message: 'Tap here for an instant overview of any work — what it is, how to present it, and what to look for.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.quickGuideBtn'),
+      buttonText: t('guide.common.gotIt'),
       onAdvance: onOpenQuickGuide,
       showGPB: true,
     },
@@ -98,8 +100,8 @@ export default function WeekViewGuide({
     {
       key: 'quick-guide-content',
       target: '[data-guide="quick-guide-content"]',
-      message: 'Everything you need to know in 10 seconds — aims, materials, and presentation steps.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.quickGuideContent'),
+      buttonText: t('guide.common.gotIt'),
       onReverse: onCloseQuickGuide,
       showGPB: false,
       delayMs: 500,
@@ -109,8 +111,8 @@ export default function WeekViewGuide({
     {
       key: 'watch-video',
       target: '[data-guide="watch-video-btn"]',
-      message: 'Tap here to watch a video demonstration — YouTube opens with the work already searched for you.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.watchVideo'),
+      buttonText: t('guide.common.gotIt'),
       onAdvance: onCloseQuickGuide,
       showGPB: true,
       insideModal: true,
@@ -119,8 +121,8 @@ export default function WeekViewGuide({
     {
       key: 'capture',
       target: '[data-guide="capture-btn"]',
-      message: `Snap a photo of your ${label} working — capture the moment!`,
-      buttonText: 'Got it!',
+      message: t('guide.weekView.capture'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
       delayMs: 400,
     },
@@ -128,8 +130,8 @@ export default function WeekViewGuide({
     {
       key: 'capture-info',
       target: null,
-      message: 'Photos you capture go straight into parent reports and build a beautiful visual record of progress.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.captureInfo'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: false,
       delayMs: 300,
     },
@@ -137,96 +139,96 @@ export default function WeekViewGuide({
     {
       key: 'area-badge',
       target: '[data-guide="area-badge-first"]',
-      message: 'Tap here to switch to a different work or browse all the works in this area.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.areaBadge'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 8: Notes area
     {
       key: 'notes',
       target: '[data-guide="notes-area"]',
-      message: `Jot down your observations here. Every note builds a richer picture of this ${label} — and when you ask Guru for advice, it draws on everything you've recorded.`,
-      buttonText: 'Got it!',
+      message: t('guide.weekView.notes'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 9: Status badge
     {
       key: 'status-badge',
       target: '[data-tutorial="status-badge-first"]',
-      message: 'Track progress right here — tap to mark a work as Presented, Practicing, or Mastered.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.statusBadge'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 10: Progress tab
     {
       key: 'tab-progress',
       target: '[data-guide="tab-progress"]',
-      message: `See the full picture — every mastered work, every milestone, all five areas at a glance.`,
-      buttonText: 'Got it!',
+      message: t('guide.weekView.tabProgress'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 11: Gallery tab
     {
       key: 'tab-gallery',
       target: '[data-guide="tab-gallery"]',
-      message: 'All your captured photos live here — organised by area and work, ready for reports.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.tabGallery'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 12: Reports tab
     {
       key: 'tab-reports',
       target: '[data-guide="tab-reports"]',
-      message: 'Generate beautiful progress reports and send them straight to parents — photos included!',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.tabReports'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 13: Guru (header nav)
     {
       key: 'nav-guru',
       target: '[data-guide="nav-guru"]',
-      message: `Meet Guru, your AI teaching assistant — ask anything about Montessori and get personalised guidance based on your ${isParent ? 'children' : 'students'}.`,
-      buttonText: 'Got it!',
+      message: t('guide.weekView.navGuru'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 14: Curriculum (header nav)
     {
       key: 'nav-curriculum',
       target: '[data-guide="nav-curriculum"]',
-      message: 'Your complete Montessori curriculum — all 5 areas, 329 works. Browse, search, and add your own custom works.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.navCurriculum'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 15: Inbox (envelope icon)
     {
       key: 'nav-inbox',
       target: '[data-guide="nav-inbox"]',
-      message: 'Drop us a message anytime — we read every single one and get back to you personally.',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.navInbox'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 16: Feedback button
     {
       key: 'feedback-btn',
       target: '[data-guide="feedback-btn"]',
-      message: 'Spotted something off? Tap here to send us feedback — you can even include a screenshot!',
-      buttonText: 'Got it!',
+      message: t('guide.weekView.feedbackBtn'),
+      buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
     // Step 17: Student faces intro
     {
       key: 'student-faces-intro',
       target: null,
-      message: `Ooohhh! One last thing — you can give each of your ${isParent ? 'children' : 'students'} their own face!`,
-      buttonText: 'Show me!',
+      message: t('guide.weekView.studentFacesIntro'),
+      buttonText: t('guide.weekView.showMe'),
       showGPB: false,
     },
     // Step 18: Home link — navigate to classroom and explain faces + labels
     {
       key: 'nav-home',
       target: '[data-guide="nav-home"]',
-      message: `Tap here to go to your ${isParent ? 'home' : 'classroom'}. From ${isParent ? 'Children' : 'Students'}, tap Edit and snap a photo — every ${label} gets their own face!${isParent ? '' : ' You\'ll also find the 🏷️ Labels button there for printing weekly work labels.'}`,
-      buttonText: 'Done!',
+      message: t('guide.weekView.navHome'),
+      buttonText: t('guide.weekView.done'),
       onAdvance: onNavigateHome,
       showGPB: true,
     },
@@ -459,7 +461,7 @@ export default function WeekViewGuide({
                 fontWeight: 500,
               }}
             >
-              ← Back
+              ← {t('guide.common.back')}
             </button>
           ) : (
             <span />
@@ -477,7 +479,7 @@ export default function WeekViewGuide({
               padding: 0,
             }}
           >
-            Skip tour
+            {t('guide.common.skipTour')}
           </button>
 
           <button

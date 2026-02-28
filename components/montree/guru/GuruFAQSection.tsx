@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { FAQ_ENTRIES, FAQEntry } from '@/lib/montree/guru/faq-cache';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface GuruFAQSectionProps {
   childAge?: number; // filter by age range if provided
 }
 
 export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
+  const { t } = useI18n();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -93,7 +95,7 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
     <div className={`${HOME_THEME.card} rounded-2xl p-4`}>
       <h3 className={`text-base font-semibold ${HOME_THEME.textPrimary} mb-3 flex items-center gap-2`}>
         <span>🌿</span>
-        <span>Common Questions</span>
+        <span>{t('guru.commonQuestions')}</span>
       </h3>
 
       <div className="space-y-2">
@@ -129,7 +131,7 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
                   {renderMarkdown(faq.answer)}
                   <div className="mt-3 pt-3 border-t border-gray-50">
                     <p className="text-xs text-gray-400">
-                      Have a deeper question? Ask the Guru for personalised advice about your child.
+                      {t('guru.deeperQuestion')}
                     </p>
                   </div>
                 </div>
@@ -144,7 +146,7 @@ export default function GuruFAQSection({ childAge }: GuruFAQSectionProps) {
           onClick={() => setShowAll(!showAll)}
           className={`mt-3 w-full text-center text-sm font-medium ${HOME_THEME.textAccent} py-2`}
         >
-          {showAll ? 'Show less' : `Show all ${filteredFaqs.length} questions`}
+          {showAll ? t('guru.showLess') : t('guru.showAll').replace('{count}', filteredFaqs.length.toString())}
         </button>
       )}
     </div>

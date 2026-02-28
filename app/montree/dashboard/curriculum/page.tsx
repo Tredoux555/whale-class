@@ -11,6 +11,7 @@ import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsS
 import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkList';
 import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -21,6 +22,7 @@ import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 export default function CurriculumPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<any>(null);
   const [curriculum, setCurriculum] = useState<Work[]>([]);
   const [byArea, setByArea] = useState<Record<string, Work[]>>({});
@@ -59,7 +61,7 @@ export default function CurriculumPage() {
       setCurriculum(data.curriculum || []);
       setByArea(data.byArea || {});
     } catch (err) {
-      toast.error('Failed to load curriculum');
+      toast.error(t('curriculum.failedToLoad'));
     }
     setLoading(false);
   }
@@ -92,7 +94,7 @@ export default function CurriculumPage() {
 
   const handleImportCurriculum = async () => {
     if (!session?.classroom?.id) return;
-    if (!confirm('This will re-import the master Montessori curriculum. Your classroom will have its own copy to customize. Continue?')) return;
+    if (!confirm(t('curriculum.reimportConfirm'))) return;
     
     setImporting(true);
     try {
@@ -106,13 +108,13 @@ export default function CurriculumPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(`Imported ${data.seeded} works! This is now your classroom's curriculum.`);
+        toast.success(`${data.seeded} ${t('curriculum.works')}!`);
         fetchCurriculum();
       } else {
         toast.error(data.error || 'Failed to import');
       }
     } catch (err) {
-      toast.error('Failed to import curriculum');
+      toast.error(t('curriculum.failedToImport'));
     }
     setImporting(false);
   };
@@ -120,7 +122,7 @@ export default function CurriculumPage() {
 
   // Delete work from curriculum
   const deleteWork = async (work: Work) => {
-    if (!confirm(`Delete "${work.name}" from curriculum?\n\nThis cannot be undone.`)) return;
+    if (!confirm(`${t('common.delete')} "${work.name}"?`)) return;
 
     try {
       const res = await fetch('/api/montree/curriculum', {
@@ -132,13 +134,13 @@ export default function CurriculumPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('Work deleted');
+        toast.success(t('curriculum.workDeleted'));
         fetchCurriculum();
       } else {
-        toast.error(data.error || 'Failed to delete');
+        toast.error(data.error || t('curriculum.failedToDelete'));
       }
     } catch (err) {
-      toast.error('Failed to delete');
+      toast.error(t('curriculum.failedToDelete'));
     }
   };
 
@@ -184,8 +186,8 @@ export default function CurriculumPage() {
       <div className="bg-white border-b px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-gray-800">📚 Curriculum</h1>
-            <p className="text-gray-500 text-sm">{curriculum.length} works available</p>
+            <h1 className="text-lg font-bold text-gray-800">📚 {t('curriculum.title')}</h1>
+            <p className="text-gray-500 text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
           </div>
           <div className="flex items-center gap-2">
             <WorkSearchBar
@@ -200,7 +202,7 @@ export default function CurriculumPage() {
                   setTimeout(() => setHighlightedWorkId(null), 2000);
                 }
               }}
-              placeholder="Search works..."
+              placeholder={t('curriculum.searchWorks')}
             />
             <Link
               data-tutorial="browse-guide-link"
@@ -208,7 +210,7 @@ export default function CurriculumPage() {
               className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
             >
               <span>🔍</span>
-              <span className="hidden sm:inline">Browse Guide</span>
+              <span className="hidden sm:inline">{t('curriculum.browseGuide')}</span>
             </Link>
             {curriculum.length > 0 && (
               <button
@@ -217,7 +219,7 @@ export default function CurriculumPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
               >
                 <span className="text-lg">➕</span>
-                <span className="hidden sm:inline">Add Work</span>
+                <span className="hidden sm:inline">{t('weekview.addWork')}</span>
               </button>
             )}
           </div>
@@ -228,22 +230,22 @@ export default function CurriculumPage() {
         {curriculum.length === 0 ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <span className="text-5xl mb-4 block">📚</span>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">No Curriculum Yet</h2>
-            <p className="text-gray-500 mb-6">Import the master Montessori curriculum to get started. Once imported, it belongs to your classroom and you can customize it.</p>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('curriculum.noCurriculum')}</h2>
+            <p className="text-gray-500 mb-6">{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
               className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold 
                 shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
-              {importing ? 'Importing...' : '📥 Import Master Curriculum'}
+              {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
           </div>
         ) : (
           <>
             {/* Import/Re-import button */}
             <div className="mb-4 flex justify-between items-center">
-              <p className="text-sm text-gray-500">Tap a work to see details. Tap ✏️ to edit.</p>
+              <p className="text-sm text-gray-500">{t('curriculum.tapToEdit')}</p>
               <button onClick={handleImportCurriculum} disabled={importing}
                 className="text-sm px-4 py-2 bg-amber-100 text-amber-800 rounded-xl hover:bg-amber-200 disabled:opacity-50">
-                {importing ? 'Importing...' : '📥 Re-import Master'}
+                {importing ? t('curriculum.importing') : `📥 ${t('curriculum.reimportMaster')}`}
               </button>
             </div>
             
@@ -257,7 +259,7 @@ export default function CurriculumPage() {
                     <AreaBadge area={area} size="lg" />
                   </div>
                   <p className="font-semibold text-gray-800 capitalize">{area.replace('_', ' ')}</p>
-                  <p className="text-sm text-gray-500">{works.length} works</p>
+                  <p className="text-sm text-gray-500">{works.length} {t('curriculum.works')}</p>
                 </button>
               ))}
             </div>

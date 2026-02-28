@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface MentalProfile {
   // Temperament (1-5)
@@ -112,6 +113,7 @@ export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
+  const { t } = useI18n();
 
   const [child, setChild] = useState<Child | null>(null);
   const [profile, setProfile] = useState<MentalProfile>({});
@@ -161,12 +163,12 @@ export default function ProfilePage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Profile saved!');
+        toast.success(t('profile.saved'));
       } else {
-        toast.error(data.error || 'Failed to save');
+        toast.error(data.error || t('profile.saveFailed'));
       }
     } catch {
-      toast.error('Failed to save profile');
+      toast.error(t('profile.saveFailed'));
     }
     setSaving(false);
   };
@@ -220,7 +222,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-bounce text-4xl">🧠</div>
+        <div className="animate-bounce text-4xl">🧠 {t('profile.loading')}</div>
       </div>
     );
   }
@@ -233,25 +235,25 @@ export default function ProfilePage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">
-            {child?.name?.split(' ')[0]}&apos;s Profile
+            {child?.name?.split(' ')[0]}&apos;s {t('profile.title')}
           </h2>
-          <p className="text-sm text-gray-500">Developmental & behavioral insights</p>
+          <p className="text-sm text-gray-500">{t('profile.subtitle')}</p>
         </div>
         <Link
           href={`/montree/dashboard/guru?child=${childId}`}
           className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
         >
-          🔮 Ask Guru
+          🔮 {t('profile.askGuru')}
         </Link>
       </div>
 
       {/* Temperament Section */}
       <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>🎭</span> Temperament
+          <span>🎭</span> {t('profile.temperament')}
         </h3>
         <p className="text-sm text-gray-500 mb-4">
-          Rate each trait from 1-5 based on your observations
+          {t('profile.rateTraits')}
         </p>
 
         <Slider
@@ -289,13 +291,13 @@ export default function ProfilePage() {
       {/* Focus Section */}
       <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>🎯</span> Focus & Learning
+          <span>🎯</span> {t('profile.focusLearning')}
         </h3>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Baseline Focus (minutes)
+              {t('profile.baselineFocus')}
             </label>
             <input
               type="number"
@@ -306,14 +308,14 @@ export default function ProfilePage() {
                 ...prev,
                 baseline_focus_minutes: parseInt(e.target.value) || undefined,
               }))}
-              placeholder="e.g., 10"
+              placeholder={t('profile.focusPlaceholder')}
               className="w-full p-2 border rounded-lg bg-gray-50"
             />
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Optimal Work Time
+              {t('profile.optimalWorkTime')}
             </label>
             <select
               value={profile.optimal_time_of_day || ''}
@@ -323,17 +325,17 @@ export default function ProfilePage() {
               }))}
               className="w-full p-2 border rounded-lg bg-gray-50"
             >
-              <option value="">Select...</option>
-              <option value="morning">Morning</option>
-              <option value="midday">Midday</option>
-              <option value="afternoon">Afternoon</option>
+              <option value="">{t('profile.select')}</option>
+              <option value="morning">{t('profile.morning')}</option>
+              <option value="midday">{t('profile.midday')}</option>
+              <option value="afternoon">{t('profile.afternoon')}</option>
             </select>
           </div>
         </div>
 
         <div className="mt-4 grid grid-cols-3 gap-4">
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Visual</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.visual')}</label>
             <input
               type="range"
               min={1}
@@ -347,7 +349,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Auditory</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.auditory')}</label>
             <input
               type="range"
               min={1}
@@ -361,7 +363,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Kinesthetic</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">{t('profile.kinesthetic')}</label>
             <input
               type="range"
               min={1}
@@ -380,7 +382,7 @@ export default function ProfilePage() {
       {/* Sensitive Periods */}
       <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>🌱</span> Sensitive Periods
+          <span>🌱</span> {t('profile.sensitivePeriods')}
         </h3>
 
         <div className="space-y-3">
@@ -417,18 +419,18 @@ export default function ProfilePage() {
       {/* Family Context */}
       <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>👨‍👩‍👧</span> Family Context
+          <span>👨‍👩‍👧</span> {t('profile.familyContext')}
         </h3>
 
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Family Notes
+              {t('profile.familyNotes')}
             </label>
             <textarea
               value={profile.family_notes || ''}
               onChange={(e) => setProfile(prev => ({ ...prev, family_notes: e.target.value }))}
-              placeholder="New sibling, recent move, custody arrangement, etc."
+              placeholder={t('profile.familyNotesPlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50 resize-none"
               rows={3}
             />
@@ -436,27 +438,27 @@ export default function ProfilePage() {
 
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Sleep Status
+              {t('profile.sleepStatus')}
             </label>
             <select
               value={profile.sleep_status || 'normal'}
               onChange={(e) => setProfile(prev => ({ ...prev, sleep_status: e.target.value }))}
               className="w-full p-2 border rounded-lg bg-gray-50"
             >
-              <option value="normal">Normal</option>
-              <option value="disrupted">Disrupted (temporary)</option>
-              <option value="concerning">Concerning (ongoing)</option>
+              <option value="normal">{t('profile.normal')}</option>
+              <option value="disrupted">{t('profile.disruptedTemporary')}</option>
+              <option value="concerning">{t('profile.concerningOngoing')}</option>
             </select>
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Special Considerations
+              {t('profile.specialConsiderations')}
             </label>
             <textarea
               value={profile.special_considerations || ''}
               onChange={(e) => setProfile(prev => ({ ...prev, special_considerations: e.target.value }))}
-              placeholder="Allergies, medical conditions, IEP, etc."
+              placeholder={t('profile.specialConsiderationsPlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50 resize-none"
               rows={2}
             />
@@ -467,13 +469,13 @@ export default function ProfilePage() {
       {/* What Works / Triggers */}
       <section className="bg-white rounded-xl shadow-sm p-4 mb-4">
         <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <span>✨</span> What Works & Triggers
+          <span>✨</span> {t('profile.worksTriggers')}
         </h3>
 
         {/* Successful Strategies */}
         <div className="mb-4">
           <label className="text-sm font-medium text-gray-700 block mb-2">
-            Successful Strategies
+            {t('profile.successfulStrategies')}
           </label>
           <div className="flex gap-2 mb-2">
             <input
@@ -481,7 +483,7 @@ export default function ProfilePage() {
               value={newStrategy}
               onChange={(e) => setNewStrategy(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addStrategy()}
-              placeholder="Add a strategy that works..."
+              placeholder={t('profile.addStrategy')}
               className="flex-1 p-2 border rounded-lg bg-gray-50"
             />
             <button
@@ -509,7 +511,7 @@ export default function ProfilePage() {
         {/* Challenging Triggers */}
         <div>
           <label className="text-sm font-medium text-gray-700 block mb-2">
-            Challenging Triggers
+            {t('profile.challengingTriggers')}
           </label>
           <div className="flex gap-2 mb-2">
             <input
@@ -517,7 +519,7 @@ export default function ProfilePage() {
               value={newTrigger}
               onChange={(e) => setNewTrigger(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addTrigger()}
-              placeholder="Add a known trigger..."
+              placeholder={t('profile.addTrigger')}
               className="flex-1 p-2 border rounded-lg bg-gray-50"
             />
             <button
@@ -552,7 +554,7 @@ export default function ProfilePage() {
             className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-medium rounded-lg
                      disabled:opacity-50 hover:from-violet-600 hover:to-indigo-700 transition-all"
           >
-            {saving ? 'Saving...' : 'Save Profile'}
+            {saving ? t('profile.saving') : t('profile.saveButton')}
           </button>
         </div>
       </div>

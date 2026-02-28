@@ -59,7 +59,83 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ---
 
-## CURRENT STATUS (Feb 27, 2026)
+## CURRENT STATUS (Feb 28, 2026)
+
+### Session Work (Feb 28, 2026 — Late Session)
+
+**Proactive Guru Intelligence — 5 Features Complete (audit cycle, 6 bugs found and fixed):**
+
+Closed the "7% gap" in the home parent system. The Guru now reaches OUT to parents instead of waiting for them to act.
+
+5 features implemented:
+
+1. **Cold Start Guru (Feature 1)** — When a parent's shelf is empty but intake is complete, Guru enters SETUP_MODE: builds the first shelf collaboratively ("Let's build Marina's first shelf together!"). Uses `set_focus_work` tool to add age-appropriate starter works.
+
+2. **Mastery Celebrations (Feature 2)** — `buildCelebrationContext()` compares current `mastered_count` against previous interaction's `context_snapshot.mastered_count`. Detects new masteries, first mastery ever, 5th/10th milestones, all 5 areas active. Injects celebration context into greeting prompt.
+
+3. **Weekly Rhythm Nudge (Feature 3)** — REFLECTION_MODE triggers when `daysSinceLastInteraction >= 5` OR `dayOfWeek === 0` (Sunday). Relaxed "coffee chat" tone, no guilt about gaps, open-ended reflection questions. Lower priority than INTAKE/CHECKIN.
+
+4. **Sensitive Period Alerts (Feature 4)** — New file `lib/montree/guru/knowledge/sensitive-periods.ts` (310 lines). 8 sensitive periods (order, language, movement, sensory, small_objects, grace_courtesy, writing, reading) with age ranges, peak windows, observable behaviors, curriculum alignment, home activities. `formatSensitivePeriodsForPrompt(ageMonths)` injects active periods into every conversation.
+
+5. **Stern's Vitality Affects + Emotional Mirroring (Feature 5)** — `buildEmotionalMirroringInstructions()` maps parent confidence/stress/themes to Daniel Stern's vitality affect guidance. Low confidence → "mirror first, fading affect". Overwhelm → "fading, spacious". Joy → "surging affect". Recovering → acknowledge growth. Psychology-foundations.ts expanded with full Stern coverage (~25 lines: vitality affects, affect attunement, intersubjectivity, temporal contours).
+
+**Mode Priority System:** SETUP > INTAKE > CHECKIN > REFLECTION > NORMAL
+
+**Route.ts Greeting Handler Rewrite:**
+- 3 parallel DB queries on greeting trigger (settings + focus works count + last interaction)
+- Priority-based greeting question selection
+- `mastered_count` now saved in context_snapshot for both conversational and structured modes
+
+**Audit Cycle (6 bugs found, all fixed):**
+1. Duplicate `parentState` variable declaration in `buildConversationalPrompt` — removed second
+2. `childContext` referenced in greeting handler before construction — changed to generic text
+3. `buildCelebrationContext` used non-existent fields (`progress_summary`, `recent_progress`) — fixed to `mastered_count` and `current_works`
+4. `context_snapshot` not fetched in past_interactions query — added to select in context-builder.ts
+5. `PastInteraction` interface missing `context_snapshot` field — added it
+6. Duplicate local `PastInteraction` interface — replaced with import from context-builder
+
+New files (1): `lib/montree/guru/knowledge/sensitive-periods.ts`
+Modified files (4): `conversational-prompt.ts`, `route.ts`, `context-builder.ts`, `psychology-foundations.ts`
+
+**Social Media Research — COMPLETE:**
+Deep dive into Montessori homeschool social media channels. Report: `docs/RESEARCH_MONTESSORI_HOMESCHOOL_SOCIAL_MEDIA.md`
+Key findings: Facebook groups are #1 hub (10+ groups with 50K-150K+ members), Instagram top accounts (@montessorifromtheheart 653K), parent pain points = curriculum overwhelm + isolation.
+
+**Handoff:** `docs/handoffs/HANDOFF_PROACTIVE_GURU_FEB28.md`
+
+### Session Work (Feb 28, 2026 — Earlier)
+
+**Self-Improving Guru Brain System — COMPLETE (3 audit cycles + health check + deep audit, 56 issues fixed):**
+
+Built the Guru's self-evolving brain — a living JSONB document that grows smarter after every conversation across ALL families.
+
+4-part architecture:
+1. **Brain Storage** — `montree_guru_brain` table, single global row, categorized wisdom sections
+2. **Learning Extraction** — After every guru conversation (teacher + parent), learnings extracted and atomically appended via RPC
+3. **Brain Consolidation** — Haiku reads raw learnings buffer and synthesizes into polished wisdom entries (auto-triggers at 20 learnings, max 1x per 6 hours)
+4. **Brain Retrieval** — Before each conversation, relevant wisdom scored by age/area/concerns and injected into system prompt
+
+**Cross-family pattern learning** also wired: `pattern-learner.ts` aggregates insights across families, tracks success rates (EMA α=0.2), injects anonymized patterns into prompts.
+
+**Daily Rate Limits** (replaced monthly counters):
+- Haiku tier ($5/mo): 10 messages/day → max $3.60/mo cost = healthy margin
+- Sonnet tier ($20/mo): 5 messages/day → max $6.75/mo cost = great margin
+- Free trial: 3 messages/day for 7 days from signup, then paywall
+- Counts from `montree_guru_interactions` table (no counter drift), UTC midnight boundary
+
+**Psychology Brain** — 13 developmental psychologists in `knowledge/psychology-foundations.ts`: Freud, Piaget, Erikson, Bowlby/Ainsworth, Winnicott, Vygotsky, Jung, Montessori, Bandura, Maslow, Bronfenbrenner, Stern, Dweck, Kohn. Sonnet tier gets full psychology reference injected into prompt.
+
+New files (2): `lib/montree/guru/brain.ts` (668 lines), `migrations/133_guru_tiers.sql`
+Modified files (5): `route.ts` (brain wiring + daily limits), `pattern-learner.ts` (safety fixes + EMA tuning), `lib/ai/anthropic.ts` (HAIKU_MODEL + getModelForTier), `conversational-prompt.ts` (Kohn + psych safety), `psychology-foundations.ts` (Alfie Kohn + nuance)
+
+3 audit cycles: 25 + 17 + 1 = 43 issues found and fixed. Health check: 8 additional issues found and fixed (UTC timezone fix, null guards, index, EMA tuning, consolidation docs). Deep audit: 4 more issues (teacher_id rate-limit bypass, broken success rate updates, dead code). Total: 56 issues.
+
+**Deploy:** Run `psql $DATABASE_URL -f migrations/133_guru_tiers.sql` before testing.
+**Handoff:** `docs/handoffs/HANDOFF_BRAIN_SYSTEM_FEB28.md`
+
+---
+
+## PREVIOUS STATUS (Feb 27, 2026)
 
 ### Session Work (Feb 27, 2026)
 
@@ -107,6 +183,7 @@ Previous session work (3 build-audit-fix cycles):
 
 10 new files + 4 modified. Bioluminescent botanical theme. Two-tab Portal (AI chat) + Shelf (visual works) interface.
 Push command in handoff: `docs/handoffs/HANDOFF_I18N_AUDIT_HOME_REDESIGN_FEB27.md`
+Late session push: `docs/handoffs/HANDOFF_SHELF_REDESIGN_GUIDES_HIDDEN_FEB27.md`
 
 **Onboarding Guides — ALL HIDDEN (not deleted):**
 
@@ -115,7 +192,7 @@ User decided onboarding guides are unnecessary. All guide renders wrapped with `
 - Hidden: WelcomeModal, DashboardGuide, WeekViewGuide, StudentFormGuide, PrincipalSetupGuide, PrincipalAdminGuide, principal welcome overlay, auto-open bulk form
 - To re-enable: search `HIDDEN: onboarding guides disabled` and remove `false &&`
 
-**Visual Shelf Redesign — ShelfView.tsx rewritten:**
+**Visual Shelf Redesign — ShelfView.tsx rewritten + audited:**
 
 Shelf redesigned from vertical list of 5 planks to actual 3-plank visual Montessori shelf. Works are tappable 3D objects sitting on wooden planks.
 - 3 horizontal wooden planks with up to 3 works each (9 slots total), works distributed top-down
@@ -127,6 +204,16 @@ Shelf redesigned from vertical list of 5 planks to actual 3-plank visual Montess
 - Reuses existing components: `QuickGuideModal.tsx`, `FullDetailsModal.tsx` (zero changes to those)
 - Replaced `WorkDetailSheet` (accordion bottom sheet) with teacher modals
 - Shelf frame with CSS wood gradients, side rails, top/bottom caps
+
+**Audit (7 issues found, all fixed):**
+- Removed dead `AREA_ORDER` constant
+- Added AbortController to `fetchShelf()` + `openWorkGuide()` (race condition prevention)
+- Added cleanup useEffect for abort-on-unmount
+- Added `aria-label` to all interactive buttons
+- Fixed React keys from `idx` to `work.work_name`
+- Guide fetch error now sets `null` instead of `{ error: true }`
+
+**Handoff:** `docs/handoffs/HANDOFF_SHELF_REDESIGN_GUIDES_HIDDEN_FEB27.md`
 
 ---
 
@@ -1817,7 +1904,13 @@ AI advisor for child development questions. Uses Anthropic API.
 - `app/api/montree/guru/checkout/route.ts` — Stripe checkout session
 - `app/api/montree/guru/webhook/route.ts` — Stripe webhook handler
 
-Tables: `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`, `montree_child_patterns`
+**Self-Improving Brain:**
+- `lib/montree/guru/brain.ts` — Core brain system (storage, extraction, consolidation, retrieval)
+- `lib/montree/guru/pattern-learner.ts` — Cross-family pattern aggregation + success rate tracking
+- Brain grows after EVERY conversation (teacher + parent), consolidated by Haiku every 20 learnings
+- 7 wisdom categories: developmental_wisdom, therapeutic_techniques, montessori_insights, behavioral_patterns, parent_psychology, failure_modes, breakthrough_moments
+
+Tables: `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`, `montree_child_patterns`, `montree_guru_brain`
 
 ---
 

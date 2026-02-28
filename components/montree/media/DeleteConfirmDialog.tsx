@@ -3,6 +3,7 @@
 'use client';
 
 import React from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export default function DeleteConfirmDialog({
   onCancel,
   isDeleting = false,
 }: DeleteConfirmDialogProps) {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   const isBulk = count > 1;
@@ -36,21 +38,21 @@ export default function DeleteConfirmDialog({
         {/* Content */}
         <div className="p-6 text-center space-y-2">
           <h2 className="text-lg font-bold text-gray-900">
-            {isBulk ? 'Delete Multiple Photos?' : 'Delete Photo?'}
+            {isBulk ? t('deleteDialog.multipleTitle') : t('deleteDialog.singleTitle')}
           </h2>
-          
+
           <p className="text-gray-600">
             {isBulk ? (
               <>
-                You're about to delete <span className="font-semibold">{count} photos</span>.
+                {t('deleteDialog.bulkMessage').replace('{count}', count.toString())}
               </>
             ) : (
-              'You\'re about to delete this photo.'
+              t('deleteDialog.singleMessage')
             )}
           </p>
 
           <p className="text-sm text-red-600 font-medium">
-            This action cannot be undone.
+            {t('deleteDialog.warning')}
           </p>
         </div>
 
@@ -61,7 +63,7 @@ export default function DeleteConfirmDialog({
             disabled={isDeleting}
             className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            Keep Photo{!isBulk ? '' : 's'}
+            {isBulk ? t('deleteDialog.keepPhotos') : t('deleteDialog.keepPhoto')}
           </button>
           <button
             onClick={onConfirm}
@@ -71,10 +73,10 @@ export default function DeleteConfirmDialog({
             {isDeleting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Deleting...
+                {t('deleteDialog.deleting')}
               </>
             ) : (
-              <>🗑️ Delete</>
+              <>🗑️ {t('deleteDialog.delete')}</>
             )}
           </button>
         </div>

@@ -4,10 +4,12 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 
 function ParentPortalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [accessCode, setAccessCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +34,7 @@ function ParentPortalContent() {
 
   const handleAccessCode = async () => {
     if (!accessCode || accessCode.length < 6) {
-      setError('Please enter your 6-character access code');
+      setError(t('parentLogin.errorCodeTooShort'));
       return;
     }
     
@@ -70,10 +72,10 @@ function ParentPortalContent() {
 
         router.push(data.redirect || '/montree/parent/dashboard');
       } else {
-        setError(data.error || 'Invalid access code. Please check and try again.');
+        setError(data.error || t('parentLogin.errorInvalidCode'));
       }
     } catch {
-      setError('Network error. Please check your connection and try again.');
+      setError(t('parentLogin.errorNetwork'));
     } finally {
       setLoading(false);
     }
@@ -94,8 +96,8 @@ function ParentPortalContent() {
             <span className="text-2xl">🌳</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">My Classroom</h1>
-            <p className="text-sm text-gray-500">Parent Portal</p>
+            <h1 className="text-xl font-bold text-gray-900">{t('parentPortal.title')}</h1>
+            <p className="text-sm text-gray-500">{t('parentPortal.subtitle')}</p>
           </div>
         </div>
       </header>
@@ -109,14 +111,14 @@ function ParentPortalContent() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full mb-4">
                 <span className="text-4xl">👨‍👩‍👧</span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Welcome, Parent!</h2>
-              <p className="text-gray-500 mt-1">See your child&apos;s learning journey</p>
+              <h2 className="text-2xl font-bold text-gray-900">{t('parentLogin.welcomeTitle')}</h2>
+              <p className="text-gray-500 mt-1">{t('parentLogin.welcomeSubtitle')}</p>
             </div>
 
             {/* Instructions */}
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-5">
               <p className="text-sm text-emerald-800">
-                <strong>👋 Welcome!</strong> Enter the access code from your child&apos;s teacher to view their progress.
+                <strong>👋 {t('parentLogin.welcome')}</strong> {t('parentLogin.instructions')}
               </p>
             </div>
 
@@ -132,7 +134,7 @@ function ParentPortalContent() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Access Code
+                  {t('parentLogin.accessCodeLabel')}
                 </label>
                 <input
                   type="text"
@@ -147,7 +149,7 @@ function ParentPortalContent() {
                   autoComplete="off"
                 />
                 <p className="text-xs text-gray-400 mt-2 text-center">
-                  Enter the 6-character code from your teacher
+                  {t('parentLogin.accessCodeHint')}
                 </p>
               </div>
 
@@ -159,11 +161,11 @@ function ParentPortalContent() {
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="animate-spin">⏳</span>
-                    Connecting...
+                    {t('common.connecting')}
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2">
-                    🔗 Connect to My Child
+                    🔗 {t('parentLogin.connectButton')}
                   </span>
                 )}
               </button>
@@ -172,19 +174,19 @@ function ParentPortalContent() {
 
           {/* How it works */}
           <div className="bg-white/60 rounded-2xl p-5 border border-gray-100">
-            <h3 className="font-semibold text-gray-700 mb-3 text-center">How to get your code:</h3>
+            <h3 className="font-semibold text-gray-700 mb-3 text-center">{t('parentLogin.howToGetCode')}</h3>
             <ol className="space-y-2 text-sm text-gray-600">
               <li className="flex items-start gap-2">
                 <span className="w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                <span>Ask your child&apos;s teacher for a parent access code</span>
+                <span>{t('parentLogin.step1')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                <span>Scan the QR code or enter the code above</span>
+                <span>{t('parentLogin.step2')}</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="w-5 h-5 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                <span>View your child&apos;s progress, photos, and reports</span>
+                <span>{t('parentLogin.step3')}</span>
               </li>
             </ol>
           </div>
@@ -193,7 +195,7 @@ function ParentPortalContent() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-gray-400">
-        <p>🌳 My Classroom • Montessori Progress Tracking</p>
+        <p>🌳 {t('parentPortal.footerText')}</p>
       </footer>
     </div>
   );
@@ -208,7 +210,7 @@ export default function ParentPortalPage() {
           <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl animate-bounce">🌳</span>
           </div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     }>

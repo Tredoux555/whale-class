@@ -713,15 +713,15 @@ function GuruContent() {
             <h3 className="text-sm font-medium text-gray-500 mb-3">{t('guru.commonQuestions')}</h3>
             <div className="space-y-2">
               {(isParent ? [
-                `${selectedChild.name.split(' ')[0]} can't focus and wanders away from work. What should I do?`,
-                `How do I set up our home environment for ${selectedChild.name.split(' ')[0]}?`,
-                `How can I help ${selectedChild.name.split(' ')[0]} choose work independently at home?`,
-                `${selectedChild.name.split(' ')[0]} seems frustrated with materials. What am I missing?`,
+                t('guru.quickQuestion1').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion2').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion3').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion4').replace('{name}', selectedChild.name.split(' ')[0]),
               ] : [
-                `${selectedChild.name.split(' ')[0]} can't focus and wanders around. What should I do?`,
-                `${selectedChild.name.split(' ')[0]} is having trouble with social interactions.`,
-                `How can I help ${selectedChild.name.split(' ')[0]} choose work independently?`,
-                `${selectedChild.name.split(' ')[0]} seems frustrated and gets upset easily.`,
+                t('guru.quickQuestion5').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion6').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion7').replace('{name}', selectedChild.name.split(' ')[0]),
+                t('guru.quickQuestion8').replace('{name}', selectedChild.name.split(' ')[0]),
               ]).map((q, i) => (
                 <button
                   key={i}

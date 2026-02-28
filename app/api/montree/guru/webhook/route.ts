@@ -56,16 +56,26 @@ export async function POST(request: NextRequest) {
           ? new Date(subscription.current_period_end * 1000).toISOString()
           : null;
 
+        // Extract and validate tier from checkout metadata
+        const rawTier = session.metadata?.guru_tier;
+        const guruTier = (rawTier === 'haiku' || rawTier === 'sonnet') ? rawTier : 'sonnet';
+        if (!rawTier) {
+          console.warn(`[Guru Webhook] Missing guru_tier in checkout metadata for teacher ${teacherId}, defaulting to sonnet`);
+        }
+
         await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
           .update({
             guru_plan: 'paid',
+            guru_tier: guruTier,
             guru_stripe_subscription_id: subscriptionId,
             guru_subscription_status: 'active',
             guru_current_period_end: periodEnd,
+            guru_prompts_used: 0, // Reset prompts on new subscription
+            guru_prompts_reset_at: new Date().toISOString(),
           })
           .eq('id', teacherId);
 
-        console.error(`[Guru Webhook] Checkout completed for teacher ${teacherId}`);
+        console.log(`[Guru Webhook] Checkout completed for teacher ${teacherId}, tier: ${guruTier}`);
         break;
       }
 
@@ -81,18 +91,30 @@ export async function POST(request: NextRequest) {
 
         const status = subscription.status as string; // active, past_due, canceled, unpaid, etc.
         const isActive = status === 'active' || status === 'trialing';
+        const guruTier = subscription.metadata?.guru_tier;
+
+        // Check if this is a period renewal (reset monthly prompts)
+        const updateData: Record<string, unknown> = {
+          guru_plan: isActive ? 'paid' : 'free',
+          guru_subscription_status: status,
+          guru_current_period_end: subscription.current_period_end
+            ? new Date(subscription.current_period_end * 1000).toISOString()
+            : null,
+        };
+
+        if (guruTier) updateData.guru_tier = guruTier;
+
+        // Reset prompt counter on each new billing period
+        if (isActive) {
+          updateData.guru_prompts_used = 0;
+          updateData.guru_prompts_reset_at = new Date().toISOString();
+        }
 
         await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
-          .update({
-            guru_plan: isActive ? 'paid' : 'free',
-            guru_subscription_status: status,
-            guru_current_period_end: subscription.current_period_end
-              ? new Date(subscription.current_period_end * 1000).toISOString()
-              : null,
-          })
+          .update(updateData)
           .eq('id', teacherId);
 
-        console.error(`[Guru Webhook] Subscription updated for teacher ${teacherId}: ${status}`);
+        console.log(`[Guru Webhook] Subscription updated for teacher ${teacherId}: ${status}`);
         break;
       }
 

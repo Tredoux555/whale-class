@@ -5,6 +5,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Teacher {
   id: string;
@@ -34,6 +35,7 @@ interface ClassroomDetail {
 export default function ClassroomDetailPage({ params }: { params: Promise<{ classroomId: string }> }) {
   const { classroomId } = use(params);
   const router = useRouter();
+  const { t } = useI18n();
   const [classroom, setClassroom] = useState<ClassroomDetail | null>(null);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -59,12 +61,12 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
   const fetchData = async () => {
     try {
       const res = await fetch(`/api/montree/admin/classrooms/${classroomId}`);
-      if (!res.ok) { toast.error('Classroom not found'); router.push('/montree/admin'); return; }
+      if (!res.ok) { toast.error(t('admin.errors.classroomNotFound')); router.push('/montree/admin'); return; }
       const data = await res.json();
       setClassroom(data.classroom);
       setTeachers(data.teachers || []);
       setStudents(data.students || []);
-    } catch { toast.error('Failed to load classroom'); }
+    } catch { toast.error(t('admin.errors.failedToLoadClassroom')); }
     finally { setLoading(false); }
   };
 
@@ -81,9 +83,9 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: teacherId, role: newRole }),
       });
-      toast.success('Role updated');
+      toast.success(t('admin.messages.roleUpdated'));
       fetchData();
-    } catch { toast.error('Failed to update role'); }
+    } catch { toast.error(t('admin.errors.failedToUpdateRole')); }
   };
 
   const addTeacher = async () => {
@@ -100,7 +102,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
         setNewCode(data.teacher.login_code);
         fetchData();
       }
-    } catch { toast.error('Failed to add teacher'); }
+    } catch { toast.error(t('admin.errors.failedToAddTeacher')); }
     finally { setSaving(false); }
   };
 
@@ -114,17 +116,17 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
         body: JSON.stringify({ name: studentForm.name.trim(), age: studentForm.age ? parseFloat(studentForm.age) : null, classroom_id: classroomId }),
       });
       if (res.ok) {
-        toast.success('Student added');
+        toast.success(t('admin.messages.studentAdded'));
         setShowAddStudent(false);
         setStudentForm({ name: '', age: '' });
         fetchData();
       }
-    } catch { toast.error('Failed to add student'); }
+    } catch { toast.error(t('admin.errors.failedToAddStudent')); }
     finally { setSaving(false); }
   };
 
   const regenerateCode = async (teacherId: string) => {
-    if (!confirm('Generate a new login code? The old code will stop working.')) return;
+    if (!confirm(t('admin.confirmations.regenerateCode'))) return;
     try {
       const res = await fetch('/api/montree/admin/teachers', {
         method: 'PATCH',
@@ -133,7 +135,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
       });
       const data = await res.json();
       if (data.new_login_code) { setNewCode(data.new_login_code); setShowAddTeacher(true); }
-    } catch { toast.error('Failed to regenerate code'); }
+    } catch { toast.error(t('admin.errors.failedToRegenerateCode')); }
   };
 
   if (loading) {
@@ -172,13 +174,13 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
         {/* Teachers Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-white">Teachers</h2>
-            <button onClick={() => { setShowAddTeacher(true); setNewCode(null); setTeacherForm({ name: '', email: '' }); }} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">+ Add Teacher</button>
+            <h2 className="text-lg font-semibold text-white">{t('admin.sections.teachers')}</h2>
+            <button onClick={() => { setShowAddTeacher(true); setNewCode(null); setTeacherForm({ name: '', email: '' }); }} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">+ {t('admin.actions.addTeacher')}</button>
           </div>
 
           {teachers.length === 0 ? (
             <div className="bg-white/10 rounded-xl p-6 text-center">
-              <p className="text-white/60">No teachers assigned yet</p>
+              <p className="text-white/60">{t('admin.emptyStates.noTeachersAssigned')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -191,7 +193,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-white font-semibold text-lg">{t.name}</span>
-                          <span className="px-2 py-0.5 bg-emerald-500/30 text-emerald-300 text-xs rounded-full font-medium">LEAD</span>
+                          <span className="px-2 py-0.5 bg-emerald-500/30 text-emerald-300 text-xs rounded-full font-medium">{t('admin.roles.lead')}</span>
                         </div>
                         {t.email && <p className="text-white/50 text-sm">{t.email}</p>}
                       </div>
@@ -199,14 +201,14 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
                     <div className="flex items-center gap-2">
                       {t.login_code && (
                         <button onClick={() => copyCode(t.login_code!)} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg font-mono">
-                          {copiedCode === t.login_code ? '✓ Copied' : t.login_code}
+                          {copiedCode === t.login_code ? '✓ ' + t('admin.actions.copied') : t.login_code}
                         </button>
                       )}
                       <button onClick={() => regenerateCode(t.id)} className="text-xs text-amber-400 hover:text-amber-300">🔄</button>
                       <select value={t.role} onChange={e => changeRole(t.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
-                        <option value="lead_teacher">Lead</option>
-                        <option value="assistant_teacher">Assistant</option>
-                        <option value="teacher">Teacher</option>
+                        <option value="lead_teacher">{t('admin.roles.lead')}</option>
+                        <option value="assistant_teacher">{t('admin.roles.assistant')}</option>
+                        <option value="teacher">{t('admin.roles.teacher')}</option>
                       </select>
                     </div>
                   </div>
@@ -223,7 +225,7 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
                         <div className="flex items-center gap-2">
                           <span className="text-white font-medium">{t.name}</span>
                           <span className="px-2 py-0.5 bg-white/10 text-white/50 text-xs rounded-full">
-                            {t.role === 'assistant_teacher' ? 'ASSISTANT' : 'TEACHER'}
+                            {t.role === 'assistant_teacher' ? t('admin.roles.assistant').toUpperCase() : t('admin.roles.teacher').toUpperCase()}
                           </span>
                         </div>
                         {t.email && <p className="text-white/40 text-xs">{t.email}</p>}
@@ -236,9 +238,9 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
                         </button>
                       )}
                       <select value={t.role} onChange={e => changeRole(t.id, e.target.value)} className="bg-white/10 text-white text-xs rounded-lg px-2 py-1 border border-white/20">
-                        <option value="lead_teacher">Lead</option>
-                        <option value="assistant_teacher">Assistant</option>
-                        <option value="teacher">Teacher</option>
+                        <option value="lead_teacher">{t('admin.roles.lead')}</option>
+                        <option value="assistant_teacher">{t('admin.roles.assistant')}</option>
+                        <option value="teacher">{t('admin.roles.teacher')}</option>
                       </select>
                     </div>
                   </div>
@@ -251,8 +253,8 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
         {/* Students Section */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-white">Students</h2>
-            <button onClick={() => { setShowAddStudent(true); setStudentForm({ name: '', age: '' }); }} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">+ Add Student</button>
+            <h2 className="text-lg font-semibold text-white">{t('admin.sections.students')}</h2>
+            <button onClick={() => { setShowAddStudent(true); setStudentForm({ name: '', age: '' }); }} className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm hover:bg-emerald-600">+ {t('admin.actions.addStudent')}</button>
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
@@ -285,13 +287,13 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
               className="bg-white/5 border-2 border-dashed border-emerald-500/30 rounded-xl p-3 flex flex-col items-center justify-center hover:border-emerald-500/50 hover:bg-white/10 transition-all min-h-[120px]"
             >
               <span className="text-2xl opacity-50 mb-1">+</span>
-              <span className="text-emerald-300 text-xs">Add Student</span>
+              <span className="text-emerald-300 text-xs">{t('admin.actions.addStudent')}</span>
             </button>
           </div>
 
           {students.length === 0 && (
             <div className="bg-white/10 rounded-xl p-8 text-center mt-4">
-              <p className="text-white/60">No students in this classroom yet</p>
+              <p className="text-white/60">{t('admin.emptyStates.noStudentsYet')}</p>
             </div>
           )}
         </div>
@@ -301,33 +303,33 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
       {showAddTeacher && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-emerald-900 rounded-2xl p-6 max-w-md w-full border border-emerald-700">
-            <h2 className="text-xl font-bold text-white mb-4">{newCode ? '🎉 Login Code' : 'Add Teacher'}</h2>
+            <h2 className="text-xl font-bold text-white mb-4">{newCode ? '🎉 ' + t('admin.modals.loginCode') : t('admin.modals.addTeacher')}</h2>
             {newCode ? (
               <div className="text-center">
-                <p className="text-emerald-300 mb-4">Share this code with the teacher:</p>
+                <p className="text-emerald-300 mb-4">{t('admin.messages.shareCodeWithTeacher')}</p>
                 <div className="bg-black/30 rounded-xl p-6 mb-4">
                   <div className="text-4xl font-mono font-bold text-emerald-400 tracking-wider mb-2">{newCode}</div>
                   <button onClick={() => copyCode(newCode)} className={`px-4 py-2 rounded-lg text-sm ${copiedCode === newCode ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white'}`}>
-                    {copiedCode === newCode ? '✓ Copied!' : 'Copy Code'}
+                    {copiedCode === newCode ? '✓ ' + t('admin.actions.copied') : t('admin.actions.copyCode')}
                   </button>
                 </div>
-                <button onClick={() => { setShowAddTeacher(false); setNewCode(null); }} className="w-full py-3 bg-emerald-500 text-white rounded-xl font-medium">Done</button>
+                <button onClick={() => { setShowAddTeacher(false); setNewCode(null); }} className="w-full py-3 bg-emerald-500 text-white rounded-xl font-medium">{t('admin.actions.done')}</button>
               </div>
             ) : (
               <>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-emerald-300 text-sm mb-1">Name *</label>
+                    <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.nameRequired')}</label>
                     <input type="text" value={teacherForm.name} onChange={e => setTeacherForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder="Ms. Sarah" />
                   </div>
                   <div>
-                    <label className="block text-emerald-300 text-sm mb-1">Email (optional)</label>
+                    <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.emailOptional')}</label>
                     <input type="email" value={teacherForm.email} onChange={e => setTeacherForm(f => ({ ...f, email: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder="teacher@school.com" />
                   </div>
                 </div>
                 <div className="flex gap-3 mt-6">
-                  <button onClick={() => setShowAddTeacher(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">Cancel</button>
-                  <button onClick={addTeacher} disabled={saving || !teacherForm.name.trim()} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? 'Creating...' : 'Create'}</button>
+                  <button onClick={() => setShowAddTeacher(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">{t('admin.actions.cancel')}</button>
+                  <button onClick={addTeacher} disabled={saving || !teacherForm.name.trim()} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? t('admin.states.creating') : t('admin.actions.create')}</button>
                 </div>
               </>
             )}
@@ -339,20 +341,20 @@ export default function ClassroomDetailPage({ params }: { params: Promise<{ clas
       {showAddStudent && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-emerald-900 rounded-2xl p-6 max-w-md w-full border border-emerald-700">
-            <h2 className="text-xl font-bold text-white mb-4">Add Student</h2>
+            <h2 className="text-xl font-bold text-white mb-4">{t('admin.modals.addStudent')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">Name *</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.nameRequired')}</label>
                 <input type="text" value={studentForm.name} onChange={e => setStudentForm(f => ({ ...f, name: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder="Student name" />
               </div>
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">Age (optional)</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.ageOptional')}</label>
                 <input type="number" step="0.5" min="2" max="7" value={studentForm.age} onChange={e => setStudentForm(f => ({ ...f, age: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder="e.g., 3.5" />
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <button onClick={() => setShowAddStudent(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">Cancel</button>
-              <button onClick={addStudent} disabled={saving || !studentForm.name.trim()} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? 'Adding...' : 'Add'}</button>
+              <button onClick={() => setShowAddStudent(false)} className="flex-1 py-3 bg-white/10 text-white rounded-xl">{t('admin.actions.cancel')}</button>
+              <button onClick={addStudent} disabled={saving || !studentForm.name.trim()} className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50">{saving ? t('admin.states.adding') : t('admin.actions.add')}</button>
             </div>
           </div>
         </div>

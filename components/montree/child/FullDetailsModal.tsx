@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { QuickGuideData } from '@/components/montree/curriculum/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface FullDetailsModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function FullDetailsModal({
   guideData,
   loading,
 }: FullDetailsModalProps) {
+  const { t } = useI18n();
   if (!isOpen) {
     return null;
   }
@@ -29,7 +31,7 @@ export default function FullDetailsModal({
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
-          aria-label="Close modal"
+          aria-label={t('common.closeModal')}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -54,14 +56,14 @@ export default function FullDetailsModal({
                 {/* Quick Guide Section */}
                 {guideData.quick_guide && (
                   <div className="bg-yellow-900/40 border border-yellow-600/50 rounded-2xl p-4">
-                    <h3 className="text-lg font-semibold text-yellow-300 mb-3">Quick Guide</h3>
+                    <h3 className="text-lg font-semibold text-yellow-300 mb-3">{t('details.quickGuide')}</h3>
                     <p className="text-gray-100 text-sm leading-relaxed">{guideData.quick_guide}</p>
                   </div>
                 )}
 
                 {/* Step-by-Step Presentation Section */}
                 <div>
-                  <h3 className="text-lg font-semibold text-emerald-400 mb-4">Step-by-Step Presentation</h3>
+                  <h3 className="text-lg font-semibold text-emerald-400 mb-4">{t('details.stepByStep')}</h3>
                   {guideData.presentation_steps && guideData.presentation_steps.length > 0 ? (
                     <div className="space-y-4">
                       {guideData.presentation_steps.map((step) => (
@@ -79,7 +81,7 @@ export default function FullDetailsModal({
                               <h4 className="font-semibold text-white mb-2">{step.title}</h4>
                               <p className="text-gray-300 text-sm mb-3">{step.description}</p>
                               <div className="bg-slate-700/50 rounded-lg p-3 border-l-2 border-amber-400">
-                                <p className="text-xs text-amber-300 font-medium mb-1">Teacher Tip:</p>
+                                <p className="text-xs text-amber-300 font-medium mb-1">{t('details.teacherTip')}:</p>
                                 <p className="text-gray-200 text-sm">{step.tip}</p>
                               </div>
                             </div>
@@ -89,7 +91,7 @@ export default function FullDetailsModal({
                     </div>
                   ) : (
                     <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4 text-center">
-                      <p className="text-gray-400 text-sm italic">Detailed presentation steps coming soon.</p>
+                      <p className="text-gray-400 text-sm italic">{t('details.stepsComingSoon')}</p>
                     </div>
                   )}
                 </div>
@@ -97,7 +99,7 @@ export default function FullDetailsModal({
                 {/* Direct Aims Section */}
                 {guideData.direct_aims && guideData.direct_aims.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-emerald-400 mb-3">Direct Aims</h3>
+                    <h3 className="text-lg font-semibold text-emerald-400 mb-3">{t('details.directAims')}</h3>
                     <ul className="space-y-2">
                       {guideData.direct_aims.map((aim, index) => (
                         <li key={index} className="flex items-start gap-3">
@@ -112,7 +114,7 @@ export default function FullDetailsModal({
                 {/* Materials Section */}
                 {guideData.materials && guideData.materials.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-semibold text-emerald-400 mb-3">Materials</h3>
+                    <h3 className="text-lg font-semibold text-emerald-400 mb-3">{t('details.materials')}</h3>
                     <ul className="space-y-2">
                       {guideData.materials.map((material, index) => (
                         <li key={index} className="flex items-start gap-3">
@@ -127,7 +129,7 @@ export default function FullDetailsModal({
                 {/* Control of Error Section */}
                 {guideData.control_of_error && (
                   <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-                    <h3 className="text-lg font-semibold text-emerald-400 mb-2">Control of Error</h3>
+                    <h3 className="text-lg font-semibold text-emerald-400 mb-2">{t('details.controlOfError')}</h3>
                     <p className="text-gray-100 text-sm leading-relaxed">{guideData.control_of_error}</p>
                   </div>
                 )}
@@ -135,14 +137,14 @@ export default function FullDetailsModal({
                 {/* Why It Matters Section */}
                 {guideData.why_it_matters && (
                   <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
-                    <h3 className="text-lg font-semibold text-emerald-400 mb-2">Why It Matters</h3>
+                    <h3 className="text-lg font-semibold text-emerald-400 mb-2">{t('details.whyItMatters')}</h3>
                     <p className="text-gray-100 text-sm leading-relaxed">{guideData.why_it_matters}</p>
                   </div>
                 )}
               </>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-400">No details available</p>
+                <p className="text-gray-400">{t('details.noDetailsAvailable')}</p>
               </div>
             )}
           </div>

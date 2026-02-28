@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface AreaWork {
   id: string;
@@ -19,12 +20,12 @@ interface AddWorkModalProps {
   areaWorks?: Record<string, AreaWork[]>;
 }
 
-const AREAS = [
-  { key: 'practical_life', name: 'Practical Life', icon: 'P', color: 'from-green-400 to-emerald-500', solid: '#10b981' },
-  { key: 'sensorial', name: 'Sensorial', icon: 'S', color: 'from-orange-400 to-amber-500', solid: '#f59e0b' },
-  { key: 'mathematics', name: 'Mathematics', icon: 'M', color: 'from-blue-400 to-indigo-500', solid: '#6366f1' },
-  { key: 'language', name: 'Language', icon: 'L', color: 'from-pink-400 to-rose-500', solid: '#f43f5e' },
-  { key: 'cultural', name: 'Cultural', icon: 'C', color: 'from-purple-400 to-violet-500', solid: '#8b5cf6' },
+const getAreas = (t: any) => [
+  { key: 'practical_life', name: t('area.practicalLife'), icon: 'P', color: 'from-green-400 to-emerald-500', solid: '#10b981' },
+  { key: 'sensorial', name: t('area.sensorial'), icon: 'S', color: 'from-orange-400 to-amber-500', solid: '#f59e0b' },
+  { key: 'mathematics', name: t('area.mathematics'), icon: 'M', color: 'from-blue-400 to-indigo-500', solid: '#6366f1' },
+  { key: 'language', name: t('area.language'), icon: 'L', color: 'from-pink-400 to-rose-500', solid: '#f43f5e' },
+  { key: 'cultural', name: t('area.cultural'), icon: 'C', color: 'from-purple-400 to-violet-500', solid: '#8b5cf6' },
 ];
 
 export default function AddWorkModal({
@@ -35,6 +36,7 @@ export default function AddWorkModal({
   defaultArea,
   areaWorks,
 }: AddWorkModalProps) {
+  const { t } = useI18n();
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
@@ -64,14 +66,14 @@ export default function AddWorkModal({
 
   // Build position options array for wheel picker
   const positionOptions = [
-    { key: 'beginning', label: 'Beginning of list', icon: '⬆', value: -1 as number | null },
+    { key: 'beginning', label: t('modal.beginningOfList'), icon: '⬆', value: -1 as number | null },
     ...currentAreaWorks.map((w, idx) => ({
       key: w.id,
       label: w.name,
       icon: `${idx + 1}`,
       value: idx as number | null,
     })),
-    { key: 'end', label: 'End of list', icon: '⬇', value: null as number | null },
+    { key: 'end', label: t('modal.endOfList'), icon: '⬇', value: null as number | null },
   ];
 
   // Scroll handler for position wheel — tracks centered item
@@ -136,7 +138,7 @@ export default function AddWorkModal({
 
   const handleGenerateAI = async () => {
     if (!form.name.trim()) {
-      toast.error('Please enter a work name first');
+      toast.error(t('error.pleaseEnterWorkNameFirst'));
       return;
     }
 
@@ -159,22 +161,22 @@ export default function AddWorkModal({
           description: data.description || prev.description,
           why_it_matters: data.why_it_matters || prev.why_it_matters,
         }));
-        toast.success('✨ Descriptions generated!');
+        toast.success(t('success.descriptionsGenerated'));
       } else if (data.error) {
         toast.error(data.error);
       } else {
-        toast.error('Failed to generate');
+        toast.error(t('error.failedToGenerate'));
       }
     } catch (err) {
       console.error('AI generation error:', err);
-      toast.error('Failed to generate description');
+      toast.error(t('error.failedToGenerateDescription'));
     }
     setGenerating(false);
   };
 
   const handleSubmit = async () => {
     if (!form.name.trim()) {
-      toast.error('Please enter a work name');
+      toast.error(t('error.pleaseEnterWorkName'));
       return;
     }
 
@@ -212,21 +214,22 @@ export default function AddWorkModal({
 
       const data = await res.json();
       if (data.success) {
-        toast.success(`"${form.name}" added to curriculum!`);
+        toast.success(t('success.addedToCurriculum').replace('{name}', form.name));
         handleClose();
         onSuccess();
       } else {
-        toast.error(data.error || 'Failed to add work');
+        toast.error(data.error || t('error.failedToAddWork'));
       }
     } catch (err) {
       console.error('Add work error:', err);
-      toast.error('Failed to add work');
+      toast.error(t('error.failedToAddWork'));
     }
     setSaving(false);
   };
 
   if (!isOpen) return null;
 
+  const AREAS = getAreas(t);
   const selectedArea = AREAS.find(a => a.key === form.area_key) || AREAS[0];
 
   return (
@@ -249,8 +252,8 @@ export default function AddWorkModal({
                 {selectedArea.icon}
               </div>
               <div>
-                <h3 className="font-bold text-lg">Add New Work</h3>
-                <p className="text-white/80 text-sm">Create a custom curriculum work</p>
+                <h3 className="font-bold text-lg">{t('modal.addNewWork')}</h3>
+                <p className="text-white/80 text-sm">{t('modal.createCustomCurriculumWork')}</p>
               </div>
             </div>
             <button
@@ -266,7 +269,7 @@ export default function AddWorkModal({
         <div className="p-4 overflow-y-auto flex-1 space-y-4">
           {/* Category Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('form.category')} *</label>
             <div className="grid grid-cols-5 gap-2">
               {AREAS.map(area => (
                 <button
@@ -296,12 +299,12 @@ export default function AddWorkModal({
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Work Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('form.workName')} *</label>
             <input
               type="text"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
-              placeholder="e.g. Pouring Water, Pink Tower, Sandpaper Letters"
+              placeholder={t('form.workNameExample')}
               className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400"
             />
           </div>
@@ -309,7 +312,7 @@ export default function AddWorkModal({
           {/* Position in Sequence */}
           {currentAreaWorks.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Position in Sequence</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('modal.positionInSequence')}</label>
               <button
                 type="button"
                 onClick={() => setShowPositionPicker(true)}
@@ -321,10 +324,10 @@ export default function AddWorkModal({
               >
                 <span className="flex items-center gap-2">
                   <span>{insertAfterIndex === -1
-                    ? '⬆️ Beginning of list'
+                    ? `⬆️ ${t('modal.beginningOfList')}`
                     : insertAfterIndex !== null && currentAreaWorks[insertAfterIndex]
-                    ? `After ${insertAfterIndex + 1}. ${currentAreaWorks[insertAfterIndex].name}`
-                    : '⬇️ End of list (default)'
+                    ? `${t('modal.after')} ${insertAfterIndex + 1}. ${currentAreaWorks[insertAfterIndex].name}`
+                    : `⬇️ ${t('modal.endOfListDefault')}`
                   }</span>
                 </span>
                 <span className={insertAfterIndex !== null ? 'text-white/80' : 'text-gray-400'}>▼</span>
@@ -343,7 +346,7 @@ export default function AddWorkModal({
                   </button>
                   <div className="text-center">
                     <span className="text-3xl">{selectedArea.icon}</span>
-                    <h2 className="font-bold text-lg">Insert after...</h2>
+                    <h2 className="font-bold text-lg">{t('modal.insertAfter')}</h2>
                   </div>
                   <div className="w-10" />
                 </div>
@@ -414,7 +417,7 @@ export default function AddWorkModal({
           {/* AI Generate Section */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-xl border border-purple-200">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-purple-700">✨ AI Description Generator</p>
+              <p className="text-sm font-medium text-purple-700">✨ {t('modal.aiDescriptionGenerator')}</p>
               <button
                 onClick={handleGenerateAI}
                 disabled={generating || !form.name.trim()}
@@ -423,86 +426,86 @@ export default function AddWorkModal({
                 {generating ? (
                   <>
                     <span className="animate-spin">⏳</span>
-                    Generating...
+                    {t('common.generating')}
                   </>
                 ) : (
-                  <>🧠 Generate</>
+                  <>🧠 {t('action.generate')}</>
                 )}
               </button>
             </div>
             <p className="text-xs text-purple-600">
-              Enter a work name, then click to generate parent-friendly descriptions
+              {t('modal.aiGeneratorInstructions')}
             </p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (for parents)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('form.description')}</label>
             <textarea
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
               rows={3}
-              placeholder="What parents will see about this work..."
+              placeholder={t('form.descriptionPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
             />
           </div>
 
           {/* Why It Matters */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">💡 Why It Matters</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">💡 {t('form.whyItMatters')}</label>
             <textarea
               value={form.why_it_matters}
               onChange={e => setForm({ ...form, why_it_matters: e.target.value })}
               rows={2}
-              placeholder="The developmental significance of this work..."
+              placeholder={t('form.whyItMattersPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
             />
           </div>
 
           {/* Direct Aims */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Direct Aims (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🎯 {t('form.directAims')}</label>
             <textarea
               value={form.direct_aims}
               onChange={e => setForm({ ...form, direct_aims: e.target.value })}
               rows={3}
-              placeholder="Control of movement&#10;Fine motor skills&#10;Hand-eye coordination"
+              placeholder={t('form.directAimsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Indirect Aims */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🌱 Indirect Aims (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🌱 {t('form.indirectAims')}</label>
             <textarea
               value={form.indirect_aims}
               onChange={e => setForm({ ...form, indirect_aims: e.target.value })}
               rows={3}
-              placeholder="Concentration&#10;Independence&#10;Self-discipline"
+              placeholder={t('form.indirectAimsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Materials */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🧰 Materials Needed (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🧰 {t('form.materialsNeeded')}</label>
             <textarea
               value={form.materials}
               onChange={e => setForm({ ...form, materials: e.target.value })}
               rows={3}
-              placeholder="Small pitcher&#10;Bowl&#10;Sponge&#10;Tray"
+              placeholder={t('form.materialsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Teacher Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">📝 Teacher Notes (private)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">📝 {t('form.teacherNotes')}</label>
             <textarea
               value={form.teacher_notes}
               onChange={e => setForm({ ...form, teacher_notes: e.target.value })}
               rows={3}
-              placeholder="Notes for yourself about this work..."
+              placeholder={t('form.teacherNotesPlaceholder')}
               className="w-full px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
@@ -514,7 +517,7 @@ export default function AddWorkModal({
             onClick={handleClose}
             className="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -527,11 +530,11 @@ export default function AddWorkModal({
           >
             {saving ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="animate-spin">⏳</span> Adding...
+                <span className="animate-spin">⏳</span> {t('common.adding')}
               </span>
             ) : (
               <span className="flex items-center justify-center gap-2">
-                ➕ Add Work
+                ➕ {t('action.addWork')}
               </span>
             )}
           </button>
