@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface PrincipalSetupGuideProps {
   isVisible: boolean;
@@ -38,33 +39,34 @@ export default function PrincipalSetupGuide({
   hasClassrooms,
   hasTeachers,
 }: PrincipalSetupGuideProps) {
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  const steps: StepConfig[] = [
+  const getSteps = (): StepConfig[] => [
     // === Wizard Step 1: Classrooms ===
     {
       key: 'welcome-setup',
       target: null,
-      message: "Let's set up your school! Add your classrooms first — you can always add more later.",
-      buttonText: "Let's go!",
+      message: t('principal.guide.welcomeSetup'),
+      buttonText: t('principal.guide.letsGo'),
       showGPB: false,
       wizardStep: 1,
     },
     {
       key: 'add-classroom',
       target: '[data-guide="add-classroom-btn"]',
-      message: 'Tap here to add a classroom. Give it a name, pick an icon and a colour!',
-      buttonText: 'Got it!',
+      message: t('principal.guide.addClassroomMsg'),
+      buttonText: t('principal.guide.gotIt'),
       showGPB: true,
       wizardStep: 1,
     },
     {
       key: 'continue-teachers',
       target: '[data-guide="continue-teachers-btn"]',
-      message: "Once you've added your classrooms, tap here to assign teachers.",
-      buttonText: 'Got it!',
+      message: t('principal.guide.continueTeachersMsg'),
+      buttonText: t('principal.guide.gotIt'),
       showGPB: true,
       wizardStep: 1,
     },
@@ -72,16 +74,16 @@ export default function PrincipalSetupGuide({
     {
       key: 'teachers-intro',
       target: null,
-      message: 'Now assign a teacher to each classroom.',
-      buttonText: 'Got it!',
+      message: t('principal.guide.teachersIntro'),
+      buttonText: t('principal.guide.gotIt'),
       showGPB: false,
       wizardStep: 2,
     },
     {
       key: 'teacher-name',
       target: '[data-guide="teacher-name-first"]',
-      message: "Type their name — email is optional.",
-      buttonText: 'Got it!',
+      message: t('principal.guide.typeNameMsg'),
+      buttonText: t('principal.guide.gotIt'),
       showGPB: true,
       delayMs: 400,
       wizardStep: 2,
@@ -89,8 +91,8 @@ export default function PrincipalSetupGuide({
     {
       key: 'complete-setup',
       target: '[data-guide="complete-setup-btn"]',
-      message: "Ready? Tap here and we'll create everything — classrooms, 329 Montessori activities, and login codes for every teacher.",
-      buttonText: 'Got it!',
+      message: t('principal.guide.completeSetupMsg'),
+      buttonText: t('principal.guide.gotIt'),
       showGPB: true,
       wizardStep: 2,
     },
@@ -98,8 +100,8 @@ export default function PrincipalSetupGuide({
     {
       key: 'setup-complete',
       target: '[data-guide="setup-overview"]',
-      message: "You're live! Copy these codes and share them in your teachers' group chat.",
-      buttonText: 'Amazing!',
+      message: t('principal.guide.setupCompleteMsg'),
+      buttonText: t('principal.guide.amazing'),
       showGPB: true,
       delayMs: 600,
       wizardStep: 3,
@@ -107,12 +109,14 @@ export default function PrincipalSetupGuide({
     {
       key: 'go-dashboard',
       target: '[data-guide="go-dashboard-btn"]',
-      message: "Let's head to your dashboard — I'll show you around.",
-      buttonText: "Let's go!",
+      message: t('principal.guide.goToDashboardMsg'),
+      buttonText: t('principal.guide.letsGo'),
       showGPB: true,
       wizardStep: 3,
     },
   ];
+
+  const steps = getSteps();
 
   // When wizardStep changes, jump to the first guide step for that wizard step
   const prevWizardStep = useRef(wizardStep);
@@ -124,7 +128,7 @@ export default function PrincipalSetupGuide({
         setStep(firstStepForWizard);
       }
     }
-  }, [wizardStep]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [wizardStep, steps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentStep = steps[step];
 
@@ -351,7 +355,7 @@ export default function PrincipalSetupGuide({
                 fontWeight: 500,
               }}
             >
-              ← Back
+              ← {t('principal.guide.back')}
             </button>
           ) : (
             <span />
@@ -369,7 +373,7 @@ export default function PrincipalSetupGuide({
               padding: 0,
             }}
           >
-            Skip tour
+            {t('principal.guide.skipTour')}
           </button>
 
           <button

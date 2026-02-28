@@ -7,6 +7,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface PrincipalAdminGuideProps {
   principalName?: string;
@@ -30,6 +31,7 @@ interface StepConfig {
 }
 
 export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGuideProps) {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const [step, setStep] = useState(() => {
@@ -44,13 +46,13 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
 
   const firstName = principalName ? principalName.split(' ')[0] : '';
 
-  const steps: StepConfig[] = [
+  const getSteps = (): StepConfig[] => [
     // === Step 0: Overview intro ===
     {
       key: 'overview-intro',
       target: '[data-guide="first-classroom"]',
-      message: 'This is an overview of your school. Tap on a classroom to look inside.',
-      buttonText: 'Got it!',
+      message: t('principal.adminGuide.overviewIntro'),
+      buttonText: t('principal.adminGuide.gotIt'),
       showGPB: true,
       page: 'overview',
       onAdvance: 'navigate-first-classroom',
@@ -59,8 +61,8 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
     {
       key: 'classroom-students',
       target: '[data-guide="first-student"]',
-      message: 'Tap on a student to see their overview and generate a report for the parent.',
-      buttonText: 'Got it!',
+      message: t('principal.adminGuide.classroomStudents'),
+      buttonText: t('principal.adminGuide.gotIt'),
       showGPB: true,
       page: 'classroom',
       delayMs: 500,
@@ -70,8 +72,8 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
     {
       key: 'guru-tab',
       target: '[data-guide="nav-guru"]',
-      message: 'Ask the Guru anything a parent might ask you. It looks through the child\'s history, progress, and teacher notes — and gives you the best parent-friendly answer on the spot.',
-      buttonText: 'Got it!',
+      message: t('principal.adminGuide.guruTab'),
+      buttonText: t('principal.adminGuide.gotIt'),
       showGPB: true,
       page: 'overview',
       delayMs: 400,
@@ -80,13 +82,15 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
     {
       key: 'farewell',
       target: null,
-      message: `That's it${firstName ? `, Principal ${firstName}` : ''}! I left all the technical stuff to the teachers and gave you just what you need. Best of luck with your upgrade — don't hesitate to reach out if you have any questions or requests!`,
-      buttonText: 'Done!',
+      message: t('principal.adminGuide.farewell').replace('{name}', firstName ? `, Principal ${firstName}` : ''),
+      buttonText: t('principal.adminGuide.done'),
       showGPB: false,
       page: 'any',
       onAdvance: 'complete',
     },
   ];
+
+  const steps = getSteps();
 
   // Determine which page we're on
   const currentPageType = (): 'overview' | 'classroom' | 'student' | 'guru' | 'other' => {
@@ -345,7 +349,7 @@ export default function PrincipalAdminGuide({ principalName }: PrincipalAdminGui
               padding: 0,
             }}
           >
-            Skip tour
+            {t('principal.adminGuide.skipTour')}
           </button>
 
           <button

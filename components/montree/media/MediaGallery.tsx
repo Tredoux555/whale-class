@@ -7,6 +7,7 @@
 import React from 'react';
 import MediaCard from './MediaCard';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface MediaGalleryProps {
   media: MontreeMedia[];
@@ -41,6 +42,7 @@ export default function MediaGallery({
   selectionMode = false,
   showActions = true,
 }: MediaGalleryProps) {
+  const { t } = useI18n();
   // Build child name lookup
   const childNameMap = React.useMemo(() => {
     const map: Record<string, string> = {};
@@ -67,7 +69,7 @@ export default function MediaGallery({
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-400">
         <div className="text-5xl mb-4">{emptyIcon}</div>
-        <p className="text-lg">{emptyMessage}</p>
+        <p className="text-lg">{emptyMessage || t('media.noPhotos')}</p>
       </div>
     );
   }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Photo {
   id: string;
@@ -30,6 +31,7 @@ export default function PhotoSelectionModal({
   childId,
   isSaving = false,
 }: PhotoSelectionModalProps) {
+  const { t } = useI18n();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(currentPhotos.map(p => p.id))
   );
@@ -51,10 +53,10 @@ export default function PhotoSelectionModal({
     setSaving(true);
     try {
       await onSave(Array.from(selectedIds));
-      toast.success('Photos updated!');
+      toast.success(t('photoSelection.photosUpdated'));
       onClose();
     } catch (error) {
-      toast.error('Failed to update photos');
+      toast.error(t('photoSelection.failedToUpdate'));
       console.error(error);
     } finally {
       setSaving(false);
@@ -79,8 +81,8 @@ export default function PhotoSelectionModal({
         <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-cyan-600 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-lg">📸 Edit Report Photos</h3>
-              <p className="text-blue-100 text-sm">Select photos to include in this report</p>
+              <h3 className="font-bold text-lg">📸 {t('photoSelection.editReportPhotos')}</h3>
+              <p className="text-blue-100 text-sm">{t('photoSelection.selectPhotosToInclude')}</p>
             </div>
             <button
               onClick={onClose}
@@ -98,7 +100,7 @@ export default function PhotoSelectionModal({
           {currentlySelected.length > 0 && (
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                ✅ In Report ({currentlySelected.length})
+                ✅ {t('photoSelection.inReport')} ({currentlySelected.length})
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {currentlySelected.map(photo => (
@@ -139,7 +141,7 @@ export default function PhotoSelectionModal({
           {notSelected.length > 0 && (
             <div className="space-y-3">
               <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                ○ Available ({notSelected.length})
+                ○ {t('photoSelection.available')} ({notSelected.length})
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 {notSelected.map(photo => (
@@ -180,8 +182,8 @@ export default function PhotoSelectionModal({
           {allPhotos.length === 0 && (
             <div className="text-center py-12">
               <span className="text-4xl mb-3 block">📸</span>
-              <p className="text-gray-600 font-medium">No photos available</p>
-              <p className="text-gray-400 text-sm mt-1">Capture some photos from the Week view first</p>
+              <p className="text-gray-600 font-medium">{t('photoSelection.noPhotosAvailable')}</p>
+              <p className="text-gray-400 text-sm mt-1">{t('photoSelection.capturePhotosFirst')}</p>
             </div>
           )}
         </div>
@@ -193,14 +195,14 @@ export default function PhotoSelectionModal({
             disabled={saving}
             className="flex-1 py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:opacity-50"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || selectedIds.size === 0}
             className="flex-1 py-3 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50"
           >
-            {saving ? '⏳ Saving...' : `✓ Save (${selectedIds.size})`}
+            {saving ? `⏳ ${t('common.saving')}` : `✓ ${t('common.save')} (${selectedIds.size})`}
           </button>
         </div>
       </div>

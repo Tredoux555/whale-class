@@ -4,6 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 import { getConcernById } from '@/lib/montree/guru/concern-mappings';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 
@@ -15,6 +16,7 @@ interface ConcernDetailModalProps {
 }
 
 export default function ConcernDetailModal({ childId, childName, concernId, onClose }: ConcernDetailModalProps) {
+  const { t } = useI18n();
   const [guide, setGuide] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,12 +35,12 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
         if (data.success) {
           setGuide(data.guide);
         } else {
-          setError(data.error || 'Failed to load guide');
+          setError(data.error || t('guru.failedLoadGuide'));
         }
         setLoading(false);
       })
       .catch(() => {
-        setError('Something went wrong. Please try again.');
+        setError(t('guru.somethingWentWrong'));
         setLoading(false);
       });
   }, [childId, concernId]);
@@ -124,7 +126,7 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
             <span className="text-xl">{concern?.icon}</span>
             <span className="font-bold text-lg truncate">{concern?.title}</span>
           </div>
-          <p className="text-emerald-300 text-sm">Personalized guide for {childName}</p>
+          <p className="text-emerald-300 text-sm">{t('guru.personalizedGuideFor').replace('{name}', childName)}</p>
         </div>
       </div>
 
@@ -134,10 +136,10 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-bounce text-4xl mb-4">🌿</div>
             <p className={`${HOME_THEME.headingText} font-medium`}>
-              Creating {childName}&apos;s personalized guide...
+              {t('guru.creatingGuide').replace('{name}', childName)}
             </p>
             <p className={`text-sm ${HOME_THEME.subtleText} mt-1`}>
-              This takes a few seconds
+              {t('guru.takesFewSeconds')}
             </p>
           </div>
         )}
@@ -161,7 +163,7 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
               }}
               className={`mt-4 px-6 py-2 rounded-full ${HOME_THEME.primaryBtn} text-sm font-medium`}
             >
-              Try Again
+              {t('common.tryAgain')}
             </button>
           </div>
         )}

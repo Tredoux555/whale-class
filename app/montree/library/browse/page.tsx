@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -23,6 +24,7 @@ function getPhotoUrl(photo: any) {
 }
 
 export default function LibraryBrowsePage() {
+  const { t } = useI18n();
   const [works, setWorks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedWork, setExpandedWork] = useState(null);
@@ -141,13 +143,13 @@ export default function LibraryBrowsePage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <Link href="/montree/library" className="text-emerald-400/60 text-xs hover:text-emerald-300 transition-colors">← Library</Link>
-              <h1 className="text-lg font-bold text-white mt-0.5">Browse Works</h1>
+              <h1 className="text-lg font-bold text-white mt-0.5">{t('library.browseWorks')}</h1>
             </div>
             <Link
               href="/montree/library/upload"
               className="bg-emerald-500/90 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
             >
-              + Share a Work
+              + {t('library.shareWork')}
             </Link>
           </div>
 
@@ -162,7 +164,7 @@ export default function LibraryBrowsePage() {
                 onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); setSearchFocusIdx(-1); }}
                 onFocus={() => { if (searchQuery.trim()) setSearchOpen(true); }}
                 onKeyDown={handleSearchKeyDown}
-                placeholder="Search across all areas..."
+                placeholder={t('library.searchPlaceholder')}
                 className="bg-transparent outline-none text-sm text-white placeholder-white/30 flex-1"
               />
               {searchQuery && (
@@ -174,7 +176,7 @@ export default function LibraryBrowsePage() {
             {searchOpen && searchQuery.trim() && (
               <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
                 {searchResults.length === 0 ? (
-                  <div className="px-4 py-3 text-sm text-gray-400 text-center">No works found</div>
+                  <div className="px-4 py-3 text-sm text-gray-400 text-center">{t('library.noWorksFound')}</div>
                 ) : (
                   <div className="max-h-72 overflow-y-auto">
                     {searchResults.map((r, i) => (
@@ -253,7 +255,7 @@ export default function LibraryBrowsePage() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-emerald-500 animate-spin" />
-            <p className="text-sm text-gray-400 mt-3">Loading works...</p>
+            <p className="text-sm text-gray-400 mt-3">{t('library.loadingWorks')}</p>
           </div>
         ) : currentWorks.length === 0 ? (
           <div className="text-center py-16">
@@ -262,23 +264,23 @@ export default function LibraryBrowsePage() {
             </div>
             {searchQuery ? (
               <>
-                <p className="text-gray-500 font-medium">No results in {cfg.name}</p>
-                <p className="text-gray-400 text-sm mt-1">Try a different search term or check other areas</p>
+                <p className="text-gray-500 font-medium">{t('library.noResultsIn').replace('{area}', cfg.name)}</p>
+                <p className="text-gray-400 text-sm mt-1">{t('library.tryDifferentSearch')}</p>
               </>
             ) : activeTab === 'miscellaneous' ? (
               <>
-                <p className="text-gray-500 font-medium">Nothing here yet</p>
-                <p className="text-gray-400 text-sm mt-1 max-w-xs mx-auto">This is a catch-all for uploads that don&apos;t fit the 5 Montessori areas. Share anything!</p>
+                <p className="text-gray-500 font-medium">{t('library.nothingHere')}</p>
+                <p className="text-gray-400 text-sm mt-1 max-w-xs mx-auto">{t('library.miscellaneousDescription')}</p>
                 <Link href="/montree/library/upload" className="inline-block mt-4 px-5 py-2 bg-slate-600 text-white rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors">
-                  + Upload Something
+                  + {t('library.uploadSomething')}
                 </Link>
               </>
             ) : (
               <>
-                <p className="text-gray-500 font-medium">No {cfg.name} works yet</p>
-                <p className="text-gray-400 text-sm mt-1">Be the first to share one!</p>
+                <p className="text-gray-500 font-medium">{t('library.noWorksYet').replace('{area}', cfg.name)}</p>
+                <p className="text-gray-400 text-sm mt-1">{t('library.beFirstToShare')}</p>
                 <Link href="/montree/library/upload" className="inline-block mt-4 px-5 py-2 rounded-lg text-sm font-medium text-white transition-colors" style={{ backgroundColor: cfg.color }}>
-                  + Share a {cfg.short} Work
+                  + {t('library.shareWorkArea').replace('{area}', cfg.short)}
                 </Link>
               </>
             )}
@@ -297,9 +299,9 @@ export default function LibraryBrowsePage() {
               <div className="flex-1">
                 <h2 className="text-lg font-bold text-gray-900">{cfg.name}</h2>
                 <p className="text-xs text-gray-400">
-                  {currentWorks.length} work{currentWorks.length !== 1 ? 's' : ''}
-                  {searchQuery && ` matching "${searchQuery}"`}
-                  {' · '}{Object.keys(byCategory).length} categor{Object.keys(byCategory).length !== 1 ? 'ies' : 'y'}
+                  {currentWorks.length} {t('library.work').replace('{count}', currentWorks.length.toString()).split(' ')[currentWorks.length !== 1 ? 1 : 0]}
+                  {searchQuery && ` ${t('library.matching')} "${searchQuery}"`}
+                  {' · '}{Object.keys(byCategory).length} {t('library.category').replace('{count}', Object.keys(byCategory).length.toString()).split(' ')[Object.keys(byCategory).length !== 1 ? 1 : 0]}
                 </p>
               </div>
             </div>
@@ -351,13 +353,13 @@ export default function LibraryBrowsePage() {
                             <p className="font-semibold text-gray-900 text-sm truncate">{work.title}</p>
                             <div className="flex items-center gap-2 mt-0.5">
                               {work.age_range && (
-                                <span className="text-[10px] text-gray-400">Ages {work.age_range}</span>
+                                <span className="text-[10px] text-gray-400">{t('library.ages')} {work.age_range}</span>
                               )}
                               {work.photos?.length > 0 && (
                                 <span className="text-[10px] text-gray-300">📷 {work.photos.length}</span>
                               )}
                               {work.ai_guide && (
-                                <span className="text-[10px] text-emerald-400">✨ Guide</span>
+                                <span className="text-[10px] text-emerald-400">✨ {t('library.guide')}</span>
                               )}
                             </div>
                           </div>
@@ -396,7 +398,7 @@ export default function LibraryBrowsePage() {
                             {/* Materials chips */}
                             {work.materials?.length > 0 && (
                               <div>
-                                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Materials</p>
+                                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">{t('library.materials')}</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {work.materials.map((m, i) => (
                                     <span key={i} className="px-2.5 py-1 rounded-full text-xs font-medium border" style={{ backgroundColor: cfg.bgLight, borderColor: cfg.color + '20', color: cfg.color }}>
@@ -410,7 +412,7 @@ export default function LibraryBrowsePage() {
                             {/* Aims */}
                             {work.direct_aims?.length > 0 && (
                               <div>
-                                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">What children learn</p>
+                                <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">{t('library.whatChildrenLearn')}</p>
                                 <div className="space-y-1">
                                   {work.direct_aims.map((a, i) => (
                                     <div key={i} className="flex items-start gap-2">
@@ -426,7 +428,7 @@ export default function LibraryBrowsePage() {
                             <div className="flex items-center justify-between pt-1">
                               {work.contributor_name && (
                                 <p className="text-xs text-gray-400">
-                                  Shared by <span className="text-gray-500">{work.contributor_name}</span>
+                                  {t('library.sharedBy')} <span className="text-gray-500">{work.contributor_name}</span>
                                   {work.contributor_country ? ` · ${work.contributor_country}` : ''}
                                 </p>
                               )}
@@ -435,7 +437,7 @@ export default function LibraryBrowsePage() {
                                 className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors"
                                 style={{ backgroundColor: cfg.color }}
                               >
-                                Full Details
+                                {t('library.fullDetails')}
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                               </Link>
                             </div>

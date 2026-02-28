@@ -28,11 +28,12 @@ type FlowStep = 'select-child' | 'camera' | 'uploading' | 'success' | 'error';
 // ============================================
 
 function CaptureLoading() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
       <div className="flex flex-col items-center">
         <div className="animate-spin rounded-full h-10 w-10 border-4 border-emerald-500 border-t-transparent mb-4" />
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">{t('common.loading')}</p>
       </div>
     </div>
   );

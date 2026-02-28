@@ -7,6 +7,7 @@
 
 import React, { useState, useMemo } from 'react';
 import type { MontreeChild } from '@/lib/montree/media/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================
 // TYPES
@@ -35,6 +36,7 @@ export default function ChildSelector({
   showSearch = true,
   maxHeight = '400px',
 }: ChildSelectorProps) {
+  const { t } = useI18n();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter children by search query
@@ -76,7 +78,7 @@ export default function ChildSelector({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent mb-3" />
-        <p>Loading children...</p>
+        <p>{t('childSelector.loading')}</p>
       </div>
     );
   }
@@ -86,7 +88,7 @@ export default function ChildSelector({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-gray-400">
         <div className="text-4xl mb-3">👶</div>
-        <p>No children found</p>
+        <p>{t('childSelector.notFound')}</p>
       </div>
     );
   }
@@ -99,7 +101,7 @@ export default function ChildSelector({
           <div className="relative">
             <input
               type="text"
-              placeholder="Search by name..."
+              placeholder={t('childSelector.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
@@ -123,13 +125,13 @@ export default function ChildSelector({
       {multiSelect && filteredChildren.length > 0 && (
         <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
           <span className="text-sm text-gray-500">
-            {selectedIds.length} of {filteredChildren.length} selected
+            {t('childSelector.selected').replace('{count}', selectedIds.length.toString()).replace('{total}', filteredChildren.length.toString())}
           </span>
           <button
             onClick={handleSelectAll}
             className="text-sm text-blue-500 hover:text-blue-600 font-medium"
           >
-            {selectedIds.length === filteredChildren.length ? 'Deselect All' : 'Select All'}
+            {selectedIds.length === filteredChildren.length ? t('childSelector.deselectAll') : t('childSelector.selectAll')}
           </button>
         </div>
       )}
@@ -141,7 +143,7 @@ export default function ChildSelector({
       >
         {filteredChildren.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
-            No matches for "{searchQuery}"
+            {t('childSelector.noMatches').replace('{query}', searchQuery)}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">

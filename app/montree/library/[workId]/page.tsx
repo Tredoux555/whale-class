@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 
@@ -27,6 +28,7 @@ function getMediaUrl(path: string) {
 }
 
 export default function WorkDetailPage() {
+  const { t } = useI18n();
   const { workId } = useParams();
   const [work, setWork] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,8 +68,8 @@ export default function WorkDetailPage() {
     setInjecting(false);
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">Loading...</div>;
-  if (!work) return <div className="min-h-screen flex items-center justify-center text-gray-400">Work not found</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center text-gray-400">{t('work.loading')}</div>;
+  if (!work) return <div className="min-h-screen flex items-center justify-center text-gray-400">{t('work.not_found')}</div>;
 
   const cfg = AREA_CONFIG[work.area] || AREA_CONFIG.practical_life;
   const photos = work.photos || [];
@@ -81,7 +83,7 @@ export default function WorkDetailPage() {
       <header className="bg-[#0D3330] text-white px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
           <Link href="/montree/library" className="text-emerald-300 hover:underline text-sm">
-            ← Library
+            ← {t('work.library')}
           </Link>
           <span className="text-white/30">|</span>
           <span
@@ -159,21 +161,21 @@ export default function WorkDetailPage() {
 
           {/* Stats */}
           <div className="flex gap-4 mt-3 text-sm text-gray-500">
-            <span>{work.view_count || 0} views</span>
-            <span>{work.download_count || 0} downloads</span>
-            <span>{work.inject_count || 0} added to classrooms</span>
+            <span>{work.view_count || 0} {t('work.views')}</span>
+            <span>{work.download_count || 0} {t('work.downloads')}</span>
+            <span>{work.inject_count || 0} {t('work.added_classrooms')}</span>
           </div>
 
           {/* Description */}
           <div className="mt-6">
-            <h2 className="font-semibold text-gray-900 text-lg">Description</h2>
+            <h2 className="font-semibold text-gray-900 text-lg">{t('work.description')}</h2>
             <p className="text-gray-700 mt-2 whitespace-pre-wrap">{work.description}</p>
           </div>
 
           {/* Detailed description */}
           {work.detailed_description && (
             <div className="mt-6">
-              <h2 className="font-semibold text-gray-900 text-lg">Detailed Guide</h2>
+              <h2 className="font-semibold text-gray-900 text-lg">{t('work.detailed_guide')}</h2>
               <p className="text-gray-700 mt-2 whitespace-pre-wrap">{work.detailed_description}</p>
             </div>
           )}
@@ -183,7 +185,7 @@ export default function WorkDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
           {work.materials?.length > 0 && (
             <div className="bg-white rounded-xl p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-2">Materials Needed</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{t('work.materials_needed')}</h3>
               <ul className="space-y-1">
                 {work.materials.map((m, i) => (
                   <li key={i} className="text-gray-700 text-sm flex items-start gap-2">
@@ -196,7 +198,7 @@ export default function WorkDetailPage() {
 
           {work.direct_aims?.length > 0 && (
             <div className="bg-white rounded-xl p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-2">What Children Learn</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{t('work.what_children_learn')}</h3>
               <ul className="space-y-1">
                 {work.direct_aims.map((a, i) => (
                   <li key={i} className="text-gray-700 text-sm flex items-start gap-2">
@@ -206,7 +208,7 @@ export default function WorkDetailPage() {
               </ul>
               {work.indirect_aims?.length > 0 && (
                 <>
-                  <h4 className="font-medium text-gray-600 text-sm mt-3 mb-1">Indirect Benefits</h4>
+                  <h4 className="font-medium text-gray-600 text-sm mt-3 mb-1">{t('work.indirect_benefits')}</h4>
                   <ul className="space-y-1">
                     {work.indirect_aims.map((a, i) => (
                       <li key={i} className="text-gray-500 text-sm flex items-start gap-2">
@@ -221,14 +223,14 @@ export default function WorkDetailPage() {
 
           {work.control_of_error && (
             <div className="bg-white rounded-xl p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-2">Control of Error</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{t('work.control_of_error')}</h3>
               <p className="text-gray-700 text-sm">{work.control_of_error}</p>
             </div>
           )}
 
           {work.prerequisites?.length > 0 && (
             <div className="bg-white rounded-xl p-5 shadow-sm">
-              <h3 className="font-semibold text-gray-900 mb-2">Prerequisites</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">{t('work.prerequisites')}</h3>
               <ul className="space-y-1">
                 {work.prerequisites.map((p, i) => (
                   <li key={i} className="text-gray-700 text-sm flex items-start gap-2">
@@ -243,7 +245,7 @@ export default function WorkDetailPage() {
         {/* Presentation Steps */}
         {work.presentation_steps?.length > 0 && (
           <div className="bg-white rounded-xl p-6 shadow-sm mt-4">
-            <h2 className="font-semibold text-gray-900 text-lg mb-3">Presentation Steps</h2>
+            <h2 className="font-semibold text-gray-900 text-lg mb-3">{t('work.presentation_steps')}</h2>
             <ol className="space-y-3">
               {work.presentation_steps.map((step, i) => (
                 <li key={i} className="flex gap-3">
@@ -254,7 +256,7 @@ export default function WorkDetailPage() {
                     {step.title && <p className="font-medium text-gray-900">{step.title}</p>}
                     <p className="text-gray-700 text-sm">{step.instruction || step}</p>
                     {step.teacher_says && (
-                      <p className="text-emerald-700 text-sm mt-1 italic">Say: "{step.teacher_says}"</p>
+                      <p className="text-emerald-700 text-sm mt-1 italic">{t('work.say')}: "{step.teacher_says}"</p>
                     )}
                   </div>
                 </li>
@@ -268,12 +270,12 @@ export default function WorkDetailPage() {
           <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 shadow-sm mt-4 border border-emerald-100">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">🧠</span>
-              <h2 className="font-semibold text-gray-900 text-lg">AI Presentation Guide</h2>
+              <h2 className="font-semibold text-gray-900 text-lg">{t('work.ai_guide')}</h2>
             </div>
 
             {guide.presentation_steps?.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-medium text-gray-800 mb-2">Step-by-Step Presentation</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t('work.step_by_step')}</h3>
                 <ol className="space-y-2">
                   {guide.presentation_steps.map((step, i) => (
                     <li key={i} className="flex gap-3 text-sm">
@@ -284,7 +286,7 @@ export default function WorkDetailPage() {
                         {step.title && <p className="font-medium text-gray-800">{step.title}</p>}
                         <p className="text-gray-700">{step.instruction}</p>
                         {step.teacher_says && (
-                          <p className="text-emerald-700 mt-1 italic">"{step.teacher_says}"</p>
+                          <p className="text-emerald-700 mt-1 italic">{t('work.say')}: "{step.teacher_says}"</p>
                         )}
                       </div>
                     </li>
@@ -295,7 +297,7 @@ export default function WorkDetailPage() {
 
             {guide.tips?.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-medium text-gray-800 mb-2">Tips</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t('work.tips')}</h3>
                 <ul className="space-y-1">
                   {guide.tips.map((t, i) => (
                     <li key={i} className="text-sm text-gray-700">💡 {t}</li>
@@ -306,7 +308,7 @@ export default function WorkDetailPage() {
 
             {guide.common_mistakes?.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-medium text-gray-800 mb-2">Common Mistakes to Avoid</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t('work.common_mistakes')}</h3>
                 <ul className="space-y-1">
                   {guide.common_mistakes.map((m, i) => (
                     <li key={i} className="text-sm text-gray-700">⚠️ {m}</li>
@@ -317,7 +319,7 @@ export default function WorkDetailPage() {
 
             {guide.materials_sourcing?.length > 0 && (
               <div className="mb-4">
-                <h3 className="font-medium text-gray-800 mb-2">Where to Find Materials</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t('work.find_materials')}</h3>
                 <ul className="space-y-1">
                   {guide.materials_sourcing.map((s, i) => (
                     <li key={i} className="text-sm text-gray-700">🛒 {s}</li>
@@ -328,7 +330,7 @@ export default function WorkDetailPage() {
 
             {guide.parent_friendly_summary && (
               <div className="mt-4 p-3 bg-white/60 rounded-lg">
-                <h3 className="font-medium text-gray-800 mb-1 text-sm">Parent-Friendly Summary</h3>
+                <h3 className="font-medium text-gray-800 mb-1 text-sm">{t('work.parent_summary')}</h3>
                 <p className="text-sm text-gray-700">{guide.parent_friendly_summary}</p>
               </div>
             )}
@@ -338,11 +340,11 @@ export default function WorkDetailPage() {
         {/* Videos */}
         {videos.length > 0 && (
           <div className="bg-white rounded-xl p-6 shadow-sm mt-4">
-            <h2 className="font-semibold text-gray-900 text-lg mb-3">Videos</h2>
+            <h2 className="font-semibold text-gray-900 text-lg mb-3">{t('work.videos')}</h2>
             <div className="space-y-3">
               {videos.map((v, i) => (
                 <video key={i} controls className="w-full rounded-lg" src={getMediaUrl(v.storage_path)}>
-                  Your browser does not support the video tag.
+                  {t('work.video_not_supported')}
                 </video>
               ))}
             </div>
@@ -352,7 +354,7 @@ export default function WorkDetailPage() {
         {/* PDFs */}
         {pdfs.length > 0 && (
           <div className="bg-white rounded-xl p-6 shadow-sm mt-4">
-            <h2 className="font-semibold text-gray-900 text-lg mb-3">Downloadable Files</h2>
+            <h2 className="font-semibold text-gray-900 text-lg mb-3">{t('work.downloadable_files')}</h2>
             <div className="space-y-2">
               {pdfs.map((p, i) => (
                 <a
@@ -364,7 +366,7 @@ export default function WorkDetailPage() {
                 >
                   <span className="text-2xl">📄</span>
                   <div>
-                    <p className="font-medium text-gray-900 text-sm">{p.filename || 'Download PDF'}</p>
+                    <p className="font-medium text-gray-900 text-sm">{p.filename || t('work.download_pdf')}</p>
                     {p.description && <p className="text-gray-500 text-xs">{p.description}</p>}
                   </div>
                 </a>
@@ -378,7 +380,7 @@ export default function WorkDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             {work.variations?.length > 0 && (
               <div className="bg-white rounded-xl p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Variations</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">{t('work.variations')}</h3>
                 <ul className="space-y-1">
                   {work.variations.map((v, i) => (
                     <li key={i} className="text-gray-700 text-sm">🔄 {typeof v === 'string' ? v : v.description || JSON.stringify(v)}</li>
@@ -388,7 +390,7 @@ export default function WorkDetailPage() {
             )}
             {work.extensions?.length > 0 && (
               <div className="bg-white rounded-xl p-5 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-2">Extensions</h3>
+                <h3 className="font-semibold text-gray-900 mb-2">{t('work.extensions')}</h3>
                 <ul className="space-y-1">
                   {work.extensions.map((e, i) => (
                     <li key={i} className="text-gray-700 text-sm">🚀 {typeof e === 'string' ? e : e.description || JSON.stringify(e)}</li>
@@ -406,7 +408,7 @@ export default function WorkDetailPage() {
             className="flex-1 py-3 text-white rounded-xl font-medium text-lg transition-colors hover:opacity-90"
             style={{ backgroundColor: '#0D3330' }}
           >
-            Send to My Classroom
+            {t('work.send_to_classroom')}
           </button>
         </div>
       </div>
@@ -445,13 +447,13 @@ export default function WorkDetailPage() {
                 <div className="text-5xl mb-4">✅</div>
                 <h3 className="text-xl font-bold text-gray-900">{injectResult.message}</h3>
                 <button onClick={() => setShowInject(false)} className="mt-6 w-full py-3 bg-emerald-500 text-white rounded-xl font-medium">
-                  Done
+                  {t('common.done')}
                 </button>
               </div>
             ) : (
               <>
-                <h3 className="text-xl font-bold text-gray-900">Send to My Classroom</h3>
-                <p className="text-gray-500 mt-1">Enter your Montree teacher code:</p>
+                <h3 className="text-xl font-bold text-gray-900">{t('work.send_to_classroom')}</h3>
+                <p className="text-gray-500 mt-1">{t('work.enter_teacher_code')}</p>
                 <input
                   type="text"
                   value={teacherCode}
@@ -469,12 +471,12 @@ export default function WorkDetailPage() {
                   disabled={injecting || teacherCode.length < 4}
                   className="w-full mt-4 py-3 bg-[#0D3330] text-white rounded-xl font-medium disabled:opacity-50"
                 >
-                  {injecting ? 'Adding...' : 'Add to My Curriculum'}
+                  {injecting ? t('work.adding') : t('work.add_to_curriculum')}
                 </button>
                 <p className="text-center text-xs text-gray-400 mt-3">
-                  Don't have Montree? <Link href="/montree/try" className="text-emerald-600 underline">Try free</Link>
+                  {t('work.no_montree')} <Link href="/montree/try" className="text-emerald-600 underline">{t('work.try_free')}</Link>
                 </p>
-                <button onClick={() => setShowInject(false)} className="w-full mt-2 py-2 text-gray-500 text-sm">Cancel</button>
+                <button onClick={() => setShowInject(false)} className="w-full mt-2 py-2 text-gray-500 text-sm">{t('common.cancel')}</button>
               </>
             )}
           </div>

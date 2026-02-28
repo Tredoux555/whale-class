@@ -2,6 +2,8 @@
 // Single chat message bubble for the Guru conversational thread
 'use client';
 
+import { useI18n } from '@/lib/montree/i18n';
+
 interface ChatAction {
   tool: string;
   success: boolean;
@@ -15,7 +17,7 @@ interface ChatBubbleProps {
   actions?: ChatAction[];
 }
 
-function formatRelativeTime(dateStr: string): string {
+function formatRelativeTime(dateStr: string, t: any): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -23,11 +25,11 @@ function formatRelativeTime(dateStr: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return 'Just now';
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return t('time.justNow');
+  if (diffMins < 60) return t('time.minutesAgo').replace('{minutes}', diffMins.toString());
+  if (diffHours < 24) return t('time.hoursAgo').replace('{hours}', diffHours.toString());
+  if (diffDays === 1) return t('time.yesterday');
+  if (diffDays < 7) return t('time.daysAgo').replace('{days}', diffDays.toString());
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
@@ -75,6 +77,7 @@ function renderInlineBold(text: string) {
 }
 
 export default function ChatBubble({ content, isUser, timestamp, actions }: ChatBubbleProps) {
+  const { t } = useI18n();
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {/* Guru avatar */}
@@ -117,7 +120,7 @@ export default function ChatBubble({ content, isUser, timestamp, actions }: Chat
 
         {timestamp && (
           <p className={`text-[10px] text-[#0D3330]/40 mt-1 ${isUser ? 'text-right' : 'text-left ml-1'}`}>
-            {formatRelativeTime(timestamp)}
+            {formatRelativeTime(timestamp, t)}
           </p>
         )}
       </div>

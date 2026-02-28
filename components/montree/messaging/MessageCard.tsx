@@ -4,6 +4,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Message {
   id: string;
@@ -30,6 +31,7 @@ export function MessageCard({
   onReply,
   isTeacher,
 }: MessageCardProps) {
+  const { t } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleCardClick = () => {
@@ -47,10 +49,10 @@ export function MessageCard({
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
 
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffMins < 1) return t('messaging.justNow');
+    if (diffMins < 60) return t('messaging.minutesAgo').replace('{m}', diffMins.toString());
+    if (diffHours < 24) return t('messaging.hoursAgo').replace('{h}', diffHours.toString());
+    if (diffDays < 7) return t('messaging.daysAgo').replace('{d}', diffDays.toString());
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -107,7 +109,7 @@ export function MessageCard({
                 {message.sender_name}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgeColor}`}>
-                {isFromTeacher ? 'Teacher' : 'Parent'}
+                {isFromTeacher ? t('messaging.teacher') : t('messaging.parent')}
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -162,7 +164,7 @@ export function MessageCard({
                 }}
                 className="flex-1 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-sm font-medium rounded-lg transition-colors duration-200"
               >
-                ↩️ Reply
+                ↩️ {t('messaging.reply')}
               </button>
             )}
           </div>

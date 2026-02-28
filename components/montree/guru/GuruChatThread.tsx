@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import ChatBubble from './ChatBubble';
 import ConcernPills from './ConcernPills';
 import GuruOnboardingPicker from './GuruOnboardingPicker';
@@ -32,6 +33,7 @@ export default function GuruChatThread({
   classroomId,
   onGuruLimitReached,
 }: GuruChatThreadProps) {
+  const { t } = useI18n();
   const [state, setState] = useState<'loading' | 'onboarding' | 'chat'>('loading');
   const [concerns, setConcerns] = useState<string[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -110,7 +112,7 @@ export default function GuruChatThread({
                 // Add a follow-up greeting bubble
                 chatMessages.push({
                   id: 'followup-greeting',
-                  content: `Welcome back! It's been a little while — how have things been going with ${firstName}? 🌿`,
+                  content: `${t('guru.welcomeBackGreeting').replace('{name}', firstName)} 🌿`,
                   isUser: false,
                   timestamp: new Date().toISOString(),
                 });
@@ -123,7 +125,7 @@ export default function GuruChatThread({
           if (!histData.history || histData.history.length === 0) {
             setMessages([{
               id: 'welcome',
-              content: `Hi there! I'm ${firstName}'s Montessori guide. I know what's on your mind — ask me anything and I'll give you practical, personalized advice. What's on your mind today? 🌿`,
+              content: `${t('guru.welcomeGreeting').replace('{name}', firstName)} 🌿`,
               isUser: false,
               timestamp: new Date().toISOString(),
             }]);
@@ -134,7 +136,7 @@ export default function GuruChatThread({
           setState('onboarding');
         }
       } catch {
-        toast.error('Failed to load chat');
+        toast.error(t('guru.errorLoadChat'));
         setState('onboarding');
       }
     };
@@ -148,8 +150,8 @@ export default function GuruChatThread({
 
     // Add welcome message referencing concerns
     const welcomeMsg = selectedConcerns.length > 0
-      ? `Thanks for sharing what's on your mind! I'll keep ${firstName}'s journey front and center as we chat. Ask me anything — about the concerns you picked, daily activities, or anything else. I'm here to help! 🌿`
-      : `Great, let's get started! Ask me anything about ${firstName}'s Montessori journey — daily activities, development questions, or specific works to try. I'm here for you! 🌿`;
+      ? `${t('guru.onboardingWelcomeWithConcerns').replace('{name}', firstName)} 🌿`
+      : `${t('guru.onboardingWelcomeNoConcerns').replace('{name}', firstName)} 🌿`;
 
     setMessages([{
       id: 'onboarding-welcome',
@@ -206,12 +208,12 @@ export default function GuruChatThread({
         setMessages(prev => [...prev, guruMsg]);
       } else if (data.error === 'guru_limit_reached') {
         onGuruLimitReached?.();
-        toast.error('You\'ve used all your free sessions. Upgrade for unlimited access.');
+        toast.error(t('guru.limitReachedUpgrade'));
       } else {
-        toast.error(data.error || 'Failed to get response');
+        toast.error(data.error || t('guru.failedResponse'));
       }
     } catch {
-      toast.error('Connection failed. Please try again.');
+      toast.error(t('guru.connectionFailed'));
     } finally {
       setSending(false);
     }
@@ -237,7 +239,7 @@ export default function GuruChatThread({
       <div className={`flex-1 flex items-center justify-center ${HOME_THEME.pageBg}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-2">🌿</div>
-          <p className={`text-sm ${HOME_THEME.subtleText}`}>Loading...</p>
+          <p className={`text-sm ${HOME_THEME.subtleText}`}>{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -264,7 +266,7 @@ export default function GuruChatThread({
             <span className="text-lg">🌿</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-white font-bold text-base">{firstName}&apos;s Guide</h2>
+            <h2 className="text-white font-bold text-base">{firstName} {t('guru.guide')}</h2>
             {concerns.length > 0 && (
               <div className="mt-1 opacity-90">
                 <ConcernPills concernIds={concerns} />
@@ -322,7 +324,7 @@ export default function GuruChatThread({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Ask about ${firstName}...`}
+              placeholder={t('guru.askPlaceholder').replace('{name}', firstName)}
               disabled={sending}
               rows={1}
               className={`w-full px-4 py-2.5 rounded-2xl border border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] text-sm placeholder:text-[#0D3330]/40 resize-none focus:outline-none focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10 disabled:opacity-50`}

@@ -19,4 +19,11 @@ export const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 // Token limits
 export const MAX_TOKENS = 2048;
 
-
+// Guru tier → model mapping
+export function getModelForTier(tier: 'haiku' | 'sonnet'): string {
+  switch (tier) {
+    case 'haiku': return HAIKU_MODEL;
+    case 'sonnet': return AI_MODEL;
+    default: return AI_MODEL;
+  }
+}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useI18n } from '@/lib/montree/i18n';
 import { QuickGuideData } from '@/components/montree/curriculum/types';
 
 export interface QuickGuideModalProps {
@@ -19,6 +20,7 @@ export default function QuickGuideModal({
   loading,
   onOpenFullDetails,
 }: QuickGuideModalProps) {
+  const { t } = useI18n();
 
   if (!isOpen) return null;
 
@@ -33,7 +35,7 @@ export default function QuickGuideModal({
       >
         <div className="p-4 border-b bg-gradient-to-r from-amber-500 to-yellow-500 text-white">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-lg">📖 Quick Guide</h3>
+            <h3 className="font-bold text-lg">📖 {t('modal.quickGuide')}</h3>
             <button
               onClick={onClose}
               className="text-white/80 hover:text-white text-2xl"
@@ -48,13 +50,13 @@ export default function QuickGuideModal({
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-bounce text-3xl mb-2">📖</div>
-              <p className="text-gray-500">Loading guide...</p>
+              <p className="text-gray-500">{t('common.loadingGuide')}</p>
             </div>
           ) : guideData?.quick_guide ? (
             <div className="space-y-4">
               {/* Quick Guide Content */}
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-xl border border-amber-200">
-                <p className="font-bold text-amber-800 mb-2">⚡ 10-Second Guide</p>
+                <p className="font-bold text-amber-800 mb-2">⚡ {t('modal.tenSecondGuide')}</p>
                 <div className="text-sm text-amber-900 space-y-2">
                   {guideData.quick_guide.split('\n').map((line: string, i: number) => (
                     <p key={i} className="leading-relaxed">{line}</p>
@@ -65,7 +67,7 @@ export default function QuickGuideModal({
               {/* Materials if available */}
               {guideData.materials?.length > 0 && (
                 <div className="bg-gray-50 p-3 rounded-xl">
-                  <p className="font-semibold text-gray-700 text-sm mb-1">🧰 Materials</p>
+                  <p className="font-semibold text-gray-700 text-sm mb-1">🧰 {t('common.materials')}</p>
                   <ul className="text-sm text-gray-600">
                     {guideData.materials.map((m: string, i: number) => (
                       <li key={i}>• {m}</li>
@@ -76,8 +78,8 @@ export default function QuickGuideModal({
             </div>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">No quick guide available yet for this work.</p>
-              <p className="text-sm text-gray-400">Check the curriculum page for more details.</p>
+              <p className="text-gray-500 mb-4">{t('modal.noGuideAvailable')}</p>
+              <p className="text-sm text-gray-400">{t('modal.checkCurriculumPage')}</p>
             </div>
           )}
         </div>
@@ -89,14 +91,14 @@ export default function QuickGuideModal({
             onClick={() => window.open(`https://youtube.com/results?search_query=${encodeURIComponent(guideData?.video_search_term || workName + ' Montessori presentation')}`, '_blank')}
             className="flex-1 py-3 bg-red-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-600"
           >
-            🎬 Watch Video
+            🎬 {t('modal.watchVideo')}
           </button>
           <button
             data-guide="full-details-btn"
             onClick={() => onOpenFullDetails?.()}
             className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600"
           >
-            📚 Full Details
+            📚 {t('modal.fullDetails')}
           </button>
         </div>
       </div>

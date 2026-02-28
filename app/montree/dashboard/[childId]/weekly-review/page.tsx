@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================
 // TYPES
@@ -117,6 +118,7 @@ function getWeekBoundaries(date: Date = new Date()): { start: string; end: strin
 export default function WeeklyReviewPage() {
   const params = useParams();
   const childId = params.childId as string;
+  const { t } = useI18n();
 
   const [activeTab, setActiveTab] = useState<'teacher' | 'parent' | 'ai'>('teacher');
   const [loading, setLoading] = useState(true);
@@ -150,10 +152,10 @@ export default function WeeklyReviewPage() {
         setReports(data.reports);
         setChildName(data.analysis_summary?.child_name || '');
       } else {
-        toast.error(data.error || 'Failed to generate reports');
+        toast.error(data.error || t('weeklyReview.generateFailed'));
       }
     } catch (err) {
-      toast.error('Failed to fetch reports');
+      toast.error(t('weeklyReview.fetchFailed'));
     }
     setLoading(false);
   };
@@ -167,7 +169,7 @@ export default function WeeklyReviewPage() {
     setGenerating(true);
     await fetchReports();
     setGenerating(false);
-    toast.success('Reports regenerated!');
+    toast.success(t('weeklyReview.regenerated'));
   };
 
   // Week navigation
@@ -199,12 +201,12 @@ export default function WeeklyReviewPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(data.message || 'Parents notified!');
+        toast.success(data.message || t('weeklyReview.notified'));
       } else {
-        toast.error(data.error || 'Failed to notify');
+        toast.error(data.error || t('weeklyReview.notifyFailed'));
       }
     } catch {
-      toast.error('Failed to send notifications');
+      toast.error(t('weeklyReview.notificationsFailed'));
     }
     setNotifying(false);
   };
@@ -219,7 +221,7 @@ export default function WeeklyReviewPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl">📋</span>
-              <h1 className="font-bold text-slate-800">Weekly Review</h1>
+              <h1 className="font-bold text-slate-800">{t('weeklyReview.title')}</h1>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -261,9 +263,9 @@ export default function WeeklyReviewPage() {
         <div className="max-w-2xl mx-auto px-4">
           <div className="flex border-b">
             {[
-              { key: 'teacher', label: '📊 Teacher', color: 'blue' },
-              { key: 'parent', label: '💝 Parent', color: 'pink' },
-              { key: 'ai', label: '🧠 AI Analysis', color: 'purple' },
+              { key: 'teacher', label: `📊 ${t('weeklyReview.teacher')}`, color: 'blue' },
+              { key: 'parent', label: `💝 ${t('weeklyReview.parent')}`, color: 'pink' },
+              { key: 'ai', label: `🧠 ${t('weeklyReview.aiAnalysis')}`, color: 'purple' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -286,7 +288,7 @@ export default function WeeklyReviewPage() {
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-10 w-10 border-2 border-emerald-500 border-t-transparent mx-auto mb-3" />
-            <p className="text-slate-500">Generating reports...</p>
+            <p className="text-slate-500">{t('weeklyReview.generating')}</p>
           </div>
         ) : (
           <>
@@ -321,24 +323,24 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
 
       {/* Metrics */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📈 Metrics</h3>
+        <h3 className="font-semibold text-slate-700 mb-3">📈 {t('weeklyReview.metrics')}</h3>
         <div className="grid grid-cols-2 gap-3">
-          <MetricCard 
-            label="Total Works" 
-            value={report.metrics.total_works} 
+          <MetricCard
+            label={t('weeklyReview.totalWorks')}
+            value={report.metrics.total_works}
           />
-          <MetricCard 
-            label="Concentration" 
+          <MetricCard
+            label={t('weeklyReview.concentration')}
             value={`${report.metrics.concentration_score}/100`}
             subtext={report.metrics.concentration_assessment}
           />
-          <MetricCard 
-            label="Avg Duration" 
+          <MetricCard
+            label={t('weeklyReview.avgDuration')}
             value={report.metrics.avg_duration ? `${report.metrics.avg_duration.toFixed(0)} min` : 'N/A'}
-            subtext={`Expected: ${report.metrics.expected_duration} min`}
+            subtext={`${t('weeklyReview.expected')}: ${report.metrics.expected_duration} min`}
           />
-          <MetricCard 
-            label="Age" 
+          <MetricCard
+            label={t('weeklyReview.age')}
             value={`${report.child_age} yrs`}
           />
         </div>
@@ -346,7 +348,7 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
 
       {/* Area Breakdown */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📊 Area Balance</h3>
+        <h3 className="font-semibold text-slate-700 mb-3">📊 {t('weeklyReview.areaBalance')}</h3>
         <div className="space-y-2">
           {report.area_breakdown.map((area, i) => (
             <div key={i} className="flex items-center justify-between">
@@ -376,7 +378,7 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
       {/* Sensitive Periods */}
       {report.sensitive_periods.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🌱 Sensitive Periods</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">🌱 {t('weeklyReview.sensitivePeriods')}</h3>
           <div className="space-y-3">
             {report.sensitive_periods.map((sp, i) => (
               <div key={i} className="border-l-4 border-emerald-400 pl-3">
@@ -402,7 +404,7 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
       {/* Flags */}
       {report.flags.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">⚠️ Attention Needed</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">⚠️ {t('weeklyReview.attentionNeeded')}</h3>
           <div className="space-y-3">
             {report.flags.map((flag, i) => (
               <div 
@@ -425,7 +427,7 @@ function TeacherReportView({ report }: { report: TeacherReport }) {
       {/* Recommendations */}
       {report.recommendations.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">✨ Recommended Next</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">✨ {t('weeklyReview.recommendedNext')}</h3>
           <div className="space-y-2">
             {report.recommendations.slice(0, 5).map((rec, i) => (
               <div key={i} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
@@ -453,7 +455,7 @@ function ParentReportView({ report }: { report: ParentReport }) {
       {/* Greeting */}
       <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-6 shadow-sm border border-pink-100">
         <h2 className="text-xl font-bold text-rose-700 mb-2">
-          Hello, {report.child_name.split(' ')[0]}'s Family! 👋
+          {t('weeklyReview.greeting').replace('{childName}', report.child_name.split(' ')[0])}
         </h2>
         <p className="text-rose-600">{report.greeting}</p>
       </div>
@@ -461,7 +463,7 @@ function ParentReportView({ report }: { report: ParentReport }) {
       {/* Highlights */}
       {report.highlights.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🌟 This Week's Highlights</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">🌟 {t('weeklyReview.highlights')}</h3>
           <ul className="space-y-2">
             {report.highlights.map((h, i) => (
               <li key={i} className="flex items-start gap-2">
@@ -476,7 +478,7 @@ function ParentReportView({ report }: { report: ParentReport }) {
       {/* Areas Explored */}
       {report.areas_explored.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🎨 Areas Explored</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">🎨 {t('weeklyReview.areasExplored')}</h3>
           <div className="space-y-4">
             {report.areas_explored.map((area, i) => (
               <div key={i}>
@@ -500,7 +502,7 @@ function ParentReportView({ report }: { report: ParentReport }) {
 
       {/* Home Suggestions */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 shadow-sm border border-emerald-100">
-        <h3 className="font-semibold text-emerald-700 mb-3">🏠 At Home Ideas</h3>
+        <h3 className="font-semibold text-emerald-700 mb-3">🏠 {t('weeklyReview.homeIdeas')}</h3>
         <ul className="space-y-2">
           {report.home_suggestions.map((s, i) => (
             <li key={i} className="flex items-start gap-2">
@@ -530,31 +532,31 @@ function AIReportView({ report }: { report: AIReport }) {
       {/* Profile */}
       <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 shadow-sm border border-purple-100">
         <h2 className="font-bold text-purple-800 mb-3">
-          Developmental Profile: {report.child_name}
+          {t('weeklyReview.developmentalProfile')}: {report.child_name}
         </h2>
         <div className="grid grid-cols-3 gap-2">
-          <ProfileBadge label="Concentration" value={report.profile.concentration} />
-          <ProfileBadge label="Emotional" value={report.profile.emotional} />
-          <ProfileBadge label="Social" value={report.profile.social} />
+          <ProfileBadge label={t('weeklyReview.concentration')} value={report.profile.concentration} />
+          <ProfileBadge label={t('weeklyReview.emotional')} value={report.profile.emotional} />
+          <ProfileBadge label={t('weeklyReview.social')} value={report.profile.social} />
         </div>
       </div>
 
       {/* Sensitive Periods */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-2">🌱 Sensitive Period Analysis</h3>
-        <p className="text-sm text-slate-600">{report.sensitive_periods_analysis || 'Insufficient data.'}</p>
+        <h3 className="font-semibold text-slate-700 mb-2">🌱 {t('weeklyReview.sensitivePeriodAnalysis')}</h3>
+        <p className="text-sm text-slate-600">{report.sensitive_periods_analysis || t('weeklyReview.insufficientData')}</p>
       </div>
 
       {/* Trajectory */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-2">📈 Developmental Trajectory</h3>
+        <h3 className="font-semibold text-slate-700 mb-2">📈 {t('weeklyReview.developmentalTrajectory')}</h3>
         <p className="text-sm text-slate-600">{report.developmental_trajectory}</p>
       </div>
 
       {/* Concerns */}
       {report.concerns.length > 0 && (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">⚠️ Areas of Concern</h3>
+          <h3 className="font-semibold text-slate-700 mb-3">⚠️ {t('weeklyReview.areasOfConcern')}</h3>
           <div className="space-y-3">
             {report.concerns.map((c, i) => (
               <div 
@@ -574,7 +576,7 @@ function AIReportView({ report }: { report: AIReport }) {
 
       {/* Two Week Plan */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📋 2-Week Action Plan</h3>
+        <h3 className="font-semibold text-slate-700 mb-3">📋 {t('weeklyReview.twoWeekPlan')}</h3>
         <ol className="space-y-2">
           {report.two_week_plan.map((item, i) => (
             <li key={i} className="flex items-start gap-2">
@@ -589,7 +591,7 @@ function AIReportView({ report }: { report: AIReport }) {
 
       {/* Observation Questions */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">🔍 Observation Questions</h3>
+        <h3 className="font-semibold text-slate-700 mb-3">🔍 {t('weeklyReview.observationQuestions')}</h3>
         <ul className="space-y-2">
           {report.observation_questions.map((q, i) => (
             <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
@@ -602,7 +604,7 @@ function AIReportView({ report }: { report: AIReport }) {
 
       {/* Parent Communication */}
       <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">💬 Parent Discussion Points</h3>
+        <h3 className="font-semibold text-slate-700 mb-3">💬 {t('weeklyReview.parentDiscussionPoints')}</h3>
         <ul className="space-y-1">
           {report.parent_communication_points.map((p, i) => (
             <li key={i} className="text-sm text-slate-600 flex items-start gap-2">

@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { getAllConcerns } from '@/lib/montree/guru/concern-mappings';
 import ConcernDetailModal from './ConcernDetailModal';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface ConcernCardsGridProps {
   childId: string;
@@ -16,16 +17,17 @@ interface ConcernCardsGridProps {
 const concerns = getAllConcerns();
 
 export default function ConcernCardsGrid({ childId, childName }: ConcernCardsGridProps) {
+  const { t } = useI18n();
   const [selectedConcernId, setSelectedConcernId] = useState<string | null>(null);
 
   return (
     <>
       <div className="mb-3">
         <h2 className={`text-lg font-bold ${HOME_THEME.headingText}`}>
-          Supporting {childName} at Home
+          {t('guru.supportingAtHome').replace('{name}', childName)}
         </h2>
         <p className={`text-sm ${HOME_THEME.subtleText}`}>
-          Tap a concern for a personalized guide
+          {t('guru.tapConcernForGuide')}
         </p>
       </div>
 

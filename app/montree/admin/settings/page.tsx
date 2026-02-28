@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface School {
   id: string;
@@ -23,6 +24,7 @@ interface Principal {
 
 export default function AdminSettingsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [school, setSchool] = useState<School | null>(null);
@@ -85,7 +87,7 @@ export default function AdminSettingsPage() {
       }
     } catch (err) {
       console.error('Failed to fetch:', err);
-      toast.error('Failed to load settings');
+      toast.error(t('admin.errors.failedToLoadSettings'));
     } finally {
       setLoading(false);
     }
@@ -93,7 +95,7 @@ export default function AdminSettingsPage() {
 
   const handleSave = async () => {
     if (newPassword && newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('admin.errors.passwordsMismatch'));
       return;
     }
 
@@ -132,16 +134,16 @@ export default function AdminSettingsPage() {
           localStorage.setItem('montree_principal', JSON.stringify(principal));
         }
 
-        toast.success('Settings saved');
+        toast.success(t('admin.messages.settingsSaved'));
         setNewPassword('');
         setConfirmPassword('');
         fetchData();
       } else {
-        toast.error('Failed to save settings');
+        toast.error(t('admin.errors.failedToSaveSettings'));
       }
     } catch (err) {
       console.error('Save error:', err);
-      toast.error('Failed to save settings');
+      toast.error(t('admin.errors.failedToSaveSettings'));
     } finally {
       setSaving(false);
     }
@@ -158,7 +160,7 @@ export default function AdminSettingsPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4 animate-bounce">⚙️</div>
-          <p className="text-emerald-200">Loading settings...</p>
+          <p className="text-emerald-200">{t('admin.states.loadingSettings')}</p>
         </div>
       </div>
     );
@@ -172,8 +174,8 @@ export default function AdminSettingsPage() {
         <div className="flex items-center gap-4 mb-6">
           <Link href="/montree/admin" className="text-emerald-300 hover:text-white text-2xl">←</Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">⚙️ School Settings</h1>
-            <p className="text-emerald-300 text-sm">Manage your school profile</p>
+            <h1 className="text-2xl font-bold text-white">⚙️ {t('admin.sections.schoolSettings')}</h1>
+            <p className="text-emerald-300 text-sm">{t('admin.messages.manageSchoolProfile')}</p>
           </div>
         </div>
 
@@ -182,11 +184,11 @@ export default function AdminSettingsPage() {
           {/* School Info */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>🏫</span> School Information
+              <span>🏫</span> {t('admin.labels.schoolInformation')}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">School Name</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.schoolName')}</label>
                 <input
                   type="text"
                   value={schoolName}
@@ -197,7 +199,7 @@ export default function AdminSettingsPage() {
               </div>
               {school?.slug && (
                 <div className="text-sm text-emerald-400">
-                  School URL: montree.app/{school.slug}
+                  {t('admin.labels.schoolUrl')}: montree.app/{school.slug}
                 </div>
               )}
             </div>
@@ -208,11 +210,11 @@ export default function AdminSettingsPage() {
           {/* Principal Info */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>👤</span> Principal Account
+              <span>👤</span> {t('admin.labels.principalAccount')}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">Name</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.name')}</label>
                 <input
                   type="text"
                   value={principalName}
@@ -222,7 +224,7 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">Email</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.email')}</label>
                 <input
                   type="email"
                   value={principalEmail}
@@ -239,11 +241,11 @@ export default function AdminSettingsPage() {
           {/* Change Password */}
           <div>
             <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <span>🔐</span> Change Password
+              <span>🔐</span> {t('admin.labels.changePassword')}
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">New Password</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.newPassword')}</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -253,7 +255,7 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-emerald-300 text-sm mb-1">Confirm New Password</label>
+                <label className="block text-emerald-300 text-sm mb-1">{t('admin.form.confirmPassword')}</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -271,11 +273,11 @@ export default function AdminSettingsPage() {
           {school && (
             <div>
               <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <span>💳</span> Subscription
+                <span>💳</span> {t('admin.labels.subscription')}
               </h2>
               <div className="bg-black/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-emerald-300">Status</span>
+                  <span className="text-emerald-300">{t('admin.labels.status')}</span>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                     school.subscription_status === 'active'
                       ? 'bg-emerald-500/20 text-emerald-300'
@@ -283,20 +285,20 @@ export default function AdminSettingsPage() {
                       ? 'bg-amber-500/20 text-amber-300'
                       : 'bg-red-500/20 text-red-300'
                   }`}>
-                    {school.subscription_status === 'active' ? '✓ Active' :
-                     school.subscription_status === 'trial' ? '⏰ Trial' : 'Inactive'}
+                    {school.subscription_status === 'active' ? '✓ ' + t('admin.states.active') :
+                     school.subscription_status === 'trial' ? '⏰ ' + t('admin.states.trial') : t('admin.states.inactive')}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-emerald-300">Plan</span>
-                  <span className="text-white">{school.plan_type || 'Free'}</span>
+                  <span className="text-emerald-300">{t('admin.labels.plan')}</span>
+                  <span className="text-white">{school.plan_type || t('admin.states.free')}</span>
                 </div>
               </div>
               <Link
                 href="/montree/admin/billing"
                 className="block mt-3 text-center py-2 bg-emerald-500/20 text-emerald-300 rounded-lg hover:bg-emerald-500/30 transition-colors"
               >
-                Manage Subscription →
+                {t('admin.actions.manageSubscription')} →
               </Link>
             </div>
           )}
@@ -308,7 +310,7 @@ export default function AdminSettingsPage() {
               disabled={saving}
               className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('admin.states.saving') : t('admin.actions.saveChanges')}
             </button>
           </div>
         </div>
@@ -316,16 +318,16 @@ export default function AdminSettingsPage() {
         {/* Danger Zone */}
         <div className="mt-6 bg-red-500/10 rounded-2xl p-6 border border-red-500/30">
           <h2 className="text-lg font-semibold text-red-300 mb-4 flex items-center gap-2">
-            <span>⚠️</span> Danger Zone
+            <span>⚠️</span> {t('admin.labels.dangerZone')}
           </h2>
           <p className="text-red-200/70 text-sm mb-4">
-            Logging out will end your session. You can log back in anytime.
+            {t('admin.messages.logoutWarning')}
           </p>
           <button
             onClick={handleLogout}
             className="w-full py-3 bg-red-500/20 text-red-300 rounded-xl font-medium hover:bg-red-500/30 transition-colors"
           >
-            🚪 Sign Out
+            🚪 {t('admin.actions.signOut')}
           </button>
         </div>
       </div>

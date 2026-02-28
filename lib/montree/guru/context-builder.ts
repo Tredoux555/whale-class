@@ -35,6 +35,30 @@ export interface ChildContext {
 
   // Child profile from guru intake (if exists)
   guru_child_profile?: Record<string, unknown>;
+
+  // Parent emotional state (from save_parent_state tool)
+  parent_emotional_state?: {
+    emotional_themes: string[];
+    confidence_level: string;
+    stress_indicators: string[];
+    support_needed: string | null;
+    updated_at: string;
+  };
+
+  // Developmental insights (from save_developmental_insight tool)
+  developmental_insights: Array<{
+    insight_type: string;
+    description: string;
+    confidence: string;
+    recorded_at: string;
+  }>;
+
+  // Guidance outcomes (from track_guidance_outcome tool)
+  guidance_outcomes: Array<{
+    guidance_given: string;
+    outcome: string;
+    recorded_at: string;
+  }>;
 }
 
 export interface MentalProfile {
@@ -93,6 +117,7 @@ export interface PastInteraction {
   question: string;
   response_insight: string;
   outcome?: string;
+  context_snapshot?: Record<string, unknown>;
 }
 
 export interface TeacherNote {
@@ -251,7 +276,7 @@ export async function buildChildContext(
   // 5. Fetch past guru interactions (last 5)
   const { data: pastGuru } = await supabase
     .from('montree_guru_interactions')
-    .select('asked_at, question, response_insight, outcome')
+    .select('asked_at, question, response_insight, outcome, context_snapshot')
     .eq('child_id', childId)
     .order('asked_at', { ascending: false })
     .limit(5);
@@ -316,6 +341,18 @@ export async function buildChildContext(
       set_by: fw.set_by,
     })),
     guru_child_profile: settings.guru_child_profile as Record<string, unknown> | undefined,
+    parent_emotional_state: settings.guru_parent_current_state as ChildContext['parent_emotional_state'] | undefined,
+    developmental_insights: (Array.isArray(settings.guru_developmental_insights) ? settings.guru_developmental_insights : []).map((i: Record<string, unknown>) => ({
+      insight_type: i.insight_type as string,
+      description: i.description as string,
+      confidence: (i.confidence as string) || 'speculative',
+      recorded_at: i.recorded_at as string,
+    })),
+    guidance_outcomes: (Array.isArray(settings.guru_guidance_outcomes) ? settings.guru_guidance_outcomes : []).map((o: Record<string, unknown>) => ({
+      guidance_given: o.guidance_given as string,
+      outcome: o.outcome as string,
+      recorded_at: o.recorded_at as string,
+    })),
   };
 }
 
@@ -453,6 +490,41 @@ export function formatContextForPrompt(context: ChildContext): string {
       const date = new Date(int.asked_at).toLocaleDateString();
       lines.push(`[${date}] Q: ${int.question}`);
       lines.push(`  Outcome: ${int.outcome || 'not tracked'}`);
+    });
+    lines.push('');
+  }
+
+  // Parent emotional state
+  if (context.parent_emotional_state) {
+    const ps = context.parent_emotional_state;
+    lines.push('PARENT EMOTIONAL STATE:');
+    lines.push(`- Themes: ${ps.emotional_themes.join(', ')}`);
+    lines.push(`- Confidence: ${ps.confidence_level}`);
+    if (ps.stress_indicators.length > 0) {
+      lines.push(`- Stressors: ${ps.stress_indicators.join(', ')}`);
+    }
+    if (ps.support_needed) {
+      lines.push(`- Needs: ${ps.support_needed}`);
+    }
+    lines.push('');
+  }
+
+  // Developmental insights
+  if (context.developmental_insights.length > 0) {
+    lines.push('DEVELOPMENTAL PATTERNS DETECTED:');
+    context.developmental_insights.slice(-5).forEach(insight => {
+      const date = new Date(insight.recorded_at).toLocaleDateString();
+      lines.push(`[${date}] (${insight.insight_type}, ${insight.confidence}) ${insight.description}`);
+    });
+    lines.push('');
+  }
+
+  // Guidance outcomes
+  if (context.guidance_outcomes.length > 0) {
+    lines.push('ADVICE OUTCOMES:');
+    context.guidance_outcomes.slice(-5).forEach(outcome => {
+      const emoji = outcome.outcome === 'worked_well' ? '✅' : outcome.outcome === 'didnt_work' ? '❌' : '📝';
+      lines.push(`${emoji} ${outcome.guidance_given} → ${outcome.outcome}`);
     });
     lines.push('');
   }

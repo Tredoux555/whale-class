@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import { Work, EditFormData } from './types';
 
 interface EditWorkModalProps {
@@ -17,6 +18,7 @@ export default function EditWorkModal({
   onSaved,
   selectedArea
 }: EditWorkModalProps) {
+  const { t } = useI18n();
   const [editForm, setEditForm] = useState<EditFormData>({
     name: '',
     name_chinese: '',
@@ -49,7 +51,7 @@ export default function EditWorkModal({
 
   const handleGenerateAI = async () => {
     if (!editForm.name.trim()) {
-      toast.error('Please enter a work name first');
+      toast.error(t('curriculum.nameRequired'));
       return;
     }
 
@@ -72,15 +74,15 @@ export default function EditWorkModal({
           description: data.description || prev.description,
           why_it_matters: data.why_it_matters || prev.why_it_matters,
         }));
-        toast.success('✨ Descriptions generated!');
+        toast.success('✨ ' + t('curriculum.descriptionsGenerated'));
       } else if (data.error) {
         toast.error(data.error);
       } else {
-        toast.error('Failed to generate');
+        toast.error(t('curriculum.failedToGenerate'));
       }
     } catch (err) {
       console.error('AI generation error:', err);
-      toast.error('Failed to generate description');
+      toast.error(t('curriculum.failedToGenerateDescription'));
     }
     setGenerating(false);
   };
@@ -108,14 +110,14 @@ export default function EditWorkModal({
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('Work updated!');
+        toast.success(t('curriculum.workUpdated'));
         onClose();
         onSaved();
       } else {
-        toast.error(data.error || 'Failed to save');
+        toast.error(data.error || t('curriculum.failedToSave'));
       }
     } catch (err) {
-      toast.error('Failed to save changes');
+      toast.error(t('curriculum.failedToSaveChanges'));
     }
     setSaving(false);
   };
@@ -127,7 +129,7 @@ export default function EditWorkModal({
       <div className="bg-white w-full max-w-lg max-h-[90vh] rounded-2xl flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white flex-shrink-0">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-lg">Edit Work</h3>
+            <h3 className="font-bold text-lg">{t('curriculum.editWork')}</h3>
             <button onClick={onClose} className="text-white/80 hover:text-white text-2xl">×</button>
           </div>
         </div>
@@ -135,7 +137,7 @@ export default function EditWorkModal({
         <div className="p-4 overflow-y-auto flex-1 space-y-4">
           {/* Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('curriculum.name')}</label>
             <input
               type="text"
               value={editForm.name}
@@ -146,7 +148,7 @@ export default function EditWorkModal({
 
           {/* Chinese Name */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Chinese Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('curriculum.chineseName')}</label>
             <input
               type="text"
               value={editForm.name_chinese}
@@ -157,12 +159,12 @@ export default function EditWorkModal({
 
           {/* Age Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Age Range</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('curriculum.ageRange')}</label>
             <input
               type="text"
               value={editForm.age_range}
               onChange={e => setEditForm({...editForm, age_range: e.target.value})}
-              placeholder="e.g. 3-6"
+              placeholder={t('curriculum.ageRangeExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400"
             />
           </div>
@@ -170,7 +172,7 @@ export default function EditWorkModal({
           {/* AI Generate Button */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-xl border border-purple-200">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-purple-700">✨ AI Description Generator</p>
+              <p className="text-sm font-medium text-purple-700">✨ {t('curriculum.aiDescriptionGenerator')}</p>
               <button
                 onClick={handleGenerateAI}
                 disabled={generating || !editForm.name.trim()}
@@ -179,86 +181,86 @@ export default function EditWorkModal({
                 {generating ? (
                   <>
                     <span className="animate-spin">⏳</span>
-                    Generating...
+                    {t('curriculum.generating')}
                   </>
                 ) : (
-                  <>🧠 Generate with AI</>
+                  <>🧠 {t('curriculum.generateWithAI')}</>
                 )}
               </button>
             </div>
             <p className="text-xs text-purple-600">
-              AI will generate parent-friendly descriptions matching the Montessori Guru style
+              {t('curriculum.aiGenerateHint')}
             </p>
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description (for parents)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('curriculum.descriptionForParents')}</label>
             <textarea
               value={editForm.description}
               onChange={e => setEditForm({...editForm, description: e.target.value})}
               rows={3}
-              placeholder="What parents will see about this work..."
+              placeholder={t('curriculum.descriptionPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
             />
           </div>
 
           {/* Why It Matters */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">💡 Why It Matters</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">💡 {t('curriculum.whyItMatters')}</label>
             <textarea
               value={editForm.why_it_matters}
               onChange={e => setEditForm({...editForm, why_it_matters: e.target.value})}
               rows={2}
-              placeholder="The developmental significance..."
+              placeholder={t('curriculum.whyItMattersPlaceholder')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none"
             />
           </div>
 
           {/* Direct Aims */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Direct Aims (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🎯 {t('curriculum.directAims')}</label>
             <textarea
               value={editForm.direct_aims}
               onChange={e => setEditForm({...editForm, direct_aims: e.target.value})}
               rows={3}
-              placeholder="Control of movement&#10;Balance"
+              placeholder={t('curriculum.directAimsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Indirect Aims */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🌱 Indirect Aims (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🌱 {t('curriculum.indirectAims')}</label>
             <textarea
               value={editForm.indirect_aims}
               onChange={e => setEditForm({...editForm, indirect_aims: e.target.value})}
               rows={3}
-              placeholder="Concentration&#10;Independence"
+              placeholder={t('curriculum.indirectAimsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Materials */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🧰 Materials (one per line)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">🧰 {t('curriculum.materials')}</label>
             <textarea
               value={editForm.materials}
               onChange={e => setEditForm({...editForm, materials: e.target.value})}
               rows={3}
-              placeholder="Pink Tower cubes&#10;Work mat"
+              placeholder={t('curriculum.materialsExample')}
               className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
 
           {/* Teacher Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">📝 Teacher Notes (private)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">📝 {t('curriculum.teacherNotesPrivate')}</label>
             <textarea
               value={editForm.teacher_notes}
               onChange={e => setEditForm({...editForm, teacher_notes: e.target.value})}
               rows={3}
-              placeholder="Notes for yourself about this work..."
+              placeholder={t('curriculum.teacherNotesPlaceholder')}
               className="w-full px-3 py-2 bg-yellow-50 border border-yellow-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 focus:outline-none text-gray-900 placeholder-gray-400 resize-none text-sm"
             />
           </div>
@@ -268,11 +270,11 @@ export default function EditWorkModal({
         <div className="p-4 border-t flex gap-3 flex-shrink-0">
           <button onClick={onClose}
             className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button onClick={handleSaveEdit} disabled={saving}
             className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? t('common.saving') : t('curriculum.saveChanges')}
           </button>
         </div>
       </div>

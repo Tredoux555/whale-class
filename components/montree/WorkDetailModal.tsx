@@ -6,6 +6,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import { useMedia } from '@/lib/media/useMedia';
 
 interface WorkAssignment {
@@ -31,42 +32,42 @@ interface WorkDetailModalProps {
 
 const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
 
-const STATUS_CONFIG = {
-  not_started: { 
-    label: 'Not Started', 
+const getStatusConfig = (t: any) => ({
+  not_started: {
+    label: t('status.notStarted'),
     emoji: '○',
     color: 'bg-gray-100 text-gray-600 border-gray-300',
     activeColor: 'bg-gray-200 ring-2 ring-gray-400'
   },
-  presented: { 
-    label: 'Presented', 
+  presented: {
+    label: t('status.presented'),
     emoji: '🟡',
     color: 'bg-amber-50 text-amber-700 border-amber-300',
     activeColor: 'bg-amber-100 ring-2 ring-amber-400'
   },
-  practicing: { 
-    label: 'Practicing', 
+  practicing: {
+    label: t('status.practicing'),
     emoji: '🔵',
     color: 'bg-blue-50 text-blue-700 border-blue-300',
     activeColor: 'bg-blue-100 ring-2 ring-blue-400'
   },
-  mastered: { 
-    label: 'Mastered', 
+  mastered: {
+    label: t('status.mastered'),
     emoji: '🟢',
     color: 'bg-green-50 text-green-700 border-green-300',
     activeColor: 'bg-green-100 ring-2 ring-green-400'
   },
-};
+});
 
-const AREA_CONFIG: Record<string, { name: string; color: string; icon: string }> = {
-  practical_life: { name: 'Practical Life', color: 'from-pink-500 to-rose-500', icon: 'P' },
-  sensorial: { name: 'Sensorial', color: 'from-purple-500 to-violet-500', icon: 'S' },
-  mathematics: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: 'M' },
-  math: { name: 'Mathematics', color: 'from-blue-500 to-indigo-500', icon: 'M' },
-  language: { name: 'Language', color: 'from-green-500 to-emerald-500', icon: 'L' },
-  cultural: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: 'C' },
-  culture: { name: 'Cultural', color: 'from-orange-500 to-amber-500', icon: 'C' },
-};
+const getAreaConfig = (t: any): Record<string, { name: string; color: string; icon: string }> => ({
+  practical_life: { name: t('area.practicalLife'), color: 'from-pink-500 to-rose-500', icon: 'P' },
+  sensorial: { name: t('area.sensorial'), color: 'from-purple-500 to-violet-500', icon: 'S' },
+  mathematics: { name: t('area.mathematics'), color: 'from-blue-500 to-indigo-500', icon: 'M' },
+  math: { name: t('area.mathematics'), color: 'from-blue-500 to-indigo-500', icon: 'M' },
+  language: { name: t('area.language'), color: 'from-green-500 to-emerald-500', icon: 'L' },
+  cultural: { name: t('area.cultural'), color: 'from-orange-500 to-amber-500', icon: 'C' },
+  culture: { name: t('area.cultural'), color: 'from-orange-500 to-amber-500', icon: 'C' },
+});
 
 export default function WorkDetailModal({
   isOpen,
@@ -78,6 +79,7 @@ export default function WorkDetailModal({
   onNotesChange,
   onMediaCaptured,
 }: WorkDetailModalProps) {
+  const { t } = useI18n();
   const { capture } = useMedia();
   
   const [notes, setNotes] = useState(assignment?.notes || '');
@@ -95,21 +97,24 @@ export default function WorkDetailModal({
 
   if (!isOpen || !assignment) return null;
 
+  const STATUS_CONFIG = getStatusConfig(t);
+  const AREA_CONFIG = getAreaConfig(t);
+
   const area = AREA_CONFIG[assignment.area] || AREA_CONFIG.practical_life;
   const currentStatus = assignment.progress_status;
 
   // ==========================================
   // STATUS HANDLING
   // ==========================================
-  
+
   const handleStatusChange = async (newStatus: string) => {
     if (newStatus === currentStatus) return;
-    
+
     try {
       onStatusChange?.(assignment.id, newStatus);
       toast.success(`→ ${STATUS_CONFIG[newStatus as keyof typeof STATUS_CONFIG].label}`);
     } catch (error) {
-      toast.error('Failed to update status');
+      toast.error(t('error.failedToUpdateStatus'));
     }
   };
 
@@ -119,13 +124,13 @@ export default function WorkDetailModal({
   
   const handleSaveNotes = async () => {
     if (notes === assignment.notes) return;
-    
+
     setSaving(true);
     try {
       onNotesChange?.(assignment.id, notes);
-      toast.success('Notes saved!');
+      toast.success(t('success.notesSaved'));
     } catch (error) {
-      toast.error('Failed to save notes');
+      toast.error(t('error.failedToSaveNotes'));
     } finally {
       setSaving(false);
     }
@@ -163,7 +168,7 @@ export default function WorkDetailModal({
       }
     } catch (err) {
       console.error('Camera error:', err);
-      toast.error('Could not access camera');
+      toast.error(t('error.couldNotAccessCamera'));
       setCameraOpen(false);
     }
   };
@@ -209,14 +214,14 @@ export default function WorkDetailModal({
           workId: assignment.work_id,
           workName: assignment.work_name,
         });
-        
-        toast.success(`📷 Saved to ${childName}!`);
+
+        toast.success(`📷 ${t('success.savedTo').replace('{name}', childName)}!`);
         onMediaCaptured?.();
         setPreviewImage(null);
-        
+
       } catch (error) {
         console.error('Capture error:', error);
-        toast.error('Failed to save photo');
+        toast.error(t('error.failedToSavePhoto'));
       } finally {
         setCapturing(false);
       }
@@ -239,12 +244,12 @@ export default function WorkDetailModal({
         workName: assignment.work_name,
       });
       
-      toast.success(`📷 Saved to ${childName}!`);
+      toast.success(`📷 ${t('success.savedTo').replace('{name}', childName)}!`);
       onMediaCaptured?.();
-      
+
     } catch (error) {
       console.error('Capture error:', error);
-      toast.error('Failed to save photo');
+      toast.error(t('error.failedToSavePhoto'));
     } finally {
       setCapturing(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -314,7 +319,7 @@ export default function WorkDetailModal({
                   onClick={stopCamera}
                   className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={capturePhoto}
@@ -335,7 +340,7 @@ export default function WorkDetailModal({
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="text-white text-center">
                     <div className="w-8 h-8 border-3 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-2" />
-                    <p>Saving...</p>
+                    <p>{t('common.saving')}</p>
                   </div>
                 </div>
               )}
@@ -350,7 +355,7 @@ export default function WorkDetailModal({
                 className="flex items-center justify-center gap-2 py-4 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl shadow-sm active:scale-[0.98] transition-all"
               >
                 <span className="text-xl">▶️</span>
-                <span>Watch Demo</span>
+                <span>{t('action.watchDemo')}</span>
               </button>
               
               <button
@@ -359,7 +364,7 @@ export default function WorkDetailModal({
                 className="flex items-center justify-center gap-2 py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl shadow-sm active:scale-[0.98] transition-all disabled:opacity-50"
               >
                 <span className="text-xl">📷</span>
-                <span>Capture</span>
+                <span>{t('action.capture')}</span>
               </button>
             </div>
           )}
@@ -371,13 +376,13 @@ export default function WorkDetailModal({
               disabled={capturing}
               className="w-full py-3 text-gray-600 text-sm font-medium hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50"
             >
-              🖼️ Choose from gallery
+              🖼️ {t('action.chooseFromGallery')}
             </button>
           )}
 
           {/* Status Selector */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 mb-2">Progress Status</h3>
+            <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('modal.progressStatus')}</h3>
             <div className="grid grid-cols-4 gap-2">
               {STATUS_FLOW.map(status => {
                 const config = STATUS_CONFIG[status];
@@ -402,11 +407,11 @@ export default function WorkDetailModal({
 
           {/* Notes */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-500 mb-2">Observation Notes</h3>
+            <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('modal.observationNotes')}</h3>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
-              placeholder="Add notes about this work..."
+              placeholder={t('modal.addNotesAboutWork')}
               className="w-full p-3 border border-gray-200 rounded-xl text-sm resize-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               rows={3}
             />
@@ -416,7 +421,7 @@ export default function WorkDetailModal({
                 disabled={saving}
                 className="mt-2 px-4 py-2 bg-emerald-500 text-white text-sm font-medium rounded-lg hover:bg-emerald-600 disabled:opacity-50 transition-colors"
               >
-                {saving ? 'Saving...' : '💾 Save Notes'}
+                {saving ? t('common.saving') : `💾 ${t('action.saveNotes')}`}
               </button>
             )}
           </div>
@@ -424,7 +429,7 @@ export default function WorkDetailModal({
           {/* Media count */}
           {(assignment.mediaCount || 0) > 0 && (
             <div className="text-center text-sm text-gray-500">
-              📷 {assignment.mediaCount} photo{assignment.mediaCount !== 1 ? 's' : ''} captured for this work
+              📷 {assignment.mediaCount} {assignment.mediaCount === 1 ? t('modal.photo') : t('modal.photos')} {t('modal.capturedForThisWork')}
             </div>
           )}
         </div>
@@ -435,7 +440,7 @@ export default function WorkDetailModal({
             onClick={handleClose}
             className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium rounded-xl transition-colors"
           >
-            Done
+            {t('common.done')}
           </button>
         </div>
 

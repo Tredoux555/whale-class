@@ -10,6 +10,7 @@ import { MessageCard } from '@/components/montree/messaging/MessageCard';
 import { MessageComposer } from '@/components/montree/messaging/MessageComposer';
 import { InboxHeader } from '@/components/montree/messaging/InboxHeader';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Message {
   id: string;
@@ -37,6 +38,7 @@ interface GroupedMessages {
 
 export default function ParentMessagesPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<ParentSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
@@ -79,7 +81,7 @@ export default function ParentMessagesPage() {
         setMessages(msgData.messages || []);
       } catch (error) {
         console.error('Load error:', error);
-        toast.error('Failed to load messages');
+        toast.error(t('parentMessages.errorLoad'));
       } finally {
         setLoading(false);
       }
@@ -157,7 +159,7 @@ export default function ParentMessagesPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading messages...</p>
+          <p className="text-gray-600 font-medium">{t('parentMessages.loading')}</p>
         </div>
       </div>
     );
@@ -186,7 +188,7 @@ export default function ParentMessagesPage() {
                       : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  All Messages
+                  {t('parentMessages.filterAll')}
                 </button>
                 <button
                   onClick={() => setFilter('from_teacher')}
@@ -196,7 +198,7 @@ export default function ParentMessagesPage() {
                       : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  From Teacher
+                  {t('parentMessages.filterFromTeacher')}
                 </button>
                 <button
                   onClick={() => setFilter('unread')}
@@ -206,14 +208,14 @@ export default function ParentMessagesPage() {
                       : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  Unread ({unreadCount})
+                  {t('parentMessages.filterUnread')} ({unreadCount})
                 </button>
               </div>
 
               <button
                 onClick={() => {
                   if (children.length === 0) {
-                    toast.error('No children found');
+                    toast.error(t('parentMessages.errorNoChildren'));
                     return;
                   }
                   setComposing(true);
@@ -222,7 +224,7 @@ export default function ParentMessagesPage() {
                 className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg text-sm font-medium shadow-md transition-all duration-200 flex items-center gap-2"
               >
                 <span>✉️</span>
-                New Message
+                {t('parentMessages.newMessage')}
               </button>
             </div>
 
@@ -249,12 +251,12 @@ export default function ParentMessagesPage() {
               <div className="text-center py-12">
                 <div className="text-5xl mb-4">📭</div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {filter === 'unread' ? "You're all caught up!" : 'No messages yet'}
+                  {filter === 'unread' ? t('parentMessages.allCaughtUp') : t('parentMessages.noMessages')}
                 </h3>
                 <p className="text-gray-600 mb-6">
                   {filter === 'unread'
-                    ? 'All messages have been read.'
-                    : 'Messages from teachers will appear here.'}
+                    ? t('parentMessages.allRead')
+                    : t('parentMessages.noMessagesDescription')}
                 </p>
               </div>
             ) : (
@@ -276,7 +278,7 @@ export default function ParentMessagesPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{group.child.name}</h3>
                       <p className="text-xs text-gray-500">
-                        {group.messages.length} message{group.messages.length !== 1 ? 's' : ''}
+                        {group.messages.length} {group.messages.length === 1 ? t('parentMessages.message') : t('parentMessages.messages')}
                       </p>
                     </div>
                     {group.messages.some(m => !m.is_read) && (
@@ -311,11 +313,11 @@ export default function ParentMessagesPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span>👥</span>
-                Your Children
+                {t('parentMessages.yourChildren')}
               </h3>
               <div className="space-y-2">
                 {children.length === 0 ? (
-                  <p className="text-sm text-gray-500 py-4 text-center">No children added yet</p>
+                  <p className="text-sm text-gray-500 py-4 text-center">{t('parentMessages.noChildrenAdded')}</p>
                 ) : (
                   children.map(child => {
                     const childMessages = grouped[child.id];
@@ -359,15 +361,15 @@ export default function ParentMessagesPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span>📊</span>
-                Overview
+                {t('parentMessages.overview')}
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <span className="text-sm text-gray-700">Total Messages</span>
+                  <span className="text-sm text-gray-700">{t('parentMessages.totalMessages')}</span>
                   <span className="font-bold text-emerald-700 text-lg">{messages.length}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg border border-orange-100">
-                  <span className="text-sm text-gray-700">Unread</span>
+                  <span className="text-sm text-gray-700">{t('parentMessages.unread')}</span>
                   <span className="font-bold text-orange-700 text-lg">{unreadCount}</span>
                 </div>
               </div>

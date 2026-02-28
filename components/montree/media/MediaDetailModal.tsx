@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface MediaDetailModalProps {
   media: MontreeMedia | null;
@@ -21,6 +22,7 @@ export default function MediaDetailModal({
   onUpdate,
   onDelete,
 }: MediaDetailModalProps) {
+  const { t } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -75,14 +77,14 @@ export default function MediaDetailModal({
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Photo updated!');
+        toast.success(t('media.photoUpdated'));
         onUpdate(data.media);
         onClose();
       } else {
-        toast.error(data.error || 'Failed to update');
+        toast.error(data.error || t('media.failedToUpdate'));
       }
     } catch (err) {
-      toast.error('Failed to update photo');
+      toast.error(t('media.failedToUpdatePhoto'));
     } finally {
       setSaving(false);
     }
@@ -98,14 +100,14 @@ export default function MediaDetailModal({
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Photo deleted');
+        toast.success(t('media.photoDeleted'));
         onDelete(media.id);
         onClose();
       } else {
-        toast.error(data.error || 'Failed to delete');
+        toast.error(data.error || t('media.failedToDelete'));
       }
     } catch (err) {
-      toast.error('Failed to delete photo');
+      toast.error(t('media.failedToDeletePhoto'));
     } finally {
       setDeleting(false);
       setShowDeleteConfirm(false);
@@ -131,7 +133,7 @@ export default function MediaDetailModal({
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-bold text-gray-800">Photo Details</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t('media.photoDetails')}</h2>
           <button
             onClick={onClose}
             className="w-10 h-10 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-full"
@@ -169,12 +171,12 @@ export default function MediaDetailModal({
           {/* Caption */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Caption
+              {t('media.caption')}
             </label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="Add a caption..."
+              placeholder={t('media.addCaption')}
               className="w-full p-3 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
               rows={2}
             />
@@ -183,14 +185,14 @@ export default function MediaDetailModal({
           {/* Child Assignment */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Assign to Child
+              {t('media.assignToChild')}
             </label>
             <select
               value={selectedChildId || ''}
               onChange={(e) => setSelectedChildId(e.target.value || null)}
               className="w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
             >
-              <option value="">Unassigned (Group Photo)</option>
+              <option value="">{t('media.unassignedGroupPhoto')}</option>
               {children.map((child) => (
                 <option key={child.id} value={child.id}>
                   {child.name}
@@ -203,7 +205,7 @@ export default function MediaDetailModal({
           {childName && (
             <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-xl">
               <span className="text-blue-600">👤</span>
-              <span className="text-sm text-blue-800">Assigned to {childName}</span>
+              <span className="text-sm text-blue-800">{t('media.assignedTo').replace('{name}', childName)}</span>
             </div>
           )}
         </div>
@@ -216,14 +218,14 @@ export default function MediaDetailModal({
                 onClick={() => setShowDeleteConfirm(false)}
                 className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 disabled:opacity-50"
               >
-                {deleting ? 'Deleting...' : 'Confirm Delete'}
+                {deleting ? t('common.deleting') : t('media.confirmDelete')}
               </button>
             </>
           ) : (
@@ -232,20 +234,20 @@ export default function MediaDetailModal({
                 onClick={() => setShowDeleteConfirm(true)}
                 className="px-4 py-3 bg-red-100 text-red-600 rounded-xl font-medium hover:bg-red-200"
               >
-                🗑️ Delete
+                🗑️ {t('common.delete')}
               </button>
               <button
                 onClick={onClose}
                 className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
                 className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-medium hover:bg-blue-600 disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('common.saving') : t('media.saveChanges')}
               </button>
             </>
           )}

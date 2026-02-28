@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { MessageCard } from '@/components/montree/messaging/MessageCard';
 import { MessageComposer } from '@/components/montree/messaging/MessageComposer';
@@ -36,6 +37,7 @@ interface GroupedMessages {
 }
 
 export default function TeacherMessagesPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -83,7 +85,7 @@ export default function TeacherMessagesPage() {
         setMessages(msgData.messages || []);
       } catch (error) {
         console.error('Load error:', error);
-        toast.error('Failed to load messages');
+        toast.error(t('messages.loadError'));
       } finally {
         setLoading(false);
       }
@@ -153,7 +155,7 @@ export default function TeacherMessagesPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Loading messages...</p>
+          <p className="text-gray-600 font-medium">{t('messages.loadingMessages')}</p>
         </div>
       </div>
     );
@@ -182,7 +184,7 @@ export default function TeacherMessagesPage() {
                       : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  All Messages
+                  {t('messages.allMessages')}
                 </button>
                 <button
                   onClick={() => setFilter('unread')}
@@ -192,7 +194,7 @@ export default function TeacherMessagesPage() {
                       : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  Unread ({unreadCount})
+                  {t('messages.unread')} ({unreadCount})
                 </button>
               </div>
 
@@ -204,7 +206,7 @@ export default function TeacherMessagesPage() {
                 className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-lg text-sm font-medium shadow-md transition-all duration-200 flex items-center gap-2"
               >
                 <span>✉️</span>
-                New Message
+                {t('messages.newMessage')}
               </button>
             </div>
 
@@ -230,11 +232,11 @@ export default function TeacherMessagesPage() {
             {displayGroups.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-5xl mb-4">📭</div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No messages yet</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('messages.noMessagesYet')}</h3>
                 <p className="text-gray-600 mb-6">
                   {filter === 'unread'
-                    ? 'You\'re all caught up!'
-                    : 'Communication will appear here once parents reach out.'}
+                    ? t('messages.allCaughtUp')
+                    : t('messages.communicationWillAppear')}
                 </p>
                 <button
                   onClick={() => {
@@ -245,7 +247,7 @@ export default function TeacherMessagesPage() {
                   }}
                   className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors duration-200"
                 >
-                  Start a conversation
+                  {t('messages.startConversation')}
                 </button>
               </div>
             ) : (
@@ -257,7 +259,7 @@ export default function TeacherMessagesPage() {
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{group.child.name}</h3>
                       <p className="text-xs text-gray-500">
-                        {group.messages.length} message{group.messages.length !== 1 ? 's' : ''}
+                        {group.messages.length} {group.messages.length !== 1 ? t('messages.messages') : t('messages.message')}
                       </p>
                     </div>
                     {group.messages.some(m => !m.is_read) && (
@@ -292,19 +294,19 @@ export default function TeacherMessagesPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6 shadow-sm">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <span>📊</span>
-                Overview
+                {t('messages.overview')}
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <span className="text-sm text-gray-700">Total Messages</span>
+                  <span className="text-sm text-gray-700">{t('messages.totalMessages')}</span>
                   <span className="font-bold text-emerald-700 text-lg">{messages.length}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg border border-orange-100">
-                  <span className="text-sm text-gray-700">Unread</span>
+                  <span className="text-sm text-gray-700">{t('messages.unread')}</span>
                   <span className="font-bold text-orange-700 text-lg">{unreadCount}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100">
-                  <span className="text-sm text-gray-700">Children</span>
+                  <span className="text-sm text-gray-700">{t('messages.children')}</span>
                   <span className="font-bold text-blue-700 text-lg">{displayGroups.length}</span>
                 </div>
               </div>
@@ -314,24 +316,24 @@ export default function TeacherMessagesPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
               <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                 <span>💡</span>
-                Best Practices
+                {t('messages.bestPractices')}
               </h3>
               <ul className="space-y-2 text-xs text-gray-600">
                 <li className="flex gap-2">
                   <span>✓</span>
-                  <span>Keep messages focused on learning and development</span>
+                  <span>{t('messages.practiceFocused')}</span>
                 </li>
                 <li className="flex gap-2">
                   <span>✓</span>
-                  <span>Share specific observations and examples</span>
+                  <span>{t('messages.practiceObservations')}</span>
                 </li>
                 <li className="flex gap-2">
                   <span>✓</span>
-                  <span>Respond within 24-48 hours when possible</span>
+                  <span>{t('messages.practiceRespond')}</span>
                 </li>
                 <li className="flex gap-2">
                   <span>✓</span>
-                  <span>Use positive, constructive language</span>
+                  <span>{t('messages.practiceLanguage')}</span>
                 </li>
               </ul>
             </div>

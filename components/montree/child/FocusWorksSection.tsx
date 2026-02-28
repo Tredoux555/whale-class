@@ -3,6 +3,7 @@
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
+import { useI18n } from '@/lib/montree/i18n';
 
 export interface Assignment {
   work_name: string;
@@ -56,9 +57,10 @@ export default function FocusWorksSection({
   getAreaConfig,
   isHomeschoolParent: isParent = false,
 }: FocusWorksSectionProps) {
+  const { t } = useI18n();
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 className="font-bold text-gray-800 mb-3">This Week's Focus</h2>
+      <h2 className="font-bold text-gray-800 mb-3">{t('focusWorks.title')}</h2>
       {focusWorks.length > 0 ? (
         <div className="space-y-3">
           {focusWorks.map((work, i) => {
@@ -95,7 +97,7 @@ export default function FocusWorksSection({
                       e.currentTarget.addEventListener('touchend', clear, { once: true });
                       e.currentTarget.addEventListener('touchmove', clear, { once: true });
                     }}
-                    title="Tap to change work"
+                    title={t('focusWorks.tapToChange')}
                   >
                     <AreaBadge area={work.area} size="lg" />
                   </button>
@@ -156,7 +158,7 @@ export default function FocusWorksSection({
                       <textarea
                         value={notes[work.work_name] || ''}
                         onChange={(e) => setNotes(prev => ({ ...prev, [work.work_name]: e.target.value }))}
-                        placeholder="Add observation..."
+                        placeholder={t('focusWorks.addObservation')}
                         className="w-full p-3 rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:outline-none
                           bg-gradient-to-b from-amber-100 to-amber-50 border-0 shadow-md
                           text-amber-900 placeholder-amber-400"
@@ -168,7 +170,7 @@ export default function FocusWorksSection({
                         className="absolute bottom-2 right-2 px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
                           disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
                       >
-                        {savingNote === work.work_name ? '...' : '📌 Save'}
+                        {savingNote === work.work_name ? '...' : '📌 ' + t('focusWorks.save')}
                       </button>
                     </div>
                   </div>
@@ -206,7 +208,7 @@ export default function FocusWorksSection({
           })}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">Tap an area icon below to set focus works.</p>
+        <p className="text-sm text-gray-500">{t('focusWorks.empty')}</p>
       )}
     </div>
   );

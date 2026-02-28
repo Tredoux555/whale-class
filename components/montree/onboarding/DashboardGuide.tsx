@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface DashboardGuideProps {
   childName: string;
@@ -16,6 +17,7 @@ const BUBBLE_WIDTH = 300;
 const POINTER_SIZE = 12;
 
 export default function DashboardGuide({ childName, isHomeschoolParent: isParent, onDismiss }: DashboardGuideProps) {
+  const { t } = useI18n();
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -57,7 +59,7 @@ export default function DashboardGuide({ childName, isHomeschoolParent: isParent
     BUBBLE_WIDTH - 32
   );
 
-  const message = `This is so exciting! This is your ${isParent ? 'home' : 'classroom'}! But it gets better... so much better. Let's tap on ${firstName} to kick things off!`;
+  const message = t('guide.dashboard.message').replace('{name}', firstName);
 
   return createPortal(
     <>
@@ -125,7 +127,7 @@ export default function DashboardGuide({ childName, isHomeschoolParent: isParent
               padding: 0,
             }}
           >
-            Dismiss
+            {t('guide.common.dismiss')}
           </button>
         </div>
       </div>

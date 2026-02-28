@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface MessageComposerProps {
   childId: string;
@@ -25,6 +26,7 @@ export function MessageComposer({
   onSent,
   onCancel,
 }: MessageComposerProps) {
+  const { t } = useI18n();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +35,7 @@ export function MessageComposer({
     e.preventDefault();
 
     if (!message.trim()) {
-      toast.error('Please write a message');
+      toast.error(t('messaging.pleaseWriteMessage'));
       return;
     }
 
@@ -56,17 +58,17 @@ export function MessageComposer({
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error || 'Failed to send message');
+        toast.error(data.error || t('messaging.failedToSend'));
         return;
       }
 
-      toast.success('Message sent');
+      toast.success(t('messaging.messageSent'));
       setSubject('');
       setMessage('');
       onSent?.();
     } catch (error) {
       console.error('Send error:', error);
-      toast.error('Network error. Please try again.');
+      toast.error(t('messaging.networkError'));
     } finally {
       setIsSubmitting(false);
     }
@@ -84,8 +86,8 @@ export function MessageComposer({
             ✉️
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm">New Message</h3>
-            <p className="text-xs text-gray-500">To {senderType === 'teacher' ? 'teacher' : 'parent'}</p>
+            <h3 className="font-semibold text-gray-900 text-sm">{t('messaging.newMessage')}</h3>
+            <p className="text-xs text-gray-500">{t('messaging.to')} {senderType === 'teacher' ? t('messaging.teacher') : t('messaging.parent')}</p>
           </div>
         </div>
 
@@ -99,7 +101,7 @@ export function MessageComposer({
       {/* Subject field */}
       <input
         type="text"
-        placeholder="Subject (optional)"
+        placeholder={t('messaging.subjectOptional')}
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         maxLength={100}
@@ -109,7 +111,7 @@ export function MessageComposer({
       {/* Message field */}
       <div className="relative">
         <textarea
-          placeholder="Write your message here. Keep it professional and focused on learning..."
+          placeholder={t('messaging.writeMessage')}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           maxLength={2000}
@@ -126,7 +128,7 @@ export function MessageComposer({
       {/* Tips */}
       <div className="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-lg">
         <p className="text-xs text-blue-700 leading-relaxed">
-          <span className="font-semibold">💡 Tip:</span> Keep messages professional and learning-focused. Share observations, progress, and specific examples.
+          <span className="font-semibold">💡 {t('common.tip')}:</span> {t('messaging.tipText')}
         </p>
       </div>
 
@@ -139,7 +141,7 @@ export function MessageComposer({
             disabled={isSubmitting}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 disabled:opacity-50"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
         <button
@@ -150,12 +152,12 @@ export function MessageComposer({
           {isSubmitting ? (
             <>
               <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              Sending...
+              {t('messaging.sending')}
             </>
           ) : (
             <>
               <span>📤</span>
-              Send
+              {t('messaging.send')}
             </>
           )}
         </button>

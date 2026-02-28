@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 import { AREA_CONFIG as SHARED_AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
@@ -49,6 +50,7 @@ const getAreaConf = (areaName: string) => {
 };
 
 export default function ReportViewPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const params = useParams();
   const reportId = params.reportId as string;
@@ -66,12 +68,12 @@ export default function ReportViewPage() {
         if (data.success) {
           setReport(data.report);
         } else {
-          setError(data.error || 'Failed to load report');
+          setError(data.error || t('reports.failedToLoadReport'));
         }
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load report');
+        setError(t('reports.failedToLoadReport'));
         setLoading(false);
       });
   }, [reportId]);
@@ -97,9 +99,9 @@ export default function ReportViewPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50 flex items-center justify-center">
         <div className="text-center">
           <span className="text-4xl mb-4 block">❌</span>
-          <p className="text-gray-600">{error || 'Report not found'}</p>
+          <p className="text-gray-600">{error || t('reports.reportNotFound')}</p>
           <Link href="/montree/dashboard/reports" className="text-emerald-600 mt-4 inline-block">
-            ← Back to Reports
+            ← {t('reports.backToReports')}
           </Link>
         </div>
       </div>
@@ -122,16 +124,16 @@ export default function ReportViewPage() {
               ←
             </Link>
             <div className="flex-1">
-              <h1 className="text-xl font-bold">{content.child.name}'s Weekly Report</h1>
+              <h1 className="text-xl font-bold">{content.child.name}'s {t('reports.weeklyReport')}</h1>
               <p className="text-white/70 text-sm">
                 {formatDate(content.week.start)} - {formatDate(content.week.end)}
               </p>
             </div>
-            <button 
+            <button
               onClick={() => window.print()}
               className="px-4 py-2 bg-white/20 rounded-xl text-sm font-medium hover:bg-white/30"
             >
-              🖨️ Print
+              🖨️ {t('common.print')}
             </button>
           </div>
           
@@ -139,19 +141,19 @@ export default function ReportViewPage() {
           <div className="grid grid-cols-4 gap-3">
             <div className="bg-white/20 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold">{content.summary.works_this_week}</div>
-              <div className="text-xs text-white/70">This Week</div>
+              <div className="text-xs text-white/70">{t('reports.thisWeek')}</div>
             </div>
             <div className="bg-yellow-400/30 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold">{overall_progress.presented}</div>
-              <div className="text-xs text-white/70">Introduced</div>
+              <div className="text-xs text-white/70">{t('reports.introduced')}</div>
             </div>
             <div className="bg-blue-400/30 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold">{overall_progress.practicing}</div>
-              <div className="text-xs text-white/70">Practicing</div>
+              <div className="text-xs text-white/70">{t('reports.practicing')}</div>
             </div>
             <div className="bg-green-400/30 rounded-xl p-3 text-center">
               <div className="text-2xl font-bold">{overall_progress.mastered}</div>
-              <div className="text-xs text-white/70">Mastered</div>
+              <div className="text-xs text-white/70">{t('reports.mastered')}</div>
             </div>
           </div>
         </div>
@@ -173,7 +175,7 @@ export default function ReportViewPage() {
                   <AreaBadge area={areaName} size="md" />
                   {areaName}
                   <span className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-sm">
-                    {works.length} work{works.length !== 1 ? 's' : ''}
+                    {works.length} {works.length !== 1 ? t('reports.works') : t('reports.work')}
                   </span>
                 </h2>
               </div>
@@ -206,17 +208,17 @@ export default function ReportViewPage() {
                     {work.why_it_matters && (
                       <div className="bg-emerald-50 rounded-lg p-3 mt-2">
                         <p className="text-emerald-700 text-sm">
-                          <span className="font-medium">💡 Why it matters: </span>
+                          <span className="font-medium">💡 {t('reports.whyItMatters')}: </span>
                           {work.why_it_matters}
                         </p>
                       </div>
                     )}
-                    
+
                     {/* Teacher Notes */}
                     {work.notes && (
                       <div className="bg-blue-50 rounded-lg p-3 mt-2">
                         <p className="text-blue-700 text-sm">
-                          <span className="font-medium">📝 Teacher note: </span>
+                          <span className="font-medium">📝 {t('reports.teacherNote')}: </span>
                           {work.notes}
                         </p>
                       </div>
@@ -232,7 +234,7 @@ export default function ReportViewPage() {
         {Object.keys(content.works_by_area).length === 0 && (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <span className="text-4xl mb-4 block">📋</span>
-            <p className="text-gray-500">No works recorded this week</p>
+            <p className="text-gray-500">{t('reports.noWorksRecordedThisWeek')}</p>
           </div>
         )}
 
@@ -242,7 +244,7 @@ export default function ReportViewPage() {
             <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3">
               <h2 className="font-bold flex items-center gap-2">
                 <span className="text-xl">📸</span>
-                Photos This Week
+                {t('reports.photosThisWeek')}
                 <span className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-sm">
                   {content.photos.length}
                 </span>
@@ -267,8 +269,8 @@ export default function ReportViewPage() {
 
         {/* Footer */}
         <div className="text-center py-6 text-gray-400 text-sm">
-          <p>Generated {formatDate(report.generated_at)}</p>
-          <p className="mt-1">🌱 Montree • Montessori Progress Tracking</p>
+          <p>{t('reports.generated')} {formatDate(report.generated_at)}</p>
+          <p className="mt-1">🌱 Montree • {t('reports.montessoriProgressTracking')}</p>
         </div>
       </main>
 

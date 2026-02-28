@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Observation {
   id: string;
@@ -62,6 +63,7 @@ export default function ObservationsPage() {
   const params = useParams();
   const router = useRouter();
   const childId = params.childId as string;
+  const { t } = useI18n();
 
   const [child, setChild] = useState<Child | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);
@@ -132,7 +134,7 @@ export default function ObservationsPage() {
 
   const handleSubmit = async () => {
     if (!form.behavior_description.trim()) {
-      toast.error('Please describe the behavior');
+      toast.error(t('observations.describeBehavior'));
       return;
     }
 
@@ -149,7 +151,7 @@ export default function ObservationsPage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Observation saved!');
+        toast.success(t('observations.saved'));
         setForm({
           behavior_description: '',
           antecedent: '',
@@ -164,16 +166,16 @@ export default function ObservationsPage() {
         fetchObservations();
         fetchPatterns(); // Refresh patterns in case new ones detected
       } else {
-        toast.error(data.error || 'Failed to save');
+        toast.error(data.error || t('observations.saveFailed'));
       }
     } catch {
-      toast.error('Failed to save observation');
+      toast.error(t('observations.saveFailed'));
     }
     setSaving(false);
   };
 
   const deleteObservation = async (id: string) => {
-    if (!confirm('Delete this observation?')) return;
+    if (!confirm(t('observations.confirmDelete'))) return;
 
     try {
       const res = await fetch(`/api/montree/observations?id=${id}`, {
@@ -181,11 +183,11 @@ export default function ObservationsPage() {
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('Deleted');
+        toast.success(t('observations.deleted'));
         fetchObservations();
       }
     } catch {
-      toast.error('Failed to delete');
+      toast.error(t('observations.deleteFailed'));
     }
   };
 
@@ -205,45 +207,45 @@ export default function ObservationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-gray-800">
-            Observations
+            {t('observations.title')}
           </h2>
           <p className="text-sm text-gray-500">
-            Track behaviors with the ABC model
+            {t('observations.subtitle')}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors flex items-center gap-2"
         >
-          {showForm ? '✕ Close' : '+ New'}
+          {showForm ? `✕ ${t('observations.close')}` : `+ ${t('observations.new')}`}
         </button>
       </div>
 
       {/* New Observation Form */}
       {showForm && (
         <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-          <h3 className="font-bold text-gray-800 mb-4">New Observation</h3>
+          <h3 className="font-bold text-gray-800 mb-4">{t('observations.newObservation')}</h3>
 
           {/* ABC Model Explanation */}
           <div className="bg-violet-50 rounded-lg p-3 mb-4 text-sm">
-            <p className="font-medium text-violet-800 mb-1">ABC Model</p>
+            <p className="font-medium text-violet-800 mb-1">{t('observations.abcModel')}</p>
             <p className="text-violet-600">
-              <strong>A</strong>ntecedent (what happened before) →{' '}
-              <strong>B</strong>ehavior (what the child did) →{' '}
-              <strong>C</strong>onsequence (what happened after)
+              <strong>A</strong>{t('observations.antecedentDescription')} →{' '}
+              <strong>B</strong>{t('observations.behaviorDescription')} →{' '}
+              <strong>C</strong>{t('observations.consequenceDescription')}
             </p>
           </div>
 
           {/* Antecedent */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              A: What happened before? (Antecedent)
+              {t('observations.antecedentLabel')}
             </label>
             <input
               type="text"
               value={form.antecedent}
               onChange={(e) => setForm(prev => ({ ...prev, antecedent: e.target.value }))}
-              placeholder="e.g., Teacher asked to put away work..."
+              placeholder={t('observations.antecedentPlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -251,12 +253,12 @@ export default function ObservationsPage() {
           {/* Behavior */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              B: What did the child do? (Behavior) *
+              {t('observations.behaviorLabel')}
             </label>
             <textarea
               value={form.behavior_description}
               onChange={(e) => setForm(prev => ({ ...prev, behavior_description: e.target.value }))}
-              placeholder="Describe the specific behavior observed..."
+              placeholder={t('observations.behaviorPlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50 resize-none"
               rows={3}
             />
@@ -265,13 +267,13 @@ export default function ObservationsPage() {
           {/* Consequence */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              C: What happened after? (Consequence)
+              {t('observations.consequenceLabel')}
             </label>
             <input
               type="text"
               value={form.consequence}
               onChange={(e) => setForm(prev => ({ ...prev, consequence: e.target.value }))}
-              placeholder="e.g., Teacher redirected to another work..."
+              placeholder={t('observations.consequencePlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -279,7 +281,7 @@ export default function ObservationsPage() {
           {/* Behavior Function */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 block mb-2">
-              What function did this behavior serve?
+              {t('observations.functionLabel')}
             </label>
             <div className="grid grid-cols-2 gap-2">
               {BEHAVIOR_FUNCTIONS.map(func => (
@@ -303,14 +305,14 @@ export default function ObservationsPage() {
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">
-                Time of Day
+                {t('observations.timeOfDay')}
               </label>
               <select
                 value={form.time_of_day}
                 onChange={(e) => setForm(prev => ({ ...prev, time_of_day: e.target.value }))}
                 className="w-full p-2 border rounded-lg bg-gray-50"
               >
-                <option value="">Select...</option>
+                <option value="">{t('observations.select')}</option>
                 {TIME_OF_DAY.map(time => (
                   <option key={time.value} value={time.value}>{time.label}</option>
                 ))}
@@ -319,13 +321,13 @@ export default function ObservationsPage() {
 
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">
-                Activity
+                {t('observations.activity')}
               </label>
               <input
                 type="text"
                 value={form.activity_during}
                 onChange={(e) => setForm(prev => ({ ...prev, activity_during: e.target.value }))}
-                placeholder="e.g., Math work"
+                placeholder={t('observations.activityPlaceholder')}
                 className="w-full p-2 border rounded-lg bg-gray-50"
               />
             </div>
@@ -334,13 +336,13 @@ export default function ObservationsPage() {
           {/* Intervention */}
           <div className="mb-4">
             <label className="text-sm font-medium text-gray-700 block mb-1">
-              Intervention Used (if any)
+              {t('observations.interventionLabel')}
             </label>
             <input
               type="text"
               value={form.intervention_used}
               onChange={(e) => setForm(prev => ({ ...prev, intervention_used: e.target.value }))}
-              placeholder="e.g., Offered choice of two works..."
+              placeholder={t('observations.interventionPlaceholder')}
               className="w-full p-3 border rounded-lg bg-gray-50"
             />
           </div>
@@ -349,7 +351,7 @@ export default function ObservationsPage() {
           {form.intervention_used && (
             <div className="mb-4">
               <label className="text-sm font-medium text-gray-700 block mb-2">
-                How effective was the intervention?
+                {t('observations.effectivenessLabel')}
               </label>
               <div className="flex gap-2">
                 {EFFECTIVENESS.map(eff => (
@@ -376,7 +378,7 @@ export default function ObservationsPage() {
             className="w-full py-3 bg-gradient-to-r from-violet-500 to-indigo-600 text-white font-medium rounded-lg
                      disabled:opacity-50 hover:from-violet-600 hover:to-indigo-700 transition-all"
           >
-            {saving ? 'Saving...' : 'Save Observation'}
+            {saving ? t('observations.saving') : t('observations.saveButton')}
           </button>
         </div>
       )}
@@ -385,7 +387,7 @@ export default function ObservationsPage() {
       {patterns.filter(p => p.still_active).length > 0 && (
         <div className="bg-amber-50 rounded-xl p-4 mb-4 border border-amber-200">
           <h3 className="font-bold text-amber-800 mb-2 flex items-center gap-2">
-            <span>🔍</span> Detected Patterns
+            <span>🔍</span> {t('observations.detectedPatterns')}
           </h3>
           <div className="space-y-2">
             {patterns.filter(p => p.still_active).map(pattern => (
@@ -407,7 +409,7 @@ export default function ObservationsPage() {
             href={`/montree/dashboard/guru?child=${childId}`}
             className="mt-3 inline-flex items-center gap-2 text-sm text-violet-600 hover:text-violet-800"
           >
-            🔮 Ask Guru about these patterns →
+            🔮 {t('observations.askGuruPatterns')} →
           </Link>
         </div>
       )}
@@ -415,18 +417,18 @@ export default function ObservationsPage() {
       {/* Observation List */}
       <div className="bg-white rounded-xl shadow-sm p-4">
         <h3 className="font-bold text-gray-800 mb-4">
-          Recent Observations ({observations.length})
+          {t('observations.recent')} ({observations.length})
         </h3>
 
         {observations.length === 0 ? (
           <div className="text-center py-8 text-gray-400">
             <p className="text-4xl mb-2">📋</p>
-            <p>No observations yet</p>
+            <p>{t('observations.none')}</p>
             <button
               onClick={() => setShowForm(true)}
               className="mt-3 text-violet-600 hover:text-violet-800"
             >
-              Add first observation →
+              {t('observations.addFirst')} →
             </button>
           </div>
         ) : (

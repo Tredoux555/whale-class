@@ -3,8 +3,10 @@
 'use client';
 
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 export default function LibraryWelcomePage() {
+  const { t } = useI18n();
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col" style={{ background: 'linear-gradient(160deg, #0A2725 0%, #0D3330 40%, #122C2A 70%, #0F1F1E 100%)' }}>
 
@@ -29,20 +31,20 @@ export default function LibraryWelcomePage() {
           {/* Small badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-white/50 text-xs tracking-wide uppercase">Open Resource</span>
+            <span className="text-white/50 text-xs tracking-wide uppercase">{t('library.openResource')}</span>
           </div>
 
           {/* Welcome */}
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-            <span className="text-white/90">Welcome to the</span>
+            <span className="text-white/90">{t('library.welcomeTo')}</span>
             <br />
             <span style={{ background: 'linear-gradient(135deg, #6ee7b7, #34d399, #a7f3d0)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Montree Library
+              {t('library.montreeLibrary')}
             </span>
           </h1>
 
           <p className="text-white/40 mt-5 text-lg max-w-sm mx-auto leading-relaxed">
-            Create professional materials in minutes, or explore what teachers worldwide have shared.
+            {t('library.description')}
           </p>
 
           {/* Two paths */}
@@ -66,9 +68,9 @@ export default function LibraryWelcomePage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Content Creation Tools</div>
+                <div className="text-white font-semibold text-lg">{t('library.contentCreationTools')}</div>
                 <div className="text-amber-200/40 text-sm mt-0.5">
-                  Cards, flashcards, labels, bingo &amp; more
+                  {t('library.contentCreationDescription')}
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-amber-400/30 group-hover:text-amber-400 group-hover:translate-x-1 transition-all shrink-0">
@@ -95,9 +97,9 @@ export default function LibraryWelcomePage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">English Language Corner</div>
+                <div className="text-white font-semibold text-lg">{t('library.englishLanguageCorner')}</div>
                 <div className="text-pink-200/40 text-sm mt-0.5">
-                  AMI Master Setup &amp; Implementation Plan
+                  {t('library.englishLanguageDescription')}
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-pink-400/30 group-hover:text-pink-400 group-hover:translate-x-1 transition-all shrink-0">
@@ -124,9 +126,9 @@ export default function LibraryWelcomePage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Browse the Library</div>
+                <div className="text-white font-semibold text-lg">{t('library.browseLibrary')}</div>
                 <div className="text-teal-200/40 text-sm mt-0.5">
-                  Works shared by teachers around the world
+                  {t('library.browseDescription')}
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-teal-300/30 group-hover:text-teal-300 group-hover:translate-x-1 transition-all shrink-0">
@@ -140,7 +142,7 @@ export default function LibraryWelcomePage() {
       {/* Footer */}
       <div className="relative z-10 px-6 py-5 text-center">
         <p className="text-white/20 text-xs tracking-wider uppercase">
-          By teachers, for teachers
+          {t('library.byTeachers')}
         </p>
       </div>
     </div>

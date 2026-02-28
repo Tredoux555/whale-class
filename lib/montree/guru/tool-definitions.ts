@@ -61,7 +61,7 @@ export const GURU_TOOLS: Tool[] = [
   },
   {
     name: "save_observation",
-    description: "Save a behavioral observation. Use when the parent describes something notable about concentration, interests, challenges, or development.",
+    description: "Save a behavioral observation with emotional and temporal context. Use when the parent describes something notable — include as much context as possible to help detect patterns later.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -70,7 +70,35 @@ export const GURU_TOOLS: Tool[] = [
           type: "string",
           enum: ["attention", "escape", "sensory", "tangible", "unknown"]
         },
-        activity_during: { type: "string", description: "What activity was happening" }
+        activity_during: { type: "string", description: "What activity was happening" },
+        emotional_state: {
+          type: "string",
+          enum: ["calm", "excited", "frustrated", "overwhelmed", "tired", "energized", "anxious", "happy"],
+          description: "Child's emotional state during the behavior"
+        },
+        preceding_activity: {
+          type: "string",
+          description: "What happened right before this behavior (e.g., 'just mastered Pink Tower', 'transition from lunch')"
+        },
+        time_of_day: {
+          type: "string",
+          enum: ["morning", "midday", "afternoon", "evening"],
+          description: "When this happened"
+        },
+        possible_triggers: {
+          type: "array",
+          items: { type: "string" },
+          description: "What might have caused this (e.g., 'understimulation', 'overtired', 'seeking connection')"
+        },
+        related_works: {
+          type: "array",
+          items: { type: "string" },
+          description: "Which Montessori works were involved, if any"
+        },
+        developmental_note: {
+          type: "string",
+          description: "What this might indicate developmentally"
+        }
       },
       required: ["behavior_description"]
     }
@@ -101,6 +129,105 @@ export const GURU_TOOLS: Tool[] = [
         learning_style: { type: "string" }
       },
       required: ["personality", "interests"]
+    }
+  },
+  {
+    name: "save_parent_state",
+    description: "Silently record the parent's emotional state during the conversation. Call this when you detect emotional content — overwhelm, guilt, joy, anxiety, confidence changes. Do NOT announce that you're calling this tool.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        emotional_themes: {
+          type: "array",
+          items: { type: "string" },
+          description: "Key emotional themes detected (e.g., 'overwhelm', 'guilt', 'frustration', 'joy', 'pride', 'anxiety', 'burnout', 'hope', 'imposter_syndrome')"
+        },
+        confidence_level: {
+          type: "string",
+          enum: ["very_low", "low", "moderate", "high", "very_high"],
+          description: "Parent's confidence level in their Montessori implementation"
+        },
+        stress_indicators: {
+          type: "array",
+          items: { type: "string" },
+          description: "Specific stressors mentioned (e.g., 'sleep_deprived', 'relationship_tension', 'financial_worry', 'work_pressure', 'isolation')"
+        },
+        support_needed: {
+          type: "string",
+          description: "What kind of support this parent seems to need right now (e.g., 'validation', 'practical_simplification', 'encouragement', 'professional_referral')"
+        },
+        notes: {
+          type: "string",
+          description: "Free-form observation about the parent's emotional state"
+        }
+      },
+      required: ["emotional_themes", "confidence_level"]
+    }
+  },
+  {
+    name: "save_developmental_insight",
+    description: "Record a developmental pattern or correlation you've detected. Use when you notice connections between emotional states, work mastery, behaviors, and parent confidence. Think like a developmental detective.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        insight_type: {
+          type: "string",
+          enum: ["correlation", "milestone", "prediction", "concern"],
+          description: "Type of insight: correlation (A relates to B), milestone (developmental achievement), prediction (what's coming next), concern (possible red flag)"
+        },
+        description: {
+          type: "string",
+          description: "What you noticed — be specific about the connection (e.g., 'Mastered Brown Stair 3 days before hitting spike — possible understimulation from not enough challenge')"
+        },
+        related_works: {
+          type: "array",
+          items: { type: "string" },
+          description: "Which Montessori works are involved"
+        },
+        related_behaviors: {
+          type: "array",
+          items: { type: "string" },
+          description: "Which behaviors are involved"
+        },
+        confidence: {
+          type: "string",
+          enum: ["speculative", "likely", "confident"],
+          description: "How confident are you in this pattern"
+        },
+        recommendation: {
+          type: "string",
+          description: "What to do about it"
+        }
+      },
+      required: ["insight_type", "description"]
+    }
+  },
+  {
+    name: "track_guidance_outcome",
+    description: "Record whether previous advice worked or not. Call when a parent reports back on something you suggested.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        guidance_given: {
+          type: "string",
+          description: "Brief description of the advice that was given"
+        },
+        outcome: {
+          type: "string",
+          enum: ["worked_well", "partially_worked", "didnt_work", "not_tried"],
+          description: "How well the advice worked"
+        },
+        parent_confidence_after: {
+          type: "string",
+          enum: ["increased", "unchanged", "decreased"],
+          description: "Did following this advice change the parent's confidence?"
+        },
+        notes: {
+          type: "string",
+          description: "Additional context about the outcome"
+        }
+      },
+      required: ["guidance_given", "outcome"]
     }
   }
 ];

@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Message {
   id: string;
@@ -20,6 +21,7 @@ interface InboxButtonProps {
 }
 
 export default function InboxButton({ conversationId, userName, floating }: InboxButtonProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -158,7 +160,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
           <button
             onClick={() => setOpen(!open)}
             className="relative w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg hover:shadow-xl transition-all hover:scale-110 flex items-center justify-center text-2xl"
-            title="Messages"
+            title={t('inbox.title')}
           >
             ✉️
             {unreadCount > 0 && (
@@ -172,7 +174,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
         <button
           onClick={() => setOpen(!open)}
           className="relative px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-          title="Messages"
+          title={t('inbox.title')}
           data-guide="nav-inbox"
         >
           ✉️
@@ -195,8 +197,8 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
             {/* Header */}
             <div className="p-4 border-b border-slate-700 flex items-center justify-between">
               <div>
-                <h2 className="text-white font-semibold">Messages</h2>
-                <p className="text-slate-400 text-xs">Direct line to Montree</p>
+                <h2 className="text-white font-semibold">{t('inbox.messages')}</h2>
+                <p className="text-slate-400 text-xs">{t('inbox.subtitle')}</p>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -210,19 +212,19 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {loadingMessages ? (
                 <div className="text-center py-12">
-                  <p className="text-slate-400 text-sm">Loading...</p>
+                  <p className="text-slate-400 text-sm">{t('inbox.loading')}</p>
                 </div>
               ) : connectionError ? (
                 <div className="text-center py-12">
                   <span className="text-4xl block mb-3">⚠️</span>
-                  <p className="text-slate-400 text-sm">Connection issue</p>
-                  <p className="text-slate-500 text-xs mt-1">Please try again later</p>
+                  <p className="text-slate-400 text-sm">{t('inbox.connection_error')}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('inbox.try_again_later')}</p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-4xl block mb-3">👋</span>
-                  <p className="text-slate-400 text-sm">No messages yet</p>
-                  <p className="text-slate-500 text-xs mt-1">Send a message and I&apos;ll get back to you</p>
+                  <p className="text-slate-400 text-sm">{t('inbox.no_messages')}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('inbox.send_message_prompt')}</p>
                 </div>
               ) : (
                 messages.map((msg) => (
@@ -259,7 +261,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                  placeholder="Type a message..."
+                  placeholder={t('inbox.message_placeholder')}
                   className="flex-1 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
                   autoFocus
                 />

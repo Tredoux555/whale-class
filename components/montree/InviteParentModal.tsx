@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Invite {
   id: string;
@@ -26,6 +27,7 @@ export default function InviteParentModal({
   isOpen,
   onClose
 }: InviteParentModalProps) {
+  const { t } = useI18n();
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -107,8 +109,8 @@ export default function InviteParentModal({
         {/* Header */}
         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
           <div>
-            <h2 className="font-bold text-gray-800">Parent Access Code</h2>
-            <p className="text-sm text-gray-500">For {childName}</p>
+            <h2 className="font-bold text-gray-800">{t('inviteParent.parentAccessCode')}</h2>
+            <p className="text-sm text-gray-500">{t('inviteParent.for')} {childName}</p>
           </div>
           <button
             onClick={onClose}
@@ -123,7 +125,7 @@ export default function InviteParentModal({
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-pulse text-2xl mb-2">📨</div>
-              <p className="text-gray-500">Loading codes...</p>
+              <p className="text-gray-500">{t('inviteParent.loadingCodes')}</p>
             </div>
           ) : (
             <>
@@ -131,15 +133,15 @@ export default function InviteParentModal({
               {activeInvites.length > 0 ? (
                 <div className="space-y-3">
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
-                    Parents enter this code at <span className="font-mono font-semibold">/montree/parent</span> to view {childName}'s progress.
+                    {t('inviteParent.parentsEnter')} <span className="font-mono font-semibold">/montree/parent</span> {t('inviteParent.toView')} {childName}'s {t('inviteParent.progress')}.
                   </div>
 
                   {activeInvites.map(invite => (
                     <div key={invite.id} className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs text-emerald-600 font-semibold">ACTIVE CODE</span>
+                        <span className="text-xs text-emerald-600 font-semibold">{t('inviteParent.activeCode')}</span>
                         <span className="text-xs bg-emerald-100 text-emerald-600 px-2 py-1 rounded-full">
-                          Reusable
+                          {t('inviteParent.reusable')}
                         </span>
                       </div>
 
@@ -154,7 +156,7 @@ export default function InviteParentModal({
                           onClick={() => copyToClipboard(invite.invite_code)}
                           className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition"
                         >
-                          {copied === invite.invite_code ? '✓ Copied!' : '📋 Copy Code'}
+                          {copied === invite.invite_code ? `✓ ${t('inviteParent.copied')}` : `📋 ${t('inviteParent.copyCode')}`}
                         </button>
                       </div>
 
@@ -164,7 +166,7 @@ export default function InviteParentModal({
                           disabled={resetting}
                           className="w-full text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
                         >
-                          {resetting ? 'Resetting...' : '🔄 Reset Code (Forgot Password)'}
+                          {resetting ? t('inviteParent.resetting') : `🔄 ${t('inviteParent.resetCode')}`}
                         </button>
                       </div>
                     </div>
@@ -174,14 +176,14 @@ export default function InviteParentModal({
                 <div className="text-center py-6">
                   <div className="text-4xl mb-3">🔑</div>
                   <p className="text-gray-600 mb-4">
-                    Generate an access code for parents to view {childName}'s progress.
+                    {t('inviteParent.generateCode')} {childName}'s {t('inviteParent.progress')}.
                   </p>
                   <button
                     onClick={createInvite}
                     disabled={creating}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-medium transition disabled:opacity-50"
                   >
-                    {creating ? 'Generating...' : '✉️ Generate Access Code'}
+                    {creating ? t('inviteParent.generating') : `✉️ ${t('inviteParent.generateAccessCode')}`}
                   </button>
                 </div>
               )}
@@ -189,7 +191,7 @@ export default function InviteParentModal({
               {/* Previous Codes (Optional) */}
               {invites.filter(inv => inv.status !== 'active').length > 0 && (
                 <div className="mt-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">Previous Codes</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">{t('inviteParent.previousCodes')}</h3>
                   <div className="space-y-2">
                     {invites.filter(inv => inv.status !== 'active').map(invite => (
                       <div
@@ -218,7 +220,7 @@ export default function InviteParentModal({
             onClick={onClose}
             className="w-full py-2 text-gray-600 hover:text-gray-800 font-medium"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>

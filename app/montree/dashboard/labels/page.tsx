@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 
 type Student = {
@@ -14,10 +15,10 @@ type Student = {
 
 type Template = 'locker' | 'nametag' | 'cubby';
 
-const TEMPLATES: { id: Template; name: string; icon: string; desc: string; cols: number }[] = [
-  { id: 'locker', name: 'Locker Labels', icon: '🚪', desc: 'Large — 2 per row', cols: 2 },
-  { id: 'nametag', name: 'Name Tags', icon: '📛', desc: 'Medium — 3 per row', cols: 3 },
-  { id: 'cubby', name: 'Cubby / Bed Tags', icon: '🛏️', desc: 'Small — 4 per row', cols: 4 },
+const TEMPLATES: { id: Template; name: string; nameKey: string; icon: string; descKey: string; cols: number }[] = [
+  { id: 'locker', name: '', nameKey: 'labels.locker_labels', icon: '🚪', descKey: 'labels.locker_desc', cols: 2 },
+  { id: 'nametag', name: '', nameKey: 'labels.name_tags', icon: '📛', descKey: 'labels.nametag_desc', cols: 3 },
+  { id: 'cubby', name: '', nameKey: 'labels.cubby_bed_tags', icon: '🛏️', descKey: 'labels.cubby_desc', cols: 4 },
 ];
 
 // Soft pastel backgrounds for fallback letter circles
@@ -27,6 +28,7 @@ const COLORS = [
 ];
 
 export default function LabelsPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +78,7 @@ export default function LabelsPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-3 animate-pulse">🏷️</div>
-          <p className="text-slate-400">Loading students...</p>
+          <p className="text-slate-400">{t('labels.loading')}</p>
         </div>
       </div>
     );
@@ -93,35 +95,35 @@ export default function LabelsPage() {
               ←
             </button>
             <span className="text-xl">🏷️</span>
-            <h1 className="font-bold text-slate-800">Label Generator</h1>
+            <h1 className="font-bold text-slate-800">{t('labels.label_generator')}</h1>
           </div>
           <button
             onClick={() => window.print()}
             disabled={selectedStudents.length === 0}
             className="px-4 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            🖨️ Print
+            🖨️ {t('common.print')}
           </button>
         </div>
 
         <main className="p-4 max-w-3xl mx-auto space-y-6">
           {/* Template Picker */}
           <section>
-            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Template</h2>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.template')}</h2>
             <div className="grid grid-cols-3 gap-3">
-              {TEMPLATES.map(t => (
+              {TEMPLATES.map(tmpl => (
                 <button
-                  key={t.id}
-                  onClick={() => setTemplate(t.id)}
+                  key={tmpl.id}
+                  onClick={() => setTemplate(tmpl.id)}
                   className={`p-4 rounded-xl border-2 text-center transition-all ${
-                    template === t.id
+                    template === tmpl.id
                       ? 'border-blue-500 bg-blue-50 shadow-sm'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
-                  <div className="text-2xl mb-1">{t.icon}</div>
-                  <div className="font-medium text-sm text-slate-800">{t.name}</div>
-                  <div className="text-xs text-slate-400 mt-0.5">{t.desc}</div>
+                  <div className="text-2xl mb-1">{tmpl.icon}</div>
+                  <div className="font-medium text-sm text-slate-800">{t(tmpl.nameKey)}</div>
+                  <div className="text-xs text-slate-400 mt-0.5">{t(tmpl.descKey)}</div>
                 </button>
               ))}
             </div>
@@ -131,12 +133,12 @@ export default function LabelsPage() {
           <section>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">
-                Students ({selected.size}/{students.length})
+                {t('labels.students')} ({selected.size}/{students.length})
               </h2>
               <div className="flex gap-2">
-                <button onClick={selectAll} className="text-xs text-blue-500 hover:underline">Select All</button>
+                <button onClick={selectAll} className="text-xs text-blue-500 hover:underline">{t('labels.select_all')}</button>
                 <span className="text-slate-300">|</span>
-                <button onClick={selectNone} className="text-xs text-slate-400 hover:underline">None</button>
+                <button onClick={selectNone} className="text-xs text-slate-400 hover:underline">{t('labels.none')}</button>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -172,7 +174,7 @@ export default function LabelsPage() {
           {/* Preview */}
           {selectedStudents.length > 0 && (
             <section>
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Preview</h2>
+              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.preview')}</h2>
               <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
                 <div
                   className="grid gap-4"
@@ -194,7 +196,7 @@ export default function LabelsPage() {
 
           {selectedStudents.length === 0 && (
             <div className="text-center py-8 text-slate-400">
-              <p>Select students above to see the preview</p>
+              <p>{t('labels.select_to_preview')}</p>
             </div>
           )}
         </main>

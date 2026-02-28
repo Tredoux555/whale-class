@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
@@ -19,9 +20,10 @@ interface WorkProgress {
 }
 
 export default function ProgressDetailPage() {
+  const { t } = useI18n();
   const params = useParams();
   const childId = params.childId as string;
-  
+
   const [progress, setProgress] = useState<WorkProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'mastered' | 'practicing'>('all');
@@ -36,7 +38,7 @@ export default function ProgressDetailPage() {
         setLoading(false);
       })
       .catch(() => {
-        toast.error('Failed to load');
+        toast.error(t('progress.load_error'));
         setLoading(false);
       });
   }, [childId]);
@@ -87,24 +89,24 @@ export default function ProgressDetailPage() {
       {/* Header */}
       <div className="max-w-2xl mx-auto mb-6">
         <Link href={`/montree/dashboard/${childId}/progress`} className="text-emerald-600 text-sm mb-2 inline-block">
-          ← Back to Progress
+          ← {t('progress.back')}
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800">Detailed Progress</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t('progress.detailed_title')}</h1>
       </div>
 
       {/* Stats Cards */}
       <div className="max-w-2xl mx-auto grid grid-cols-3 gap-3 mb-6">
         <div className="bg-white rounded-xl p-4 text-center shadow-sm">
           <div className="text-3xl font-bold text-emerald-600">{totalMastered}</div>
-          <div className="text-xs text-gray-500">Mastered</div>
+          <div className="text-xs text-gray-500">{t('progress.mastered')}</div>
         </div>
         <div className="bg-white rounded-xl p-4 text-center shadow-sm">
           <div className="text-3xl font-bold text-blue-500">{totalPracticing}</div>
-          <div className="text-xs text-gray-500">Practicing</div>
+          <div className="text-xs text-gray-500">{t('progress.practicing')}</div>
         </div>
         <div className="bg-white rounded-xl p-4 text-center shadow-sm">
           <div className="text-3xl font-bold text-gray-600">{progress.length}</div>
-          <div className="text-xs text-gray-500">Total Works</div>
+          <div className="text-xs text-gray-500">{t('progress.total_works')}</div>
         </div>
       </div>
 
@@ -117,7 +119,7 @@ export default function ProgressDetailPage() {
               !selectedArea ? 'bg-emerald-500 text-white' : 'bg-white text-gray-600'
             }`}
           >
-            All Areas
+            {t('progress.all_areas')}
           </button>
           {areaStats.map(area => (
             <button
@@ -146,9 +148,9 @@ export default function ProgressDetailPage() {
                 activeTab === tab ? 'bg-emerald-500 text-white' : 'text-gray-500'
               }`}
             >
-              {tab === 'all' ? `All (${progress.length})` : 
-               tab === 'mastered' ? `Mastered (${totalMastered})` : 
-               `Practicing (${totalPracticing})`}
+              {tab === 'all' ? `${t('progress.all')} (${progress.length})` :
+               tab === 'mastered' ? `${t('progress.mastered')} (${totalMastered})` :
+               `${t('progress.practicing')} (${totalPracticing})`}
             </button>
           ))}
         </div>
@@ -159,7 +161,7 @@ export default function ProgressDetailPage() {
         {filteredProgress.length === 0 ? (
           <div className="bg-white rounded-xl p-8 text-center">
             <div className="text-4xl mb-2">📋</div>
-            <p className="text-gray-500">No works found</p>
+            <p className="text-gray-500">{t('progress.no_works')}</p>
           </div>
         ) : (
           filteredProgress.map(p => {
@@ -180,8 +182,8 @@ export default function ProgressDetailPage() {
                   p.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
                   'bg-amber-100 text-amber-700'
                 }`}>
-                  {p.status === 'completed' ? '✓ Mastered' : 
-                   p.status === 'practicing' ? 'Practicing' : 'Presented'}
+                  {p.status === 'completed' ? `✓ ${t('progress.mastered')}` :
+                   p.status === 'practicing' ? t('progress.practicing') : t('progress.presented')}
                 </div>
               </div>
             );
@@ -192,7 +194,7 @@ export default function ProgressDetailPage() {
       {/* Area Breakdown */}
       {areaStats.length > 0 && !selectedArea && (
         <div className="max-w-2xl mx-auto mt-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Progress by Area</h2>
+          <h2 className="text-lg font-bold text-gray-800 mb-4">{t('progress.by_area')}</h2>
           <div className="space-y-3">
             {areaStats.map(area => (
               <div key={area.key} className="bg-white rounded-xl p-4 shadow-sm">

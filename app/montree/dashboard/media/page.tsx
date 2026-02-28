@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 import MediaGallery from '@/components/montree/media/MediaGallery';
 import MediaDetailModal from '@/components/montree/media/MediaDetailModal';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
@@ -18,12 +19,12 @@ type FilterTab = 'all' | 'untagged' | 'recent';
 type AreaFilter = 'all' | 'practical_life' | 'sensorial' | 'mathematics' | 'language' | 'cultural';
 
 const AREA_LABELS: Record<AreaFilter, string> = {
-  'all': 'All Areas',
-  'practical_life': '🏠 Practical Life',
-  'sensorial': '👁️ Sensorial',
-  'mathematics': '🔢 Mathematics',
-  'language': '📚 Language',
-  'cultural': '🌍 Cultural',
+  'all': 'media.all_areas',
+  'practical_life': 'media.practical_life',
+  'sensorial': 'media.sensorial',
+  'mathematics': 'media.mathematics',
+  'language': 'media.language',
+  'cultural': 'media.cultural',
 };
 
 // ============================================
@@ -31,6 +32,7 @@ const AREA_LABELS: Record<AreaFilter, string> = {
 // ============================================
 
 export default function MediaPage() {
+  const { t } = useI18n();
   const [media, setMedia] = useState<MontreeMedia[]>([]);
   const [children, setChildren] = useState<MontreeChild[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,11 +160,11 @@ export default function MediaPage() {
         setSelectionMode(false);
       } else {
         console.error('Delete failed:', data.error);
-        alert('Failed to delete photos. Please try again.');
+        alert(t('media.delete_failed'));
       }
     } catch (err) {
       console.error('Bulk delete error:', err);
-      alert('Error deleting photos');
+      alert(t('media.delete_error_general'));
     } finally {
       setDeleting(false);
     }
@@ -198,9 +200,9 @@ export default function MediaPage() {
                 className="w-5 h-5 cursor-pointer accent-blue-500 rounded"
               />
               <div>
-                <h1 className="font-bold text-gray-800">Select Photos</h1>
+                <h1 className="font-bold text-gray-800">{t('media.select_photos')}</h1>
                 <p className="text-xs text-gray-500">
-                  {selectedIds.size} selected
+                  {selectedIds.size} {t('media.selected')}
                 </p>
               </div>
             </>
@@ -208,9 +210,9 @@ export default function MediaPage() {
             <div className="flex items-center gap-2">
               <span className="text-xl">🖼️</span>
               <div>
-                <h1 className="font-bold text-gray-800">Photo Gallery</h1>
+                <h1 className="font-bold text-gray-800">{t('media.photo_gallery')}</h1>
                 <p className="text-xs text-gray-500">
-                  {media.length} photo{media.length !== 1 ? 's' : ''} • Tap to edit
+                  {media.length} {media.length === 1 ? t('media.photo_singular') : t('media.photo_plural')} • {t('media.tap_to_edit')}
                 </p>
               </div>
             </div>
@@ -260,7 +262,7 @@ export default function MediaPage() {
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          🕐 Recent
+          🕐 {t('media.recent')}
         </button>
         <button
           onClick={() => { setActiveTab('untagged'); setSelectedChildId(null); }}
@@ -270,7 +272,7 @@ export default function MediaPage() {
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          ⚠️ Untagged
+          ⚠️ {t('media.untagged')}
         </button>
 
         {/* Divider */}
@@ -303,7 +305,7 @@ export default function MediaPage() {
       {/* Area filter */}
       <div className="bg-gray-50 border-b border-gray-100 px-4 py-3 flex gap-2 overflow-x-auto">
         <span className="text-xs font-semibold text-gray-600 whitespace-nowrap flex items-center pr-2">
-          Area:
+          {t('media.area')}:
         </span>
         {(['all', 'practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as AreaFilter[]).map(area => (
           <button
@@ -315,7 +317,7 @@ export default function MediaPage() {
                 : 'bg-white text-gray-600 border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50'
             }`}
           >
-            {AREA_LABELS[area]}
+            {t(AREA_LABELS[area])}
           </button>
         ))}
       </div>
@@ -329,10 +331,10 @@ export default function MediaPage() {
           onMediaClick={selectionMode ? undefined : handleMediaClick}
           emptyMessage={
             activeTab === 'untagged'
-              ? 'No untagged photos'
+              ? t('media.no_untagged')
               : selectedChildId
-                ? 'No photos for this child yet'
-                : 'No photos yet. Start capturing!'
+                ? t('media.no_photos_child')
+                : t('media.no_photos_start')
           }
           emptyIcon={activeTab === 'untagged' ? '✅' : '📷'}
           selectedIds={selectedIds}
@@ -359,9 +361,9 @@ export default function MediaPage() {
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">🗑️</span>
               </div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Delete {selectedIds.size} photo{selectedIds.size !== 1 ? 's' : ''}?</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">{t('media.delete_confirm_title')} {selectedIds.size} {selectedIds.size === 1 ? t('media.photo_singular') : t('media.photo_plural')}?</h2>
               <p className="text-sm text-gray-600 mb-6">
-                This action cannot be undone. The selected photos will be permanently deleted.
+                {t('media.delete_confirm_desc')}
               </p>
             </div>
 
@@ -371,7 +373,7 @@ export default function MediaPage() {
                 disabled={deleting}
                 className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleBulkDelete}
@@ -381,10 +383,10 @@ export default function MediaPage() {
                 {deleting ? (
                   <>
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Deleting...
+                    {t('media.deleting')}
                   </>
                 ) : (
-                  <>Delete</>
+                  <>{t('common.delete')}</>
                 )}
               </button>
             </div>

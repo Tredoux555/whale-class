@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas-pro';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface FeedbackButtonProps {
   // Optional overrides - if not provided, auto-detects from session
@@ -26,11 +27,12 @@ interface DetectedSession {
   userName?: string;
 }
 
-const feedbackTypes: { type: FeedbackType; emoji: string; label: string }[] = [
-  { type: 'bug', emoji: '🐛', label: 'Bug' },
-  { type: 'idea', emoji: '💡', label: 'Idea' },
-  { type: 'help', emoji: '❓', label: 'Help' },
-  { type: 'praise', emoji: '👍', label: 'Love it' },
+// Feedback types defined statically (labels will be translated via t())
+const feedbackTypes: { type: FeedbackType; emoji: string; labelKey: string }[] = [
+  { type: 'bug', emoji: '🐛', labelKey: 'feedback.type.bug' },
+  { type: 'idea', emoji: '💡', labelKey: 'feedback.type.idea' },
+  { type: 'help', emoji: '❓', labelKey: 'feedback.type.help' },
+  { type: 'praise', emoji: '👍', labelKey: 'feedback.type.praise' },
 ];
 
 // Auto-detect user session from localStorage
@@ -77,6 +79,7 @@ export default function FeedbackButton({
   userId: propUserId,
   userName: propUserName
 }: FeedbackButtonProps) {
+  const { t } = useI18n();
   const [sessionData, setSessionData] = useState<DetectedSession | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -280,11 +283,11 @@ export default function FeedbackButton({
           setIsOpen(false);
         }, 1500);
       } else {
-        alert('Failed to send feedback. Please try again.');
+        alert(t('feedback.send_failed'));
       }
     } catch (error) {
       console.error('Feedback error:', error);
-      alert('Failed to send feedback. Please try again.');
+      alert(t('feedback.send_failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -296,7 +299,7 @@ export default function FeedbackButton({
       <div className="fixed bottom-6 right-6 z-50">
         <div className="bg-emerald-500 text-white rounded-2xl px-6 py-4 shadow-lg flex items-center gap-3 animate-bounce">
           <span className="text-2xl">✓</span>
-          <span className="font-medium">Thanks for your feedback!</span>
+          <span className="font-medium">{t('feedback.success')}</span>
         </div>
       </div>
     );
@@ -309,7 +312,7 @@ export default function FeedbackButton({
         <div className="absolute bottom-16 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50">
-            <span className="font-semibold text-gray-800">Quick Feedback</span>
+            <span className="font-semibold text-gray-800">{t('feedback.title')}</span>
             <button
               onClick={() => setIsOpen(false)}
               className="text-gray-400 hover:text-gray-600 text-xl leading-none"
@@ -321,7 +324,7 @@ export default function FeedbackButton({
           {/* Type Selection */}
           <div className="p-4">
             <div className="flex gap-2 mb-4">
-              {feedbackTypes.map(({ type, emoji, label }) => (
+              {feedbackTypes.map(({ type, emoji, labelKey }) => (
                 <button
                   key={type}
                   onClick={() => setSelectedType(type)}
@@ -332,7 +335,7 @@ export default function FeedbackButton({
                   }`}
                 >
                   <div className="text-xl">{emoji}</div>
-                  <div className="text-xs text-gray-600 mt-1">{label}</div>
+                  <div className="text-xs text-gray-600 mt-1">{t(labelKey)}</div>
                 </button>
               ))}
             </div>
@@ -353,7 +356,7 @@ export default function FeedbackButton({
                     ×
                   </button>
                   <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 text-white text-xs rounded">
-                    📸 Screenshot attached
+                    📸 {t('feedback.screenshot_attached')}
                   </div>
                 </div>
               ) : (
@@ -369,17 +372,17 @@ export default function FeedbackButton({
                   {isCapturing ? (
                     <>
                       <span className="animate-spin">⏳</span>
-                      Capturing...
+                      {t('feedback.capturing')}
                     </>
                   ) : screenshotError ? (
                     <>
                       <span>⚠️</span>
-                      Capture failed — tap to retry
+                      {t('feedback.capture_failed')}
                     </>
                   ) : (
                     <>
                       <span>📸</span>
-                      Capture Screen
+                      {t('feedback.capture_screen')}
                     </>
                   )}
                 </button>
@@ -392,11 +395,11 @@ export default function FeedbackButton({
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={
-                selectedType === 'bug' ? "What's not working?" :
-                selectedType === 'idea' ? "What would make it better?" :
-                selectedType === 'help' ? "What do you need help with?" :
-                selectedType === 'praise' ? "What do you love?" :
-                "Tell us what's on your mind..."
+                selectedType === 'bug' ? t('feedback.placeholder.bug') :
+                selectedType === 'idea' ? t('feedback.placeholder.idea') :
+                selectedType === 'help' ? t('feedback.placeholder.help') :
+                selectedType === 'praise' ? t('feedback.placeholder.praise') :
+                t('feedback.placeholder.default')
               }
               className="w-full h-20 p-3 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
@@ -413,10 +416,10 @@ export default function FeedbackButton({
             >
               {isSubmitting ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin">⏳</span> Sending...
+                  <span className="animate-spin">⏳</span> {t('feedback.sending')}
                 </span>
               ) : (
-                `Send${screenshot ? ' with Screenshot' : ''} →`
+                `${t('feedback.send')}${screenshot ? ` ${t('feedback.with_screenshot')}` : ''} →`
               )}
             </button>
           </div>

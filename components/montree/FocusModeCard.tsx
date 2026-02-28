@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================
 // TYPES
@@ -61,6 +62,7 @@ export default function FocusModeCard({
   onTapCard,
   color,
 }: FocusModeCardProps) {
+  const { t } = useI18n();
   const [isLongPressing, setIsLongPressing] = useState(false);
   const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -181,7 +183,7 @@ export default function FocusModeCard({
         ) : (
           <div className="text-center py-2">
             <p className="text-xs text-gray-500">{areaLabel}</p>
-            <p className="text-lg text-gray-400 mt-1">+ Add</p>
+            <p className="text-lg text-gray-400 mt-1">+ {t('focus_mode.add')}</p>
           </div>
         )}
       </div>
@@ -189,7 +191,7 @@ export default function FocusModeCard({
       {/* Long press hint (subtle) */}
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
         <p className="text-[10px] text-gray-400">
-          {work ? 'Hold icon to switch' : 'Tap to add'}
+          {work ? t('focus_mode.hold_to_switch') : t('focus_mode.tap_to_add')}
         </p>
       </div>
     </div>
