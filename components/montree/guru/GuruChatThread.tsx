@@ -17,7 +17,6 @@ interface ChatMessage {
   content: string;
   isUser: boolean;
   timestamp: string;
-  actions?: Array<{ tool: string; success: boolean; message: string }>;
 }
 
 interface GuruChatThreadProps {
@@ -203,7 +202,6 @@ export default function GuruChatThread({
           content: data.insight,
           isUser: false,
           timestamp: new Date().toISOString(),
-          actions: data.actions || undefined,
         };
         setMessages(prev => [...prev, guruMsg]);
       } else if (data.error === 'guru_limit_reached') {
@@ -287,7 +285,6 @@ export default function GuruChatThread({
             content={msg.content}
             isUser={msg.isUser}
             timestamp={msg.timestamp}
-            actions={msg.actions}
           />
         ))}
 

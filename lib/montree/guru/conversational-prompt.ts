@@ -285,9 +285,16 @@ function buildEmotionalMirroringInstructions(
   return text;
 }
 
+export type GuruMode = 'SETUP' | 'INTAKE' | 'CHECKIN' | 'REFLECTION' | 'NORMAL';
+
+/** Modes where Guru tools (shelf/progress/observations) are enabled */
+export const TOOL_ENABLED_MODES: GuruMode[] = ['SETUP', 'INTAKE', 'CHECKIN'];
+
 export interface ConversationalPromptParts {
   systemPrompt: string;
   userPrompt: string;
+  /** The conversation mode determines whether tools are enabled */
+  mode: GuruMode;
 }
 
 /**
@@ -331,18 +338,24 @@ export function buildConversationalPrompt(
   const dayOfWeek = proactive?.dayOfWeek ?? new Date().getUTCDay();
 
   let modeInstructions: string;
+  let mode: GuruMode;
   if (shelfEmpty && intakeComplete) {
     // Feature 1: Cold Start — shelf is empty but intake is done (parent needs guided shelf setup)
     modeInstructions = SETUP_MODE;
+    mode = 'SETUP';
   } else if (!intakeComplete) {
     modeInstructions = INTAKE_MODE;
+    mode = 'INTAKE';
   } else if (isCheckinDue) {
     modeInstructions = CHECKIN_MODE;
+    mode = 'CHECKIN';
   } else if (daysSince >= 5 || dayOfWeek === 0) {
     // Feature 3: Weekly Rhythm — 5+ days gap or Sunday
     modeInstructions = REFLECTION_MODE;
+    mode = 'REFLECTION';
   } else {
     modeInstructions = NORMAL_MODE;
+    mode = 'NORMAL';
   }
 
   // Build shelf context
@@ -479,7 +492,7 @@ export function buildConversationalPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\n${formattedKnowledge}\n\nPARENT'S MESSAGE:\n${question}`;
   }
 
-  return { systemPrompt, userPrompt };
+  return { systemPrompt, userPrompt, mode };
 }
 
 /**
