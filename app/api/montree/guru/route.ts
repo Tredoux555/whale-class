@@ -10,7 +10,7 @@ import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS, getModelForTier } from '@/
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
-import { buildConversationalPrompt, buildCelebrationContext, type ProactiveContext } from '@/lib/montree/guru/conversational-prompt';
+import { buildConversationalPrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
@@ -280,6 +280,7 @@ export async function POST(request: NextRequest) {
     // 3. Build prompt — conversational mode for parent chat, structured for teachers
     let systemPrompt: string;
     let userPrompt: string;
+    let guruMode: GuruMode = 'NORMAL'; // Set by conversational prompt builder; unused in structured mode
     const isConversational = conversational && isParentRole;
 
     if (isConversational) {
@@ -339,6 +340,7 @@ export async function POST(request: NextRequest) {
       }
 
       const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt);
+      guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt
       if (brainWisdom) {
@@ -388,7 +390,9 @@ export async function POST(request: NextRequest) {
 
     if (isConversational) {
       // =============================================
-      // CONVERSATIONAL MODE — with tool-use support
+      // CONVERSATIONAL MODE
+      // Tools only enabled for SETUP/INTAKE/CHECKIN.
+      // NORMAL/REFLECTION = pure conversation, no tools.
       // =============================================
       let currentMessages: MessageParam[] = [
         ...conversationMessages.map(m => ({ ...m })),
@@ -396,21 +400,26 @@ export async function POST(request: NextRequest) {
       ];
 
       // Select model and token limit based on guru tier
-      // Issue #33: getModelForTier already has a default case, but guard at call site too
       const guruModel = getModelForTier(guruTier) || AI_MODEL;
-      // Conversational mode needs higher token limits for tool-use + emotional responses
       const guruMaxTokens = guruTier === 'sonnet' ? 4096 : 3072;
 
-      // First Claude call — may return tool_use blocks
+      // Only enable tools for modes that genuinely need them (shelf setup, intake, check-ins)
+      // NORMAL and REFLECTION = pure conversation — tools cause over-eager behavior
+      const toolsEnabled = TOOL_ENABLED_MODES.includes(guruMode);
+
+      // Build API params — tools only included when mode requires them
+      const baseApiParams = {
+        model: guruModel,
+        max_tokens: guruMaxTokens,
+        system: systemPrompt,
+        messages: currentMessages,
+      };
+      const apiParams = toolsEnabled
+        ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: { type: "auto" as const } }
+        : baseApiParams;
+
       let response = await withTimeout(
-        anthropic.messages.create({
-          model: guruModel,
-          max_tokens: guruMaxTokens,
-          system: systemPrompt,
-          tools: GURU_TOOLS,
-          tool_choice: { type: "auto" },
-          messages: currentMessages,
-        }),
+        anthropic.messages.create(apiParams),
         API_TIMEOUT_MS,
         'Guru initial call'
       );
@@ -418,7 +427,7 @@ export async function POST(request: NextRequest) {
       const actionsTaken: Array<{ tool: string } & ToolResult> = [];
       let rounds = 0;
 
-      // Multi-turn tool loop
+      // Multi-turn tool loop (only runs if tools were enabled and Claude chose to use them)
       while (response.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS) {
         rounds++;
         const toolUseBlocks = response.content.filter(
@@ -426,7 +435,6 @@ export async function POST(request: NextRequest) {
         );
 
         const toolResults: ToolResultBlockParam[] = [];
-        // Execute tools sequentially to avoid settings JSONB race conditions
         for (const toolCall of toolUseBlocks) {
           try {
             const result = await executeTool(
@@ -454,7 +462,6 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Accumulate messages for next round (includes all previous turns)
         currentMessages = [
           ...currentMessages,
           { role: 'assistant' as const, content: response.content as unknown as ContentBlockParam[] },
@@ -463,9 +470,7 @@ export async function POST(request: NextRequest) {
 
         response = await withTimeout(
           anthropic.messages.create({
-            model: guruModel,
-            max_tokens: guruMaxTokens,
-            system: systemPrompt,
+            ...baseApiParams,
             tools: GURU_TOOLS,
             tool_choice: { type: "auto" },
             messages: currentMessages,
@@ -475,30 +480,65 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Guard: if loop exited due to MAX_TOOL_ROUNDS, log it
       if (rounds >= MAX_TOOL_ROUNDS && response.stop_reason === 'tool_use') {
-        console.warn(`[Guru] Max tool rounds (${MAX_TOOL_ROUNDS}) reached. Some actions may be incomplete.`);
+        console.warn(`[Guru] Max tool rounds (${MAX_TOOL_ROUNDS}) reached.`);
       }
 
-      // Extract final text (with fallback for empty responses after tool loop)
+      // Extract final text response
       let responseText = response.content
         .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
         .map(b => b.text)
         .join('\n');
 
+      // SAFETY NET: If tools consumed the response (Claude used tools but produced no text),
+      // make one final call WITHOUT tools to force a proper text answer.
+      // This ensures the parent ALWAYS gets a real conversational response.
       if (!responseText.trim() && actionsTaken.length > 0) {
-        // Claude used tools but didn't produce a text response — generate a summary
-        const successes = actionsTaken.filter(a => a.success);
-        responseText = successes.length > 0
-          ? `I've made ${successes.length} update${successes.length > 1 ? 's' : ''}: ${successes.map(a => a.message).join(', ')}.`
-          : "I tried to make some changes but ran into issues. Could you try again?";
+        console.warn(`[Guru] No text after ${rounds} tool rounds. Making fallback text-only call.`);
+        const actionSummary = actionsTaken
+          .filter(a => a.success)
+          .map(a => `${a.tool}: ${a.message}`)
+          .join('; ');
+
+        const fallbackMessages: MessageParam[] = [
+          ...currentMessages,
+          {
+            role: 'user' as const,
+            content: `You just performed these actions: ${actionSummary}. Now respond to the parent naturally about what you did and answer their original question. Do NOT list tool names — speak conversationally.`,
+          },
+        ];
+
+        const fallbackResponse = await withTimeout(
+          anthropic.messages.create({
+            model: guruModel,
+            max_tokens: guruMaxTokens,
+            system: systemPrompt,
+            messages: fallbackMessages,
+          }),
+          API_TIMEOUT_MS,
+          'Guru fallback text call'
+        );
+
+        responseText = fallbackResponse.content
+          .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
+          .map(b => b.text)
+          .join('\n');
+
+        // Update token counts to include fallback call
+        const fb = fallbackResponse.usage || {};
+        response = { ...response, usage: {
+          input_tokens: (response.usage?.input_tokens || 0) + (fb.input_tokens || 0),
+          output_tokens: (response.usage?.output_tokens || 0) + (fb.output_tokens || 0),
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 0,
+        }};
       }
 
       // Log cost estimate (Haiku: $0.80/$4.00 per 1M, Sonnet: $3/$15 per 1M)
       const { input_tokens = 0, output_tokens = 0 } = response.usage || {};
       const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
       const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
-      console.log(`[Guru] Model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+      console.log(`[Guru] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
       const processingTime = Date.now() - startTime;
 
@@ -517,6 +557,8 @@ export async function POST(request: NextRequest) {
             age: `${childContext.age_years}y ${childContext.age_months}m`,
             mastered_count: childContext.mastered_count || 0,
             conversational: true,
+            mode: guruMode,
+            tools_enabled: toolsEnabled,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
             guru_tier: guruTier,
@@ -568,10 +610,10 @@ export async function POST(request: NextRequest) {
       // Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
       // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
+      // Actions are internal (saved in context_snapshot) — never exposed to the parent
       return NextResponse.json({
         success: true,
         insight: responseText,
-        actions: actionsTaken.length > 0 ? actionsTaken : undefined,
         interaction_id: saved?.id,
         conversational: true,
       });
