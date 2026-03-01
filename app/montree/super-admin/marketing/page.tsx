@@ -23,7 +23,8 @@ const SECTIONS = [
     tools: [
       { name: 'Sales Playbook', desc: 'School intel, scheduled outreach plan, personalized emails for 16 targets', href: '/montree/super-admin/marketing/sales-playbook', icon: '🎯' },
       { name: 'Prospect HQ', desc: 'School hit list, WhatsApp templates', href: '/montree/super-admin/marketing/prospects', icon: '📋' },
-      { name: 'Outreach', desc: 'Cold email templates', href: '/montree/super-admin/marketing/outreach', icon: '✉️' },
+      { name: 'Cold Email HQ', desc: '4-touch Ink Master sequence + school tracker', href: '/montree/super-admin/marketing/cold-email', icon: '✉️' },
+      { name: 'Outreach (Legacy)', desc: 'Old cold email templates', href: '/montree/super-admin/marketing/outreach', icon: '📝' },
       { name: 'Growth Engine', desc: 'Influencers, SEO, onboarding emails, testimonials', href: '/montree/super-admin/marketing/growth', icon: '📈' },
     ],
   },
