@@ -24,6 +24,7 @@ interface WeeklyAnalysis {
   concentration_score: number;
   recommended_works: Array<{
     work_name: string;
+    chineseName?: string | null;
     area: string;
     reason: string;
     home_activity?: string;
@@ -69,7 +70,7 @@ function LoadingScreen({ t }: { t: (key: string) => string }) {
 function ParentWeeklyReviewContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [child, setChild] = useState<Child | null>(null);
   const [analysis, setAnalysis] = useState<WeeklyAnalysis | null>(null);
   const [homeActivities, setHomeActivities] = useState<HomeActivity[]>([]);
@@ -88,14 +89,15 @@ function ParentWeeklyReviewContent() {
     try {
       const weekParam = searchParams.get('week');
       const testChild = searchParams.get('test');
-      
+
       // Build URL
       let url = '/api/montree/parent/weekly-review';
       const params = new URLSearchParams();
       if (weekParam) params.set('week', weekParam);
       if (testChild) params.set('test', testChild);
+      params.set('locale', locale);
       if (params.toString()) url += `?${params.toString()}`;
-      
+
       const res = await fetch(url);
       const data = await res.json();
 
@@ -132,8 +134,9 @@ function ParentWeeklyReviewContent() {
   const formatWeekRange = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    return `${startDate.toLocaleDateString('en-US', options)} - ${endDate.toLocaleDateString('en-US', options)}`;
+    return `${startDate.toLocaleDateString(dateLocale, options)} - ${endDate.toLocaleDateString(dateLocale, options)}`;
   };
 
   const getAreaIcon = (area: string): string => {
@@ -149,66 +152,26 @@ function ParentWeeklyReviewContent() {
   };
 
   const getAreaName = (area: string): string => {
-    const names: Record<string, string> = {
-      practical_life: 'Practical Life',
-      sensorial: 'Sensorial',
-      mathematics: 'Mathematics',
-      math: 'Math',
-      language: 'Language',
-      cultural: 'Cultural',
-    };
-    return names[area?.toLowerCase()] || area || 'Other';
+    const key = area?.toLowerCase();
+    const normalized = key === 'math' ? 'mathematics' : key;
+    return t(`area.${normalized}` as any) || area || 'Other';
   };
 
   const getSensitivePeriodInfo = (period: string): { name: string; icon: string; description: string } => {
-    const info: Record<string, { name: string; icon: string; description: string }> = {
-      order: { 
-        name: 'Order', 
-        icon: '📦', 
-        description: 'Your child loves routines and putting things in their place!' 
-      },
-      language: { 
-        name: 'Language', 
-        icon: '💬', 
-        description: 'This is a great time for reading together and learning new words!' 
-      },
-      movement: { 
-        name: 'Movement', 
-        icon: '🏃', 
-        description: 'Your child is developing fine and gross motor skills through active work.' 
-      },
-      sensory: { 
-        name: 'Sensory', 
-        icon: '🎨', 
-        description: 'Exploring textures, colors, sounds, and smells helps build understanding.' 
-      },
-      small_objects: { 
-        name: 'Small Objects', 
-        icon: '🔍', 
-        description: 'Fascination with tiny things shows growing focus and attention to detail.' 
-      },
-      social: { 
-        name: 'Social', 
-        icon: '👫', 
-        description: 'Learning to work with others and make friends is blossoming!' 
-      },
-      writing: { 
-        name: 'Writing', 
-        icon: '✏️', 
-        description: 'Your child is ready to express ideas through marks and letters.' 
-      },
-      reading: { 
-        name: 'Reading', 
-        icon: '📖', 
-        description: 'Connecting sounds to letters opens up a whole new world!' 
-      },
-      math: { 
-        name: 'Math', 
-        icon: '🔢', 
-        description: 'Numbers, patterns, and quantities are becoming meaningful.' 
-      },
+    const icons: Record<string, string> = {
+      order: '📦', language: '💬', movement: '🏃', sensory: '🎨',
+      small_objects: '🔍', social: '👫', writing: '✏️', reading: '📖', math: '🔢',
     };
-    return info[period] || { name: period, icon: '⭐', description: 'A special time for learning!' };
+    const nameKey = `sensitivePeriod.${period}.name` as any;
+    const descKey = `sensitivePeriod.${period}.description` as any;
+    const name = t(nameKey);
+    // If translation returns the key itself, it's not found — use default
+    const isFound = name !== nameKey;
+    return {
+      name: isFound ? name : t('sensitivePeriod.default.name' as any),
+      icon: icons[period] || '⭐',
+      description: isFound ? t(descKey) : t('sensitivePeriod.default.description' as any),
+    };
   };
 
   if (loading) return <LoadingScreen t={t} />;
@@ -315,13 +278,13 @@ function ParentWeeklyReviewContent() {
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{child.name}&apos;s Week</h2>
-              <p className="text-emerald-100">{child.classroom_name || 'My Classroom'}</p>
+              <h2 className="text-2xl font-bold">{t('parentWeeklyReview.childWeek' as any).replace('{childName}', child.name)}</h2>
+              <p className="text-emerald-100">{child.classroom_name || t('parentWeeklyReview.myClassroom' as any)}</p>
             </div>
           </div>
           <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
             <p className="text-lg leading-relaxed">
-              {analysis.parent_summary || `${child.name} had a wonderful week of exploration and learning!`}
+              {analysis.parent_summary || t('parentWeeklyReview.defaultSummary' as any).replace('{childName}', child.name)}
             </p>
           </div>
         </div>
@@ -454,7 +417,7 @@ function ParentWeeklyReviewContent() {
                 <div key={idx} className="flex items-start gap-3 p-3 bg-purple-50 rounded-xl border border-purple-100">
                   <span className="text-xl">{getAreaIcon(rec.area)}</span>
                   <div>
-                    <p className="font-medium text-gray-900">{rec.work_name}</p>
+                    <p className="font-medium text-gray-900">{locale === 'zh' && rec.chineseName ? rec.chineseName : rec.work_name}</p>
                     <p className="text-sm text-gray-600">{rec.reason}</p>
                   </div>
                 </div>
@@ -466,7 +429,7 @@ function ParentWeeklyReviewContent() {
         {/* Footer */}
         <div className="text-center py-4">
           <p className="text-sm text-gray-400">
-            {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString('en-US', {
+            {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
               month: 'long',
               day: 'numeric',
               year: 'numeric'

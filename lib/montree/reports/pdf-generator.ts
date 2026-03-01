@@ -5,12 +5,13 @@
 import PDFDocument from 'pdfkit';
 import type { PDFReportData, PDFHighlight } from './pdf-types';
 import { PDF_CONFIG, getAreaColor, formatDateRange } from './pdf-types';
+import { getTranslator, type Locale } from '@/lib/montree/i18n/server';
 
 // ============================================
 // MAIN GENERATOR FUNCTION
 // ============================================
 
-export async function generateReportPDF(data: PDFReportData): Promise<Buffer> {
+export async function generateReportPDF(data: PDFReportData, locale: Locale = 'en'): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
       const doc = new PDFDocument({
@@ -24,11 +25,11 @@ export async function generateReportPDF(data: PDFReportData): Promise<Buffer> {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      drawHeader(doc, data);
-      drawSummarySection(doc, data);
-      drawHighlightsSection(doc, data);
-      drawParentMessage(doc, data);
-      drawFooter(doc, data);
+      drawHeader(doc, data, locale);
+      drawSummarySection(doc, data, locale);
+      drawHighlightsSection(doc, data, locale);
+      drawParentMessage(doc, data, locale);
+      drawFooter(doc, data, locale);
 
       doc.end();
     } catch (error) {
@@ -41,22 +42,23 @@ export async function generateReportPDF(data: PDFReportData): Promise<Buffer> {
 // HEADER SECTION
 // ============================================
 
-function drawHeader(doc: PDFKit.PDFDocument, data: PDFReportData) {
+function drawHeader(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize } = PDF_CONFIG;
   const pageWidth = doc.page.width - margins.left - margins.right;
-  
+
   doc.rect(0, 0, doc.page.width, 8).fill(colors.primary);
-  
+
   doc.fontSize(fontSize.title)
     .font(fonts.bold)
     .fillColor(colors.text)
     .text('🌳 ' + data.schoolName, margins.left, margins.top);
-  
+
   doc.moveDown(0.3)
     .fontSize(fontSize.subtitle)
     .font(fonts.regular)
     .fillColor(colors.textLight)
-    .text('Weekly Progress Report');
+    .text(t('report.pdf.title' as any, 'Weekly Progress Report'));
   
   const dividerY = doc.y + 10;
   doc.moveTo(margins.left, dividerY)
@@ -77,7 +79,7 @@ function drawHeader(doc: PDFKit.PDFDocument, data: PDFReportData) {
     .fillColor(colors.text)
     .text(data.childName, margins.left, boxY + 12, { width: pageWidth, align: 'center' });
   
-  const dateRange = formatDateRange(data.weekStart, data.weekEnd);
+  const dateRange = formatDateRange(data.weekStart, data.weekEnd, locale);
   doc.fontSize(fontSize.body)
     .font(fonts.regular)
     .fillColor(colors.textLight)
@@ -90,26 +92,27 @@ function drawHeader(doc: PDFKit.PDFDocument, data: PDFReportData) {
 // SUMMARY SECTION
 // ============================================
 
-function drawSummarySection(doc: PDFKit.PDFDocument, data: PDFReportData) {
+function drawSummarySection(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize, spacing } = PDF_CONFIG;
   const pageWidth = doc.page.width - margins.left - margins.right;
-  
+
   doc.fontSize(fontSize.heading)
     .font(fonts.bold)
     .fillColor(colors.primary)
-    .text('📝 Weekly Summary', margins.left, doc.y);
-  
+    .text('📝 ' + t('report.pdf.weeklySummary' as any, 'Weekly Summary'), margins.left, doc.y);
+
   doc.moveDown(0.5);
-  
+
   doc.fontSize(fontSize.body)
     .font(fonts.regular)
     .fillColor(colors.text)
-    .text(data.summary || 'This week was full of wonderful learning experiences.', {
+    .text(data.summary || t('report.pdf.defaultSummary' as any, 'This week was full of wonderful learning experiences.'), {
       width: pageWidth,
       align: 'left',
       lineGap: 4,
     });
-  
+
   doc.y += spacing.section;
 }
 
@@ -117,33 +120,36 @@ function drawSummarySection(doc: PDFKit.PDFDocument, data: PDFReportData) {
 // HIGHLIGHTS SECTION
 // ============================================
 
-function drawHighlightsSection(doc: PDFKit.PDFDocument, data: PDFReportData) {
+function drawHighlightsSection(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize, spacing } = PDF_CONFIG;
   const pageWidth = doc.page.width - margins.left - margins.right;
-  
+
   if (!data.highlights || data.highlights.length === 0) {
     return;
   }
-  
+
   doc.fontSize(fontSize.heading)
     .font(fonts.bold)
     .fillColor(colors.primary)
-    .text('✨ Learning Highlights', margins.left, doc.y);
-  
+    .text('✨ ' + t('report.pdf.learningHighlights' as any, 'Learning Highlights'), margins.left, doc.y);
+
   doc.moveDown(0.5);
-  
+
   for (let i = 0; i < data.highlights.length; i++) {
     const highlight = data.highlights[i];
-    drawHighlightCard(doc, highlight, i + 1, pageWidth);
+    drawHighlightCard(doc, highlight, i + 1, pageWidth, locale);
   }
 }
 
 function drawHighlightCard(
-  doc: PDFKit.PDFDocument, 
-  highlight: PDFHighlight, 
+  doc: PDFKit.PDFDocument,
+  highlight: PDFHighlight,
   index: number,
-  pageWidth: number
+  pageWidth: number,
+  locale: Locale
 ) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize, spacing } = PDF_CONFIG;
   
   // Check for page break
@@ -160,8 +166,11 @@ function drawHighlightCard(
   const contentWidth = pageWidth - (cardPadding * 2);
   
   // Estimate height needed
+  // Use Chinese name when locale is zh and available
+  const displayName = locale === 'zh' && highlight.chineseName ? highlight.chineseName : highlight.workName;
+
   doc.fontSize(fontSize.subheading).font(fonts.bold);
-  const titleHeight = doc.heightOfString(highlight.workName, { width: contentWidth });
+  const titleHeight = doc.heightOfString(displayName, { width: contentWidth });
   
   doc.fontSize(fontSize.body).font(fonts.regular);
   const obsHeight = highlight.observation 
@@ -206,7 +215,7 @@ function drawHighlightCard(
   doc.fontSize(fontSize.subheading)
     .font(fonts.bold)
     .fillColor(colors.text)
-    .text(highlight.workName, margins.left + 40, cardY + 12);
+    .text(displayName, margins.left + 40, cardY + 12);
   
   doc.fontSize(fontSize.small)
     .font(fonts.regular)
@@ -232,9 +241,9 @@ function drawHighlightCard(
     doc.fontSize(fontSize.small)
       .font(fonts.bold)
       .fillColor(colors.secondary)
-      .text('🌱 Developmental Note:', contentStartX, currentY);
+      .text('🌱 ' + t('report.pdf.developmentalNote' as any, 'Developmental Note') + ':', contentStartX, currentY);
     currentY = doc.y + 2;
-    
+
     doc.fontSize(fontSize.body)
       .font(fonts.italic)
       .fillColor(colors.textLight)
@@ -244,15 +253,15 @@ function drawHighlightCard(
       });
     currentY = doc.y + 8;
   }
-  
+
   // Home Extension
   if (highlight.homeExtension) {
     doc.fontSize(fontSize.small)
       .font(fonts.bold)
       .fillColor(colors.warmAccent)
-      .text('🏠 Try at Home:', contentStartX, currentY);
+      .text('🏠 ' + t('report.pdf.tryAtHome' as any, 'Try at Home') + ':', contentStartX, currentY);
     currentY = doc.y + 2;
-    
+
     doc.fontSize(fontSize.body)
       .font(fonts.italic)
       .fillColor(colors.textLight)
@@ -269,27 +278,28 @@ function drawHighlightCard(
 // PARENT MESSAGE SECTION
 // ============================================
 
-function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData) {
+function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize, spacing } = PDF_CONFIG;
   const pageWidth = doc.page.width - margins.left - margins.right;
-  
+
   if (!data.parentMessage) {
     return;
   }
-  
+
   // Check for page break
   if (doc.y > doc.page.height - 150) {
     doc.addPage();
     doc.y = margins.top;
   }
-  
+
   doc.y += spacing.paragraph;
-  
+
   doc.fontSize(fontSize.heading)
     .font(fonts.bold)
     .fillColor(colors.warmAccent)
-    .text('💌 Message from Your Teacher', margins.left, doc.y);
-  
+    .text('💌 ' + t('report.pdf.messageFromTeacher' as any, 'Message from Your Teacher'), margins.left, doc.y);
+
   doc.moveDown(0.5);
   
   // Message box with warm background
@@ -332,32 +342,36 @@ function drawParentMessage(doc: PDFKit.PDFDocument, data: PDFReportData) {
 // FOOTER SECTION
 // ============================================
 
-function drawFooter(doc: PDFKit.PDFDocument, data: PDFReportData) {
+function drawFooter(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale) {
+  const t = getTranslator(locale);
   const { margins, colors, fonts, fontSize } = PDF_CONFIG;
   const pageWidth = doc.page.width - margins.left - margins.right;
-  
+
   // Go to bottom of page
   const footerY = doc.page.height - margins.bottom;
-  
+
   // Divider line
   doc.moveTo(margins.left, footerY - 20)
     .lineTo(margins.left + pageWidth, footerY - 20)
     .strokeColor(colors.border)
     .lineWidth(0.5)
     .stroke();
-  
+
   // Footer text
-  const generatedDate = new Date(data.generatedAt).toLocaleDateString('en-US', {
+  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+  const generatedDate = new Date(data.generatedAt).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
-  
+
+  const generatedText = t('report.pdf.generatedDate' as any, `Generated: ${generatedDate}`).replace('{date}', generatedDate);
+
   doc.fontSize(fontSize.small)
     .font(fonts.regular)
     .fillColor(colors.textLight)
     .text(
-      `Generated: ${generatedDate} • ${data.schoolName}`,
+      `${generatedText} • ${data.schoolName}`,
       margins.left,
       footerY - 10,
       { width: pageWidth, align: 'center' }

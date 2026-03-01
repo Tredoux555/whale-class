@@ -47,32 +47,32 @@ interface Child {
   name: string;
 }
 
-const TEMPERAMENT_LABELS: Record<string, { label: string; low: string; high: string }> = {
-  activity_level: { label: 'Activity Level', low: 'Calm', high: 'Very Active' },
-  regularity: { label: 'Regularity', low: 'Unpredictable', high: 'Predictable' },
-  initial_reaction: { label: 'Initial Reaction', low: 'Withdraws', high: 'Approaches' },
-  adaptability: { label: 'Adaptability', low: 'Slow to adapt', high: 'Quick to adapt' },
-  intensity: { label: 'Intensity', low: 'Mild reactions', high: 'Intense reactions' },
-  mood_quality: { label: 'Mood', low: 'Serious', high: 'Cheerful' },
-  distractibility: { label: 'Distractibility', low: 'Focused', high: 'Easily distracted' },
-  persistence: { label: 'Persistence', low: 'Gives up easily', high: 'Very persistent' },
-  sensory_threshold: { label: 'Sensory Sensitivity', low: 'Low sensitivity', high: 'Highly sensitive' },
+const TEMPERAMENT_KEYS: Record<string, { labelKey: string; lowKey: string; highKey: string }> = {
+  activity_level: { labelKey: 'profile.temperament.activityLevel', lowKey: 'profile.temperament.activityLevel.low', highKey: 'profile.temperament.activityLevel.high' },
+  regularity: { labelKey: 'profile.temperament.regularity', lowKey: 'profile.temperament.regularity.low', highKey: 'profile.temperament.regularity.high' },
+  initial_reaction: { labelKey: 'profile.temperament.initialReaction', lowKey: 'profile.temperament.initialReaction.low', highKey: 'profile.temperament.initialReaction.high' },
+  adaptability: { labelKey: 'profile.temperament.adaptability', lowKey: 'profile.temperament.adaptability.low', highKey: 'profile.temperament.adaptability.high' },
+  intensity: { labelKey: 'profile.temperament.intensity', lowKey: 'profile.temperament.intensity.low', highKey: 'profile.temperament.intensity.high' },
+  mood_quality: { labelKey: 'profile.temperament.mood', lowKey: 'profile.temperament.mood.low', highKey: 'profile.temperament.mood.high' },
+  distractibility: { labelKey: 'profile.temperament.distractibility', lowKey: 'profile.temperament.distractibility.low', highKey: 'profile.temperament.distractibility.high' },
+  persistence: { labelKey: 'profile.temperament.persistence', lowKey: 'profile.temperament.persistence.low', highKey: 'profile.temperament.persistence.high' },
+  sensory_threshold: { labelKey: 'profile.temperament.sensoryThreshold', lowKey: 'profile.temperament.sensoryThreshold.low', highKey: 'profile.temperament.sensoryThreshold.high' },
 };
 
 const SENSITIVE_PERIOD_OPTIONS = [
-  { value: 'not_started', label: 'Not Started', color: 'bg-gray-200 text-gray-600' },
-  { value: 'active', label: 'Active', color: 'bg-green-400 text-green-800' },
-  { value: 'waning', label: 'Waning', color: 'bg-amber-300 text-amber-800' },
-  { value: 'complete', label: 'Complete', color: 'bg-blue-300 text-blue-800' },
+  { value: 'not_started', labelKey: 'profile.spOption.notStarted', color: 'bg-gray-200 text-gray-600' },
+  { value: 'active', labelKey: 'profile.spOption.active', color: 'bg-green-400 text-green-800' },
+  { value: 'waning', labelKey: 'profile.spOption.waning', color: 'bg-amber-300 text-amber-800' },
+  { value: 'complete', labelKey: 'profile.spOption.complete', color: 'bg-blue-300 text-blue-800' },
 ];
 
 const SENSITIVE_PERIODS = [
-  { key: 'order', label: 'Order', description: 'Need for consistency and routine' },
-  { key: 'language', label: 'Language', description: 'Absorbing spoken and written language' },
-  { key: 'movement', label: 'Movement', description: 'Refining gross and fine motor skills' },
-  { key: 'sensory', label: 'Sensory', description: 'Exploring through senses' },
-  { key: 'small_objects', label: 'Small Objects', description: 'Fascination with tiny things' },
-  { key: 'grace_courtesy', label: 'Grace & Courtesy', description: 'Social awareness and manners' },
+  { key: 'order', labelKey: 'profile.sp.order', descKey: 'profile.sp.order.desc' },
+  { key: 'language', labelKey: 'profile.sp.language', descKey: 'profile.sp.language.desc' },
+  { key: 'movement', labelKey: 'profile.sp.movement', descKey: 'profile.sp.movement.desc' },
+  { key: 'sensory', labelKey: 'profile.sp.sensory', descKey: 'profile.sp.sensory.desc' },
+  { key: 'small_objects', labelKey: 'profile.sp.smallObjects', descKey: 'profile.sp.smallObjects.desc' },
+  { key: 'grace_courtesy', labelKey: 'profile.sp.graceCourtesy', descKey: 'profile.sp.graceCourtesy.desc' },
 ];
 
 function Slider({
@@ -84,17 +84,18 @@ function Slider({
   onChange: (v: number) => void;
   trait: string;
 }) {
-  const config = TEMPERAMENT_LABELS[trait];
+  const { t } = useI18n();
+  const config = TEMPERAMENT_KEYS[trait];
   const currentValue = value || 3;
 
   return (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-1">
-        <span className="text-sm font-medium text-gray-700">{config.label}</span>
+        <span className="text-sm font-medium text-gray-700">{t(config.labelKey as any)}</span>
         <span className="text-xs text-gray-500">{currentValue}/5</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-400 w-20 text-right">{config.low}</span>
+        <span className="text-xs text-gray-400 w-20 text-right">{t(config.lowKey as any)}</span>
         <input
           type="range"
           min={1}
@@ -103,7 +104,7 @@ function Slider({
           onChange={(e) => onChange(parseInt(e.target.value))}
           className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-violet-500"
         />
-        <span className="text-xs text-gray-400 w-20">{config.high}</span>
+        <span className="text-xs text-gray-400 w-20">{t(config.highKey as any)}</span>
       </div>
     </div>
   );
@@ -389,8 +390,8 @@ export default function ProfilePage() {
           {SENSITIVE_PERIODS.map(period => (
             <div key={period.key} className="flex items-center justify-between">
               <div>
-                <span className="font-medium text-gray-700">{period.label}</span>
-                <p className="text-xs text-gray-400">{period.description}</p>
+                <span className="font-medium text-gray-700">{t(period.labelKey as any)}</span>
+                <p className="text-xs text-gray-400">{t(period.descKey as any)}</p>
               </div>
               <div className="flex gap-1">
                 {SENSITIVE_PERIOD_OPTIONS.map(option => {
@@ -406,7 +407,7 @@ export default function ProfilePage() {
                           : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
                       }`}
                     >
-                      {option.label}
+                      {t(option.labelKey as any)}
                     </button>
                   );
                 })}

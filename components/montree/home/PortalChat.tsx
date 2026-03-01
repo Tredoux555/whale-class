@@ -7,10 +7,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
+import { useI18n } from '@/lib/montree/i18n/context';
 import VoiceNoteButton from '@/components/montree/guru/VoiceNoteButton';
 
 // TTS playback hook — manages audio state per message
 function useTTS() {
+  const { t } = useI18n();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
@@ -57,7 +59,7 @@ function useTTS() {
       if (controller.signal.aborted) return;
 
       if (!res.ok) {
-        toast.error('Could not generate speech');
+        toast.error(t('home.portal.couldNotGenerateSpeech'));
         setLoadingId(null);
         return;
       }
@@ -88,7 +90,7 @@ function useTTS() {
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
       setLoadingId(null);
-      toast.error('Could not generate speech');
+      toast.error(t('home.portal.couldNotGenerateSpeech'));
     }
   }, [playingId, stop]);
 
@@ -149,6 +151,7 @@ export default function PortalChat({
   prefillMessage,
   onPrefillConsumed,
 }: PortalChatProps) {
+  const { t } = useI18n();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
@@ -276,7 +279,7 @@ export default function PortalChat({
           const name = childName?.split(' ')[0] || '';
           setMessages(prev => [...prev, {
             id: 'greeting-fallback',
-            content: `Hi there! 🌿 I'm your Montessori guide${name ? ` for ${name}` : ''}. How can I help today?`,
+            content: name ? t('home.portal.greetingWithName').replace('{name}', name) : t('home.portal.greetingDefault'),
             isUser: false,
             timestamp: new Date().toISOString(),
           }]);
@@ -286,11 +289,10 @@ export default function PortalChat({
 
       } catch (err) {
         if (signal.aborted) return;
-        const name = childName?.split(' ')[0] || '';
         setLoading(false);
         setMessages([{
           id: 'error-init',
-          content: `Welcome! 🌿 I'm here to help with${name ? ` ${name}'s` : ' your child\'s'} Montessori journey. Ask me anything!`,
+          content: t('home.portal.greetingError'),
           isUser: false,
           timestamp: new Date().toISOString(),
         }]);
@@ -350,12 +352,12 @@ export default function PortalChat({
         }
       } else if (data.error === 'guru_limit_reached') {
         onGuruLimitReached?.();
-        toast.error('You\'ve used your free sessions. Upgrade for unlimited guidance.');
+        toast.error(t('home.portal.limitReached'));
       } else {
-        toast.error(data.error || 'Failed to get a response. Please try again.');
+        toast.error(data.error || t('home.portal.failedToRespond'));
       }
     } catch {
-      toast.error('Connection failed. Please check your internet and try again.');
+      toast.error(t('home.portal.connectionFailed'));
     } finally {
       setSending(false);
     }
@@ -381,7 +383,7 @@ export default function PortalChat({
       <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-3">🌿</div>
-          <p className={`text-sm ${BIO.text.secondary}`}>Your guide is preparing...</p>
+          <p className={`text-sm ${BIO.text.secondary}`}>{t('home.portal.guideIsPreparing')}</p>
         </div>
       </div>
     );
@@ -433,7 +435,7 @@ export default function PortalChat({
                 <button
                   onClick={(e) => { e.stopPropagation(); tts.play(msg.id, msg.content); }}
                   className="mt-2 flex items-center gap-1.5 text-[10px] text-white/30 hover:text-white/60 transition-colors"
-                  title={tts.playingId === msg.id ? 'Stop' : 'Listen'}
+                  title={tts.playingId === msg.id ? t('home.portal.stop') : t('home.portal.listen')}
                 >
                   {tts.loadingId === msg.id ? (
                     <span className="animate-pulse">⏳</span>
@@ -443,8 +445,8 @@ export default function PortalChat({
                     <span>🔈</span>
                   )}
                   <span>
-                    {tts.loadingId === msg.id ? 'Generating...' :
-                     tts.playingId === msg.id ? 'Playing' : 'Listen'}
+                    {tts.loadingId === msg.id ? t('home.portal.generating') :
+                     tts.playingId === msg.id ? t('home.portal.playing') : t('home.portal.listen')}
                   </span>
                 </button>
               )}
@@ -484,7 +486,7 @@ export default function PortalChat({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={childName ? `Ask about ${childName.split(' ')[0]}...` : 'Ask your guide...'}
+              placeholder={childName ? t('home.portal.askAboutChild').replace('{name}', childName.split(' ')[0]) : t('home.portal.askYourGuide')}
               disabled={sending}
               rows={1}
               className={`w-full px-4 py-2.5 rounded-2xl border ${BIO.border.dim} ${BIO.bg.cardSolid} ${BIO.text.primary} text-sm placeholder:text-white/30 resize-none focus:outline-none focus:border-[#4ADE80]/30 focus:ring-1 focus:ring-[#4ADE80]/10 disabled:opacity-50`}

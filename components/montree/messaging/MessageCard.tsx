@@ -31,7 +31,7 @@ export function MessageCard({
   onReply,
   isTeacher,
 }: MessageCardProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleCardClick = () => {
@@ -54,7 +54,7 @@ export function MessageCard({
     if (diffHours < 24) return t('messaging.hoursAgo').replace('{h}', diffHours.toString());
     if (diffDays < 7) return t('messaging.daysAgo').replace('{d}', diffDays.toString());
 
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
       month: 'short',
       day: 'numeric',
     });

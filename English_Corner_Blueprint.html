@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Corner Classroom Blueprint</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Poppins',sans-serif;background:#0D1B2A;color:#E0E0E0;line-height:1.5}
+.page{max-width:960px;margin:0 auto}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0D3330,#1a4a3a,#0D3330);padding:32px 24px;text-align:center;border-bottom:3px solid #4ADE80}
+.hero h1{font-size:1.7rem;font-weight:800;color:#4ADE80}
+.hero .sub{font-size:0.82rem;color:#8ECFB0;margin-top:6px;max-width:650px;margin-left:auto;margin-right:auto}
+.badge{display:inline-flex;align-items:center;gap:6px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25);border-radius:20px;padding:3px 12px;font-size:0.68rem;color:#4ADE80;margin-top:12px}
+
+/* UNIT CARD */
+.unit{background:#0F1724;border:1px solid #1F2937;border-radius:14px;margin:16px;overflow:hidden}
+.unit-head{display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer;user-select:none}
+.unit-head:hover{background:rgba(74,222,128,.03)}
+.unit-num{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:800;color:#fff;flex-shrink:0}
+.unit-head h2{font-size:1rem;font-weight:700}
+.unit-head .desc{font-size:0.7rem;color:#6B7280;margin-top:2px}
+.unit-head .tag{display:inline-block;padding:1px 8px;border-radius:4px;font-size:0.58rem;font-weight:700;margin-left:8px}
+.tag-ok{background:#065F46;color:#A7F3D0}
+.tag-fix{background:#7F1D1D;color:#FCA5A5}
+.tag-add{background:#78350F;color:#FDE68A}
+
+.unit-body{padding:0 18px 18px}
+
+/* PLANK */
+.plank-row{margin-bottom:12px}
+.plank-label{font-size:0.62rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#9CA3AF;padding:0 2px 4px;display:flex;align-items:center;gap:6px}
+.plank{background:linear-gradient(180deg,#8B6F47 0%,#7A5F3A 30%,#6B5233 60%,#5C4529 100%);border-radius:7px;padding:10px 8px 14px;position:relative;box-shadow:0 3px 12px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);min-height:56px}
+.plank::after{content:'';position:absolute;bottom:0;left:0;right:0;height:6px;background:linear-gradient(180deg,#5C4529,#4A3620);border-radius:0 0 7px 7px;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.plank-items{display:flex;gap:5px;flex-wrap:wrap;align-items:flex-end;position:relative;z-index:1}
+
+/* ITEMS */
+.it{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:58px;max-width:88px;transition:transform .15s}
+.it:hover{transform:translateY(-2px)}
+.it-box{width:44px;height:44px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;box-shadow:0 2px 6px rgba(0,0,0,.3);position:relative}
+.it-box.keep{background:linear-gradient(135deg,#065F46,#047857);border:2px solid #34D399}
+.it-box.remove{background:linear-gradient(135deg,#450A0A,#7F1D1D);border:2px solid #F87171;opacity:.55}
+.it-box.add{background:linear-gradient(135deg,#7C2D12,#9A3412);border:2px dashed #FB923C;animation:pulse 2.5s ease-in-out infinite}
+.it-box.move{background:linear-gradient(135deg,#1E3A5F,#1E40AF);border:2px solid #60A5FA}
+@keyframes pulse{0%,100%{box-shadow:0 2px 6px rgba(0,0,0,.3)}50%{box-shadow:0 2px 14px rgba(251,146,60,.35)}}
+.it-name{font-size:0.55rem;font-weight:600;text-align:center;line-height:1.2;max-width:84px}
+.it.keep .it-name{color:#A7F3D0}
+.it.remove .it-name{color:#FCA5A5;text-decoration:line-through}
+.it.add .it-name{color:#FDBA74}
+.it.move .it-name{color:#93C5FD}
+.divider{width:1px;height:36px;background:rgba(255,255,255,.1);margin:0 3px;flex-shrink:0;align-self:center}
+
+/* CHANGE BOX */
+.changes{background:#111B2E;border:1px solid #1F2937;border-radius:8px;padding:12px;margin-top:10px}
+.changes h4{font-size:0.75rem;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.change-item{display:flex;align-items:flex-start;gap:8px;font-size:0.7rem;color:#D1D5DB;padding:4px 0;line-height:1.4}
+.change-item .icon{flex-shrink:0;font-size:0.8rem;margin-top:1px}
+.change-item strong{color:#FDE68A}
+
+/* LEGEND */
+.legend{display:flex;justify-content:center;gap:16px;padding:12px;background:#111B2E;flex-wrap:wrap;border-bottom:1px solid #1F2937}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:0.7rem;color:#9CA3AF}
+.legend-dot{width:10px;height:10px;border-radius:3px}
+
+/* GURU */
+.guru{background:linear-gradient(135deg,#0D3330,#163D35);border:1px solid #2D7A5A;border-radius:10px;padding:14px 14px 14px 48px;margin:14px 18px;position:relative;font-size:0.78rem;color:#A7F3D0;line-height:1.6}
+.guru::before{content:'🧠';position:absolute;left:12px;top:12px;width:28px;height:28px;background:rgba(74,222,128,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+.guru strong{color:#4ADE80}
+
+/* SUMMARY */
+.summary{margin:16px;padding:18px;background:#0F1724;border:1px solid #1F2937;border-radius:14px}
+.summary h2{font-size:1.1rem;font-weight:700;color:#4ADE80;margin-bottom:12px}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.s-card{background:#111B2E;border-radius:8px;padding:12px;border-left:3px solid}
+.s-card .t{font-size:0.82rem;font-weight:700;margin-bottom:4px}
+.s-card .d{font-size:0.68rem;color:#9CA3AF;line-height:1.4}
+.s-card .c{font-size:0.65rem;color:#FDE68A;font-weight:600;margin-top:6px}
+
+footer{text-align:center;padding:20px;font-size:0.58rem;color:#4B5563;border-top:1px solid #1F2937}
+
+@media(max-width:640px){
+  .hero h1{font-size:1.3rem}
+  .unit{margin:10px}
+  .plank-items{gap:3px}
+  .it{min-width:50px;max-width:72px}
+  .it-box{width:38px;height:38px;font-size:1rem}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Your English Corner — Shelf by Shelf</h1>
+  <div class="sub">20 students, all levels. Every shelf unit in your classroom mapped from your photos. What stays, what goes, what fills the gaps.</div>
+  <div class="badge">🧠 Based on your 9 photos + language.json (43 works, 5 categories)</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#34D399;border:1px solid #065F46"></div>Keep</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F87171;border:1px solid #7F1D1D;opacity:.55"></div>Remove</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FB923C;border:1px dashed #9A3412"></div>Add (buy/make)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60A5FA;border:1px solid #1E40AF"></div>Move here</div>
+</div>
+
+<!-- ======================== UNIT A ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#E91E63">A</div>
+    <div>
+      <h2 style="color:#F472B6">Oral Language & Classified Cards <span class="tag tag-fix">FIX</span></h2>
+      <div class="desc">Photo 1 — 3 baskets on top, cards on middle + bottom planks</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP — I Spy Baskets</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">👂</div><div class="it-name">I Spy Basket (animals)</div></div>
+          <div class="it add"><div class="it-box add">🎵</div><div class="it-name">Rhyming Basket</div></div>
+          <div class="it add"><div class="it-box add">🔗</div><div class="it-name">Object↔Picture Basket</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — Classified Cards</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🦉</div><div class="it-name">Owl / Bird cards</div></div>
+          <div class="it keep"><div class="it-box keep">🌿</div><div class="it-name">Garden cards</div></div>
+          <div class="it keep"><div class="it-box keep">🍎</div><div class="it-name">Fruit / Veg cards</div></div>
+          <div class="it keep"><div class="it-box keep">📦</div><div class="it-name">Wooden card box</div></div>
+          <div class="it keep"><div class="it-box keep">🥣</div><div class="it-name">Sand tray</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — 🚫 Currently has dead weight</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it remove"><div class="it-box remove">🏎️</div><div class="it-name">Ferrari cards</div></div>
+          <div class="it remove"><div class="it-box remove">🚗</div><div class="it-name">BMW cards</div></div>
+          <div class="it keep"><div class="it-box keep">🐴</div><div class="it-name">Animal cards</div></div>
+          <div class="it keep"><div class="it-box keep">🃏</div><div class="it-name">More classified cards</div></div>
+          <div class="it remove"><div class="it-box remove">🔤</div><div class="it-name">Letter fabric bag</div></div>
+          <div class="divider"></div>
+          <div class="it add"><div class="it-box add">📖</div><div class="it-name">Sequence Cards</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="changes">
+      <h4>🔧 Changes for Unit A</h4>
+      <div class="change-item"><span class="icon">❌</span>Remove Ferrari + BMW cards — brand recognition is not language work</div>
+      <div class="change-item"><span class="icon">❌</span>Remove alphabet letter fabric bag — not AMI, sandpaper letters already handle this</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Add Rhyming Basket</strong> to top — miniature pairs that rhyme (cat/hat, fox/box)</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Add Object↔Picture Matching Basket</strong> to top — bridges 3D objects to 2D cards</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Add Storytelling Sequence Cards</strong> to bottom (freed space from Ferrari/BMW)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT B ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#7C3AED">B</div>
+    <div>
+      <h2 style="color:#A78BFA">Object Boxes + Sandpaper Letters <span class="tag tag-ok">GOOD</span></h2>
+      <div class="desc">Photo 2 — Letter drawers (a-z) on top, sandpaper letter trays in 6 groups below</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP SURFACE — Object Boxes</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">📦</div><div class="it-name">Object Box a–o (15 drawers)</div></div>
+          <div class="it keep"><div class="it-box keep">📦</div><div class="it-name">Object Box p–z (11 drawers)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — Sandpaper Letters (vowels a, e, i)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">🅰️</div><div class="it-name">a (c,m,a,t)</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">🅴</div><div class="it-name">e (d,n,e,k)</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">ℹ️</div><div class="it-name">i (s,r,i,p)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — Sandpaper Letters (vowels o, u + consonants v-z)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">🅾️</div><div class="it-name">o (b,f,o,g)</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">🇺</div><div class="it-name">u (h,u,j,l)</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">🔡</div><div class="it-name">v (v,w,x,y,z)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="guru">
+      <strong>This unit is excellent.</strong> Proper AMI sandpaper letter groupings organized by vowel. Object boxes with real miniatures in each drawer. No changes needed. This is exactly right.
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT C ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#059669">C</div>
+    <div>
+      <h2 style="color:#34D399">Farm Scene + Student Folders <span class="tag tag-ok">GOOD</span></h2>
+      <div class="desc">Photo 3 — Barn with animals on top, clear file folders inside, writing tray on side</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP SURFACE — Vocabulary Enrichment Scene</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🏠</div><div class="it-name">Farm barn + animals</div></div>
+          <div class="it keep"><div class="it-box keep">✂️</div><div class="it-name">Writing / cutting tray</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">INSIDE — Student Work Storage</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">📁</div><div class="it-name">Student file folders (20 children)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="guru">
+      <strong>The farm is doing double duty</strong> — vocabulary enrichment (naming animals, parts of the barn, spatial language like "inside/outside the fence") plus oral language conversation starters. Keep it. Rotate the scene seasonally if you want variety.
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT D ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#BE185D">D</div>
+    <div>
+      <h2 style="color:#F472B6">Pink Series (CVC Reading) <span class="tag tag-add">ADD BLUE</span></h2>
+      <div class="desc">Photo 4 — CVC word cards in mesh stands, blue mat on top, storage below</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP SURFACE — Work mat</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🟦</div><div class="it-name">Blue felt mat</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — Pink Series CVC Cards ← THIS IS THE CRITICAL PLANK</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">hen</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">sit</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">dog</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">pup</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">bag</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">+ ~5 more</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — Storage + organiser</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🗄️</div><div class="it-name">Cabinet</div></div>
+          <div class="it keep"><div class="it-box keep">📥</div><div class="it-name">Organiser drawers</div></div>
+          <div class="it keep"><div class="it-box keep">🧺</div><div class="it-name">Basket</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="changes">
+      <h4>🔧 Changes for Unit D</h4>
+      <div class="change-item"><span class="icon">🚨</span><strong>CRITICAL: Add Blue Series cards alongside the Pink.</strong> You currently jump from Pink (CVC: hen, sit, dog) straight to Green (phonograms). Blue Series covers consonant blends (frog, stamp, clip, drum). Same card format, same mesh stands — just with CCVC/CVCC words. Put them on the RIGHT side of this same plank so the child sees the progression: pink stands → blue stands.</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Add Puzzle Words</strong> to the bottom plank — sight word cards (the, was, said, have) that don't follow phonetic rules. Red border convention = "this is a puzzle."</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT E ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#047857">E</div>
+    <div>
+      <h2 style="color:#34D399">Chalkboard Stand <span class="tag tag-ok">PERFECT</span></h2>
+      <div class="desc">Photo 5 — Individual chalkboards stored vertically, chalk tray on top</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP — Chalk tray (colored chalk + eraser + sponge)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🖍️</div><div class="it-name">Chalk + eraser tray</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BELOW — Individual chalkboards (~8 boards)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">📝</div><div class="it-name">8 green chalkboards (1 per child working)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="guru">
+      <strong>Textbook Montessori.</strong> Individual boards so multiple kids can practice letter formation simultaneously. Chalk in ramekin is clever. No changes.
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT F ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#7C3AED">F</div>
+    <div>
+      <h2 style="color:#A78BFA">Handwriting + Phonograms <span class="tag tag-ok">GOOD</span></h2>
+      <div class="desc">Photo 6 — Handwriting tray + green sandpaper phonograms on top, pink sandpaper letters + empty space below</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP SURFACE — Handwriting + Phonogram Introduction</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">✍️</div><div class="it-name">Handwriting tray ("Rachel")</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#065F46,#047857);border-color:#34D399">🟢</div><div class="it-name">Green sandpaper phonograms (ar, dr, etc.)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — Pink sandpaper letters set + empty boards</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#9D174D);border-color:#F472B6">🩷</div><div class="it-name">Pink sandpaper letters (2nd set)</div></div>
+          <div class="it add"><div class="it-box add">🏃</div><div class="it-name">Command Cards</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — Currently: rolled rug</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🧶</div><div class="it-name">Work rug</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="changes">
+      <h4>🔧 Changes for Unit F</h4>
+      <div class="change-item"><span class="icon">➕</span><strong>Add Command Cards</strong> to the middle plank — there's space next to the pink sandpaper letters. Three levels: simple ("hop"), two-step ("walk to the door and wave"), complex. Free to DIY.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT G ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#059669">G</div>
+    <div>
+      <h2 style="color:#34D399">Reading Series Booklets <span class="tag tag-fix">FIX</span></h2>
+      <div class="desc">Photo 8 — Color-sorted booklet dividers on top, Beleduc Humanico + empty plank below</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP — Reading Booklets (Pink / Blue / Green series + more)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#BE185D);border-color:#F472B6">🩷</div><div class="it-name">Pink booklets</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#2563EB);border-color:#60A5FA">💙</div><div class="it-name">Blue booklets</div></div>
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#065F46,#047857);border-color:#34D399">💚</div><div class="it-name">Green booklets</div></div>
+          <div class="it keep"><div class="it-box keep">🟣</div><div class="it-name">Purple / other booklets</div></div>
+          <div class="it keep"><div class="it-box keep">⭐</div><div class="it-name">Star felt holder</div></div>
+          <div class="it keep"><div class="it-box keep">📖</div><div class="it-name">Book stand</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — 🚫 Currently: Beleduc Humanico (misplaced)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it remove"><div class="it-box remove">🎭</div><div class="it-name">Beleduc Humanico</div></div>
+          <div class="divider"></div>
+          <div class="it add"><div class="it-box add">📊</div><div class="it-name">Grammar Symbols intro</div></div>
+          <div class="it add"><div class="it-box add">📚</div><div class="it-name">Reading books (leveled)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — Currently empty</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it add"><div class="it-box add">👪</div><div class="it-name">Word Families cards</div></div>
+          <div class="it add"><div class="it-box add">↔️</div><div class="it-name">Synonyms / Antonyms</div></div>
+          <div class="it add"><div class="it-box add">🔗</div><div class="it-name">Compound Words</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="changes">
+      <h4>🔧 Changes for Unit G</h4>
+      <div class="change-item"><span class="icon">❌</span><strong>Move Beleduc Humanico</strong> to Practical Life / Grace & Courtesy shelf — it's an emotions/senses game, not Language</div>
+      <div class="change-item"><span class="icon">➕</span>Middle plank becomes <strong>Grammar introduction</strong> (Year 2+ children) — noun/verb/adjective symbol materials</div>
+      <div class="change-item"><span class="icon">➕</span>Bottom plank becomes <strong>Word Study</strong> — word families, compound words, synonyms/antonyms (Year 2-3 children)</div>
+      <div class="change-item"><span class="icon">💡</span>This unit becomes the <strong>advanced reading + grammar hub</strong> — natural flow from booklets above → grammar → word study below</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT H ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#DC2626">H</div>
+    <div>
+      <h2 style="color:#FCA5A5">Brocade Boxes + More Sandpaper Letters <span class="tag tag-fix">MAJOR FIX</span></h2>
+      <div class="desc">Photo 7 — Pink sandpaper letters on top, brocade boxes + clothespins on middle/bottom</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP SURFACE — Pink sandpaper letters + sand tray</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#9D174D);border-color:#F472B6">🩷</div><div class="it-name">Pink sandpaper letters (m,t,n,b,b,g)</div></div>
+          <div class="it keep"><div class="it-box keep">🏖️</div><div class="it-name">Sand tray (pink)</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — 🚫 Brocade boxes + dead weight</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade box 1</div></div>
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade box 2</div></div>
+          <div class="it remove"><div class="it-box remove">🪡</div><div class="it-name">Letter clothespins</div></div>
+          <div class="it keep"><div class="it-box keep">🪵</div><div class="it-name">Wooden tray</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — 🚫 More brocade boxes</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade 4</div></div>
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade 3</div></div>
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade 1</div></div>
+          <div class="it remove"><div class="it-box remove">🎁</div><div class="it-name">Brocade 2</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="changes">
+      <h4>🔧 Changes for Unit H — BIGGEST OPPORTUNITY</h4>
+      <div class="change-item"><span class="icon">❌</span><strong>Remove ALL 6 brocade boxes</strong> — decorative Chinese fabric boxes taking up 2 entire planks. Not language materials. Move to Cultural shelf if anywhere.</div>
+      <div class="change-item"><span class="icon">❌</span><strong>Remove letter clothespins</strong> — Pinterest activity, not AMI. Sandpaper letters already teach formation.</div>
+      <div class="change-item"><span class="icon">🚨</span>This frees up <strong>2 full planks</strong>. Use them for:</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Middle plank → Moveable Alphabet work station</strong> — move the moveable alphabet here with word-building materials</div>
+      <div class="change-item"><span class="icon">➕</span><strong>Bottom plank → Creative Writing + Handwriting paper</strong> — lined paper, journals, writing prompts for Year 2+ children</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== UNIT I ======================== -->
+<div class="unit">
+  <div class="unit-head">
+    <div class="unit-num" style="background:#7C3AED">I</div>
+    <div>
+      <h2 style="color:#A78BFA">Metal Insets + Pencils <span class="tag tag-ok">PERFECT</span></h2>
+      <div class="desc">Photo 9 — Geometric insets on top two planks, colored pencil holders alongside</div>
+    </div>
+  </div>
+  <div class="unit-body">
+    <div class="plank-row">
+      <div class="plank-label">TOP — Metal Insets (curved shapes)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#831843,#6D28D9);border-color:#C084FC">⭕</div><div class="it-name">Circle, Oval, Ellipse, Quatrefoil, Curv. Triangle</div></div>
+          <div class="it keep"><div class="it-box keep">✏️</div><div class="it-name">Colored pencils</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">MIDDLE — Metal Insets (straight shapes)</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep" style="background:linear-gradient(135deg,#1E3A8A,#6D28D9);border-color:#C084FC">🔷</div><div class="it-name">Triangle, Square, Pentagon, Hexagon, Trapezoid</div></div>
+          <div class="it keep"><div class="it-box keep">✏️</div><div class="it-name">More colored pencils</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="plank-row">
+      <div class="plank-label">BOTTOM — Supplies</div>
+      <div class="plank">
+        <div class="plank-items">
+          <div class="it keep"><div class="it-box keep">🎨</div><div class="it-name">Extra pencil holders + supplies tray</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="guru">
+      <strong>Full set of 10 metal insets, properly split curved vs straight, pencils right there.</strong> This is textbook. The only note: make sure inset paper is accessible nearby (I see some white paper in a tray — good).
+    </div>
+  </div>
+</div>
+
+<!-- ======================== SUMMARY ======================== -->
+<div class="summary">
+  <h2>🛒 What to Buy / Make</h2>
+  <div class="summary-grid">
+    <div class="s-card" style="border-left-color:#F87171">
+      <div class="t" style="color:#F87171">🚨 #1 Blue Series Cards</div>
+      <div class="d">CCVC/CVCC word cards in same mesh stand format as your Pink Series. Goes on Unit D middle plank, right side. This is the single biggest gap — you're jumping Pink→Green with no bridge.</div>
+      <div class="c">~¥80–150 on 1688 or DIY print</div>
+    </div>
+    <div class="s-card" style="border-left-color:#F87171">
+      <div class="t" style="color:#F87171">🚨 #2 Command Cards</div>
+      <div class="d">30+ action cards at 3 levels. Goes on Unit F middle plank. "Hop." "Walk to the door and wave." "Put the red pencil next to the blue book." Reading → doing = real comprehension.</div>
+      <div class="c">FREE — print on card stock</div>
+    </div>
+    <div class="s-card" style="border-left-color:#FDE68A">
+      <div class="t" style="color:#FDE68A">⚡ #3 Puzzle Words</div>
+      <div class="d">60 sight word cards (the, was, said). Goes on Unit D bottom plank. Red border = "this is a puzzle" convention.</div>
+      <div class="c">DIY print or ~¥30–50</div>
+    </div>
+    <div class="s-card" style="border-left-color:#FDE68A">
+      <div class="t" style="color:#FDE68A">⚡ #4 Rhyming Basket</div>
+      <div class="d">10–15 miniature object pairs that rhyme. Goes on Unit A top plank (replace empty basket). Use your existing 1688 miniatures.</div>
+      <div class="c">~¥30–80</div>
+    </div>
+    <div class="s-card" style="border-left-color:#93C5FD">
+      <div class="t" style="color:#93C5FD">📦 #5 Sequence Cards</div>
+      <div class="d">8–10 sets of 4–6 card sequences. Goes on Unit A bottom plank (freed space from Ferrari/BMW).</div>
+      <div class="c">~¥30–60</div>
+    </div>
+    <div class="s-card" style="border-left-color:#93C5FD">
+      <div class="t" style="color:#93C5FD">📦 #6 Object↔Picture Matching</div>
+      <div class="d">Print photos matching your I Spy objects. Goes on Unit A top plank.</div>
+      <div class="c">~¥20 (print only)</div>
+    </div>
+  </div>
+</div>
+
+<div class="summary">
+  <h2>🚫 What to Remove (frees 2+ full planks)</h2>
+  <div class="summary-grid">
+    <div class="s-card" style="border-left-color:#F87171">
+      <div class="t" style="color:#FCA5A5">Ferrari + BMW Cards → Bin</div>
+      <div class="d">Unit A bottom. Brand recognition is not language development.</div>
+    </div>
+    <div class="s-card" style="border-left-color:#F87171">
+      <div class="t" style="color:#FCA5A5">6 Brocade Boxes → Cultural Shelf</div>
+      <div class="d">Unit H middle + bottom. Decorative, taking 2 full planks. Move to Cultural if you want to keep them.</div>
+    </div>
+    <div class="s-card" style="border-left-color:#F87171">
+      <div class="t" style="color:#FCA5A5">Letter Clothespins → Bin</div>
+      <div class="d">Unit H middle. Pinterest, not AMI. Sandpaper letters do this properly.</div>
+    </div>
+    <div class="s-card" style="border-left-color:#60A5FA">
+      <div class="t" style="color:#93C5FD">Beleduc Humanico → Practical Life</div>
+      <div class="d">Unit G middle. Emotions/senses game belongs in Grace & Courtesy, not Language.</div>
+    </div>
+  </div>
+</div>
+
+<div class="guru" style="margin:16px">
+  <strong>The big picture:</strong> Your classroom has beautiful bones — the sandpaper letters, object boxes, metal insets, chalkboards, Pink Series, Green Series booklets, and farm scene are all proper AMI. The problem is inherited clutter (brocade boxes eating 2 planks, brand cards, Beleduc in the wrong area) and one critical gap: no Blue Series. Fix Unit D (add Blue Series cards) and clear Unit H (remove brocade boxes), and you've got a clean, pure English Corner that serves all 20 kids from I Spy through Grammar.
+</div>
+
+</div>
+
+<footer>English Corner Classroom Blueprint — 9 shelf units from photos — Montree Guru — March 2026</footer>
+
+</body>
+</html>

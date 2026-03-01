@@ -96,7 +96,7 @@ interface SentReport {
 }
 
 export default function ReportsPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useParams();
   const childId = params.childId as string;
 
@@ -119,8 +119,8 @@ export default function ReportsPage() {
   const fetchPreview = async () => {
     try {
       const [previewRes, photosRes] = await Promise.all([
-        fetch(`/api/montree/reports/preview?child_id=${childId}`),
-        fetch(`/api/montree/reports/available-photos?child_id=${childId}`),
+        fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`),
+        fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`),
       ]);
 
       const previewData = await previewRes.json();
@@ -166,7 +166,7 @@ export default function ReportsPage() {
 
     setLoadingLastReport(true);
     try {
-      const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1`);
+      const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1&locale=${locale}`);
       const data = await res.json();
 
       if (data.success && data.reports && data.reports.length > 0) {
@@ -211,7 +211,7 @@ export default function ReportsPage() {
   const sendReport = async () => {
     setSending(true);
     try {
-      const res = await fetch('/api/montree/reports/send', {
+      const res = await fetch(`/api/montree/reports/send?locale=${locale}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId }),
@@ -316,7 +316,7 @@ export default function ReportsPage() {
             onClick={async () => {
               setLoading(true);
               try {
-                const res = await fetch(`/api/montree/reports/preview?child_id=${childId}&show_all=true`);
+                const res = await fetch(`/api/montree/reports/preview?child_id=${childId}&show_all=true&locale=${locale}`);
                 const data = await res.json();
                 if (data.success) {
                   setItems(data.items || []);

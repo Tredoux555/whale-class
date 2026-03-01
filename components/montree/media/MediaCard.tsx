@@ -37,7 +37,7 @@ export default function MediaCard({
   onDelete,
   showActions = true,
 }: MediaCardProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(thumbnailUrl || null);
   const [loading, setLoading] = useState(!thumbnailUrl);
   const [error, setError] = useState(false);
@@ -83,7 +83,7 @@ export default function MediaCard({
     if (diffHours < 24) return t('media.hoursAgo').replace('{h}', diffHours.toString());
     if (diffDays < 7) return t('media.daysAgo').replace('{d}', diffDays.toString());
 
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
       month: 'short',
       day: 'numeric'
     });

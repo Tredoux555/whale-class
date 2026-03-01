@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
 
 // Area icons for display
 const AREA_ICONS: Record<string, string> = {
@@ -214,11 +215,17 @@ export async function GET(request: NextRequest) {
     }
     
     // Parse recommended_works if it's stored as JSONB
-    let recommendedWorks = [];
+    let recommendedWorks: Array<{ work_name: string; area: string; reason: string; home_activity?: string; chineseName?: string }> = [];
     try {
-      recommendedWorks = typeof analysis.recommended_works === 'string' 
-        ? JSON.parse(analysis.recommended_works) 
+      const raw = typeof analysis.recommended_works === 'string'
+        ? JSON.parse(analysis.recommended_works)
         : (analysis.recommended_works || []);
+      // Enrich with chineseName
+      const cnMap = getChineseNameMap();
+      recommendedWorks = (raw as Array<{ work_name: string; area: string; reason: string; home_activity?: string }>).map(w => ({
+        ...w,
+        chineseName: w.work_name ? cnMap.get(w.work_name.toLowerCase().trim()) || null : null,
+      }));
     } catch {
       recommendedWorks = [];
     }

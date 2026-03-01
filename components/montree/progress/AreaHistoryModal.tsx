@@ -3,8 +3,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
-// Area display config (mirrors progress page)
+// Area display config (mirrors progress page) — name is fallback only
 const AREAS: Record<string, { name: string; emoji: string; gradient: string; bg: string; text: string }> = {
   practical_life: { name: 'Practical Life', emoji: '🧹', gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
   sensorial: { name: 'Sensorial', emoji: '👁', gradient: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700' },
@@ -13,11 +14,12 @@ const AREAS: Record<string, { name: string; emoji: string; gradient: string; bg:
   cultural: { name: 'Cultural', emoji: '🌍', gradient: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
 };
 
-const STATUS_LABELS: Record<string, { label: string; icon: string; bg: string; text: string }> = {
-  mastered: { label: 'Mastered', icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  completed: { label: 'Mastered', icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
-  practicing: { label: 'Practicing', icon: '🔄', bg: 'bg-blue-100', text: 'text-blue-700' },
-  presented: { label: 'Presented', icon: '📋', bg: 'bg-amber-100', text: 'text-amber-700' },
+// Status styling config — labels come from i18n at render time
+const STATUS_STYLES: Record<string, { icon: string; bg: string; text: string }> = {
+  mastered: { icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  completed: { icon: '⭐', bg: 'bg-emerald-100', text: 'text-emerald-700' },
+  practicing: { icon: '🔄', bg: 'bg-blue-100', text: 'text-blue-700' },
+  presented: { icon: '📋', bg: 'bg-amber-100', text: 'text-amber-700' },
 };
 
 interface ProgressItem {
@@ -51,8 +53,9 @@ interface MediaItem {
 
 interface WorkEntry {
   work_name: string;
+  chineseName?: string;
   status: string;
-  statusLabel: { label: string; icon: string; bg: string; text: string };
+  statusStyle: { icon: string; bg: string; text: string };
   date: string;
   photo?: MediaItem;
   notes: { text: string; date: string }[];
@@ -69,8 +72,17 @@ interface AreaHistoryModalProps {
 export default function AreaHistoryModal({ isOpen, onClose, area, childId, childName }: AreaHistoryModalProps) {
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<{ label: string; works: WorkEntry[] }[]>([]);
+  const { t, locale } = useI18n();
 
   const config = AREAS[area] || AREAS.practical_life;
+  const areaDisplayName = t(`area.${area}` as any) || config.name;
+
+  const statusLabel = (s: string) => {
+    if (s === 'mastered' || s === 'completed') return t('progress.mastered' as any);
+    if (s === 'practicing') return t('progress.practicing' as any);
+    if (s === 'presented') return t('progress.presented' as any);
+    return t('common.started' as any) || 'Started';
+  };
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const getPhotoUrl = (path: string) => path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${path}` : '';
 
@@ -129,7 +141,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
             ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : 'not_started'
             : String(p.status);
 
-          const statusLabel = STATUS_LABELS[s] || { label: 'Started', icon: '○', bg: 'bg-gray-100', text: 'text-gray-600' };
+          const style = STATUS_STYLES[s] || { icon: '○', bg: 'bg-gray-100', text: 'text-gray-600' };
           const date = p.mastered_at || p.presented_at || p.updated_at;
           const photo = photoMap.get(key);
           const notes = notesMap.get(key) || [];
@@ -142,7 +154,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           // Sort notes newest first
           notes.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-          workEntries.push({ work_name: p.work_name, status: s, statusLabel, date, photo, notes });
+          workEntries.push({ work_name: p.work_name, chineseName: (p as any).chineseName, status: s, statusStyle: style, date, photo, notes });
         }
 
         // Sort by most recent date
@@ -152,7 +164,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
         const monthMap = new Map<string, WorkEntry[]>();
         for (const entry of workEntries) {
           const d = new Date(entry.date);
-          const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+          const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
           if (!monthMap.has(label)) monthMap.set(label, []);
           monthMap.get(label)!.push(entry);
         }
@@ -174,7 +186,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
@@ -190,8 +202,8 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           </button>
           <div className="text-center">
             <span className="text-3xl">{config.emoji}</span>
-            <h2 className="font-bold text-lg">{config.name}</h2>
-            <p className="text-white/70 text-sm">{childName}&apos;s Journey</p>
+            <h2 className="font-bold text-lg">{areaDisplayName}</h2>
+            <p className="text-white/70 text-sm">{childName}{locale === 'zh' ? '的学习旅程' : "'s Journey"}</p>
           </div>
           <div className="w-10" />
         </div>
@@ -203,15 +215,15 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           <div className="flex items-center justify-center h-40">
             <div className="text-white/60 text-center">
               <div className="text-3xl mb-2 animate-pulse">{config.emoji}</div>
-              <p>Loading history...</p>
+              <p>{t('common.loading' as any)}</p>
             </div>
           </div>
         ) : entries.length === 0 ? (
           <div className="flex items-center justify-center h-40">
             <div className="text-white/60 text-center">
               <div className="text-4xl mb-3">📭</div>
-              <p className="font-medium">No activity recorded yet</p>
-              <p className="text-sm mt-1">in {config.name}</p>
+              <p className="font-medium">{t('progress.noActivity' as any) || 'No activity recorded yet'}</p>
+              <p className="text-sm mt-1">{areaDisplayName}</p>
             </div>
           </div>
         ) : (
@@ -227,15 +239,15 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
                   <div key={work.work_name} className="bg-white rounded-2xl overflow-hidden shadow-sm">
                     {/* Status + date header */}
                     <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${work.statusLabel.bg} ${work.statusLabel.text}`}>
-                        {work.statusLabel.icon} {work.statusLabel.label}
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${work.statusStyle.bg} ${work.statusStyle.text}`}>
+                        {work.statusStyle.icon} {statusLabel(work.status)}
                       </span>
                       <span className="text-xs text-gray-400">{fmtDate(work.date)}</span>
                     </div>
 
                     {/* Work name */}
                     <div className="px-4 pb-2">
-                      <h4 className="font-bold text-gray-800">{work.work_name}</h4>
+                      <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
                     </div>
 
                     {/* Photo */}

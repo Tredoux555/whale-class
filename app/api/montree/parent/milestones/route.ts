@@ -4,15 +4,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
-
-
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural Studies'
-};
+import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -62,18 +55,29 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Transform to milestones format
+    // Transform to milestones format — locale-aware
+    const locale = getLocaleFromRequest(request.url);
+    const t = getTranslator(locale);
+    const cnMap = getChineseNameMap();
     const milestones = (progress || [])
       .filter(p => p.work)
-      .map(p => ({
-        id: p.id,
-        type: 'mastery',
-        title: `Mastered: ${(p.work as Record<string, unknown>).name}`,
-        area: (p.work as Record<string, unknown>).area_id,
-        area_label: AREA_LABELS[(p.work as Record<string, unknown>).area_id as string] || 'Other',
-        date: p.mastery_date || p.updated_at,
-        icon: p.status === 'mastered' ? '⭐' : '✓'
-      }));
+      .map(p => {
+        const workName = (p.work as Record<string, unknown>).name as string;
+        const areaId = (p.work as Record<string, unknown>).area_id as string;
+        const chineseName = workName ? cnMap.get(workName.toLowerCase().trim()) || null : null;
+        const displayName = locale === 'zh' && chineseName ? chineseName : workName;
+        return {
+          id: p.id,
+          type: 'mastery',
+          title: `${t('progress.mastered')}: ${displayName}`,
+          work_name: workName,
+          chineseName,
+          area: areaId,
+          area_label: getTranslatedAreaName(areaId, locale),
+          date: p.mastery_date || p.updated_at,
+          icon: p.status === 'mastered' ? '⭐' : '✓'
+        };
+      });
 
     // Group by month for timeline display
     const grouped: Record<string, typeof milestones> = {};
@@ -89,7 +93,7 @@ export async function GET(request: NextRequest) {
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([month, items]) => ({
         month,
-        label: new Date(month + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        label: new Date(month + '-01').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' }),
         items
       }));
 

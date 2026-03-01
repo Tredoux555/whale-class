@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface PhotoEditModalProps {
   media: MontreeMedia | null;
@@ -29,6 +30,7 @@ export default function PhotoEditModal({
   onClose,
   onSave,
 }: PhotoEditModalProps) {
+  const { t } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -212,7 +214,7 @@ export default function PhotoEditModal({
             <textarea
               value={formData.caption}
               onChange={(e) => setFormData(prev => ({ ...prev, caption: e.target.value }))}
-              placeholder="Add a caption or notes about this photo..."
+              placeholder={t('placeholder.photoCaption' as TranslationKey)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
               rows={3}
             />
@@ -304,7 +306,7 @@ export default function PhotoEditModal({
                     handleAddTag();
                   }
                 }}
-                placeholder="Add a tag (e.g., 'concentration', 'focus')..."
+                placeholder={t('placeholder.addTag' as TranslationKey)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
               <button

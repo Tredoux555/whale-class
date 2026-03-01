@@ -6,11 +6,11 @@ import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 
 const AREA_OPTIONS = [
-  { key: 'practical_life', name: 'Practical Life', color: '#ec4899', icon: 'P' },
-  { key: 'sensorial', name: 'Sensorial', color: '#8b5cf6', icon: 'S' },
-  { key: 'mathematics', name: 'Math', color: '#3b82f6', icon: 'M' },
-  { key: 'language', name: 'Language', color: '#22c55e', icon: 'L' },
-  { key: 'cultural', name: 'Cultural', color: '#f97316', icon: 'C' },
+  { key: 'practical_life', nameKey: 'area.practical_life', color: '#ec4899', icon: 'P' },
+  { key: 'sensorial', nameKey: 'area.sensorial', color: '#8b5cf6', icon: 'S' },
+  { key: 'mathematics', nameKey: 'area.mathematics', color: '#3b82f6', icon: 'M' },
+  { key: 'language', nameKey: 'area.language', color: '#22c55e', icon: 'L' },
+  { key: 'cultural', nameKey: 'area.cultural', color: '#f97316', icon: 'C' },
 ];
 
 export default function UploadPage() {
@@ -51,7 +51,7 @@ export default function UploadPage() {
       formData.set('title', title);
       formData.set('description', description || title);
       formData.set('area', area);
-      formData.set('contributor_name', contributorName || 'Anonymous Teacher');
+      formData.set('contributor_name', contributorName || t('library.anonymousTeacher' as any));
       formData.set('age_range', 'all');
       formData.set('materials', '[]');
       formData.set('direct_aims', '[]');
@@ -136,7 +136,7 @@ export default function UploadPage() {
                 <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: opt.color }}>
                   {opt.icon}
                 </span>
-                {opt.name}
+                {t(opt.nameKey as any)}
               </button>
             ))}
           </div>

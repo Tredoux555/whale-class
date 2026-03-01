@@ -57,7 +57,7 @@ export default function FocusWorksSection({
   getAreaConfig,
   isHomeschoolParent: isParent = false,
 }: FocusWorksSectionProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
       <h2 className="font-bold text-gray-800 mb-3">{t('focusWorks.title')}</h2>
@@ -108,7 +108,7 @@ export default function FocusWorksSection({
                     onClick={() => setExpandedIndex(isExpanded ? null : work.work_name)}
                     className="flex-1 text-left"
                   >
-                    <p className="font-medium text-gray-800 text-sm">{work.work_name}</p>
+                    <p className="font-medium text-gray-800 text-sm">{locale === 'zh' && (work as any).chineseName ? (work as any).chineseName : work.work_name}</p>
                   </button>
 
                   {/* Status badge - tap to cycle */}
@@ -184,7 +184,7 @@ export default function FocusWorksSection({
                       return (
                         <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
                           <span className="text-xs text-gray-400">└</span>
-                          <span className="flex-1 text-sm text-gray-600">{extra.work_name}</span>
+                          <span className="flex-1 text-sm text-gray-600">{locale === 'zh' && (extra as any).chineseName ? (extra as any).chineseName : extra.work_name}</span>
                           <button
                             onClick={() => onCycleStatus(extra, false)}
                             className={`w-7 h-7 rounded-full ${extraStatus.bg} ${extraStatus.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90`}

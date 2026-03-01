@@ -29,6 +29,7 @@ export interface CurriculumWork {
   area_key: string;
   work_key: string;
   name: string;
+  chineseName?: string;  // Chinese translation of work name (from stem JSON)
   description?: string;
   age_range?: string;
   sequence: number;  // Global sequence across all areas
@@ -105,7 +106,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
   const works: CurriculumWork[] = [];
 
   for (const area of AREAS) {
-    const areaData = area.data as unknown as { categories?: Array<{ sequence?: number; name: string; works?: Array<{ id: string; name: string; description?: string; ageRange?: string; materials?: string[]; directAims?: string[]; indirectAims?: string[]; controlOfError?: string; prerequisites?: string[]; sequence?: number }> }> };
+    const areaData = area.data as unknown as { categories?: Array<{ sequence?: number; name: string; works?: Array<{ id: string; name: string; chineseName?: string; description?: string; ageRange?: string; materials?: string[]; directAims?: string[]; indirectAims?: string[]; controlOfError?: string; prerequisites?: string[]; sequence?: number }> }> };
     const areaSeq = area.sequence;
 
     // Build guide lookup for this area
@@ -131,6 +132,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
           area_key: area.key,
           work_key: work.id,
           name: work.name,
+          chineseName: work.chineseName || undefined,
           description: work.description || null,
           age_range: work.ageRange || guide.age_range || '3-6',
           sequence: globalSequence,
@@ -206,4 +208,38 @@ export function debugCurriculumStats(): void {
 // Debug: Print first 10 math works to verify sequence
 export function debugMathSequence(): void {
   const mathWorks = loadWorksForArea('mathematics');
+}
+
+/**
+ * Build a lookup map: lowercase work_name → chineseName
+ * Used by API routes to enrich DB results with Chinese translations.
+ * Cached at module level (static JSON, never changes at runtime).
+ */
+let _chineseNameMap: Map<string, string> | null = null;
+
+export function getChineseNameMap(): Map<string, string> {
+  if (_chineseNameMap) return _chineseNameMap;
+
+  _chineseNameMap = new Map();
+  const works = loadAllCurriculumWorks();
+  for (const w of works) {
+    if (w.chineseName) {
+      _chineseNameMap.set(w.name.toLowerCase().trim(), w.chineseName);
+    }
+  }
+  return _chineseNameMap;
+}
+
+/**
+ * Enrich an array of work objects with chineseName from curriculum data.
+ * Works on any object that has a `work_name` string property.
+ */
+export function enrichWithChineseNames<T extends { work_name?: string }>(
+  items: T[]
+): (T & { chineseName?: string })[] {
+  const map = getChineseNameMap();
+  return items.map(item => {
+    const cn = item.work_name ? map.get(item.work_name.toLowerCase().trim()) : undefined;
+    return cn ? { ...item, chineseName: cn } : item;
+  });
 }

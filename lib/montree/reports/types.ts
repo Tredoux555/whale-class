@@ -276,12 +276,13 @@ export function formatDateISO(date: Date): string {
 /**
  * Format week range for display
  */
-export function formatWeekRange(start: string, end: string): string {
+export function formatWeekRange(start: string, end: string, locale?: string): string {
   const startDate = new Date(start);
   const endDate = new Date(end);
-  
-  const startMonth = startDate.toLocaleDateString('en-US', { month: 'short' });
-  const endMonth = endDate.toLocaleDateString('en-US', { month: 'short' });
+  const loc = locale === 'zh' ? 'zh-CN' : 'en-US';
+
+  const startMonth = startDate.toLocaleDateString(loc, { month: 'short' });
+  const endMonth = endDate.toLocaleDateString(loc, { month: 'short' });
   
   if (startMonth === endMonth) {
     return `${startMonth} ${startDate.getDate()}-${endDate.getDate()}`;

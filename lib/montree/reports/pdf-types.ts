@@ -9,7 +9,7 @@
 export interface PDFReportData {
   // Child info
   childName: string;
-  childGender: 'he' | 'she' | 'they';
+  childGender?: 'he' | 'she' | 'they';
   
   // Report metadata
   weekStart: string;
@@ -28,6 +28,7 @@ export interface PDFReportData {
 
 export interface PDFHighlight {
   workName: string;
+  chineseName?: string;  // Chinese translation of workName from curriculum JSON
   workArea: string;
   observation: string;
   developmentalNote?: string;
@@ -118,18 +119,19 @@ export function getAreaColor(areaKey: string): string {
   return colorMap[normalizedKey] || PDF_CONFIG.colors.primary;
 }
 
-export function formatDateRange(startDate: string, endDate: string): string {
+export function formatDateRange(startDate: string, endDate: string, locale: string = 'en'): string {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
-  const options: Intl.DateTimeFormatOptions = { 
-    month: 'long', 
+  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+
+  const options: Intl.DateTimeFormatOptions = {
+    month: 'long',
     day: 'numeric',
   };
-  
-  const startStr = start.toLocaleDateString('en-US', options);
-  const endStr = end.toLocaleDateString('en-US', { ...options, year: 'numeric' });
-  
+
+  const startStr = start.toLocaleDateString(dateLocale, options);
+  const endStr = end.toLocaleDateString(dateLocale, { ...options, year: 'numeric' });
+
   return `${startStr} - ${endStr}`;
 }
 

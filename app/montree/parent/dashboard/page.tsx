@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n/context';
 
 
 interface Child {
@@ -32,6 +33,7 @@ interface Stats {
 
 interface Activity {
   work_name: string;
+  chineseName?: string;
   area: string;
   status: string;
   updated_at: string;
@@ -62,6 +64,7 @@ interface Milestone {
 
 export default function ParentDashboardPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const [loading, setLoading] = useState(true);
   const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
@@ -139,7 +142,7 @@ export default function ParentDashboardPage() {
       }
     } catch (err) {
       console.error('Failed to load children:', err);
-      toast.error('Failed to load children');
+      toast.error(t('parent.dashboard.failedToLoadChildren'));
     } finally {
       setLoading(false);
     }
@@ -148,14 +151,14 @@ export default function ParentDashboardPage() {
   const loadReports = async (childId: string) => {
     setLoadingReports(true);
     try {
-      const res = await fetch(`/api/montree/parent/reports?childId=${childId}`);
+      const res = await fetch(`/api/montree/parent/reports?childId=${childId}&locale=${locale}`);
       const data = await res.json();
       if (data.reports) {
         setReports(data.reports);
       }
     } catch (err) {
       console.error('Failed to load reports:', err);
-      toast.error('Failed to load reports');
+      toast.error(t('parent.dashboard.failedToLoadReports'));
     } finally {
       setLoadingReports(false);
     }
@@ -242,19 +245,23 @@ export default function ParentDashboardPage() {
 
   // Format week display with fallback to date range
   const formatWeekDisplay = (report: WeeklyReport) => {
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
     if (report.week_number && report.report_year) {
-      return `Week ${report.week_number}, ${report.report_year}`;
+      return locale === 'zh'
+        ? `${report.report_year}年 第${report.week_number}周`
+        : `Week ${report.week_number}, ${report.report_year}`;
     }
     // Fallback to date range
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
-      const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const formatDate = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
       return `${formatDate(start)} - ${formatDate(end)}`;
     }
     // Last resort: use created_at
     const created = new Date(report.created_at);
-    return `Week of ${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    const weekOf = locale === 'zh' ? '周' : 'Week of';
+    return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
   };
 
   if (loading) {
@@ -262,7 +269,7 @@ export default function ParentDashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">🌱</div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -278,14 +285,14 @@ export default function ParentDashboardPage() {
             <span className="text-2xl">🌳</span>
             <div>
               <h1 className="font-bold text-gray-800">Montree</h1>
-              <p className="text-sm text-gray-500">Welcome, {parentName}</p>
+              <p className="text-sm text-gray-500">{t('parent.dashboard.welcome').replace('{name}', parentName)}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
             className="text-gray-500 hover:text-gray-700 text-sm"
           >
-            Sign out
+            {t('parent.dashboard.signOut')}
           </button>
         </div>
       </header>
@@ -294,7 +301,7 @@ export default function ParentDashboardPage() {
         {/* Child Selector (if multiple children) */}
         {children.length > 1 && (
           <div className="mb-6">
-            <h2 className="text-sm font-medium text-gray-700 mb-3">Your Children</h2>
+            <h2 className="text-sm font-medium text-gray-700 mb-3">{t('parent.dashboard.yourChildren')}</h2>
             <div className="flex gap-3 flex-wrap">
               {children.map(child => (
                 <button
@@ -349,7 +356,7 @@ export default function ParentDashboardPage() {
             {announcements.length > 0 && (
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 shadow-sm border border-amber-200">
                 <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
-                  <span>📢</span> Announcements
+                  <span>📢</span> {t('parent.dashboard.announcements')}
                 </h3>
                 <div className="space-y-2">
                   {announcements.map(ann => (
@@ -368,19 +375,19 @@ export default function ParentDashboardPage() {
             {/* Weekly Reports */}
             <div data-tutorial="parent-weekly-reports" className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📊</span> Weekly Reports
+                <span>📊</span> {t('parent.dashboard.weeklyReports')}
               </h3>
 
               {loadingReports ? (
                 <div className="text-center py-8 text-gray-500">
-                  Loading reports...
+                  {t('parent.dashboard.loadingReports')}
                 </div>
               ) : reports.length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-4xl mb-2">📝</div>
-                  <p className="text-gray-500">No reports yet this term</p>
+                  <p className="text-gray-500">{t('parent.dashboard.noReportsYet')}</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    Reports are generated weekly by teachers
+                    {t('parent.dashboard.reportsGenerated')}
                   </p>
                 </div>
               ) : (
@@ -415,12 +422,12 @@ export default function ParentDashboardPage() {
               <div className="bg-white rounded-xl p-4 shadow-sm text-center">
                 <div className="text-3xl mb-1">🎯</div>
                 <div className="text-2xl font-bold text-emerald-600">{stats?.works_this_week ?? '--'}</div>
-                <div className="text-xs text-gray-500">Works This Week</div>
+                <div className="text-xs text-gray-500">{t('parent.dashboard.worksThisWeek')}</div>
               </div>
               <div className="bg-white rounded-xl p-4 shadow-sm text-center">
                 <div className="text-3xl mb-1">⭐</div>
                 <div className="text-2xl font-bold text-amber-500">{stats?.total_mastered ?? '--'}</div>
-                <div className="text-xs text-gray-500">Mastered Skills</div>
+                <div className="text-xs text-gray-500">{t('parent.dashboard.masteredSkills')}</div>
               </div>
             </div>
 
@@ -429,14 +436,14 @@ export default function ParentDashboardPage() {
               <div data-tutorial="parent-photo-gallery" className="bg-white rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <span>📸</span> Photos
+                    <span>📸</span> {t('parent.dashboard.photos')}
                   </h3>
                   <Link
                     href="/montree/parent/photos"
                     data-tutorial="photos-link"
                     className="text-sm text-emerald-600 hover:text-emerald-700"
                   >
-                    View all →
+                    {t('parent.dashboard.viewAll')}
                   </Link>
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -464,13 +471,13 @@ export default function ParentDashboardPage() {
               <div data-tutorial="parent-milestones" className="bg-white rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <span>⭐</span> Recent Milestones
+                    <span>⭐</span> {t('parent.dashboard.recentMilestones')}
                   </h3>
                   <Link
                     href="/montree/parent/milestones"
                     className="text-sm text-emerald-600 hover:text-emerald-700"
                   >
-                    View all →
+                    {t('parent.dashboard.viewAll')}
                   </Link>
                 </div>
                 <div className="space-y-2">
@@ -497,8 +504,8 @@ export default function ParentDashboardPage() {
                   <span className="text-3xl">🎮</span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-white font-bold text-lg">Practice Games</h3>
-                  <p className="text-white/80 text-sm">Fun activities to practice at home</p>
+                  <h3 className="text-white font-bold text-lg">{t('parent.dashboard.practiceGames')}</h3>
+                  <p className="text-white/80 text-sm">{t('parent.dashboard.funActivities')}</p>
                 </div>
                 <span className="text-white text-xl">→</span>
               </div>
@@ -508,7 +515,7 @@ export default function ParentDashboardPage() {
             {recentActivity.length > 0 && (
               <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span>🕐</span> Recent Activity
+                  <span>🕐</span> {t('parent.dashboard.recentActivity')}
                 </h3>
                 <div className="space-y-3">
                   {recentActivity.map((activity, i) => (
@@ -520,7 +527,7 @@ export default function ParentDashboardPage() {
                          activity.area === 'language' ? '📚' : '🌍'}
                       </span>
                       <div className="flex-1">
-                        <div className="font-medium text-gray-800">{activity.work_name}</div>
+                        <div className="font-medium text-gray-800">{locale === 'zh' && activity.chineseName ? activity.chineseName : activity.work_name}</div>
                         <div className="text-xs text-gray-500">
                           {new Date(activity.updated_at).toLocaleDateString()}
                         </div>
@@ -532,8 +539,8 @@ export default function ParentDashboardPage() {
                           ? 'bg-blue-100 text-blue-700'
                           : 'bg-amber-100 text-amber-700'
                       }`}>
-                        {activity.status === 'completed' || activity.status === 'mastered' ? '✓ Mastered' : 
-                         activity.status === 'practicing' ? 'Practicing' : 'Started'}
+                        {activity.status === 'completed' || activity.status === 'mastered' ? t('parent.dashboard.statusMastered') :
+                         activity.status === 'practicing' ? t('parent.dashboard.statusPracticing') : t('parent.dashboard.statusStarted')}
                       </span>
                     </div>
                   ))}
@@ -545,7 +552,7 @@ export default function ParentDashboardPage() {
           /* No Child Selected */
           <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
             <div className="text-5xl mb-4">👆</div>
-            <p className="text-gray-600">Select a child above to view their progress</p>
+            <p className="text-gray-600">{t('parent.dashboard.selectChild')}</p>
           </div>
         )}
       </main>

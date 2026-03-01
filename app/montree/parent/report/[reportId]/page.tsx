@@ -27,6 +27,7 @@ interface ReportData {
   };
   works_completed: {
     work_name: string;
+    chineseName?: string | null;
     area: string;
     status: string;
     completed_at: string;
@@ -47,7 +48,7 @@ interface ReportData {
 export default function ParentReportPage() {
   const router = useRouter();
   const params = useParams();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const reportId = params.reportId as string;
 
   const [loading, setLoading] = useState(true);
@@ -71,7 +72,7 @@ export default function ParentReportPage() {
     }
 
     try {
-      const res = await fetch(`/api/montree/parent/report/${reportId}`);
+      const res = await fetch(`/api/montree/parent/report/${reportId}?locale=${locale}`);
       const data = await res.json();
       
       if (!res.ok) {
@@ -102,19 +103,23 @@ export default function ParentReportPage() {
   // Format week display with fallback to date range
   const formatWeekDisplay = () => {
     if (!report) return '';
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
     if (report.week_number && report.report_year) {
-      return `Week ${report.week_number}, ${report.report_year}`;
+      return locale === 'zh'
+        ? `${report.report_year}年 第${report.week_number}周`
+        : `Week ${report.week_number}, ${report.report_year}`;
     }
     // Fallback to date range
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
-      const formatDate = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const formatDate = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
       return `${formatDate(start)} - ${formatDate(end)}`;
     }
     // Last resort: use created_at
     const created = new Date(report.created_at);
-    return `Week of ${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    const weekOf = locale === 'zh' ? '周' : 'Week of';
+    return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
   };
 
   if (loading) {
@@ -246,10 +251,10 @@ export default function ParentReportPage() {
                     work.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
                     'bg-amber-100 text-amber-700'
                   }`}>
-                    {work.status === 'mastered' ? '⭐ Mastered' :
-                     work.status === 'practicing' ? '🔄 Practicing' : '🌱 Introduced'}
+                    {work.status === 'mastered' ? t('parentReport.statusMastered' as any) :
+                     work.status === 'practicing' ? t('parentReport.statusPracticing' as any) : t('parentReport.statusIntroduced' as any)}
                   </span>
-                  <h4 className="font-bold text-gray-800">{work.work_name}</h4>
+                  <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
                 </div>
 
                 {/* Photo */}
@@ -356,7 +361,7 @@ export default function ParentReportPage() {
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-500 py-4">
-          {t('parentReport.reportGenerated')} {new Date(report.created_at).toLocaleDateString()}
+          {t('parentReport.reportGenerated')} {new Date(report.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
       </main>
     </div>

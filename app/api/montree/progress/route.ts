@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
 
 // Empty response shape — used as fallback so client always gets valid data
 const EMPTY_RESPONSE = {
@@ -201,10 +202,17 @@ export async function GET(request: NextRequest) {
     } catch { /* graceful */ }
   }
 
+  // Enrich work names with Chinese translations from curriculum JSON
+  const enrichedProgress = enrichWithChineseNames(progressWithFlags);
+  const enrichedByArea: Record<string, any[]> = {};
+  for (const [area, works] of Object.entries(byArea)) {
+    enrichedByArea[area] = enrichWithChineseNames(works);
+  }
+
   return NextResponse.json({
-    progress: progressWithFlags,
+    progress: enrichedProgress,
     stats,
-    byArea,
+    byArea: enrichedByArea,
     total: progress.length,
     ...(includeObservations ? { observations, workNotes } : {}),
   });

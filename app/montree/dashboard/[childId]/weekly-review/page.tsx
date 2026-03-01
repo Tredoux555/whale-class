@@ -118,7 +118,7 @@ function getWeekBoundaries(date: Date = new Date()): { start: string; end: strin
 export default function WeeklyReviewPage() {
   const params = useParams();
   const childId = params.childId as string;
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [activeTab, setActiveTab] = useState<'teacher' | 'parent' | 'ai'>('teacher');
   const [loading, setLoading] = useState(true);
@@ -249,9 +249,9 @@ export default function WeeklyReviewPage() {
               ◀
             </button>
             <span className="text-sm text-slate-600">
-              {new Date(weekRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(weekRange.start).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
               {' - '}
-              {new Date(weekRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(weekRange.end).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
             </span>
             <button onClick={goToNextWeek} className="text-slate-400 hover:text-slate-600">
               ▶

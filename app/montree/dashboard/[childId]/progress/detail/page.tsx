@@ -20,7 +20,7 @@ interface WorkProgress {
 }
 
 export default function ProgressDetailPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useParams();
   const childId = params.childId as string;
 
@@ -50,7 +50,7 @@ export default function ProgressDetailPage() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   // Filter progress

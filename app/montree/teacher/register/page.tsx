@@ -5,9 +5,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 export default function TeacherRegisterPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,12 +25,12 @@ export default function TeacherRegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('validation.passwordsDoNotMatch' as TranslationKey));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('validation.passwordMinLength' as TranslationKey));
       return;
     }
 
@@ -61,7 +63,7 @@ export default function TeacherRegisterPage() {
       router.push('/montree/teacher');
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('validation.registrationFailed' as TranslationKey));
     } finally {
       setLoading(false);
     }

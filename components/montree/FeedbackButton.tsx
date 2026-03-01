@@ -434,7 +434,7 @@ export default function FeedbackButton({
             ? 'bg-gray-800 text-white rotate-45'
             : 'bg-emerald-500 text-white hover:bg-emerald-600'
         }`}
-        aria-label="Give feedback"
+        aria-label={t('a11y.giveFeedback' as TranslationKey)}
       >
         {isOpen ? '×' : '💬'}
       </button>

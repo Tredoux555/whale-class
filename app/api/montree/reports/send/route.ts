@@ -6,6 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getLocaleFromRequest, getTranslator } from '@/lib/montree/i18n/server';
+import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,6 +21,8 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { child_id } = body;
+    const locale = getLocaleFromRequest(request.url);
+    const t = getTranslator(locale);
 
     if (!child_id) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
@@ -193,6 +197,7 @@ export async function POST(request: NextRequest) {
       return 'presented';
     };
 
+    const cnMap = getChineseNameMap();
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
       works: works.map(w => {
@@ -204,6 +209,7 @@ export async function POST(request: NextRequest) {
 
         return {
           name: w.work_name,
+          chineseName: cnMap.get(workNameLower.trim()) || null,
           area: w.area,
           status: w.status === 'completed' ? 'mastered' : w.status,
           status_label: getStatusLabel(w.status),
@@ -280,22 +286,29 @@ export async function POST(request: NextRequest) {
       };
 
       const worksHtml = works.length > 0
-        ? works.map(w => `<li>${statusEmoji(w.status)} ${w.work_name}</li>`).join('')
-        : '<li>No new progress this period</li>';
+        ? works.map(w => {
+            const displayName = locale === 'zh' && cnMap.get((w.work_name || '').toLowerCase().trim())
+              ? cnMap.get((w.work_name || '').toLowerCase().trim())
+              : w.work_name;
+            return `<li>${statusEmoji(w.status)} ${displayName}</li>`;
+          }).join('')
+        : `<li>${t('report.email.noProgress' as any, 'No new progress this period')}</li>`;
+
+      const statusLegend = t('report.email.statusLegend' as any, '⭐ Mastered • 🔄 Practicing • 🌱 Introduced • 📸 Documented');
 
       const html = `
         <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #059669;">🌳 Progress Update for ${child.name}</h2>
-          <p style="color: #666;">From ${classroom?.name || 'Class'}</p>
+          <h2 style="color: #059669;">🌳 ${t('report.email.subject' as any, 'Progress Update for {name}').replace('{name}', child.name)}</h2>
+          <p style="color: #666;">${t('report.email.bodyIntro' as any, 'From {name}').replace('{name}', classroom?.name || 'Class')}</p>
 
-          <h3 style="color: #333;">Recent Activities</h3>
+          <h3 style="color: #333;">${t('report.email.recentPhotos' as any, 'Recent Activities')}</h3>
           <ul style="line-height: 1.8;">${worksHtml}</ul>
 
-          ${photos && photos.length > 0 ? `<p style="color: #059669;">📸 ${photos.length} new photo(s) captured!</p>` : ''}
+          ${photos && photos.length > 0 ? `<p style="color: #059669;">📸 ${t('report.email.newPhotos' as any, '{count} new photo(s) captured!').replace('{count}', photos.length.toString())}</p>` : ''}
 
           <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
           <p style="color: #999; font-size: 12px;">
-            ⭐ Mastered • 🔄 Practicing • 🌱 Introduced • 📸 Documented
+            ${statusLegend}
           </p>
         </div>
       `;
@@ -305,7 +318,7 @@ export async function POST(request: NextRequest) {
           await resend.emails.send({
             from: 'Montree <noreply@montree.xyz>',
             to: email,
-            subject: `🌳 ${child.name}'s Progress Update`,
+            subject: `🌳 ${t('report.email.subject' as any, '{name}\'s Progress Update').replace('{name}', child.name)}`,
             html,
           });
           sent++;

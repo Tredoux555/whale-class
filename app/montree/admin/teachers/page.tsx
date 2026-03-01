@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n/context';
 
 interface Teacher {
   id: string;
@@ -25,6 +26,7 @@ interface Classroom {
 
 export default function TeachersPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +77,7 @@ export default function TeachersPage() {
       setTeachers(teachersData.teachers || []);
       setClassrooms(classroomsData.classrooms || []);
     } catch (error) {
-      toast.error('Failed to load data');
+      toast.error(t('admin.teachers.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -104,14 +106,14 @@ export default function TeachersPage() {
         throw new Error(data.error || 'Failed to add teacher');
       }
       
-      toast.success(`Teacher added! Login code: ${data.teacher.login_code}`);
+      toast.success(t('admin.teachers.teacherAdded').replace('{code}', data.teacher.login_code));
       setShowAddModal(false);
       setFormName('');
       setFormEmail('');
       setFormClassroomId('');
       fetchData();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to add teacher');
+      toast.error(error instanceof Error ? error.message : t('admin.teachers.failedToAdd'));
     } finally {
       setSaving(false);
     }
@@ -126,11 +128,11 @@ export default function TeachersPage() {
       });
       
       if (!res.ok) throw new Error('Failed to update');
-      
-      toast.success(teacher.is_active ? 'Teacher deactivated' : 'Teacher activated');
+
+      toast.success(teacher.is_active ? t('admin.teachers.deactivated') : t('admin.teachers.activated'));
       fetchData();
     } catch {
-      toast.error('Failed to update teacher');
+      toast.error(t('admin.teachers.failedToUpdate'));
     }
   };
 
@@ -153,12 +155,12 @@ export default function TeachersPage() {
       });
       
       if (!res.ok) throw new Error('Failed to assign');
-      
-      toast.success('Classrooms assigned');
+
+      toast.success(t('admin.teachers.classroomsAssigned'));
       setShowAssignModal(false);
       fetchData();
     } catch {
-      toast.error('Failed to assign classrooms');
+      toast.error(t('admin.teachers.failedToAssign'));
     } finally {
       setSaving(false);
     }
@@ -166,7 +168,7 @@ export default function TeachersPage() {
 
   const copyLoginCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast.success('Login code copied!');
+    toast.success(t('admin.teachers.codeCopied'));
   };
 
   if (loading) {
@@ -184,17 +186,17 @@ export default function TeachersPage() {
       {/* Header */}
       <div className="max-w-4xl mx-auto mb-8">
         <Link href="/montree/admin" className="text-emerald-400 hover:text-emerald-300 text-sm mb-4 inline-block">
-          ← Back to Admin
+          {t('admin.teachers.backToAdmin')}
         </Link>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-light text-white">
-            👩‍🏫 <span className="font-semibold">Teachers</span>
+            👩‍🏫 <span className="font-semibold">{t('admin.teachers.title')}</span>
           </h1>
           <button
             onClick={() => setShowAddModal(true)}
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition"
           >
-            + Add Teacher
+            {t('admin.teachers.addTeacher')}
           </button>
         </div>
       </div>
@@ -203,7 +205,7 @@ export default function TeachersPage() {
       <div className="max-w-4xl mx-auto space-y-4">
         {teachers.length === 0 ? (
           <div className="bg-white/10 backdrop-blur rounded-2xl p-8 text-center">
-            <p className="text-white/60">No teachers yet. Add your first teacher!</p>
+            <p className="text-white/60">{t('admin.teachers.noTeachers')}</p>
           </div>
         ) : (
           teachers.map(teacher => (
@@ -218,7 +220,7 @@ export default function TeachersPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="text-white font-medium">{teacher.name}</h3>
                   {!teacher.is_active && (
-                    <span className="px-2 py-0.5 bg-red-500/30 text-red-300 text-xs rounded-full">Inactive</span>
+                    <span className="px-2 py-0.5 bg-red-500/30 text-red-300 text-xs rounded-full">{t('admin.teachers.inactive')}</span>
                   )}
                 </div>
                 <p className="text-white/50 text-sm">{teacher.email}</p>
@@ -239,7 +241,7 @@ export default function TeachersPage() {
                   <button
                     onClick={() => copyLoginCode(teacher.login_code!)}
                     className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition"
-                    title="Copy login code"
+                    title={t('admin.teachers.copyLoginCode')}
                   >
                     📋 {teacher.login_code}
                   </button>
@@ -248,7 +250,7 @@ export default function TeachersPage() {
                   onClick={() => openAssignModal(teacher)}
                   className="px-3 py-1.5 bg-blue-500/30 hover:bg-blue-500/50 text-blue-300 text-sm rounded-lg transition"
                 >
-                  Classrooms
+                  {t('admin.teachers.classrooms')}
                 </button>
                 <button
                   onClick={() => handleToggleActive(teacher)}
@@ -258,7 +260,7 @@ export default function TeachersPage() {
                       : 'bg-green-500/30 hover:bg-green-500/50 text-green-300'
                   }`}
                 >
-                  {teacher.is_active ? 'Deactivate' : 'Activate'}
+                  {teacher.is_active ? t('admin.teachers.deactivate') : t('admin.teachers.activate')}
                 </button>
               </div>
             </div>
@@ -270,38 +272,38 @@ export default function TeachersPage() {
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold text-white mb-4">Add Teacher</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">{t('admin.teachers.addTeacherModal')}</h2>
             <form onSubmit={handleAddTeacher} className="space-y-4">
               <div>
-                <label className="block text-white/70 text-sm mb-1">Name</label>
+                <label className="block text-white/70 text-sm mb-1">{t('admin.teachers.name')}</label>
                 <input
                   type="text"
                   value={formName}
                   onChange={e => setFormName(e.target.value)}
                   className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white"
-                  placeholder="Teacher name"
+                  placeholder={t('admin.teachers.teacherName')}
                   required
                 />
               </div>
               <div>
-                <label className="block text-white/70 text-sm mb-1">Email</label>
+                <label className="block text-white/70 text-sm mb-1">{t('admin.teachers.email')}</label>
                 <input
                   type="email"
                   value={formEmail}
                   onChange={e => setFormEmail(e.target.value)}
                   className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white"
-                  placeholder="teacher@school.com"
+                  placeholder={t('admin.teachers.emailPlaceholder')}
                   required
                 />
               </div>
               <div>
-                <label className="block text-white/70 text-sm mb-1">Classroom (optional)</label>
+                <label className="block text-white/70 text-sm mb-1">{t('admin.teachers.classroomOptional')}</label>
                 <select
                   value={formClassroomId}
                   onChange={e => setFormClassroomId(e.target.value)}
                   className="w-full p-3 bg-white/10 border border-white/20 rounded-xl text-white"
                 >
-                  <option value="">— No classroom yet —</option>
+                  <option value="">{t('admin.teachers.noClassroomYet')}</option>
                   {classrooms.map(c => (
                     <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                   ))}
@@ -313,14 +315,14 @@ export default function TeachersPage() {
                   onClick={() => setShowAddModal(false)}
                   className="flex-1 py-3 bg-white/10 text-white rounded-xl"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
                   className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50"
                 >
-                  {saving ? 'Adding...' : 'Add Teacher'}
+                  {saving ? t('admin.teachers.adding') : t('admin.teachers.addTeacher')}
                 </button>
               </div>
             </form>
@@ -333,7 +335,7 @@ export default function TeachersPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-slate-800 rounded-2xl p-6 w-full max-w-md">
             <h2 className="text-xl font-semibold text-white mb-4">
-              Assign Classrooms to {selectedTeacher.name}
+              {t('admin.teachers.assignClassrooms').replace('{name}', selectedTeacher.name)}
             </h2>
             <div className="space-y-2 mb-4 max-h-60 overflow-y-auto">
               {classrooms.map(classroom => (
@@ -360,14 +362,14 @@ export default function TeachersPage() {
                 onClick={() => setShowAssignModal(false)}
                 className="flex-1 py-3 bg-white/10 text-white rounded-xl"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleAssignClassrooms}
                 disabled={saving}
                 className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? t('common.saving') : t('common.save')}
               </button>
             </div>
           </div>

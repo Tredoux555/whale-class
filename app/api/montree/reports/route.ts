@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getLocaleFromRequest, getTranslator, getTranslatedAreaName, getTranslatedStatus } from '@/lib/montree/i18n/server';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
+    const locale = getLocaleFromRequest(request.url);
     const classroomId = searchParams.get('classroom_id');
     const childId = searchParams.get('child_id');
     const weekStart = searchParams.get('week_start');
@@ -201,11 +203,11 @@ export async function POST(request: NextRequest) {
       return {
         name: progress.work_name,
         name_chinese: curriculum?.name_chinese || null,
-        area: curriculum?.area?.name || getAreaName(progress.area),
+        area: curriculum?.area?.name || getAreaName(progress.area, locale),
         area_key: curriculum?.area?.area_key || progress.area,
         area_icon: curriculum?.area?.icon || getAreaIcon(progress.area),
         status: progress.status,
-        status_label: getStatusLabel(progress.status),
+        status_label: getStatusLabel(progress.status, locale),
         notes: progress.notes,
         // Parent-friendly content - THE GOLD!
         parent_explanation: brain?.parent_explanation_simple || '',
@@ -308,11 +310,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getStatusLabel(status: number | string): string {
-  if (status === 1 || status === 'presented') return 'Introduced';
-  if (status === 2 || status === 'practicing') return 'Practicing';
-  if (status === 3 || status === 'mastered' || status === 'completed') return 'Mastered';
-  return 'Started';
+function getStatusLabel(status: number | string, locale: 'en' | 'zh' = 'en'): string {
+  const t = getTranslator(locale);
+  if (status === 1 || status === 'presented') return t('progress.presented' as any, 'Presented');
+  if (status === 2 || status === 'practicing') return t('progress.practicing' as any, 'Practicing');
+  if (status === 3 || status === 'mastered' || status === 'completed') return t('progress.mastered' as any, 'Mastered');
+  return t('progress.notStarted' as any, 'Started');
 }
 
 function getAreaIcon(area: string): string {
@@ -322,10 +325,6 @@ function getAreaIcon(area: string): string {
   return icons[area?.toLowerCase()] || '📋';
 }
 
-function getAreaName(area: string): string {
-  const names: Record<string, string> = {
-    practical_life: 'Practical Life', sensorial: 'Sensorial', mathematics: 'Mathematics', 
-    math: 'Mathematics', language: 'Language', cultural: 'Cultural',
-  };
-  return names[area?.toLowerCase()] || area || 'Other';
+function getAreaName(area: string, locale: 'en' | 'zh' = 'en'): string {
+  return getTranslatedAreaName(area, locale);
 }
