@@ -22,7 +22,7 @@ export default function MediaDetailModal({
   onUpdate,
   onDelete,
 }: MediaDetailModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -115,7 +115,7 @@ export default function MediaDetailModal({
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',

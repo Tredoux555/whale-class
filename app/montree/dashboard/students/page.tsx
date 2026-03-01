@@ -265,7 +265,8 @@ function CurriculumPicker({
 
 export default function StudentsPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const areaNameT = (key: string) => t(`area.${key}` as any) || AREA_CONFIG[key]?.name || key;
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -789,7 +790,7 @@ export default function StudentsPage() {
                       <CurriculumPicker
                         key={area.id}
                         areaId={area.id}
-                        areaName={area.name}
+                        areaName={areaNameT(area.id)}
                         icon={area.icon}
                         color={area.color}
                         works={curriculumWorks[area.id] || []}
@@ -966,7 +967,7 @@ export default function StudentsPage() {
                           <div key={area.id} {...(index === 0 ? { 'data-guide': `area-${area.id}` } : {})}>
                             <CurriculumPicker
                               areaId={area.id}
-                              areaName={area.name}
+                              areaName={areaNameT(area.id)}
                               icon={area.icon}
                               color={area.color}
                               works={curriculumWorks[area.id] || []}

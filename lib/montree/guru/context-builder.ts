@@ -286,6 +286,7 @@ export async function buildChildContext(
     question: g.question,
     response_insight: g.response_insight,
     outcome: g.outcome,
+    context_snapshot: g.context_snapshot as Record<string, unknown> | undefined,
   }));
 
   // 6. Fetch teacher notes from work sessions (last 20)

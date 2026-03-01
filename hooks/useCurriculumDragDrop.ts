@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { Work } from '@/components/montree/curriculum/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface UseCurriculumDragDropProps {
   selectedArea: string | null;
@@ -17,6 +18,7 @@ export function useCurriculumDragDrop({
   session,
   fetchCurriculum,
 }: UseCurriculumDragDropProps) {
+  const { t } = useI18n();
   const [draggedWork, setDraggedWork] = useState<Work | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [reordering, setReordering] = useState(false);
@@ -125,13 +127,13 @@ export function useCurriculumDragDrop({
       });
       const data = await res.json();
       if (data.success) {
-        toast.success('Order saved!');
+        toast.success(t('toast.orderSaved' as any));
       } else {
-        toast.error('Failed to save order');
+        toast.error(t('toast.failedToSaveOrder' as any));
         fetchCurriculum();
       }
     } catch (err) {
-      toast.error('Failed to save order');
+      toast.error(t('toast.failedToSaveOrder' as any));
       fetchCurriculum();
     }
     setReordering(false);

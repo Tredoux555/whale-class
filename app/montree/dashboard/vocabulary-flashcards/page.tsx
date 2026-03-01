@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react';
 import JSZip from 'jszip';
 import { CIRCLE_TIME_CURRICULUM } from '@/lib/circle-time/curriculum-data';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
+import { useI18n } from '@/lib/montree/i18n/context';
 
 interface FlashCard {
   id: number;
@@ -12,6 +13,7 @@ interface FlashCard {
 }
 
 const VocabularyFlashcardGenerator = () => {
+  const { t } = useI18n();
   const [selectedWeek, setSelectedWeek] = useState<number>(17);
   const [cards, setCards] = useState<FlashCard[]>([]);
   const [borderColor, setBorderColor] = useState('#00BCD4');
@@ -73,13 +75,13 @@ const VocabularyFlashcardGenerator = () => {
       const matched = newCards.length;
       const total = imageFiles.length;
       if (matched === 0 && total > 0) {
-        alert(`No matches found. Make sure image filenames match vocabulary words.\n\nExample: winter.jpg → "winter"`);
+        alert(t('flashcard.noMatchesFound'));
       } else if (matched < total) {
-        alert(`Matched ${matched} of ${total} images to vocabulary words.`);
+        alert(t('flashcard.matchedImages').replace('{matched}', String(matched)).replace('{total}', String(total)));
       }
     } catch (err) {
       console.error('Error processing files:', err);
-      alert('Error processing files.');
+      alert(t('flashcard.errorProcessing'));
     } finally {
       setProcessingZip(false);
     }
@@ -126,11 +128,11 @@ const VocabularyFlashcardGenerator = () => {
       const matched = newCards.length;
       const total = imageFiles.length;
       if (matched < total) {
-        alert(`Matched ${matched} of ${total} images to vocabulary words.\n\nUnmatched files may have different names than the vocabulary words.`);
+        alert(t('flashcard.matchedImages').replace('{matched}', String(matched)).replace('{total}', String(total)));
       }
     } catch (err) {
       console.error('Error processing zip:', err);
-      alert('Error processing zip file. Make sure it contains images.');
+      alert(t('flashcard.errorProcessing'));
     } finally {
       setProcessingZip(false);
     }
@@ -291,10 +293,10 @@ const VocabularyFlashcardGenerator = () => {
         }
       }
       // No image found in clipboard
-      alert('No image found in clipboard. Copy an image first!');
+      alert(t('flashcard.noImageInClipboard'));
     } catch (err) {
       console.error('Paste error:', err);
-      alert('Could not paste. Make sure you copied an image (not just the URL).');
+      alert(t('flashcard.couldNotPaste'));
     }
   }, []);
 
@@ -315,7 +317,7 @@ const VocabularyFlashcardGenerator = () => {
   const generatePrintableSheet = async () => {
     const cardsWithImages = cards.filter(c => c.image);
     if (cardsWithImages.length === 0) {
-      alert('Please add images to at least one vocabulary word!');
+      alert(t('flashcard.addImages'));
       return;
     }
 
@@ -324,7 +326,7 @@ const VocabularyFlashcardGenerator = () => {
     try {
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
-        alert('Please allow pop-ups to use the print feature');
+        alert(t('flashcard.allowPopups'));
         setGenerating(false);
         return;
       }
@@ -414,7 +416,7 @@ const VocabularyFlashcardGenerator = () => {
       printWindow.document.close();
     } catch (error) {
       console.error('Error generating flashcards:', error);
-      alert('Error generating flashcards. Please try again.');
+      alert(t('flashcard.errorProcessing'));
     }
 
     setGenerating(false);
@@ -428,7 +430,7 @@ const VocabularyFlashcardGenerator = () => {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-xl">🃏</span>
-            <h1 className="font-bold text-gray-800">Vocabulary Flashcard Maker</h1>
+            <h1 className="font-bold text-gray-800">{t('flashcard.title')}</h1>
           </div>
           {readyCount > 0 && (
             <button
@@ -436,7 +438,7 @@ const VocabularyFlashcardGenerator = () => {
               disabled={generating}
               className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >
-              {generating ? '⏳ Generating...' : `🖨️ Print ${readyCount} Cards`}
+              {generating ? `⏳ ${t('flashcard.generating')}` : `🖨️ ${t('flashcard.printCards').replace('{count}', String(readyCount))}`}
             </button>
           )}
         </div>
@@ -445,7 +447,7 @@ const VocabularyFlashcardGenerator = () => {
       <div className="max-w-6xl mx-auto p-6">
         {/* Week Selector */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📅 Select Week</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">📅 {t('flashcard.selectWeek')}</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
             {CIRCLE_TIME_CURRICULUM.slice(0, 20).map((week) => (
               <button
@@ -477,7 +479,7 @@ const VocabularyFlashcardGenerator = () => {
 
         {/* Copyable Word List */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">📝 Word List (click to copy)</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">📝 {t('flashcard.wordList')}</h2>
           <div className="flex flex-wrap gap-2">
             {vocabulary.map((word) => (
               <button
@@ -496,7 +498,7 @@ const VocabularyFlashcardGenerator = () => {
               </button>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-2">Click a word → paste into Google Images → copy image → click card below → ⌘V</p>
+          <p className="text-xs text-gray-400 mt-2">{t('flashcard.copyInstruction')}</p>
         </div>
 
         {/* Folder/ZIP Drop Zone */}
@@ -513,17 +515,17 @@ const VocabularyFlashcardGenerator = () => {
           {processingZip ? (
             <div className="flex items-center justify-center gap-3">
               <div className="animate-spin text-2xl">⏳</div>
-              <span className="text-gray-600">Processing images...</span>
+              <span className="text-gray-600">{t('flashcard.processingImages')}</span>
             </div>
           ) : (
             <>
               <div className="text-4xl mb-2">📁</div>
-              <p className="font-semibold text-gray-700">Drop a folder with images here</p>
+              <p className="font-semibold text-gray-700">{t('flashcard.dropFolder')}</p>
               <p className="text-sm text-gray-500 mt-1">
-                Name images like vocabulary words (e.g., winter.jpg → "winter")
+                {t('flashcard.nameImages')}
               </p>
               <label className="inline-block mt-3 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg cursor-pointer font-medium">
-                📂 Choose Folder
+                📂 {t('flashcard.chooseFolder')}
                 <input
                   type="file"
                   // @ts-expect-error - webkitdirectory is valid but not in React types
@@ -535,7 +537,7 @@ const VocabularyFlashcardGenerator = () => {
                 />
               </label>
               <p className="text-xs text-gray-400 mt-2">
-                Also accepts ZIP files or multiple images
+                {t('flashcard.alsoAccepts')}
               </p>
             </>
           )}
@@ -543,10 +545,10 @@ const VocabularyFlashcardGenerator = () => {
 
         {/* Settings */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4 mb-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">⚙️ Card Style</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">⚙️ {t('flashcard.cardStyle')}</h2>
           <div className="flex flex-wrap gap-4">
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Border Color</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('flashcard.borderColor')}</label>
               <div className="flex gap-2">
                 {['#00BCD4', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0', '#2196F3'].map(color => (
                   <button
@@ -559,7 +561,7 @@ const VocabularyFlashcardGenerator = () => {
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-600 mb-1">Font</label>
+              <label className="block text-sm text-gray-600 mb-1">{t('flashcard.font')}</label>
               <select
                 value={fontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
@@ -576,12 +578,12 @@ const VocabularyFlashcardGenerator = () => {
         {/* Vocabulary Grid */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">📇 Vocabulary Words</h2>
-            <span className="text-sm text-gray-500">{readyCount} of {vocabulary.length} ready</span>
+            <h2 className="text-lg font-semibold text-gray-800">📇 {t('flashcard.vocabularyWords')}</h2>
+            <span className="text-sm text-gray-500">{t('flashcard.readyCount').replace('{ready}', String(readyCount)).replace('{total}', String(vocabulary.length))}</span>
           </div>
-          
+
           <p className="text-gray-600 text-sm mb-4">
-            Drop a ZIP above to auto-fill, or <strong>click a card → copy image from web → ⌘V to paste</strong>
+            {t('flashcard.dropZipInstruction')}
           </p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -617,7 +619,7 @@ const VocabularyFlashcardGenerator = () => {
                     <div className={`w-full h-full flex flex-col items-center justify-center ${selectedWord === word ? 'bg-blue-50' : 'bg-gray-50 hover:bg-cyan-50'}`}>
                       <span className="text-3xl mb-1">{selectedWord === word ? '📋' : '📷'}</span>
                       <span className="text-xs text-gray-500 text-center px-2">
-                        {selectedWord === word ? 'Press ⌘V to paste' : 'Click then paste'}
+                        {selectedWord === word ? t('flashcard.pressToPass') : t('flashcard.clickThenPaste')}
                       </span>
                       <input
                         type="file"
@@ -649,7 +651,7 @@ const VocabularyFlashcardGenerator = () => {
               disabled={generating}
               className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-400 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg flex items-center gap-2"
             >
-              {generating ? <>⏳ Generating...</> : <>🎴 Generate {readyCount} Flashcards</>}
+              {generating ? <>⏳ {t('flashcard.generating')}</> : <>🎴 {t('flashcard.generateCards').replace('{count}', String(readyCount))}</>}
             </button>
           </div>
         )}

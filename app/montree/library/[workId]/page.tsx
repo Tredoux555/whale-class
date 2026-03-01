@@ -16,11 +16,11 @@ const AREA_CONFIG = {
   cultural: { name: 'Cultural', icon: 'C', color: '#f97316' },
 };
 
-const AGE_LABELS = {
-  all: 'All Ages',
-  primary_year1: 'Year 1 (2.5-4)',
-  primary_year2: 'Year 2 (4-5)',
-  primary_year3: 'Year 3 (5-6)',
+const AGE_KEYS: Record<string, string> = {
+  all: 'curriculum.allAges',
+  primary_year1: 'curriculum.year1',
+  primary_year2: 'curriculum.year2',
+  primary_year3: 'curriculum.year3',
 };
 
 function getMediaUrl(path: string) {
@@ -63,7 +63,7 @@ export default function WorkDetailPage() {
       const data = await res.json();
       setInjectResult(res.ok ? { success: true, message: data.message } : { success: false, message: data.error });
     } catch {
-      setInjectResult({ success: false, message: 'Something went wrong.' });
+      setInjectResult({ success: false, message: t('validation.somethingWentWrong' as any) });
     }
     setInjecting(false);
   };
@@ -90,7 +90,7 @@ export default function WorkDetailPage() {
             className="px-2.5 py-0.5 rounded-full text-white text-xs font-bold"
             style={{ backgroundColor: cfg.color }}
           >
-            {cfg.name}
+            {t(('area.' + work.area) as any) || cfg.name}
           </span>
         </div>
       </header>
@@ -142,20 +142,20 @@ export default function WorkDetailPage() {
 
           <div className="flex flex-wrap gap-2 mt-3">
             <span className="px-3 py-1 rounded-full text-white text-sm font-medium" style={{ backgroundColor: cfg.color }}>
-              {cfg.name}
+              {t(('area.' + work.area) as any) || cfg.name}
             </span>
             {work.category && (
               <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm">{work.category}</span>
             )}
             <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm">
-              {AGE_LABELS[work.age_range] || 'All Ages'}
+              {t((AGE_KEYS[work.age_range] || 'curriculum.allAges') as any)}
             </span>
           </div>
 
           {/* Contributor */}
           <p className="text-sm text-gray-400 mt-3">
-            Shared by <strong className="text-gray-600">{work.contributor_name}</strong>
-            {work.contributor_school && <> from {work.contributor_school}</>}
+            {t('library.sharedByName' as any)} <strong className="text-gray-600">{work.contributor_name}</strong>
+            {work.contributor_school && <> {t('library.fromSchool' as any)} {work.contributor_school}</>}
             {work.contributor_country && <> · {work.contributor_country}</>}
           </p>
 

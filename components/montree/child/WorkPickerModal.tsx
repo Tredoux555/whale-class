@@ -43,7 +43,7 @@ export default function WorkPickerModal({
   onAddWork,
   getAreaConfig,
 }: WorkPickerModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -108,7 +108,7 @@ export default function WorkPickerModal({
                   >
                     <span className="text-xl">{getAreaConfig(selectedArea).icon}</span>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-800">{work.name}</p>
+                      <p className="font-medium text-gray-800">{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</p>
                     </div>
                     {isAdded ? (
                       <span className="text-xs text-gray-400">{t('workPicker.added')} ✓</span>

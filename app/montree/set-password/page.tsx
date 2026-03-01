@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 export default function SetPasswordPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<any>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -38,12 +40,12 @@ export default function SetPasswordPage() {
     e.preventDefault();
     
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error(t('validation.passwordMinLength' as TranslationKey));
       return;
     }
-    
+
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('validation.passwordsDoNotMatch' as TranslationKey));
       return;
     }
 
@@ -68,14 +70,14 @@ export default function SetPasswordPage() {
           teacher: { ...session.teacher, password_set: true, email: email || session.teacher.email }
         };
         localStorage.setItem('montree_session', JSON.stringify(updatedSession));
-        
-        toast.success('Password set successfully!');
+
+        toast.success(t('validation.passwordSetSuccess' as TranslationKey));
         setTimeout(() => router.push('/montree/dashboard'), 1000);
       } else {
-        toast.error(data.error || 'Failed to set password');
+        toast.error(data.error || t('validation.failedToSetPassword' as TranslationKey));
       }
     } catch (err) {
-      toast.error('Something went wrong');
+      toast.error(t('validation.somethingWentWrong' as TranslationKey));
     }
     setLoading(false);
   };

@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n/context';
 
 interface Student {
   id: string;
@@ -35,6 +36,7 @@ function escHtml(str: string): string {
 
 export default function GuruPage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Auth
@@ -133,7 +135,7 @@ export default function GuruPage() {
         setConversationHistory(prev => [...prev, { question, response: data }]);
       }
     } catch {
-      const errResp: GuruResponse = { success: false, error: 'Failed to get response. Please try again.' };
+      const errResp: GuruResponse = { success: false, error: t('admin.guru.failedToRespond') };
       setGuruResponse(errResp);
     } finally {
       setGuruLoading(false);
@@ -162,7 +164,7 @@ export default function GuruPage() {
   const formatForPrint = (): string => {
     if (!guruResponse?.success || !selected) return '';
     const lines: string[] = [];
-    const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const date = new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     if (reportMode === 'home_plan') {
       lines.push(`HOME ACTION PLAN FOR ${selected.name.toUpperCase()}`);
@@ -221,7 +223,7 @@ export default function GuruPage() {
     if (!content) return;
 
     const printWindow = window.open('', '_blank');
-    if (!printWindow) { toast.error('Please allow pop-ups to print'); return; }
+    if (!printWindow) { toast.error(t('admin.guru.allowPopups')); return; }
 
     const title = reportMode === 'home_plan'
       ? `Home Action Plan — ${selected?.name}`
@@ -253,7 +255,7 @@ export default function GuruPage() {
 
     printWindow.document.write(`<h1>${escHtml(modeTitle)}</h1>`);
     printWindow.document.write(`<p class="subtitle">${selected?.classroom_icon || ''} ${escHtml(selected?.classroom_name || '')} · ${escHtml(schoolName)}</p>`);
-    printWindow.document.write(`<p class="subtitle">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>`);
+    printWindow.document.write(`<p class="subtitle">${new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>`);
     printWindow.document.write('<div class="divider"></div>');
 
     // Overview / Insight
@@ -303,14 +305,14 @@ export default function GuruPage() {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    toast.success('Copied to clipboard');
+    toast.success(t('admin.guru.copiedToClipboard'));
   };
 
   // Mode labels + icons
   const MODE_CONFIG: Record<ReportMode, { label: string; icon: string; desc: string }> = {
-    principal: { label: 'Principal Report', icon: '📊', desc: 'Detailed overview for your records' },
-    parent: { label: 'Parent Summary', icon: '💬', desc: 'Simple, warm update for parents' },
-    home_plan: { label: 'Home Action Plan', icon: '🏠', desc: 'Activities parents can do at home' },
+    principal: { label: t('admin.guru.modePrincipalReport'), icon: '📊', desc: t('admin.guru.modePrincipalDesc') },
+    parent: { label: t('admin.guru.modeParentSummary'), icon: '💬', desc: t('admin.guru.modeParentDesc') },
+    home_plan: { label: t('admin.guru.modeHomeAction'), icon: '🏠', desc: t('admin.guru.modeHomeDesc') },
   };
 
   return (
@@ -321,8 +323,8 @@ export default function GuruPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-2">🧠</div>
-          <h1 className="text-2xl font-bold text-white">Montree Guru</h1>
-          <p className="text-emerald-300 text-sm mt-1">Search any student for instant reports and action plans</p>
+          <h1 className="text-2xl font-bold text-white">{t('admin.guru.title')}</h1>
+          <p className="text-emerald-300 text-sm mt-1">{t('admin.guru.subtitle')}</p>
         </div>
 
         {/* Search Bar */}
@@ -337,7 +339,7 @@ export default function GuruPage() {
                 onChange={e => { setSearchQuery(e.target.value); setShowDropdown(true); }}
                 onFocus={() => setShowDropdown(true)}
                 onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
-                placeholder={loadingStudents ? 'Loading students...' : `Search ${allStudents.length} students by name...`}
+                placeholder={loadingStudents ? t('admin.guru.loadingStudents') : t('admin.guru.searchPlaceholder').replace('{count}', String(allStudents.length))}
                 className="w-full pl-12 pr-4 py-4 bg-white/10 border-2 border-emerald-500/40 rounded-2xl text-white text-lg placeholder:text-white/30 focus:outline-none focus:border-emerald-400 focus:bg-white/15 transition-all"
                 autoFocus
               />
@@ -375,7 +377,7 @@ export default function GuruPage() {
             {/* No results */}
             {showDropdown && searchQuery.trim().length >= 2 && filteredStudents.length === 0 && !loadingStudents && (
               <div className="absolute top-full left-0 right-0 mt-2 bg-emerald-900/95 border border-emerald-600 rounded-xl p-4 text-center z-50">
-                <p className="text-white/50 text-sm">No students found for &ldquo;{searchQuery}&rdquo;</p>
+                <p className="text-white/50 text-sm">{t('admin.guru.noResults').replace('{query}', searchQuery)}</p>
               </div>
             )}
           </div>
@@ -395,7 +397,7 @@ export default function GuruPage() {
                 <p className="text-emerald-300 text-sm">{selected.classroom_icon} {selected.classroom_name}{selected.age ? ` · ${selected.age} years old` : ''}</p>
               </div>
               <button onClick={clearStudent} className="px-3 py-2 bg-white/10 rounded-lg text-white/70 text-sm hover:bg-white/20 flex-shrink-0">
-                ✕ Change
+                {t('admin.guru.change')}
               </button>
             </div>
           </div>
@@ -427,8 +429,8 @@ export default function GuruPage() {
         {guruLoading && (
           <div className="bg-white/10 rounded-2xl p-8 text-center border border-emerald-500/30 mb-6">
             <div className="text-4xl animate-bounce mb-3">🧠</div>
-            <p className="text-emerald-300">Analyzing {selected?.name}&apos;s profile...</p>
-            <p className="text-white/30 text-xs mt-1">Reviewing progress, observations, and teacher notes</p>
+            <p className="text-emerald-300">{t('admin.guru.analyzing').replace('{name}', selected?.name || '')}</p>
+            <p className="text-white/30 text-xs mt-1">{t('admin.guru.reviewingProgress')}</p>
           </div>
         )}
 
@@ -447,7 +449,7 @@ export default function GuruPage() {
             {/* Insight / Overview */}
             {guruResponse.insight && (
               <div>
-                <h3 className="text-emerald-400 text-sm font-medium mb-1">💡 Overview</h3>
+                <h3 className="text-emerald-400 text-sm font-medium mb-1">💡 {t('admin.guru.overview')}</h3>
                 <p className="text-white/90 text-sm leading-relaxed">{guruResponse.insight}</p>
               </div>
             )}
@@ -455,7 +457,7 @@ export default function GuruPage() {
             {/* Root cause (principal mode only) */}
             {reportMode === 'principal' && guruResponse.root_cause && guruResponse.root_cause !== 'See insight above' && (
               <div>
-                <h3 className="text-amber-400 text-sm font-medium mb-1">🔍 Key Finding</h3>
+                <h3 className="text-amber-400 text-sm font-medium mb-1">🔍 {t('admin.guru.keyFinding')}</h3>
                 <p className="text-white/80 text-sm">{guruResponse.root_cause}</p>
               </div>
             )}
@@ -464,7 +466,7 @@ export default function GuruPage() {
             {guruResponse.action_plan && guruResponse.action_plan.length > 0 && (
               <div>
                 <h3 className="text-emerald-400 text-sm font-medium mb-2">
-                  {reportMode === 'home_plan' ? '🏠 Activities for Home' : '📋 Recommendations'}
+                  {reportMode === 'home_plan' ? `🏠 ${t('admin.guru.activitiesForHome')}` : `📋 ${t('admin.guru.recommendations')}`}
                 </h3>
                 <div className="space-y-3">
                   {guruResponse.action_plan.map((a, i) => (
@@ -483,7 +485,7 @@ export default function GuruPage() {
             {/* Timeline */}
             {guruResponse.timeline && (
               <div className="bg-amber-500/10 rounded-lg p-3">
-                <h3 className="text-amber-400 text-xs font-medium mb-1">⏰ Timeline</h3>
+                <h3 className="text-amber-400 text-xs font-medium mb-1">⏰ {t('admin.guru.timeline')}</h3>
                 <p className="text-white/80 text-sm">{guruResponse.timeline}</p>
               </div>
             )}
@@ -491,7 +493,7 @@ export default function GuruPage() {
             {/* Parent talking point */}
             {guruResponse.parent_talking_point && (
               <div className="bg-emerald-500/10 rounded-lg p-3">
-                <h3 className="text-emerald-400 text-xs font-medium mb-1">💬 Say This to the Parent</h3>
+                <h3 className="text-emerald-400 text-xs font-medium mb-1">💬 {t('admin.guru.sayThisToParent')}</h3>
                 <p className="text-white/90 text-sm italic">&ldquo;{guruResponse.parent_talking_point}&rdquo;</p>
               </div>
             )}
@@ -502,7 +504,7 @@ export default function GuruPage() {
                 onClick={handlePrint}
                 className="px-4 py-2 bg-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/20 transition-colors"
               >
-                🖨️ Print
+                🖨️ {t('admin.guru.print')}
               </button>
               <button
                 onClick={copyToClipboard}
@@ -510,7 +512,7 @@ export default function GuruPage() {
                   copied ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
-                {copied ? '✓ Copied!' : '📋 Copy'}
+                {copied ? `✓ ${t('admin.guru.copied')}` : `📋 ${t('admin.guru.copy')}`}
               </button>
             </div>
           </div>
@@ -519,12 +521,12 @@ export default function GuruPage() {
         {/* Error state */}
         {guruResponse && !guruResponse.success && !guruLoading && (
           <div className="bg-red-500/10 rounded-2xl p-5 border border-red-500/30 mb-6 text-center">
-            <p className="text-red-300 text-sm">{guruResponse.error || 'Something went wrong'}</p>
+            <p className="text-red-300 text-sm">{guruResponse.error || t('admin.guru.somethingWrong')}</p>
             <button
               onClick={() => lastQuestion ? askGuru(lastQuestion, reportMode || undefined) : null}
               className="mt-3 px-4 py-2 bg-white/10 text-white rounded-lg text-sm hover:bg-white/20"
             >
-              Try Again
+              {t('admin.guru.tryAgain')}
             </button>
           </div>
         )}
@@ -532,14 +534,14 @@ export default function GuruPage() {
         {/* Follow-up question */}
         {selected && guruResponse?.success && !guruLoading && (
           <div className="bg-white/5 rounded-2xl p-4 mb-6">
-            <p className="text-white/40 text-xs mb-2">Ask a follow-up question about {selected.name}:</p>
+            <p className="text-white/40 text-xs mb-2">{t('admin.guru.askFollowUp').replace('{name}', selected.name)}</p>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={followUp}
                 onChange={e => setFollowUp(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') askFollowUp(); }}
-                placeholder={`e.g. "What can the parents do at home?" or "How does ${selected.name} compare to age expectations?"`}
+                placeholder={t('admin.guru.followUpPlaceholder')}
                 className="flex-1 px-4 py-3 bg-black/20 border border-white/20 rounded-xl text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-emerald-400"
               />
               <button
@@ -547,16 +549,16 @@ export default function GuruPage() {
                 disabled={guruLoading || !followUp.trim()}
                 className="px-5 py-3 bg-emerald-500 text-white rounded-xl text-sm font-medium disabled:opacity-50 hover:bg-emerald-600 transition-colors flex-shrink-0"
               >
-                Ask
+                {t('admin.guru.ask')}
               </button>
             </div>
 
             {/* Quick follow-ups */}
             <div className="flex flex-wrap gap-2 mt-3">
               {[
-                `What can parents do at home to help ${selected.name}?`,
-                `What should ${selected.name} focus on next?`,
-                `Are there any concerns about ${selected.name}'s development?`,
+                t('admin.guru.followUpHome').replace('{name}', selected.name),
+                t('admin.guru.followUpFocus').replace('{name}', selected.name),
+                t('admin.guru.followUpConcerns').replace('{name}', selected.name),
               ].map((q, i) => (
                 <button
                   key={i}
@@ -574,7 +576,7 @@ export default function GuruPage() {
         {/* Previous responses in this session (conversation history) */}
         {conversationHistory.length > 1 && (
           <div className="space-y-3">
-            <p className="text-white/30 text-xs uppercase tracking-wider">Previous in this session</p>
+            <p className="text-white/30 text-xs uppercase tracking-wider">{t('admin.guru.previousSession')}</p>
             {conversationHistory.slice(0, -1).reverse().map((item, i) => (
               <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/10">
                 <p className="text-emerald-400/70 text-xs mb-1 font-medium">Q: {item.question.slice(0, 100)}{item.question.length > 100 ? '...' : ''}</p>

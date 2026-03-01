@@ -202,18 +202,23 @@ function ParentPortalContent() {
 }
 
 // Wrap in Suspense for useSearchParams
+function ParentPortalLoadingFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
+          <span className="text-3xl animate-bounce">🌳</span>
+        </div>
+        <p className="text-gray-600">{t('common.loading')}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ParentPortalPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl animate-bounce">🌳</span>
-          </div>
-          <p className="text-gray-600">{t('common.loading')}</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<ParentPortalLoadingFallback />}>
       <ParentPortalContent />
     </Suspense>
   );

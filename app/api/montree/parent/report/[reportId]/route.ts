@@ -3,6 +3,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
 
 // Load parent descriptions from curriculum JSON files with area info
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
@@ -176,8 +177,10 @@ export async function GET(
     if (savedContent?.works && savedContent.works.length > 0) {
       // USE SAVED CONTENT - This is the preferred path for new reports
       // The content was saved at send time with all descriptions and photos
+      const cnMap = getChineseNameMap();
       const worksCompleted = savedContent.works.map(w => ({
         work_name: w.name,
+        chineseName: cnMap.get(w.name.toLowerCase().trim()) || null,
         area: w.area || 'unknown',
         status: w.status,
         completed_at: report.created_at,
@@ -316,6 +319,7 @@ export async function GET(
     const jsonDescriptions = loadParentDescriptions();
 
     // Build enriched works list
+    const cnMap = getChineseNameMap();
     const worksCompleted = (progress || []).map(p => {
       const workNameLower = (p.work_name || '').toLowerCase();
 
@@ -331,6 +335,7 @@ export async function GET(
 
       return {
         work_name: p.work_name,
+        chineseName: cnMap.get(workNameLower.trim()) || null,
         area: p.area || 'unknown',
         status: p.status === 'completed' ? 'mastered' : p.status,
         completed_at: p.updated_at,

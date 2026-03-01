@@ -52,7 +52,7 @@ export default function CurriculumWorkList({
   stopAutoScroll,
   onWorkUpdated,
 }: CurriculumWorkListProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   // Scroll to highlighted work when it changes (from search)
   useEffect(() => {
     if (!highlightedWorkId) return;
@@ -117,7 +117,7 @@ export default function CurriculumWorkList({
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800">{work.name}</p>
+                    <p className="font-medium text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">{work.age_range || '3-6'}</span>

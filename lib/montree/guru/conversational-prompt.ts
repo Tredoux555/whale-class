@@ -549,7 +549,17 @@ export function buildGreetingPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent just finished setting up their concerns (${concernNames || 'none specified'}). Write a SHORT, warm opening greeting (2-3 sentences max) that:\n1. Welcomes them by referencing ${childName} by name\n2. Acknowledges their concerns naturally (don't list them — weave them in)\n3. Invites them to ask anything\n\nKeep it brief and warm — this is just a greeting, not a full response. Like a friend saying "Hey! I'm here for you."`;
   }
 
-  return { systemPrompt, userPrompt };
+  // Determine the mode for this greeting (mirrors buildConversationalPrompt logic)
+  let mode: GuruMode;
+  if (proactive?.shelfEmpty) {
+    mode = 'SETUP';
+  } else if ((proactive?.daysSinceLastInteraction ?? 0) >= 5 || proactive?.dayOfWeek === 0) {
+    mode = 'REFLECTION';
+  } else {
+    mode = 'NORMAL';
+  }
+
+  return { systemPrompt, userPrompt, mode };
 }
 
 /**
@@ -588,5 +598,8 @@ export function buildFollowUpPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent is back after ${daysSinceLastChat} days. Their last question was: "${lastQuestion}"\n\nWrite a SHORT follow-up greeting (2 sentences max) for ${childName}'s parent:\n1. Welcome them back warmly\n2. Ask about how things went since last time (reference their last question naturally)\n\nKeep it brief — just a friendly check-in, not a full response.`;
   }
 
-  return { systemPrompt, userPrompt };
+  // Determine mode for follow-up greeting
+  const mode: GuruMode = daysSinceLastChat >= 5 ? 'REFLECTION' : 'NORMAL';
+
+  return { systemPrompt, userPrompt, mode };
 }

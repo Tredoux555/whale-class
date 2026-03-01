@@ -25,6 +25,7 @@ interface AreaSummary {
 interface ProgressItem {
   id: string;
   work_name: string;
+  chineseName?: string;
   area: string;
   status: number | string;
   notes?: string;
@@ -57,6 +58,7 @@ interface TimelineEvent {
   type: 'mastery' | 'practicing' | 'presented' | 'observation' | 'note';
   date: string;
   title: string;
+  chineseTitle?: string;
   subtitle?: string;
   area?: string;
   icon: string;
@@ -66,7 +68,8 @@ export default function ProgressPage() {
   const params = useParams();
   const childId = params.childId as string;
   const session = getSession();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const areaName = (key: string) => t(`area.${key}` as any) || AREA_CONFIG[key]?.name || key;
   const photosRef = useRef<HTMLDivElement>(null);
 
   // State
@@ -136,19 +139,19 @@ export default function ProgressPage() {
             events.push({
               id: `m-${p.id}`, type: 'mastery',
               date: p.mastered_at || p.updated_at,
-              title: p.work_name, area: p.area, icon: '⭐',
+              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '⭐',
             });
           } else if (s === 'practicing') {
             events.push({
               id: `pr-${p.id}`, type: 'practicing',
               date: p.updated_at,
-              title: p.work_name, area: p.area, icon: '🔄',
+              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '🔄',
             });
           } else if (s === 'presented') {
             events.push({
               id: `ps-${p.id}`, type: 'presented',
               date: p.presented_at || p.updated_at,
-              title: p.work_name, area: p.area, icon: '📋',
+              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '📋',
             });
           }
 
@@ -156,7 +159,7 @@ export default function ProgressPage() {
             events.push({
               id: `n-${p.id}`, type: 'note',
               date: p.updated_at,
-              title: p.work_name, subtitle: p.notes,
+              title: p.work_name, chineseTitle: p.chineseName, subtitle: p.notes,
               area: p.area, icon: '📝',
             });
           }
@@ -173,12 +176,12 @@ export default function ProgressPage() {
         }
 
         // Teacher notes from work_sessions (saved via Week tab)
-        const workNotes: { id: string; work_name: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
+        const workNotes: { id: string; work_name: string; chineseName?: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
         for (const wn of workNotes) {
           events.push({
             id: `wn-${wn.id}`, type: 'note',
             date: wn.observed_at,
-            title: wn.work_name, subtitle: wn.notes,
+            title: wn.work_name, chineseTitle: wn.chineseName, subtitle: wn.notes,
             area: wn.area, icon: '📝',
           });
         }
@@ -203,7 +206,7 @@ export default function ProgressPage() {
   const monthMap = new Map<string, TimelineEvent[]>();
   for (const event of filtered) {
     const d = new Date(event.date);
-    const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
     if (!monthMap.has(label)) monthMap.set(label, []);
     monthMap.get(label)!.push(event);
   }
@@ -212,7 +215,7 @@ export default function ProgressPage() {
   // Format date
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   // Loading state
@@ -285,7 +288,7 @@ export default function ProgressPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
                     <AreaBadge area={area.area} size="sm" />
-                    <span className="font-semibold text-gray-800 text-sm">{config.name}</span>
+                    <span className="font-semibold text-gray-800 text-sm">{areaName(area.area)}</span>
                   </div>
                   <span className="text-xs font-bold" style={{ color: AREA_CONFIG[area.area]?.color }}>
                     {area.completed}/{area.totalWorks}
@@ -314,7 +317,7 @@ export default function ProgressPage() {
             onClick={() => setSelectedArea(null)}
             className="w-full text-center text-xs text-gray-400 mt-3 py-1"
           >
-            {t('progress.tapAreaHint')} · {t('progress.showing')} {AREA_CONFIG[selectedArea]?.name}
+            {t('progress.tapAreaHint')} · {t('progress.showing')} {selectedArea ? areaName(selectedArea) : ''}
           </button>
         )}
       </div>
@@ -356,7 +359,7 @@ export default function ProgressPage() {
           {t('progress.timeline')}
           {selectedArea && (
             <span className="text-sm font-normal text-gray-400 ml-2">
-              ({AREA_CONFIG[selectedArea]?.name})
+              ({areaName(selectedArea)})
             </span>
           )}
         </h2>
@@ -387,7 +390,7 @@ export default function ProgressPage() {
                           {event.type === 'presented' && `${t('progress.presented')} `}
                           {event.type === 'note' && '📝 '}
                           {event.type === 'observation' && ''}
-                          {event.title}
+                          {locale === 'zh' && event.chineseTitle ? event.chineseTitle : event.title}
                         </span>
                       </div>
                       {event.subtitle && (
@@ -397,7 +400,7 @@ export default function ProgressPage() {
                         <span className="text-[10px] text-gray-400">{fmtDate(event.date)}</span>
                         {areaConf && (
                           <span className={`text-[10px] font-medium ${areaConf.text} ${areaConf.bg} px-1.5 py-0.5 rounded-full`}>
-                            {areaConf.name}
+                            {event.area ? areaName(event.area) : areaConf.name}
                           </span>
                         )}
                       </div>

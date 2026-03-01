@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface WorkDetailSheetProps {
   workName: string;
@@ -71,6 +72,7 @@ export default function WorkDetailSheet({
   onClose,
   onAskGuide,
 }: WorkDetailSheetProps) {
+  const { t } = useI18n();
   const [guide, setGuide] = useState<WorkGuide | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -161,7 +163,7 @@ export default function WorkDetailSheet({
             <button
               onClick={onClose}
               className={`p-2 rounded-full ${BIO.btn.ghost} ml-3`}
-              aria-label="Close work details"
+              aria-label={t('a11y.closeDetails' as TranslationKey)}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

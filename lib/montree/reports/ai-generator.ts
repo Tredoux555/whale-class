@@ -34,6 +34,7 @@ export interface EnhanceInput {
   week_start: string;
   week_end: string;
   translations: Record<string, WorkTranslation>;
+  locale?: string;
 }
 
 export interface EnhanceResult {
@@ -247,11 +248,12 @@ function buildUserPrompt(input: EnhanceInput): string {
   const p = pronouns[child.gender];
 
   // Format week dates nicely
-  const weekStart = new Date(week_start).toLocaleDateString('en-US', { 
-    month: 'long', day: 'numeric' 
+  const dateLoc = input.locale === 'zh' ? 'zh-CN' : 'en-US';
+  const weekStart = new Date(week_start).toLocaleDateString(dateLoc, {
+    month: 'long', day: 'numeric'
   });
-  const weekEnd = new Date(week_end).toLocaleDateString('en-US', { 
-    month: 'long', day: 'numeric', year: 'numeric' 
+  const weekEnd = new Date(week_end).toLocaleDateString(dateLoc, {
+    month: 'long', day: 'numeric', year: 'numeric'
   });
 
   // Build activity list with context

@@ -5,6 +5,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
+import { useI18n } from '@/lib/montree/i18n/context';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { QuickGuideData } from '@/components/montree/curriculum/types';
@@ -65,6 +66,7 @@ function distributeToShelves(works: ShelfWork[]): (ShelfWork | null)[][] {
 }
 
 export default function ShelfView({ childId, classroomId, onAskGuide, refreshTrigger }: ShelfViewProps) {
+  const { t, locale } = useI18n();
   const [shelf, setShelf] = useState<ShelfWork[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -142,7 +144,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-3">📚</div>
-          <p className={`text-sm ${BIO.text.secondary}`}>Loading shelf...</p>
+          <p className={`text-sm ${BIO.text.secondary}`}>{t('home.shelf.loading')}</p>
         </div>
       </div>
     );
@@ -152,10 +154,10 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     <div className={`flex-1 overflow-y-auto ${BIO.bg.gradient}`}>
       {/* Title */}
       <h2 className={`text-center text-lg font-semibold ${BIO.text.primary} pt-5 pb-1`}>
-        Your Shelf
+        {t('home.shelf.title')}
       </h2>
       <p className={`text-center text-xs ${BIO.text.muted} mb-4 px-6`}>
-        Tap a work to see how to present it
+        {t('home.shelf.tapToPresent')}
       </p>
 
       {/* Shelf unit — 3 planks */}
@@ -183,7 +185,8 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
               items={row}
               isLast={rowIdx === 2}
               onWorkTap={openWorkGuide}
-              onEmptyTap={() => onAskGuide('Can you suggest a work for my child?')}
+              onEmptyTap={() => onAskGuide(t('home.shelf.suggestWork'))}
+              t={t}
             />
           ))}
 
@@ -203,7 +206,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       {shelf.length === 0 && (
         <div className="text-center px-6 pb-8 -mt-4">
           <p className={`text-xs ${BIO.text.secondary}`}>
-            Your shelves are waiting! Chat with your guide in the Portal to get personalized work suggestions.
+            {t('home.shelf.emptyMessage')}
           </p>
         </div>
       )}
@@ -240,11 +243,13 @@ function ShelfPlank({
   isLast,
   onWorkTap,
   onEmptyTap,
+  t,
 }: {
   items: (ShelfWork | null)[];
   isLast: boolean;
   onWorkTap: (workName: string) => void;
   onEmptyTap: () => void;
+  t: (key: string) => string;
 }) {
   return (
     <div className="relative">
@@ -255,6 +260,7 @@ function ShelfPlank({
             key={item ? item.work_name : `empty-${idx}`}
             work={item}
             onTap={() => item ? onWorkTap(item.work_name) : onEmptyTap()}
+            t={t}
           />
         ))}
       </div>
@@ -292,16 +298,19 @@ function ShelfPlank({
 function ShelfObject({
   work,
   onTap,
+  t,
 }: {
   work: ShelfWork | null;
   onTap: () => void;
+  t: (key: string) => string;
 }) {
+  const { locale } = useI18n();
   if (!work) {
     // Empty slot
     return (
       <button
         onClick={onTap}
-        aria-label="Ask guide for a work suggestion"
+        aria-label={t('home.shelf.askGuide')}
         className="flex flex-col items-center gap-1 transition-transform active:scale-95"
         style={{ width: '88px' }}
       >
@@ -311,7 +320,7 @@ function ShelfObject({
         >
           <span className="text-white/15 text-2xl">+</span>
         </div>
-        <span className="text-[9px] text-white/20 text-center">Ask guide</span>
+        <span className="text-[9px] text-white/20 text-center">{t('home.shelf.askGuide')}</span>
       </button>
     );
   }
@@ -324,7 +333,7 @@ function ShelfObject({
   return (
     <button
       onClick={onTap}
-      aria-label={`View guide for ${work.work_name}`}
+      aria-label={t('home.shelf.viewGuide').replace('{name}', work.work_name)}
       className="flex flex-col items-center gap-1 transition-transform active:scale-95"
       style={{ width: '88px' }}
     >
@@ -372,12 +381,12 @@ function ShelfObject({
       <span
         className="text-[10px] font-medium text-white/75 text-center leading-tight max-w-full truncate px-0.5"
       >
-        {work.work_name}
+        {locale === 'zh' && (work as any).chineseName ? (work as any).chineseName : work.work_name}
       </span>
 
       {/* Area label */}
       <span className="text-[8px] text-center" style={{ color: colors.bg, opacity: 0.6 }}>
-        {BIO.areaLabel[work.area] || work.area}
+        {t(`area.${work.area}` as any) || BIO.areaLabel[work.area] || work.area}
       </span>
     </button>
   );

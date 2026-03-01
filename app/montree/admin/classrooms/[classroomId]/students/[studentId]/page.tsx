@@ -56,7 +56,8 @@ const AREA_COLORS: Record<string, string> = {
   cultural: '#f97316',
 };
 
-const AREA_NAMES: Record<string, string> = {
+// Area names now come from i18n — this is a fallback only
+const AREA_NAMES_FALLBACK: Record<string, string> = {
   practical_life: 'Practical Life',
   sensorial: 'Sensorial',
   mathematics: 'Mathematics',
@@ -67,7 +68,8 @@ const AREA_NAMES: Record<string, string> = {
 export default function StudentDetailPage({ params }: { params: Promise<{ classroomId: string; studentId: string }> }) {
   const { classroomId, studentId } = use(params);
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const areaName = (key: string) => t(`area.${key}` as any) || AREA_NAMES_FALLBACK[key] || key;
 
   const [student, setStudent] = useState<{ name: string; photo_url: string | null; age: number | null } | null>(null);
   const [classroomName, setClassroomName] = useState('');
@@ -359,7 +361,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full" style={{ backgroundColor: AREA_COLORS[area.area] || '#6b7280' }} />
-                      <span className="text-white text-sm font-medium">{AREA_NAMES[area.area] || area.area}</span>
+                      <span className="text-white text-sm font-medium">{areaName(area.area)}</span>
                     </div>
                     <span className="text-emerald-300 text-xs">{area.completed}/{area.totalWorks} ({area.progressPercent}%)</span>
                   </div>
@@ -399,9 +401,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
           ) : (
             <div className="space-y-2">
               {reports.map(report => {
-                const weekStart = new Date(report.week_start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const weekEnd = new Date(report.week_end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                const sentDate = report.sent_at ? new Date(report.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+                const weekStart = new Date(report.week_start).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
+                const weekEnd = new Date(report.week_end).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
+                const sentDate = report.sent_at ? new Date(report.sent_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
                 const isExpanded = expandedReport === report.id;
                 const content = report.content as Record<string, unknown>;
                 const works = (content?.works as Array<{ name: string; area: string; status: number }>) || [];

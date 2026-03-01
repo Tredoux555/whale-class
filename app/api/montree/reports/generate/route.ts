@@ -7,6 +7,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 
 // ============================================
 // TYPES
@@ -97,39 +98,32 @@ interface AIAnalysisReport {
 // AREA HELPERS
 // ============================================
 
-const AREA_DISPLAY: Record<string, { name: string; emoji: string; description: string }> = {
-  practical_life: {
-    name: 'Practical Life',
-    emoji: '🧹',
-    description: 'Activities for independence and care of self and environment',
-  },
-  sensorial: {
-    name: 'Sensorial',
-    emoji: '👁️',
-    description: 'Exploring the world through the senses',
-  },
-  mathematics: {
-    name: 'Mathematics',
-    emoji: '🔢',
-    description: 'Understanding numbers, quantities, and patterns',
-  },
-  language: {
-    name: 'Language',
-    emoji: '📚',
-    description: 'Letters, sounds, reading, and writing',
-  },
-  cultural: {
-    name: 'Cultural',
-    emoji: '🌍',
-    description: 'Geography, science, art, and music',
-  },
-};
+function getAreaDisplay(area: string, locale: 'en' | 'zh'): { name: string; emoji: string; description: string } {
+  const t = getTranslator(locale);
+  const emojis: Record<string, string> = {
+    practical_life: '🧹', sensorial: '👁️', mathematics: '🔢',
+    language: '📚', cultural: '🌍',
+  };
+  const descriptions: Record<string, string> = {
+    practical_life: t('report.generate.areaDescription.practical_life' as any, 'Activities for independence and care of self and environment'),
+    sensorial: t('report.generate.areaDescription.sensorial' as any, 'Exploring the world through the senses'),
+    mathematics: t('report.generate.areaDescription.mathematics' as any, 'Understanding numbers, quantities, and patterns'),
+    language: t('report.generate.areaDescription.language' as any, 'Letters, sounds, reading, and writing'),
+    cultural: t('report.generate.areaDescription.cultural' as any, 'Geography, science, art, and music'),
+  };
+
+  return {
+    name: getTranslatedAreaName(area, locale),
+    emoji: emojis[area] || '📌',
+    description: descriptions[area] || '',
+  };
+}
 
 // ============================================
 // REPORT GENERATORS
 // ============================================
 
-function generateTeacherReport(analysis: WeeklyAnalysisResult): TeacherReport {
+function generateTeacherReport(analysis: WeeklyAnalysisResult, locale: 'en' | 'zh'): TeacherReport {
   const areaBreakdown = Object.entries(analysis.area_distribution).map(([area, pct]) => {
     const expected = analysis.expected_distribution[area];
     let status: 'healthy' | 'low' | 'high' = 'healthy';
@@ -137,8 +131,9 @@ function generateTeacherReport(analysis: WeeklyAnalysisResult): TeacherReport {
       if (pct < expected.min) status = 'low';
       else if (pct > expected.max) status = 'high';
     }
+    const areaDisplay = getAreaDisplay(area, locale);
     return {
-      area: AREA_DISPLAY[area]?.name || area,
+      area: areaDisplay.name,
       percentage: Math.round(pct * 100),
       expected_range: expected ? `${Math.round(expected.min * 100)}-${Math.round(expected.max * 100)}%` : 'N/A',
       status,
@@ -168,52 +163,62 @@ function generateTeacherReport(analysis: WeeklyAnalysisResult): TeacherReport {
 
 function generateParentReport(
   analysis: WeeklyAnalysisResult,
-  worksByArea: Record<string, string[]>
+  worksByArea: Record<string, string[]>,
+  locale: 'en' | 'zh'
 ): ParentReport {
+  const t = getTranslator(locale);
   const firstName = analysis.child_name.split(' ')[0];
-  
+
   // Generate greeting based on emotional state
-  let greeting = `${firstName} had a wonderful week in the classroom!`;
+  let greeting = t('report.generate.wonderfulWeek' as any, `${firstName} had a wonderful week in the classroom!`).replace('{name}', firstName);
   if (analysis.emotional_state === 'positive') {
-    greeting = `${firstName} was full of joy and enthusiasm this week!`;
+    greeting = t('report.generate.activeWeek' as any, `${firstName} had an active and engaged week!`).replace('{name}', firstName);
   }
 
   // Generate highlights
   const highlights: string[] = [];
   if (analysis.repetition_highlights.length > 0) {
-    highlights.push(
-      `${firstName} showed deep concentration with ${analysis.repetition_highlights[0].work}, returning to it ${analysis.repetition_highlights[0].count} times!`
-    );
+    const deepConcentration = t('report.generate.deepConcentration' as any, `${firstName} showed deep concentration with {works}.`)
+      .replace('{name}', firstName)
+      .replace('{works}', `${analysis.repetition_highlights[0].work} (${analysis.repetition_highlights[0].count}x)`);
+    highlights.push(deepConcentration);
   }
   if (analysis.concentration_assessment === 'strong') {
-    highlights.push(`${firstName} demonstrated excellent focus during work time.`);
+    const excellentFocus = t('report.generate.excellentFocus' as any, `${firstName} demonstrated excellent focus during work time.`)
+      .replace('{name}', firstName);
+    highlights.push(excellentFocus);
   }
   const activePeriods = analysis.detected_sensitive_periods.filter(p => p.status === 'active');
   if (activePeriods.length > 0) {
-    highlights.push(
-      `${firstName} is showing special interest in ${activePeriods[0].period_name.toLowerCase()} activities.`
-    );
+    const specialInterest = t('report.generate.specialInterest' as any, `${firstName} is showing special interest in the {area} area.`)
+      .replace('{name}', firstName)
+      .replace('{area}', activePeriods[0].period_name.toLowerCase());
+    highlights.push(specialInterest);
   }
 
   // Generate areas explored
   const areasExplored = Object.entries(worksByArea)
     .filter(([_, works]) => works.length > 0)
-    .map(([area, works]) => ({
-      area_name: AREA_DISPLAY[area]?.name || area,
-      emoji: AREA_DISPLAY[area]?.emoji || '📌',
-      works: works.slice(0, 3),
-      description: AREA_DISPLAY[area]?.description || '',
-    }));
+    .map(([area, works]) => {
+      const areaDisplay = getAreaDisplay(area, locale);
+      return {
+        area_name: areaDisplay.name,
+        emoji: areaDisplay.emoji,
+        works: works.slice(0, 3),
+        description: areaDisplay.description,
+      };
+    });
 
   // Home suggestions
   const homeSuggestions = [
-    'Continue encouraging independence at home - let them help with simple tasks!',
-    'Read together daily and point out letters in the environment.',
-    'Provide opportunities for sorting, counting, and organizing.',
+    t('report.generate.encourageIndependence' as any, 'Continue encouraging independence at home — let them help with simple tasks!'),
+    t('report.generate.readTogether' as any, 'Read together daily and point out letters in the environment.'),
+    t('report.generate.sortAndCount' as any, 'Provide opportunities for sorting, counting, and organizing.'),
   ];
 
   // Closing
-  const closing = `We love having ${firstName} in our classroom. See you next week!`;
+  const closing = t('report.generate.loveHaving' as any, `We love having ${firstName} in our classroom. See you next week!`)
+    .replace('{name}', firstName);
 
   return {
     type: 'parent',
@@ -400,14 +405,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Extract locale from URL
+    const locale = getLocaleFromRequest(request.url);
+
     // Generate requested reports
     const reports: Record<string, any> = {};
 
     if (requestedTypes.includes('teacher')) {
-      reports.teacher = generateTeacherReport(analysis);
+      reports.teacher = generateTeacherReport(analysis, locale);
     }
     if (requestedTypes.includes('parent')) {
-      reports.parent = generateParentReport(analysis, worksByArea);
+      reports.parent = generateParentReport(analysis, worksByArea, locale);
     }
     if (requestedTypes.includes('ai_analysis')) {
       reports.ai_analysis = generateAIAnalysisReport(analysis);

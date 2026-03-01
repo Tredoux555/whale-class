@@ -50,19 +50,20 @@ const getAreaConf = (areaName: string) => {
 };
 
 export default function ReportViewPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const params = useParams();
   const reportId = params.reportId as string;
-  
+  const areaDisplayName = (key: string) => t(`area.${normalizeArea(key)}` as any) || key;
+
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (!reportId) return;
-    
-    fetch(`/api/montree/reports/${reportId}`)
+
+    fetch(`/api/montree/reports/${reportId}?locale=${locale}`)
       .then(r => r.json())
       .then(data => {
         if (data.success) {
@@ -79,8 +80,8 @@ export default function ReportViewPage() {
   }, [reportId]);
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', { 
-      month: 'short', 
+    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric'
     });
@@ -173,7 +174,7 @@ export default function ReportViewPage() {
               <div className={`bg-gradient-to-r ${areaConfig.gradient} text-white px-4 py-3`}>
                 <h2 className="font-bold flex items-center gap-2">
                   <AreaBadge area={areaName} size="md" />
-                  {areaName}
+                  {areaDisplayName(areaName)}
                   <span className="ml-auto bg-white/20 px-2 py-0.5 rounded-full text-sm">
                     {works.length} {works.length !== 1 ? t('reports.works') : t('reports.work')}
                   </span>
@@ -186,14 +187,19 @@ export default function ReportViewPage() {
                   <div key={work.id || idx} className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <h3 className="font-semibold text-gray-800">{work.name}</h3>
+                        <h3 className="font-semibold text-gray-800">
+                          {locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}
+                        </h3>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                         work.status_label === 'Mastered' ? 'bg-green-100 text-green-700' :
                         work.status_label === 'Practicing' ? 'bg-blue-100 text-blue-700' :
                         'bg-yellow-100 text-yellow-700'
                       }`}>
-                        {work.status_label}
+                        {work.status_label === 'Mastered' ? t('progress.mastered' as any) :
+                         work.status_label === 'Practicing' ? t('progress.practicing' as any) :
+                         work.status_label === 'Presented' ? t('progress.presented' as any) :
+                         work.status_label}
                       </span>
                     </div>
                     

@@ -46,12 +46,12 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
-### ~~i18n Full Migration~~ — ✅ DONE + AUDITED (Priority #7)
+### ~~i18n Full Migration~~ — ✅ DONE + DEEP CLEANUP (Priority #7)
 
-**Status:** ALL user-facing pages migrated. 194 → **1,378 translation keys** across ~65 files. en.ts and zh.ts at perfect parity. Deep audit completed Feb 27 — 3 bugs found, 2 fixed (double-arrow, hardcoded toasts), 1 deferred (pluralization).
-**Remaining:** Wire `chineseName` from curriculum JSON when language is zh (~1hr). Translate 15 remaining pages (~3hrs). Translate curriculum descriptions (329 works × 5 fields).
-**Audit:** `docs/audits/AUDIT_I18N_DEEP_FEB27.md`
-**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_MIGRATION_FEB26.md`
+**Status:** ALL user-facing pages migrated. 194 → **~1,490 translation keys** across ~90 files. en.ts and zh.ts at perfect parity. 3-cycle deep cleanup completed Mar 1.
+**Done:** Server-side translator for API routes. Report system (PDF, email, generation) fully locale-aware. chineseName wired on 6 components. Parent dashboard, PortalChat, ShelfView, admin/teachers, admin/guru, vocab flashcards all wired with `useI18n()`.
+**Remaining (wiring only — keys exist):** Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
+**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_CLEANUP_MAR1.md`
 
 ### Curriculum Inconsistency Resolution (Priority #8 — Deferred)
 
@@ -59,7 +59,46 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ---
 
-## CURRENT STATUS (Feb 28, 2026)
+## CURRENT STATUS (Mar 1, 2026)
+
+### Session Work (Mar 1, 2026)
+
+**Guru Health Check Fixes (3 bugs fixed):**
+- `context-builder.ts` — Fixed `context_snapshot` not mapped in PastInteraction array (celebrations never triggered)
+- `conversational-prompt.ts` — Added `mode` return to `buildGreetingPrompt()` (was missing, tool gating broken for greetings)
+- `conversational-prompt.ts` — Added `mode` return to `buildFollowUpPrompt()` (same issue for follow-ups)
+
+**i18n Full Platform Cleanup — 3-Cycle Deep Pass:**
+
+Grew translation keys from ~1,378 to ~1,490. Created server-side translator. Translated report system end-to-end.
+
+**Cycle 1 (Foundation):**
+- NEW: `lib/montree/i18n/server.ts` — `getTranslator(locale)`, `getLocaleFromRequest()`, `getTranslatedAreaName()`, `getTranslatedStatus()`
+- Report system: `reports/route.ts`, `reports/generate/route.ts`, `reports/send/route.ts`, `pdf-generator.ts` all locale-aware
+- Parent dashboard, PortalChat, ShelfView wired with `useI18n()`
+- Locale passthrough (`?locale=`) added to all client→API fetches
+
+**Cycle 2 (Admin + Curriculum):**
+- `admin/teachers/page.tsx`, `admin/guru/page.tsx`, `vocabulary-flashcards/page.tsx` wired
+- `chineseName` display on 6 components (FocusWorks, CurriculumWorkList, WorkPicker, ShelfView, progress, browse)
+
+**Cycle 3 (Stragglers + Final Keys):**
+- 47 keys: validation, placeholders, accessibility, curriculum labels, onboarding buttons
+- ~110 keys: toast messages, admin students/reports/activity/billing, onboarding expanded, PhotoEditModal
+- Wired: set-password, teacher/register, FeedbackButton, curriculum/browse, PhotoEditModal placeholders, WorkDetailSheet
+
+**Parity fix:** Removed 6 duplicate area keys, resolved 62-key gap. Final audit: perfect parity.
+
+**NOT wired yet (keys exist, ~2hrs):** `useWorkOperations.ts`, `useCurriculumDragDrop.ts`, `admin/students`, `admin/reports`, `admin/activity`, `admin/billing`, `onboarding/page.tsx`, `PhotoEditModal.tsx` (remaining fields)
+
+New files (1): `lib/montree/i18n/server.ts`
+Modified files (~25): en.ts, zh.ts, index.ts, 4 report API routes, pdf-generator, parent dashboard, parent report, parent weekly-review, teacher reports, PortalChat, ShelfView, admin/teachers, admin/guru, flashcards, 6 chineseName components, set-password, teacher/register, FeedbackButton, curriculum/browse, PhotoEditModal, WorkDetailSheet
+
+**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_CLEANUP_MAR1.md`
+
+---
+
+## PREVIOUS STATUS (Feb 28, 2026)
 
 ### Session Work (Feb 28, 2026 — Late Session)
 

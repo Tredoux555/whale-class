@@ -31,7 +31,7 @@ const getAreaClasses = (area: string) => {
 function ParentMilestonesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const childIdParam = searchParams.get('child');
 
   const [loading, setLoading] = useState(true);
@@ -80,7 +80,7 @@ function ParentMilestonesContent() {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
       month: 'short',
       day: 'numeric'
     });
@@ -179,16 +179,21 @@ function ParentMilestonesContent() {
 }
 
 // Wrap in Suspense for useSearchParams
+function MilestonesLoadingFallback() {
+  const { t } = useI18n();
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-4xl mb-4 animate-pulse">⭐</div>
+        <p className="text-gray-600">{t('parentMilestones.loading')}</p>
+      </div>
+    </div>
+  );
+}
+
 export default function ParentMilestonesPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">⭐</div>
-          <p className="text-gray-600">{t('common.loading')}</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<MilestonesLoadingFallback />}>
       <ParentMilestonesContent />
     </Suspense>
   );

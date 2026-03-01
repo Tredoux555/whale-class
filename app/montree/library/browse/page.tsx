@@ -127,12 +127,12 @@ export default function LibraryBrowsePage() {
   const byCategory = useMemo(() => {
     const grouped = {};
     currentWorks.forEach(w => {
-      const cat = w.category || 'Uncategorised';
+      const cat = w.category || t('area.uncategorised' as any);
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(w);
     });
     return grouped;
-  }, [currentWorks]);
+  }, [currentWorks, t]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,7 +142,7 @@ export default function LibraryBrowsePage() {
         <div className="max-w-3xl mx-auto px-4 pt-4 pb-3">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <Link href="/montree/library" className="text-emerald-400/60 text-xs hover:text-emerald-300 transition-colors">← Library</Link>
+              <Link href="/montree/library" className="text-emerald-400/60 text-xs hover:text-emerald-300 transition-colors">{t('library.backToLibrary' as any)}</Link>
               <h1 className="text-lg font-bold text-white mt-0.5">{t('library.browseWorks')}</h1>
             </div>
             <Link
@@ -192,7 +192,7 @@ export default function LibraryBrowsePage() {
                           <div className="text-sm font-medium text-gray-800 truncate">{r.title}</div>
                           {r.category && <div className="text-[11px] text-gray-400 truncate">{r.category}</div>}
                         </div>
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ backgroundColor: r.cfg.bgSubtle, color: r.cfg.color }}>{r.cfg.short}</span>
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ backgroundColor: r.cfg.bgSubtle, color: r.cfg.color }}>{t(('area.' + (r.area || 'practical_life') + '.short') as any) || r.cfg.short}</span>
                       </button>
                     ))}
                   </div>
@@ -231,7 +231,7 @@ export default function LibraryBrowsePage() {
                     >
                       {tabCfg.icon}
                     </span>
-                    <span>{tabCfg.short}</span>
+                    <span>{t(('area.' + areaKey + '.short') as any) || tabCfg.short}</span>
                     {count > 0 && (
                       <span className={`text-[10px] tabular-nums ${isActive ? 'text-white/70' : 'text-white/25'}`}>
                         {count}
@@ -264,7 +264,7 @@ export default function LibraryBrowsePage() {
             </div>
             {searchQuery ? (
               <>
-                <p className="text-gray-500 font-medium">{t('library.noResultsIn').replace('{area}', cfg.name)}</p>
+                <p className="text-gray-500 font-medium">{t('library.noResultsIn').replace('{area}', t(('area.' + activeTab) as any) || cfg.name)}</p>
                 <p className="text-gray-400 text-sm mt-1">{t('library.tryDifferentSearch')}</p>
               </>
             ) : activeTab === 'miscellaneous' ? (
@@ -277,10 +277,10 @@ export default function LibraryBrowsePage() {
               </>
             ) : (
               <>
-                <p className="text-gray-500 font-medium">{t('library.noWorksYet').replace('{area}', cfg.name)}</p>
+                <p className="text-gray-500 font-medium">{t('library.noWorksYet').replace('{area}', t(('area.' + activeTab) as any) || cfg.name)}</p>
                 <p className="text-gray-400 text-sm mt-1">{t('library.beFirstToShare')}</p>
                 <Link href="/montree/library/upload" className="inline-block mt-4 px-5 py-2 rounded-lg text-sm font-medium text-white transition-colors" style={{ backgroundColor: cfg.color }}>
-                  + {t('library.shareWorkArea').replace('{area}', cfg.short)}
+                  + {t('library.shareWorkArea').replace('{area}', t(('area.' + activeTab + '.short') as any) || cfg.short)}
                 </Link>
               </>
             )}
@@ -297,7 +297,7 @@ export default function LibraryBrowsePage() {
                 {cfg.icon}
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold text-gray-900">{cfg.name}</h2>
+                <h2 className="text-lg font-bold text-gray-900">{t(('area.' + activeTab) as any) || cfg.name}</h2>
                 <p className="text-xs text-gray-400">
                   {currentWorks.length} {t('library.work').replace('{count}', currentWorks.length.toString()).split(' ')[currentWorks.length !== 1 ? 1 : 0]}
                   {searchQuery && ` ${t('library.matching')} "${searchQuery}"`}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import { HOME_THEME } from '@/lib/montree/home-theme';
+import { useI18n } from '@/lib/montree/i18n';
 
 // Import curriculum data directly (static JSON — no API needed)
 import languageData from '@/lib/curriculum/data/language.json';
@@ -63,25 +64,27 @@ const AREA_DATA: Record<string, CurriculumAreaData> = {
   cultural: culturalData as CurriculumAreaData,
 };
 
-// Age range labels
-const AGE_LABELS: Record<string, string> = {
-  all: 'All Ages',
-  primary_year1: 'Year 1 (2.5-4)',
-  primary_year2: 'Year 2 (4-5)',
-  primary_year3: 'Year 3 (5-6)',
+// Age range keys — resolved at render time via i18n
+const AGE_KEYS: Record<string, string> = {
+  all: 'curriculum.allAges',
+  primary_year1: 'curriculum.year1',
+  primary_year2: 'curriculum.year2',
+  primary_year3: 'curriculum.year3',
 };
 
 // Difficulty badges for recommended view
-function getDifficultyBadge(work: CurriculumWork, masteredIds: Set<string>, allWorksMap: Record<string, string>): { label: string; color: string } {
+function getDifficultyBadge(work: CurriculumWork, masteredIds: Set<string>, allWorksMap: Record<string, string>, t: any): { label: string; color: string } {
   const prereqsMet = work.prerequisites.every(p => masteredIds.has(p));
   const hasNoPrereqs = work.prerequisites.length === 0;
-  if (hasNoPrereqs) return { label: 'Start Here', color: 'bg-emerald-100 text-emerald-700' };
-  if (prereqsMet) return { label: 'Building On', color: 'bg-amber-100 text-amber-700' };
-  return { label: 'Advanced', color: 'bg-violet-100 text-violet-700' };
+  if (hasNoPrereqs) return { label: t('curriculum.startHere' as any), color: 'bg-emerald-100 text-emerald-700' };
+  if (prereqsMet) return { label: t('curriculum.buildingOn' as any), color: 'bg-amber-100 text-amber-700' };
+  return { label: t('curriculum.advanced' as any), color: 'bg-violet-100 text-violet-700' };
 }
 
 export default function CurriculumBrowsePage() {
   const router = useRouter();
+  const { t, locale } = useI18n();
+  const areaName = (key: string) => t(`area.${key}` as any) || AREA_CONFIG[key]?.name || key;
   const [isParent, setIsParent] = useState(false);
   const [selectedArea, setSelectedArea] = useState<string>(AREA_ORDER[0]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -254,11 +257,10 @@ export default function CurriculumBrowsePage() {
             </button>
             <div className="flex-1">
               <h1 className={`text-lg font-bold ${isParent ? 'text-white' : 'text-slate-900'}`}>
-                {isParent ? 'Montessori Curriculum Guide' : 'Curriculum Browser'}
+                {t('curriculum.browseTitle' as any)}
               </h1>
               <p className={`text-xs ${isParent ? 'text-white/60' : 'text-slate-500'}`}>
-                {totalWorks} works across 5 areas
-                {isParent && ' — your guide to Montessori at home'}
+                {totalWorks} {t('curriculum.worksAcrossAreas' as any)}
               </p>
             </div>
           </div>
@@ -290,7 +292,7 @@ export default function CurriculumBrowsePage() {
                   >
                     {cfg.icon}
                   </span>
-                  {cfg.name}
+                  {areaName(areaId)}
                 </button>
               );
             })}
@@ -310,7 +312,7 @@ export default function CurriculumBrowsePage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Search ${areaConfig?.name || ''} works...`}
+              placeholder={t('curriculum.searchAreaWorks' as any)}
               className={`w-full pl-9 pr-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:border-transparent ${
                 isParent ? 'border-[#0D3330]/15 focus:ring-[#0D3330]/30 bg-[#FFFDF8]' : 'border-slate-200 focus:ring-emerald-500'
               }`}
@@ -332,8 +334,8 @@ export default function CurriculumBrowsePage() {
               isParent ? 'border-[#0D3330]/15 bg-[#FFFDF8] focus:ring-[#0D3330]/30' : 'border-slate-200 bg-white focus:ring-emerald-500'
             }`}
           >
-            {Object.entries(AGE_LABELS).map(([val, label]) => (
-              <option key={val} value={val}>{label}</option>
+            {Object.entries(AGE_KEYS).map(([val, key]) => (
+              <option key={val} value={val}>{t(key as any)}</option>
             ))}
           </select>
         </div>
@@ -349,8 +351,8 @@ export default function CurriculumBrowsePage() {
           >
             <span>{showRecommended ? '⭐' : '☆'}</span>
             {showRecommended
-              ? `Recommended for ${childName || 'Your Child'}`
-              : 'Show All Works'
+              ? `${t('curriculum.recommendedFor' as any)} ${childName || t('curriculum.yourChild' as any)}`
+              : t('curriculum.showAllWorks' as any)
             }
           </button>
         )}
@@ -358,10 +360,10 @@ export default function CurriculumBrowsePage() {
         {/* Results count */}
         <p className="text-xs text-slate-500 mt-1.5 pl-1">
           {filteredWorkCount === areaWorkCount
-            ? `${areaWorkCount} works in ${areaConfig?.name}`
-            : `${filteredWorkCount} of ${areaWorkCount} works`
+            ? `${areaWorkCount} ${t('curriculum.worksInArea' as any)} ${areaName(selectedArea)}`
+            : `${filteredWorkCount} ${t('curriculum.worksOfTotal' as any)} ${areaWorkCount} ${t('curriculum.works' as any)}`
           }
-          {showRecommended && isParent && ' (excluding mastered)'}
+          {showRecommended && isParent && ` ${t('curriculum.excludingMastered' as any)}`}
         </p>
       </div>
 
@@ -369,8 +371,8 @@ export default function CurriculumBrowsePage() {
       <div className="max-w-4xl mx-auto px-4 pb-8">
         {filteredCategories.length === 0 ? (
           <div className="text-center py-12 text-slate-400">
-            <p className="text-lg">No works found</p>
-            <p className="text-sm mt-1">Try adjusting your search or filter</p>
+            <p className="text-lg">{t('curriculum.noWorksFound' as any)}</p>
+            <p className="text-sm mt-1">{t('curriculum.tryAdjusting' as any)}</p>
           </div>
         ) : (
           filteredCategories.map(category => (
@@ -390,7 +392,7 @@ export default function CurriculumBrowsePage() {
                 />
                 <div className="flex-1 text-left">
                   <h3 className="text-sm font-semibold text-slate-800">{category.name}</h3>
-                  <p className="text-xs text-slate-500">{category.works.length} works</p>
+                  <p className="text-xs text-slate-500">{category.works.length} {t('curriculum.works' as any)}</p>
                 </div>
                 <svg
                   className={`w-4 h-4 text-slate-400 transition-transform ${
@@ -415,7 +417,7 @@ export default function CurriculumBrowsePage() {
                       areaColor={areaConfig?.color || '#666'}
                       allWorksMap={allWorksMap}
                       isParent={isParent}
-                      difficultyBadge={showRecommended && isParent ? getDifficultyBadge(work, masteredWorkNames, allWorksMap) : undefined}
+                      difficultyBadge={showRecommended && isParent ? getDifficultyBadge(work, masteredWorkNames, allWorksMap, t) : undefined}
                     />
                   ))}
                 </div>
@@ -443,7 +445,8 @@ interface WorkCardProps {
 }
 
 function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, isParent, difficultyBadge }: WorkCardProps) {
-  const ageLabel = AGE_LABELS[work.ageRange] || work.ageRange;
+  const { t, locale } = useI18n();
+  const ageLabel = t((AGE_KEYS[work.ageRange] || 'curriculum.allAges') as any) || work.ageRange;
 
   return (
     <div className={`rounded-lg border overflow-hidden ${isParent ? 'bg-[#FFFDF8] border-[#0D3330]/10' : 'bg-white border-slate-200'}`}>
@@ -459,7 +462,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
           {index + 1}
         </span>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-slate-800 truncate">{work.name}</h4>
+          <h4 className="text-sm font-medium text-slate-800 truncate">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
           <p className="text-xs text-slate-500 truncate">{work.description}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -490,20 +493,20 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
           <div className="grid grid-cols-2 gap-3">
             {/* Age Range */}
             <InfoBlock
-              label="Age Range"
+              label={t('curriculum.ageRange' as any)}
               icon="🎂"
               value={ageLabel}
             />
             {/* Levels */}
             <InfoBlock
-              label="Levels"
+              label={t('curriculum.levels' as any)}
               icon="📊"
-              value={`${work.levels.length} progression ${work.levels.length === 1 ? 'level' : 'levels'}`}
+              value={`${work.levels.length} ${work.levels.length === 1 ? t('curriculum.progressionLevel' as any) : t('curriculum.progressionLevelsPlural' as any)}`}
             />
           </div>
 
           {/* Materials */}
-          <Section title={isParent ? "Materials You'll Need" : "Materials"} icon="🧰">
+          <Section title={isParent ? t('curriculum.materialsYouNeed' as any) : t('curriculum.materials' as any)} icon="🧰">
             <div className="flex flex-wrap gap-1.5">
               {work.materials.map((material, i) => (
                 <span key={i} className="text-xs px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
@@ -515,7 +518,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Direct Aims */}
           {work.directAims && work.directAims.length > 0 && (
-            <Section title={isParent ? "What Your Child Learns" : "Direct Aims"} icon="🎯">
+            <Section title={isParent ? t('curriculum.whatChildLearns' as any) : t('curriculum.directAims' as any)} icon="🎯">
               <div className="flex flex-wrap gap-1.5">
                 {work.directAims.map((aim, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -528,7 +531,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Indirect Aims */}
           {work.indirectAims && work.indirectAims.length > 0 && (
-            <Section title={isParent ? "Hidden Benefits" : "Indirect Aims"} icon="✨">
+            <Section title={isParent ? t('curriculum.hiddenBenefits' as any) : t('curriculum.indirectAims' as any)} icon="✨">
               <div className="flex flex-wrap gap-1.5">
                 {work.indirectAims.map((aim, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
@@ -541,7 +544,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Prerequisites */}
           {work.prerequisites && work.prerequisites.length > 0 && (
-            <Section title="Prerequisites" icon="🔗">
+            <Section title={t('curriculum.prerequisites' as any)} icon="🔗">
               <div className="flex flex-wrap gap-1.5">
                 {work.prerequisites.map((preReqId, i) => (
                   <span key={i} className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
@@ -554,13 +557,13 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
 
           {/* Control of Error */}
           {work.controlOfError && (
-            <Section title={isParent ? "How They Self-Correct" : "Control of Error"} icon="🔍">
+            <Section title={isParent ? t('curriculum.howTheySelfCorrect' as any) : t('curriculum.controlOfError' as any)} icon="🔍">
               <p className="text-xs text-slate-600">{work.controlOfError}</p>
             </Section>
           )}
 
           {/* Levels / Progression */}
-          <Section title="Progression Levels" icon="📈">
+          <Section title={t('curriculum.progressionLevels' as any)} icon="📈">
             <div className="space-y-2">
               {work.levels.map((level) => (
                 <div key={level.level} className="flex gap-2">
@@ -580,7 +583,7 @@ function WorkCard({ work, index, isExpanded, onToggle, areaColor, allWorksMap, i
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-[10px] text-red-500 hover:text-red-600 mt-0.5"
                       >
-                        <span>▶</span> Watch demo
+                        <span>▶</span> {t('curriculum.watchDemo' as any)}
                       </a>
                     )}
                   </div>

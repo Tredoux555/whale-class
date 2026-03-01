@@ -5,6 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface PhotoDetailViewProps {
   media: MontreeMedia | null;
@@ -25,6 +26,7 @@ export default function PhotoDetailView({
   onDelete,
   onMediaUpdated,
 }: PhotoDetailViewProps) {
+  const { locale } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,7 +57,7 @@ export default function PhotoDetailView({
   if (!isOpen || !media) return null;
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',

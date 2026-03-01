@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { MergedWork } from '@/components/montree/curriculum/types';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Assignment {
   work_name: string;
@@ -56,6 +57,8 @@ export function useWorkOperations({
   setWheelPickerOpen,
   fetchAssignments,
 }: UseWorkOperationsParams) {
+  const { t } = useI18n();
+
   // Cycle status on tap (works for both focus and extras)
   const cycleStatus = useCallback(async (work: Assignment, isFocus: boolean) => {
     const currentIdx = STATUS_FLOW.indexOf(work.status || 'not_started');
@@ -85,7 +88,7 @@ export function useWorkOperations({
       });
       if (!res.ok) throw new Error('Save failed');
     } catch {
-      toast.error('Failed to update');
+      toast.error(t('toast.failedToUpdate' as any));
       // Revert optimistic update
       if (isFocus) {
         setFocusWorks(prev => prev.map(w =>
@@ -104,7 +107,7 @@ export function useWorkOperations({
     // OPTIMISTIC - remove from UI immediately
     const removedWork = work;
     setExtraWorks(prev => prev.filter(w => w.work_name !== work.work_name));
-    toast.success('Removed');
+    toast.success(t('toast.removed' as any));
 
     // Background API call — remove_extra deletes from extras table only
     try {
@@ -122,7 +125,7 @@ export function useWorkOperations({
     } catch {
       // Revert on failure
       setExtraWorks(prev => [...prev, removedWork]);
-      toast.error('Failed to remove');
+      toast.error(t('toast.failedToRemove' as any));
     }
   }, [childId, setExtraWorks]);
 
@@ -147,7 +150,7 @@ export function useWorkOperations({
       return w;
     }));
     setWheelPickerOpen(false);
-    toast.success(`Focus: ${work.name}`);
+    toast.success(t('toast.focusSet' as any).replace('{name}', work.name));
 
     // Background API call
     try {
@@ -194,7 +197,7 @@ export function useWorkOperations({
           return w;
         }));
       }
-      toast.error('Failed to update');
+      toast.error(t('toast.failedToUpdate' as any));
     }
   }, [childId, wheelPickerArea, wheelPickerWorks, focusWorks, setFocusWorks, setWheelPickerOpen]);
 
@@ -205,7 +208,7 @@ export function useWorkOperations({
     // Check if already exists
     const existing = allWorks.find(w => w.work_name?.toLowerCase() === work.name?.toLowerCase());
     if (existing) {
-      toast.error('Already added');
+      toast.error(t('toast.alreadyAdded' as any));
       return;
     }
 
@@ -219,7 +222,7 @@ export function useWorkOperations({
     };
     setExtraWorks(prev => [...prev, newExtra]);
     setWheelPickerOpen(false);
-    toast.success(`Added: ${work.name}`);
+    toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
 
     // Background API call
     try {
@@ -239,7 +242,7 @@ export function useWorkOperations({
     } catch {
       // Revert on failure
       setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
-      toast.error('Failed to add');
+      toast.error(t('toast.failedToAdd' as any));
     }
   }, [childId, wheelPickerArea, allWorks, setExtraWorks, setWheelPickerOpen]);
 
@@ -248,7 +251,7 @@ export function useWorkOperations({
     // Check if already exists in focus or extras
     const existing = allWorks.find(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
     if (existing) {
-      toast.error('Already added');
+      toast.error(t('toast.alreadyAdded' as any));
       return;
     }
 
@@ -267,10 +270,10 @@ export function useWorkOperations({
         }),
       });
 
-      toast.success(`Added: ${work.name}`);
+      toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
       fetchAssignments();
     } catch {
-      toast.error('Failed to add');
+      toast.error(t('toast.failedToAdd' as any));
     }
   }, [childId, allWorks, fetchAssignments]);
 
@@ -291,11 +294,11 @@ export function useWorkOperations({
         }),
       });
       if (res.ok) {
-        toast.success('Note saved!');
+        toast.success(t('toast.noteSaved' as any));
         return true;
       }
     } catch {
-      toast.error('Error saving');
+      toast.error(t('toast.errorSaving' as any));
     }
     return false;
   }, [childId, session?.teacher?.id]);

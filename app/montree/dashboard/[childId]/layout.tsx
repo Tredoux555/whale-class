@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface ChildInfo {
   id: string;
@@ -19,6 +20,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   const params = useParams();
   const childId = params.childId as string;
 
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [child, setChild] = useState<ChildInfo | null>(null);
 
@@ -59,10 +61,10 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
   // Visible tabs - Profile & Observations hidden but routes still work
   const tabs = [
-    { id: 'week', label: '📋 Week', href: `/montree/dashboard/${childId}` },
-    { id: 'progress', label: '📊 Progress', href: `/montree/dashboard/${childId}/progress` },
-    { id: 'gallery', label: '📷 Gallery', href: `/montree/dashboard/${childId}/gallery` },
-    { id: 'reports', label: '📄 Reports', href: `/montree/dashboard/${childId}/reports` },
+    { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
+    { id: 'progress', label: `📊 ${t('nav.progress' as any)}`, href: `/montree/dashboard/${childId}/progress` },
+    { id: 'gallery', label: `📷 ${t('nav.gallery' as any)}`, href: `/montree/dashboard/${childId}/gallery` },
+    { id: 'reports', label: `📄 ${t('nav.reports' as any)}`, href: `/montree/dashboard/${childId}/reports` },
   ];
   // Hidden but functional: /profile, /observations
 
@@ -75,7 +77,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const displayName = child?.name || 'Student';
+  const displayName = child?.name || t('common.student' as any);
   const displayInitial = child?.name?.charAt(0) || '👤';
 
   return (

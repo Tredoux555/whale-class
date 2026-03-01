@@ -6,6 +6,8 @@ import { generateReportPDF } from '@/lib/montree/reports/pdf-generator';
 import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,13 +59,15 @@ export async function GET(request: NextRequest) {
       .gte('updated_at', startDate)
       .lte('updated_at', endDate + 'T23:59:59');
 
-    // Build highlights from progress
+    // Build highlights from progress, enriched with Chinese names
     // Status values: not_started, presented, practicing, mastered
+    const cnMap = getChineseNameMap();
     const highlights = (progress || [])
       .filter(p => p.status === 'practicing' || p.status === 'mastered')
       .slice(0, 5)
       .map(p => ({
         workName: p.work_name,
+        chineseName: p.work_name ? cnMap.get(p.work_name.toLowerCase().trim()) || undefined : undefined,
         workArea: p.area,
         observation: p.notes || `Working on ${p.work_name}`,
         developmentalNote: p.status === 'mastered' ? 'Mastered this skill!' : undefined,
@@ -84,8 +88,9 @@ export async function GET(request: NextRequest) {
       generatedAt: new Date().toISOString(),
     };
 
-    // Generate PDF
-    const pdfBuffer = await generateReportPDF(pdfData);
+    // Generate PDF with locale support
+    const locale = getLocaleFromRequest(request.url);
+    const pdfBuffer = await generateReportPDF(pdfData, locale);
 
     // Return as downloadable PDF
     return new NextResponse(pdfBuffer, {
