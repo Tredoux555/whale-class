@@ -12,6 +12,7 @@ export interface Assignment {
   notes?: string;
   is_focus?: boolean;
   is_extra?: boolean;
+  chineseName?: string;
 }
 
 export interface FocusWorksSectionProps {
@@ -26,7 +27,7 @@ export interface FocusWorksSectionProps {
   onCycleStatus: (work: Assignment, isFocus: boolean) => void;
   onRemoveExtra: (work: Assignment) => void;
   onOpenWheelPicker: (area: string, workName?: string) => void;
-  onOpenQuickGuide: (workName: string) => void;
+  onOpenQuickGuide: (workName: string, chineseName?: string) => void;
   childId: string;
   getAreaConfig: (area: string) => AreaConfig;
   isHomeschoolParent?: boolean;
@@ -134,7 +135,7 @@ export default function FocusWorksSection({
                     <div className="flex gap-2">
                       <button
                         {...(i === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
-                        onClick={() => onOpenQuickGuide(work.work_name)}
+                        onClick={() => onOpenQuickGuide(work.work_name, work.chineseName)}
                         className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                       >
                         📖 Quick Guide

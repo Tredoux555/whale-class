@@ -1039,6 +1039,9 @@ export const en = {
   'guru.connectionFailed': 'Connection failed. Please check your internet.',
   'guru.guide': 'Guide',
   'guru.askPlaceholder': 'Ask about your child...',
+  'guru.guruAdvisor': 'Guru Advisor',
+  'guru.teacherWelcome': 'Hi! I\'m your Montessori colleague. Ask me anything about {name} — curriculum, development, classroom strategies, parent communication, or anything else.',
+  'guru.teacherAskPlaceholder': 'Ask about this student...',
 
   // Phase 7 — Guru Onboarding
   'guru.onboardingTitle': 'Montessori Guide',

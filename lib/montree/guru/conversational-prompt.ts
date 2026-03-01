@@ -1,6 +1,6 @@
 // lib/montree/guru/conversational-prompt.ts
-// Conversational system prompt for WhatsApp-style Guru chat (homeschool parents only)
-// Teachers continue using buildGuruPrompt() from prompt-builder.ts
+// Conversational system prompt for WhatsApp-style Guru chat
+// Both teachers and homeschool parents use this — with role-specific personas
 
 import { ChildContext, formatContextForPrompt } from './context-builder';
 import { KnowledgeResult, formatKnowledgeForPrompt } from './knowledge-retriever';
@@ -94,6 +94,78 @@ If you have previous messages, build on them naturally:
 - If previous advice didn't work, try a different approach
 - Track the parent's emotional arc — are they feeling more confident? More overwhelmed?`;
 
+const TEACHER_CONVERSATIONAL_SYSTEM_PROMPT = `You are a brilliant, experienced Montessori colleague — like the senior teacher everyone in the school turns to for advice. You have 30+ years of AMI training and classroom experience across all age groups (toddler through elementary). You're chatting through a messaging app with a fellow teacher.
+
+YOUR PERSONALITY:
+- Professional but warm — like texting a trusted colleague who has seen it all
+- You share practical wisdom, not textbook theory
+- You're direct and honest — if something isn't working, you say so kindly
+- You use natural paragraphs, not structured reports
+- You reference the specific children and classroom context when available
+- You match the teacher's energy — quick questions get quick answers, detailed concerns get thorough responses
+
+YOUR EXPERTISE COVERS EVERYTHING A TEACHER NEEDS:
+1. Curriculum & Materials:
+   - Deep knowledge of every Montessori work across all 5 areas
+   - Presentation techniques, extensions, variations
+   - When to introduce works, prerequisites, progression sequences
+   - DIY alternatives and material modifications
+   - How to handle mixed-age classrooms
+
+2. Child Development & Observation:
+   - Sensitive periods and how to spot them
+   - Normalization process and what to expect
+   - Developmental red flags vs normal variation
+   - Reading children's behavior as communication
+   - Concentration, repetition, and the work cycle
+
+3. Classroom Management:
+   - Grace and courtesy lessons
+   - Handling disruptions without breaking the flow
+   - Ground rules and freedom within limits
+   - Managing transitions, line time, outdoor time
+   - Multi-age dynamics and peer learning
+
+4. Parent Communication:
+   - How to explain Montessori concepts to parents simply
+   - Handling parent concerns ("Why isn't my child reading yet?")
+   - Progress reports and conferences
+   - Setting expectations without being condescending
+   - Talking points for common parent questions
+
+5. Professional Development:
+   - Observation techniques and record-keeping
+   - Environment preparation and rotation
+   - Self-reflection and growth
+   - Working with assistants and co-teachers
+   - Handling stress and avoiding burnout
+
+CRITICAL RULES:
+1. NEVER output structured sections (no "INSIGHT:", "ROOT CAUSE:", "ACTION PLAN:" headers)
+2. ALWAYS write in natural conversational paragraphs — like a colleague texting back
+3. Be specific to THIS child/classroom when context is available
+4. If the teacher describes a concern, share what you've seen work in similar situations
+5. Reference the child's actual progress data when available
+6. If something sounds like it needs professional assessment, say so gently
+7. End messages with something encouraging or a practical next step
+8. Match your response length to the question — quick questions get concise answers
+
+PSYCHOLOGICAL FOUNDATIONS (use naturally, don't lecture):
+- Piaget: Cognitive stages guide when to introduce abstract vs concrete concepts
+- Vygotsky: Zone of Proximal Development — the sweet spot for each child
+- Montessori: Sensitive periods, absorbent mind, normalization, prepared environment
+- Bowlby: Secure attachment enables confident exploration
+- Erikson: Age-stage tensions (autonomy vs shame, initiative vs guilt)
+- Dweck: Growth mindset — how you praise matters (process over outcome)
+- Kohn: Intrinsic motivation — why Montessori's reward-free approach works
+
+CONVERSATION MEMORY:
+If you have previous messages, build on them naturally:
+- Reference things discussed before
+- Ask follow-ups ("How did that go with the Pink Tower presentation?")
+- Notice patterns across conversations
+- If previous advice didn't work, try a different approach`;
+
 const AREA_LABELS: Record<string, string> = {
   practical_life: 'Practical Life',
   sensorial: 'Sensorial',
@@ -141,6 +213,21 @@ Your goal is to build their first shelf together in a warm, collaborative way:
 
 IMPORTANT: Don't overwhelm them with all 5 areas at once if the child is very young. Start with Practical Life + Sensorial for toddlers, add Language + Mathematics for 3+, Cultural for 4+.
 Make it feel like building something together, not a prescription.`;
+
+const TEACHER_NORMAL_MODE = `MODE: NORMAL CONVERSATION
+Answer the teacher's question naturally and professionally. Draw on your deep Montessori knowledge.
+If they ask about a specific child, reference the child's progress data.
+If they ask a general question (curriculum, materials, classroom management), give practical, experienced advice.
+You may use tools if the conversation warrants it (e.g., teacher says "she mastered it!" → call update_progress).`;
+
+const TEACHER_CHECKIN_MODE = `MODE: WEEKLY REFLECTION
+This teacher is checking in about a child's progress. Your goal:
+1. Ask how the week went with this child
+2. Go through the works on the shelf — ask about each one
+3. Based on what they report, suggest progress updates or shelf rotations
+4. Share observations about developmental patterns you notice
+5. Suggest what to introduce next based on the child's trajectory
+6. Give encouragement — teaching is demanding work`;
 
 const REFLECTION_MODE = `MODE: WEEKLY REFLECTION
 It's been a while since this parent last chatted (5+ days), or it's the weekend.
@@ -324,38 +411,52 @@ export function buildConversationalPrompt(
   childSettings?: Record<string, unknown>,
   guruTier?: 'haiku' | 'sonnet',
   proactive?: ProactiveContext,
+  isTeacher?: boolean,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
   const childName = childContext.name?.split(' ')[0] || 'the child';
 
-  // Determine mode — priority: SETUP > INTAKE > CHECKIN > REFLECTION > NORMAL
-  const intakeComplete = (childSettings?.guru_intake_complete as boolean) ?? false;
-  const nextCheckin = (childSettings?.guru_next_checkin as string) ?? null;
-  const isCheckinDue = nextCheckin ? new Date(nextCheckin) <= new Date() : false;
-  const shelfEmpty = proactive?.shelfEmpty || false;
-  const daysSince = proactive?.daysSinceLastInteraction ?? 0;
-  const dayOfWeek = proactive?.dayOfWeek ?? new Date().getUTCDay();
-
+  // Determine mode — teachers skip SETUP/INTAKE (those are parent onboarding flows)
   let modeInstructions: string;
   let mode: GuruMode;
-  if (shelfEmpty && intakeComplete) {
-    // Feature 1: Cold Start — shelf is empty but intake is done (parent needs guided shelf setup)
-    modeInstructions = SETUP_MODE;
-    mode = 'SETUP';
-  } else if (!intakeComplete) {
-    modeInstructions = INTAKE_MODE;
-    mode = 'INTAKE';
-  } else if (isCheckinDue) {
-    modeInstructions = CHECKIN_MODE;
-    mode = 'CHECKIN';
-  } else if (daysSince >= 5 || dayOfWeek === 0) {
-    // Feature 3: Weekly Rhythm — 5+ days gap or Sunday
-    modeInstructions = REFLECTION_MODE;
-    mode = 'REFLECTION';
+
+  if (isTeacher) {
+    // Teacher modes: CHECKIN or NORMAL (no SETUP/INTAKE/REFLECTION for teachers)
+    const nextCheckin = (childSettings?.guru_next_checkin as string) ?? null;
+    const isCheckinDue = nextCheckin ? new Date(nextCheckin) <= new Date() : false;
+    if (isCheckinDue) {
+      modeInstructions = TEACHER_CHECKIN_MODE;
+      mode = 'CHECKIN';
+    } else {
+      modeInstructions = TEACHER_NORMAL_MODE;
+      mode = 'NORMAL';
+    }
   } else {
-    modeInstructions = NORMAL_MODE;
-    mode = 'NORMAL';
+    // Parent modes: SETUP > INTAKE > CHECKIN > REFLECTION > NORMAL
+    const intakeComplete = (childSettings?.guru_intake_complete as boolean) ?? false;
+    const nextCheckin = (childSettings?.guru_next_checkin as string) ?? null;
+    const isCheckinDue = nextCheckin ? new Date(nextCheckin) <= new Date() : false;
+    const shelfEmpty = proactive?.shelfEmpty || false;
+    const daysSince = proactive?.daysSinceLastInteraction ?? 0;
+    const dayOfWeek = proactive?.dayOfWeek ?? new Date().getUTCDay();
+
+    if (shelfEmpty && intakeComplete) {
+      modeInstructions = SETUP_MODE;
+      mode = 'SETUP';
+    } else if (!intakeComplete) {
+      modeInstructions = INTAKE_MODE;
+      mode = 'INTAKE';
+    } else if (isCheckinDue) {
+      modeInstructions = CHECKIN_MODE;
+      mode = 'CHECKIN';
+    } else if (daysSince >= 5 || dayOfWeek === 0) {
+      modeInstructions = REFLECTION_MODE;
+      mode = 'REFLECTION';
+    } else {
+      modeInstructions = NORMAL_MODE;
+      mode = 'NORMAL';
+    }
   }
 
   // Build shelf context
@@ -433,7 +534,7 @@ export function buildConversationalPrompt(
   }
 
   // Build the system prompt with all sections
-  let systemPrompt = CONVERSATIONAL_SYSTEM_PROMPT;
+  let systemPrompt = isTeacher ? TEACHER_CONVERSATIONAL_SYSTEM_PROMPT : CONVERSATIONAL_SYSTEM_PROMPT;
   systemPrompt += '\n\n' + modeInstructions;
   systemPrompt += '\n\n' + TOOL_USE_INSTRUCTIONS;
   systemPrompt += '\n\n' + shelfContext;
@@ -443,7 +544,8 @@ export function buildConversationalPrompt(
   if (concernContext) {
     systemPrompt += '\n' + concernContext;
   }
-  if (parentStateContext) {
+  // Parent-only: emotional state tracking and mirroring
+  if (!isTeacher && parentStateContext) {
     systemPrompt += '\n' + parentStateContext;
   }
   if (insightsContext) {
@@ -467,20 +569,20 @@ export function buildConversationalPrompt(
     systemPrompt += '\n' + proactive.celebrationContext;
   }
 
-  // Feature 5: Stern's Vitality Affects — emotional mirroring instructions
-  // parentState already declared above in the parent emotional state context block
-  const mirroringInstructions = buildEmotionalMirroringInstructions(parentState);
-  if (mirroringInstructions) {
-    systemPrompt += '\n' + mirroringInstructions;
+  // Feature 5: Stern's Vitality Affects — emotional mirroring (parent-only)
+  if (!isTeacher) {
+    const mirroringInstructions = buildEmotionalMirroringInstructions(parentState);
+    if (mirroringInstructions) {
+      systemPrompt += '\n' + mirroringInstructions;
+    }
   }
 
-  // Sonnet tier gets deep psychology knowledge for richer therapeutic responses
-  // Haiku tier relies on the inline summary already in CONVERSATIONAL_SYSTEM_PROMPT
+  // Sonnet tier gets deep psychology knowledge for richer responses
   // Issue HC#4: Guard against undefined guruTier — default to sonnet (gives richer responses)
   if (!guruTier || guruTier === 'sonnet') {
     const deepPsychKnowledge = getRelevantPsychologyKnowledge([]);
     if (deepPsychKnowledge) {
-      systemPrompt += '\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don\'t dump all of this on the parent):\n' + deepPsychKnowledge;
+      systemPrompt += `\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don't ${isTeacher ? 'lecture' : 'dump all of this on the parent'}):\n` + deepPsychKnowledge;
     }
   }
 

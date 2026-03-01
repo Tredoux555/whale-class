@@ -14,7 +14,7 @@ interface CurriculumWorkListProps {
   setExpandedWork: (id: string | null) => void;
   onEditWork: (work: Work) => void;
   onDeleteWork: (work: Work) => void;
-  onOpenFullDetails?: (workName: string) => void;
+  onOpenFullDetails?: (workName: string, chineseName?: string) => void;
   highlightedWorkId?: string | null;
   reordering: boolean;
   onDragStart: (e: React.DragEvent, work: Work) => void;
@@ -69,7 +69,7 @@ export default function CurriculumWorkList({
     <div className="bg-white rounded-2xl p-4 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-gray-800 capitalize flex items-center gap-2">
-          <AreaBadge area={selectedArea} size="md" /> {selectedArea.replace('_', ' ')}
+          <AreaBadge area={selectedArea} size="md" /> {t(('area.' + selectedArea) as any)}
         </h3>
         <span className="text-xs text-gray-400 flex items-center gap-1">
           {reordering && <span className="animate-spin">⏳</span>}
@@ -117,7 +117,7 @@ export default function CurriculumWorkList({
                     <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${AREA_COLORS[selectedArea]}`} />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</p>
+                    <p className="font-medium text-gray-800">{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-gray-400">{work.age_range || '3-6'}</span>
@@ -164,7 +164,7 @@ function ExpandedWorkDetails({
 }: {
   work: Work;
   selectedArea: string;
-  onOpenFullDetails?: (workName: string) => void;
+  onOpenFullDetails?: (workName: string, chineseName?: string) => void;
   onWorkUpdated?: () => void;
 }) {
   const { t } = useI18n();
@@ -301,7 +301,7 @@ function ExpandedWorkDetails({
       {/* Full Details Button */}
       {onOpenFullDetails && (
         <button
-          onClick={() => onOpenFullDetails(work.name)}
+          onClick={() => onOpenFullDetails(work.name, work.name_chinese)}
           className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:from-emerald-600 hover:to-teal-700 active:scale-[0.98] transition-all shadow-sm"
         >
           📚 {t('curriculum.fullDetails')}

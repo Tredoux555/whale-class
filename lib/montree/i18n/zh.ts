@@ -1039,6 +1039,9 @@ export const zh = {
   'guru.connectionFailed': '连接失败。请检查网络连接。',
   'guru.guide': '导师',
   'guru.askPlaceholder': '询问关于您的孩子...',
+  'guru.guruAdvisor': '蒙台梭利顾问',
+  'guru.teacherWelcome': '你好！我是你的蒙台梭利同事。关于{name}的任何问题都可以问我——课程、发展、课堂策略、家长沟通等等。',
+  'guru.teacherAskPlaceholder': '询问关于这位学生...',
 
   // Phase 7 — Guru Onboarding
   'guru.onboardingTitle': '蒙特梭利导师',

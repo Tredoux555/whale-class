@@ -31,6 +31,7 @@ interface Assignment {
   notes?: string;
   is_focus?: boolean;
   is_extra?: boolean;
+  chineseName?: string;
 }
 
 interface CurriculumWork {
@@ -48,7 +49,7 @@ interface Child {
 export default function WeekPage() {
   const params = useParams();
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const childId = params.childId as string;
   const session = getSession();
 
@@ -83,6 +84,7 @@ export default function WeekPage() {
   // Quick Guide modal state
   const [quickGuideOpen, setQuickGuideOpen] = useState(false);
   const [quickGuideWork, setQuickGuideWork] = useState<string>('');
+  const [quickGuideDisplayName, setQuickGuideDisplayName] = useState<string>('');
   const [quickGuideData, setQuickGuideData] = useState<QuickGuideData | null>(null);
   const [quickGuideLoading, setQuickGuideLoading] = useState(false);
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
@@ -95,18 +97,24 @@ export default function WeekPage() {
     }
   }, []);
 
-  // Fetch quick guide for a work
-  const openQuickGuide = async (workName: string) => {
+  // Fetch quick guide for a work (accepts optional chineseName for display)
+  const openQuickGuide = async (workName: string, chineseName?: string) => {
     setQuickGuideWork(workName);
+    // Display Chinese name when locale is zh and chineseName is available
+    setQuickGuideDisplayName(locale === 'zh' && chineseName ? chineseName : workName);
     setQuickGuideOpen(true);
     setQuickGuideLoading(true);
     setQuickGuideData(null);
 
     try {
       const classroomId = session?.classroom?.id;
-      const url = classroomId
+      let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      // Pass locale for Chinese translation of guide content
+      if (locale === 'zh') {
+        url += '&locale=zh';
+      }
       const res = await fetch(url);
       const data = await res.json();
       setQuickGuideData(data);
@@ -623,7 +631,7 @@ export default function WeekPage() {
       <QuickGuideModal
         isOpen={quickGuideOpen}
         onClose={() => setQuickGuideOpen(false)}
-        workName={quickGuideWork}
+        workName={quickGuideDisplayName || quickGuideWork}
         guideData={quickGuideData}
         loading={quickGuideLoading}
         onOpenFullDetails={() => { setQuickGuideOpen(false); setFullDetailsOpen(true); }}
@@ -632,7 +640,7 @@ export default function WeekPage() {
       <FullDetailsModal
         isOpen={fullDetailsOpen}
         onClose={() => setFullDetailsOpen(false)}
-        workName={quickGuideWork}
+        workName={quickGuideDisplayName || quickGuideWork}
         guideData={quickGuideData}
         loading={quickGuideLoading}
       />
@@ -653,7 +661,7 @@ export default function WeekPage() {
           }}
           onOpenQuickGuide={() => {
             if (focusWorks.length > 0) {
-              openQuickGuide(focusWorks[0].work_name);
+              openQuickGuide(focusWorks[0].work_name, focusWorks[0].chineseName);
             }
           }}
           onCloseQuickGuide={() => {
