@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { loadAllCurriculumWorks, getChineseNameMap } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found
@@ -345,6 +345,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Chinese name lookup
+    const cnMap = getChineseNameMap();
+
     // Track which works we've added (by work_id or name)
     const addedWorkIds = new Set<string>();
     const addedWorkNames = new Set<string>();
@@ -389,6 +392,7 @@ export async function GET(request: NextRequest) {
       reportItems.push({
         work_id: workId || null,
         work_name: p.work_name,
+        chineseName: p.work_name ? cnMap.get(p.work_name.toLowerCase().trim()) || null : null,
         area: p.area || workInfo?.area || 'practical_life',
         status: p.status === 'completed' ? 'mastered' : p.status,
         photo_url: photo?.url || null,
@@ -419,6 +423,7 @@ export async function GET(request: NextRequest) {
       reportItems.push({
         work_id: photo.work_id,
         work_name: workInfo.name,
+        chineseName: cnMap.get(workInfo.name.toLowerCase().trim()) || null,
         area: workInfo.area || 'practical_life',
         status: 'documented', // Special status: photo exists but no formal progress
         photo_url: photo.url,

@@ -299,8 +299,8 @@ export default function ReportsPage() {
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
             {items.map((item, i) => (
               <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
-                <StatusBadge status={item.status} />
-                <span className="flex-1 text-sm font-medium text-gray-700">{item.work_name}</span>
+                <StatusBadge status={item.status} locale={locale} />
+                <span className="flex-1 text-sm font-medium text-gray-700">{locale === 'zh' && (item as any).chineseName ? (item as any).chineseName : item.work_name}</span>
                 {item.photo_url && <span className="text-blue-500">📸</span>}
                 {item.has_description && <span className="text-emerald-500">📝</span>}
               </div>
@@ -382,8 +382,8 @@ export default function ReportsPage() {
                 <div key={`work-${item.work_name}-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
                   {/* Work header */}
                   <div className="flex items-center gap-2">
-                    <StatusBadge status={item.status} />
-                    <h4 className="font-bold text-gray-800">{item.work_name}</h4>
+                    <StatusBadge status={item.status} locale={locale} />
+                    <h4 className="font-bold text-gray-800">{locale === 'zh' && (item as any).chineseName ? (item as any).chineseName : item.work_name}</h4>
                   </div>
 
                   {/* Photo - Hero style */}
@@ -572,7 +572,7 @@ export default function ReportsPage() {
                                 }`}>
                                   {work.status_label || work.status}
                                 </span>
-                                <h4 className="font-bold text-gray-800">{work.name}</h4>
+                                <h4 className="font-bold text-gray-800">{locale === 'zh' && (work as any).chineseName ? (work as any).chineseName : work.name}</h4>
                               </div>
 
                               {/* Photo - Hero style */}
@@ -708,13 +708,14 @@ function StatCard({ icon, value, label, color }: { icon: string; value: number; 
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, locale }: { status: string; locale?: string }) {
+  const isZh = locale === 'zh';
   const styles: Record<string, { bg: string; text: string; label: string }> = {
-    presented: { bg: 'bg-amber-100', text: 'text-amber-700', label: '🌱 Introduced' },
-    practicing: { bg: 'bg-blue-100', text: 'text-blue-700', label: '🔄 Practicing' },
-    mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastered' },
-    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastered' },
-    documented: { bg: 'bg-purple-100', text: 'text-purple-700', label: '📸 Documented' },
+    presented: { bg: 'bg-amber-100', text: 'text-amber-700', label: isZh ? '🌱 已展示' : '🌱 Introduced' },
+    practicing: { bg: 'bg-blue-100', text: 'text-blue-700', label: isZh ? '🔄 练习中' : '🔄 Practicing' },
+    mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    documented: { bg: 'bg-purple-100', text: 'text-purple-700', label: isZh ? '📸 已记录' : '📸 Documented' },
   };
 
   const style = styles[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: '○ Started' };
