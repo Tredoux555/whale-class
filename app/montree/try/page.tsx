@@ -218,6 +218,14 @@ export default function TryMontreePage() {
                 <span className="text-lg block">👔 {t('signup.principal')}</span>
                 <span className="text-sm text-purple-100/70 font-normal mt-1 block">{t('signup.principalDesc')}</span>
               </button>
+
+              <button
+                onClick={() => handleRoleSelect('homeschool_parent')}
+                className="w-full px-6 py-5 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
+              >
+                <span className="text-lg block">🌿 {t('signup.homeParent')}</span>
+                <span className="text-sm text-emerald-100/70 font-normal mt-1 block">{t('signup.homeParentDesc')}</span>
+              </button>
             </div>
           </div>
         )}
@@ -239,7 +247,7 @@ export default function TryMontreePage() {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
@@ -247,13 +255,13 @@ export default function TryMontreePage() {
 
               <div>
                 <label className="block text-sm mb-2 text-emerald-300/70">
-                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
+                  {selectedRole === 'principal' ? t('signup.schoolName') : selectedRole === 'homeschool_parent' ? t('signup.homeName') : t('signup.schoolClassroomName')}
                 </label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.schoolPlaceholder.parent') : t('signup.schoolPlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />
