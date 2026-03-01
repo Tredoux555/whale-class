@@ -17,12 +17,11 @@ import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
 
 
 export default function CurriculumPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [session, setSession] = useState<any>(null);
   const [curriculum, setCurriculum] = useState<Work[]>([]);
   const [byArea, setByArea] = useState<Record<string, Work[]>>({});
@@ -43,6 +42,7 @@ export default function CurriculumPage() {
   // Full Details modal state
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
   const [fullDetailsWork, setFullDetailsWork] = useState('');
+  const [fullDetailsDisplayName, setFullDetailsDisplayName] = useState('');
   const [fullDetailsData, setFullDetailsData] = useState<QuickGuideData | null>(null);
   const [fullDetailsLoading, setFullDetailsLoading] = useState(false);
 
@@ -146,15 +146,17 @@ export default function CurriculumPage() {
 
 
   // Open Full Details modal — fetch guide data from API
-  const openFullDetails = async (workName: string) => {
+  const openFullDetails = async (workName: string, chineseName?: string) => {
     setFullDetailsWork(workName);
+    setFullDetailsDisplayName(locale === 'zh' && chineseName ? chineseName : workName);
     setFullDetailsLoading(true);
     setFullDetailsOpen(true);
     try {
       const classroomId = session?.classroom?.id;
-      const url = classroomId
+      let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      if (locale === 'zh') url += '&locale=zh';
       const res = await fetch(url);
       const data = await res.json();
       setFullDetailsData(data);
@@ -173,7 +175,6 @@ export default function CurriculumPage() {
   }
 
   return (
-    <FeatureWrapper featureModule="curriculum" autoStart>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
       <Toaster position="top-center" richColors />
 
@@ -258,7 +259,7 @@ export default function CurriculumPage() {
                   <div className="mb-2">
                     <AreaBadge area={area} size="lg" />
                   </div>
-                  <p className="font-semibold text-gray-800 capitalize">{area.replace('_', ' ')}</p>
+                  <p className="font-semibold text-gray-800 capitalize">{t(('area.' + area) as any)}</p>
                   <p className="text-sm text-gray-500">{works.length} {t('curriculum.works')}</p>
                 </button>
               ))}
@@ -332,12 +333,11 @@ export default function CurriculumPage() {
       <FullDetailsModal
         isOpen={fullDetailsOpen}
         onClose={() => setFullDetailsOpen(false)}
-        workName={fullDetailsWork}
+        workName={fullDetailsDisplayName || fullDetailsWork}
         guideData={fullDetailsData}
         loading={fullDetailsLoading}
       />
 
     </div>
-    </FeatureWrapper>
   );
 }

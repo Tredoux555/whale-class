@@ -277,11 +277,12 @@ export async function POST(request: NextRequest) {
     // 2. Retrieve relevant knowledge
     const knowledge = await retrieveKnowledge(question, 4);
 
-    // 3. Build prompt — conversational mode for parent chat, structured for teachers
+    // 3. Build prompt — conversational mode for both teachers and parents
     let systemPrompt: string;
     let userPrompt: string;
     let guruMode: GuruMode = 'NORMAL'; // Set by conversational prompt builder; unused in structured mode
-    const isConversational = conversational && isParentRole;
+    const isConversational = conversational === true;
+    const isTeacher = !isParentRole;
 
     if (isConversational) {
       // Fetch saved concerns + settings for conversational context
@@ -339,7 +340,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt);
+      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher);
       guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt
