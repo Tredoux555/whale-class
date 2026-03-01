@@ -61,7 +61,37 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ## CURRENT STATUS (Mar 1, 2026)
 
-### Session Work (Mar 1, 2026)
+### Session Work (Mar 1, 2026 — Late Session)
+
+**Teacher Conversational Guru — COMPLETE:**
+
+Teachers now get the same WhatsApp-style conversational chat as parents, replacing the rigid 5-section structured Q&A form. Professional colleague persona instead of nurturing parent guide.
+
+- `guru/page.tsx` — Removed structured form UI. Both roles render `GuruChatThread`. Teachers pass `isTeacher={true}`.
+- `conversational-prompt.ts` — Added `isTeacher` param to all 3 prompt builders. Teacher persona: experienced Montessori colleague, direct/practical tone, uses AMI terminology freely, references Piaget/Vygotsky directly.
+- `route.ts` — `isConversational` now true for both homeschool parents AND teachers. Passes `isTeacher: role === 'teacher'` to prompt builder.
+- `GuruChatThread.tsx` — `isTeacher` prop: skip concern picker, violet/indigo theme (vs botanical green), teacher-specific welcome message and placeholder.
+- 3 new i18n keys: `guru.guruAdvisor`, `guru.teacherWelcome`, `guru.teacherAskPlaceholder`
+
+**Guide Content Chinese Translation (Sonnet) — COMPLETE:**
+
+QuickGuideModal and FullDetailsModal now translate to Chinese when locale is zh. Uses Sonnet (NOT Haiku) per user instruction.
+
+- `app/api/montree/works/guide/route.ts` — Added `locale` query param. When `locale=zh`, translates guide JSON via Sonnet (`translateGuideToZh()`). Translates: quick_guide, materials, presentation_steps, aims, parent_description, control_of_error, why_it_matters.
+- `[childId]/page.tsx` — `openQuickGuide()` accepts `chineseName`, passes `&locale=zh` to API, sets `quickGuideDisplayName` for modal header.
+- `FocusWorksSection.tsx` — Passes `work.chineseName` through `onOpenQuickGuide` callback.
+- `curriculum/page.tsx` — `openFullDetails()` accepts `chineseName`, passes `&locale=zh` to API, sets `fullDetailsDisplayName` for modal header.
+- `CurriculumWorkList.tsx` — Passes `work.name_chinese` through `onOpenFullDetails`. **Bug fix:** was using `work.chineseName` (wrong field) → fixed to `work.name_chinese` (matches Work type).
+
+**Other i18n Fixes:**
+- Removed FeatureWrapper from curriculum, capture, guru pages (onboarding tours already hidden)
+- Fixed curriculum page area names: `.replace('_', ' ')` → `t('areas.practical_life')` etc.
+
+Modified files (11): guru/page.tsx, route.ts, conversational-prompt.ts, GuruChatThread.tsx, en.ts, zh.ts, guide/route.ts, [childId]/page.tsx, FocusWorksSection.tsx, curriculum/page.tsx, CurriculumWorkList.tsx
+
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_GURU_I18N_MAR1.md`
+
+### Session Work (Mar 1, 2026 — Earlier)
 
 **Guru Health Check Fixes (3 bugs fixed):**
 - `context-builder.ts` — Fixed `context_snapshot` not mapped in PastInteraction array (celebrations never triggered)
@@ -1914,20 +1944,18 @@ Single client: `lib/supabase-client.ts` — singleton pattern with retry logic f
 
 AI advisor for child development questions. Uses Anthropic API.
 
-**Core chat — Teachers (Sonnet, structured):**
+**Core chat — Both Teachers & Parents (Sonnet, conversational WhatsApp-style):**
+- `lib/montree/guru/conversational-prompt.ts` — persona builder with `isTeacher` flag. Teachers get professional colleague persona (violet theme, direct/practical, AMI terminology). Parents get nurturing guide persona (botanical green theme, emotional mirroring).
 - `lib/montree/guru/context-builder.ts` — builds child context
 - `lib/montree/guru/knowledge-retrieval.ts` — Montessori knowledge
-- `lib/montree/guru/prompt-builder.ts` — system prompt + homeschool addendum (structured mode)
-- `app/api/montree/guru/route.ts` — main chat endpoint (branches on `conversational` flag)
-
-**Core chat — Homeschool Parents (Sonnet, conversational WhatsApp-style):**
-- `lib/montree/guru/conversational-prompt.ts` — natural chat persona, greeting/follow-up builders
-- `app/api/montree/guru/concerns/route.ts` — GET/POST concerns saved in `montree_children.settings` JSONB
-- `components/montree/guru/GuruOnboardingPicker.tsx` — concern picker (10 concerns, max 3)
-- `components/montree/guru/GuruChatThread.tsx` — full chat UI (history, typing indicator, voice, auto-scroll)
+- `lib/montree/guru/prompt-builder.ts` — system prompt + homeschool addendum (legacy structured mode — no longer used)
+- `app/api/montree/guru/route.ts` — main chat endpoint (`isConversational` true for both teachers and homeschool parents)
+- `app/api/montree/guru/concerns/route.ts` — GET/POST concerns saved in `montree_children.settings` JSONB (parents only)
+- `components/montree/guru/GuruOnboardingPicker.tsx` — concern picker (10 concerns, max 3, parents only)
+- `components/montree/guru/GuruChatThread.tsx` — shared chat UI with `isTeacher` prop (history, typing indicator, voice, auto-scroll). Teachers skip concern picker, get violet theme.
 - `components/montree/guru/ChatBubble.tsx` — message bubble with markdown rendering
 - `components/montree/guru/ConcernPills.tsx` — concern pills display
-- Parent guru page (`guru/page.tsx`) has early return that renders `GuruChatThread` instead of structured form
+- `guru/page.tsx` — both roles render `GuruChatThread` (structured form removed)
 
 **Daily Coach (Haiku — homeschool parents only):**
 - `app/api/montree/guru/daily-plan/route.ts` — personalized daily plan, cached per child per day
@@ -1984,7 +2012,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md` | **CURRENT** — Wooden shelf UI + OpenAI TTS voice for home parents |
+| `docs/handoffs/HANDOFF_TEACHER_GURU_I18N_MAR1.md` | **CURRENT** — Teacher conversational guru + guide Chinese translation + i18n fixes |
+| `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md` | Wooden shelf UI + OpenAI TTS voice for home parents |
 | `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md` | Guru WhatsApp-style chat for parents (concern picker, conversational prompts, chat thread) |
 | `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
 | `docs/HANDOFF_DEPLOY_SEED_FEB21.md` | Production deploy, Dockerfile fix, seed 500 fix, push script |
