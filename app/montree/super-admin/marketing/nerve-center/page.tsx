@@ -452,7 +452,7 @@ export default function NerveCenterPage() {
                 <p className="text-slate-400 text-sm mt-1">One quality video becomes: TikTok (3-5 hashtags, keyword caption) → Instagram Reel (5-10 hashtags, longer caption) → YouTube Short (trending audio) → LinkedIn clip (professional angle) → Instagram Story (behind-the-scenes of making it). 35% more reach, 60% less time.</p>
               </div>
               <div className="bg-slate-700/30 rounded-lg p-4">
-                <h3 className="text-emerald-400 font-semibold text-sm">Consistency > Perfection</h3>
+                <h3 className="text-emerald-400 font-semibold text-sm">Consistency &gt; Perfection</h3>
                 <p className="text-slate-400 text-sm mt-1">Accounts that post regularly from the same time windows see 34% higher reach than sporadic posters. The algorithm rewards predictability. Pick your schedule and stick to it for at least 8 weeks before judging results.</p>
               </div>
             </div>
