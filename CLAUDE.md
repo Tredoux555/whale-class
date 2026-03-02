@@ -59,7 +59,49 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ---
 
-## CURRENT STATUS (Mar 1, 2026)
+## CURRENT STATUS (Mar 2, 2026)
+
+### Session Work (Mar 2, 2026)
+
+**Marketing Hub Overhaul — COMPLETE (3 files: 1 new, 2 modified, NOT YET PUSHED):**
+
+Cleaned up cluttered marketing hub, installed master outreach letter, and built "The Nerve Center" marketing intelligence brain.
+
+**1. Master Outreach Letter — Installed in Sales Playbook:**
+- `app/montree/super-admin/marketing/sales-playbook/page.tsx` — Complete rewrite of outreach content:
+  - All 6 personalized school emails (HD Qingdao, QAIS, Hongwen, Etonkids, MSB Beijing, Nebula) rewritten with sincere tone reflecting real story: built for own classroom, exceeded expectations, needs testing/validation, offering 1 year free
+  - Psychology tab renamed "The Honest Approach — 6 Reminders" (was "6 Psychological Principles")
+  - 5-touch sequence, objection handling, WeChat message, follow-up email all updated
+  - **Templates tab replaced with "The Letter" tab** — single master letter written by Tredoux for top 6 Montessori schools in China
+  - Schedule task language softened throughout
+
+**2. The Nerve Center — NEW Marketing Intelligence Brain:**
+- `app/montree/super-admin/marketing/nerve-center/page.tsx` — **NEW FILE** (~450 lines)
+- 4 tabs:
+  - **Algorithms** — 2026 algorithm data for TikTok, Instagram, YouTube, LinkedIn with expandable detail cards (watch time signals, hashtag strategy, engagement windows, posting frequency)
+  - **Hooks & Virality** — 6 hook formulas with Montessori-specific examples, viral psychology stats, pattern interrupt techniques
+  - **Montree Playbook** — 5 content pillars (Before/After Transformations, Guru AI Demos, "Why Montessori?" Series, Behind the Build, Parent Testimonials) + 5 growth tactics with cost/ROI data
+  - **Content Calendar** — Weekly schedule (Mon-Sun), optimal posting times by platform, batching system (4hrs/month)
+
+**3. Marketing Hub Cleanup:**
+- `app/montree/super-admin/marketing/page.tsx` — Complete rewrite from 5 cluttered sections to clean hierarchy:
+  - ⚡ INTELLIGENCE (featured, green accent): Nerve Center + Sales Playbook
+  - 📝 CONTENT & CREATIVE: Warroom, Content Factory, Creative Studio
+  - 📨 OUTREACH: Prospect HQ, Growth Engine
+  - 🌐 WEB PAGES: Landing, Links, Pitch
+  - 📖 ARCHIVE: Launch HQ, Objections, Cold Email HQ, Outreach Legacy, Full Playbook
+
+**Deploy:** NOT YET PUSHED. Run from Mac terminal:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add app/montree/super-admin/marketing/page.tsx app/montree/super-admin/marketing/sales-playbook/page.tsx app/montree/super-admin/marketing/nerve-center/page.tsx
+git commit -m "Marketing hub cleanup + Nerve Center brain + master letter"
+git push origin main
+```
+
+---
+
+## PREVIOUS STATUS (Mar 1, 2026)
 
 ### Session Work (Mar 1, 2026 — Late Session)
 
