@@ -28,6 +28,7 @@ export default function DashboardHeader() {
     // Check if voice observations feature is enabled for this school
     if (sess.school?.id) {
       montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
+        .then((res) => res.json())
         .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
           const voiceFeature = data.features?.find((f) => f.feature_key === 'voice_observations');
           setVoiceObsEnabled(voiceFeature?.enabled || false);
