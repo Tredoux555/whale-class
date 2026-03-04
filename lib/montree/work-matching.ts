@@ -125,10 +125,15 @@ export const mergeWorksWithCurriculum = (
     merged.splice(position, 0, newWork);
   }
 
-  // Recalculate display sequences, but preserve real DB sequences
-  return merged.map((w, idx) => ({
-    ...w,
-    dbSequence: w.sequence, // Preserve real DB value for API calls
-    sequence: idx + 1,      // Display-friendly index
-  }));
+  // Preserve original DB sequences — do NOT renumber
+  // Imported works get a sequence based on their insertion neighbours
+  return merged.map((w, idx) => {
+    if (w.isImported || !w.sequence) {
+      // For imported works without a real sequence, derive from neighbours
+      const prev = idx > 0 ? (merged[idx - 1].sequence || idx) : 0;
+      const next = idx < merged.length - 1 ? (merged[idx + 1].sequence || idx + 2) : prev + 1;
+      return { ...w, dbSequence: 0, sequence: Math.round((prev + next) / 2) || idx + 1 };
+    }
+    return { ...w, dbSequence: w.sequence };
+  });
 };
