@@ -1,6 +1,6 @@
 // /montree/dashboard/raz/page.tsx
 // RAZ Reading Tracker - Daily reading log with photo evidence
-// Shows all children in the class, take 2 photos per kid, toggle read/not_read/no_folder
+// Shows all children in the class, take 3 photos per kid, toggle read/not_read/no_folder/absent
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -20,19 +20,28 @@ interface RazRecord {
   id?: string;
   child_id: string;
   record_date: string;
-  status: 'read' | 'not_read' | 'no_folder';
+  status: 'read' | 'not_read' | 'no_folder' | 'absent';
   book_photo_url?: string;
   signature_photo_url?: string;
+  new_book_photo_url?: string;
   book_title?: string;
   notes?: string;
 }
 
-type StatusType = 'read' | 'not_read' | 'no_folder';
+type StatusType = 'read' | 'not_read' | 'no_folder' | 'absent';
+type PhotoType = 'book' | 'signature' | 'new_book';
 
 const STATUS_CONFIG: Record<StatusType, { label: string; emoji: string; color: string; bg: string }> = {
   read: { label: 'Read', emoji: '📖', color: '#22c55e', bg: '#dcfce7' },
   not_read: { label: 'Not Read', emoji: '❌', color: '#ef4444', bg: '#fee2e2' },
   no_folder: { label: 'No Folder', emoji: '📁', color: '#f59e0b', bg: '#fef3c7' },
+  absent: { label: 'Absent', emoji: '🚫', color: '#6b7280', bg: '#f3f4f6' },
+};
+
+const PHOTO_CONFIG: Record<PhotoType, { label: string; emoji: string; key: keyof RazRecord }> = {
+  book: { label: 'Book Read', emoji: '📚', key: 'book_photo_url' },
+  signature: { label: 'Signature', emoji: '✍️', key: 'signature_photo_url' },
+  new_book: { label: 'New Book', emoji: '🎁', key: 'new_book_photo_url' },
 };
 
 export default function RazTrackerPage() {
@@ -42,8 +51,11 @@ export default function RazTrackerPage() {
   const [records, setRecords] = useState<Record<string, RazRecord>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [uploadingFor, setUploadingFor] = useState<{ childId: string; type: 'book' | 'signature' } | null>(null);
+  const [uploadingFor, setUploadingFor] = useState<{ childId: string; type: PhotoType } | null>(null);
+  const [nextPhotoQueue, setNextPhotoQueue] = useState<{ childId: string; nextType: PhotoType | null } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const autoPromptTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // Auth check
   useEffect(() => {
@@ -55,30 +67,44 @@ export default function RazTrackerPage() {
   // Load children + records
   useEffect(() => {
     if (!session?.classroom?.id) return;
-    loadData();
+    // Abort previous in-flight fetch
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    loadData(controller.signal);
+    return () => controller.abort();
   }, [session, selectedDate]);
 
-  async function loadData() {
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (autoPromptTimeoutRef.current) {
+        clearTimeout(autoPromptTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  async function loadData(signal?: AbortSignal) {
     if (!session?.classroom?.id) return;
     setLoading(true);
     try {
-      // Load children
-      const childRes = await fetch(`/api/montree/children?classroom_id=${session.classroom.id}`);
+      // Load children + RAZ records in parallel
+      const [childRes, razRes] = await Promise.all([
+        fetch(`/api/montree/children?classroom_id=${session.classroom.id}`, { signal }),
+        fetch(`/api/montree/raz?classroom_id=${session.classroom.id}&date=${selectedDate}`, { signal }),
+      ]);
       const childData = await childRes.json();
+      const razData = await razRes.json();
       const kids = childData.children || [];
       setChildren(kids);
 
-      // Load RAZ records for this date
-      const razRes = await fetch(
-        `/api/montree/raz?classroom_id=${session.classroom.id}&date=${selectedDate}`
-      );
-      const razData = await razRes.json();
       const recordMap: Record<string, RazRecord> = {};
       (razData.records || []).forEach((r: RazRecord) => {
         recordMap[r.child_id] = r;
       });
       setRecords(recordMap);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return; // Ignore aborted fetches
       console.error('Failed to load data:', err);
       toast.error('Failed to load data');
     }
@@ -100,18 +126,37 @@ export default function RazTrackerPage() {
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && res.ok) {
         setRecords(prev => ({ ...prev, [childId]: data.record }));
         toast.success(`${children.find(c => c.id === childId)?.name}: ${STATUS_CONFIG[newStatus].label}`);
+      } else {
+        toast.error(data.error || 'Failed to update');
       }
     } catch (err) {
       toast.error('Failed to update');
     }
   }
 
-  function triggerPhotoCapture(childId: string, type: 'book' | 'signature') {
+  function triggerPhotoCapture(childId: string, type: PhotoType) {
+    // Cancel any pending auto-prompt from previous photo
+    if (autoPromptTimeoutRef.current) {
+      clearTimeout(autoPromptTimeoutRef.current);
+      autoPromptTimeoutRef.current = null;
+    }
+    // Clear queue if it's for a different child (prevents confusion)
+    if (nextPhotoQueue?.childId !== childId) {
+      setNextPhotoQueue(null);
+    }
     setUploadingFor({ childId, type });
     setTimeout(() => fileInputRef.current?.click(), 100);
+  }
+
+  // After each photo, determine the next photo to prompt for
+  function getNextPhotoType(currentType: PhotoType): PhotoType | null {
+    const sequence: PhotoType[] = ['book', 'signature', 'new_book'];
+    const currentIndex = sequence.indexOf(currentType);
+    if (currentIndex === -1 || currentIndex === sequence.length - 1) return null;
+    return sequence[currentIndex + 1];
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -135,7 +180,21 @@ export default function RazTrackerPage() {
       if (data.success) {
         setRecords(prev => ({ ...prev, [childId]: data.record }));
         const childName = children.find(c => c.id === childId)?.name;
-        toast.success(`${type === 'book' ? '📚 Book' : '✍️ Signature'} photo saved for ${childName}`);
+        const photoLabel = PHOTO_CONFIG[type].label;
+        toast.success(`${PHOTO_CONFIG[type].emoji} ${photoLabel} saved for ${childName}`);
+
+        // Queue next photo with a visual pulse
+        const nextType = getNextPhotoType(type);
+        if (nextType) {
+          setNextPhotoQueue({ childId, nextType });
+          // Auto-prompt after a brief delay
+          autoPromptTimeoutRef.current = setTimeout(() => {
+            triggerPhotoCapture(childId, nextType);
+            autoPromptTimeoutRef.current = null;
+          }, 800);
+        } else {
+          setNextPhotoQueue(null);
+        }
       } else {
         toast.error('Upload failed');
       }
@@ -144,15 +203,19 @@ export default function RazTrackerPage() {
       toast.error('Upload failed');
     }
     setUploadingFor(null);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    // Reset file input for next capture
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   }
 
-  // Stats
+  // Stats - include absent count
   const totalKids = children.length;
   const readCount = children.filter(c => records[c.id]?.status === 'read').length;
   const notReadCount = children.filter(c => records[c.id]?.status === 'not_read').length;
   const noFolderCount = children.filter(c => records[c.id]?.status === 'no_folder').length;
-  const unmarked = totalKids - readCount - notReadCount - noFolderCount;
+  const absentCount = children.filter(c => records[c.id]?.status === 'absent').length;
+  const unmarked = totalKids - readCount - notReadCount - noFolderCount - absentCount;
 
   if (loading) {
     return (
@@ -165,7 +228,7 @@ export default function RazTrackerPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#e2e8f0', padding: '16px' }}>
       <Toaster position="top-center" />
-      
+
       {/* Hidden file input for camera */}
       <input
         ref={fileInputRef}
@@ -184,7 +247,7 @@ export default function RazTrackerPage() {
             {session?.classroom?.name || 'Classroom'} &middot; {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </p>
         </div>
-        <button 
+        <button
           onClick={() => router.push('/montree/dashboard')}
           style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}
         >
@@ -222,8 +285,8 @@ export default function RazTrackerPage() {
         >Today</button>
       </div>
 
-      {/* Stats Bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 20 }}>
+      {/* Stats Bar - 5 columns now */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 20 }}>
         <div style={{ background: '#dcfce7', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#166534' }}>{readCount}</div>
           <div style={{ fontSize: 11, color: '#166534' }}>📖 Read</div>
@@ -235,6 +298,10 @@ export default function RazTrackerPage() {
         <div style={{ background: '#fef3c7', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#92400e' }}>{noFolderCount}</div>
           <div style={{ fontSize: 11, color: '#92400e' }}>📁 No Folder</div>
+        </div>
+        <div style={{ background: '#f3f4f6', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#4b5563' }}>{absentCount}</div>
+          <div style={{ fontSize: 11, color: '#4b5563' }}>🚫 Absent</div>
         </div>
         <div style={{ background: '#1e293b', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
           <div style={{ fontSize: 20, fontWeight: 700, color: '#94a3b8' }}>{unmarked}</div>
@@ -248,6 +315,8 @@ export default function RazTrackerPage() {
           const record = records[child.id];
           const status = record?.status as StatusType | undefined;
           const config = status ? STATUS_CONFIG[status] : null;
+          const isAbsent = status === 'absent';
+          const photosDisabled = isAbsent;
 
           return (
             <div
@@ -257,6 +326,7 @@ export default function RazTrackerPage() {
                 borderRadius: 14,
                 padding: 14,
                 border: config ? `2px solid ${config.color}` : '2px solid #334155',
+                opacity: isAbsent ? 0.7 : 1,
               }}
             >
               {/* Child Header Row */}
@@ -290,60 +360,64 @@ export default function RazTrackerPage() {
                 </div>
 
                 {/* Book title if entered */}
-                {record?.book_title && (
+                {record?.book_title && !isAbsent && (
                   <div style={{ fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>
                     {record.book_title}
                   </div>
                 )}
               </div>
 
-              {/* Photos Row */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                {/* Book Photo */}
-                <button
-                  onClick={() => triggerPhotoCapture(child.id, 'book')}
-                  style={{
-                    background: record?.book_photo_url ? 'transparent' : '#0f172a',
-                    border: '2px dashed #475569', borderRadius: 10,
-                    height: 90, cursor: 'pointer', overflow: 'hidden',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexDirection: 'column', gap: 4, padding: 0,
-                  }}
-                >
-                  {record?.book_photo_url ? (
-                    <img src={record.book_photo_url} alt="Book" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                  ) : (
-                    <>
-                      <span style={{ fontSize: 24 }}>📚</span>
-                      <span style={{ fontSize: 11, color: '#64748b' }}>Tap for book photo</span>
-                    </>
-                  )}
-                </button>
+              {/* Photos Row - 3 columns (hidden if absent) */}
+              {!isAbsent && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 10 }}>
+                  {(['book', 'signature', 'new_book'] as PhotoType[]).map(photoType => {
+                    const photoKey = PHOTO_CONFIG[photoType].key;
+                    const photoUrl = record?.[photoKey] as string | undefined;
+                    const isNextQueued = nextPhotoQueue?.childId === child.id && nextPhotoQueue?.nextType === photoType;
 
-                {/* Signature Photo */}
-                <button
-                  onClick={() => triggerPhotoCapture(child.id, 'signature')}
-                  style={{
-                    background: record?.signature_photo_url ? 'transparent' : '#0f172a',
-                    border: '2px dashed #475569', borderRadius: 10,
-                    height: 90, cursor: 'pointer', overflow: 'hidden',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexDirection: 'column', gap: 4, padding: 0,
-                  }}
-                >
-                  {record?.signature_photo_url ? (
-                    <img src={record.signature_photo_url} alt="Signature" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
-                  ) : (
-                    <>
-                      <span style={{ fontSize: 24 }}>✍️</span>
-                      <span style={{ fontSize: 11, color: '#64748b' }}>Tap for signature</span>
-                    </>
-                  )}
-                </button>
-              </div>
+                    return (
+                      <button
+                        key={photoType}
+                        onClick={() => {
+                          if (!photosDisabled) {
+                            triggerPhotoCapture(child.id, photoType);
+                          }
+                        }}
+                        disabled={photosDisabled}
+                        style={{
+                          background: photoUrl ? 'transparent' : '#0f172a',
+                          border: isNextQueued ? '3px solid #f59e0b' : '2px dashed #475569',
+                          borderRadius: 10,
+                          height: 90,
+                          cursor: photosDisabled ? 'default' : 'pointer',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexDirection: 'column',
+                          gap: 4,
+                          padding: 0,
+                          position: 'relative',
+                          animation: isNextQueued ? 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
+                          opacity: photosDisabled ? 0.5 : 1,
+                        }}
+                      >
+                        {photoUrl ? (
+                          <img src={photoUrl} alt={PHOTO_CONFIG[photoType].label} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                        ) : (
+                          <>
+                            <span style={{ fontSize: 24 }}>{PHOTO_CONFIG[photoType].emoji}</span>
+                            <span style={{ fontSize: 11, color: '#64748b', textAlign: 'center', padding: '0 4px' }}>{PHOTO_CONFIG[photoType].label}</span>
+                          </>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
-              {/* Status Toggle Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              {/* Status Toggle Buttons - 4 now */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
                 {(Object.entries(STATUS_CONFIG) as [StatusType, typeof STATUS_CONFIG[StatusType]][]).map(([key, cfg]) => (
                   <button
                     key={key}
@@ -378,6 +452,18 @@ export default function RazTrackerPage() {
 
       {/* Bottom padding for mobile */}
       <div style={{ height: 80 }} />
+
+      {/* CSS for pulse animation */}
+      <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.7;
+          }
+        }
+      `}</style>
     </div>
   );
 }
