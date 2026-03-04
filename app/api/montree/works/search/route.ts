@@ -112,14 +112,14 @@ export async function GET(request: NextRequest) {
             },
             status: 'not_started'
           }));
-          
+
           if (searchQuery) {
-            works = works.filter(w => 
+            works = works.filter(w =>
               w.name.toLowerCase().includes(searchQuery) ||
               w.chinese_name?.toLowerCase().includes(searchQuery)
             );
           }
-          
+
           return NextResponse.json({ works, total: works.length, source: 'classroom' });
         }
       }
@@ -159,7 +159,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (searchQuery) {
-      allWorks = allWorks.filter(w => 
+      allWorks = allWorks.filter(w =>
         w.name.toLowerCase().includes(searchQuery) ||
         w.chinese_name?.toLowerCase().includes(searchQuery)
       );
