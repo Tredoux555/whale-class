@@ -18,6 +18,7 @@ export default function DashboardHeader() {
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
+  const [razTrackerEnabled, setRazTrackerEnabled] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
@@ -30,6 +31,8 @@ export default function DashboardHeader() {
         .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
           const voiceFeature = data.features?.find((f) => f.feature_key === 'voice_observations');
           setVoiceObsEnabled(voiceFeature?.enabled || false);
+          const razFeature = data.features?.find((f) => f.feature_key === 'raz_reading_tracker');
+          setRazTrackerEnabled(razFeature?.enabled || false);
         })
         .catch(() => {});
     }
@@ -73,6 +76,16 @@ export default function DashboardHeader() {
           >
             🧠
           </Link>
+          {razTrackerEnabled && (
+            <Link
+              href="/montree/dashboard/raz"
+              data-guide="nav-raz"
+              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+              title="RAZ Reading Tracker"
+            >
+              📖
+            </Link>
+          )}
           {voiceObsEnabled && (
             <Link
               href="/montree/dashboard/voice-observation"
