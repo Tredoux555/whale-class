@@ -60,7 +60,8 @@ VALUES
   ('weekly_plan_upload', 'Weekly Plan Upload', 'Upload Excel/Word weekly plans to auto-populate student work assignments.', '📋', 'planning', false, false),
   ('daily_reports', 'Daily Reports', 'Generate and send daily reports to parents.', '📝', 'reporting', false, true),
   ('parent_portal', 'Parent Portal', 'Allow parents to view their child''s progress online.', '👨‍👩‍👧', 'communication', false, true),
-  ('games', 'Educational Games', 'Access to Montessori-aligned digital games.', '🎮', 'learning', false, true)
+  ('games', 'Educational Games', 'Access to Montessori-aligned digital games.', '🎮', 'learning', false, true),
+  ('voice_observations', 'Voice Observations', 'AI-powered hands-free classroom observation system. Teachers record during work cycles and the system automatically transcribes, identifies students, matches works, and proposes progress updates.', '🎙️', 'ai_tools', true, false)
 ON CONFLICT (feature_key) DO NOTHING;
 
 -- ============================================================

@@ -14,7 +14,7 @@ import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
 import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia, UploadProgress } from '@/lib/montree/media/types';
-import FeatureWrapper from '@/components/montree/onboarding/FeatureWrapper';
+
 
 
 // ============================================
@@ -478,10 +478,8 @@ function CaptureContent() {
 
 export default function CapturePage() {
   return (
-    <FeatureWrapper featureModule="photo_capture" autoStart>
       <Suspense fallback={<CaptureLoading />}>
         <CaptureContent />
       </Suspense>
-    </FeatureWrapper>
   );
 }
