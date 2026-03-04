@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
+import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
 
@@ -16,11 +17,22 @@ export default function DashboardHeader() {
   const router = useRouter();
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
+  const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
 
   useEffect(() => {
     const sess = getSession();
     if (!sess) return;
     setSession(sess);
+
+    // Check if voice observations feature is enabled for this school
+    if (sess.school?.id) {
+      montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
+        .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
+          const voiceFeature = data.features?.find((f) => f.feature_key === 'voice_observations');
+          setVoiceObsEnabled(voiceFeature?.enabled || false);
+        })
+        .catch(() => {});
+    }
   }, []);
 
   // Don't render until we have a session (avoid flash)
@@ -61,7 +73,7 @@ export default function DashboardHeader() {
           >
             🧠
           </Link>
-          {!isHomeschoolParent(session) && (
+          {voiceObsEnabled && (
             <Link
               href="/montree/dashboard/voice-observation"
               data-guide="nav-voice-obs"
