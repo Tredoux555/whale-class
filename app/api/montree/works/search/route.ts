@@ -3,6 +3,24 @@ import { createClient } from '@supabase/supabase-js';
 import { CURRICULUM, getAllWorks } from '@/lib/montree/curriculum-data';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
+// Canonical area key aliases — prevents silent "return all works" when DB has non-standard keys
+const AREA_KEY_ALIASES: Record<string, string> = {
+  math: 'mathematics',
+  maths: 'mathematics',
+  science_culture: 'cultural',
+  science: 'cultural',
+  culture: 'cultural',
+  practical: 'practical_life',
+  pl: 'practical_life',
+  sensory: 'sensorial',
+};
+const CANONICAL_AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+
+function normalizeAreaKey(raw: string): string {
+  const key = raw.toLowerCase().replace('-', '_');
+  return AREA_KEY_ALIASES[key] || key;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -24,7 +42,9 @@ export async function GET(request: NextRequest) {
         // First, get the area_id if filtering by area
         let areaId: string | null = null;
         if (areaFilter && areaFilter !== 'all') {
-          const normalizedArea = areaFilter.toLowerCase().replace('-', '_');
+          const normalizedArea = normalizeAreaKey(areaFilter);
+
+          // Try canonical key first, then fall back to trying aliases in the DB
           const { data: areaData } = await supabase
             .from('montree_classroom_curriculum_areas')
             .select('id')
@@ -32,6 +52,27 @@ export async function GET(request: NextRequest) {
             .eq('area_key', normalizedArea)
             .single();
           areaId = areaData?.id || null;
+
+          // If canonical key didn't match, also try the raw key (handles old DB data)
+          if (!areaId) {
+            const rawKey = areaFilter.toLowerCase().replace('-', '_');
+            if (rawKey !== normalizedArea) {
+              const { data: fallbackData } = await supabase
+                .from('montree_classroom_curriculum_areas')
+                .select('id')
+                .eq('classroom_id', classroomId)
+                .eq('area_key', rawKey)
+                .single();
+              areaId = fallbackData?.id || null;
+            }
+          }
+
+          // CRITICAL: If area filter was requested but no matching area found,
+          // return empty results — NEVER silently return all works
+          if (!areaId) {
+            console.error(`[works/search] Area key not found for classroom ${classroomId}: tried "${normalizedArea}" and "${areaFilter}"`);
+            return NextResponse.json({ works: [], total: 0, source: 'classroom', warning: `Area "${areaFilter}" not found in classroom curriculum` });
+          }
         }
 
         let query = supabase
@@ -110,8 +151,11 @@ export async function GET(request: NextRequest) {
     });
 
     if (areaFilter && areaFilter !== 'all') {
-      const normalizedFilter = areaFilter.toLowerCase().replace('-', '_');
-      allWorks = allWorks.filter(w => w.area.area_key.toLowerCase().includes(normalizedFilter));
+      const normalizedFilter = normalizeAreaKey(areaFilter);
+      allWorks = allWorks.filter(w => {
+        const workArea = normalizeAreaKey(w.area.area_key);
+        return workArea === normalizedFilter;
+      });
     }
 
     if (searchQuery) {
