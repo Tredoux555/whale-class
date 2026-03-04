@@ -1,13 +1,20 @@
 // /api/montree/raz/route.ts
 // RAZ Reading Tracker API
-// Handles daily reading records: 2 photos per kid + read/not_read/no_folder toggle
+// Handles daily reading records: 3 photos per kid (book, signature, new book) + read/not_read/no_folder/absent toggle
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // GET - Get RAZ records for a classroom on a given date
 export async function GET(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (!auth.valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id');
@@ -63,6 +70,11 @@ export async function GET(request: NextRequest) {
 // POST - Create or update a RAZ reading record
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (!auth.valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const supabase = getSupabase();
     const body = await request.json();
     const { child_id, classroom_id, date, status, book_title, notes, recorded_by, recorded_by_id } = body;
@@ -74,7 +86,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Verify child belongs to this school
+    const childCheck = await verifyChildBelongsToSchool(child_id, auth.schoolId!);
+    if (!childCheck) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
     const recordDate = date || new Date().toISOString().split('T')[0];
+
+    // Validate status
+    const validStatuses = ['read', 'not_read', 'no_folder', 'absent'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from('raz_reading_records')
@@ -114,15 +141,38 @@ export async function POST(request: NextRequest) {
 // PATCH - Update photo URLs or status on existing record
 export async function PATCH(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (!auth.valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+
     const supabase = getSupabase();
     const body = await request.json();
-    const { record_id, child_id, date, status, book_photo_url, signature_photo_url, book_title, notes } = body;
+    const { record_id, child_id, date, status, book_photo_url, signature_photo_url, new_book_photo_url, book_title, notes } = body;
+
+    // Validate status if provided
+    const validStatuses = ['read', 'not_read', 'no_folder', 'absent'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Verify child ownership if child_id provided
+    if (child_id) {
+      const childCheck = await verifyChildBelongsToSchool(child_id, auth.schoolId!);
+      if (!childCheck) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
+    }
 
     // Can update by record_id OR by child_id + date
     const updateData: Record<string, any> = {};
     if (status !== undefined) updateData.status = status;
     if (book_photo_url !== undefined) updateData.book_photo_url = book_photo_url;
     if (signature_photo_url !== undefined) updateData.signature_photo_url = signature_photo_url;
+    if (new_book_photo_url !== undefined) updateData.new_book_photo_url = new_book_photo_url;
     if (book_title !== undefined) updateData.book_title = book_title;
     if (notes !== undefined) updateData.notes = notes;
 
