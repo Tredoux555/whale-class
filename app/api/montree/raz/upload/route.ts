@@ -11,9 +11,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
-    if (!auth.valid) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
     const formData = await request.formData();

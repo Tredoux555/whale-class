@@ -11,9 +11,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
-    if (!auth.valid) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
@@ -71,9 +69,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
-    if (!auth.valid) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
     const body = await request.json();
@@ -142,9 +138,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
-    if (!auth.valid) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
     const body = await request.json();
