@@ -11,6 +11,7 @@ import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
+import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
@@ -485,12 +486,7 @@ export default function WeekPage() {
   };
 
   if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 text-center">
-        <div className="animate-pulse text-3xl mb-2">📋</div>
-        <p className="text-gray-500">{t('common.loading')}</p>
-      </div>
-    );
+    return <WeekViewSkeleton />;
   }
 
   return (

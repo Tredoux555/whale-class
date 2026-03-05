@@ -8,6 +8,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
+import { compressImage } from '@/lib/montree/cache';
+import { RAZSkeleton } from '@/components/montree/Skeletons';
 
 interface Child {
   id: string;
@@ -244,7 +246,7 @@ export default function RazTrackerPage() {
       return;
     }
 
-    const file = e.target.files[0];
+    const rawFile = e.target.files[0];
     const { childId, childName, step, oneShot } = flow;
     const photoType = PHOTO_SEQUENCE[step];
     const date = dateRef.current;
@@ -261,6 +263,8 @@ export default function RazTrackerPage() {
       setUploading(prev => new Set(prev).add(uploadKey));
     }
 
+    // Compress image client-side (5MB phone photo → ~150KB) then upload
+    compressImage(rawFile, 1200, 0.8).then(file => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('childId', childId);
@@ -307,6 +311,7 @@ export default function RazTrackerPage() {
           });
         }
       });
+    }); // end compressImage
 
     // Quick feedback
     toast.success(
@@ -337,11 +342,7 @@ export default function RazTrackerPage() {
   const unmarked = totalKids - readCount - notReadCount - noFolderCount - absentCount;
 
   if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a' }}>
-        <div style={{ color: '#94a3b8', fontSize: 18 }}>Loading RAZ Tracker...</div>
-      </div>
-    );
+    return <RAZSkeleton />;
   }
 
   return (
