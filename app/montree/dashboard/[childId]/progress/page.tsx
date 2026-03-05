@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 
@@ -220,12 +221,7 @@ export default function ProgressPage() {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 text-center">
-        <div className="animate-bounce text-3xl mb-2">📊</div>
-        <p className="text-gray-500">{t('progress.loadingProgress')}</p>
-      </div>
-    );
+    return <ProgressSkeleton />;
   }
 
   return (

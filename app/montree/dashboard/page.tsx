@@ -9,6 +9,8 @@ import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montr
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
+import { useMontreeData } from '@/lib/montree/cache';
+import { DashboardSkeleton } from '@/components/montree/Skeletons';
 import WelcomeModal from '@/components/montree/WelcomeModal';
 import GuruDashboardCards from '@/components/montree/guru/GuruDashboardCards';
 import ConcernCardsGrid from '@/components/montree/guru/ConcernCardsGrid';
@@ -29,80 +31,76 @@ export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
-  const [session, setSession] = useState<MontreeSession | null>(null);
-  const [children, setChildren] = useState<Child[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<MontreeSession | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return getSession();
+  });
   const [showWelcome, setShowWelcome] = useState(false);
   const [showDashboardGuide, setShowDashboardGuide] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [guruFirstView, setGuruFirstView] = useState(false);
 
+  // SWR-cached children fetch — instant on revisit, background refresh if stale
+  const childrenUrl = session?.classroom?.id
+    ? `/api/montree/children?classroom_id=${session.classroom.id}`
+    : null;
+  const { data: childrenData, loading, error: childrenError } = useMontreeData<{ children: Child[] }>(childrenUrl);
+  const children = childrenData?.children || [];
+
   useEffect(() => {
-    const sess = getSession();
-    if (!sess) {
+    if (!session) {
       router.push('/montree/login');
       return;
     }
-    setSession(sess);
 
     // Show welcome modal only once per device (localStorage) AND only if tutorial not completed
-    if (!sess.teacher.has_completed_tutorial && !localStorage.getItem('montree_welcome_done')) {
+    if (!session.teacher.has_completed_tutorial && !localStorage.getItem('montree_welcome_done')) {
       setShowWelcome(true);
     }
-  }, [router]);
+  }, [router, session]);
 
+  // Extract searchParams value once (avoids object reference in deps)
+  const justOnboarded = searchParams.get('onboarded') === '1';
+
+  // Handle homeschool redirect + guide triggers
   useEffect(() => {
-    if (!session?.classroom?.id) {
-      setLoading(false);
+    if (loading || children.length === 0) return;
+
+    // Redirect home parents to the new Portal + Shelf experience
+    if (session && isHomeschoolParent(session)) {
+      router.replace(`/montree/home/${children[0].id}`);
       return;
     }
 
-    fetch(`/api/montree/children?classroom_id=${session.classroom.id}`)
-      .then(r => r.json())
-      .then(data => {
-        const kids = data.children || [];
+    // Auto-select first child for teachers
+    if (!selectedChildId) {
+      setSelectedChildId(children[0].id);
+    }
 
-        // Redirect home parents to the new Portal + Shelf experience
-        if (isHomeschoolParent(session)) {
-          if (kids.length > 0) {
-            router.replace(`/montree/home/${kids[0].id}`);
-            return;
-          } else {
-            router.replace('/montree/home/setup');
-            return;
-          }
-        }
+    // Show dashboard guide once — on first onboard or first visit with children
+    const guideDone = !!localStorage.getItem('montree_guide_dashboard_done');
+    if (!guideDone && (justOnboarded || !session?.teacher?.has_completed_tutorial)) {
+      setShowDashboardGuide(true);
+      if (justOnboarded) {
+        window.history.replaceState({}, '', '/montree/dashboard');
+      }
+    }
+  }, [loading, children, session, justOnboarded]);
 
-        setChildren(kids);
-        // Auto-select first child for teachers
-        if (kids.length > 0 && !selectedChildId) {
-          setSelectedChildId(kids[0].id);
-        }
-        setLoading(false);
-        // Show dashboard guide once — on first onboard or first visit with children
-        const justOnboarded = searchParams.get('onboarded') === '1';
-        const guideDone = !!localStorage.getItem('montree_guide_dashboard_done');
-        if (kids.length > 0 && !guideDone && (justOnboarded || !session?.teacher?.has_completed_tutorial)) {
-          setShowDashboardGuide(true);
-          if (justOnboarded) {
-            window.history.replaceState({}, '', '/montree/dashboard');
-          }
-        }
-      })
-      .catch(() => {
-        toast.error(t('dashboard.failedToLoad'));
-        setLoading(false);
-      });
-  }, [session?.classroom?.id, searchParams]);
+  // Show error toast
+  useEffect(() => {
+    if (childrenError) toast.error(t('dashboard.failedToLoad'));
+  }, [childrenError]);
 
   const isParent = session ? isHomeschoolParent(session) : false;
 
   if (!session || loading) {
-    return (
-      <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-emerald-50 to-teal-50'} flex items-center justify-center`}>
-        <div className="animate-bounce text-5xl">{isParent ? '🌿' : '🌳'}</div>
-      </div>
-    );
+    return <DashboardSkeleton />;
+  }
+
+  // Homeschool parents get redirected — show skeleton while redirect fires
+  if (isParent && children.length > 0) {
+    return <DashboardSkeleton />;
   }
 
   // Guru-first full-screen view for home parents
