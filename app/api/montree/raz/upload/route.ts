@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Upload to Supabase Storage
     const fileBuffer = await file.arrayBuffer();
     const { error: uploadError } = await supabase.storage
-      .from('child-photos')
+      .from('montree-media')
       .upload(storagePath, fileBuffer, {
         contentType: file.type || 'image/jpeg',
         upsert: false
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Get public URL
     const { data: urlData } = supabase.storage
-      .from('child-photos')
+      .from('montree-media')
       .getPublicUrl(storagePath);
 
     const photoUrl = urlData.publicUrl;
