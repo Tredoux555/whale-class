@@ -31,7 +31,8 @@ export default function VoiceObservationProgress({ sessionId, onComplete }: Prop
   useEffect(() => {
     const poll = async () => {
       try {
-        const data = await montreeApi(`/api/montree/voice-observation/${sessionId}/status`);
+        const resp = await montreeApi(`/api/montree/voice-observation/${sessionId}/status`);
+        const data = await resp.json();
         if (!data.success) {
           setError(data.error);
           return;
