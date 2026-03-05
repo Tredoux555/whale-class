@@ -55,7 +55,8 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
   // Load review data
   const loadReview = useCallback(async () => {
     try {
-      const data = await montreeApi(`/api/montree/voice-observation/${sessionId}/review`);
+      const resp = await montreeApi(`/api/montree/voice-observation/${sessionId}/review`);
+      const data = await resp.json();
       if (data.success) {
         setSessionInfo(data.session);
         setExtractions(data.extractions || []);
@@ -73,10 +74,11 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
   // Single extraction action
   const handleAction = useCallback(async (extractionId: string, action: string, extra?: any) => {
     try {
-      const data = await montreeApi(`/api/montree/voice-observation/extraction/${extractionId}`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/extraction/${extractionId}`, {
         method: 'PATCH',
         body: JSON.stringify({ action, ...extra }),
       });
+      const data = await resp.json();
       if (data.success) {
         await loadReview();
       } else {
@@ -93,10 +95,11 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
       // Use any extraction ID as the route param (it's ignored for batch)
       const firstExt = extractions[0];
       if (!firstExt) return;
-      const data = await montreeApi(`/api/montree/voice-observation/extraction/${firstExt.id}`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/extraction/${firstExt.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ action: 'approve_high_confidence', sessionId, minConfidence: 0.9 }),
       });
+      const data = await resp.json();
       if (data.success) {
         toast.success(`${data.updated} high-confidence observations approved`);
         await loadReview();
@@ -112,10 +115,11 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
     if (pendingIds.length === 0) return;
     try {
       const firstExt = extractions[0];
-      const data = await montreeApi(`/api/montree/voice-observation/extraction/${firstExt.id}`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/extraction/${firstExt.id}`, {
         method: 'PATCH',
         body: JSON.stringify({ action: 'batch_approve', extractionIds: pendingIds }),
       });
+      const data = await resp.json();
       if (data.success) {
         toast.success(`${data.updated} observations approved`);
         await loadReview();
@@ -134,9 +138,10 @@ export default function VoiceObservationReview({ sessionId, onCommitted }: Props
     }
     setCommitting(true);
     try {
-      const data = await montreeApi(`/api/montree/voice-observation/${sessionId}/commit`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/${sessionId}/commit`, {
         method: 'POST',
       });
+      const data = await resp.json();
       if (data.success) {
         onCommitted(data.committedCount);
       } else {

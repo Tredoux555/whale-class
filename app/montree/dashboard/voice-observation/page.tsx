@@ -51,6 +51,7 @@ export default function VoiceObservationPage() {
 
     // Check feature toggle
     montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
+      .then(res => res.json())
       .then(data => {
         const voiceFeature = data.features?.find((f: any) => f.feature_key === 'voice_observations');
         setFeatureEnabled(voiceFeature?.enabled || false);
@@ -59,6 +60,7 @@ export default function VoiceObservationPage() {
 
     // Load history
     montreeApi('/api/montree/voice-observation/history?limit=10')
+      .then(res => res.json())
       .then(data => {
         setHistory(data.sessions || []);
       })
@@ -70,10 +72,11 @@ export default function VoiceObservationPage() {
   // Start recording
   const handleStart = useCallback(async (language: string) => {
     try {
-      const data = await montreeApi('/api/montree/voice-observation/start', {
+      const resp = await montreeApi('/api/montree/voice-observation/start', {
         method: 'POST',
         body: JSON.stringify({ language }),
       });
+      const data = await resp.json();
       if (data.success) {
         setActiveSession({ id: data.sessionId, sessionDate: data.sessionDate });
         setPageState('recording');
@@ -89,9 +92,10 @@ export default function VoiceObservationPage() {
   const handlePause = useCallback(async () => {
     if (!activeSession) return;
     try {
-      const data = await montreeApi(`/api/montree/voice-observation/${activeSession.id}/pause`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/${activeSession.id}/pause`, {
         method: 'POST',
       });
+      const data = await resp.json();
       if (data.success) {
         setPageState(data.status === 'paused' ? 'paused' : 'recording');
       }
@@ -104,10 +108,11 @@ export default function VoiceObservationPage() {
   const handleEnd = useCallback(async (durationSeconds: number) => {
     if (!activeSession) return;
     try {
-      const data = await montreeApi(`/api/montree/voice-observation/${activeSession.id}/end`, {
+      const resp = await montreeApi(`/api/montree/voice-observation/${activeSession.id}/end`, {
         method: 'POST',
         body: JSON.stringify({ duration_seconds: durationSeconds }),
       });
+      const data = await resp.json();
       if (data.success) {
         setPageState('processing');
       } else {
@@ -129,6 +134,7 @@ export default function VoiceObservationPage() {
     toast.success(`${committedCount} observations committed to student records!`);
     // Refresh history
     montreeApi('/api/montree/voice-observation/history?limit=10')
+      .then(res => res.json())
       .then(data => setHistory(data.sessions || []))
       .catch(() => {});
   }, []);
