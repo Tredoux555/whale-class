@@ -1257,10 +1257,6 @@ export const zh = {
   'placeholder.photoCaption': '添加关于此照片的标题或笔记...',
   'placeholder.addTag': '添加标签...',
 
-  // Accessibility
-  'a11y.giveFeedback': '提供反馈',
-  'a11y.closeDetails': '关闭工作详情',
-
   // Phase 10 — Feedback
   'feedback.title': '快速反馈',
   'feedback.success': '感谢您的反馈！',

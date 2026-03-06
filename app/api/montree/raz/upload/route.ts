@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     // Verify child belongs to school
     const childCheck = await verifyChildBelongsToSchool(childId, auth.schoolId!);
-    if (!childCheck) {
+    if (!childCheck.allowed) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 

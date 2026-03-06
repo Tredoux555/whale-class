@@ -217,14 +217,14 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
               ) : connectionError ? (
                 <div className="text-center py-12">
                   <span className="text-4xl block mb-3">⚠️</span>
-                  <p className="text-slate-400 text-sm">{t('inbox.connection_error')}</p>
-                  <p className="text-slate-500 text-xs mt-1">{t('inbox.try_again_later')}</p>
+                  <p className="text-slate-400 text-sm">{t('inbox.connectionError')}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('inbox.tryAgainLater')}</p>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-12">
                   <span className="text-4xl block mb-3">👋</span>
-                  <p className="text-slate-400 text-sm">{t('inbox.no_messages')}</p>
-                  <p className="text-slate-500 text-xs mt-1">{t('inbox.send_message_prompt')}</p>
+                  <p className="text-slate-400 text-sm">{t('inbox.noMessages')}</p>
+                  <p className="text-slate-500 text-xs mt-1">{t('inbox.sendMessagePrompt')}</p>
                 </div>
               ) : (
                 messages.map((msg) => (
@@ -261,7 +261,7 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                  placeholder={t('inbox.message_placeholder')}
+                  placeholder={t('inbox.messagePlaceholder')}
                   className="flex-1 p-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
                   autoFocus
                 />
