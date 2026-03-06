@@ -1,8 +1,8 @@
 // lib/montree/voice-notes/extraction.ts
 // Core AI extraction for teacher voice notes
-// Uses Haiku tool_use to extract structured observation data from transcribed voice notes
+// Uses Sonnet tool_use to extract structured observation data from transcribed voice notes
 
-import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { matchStudentName, loadAliases } from '@/lib/montree/voice/student-matcher';
 import { fuzzyScore } from '@/lib/montree/work-matching';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
@@ -217,10 +217,10 @@ export async function extractFromVoiceNote(
   // Build system prompt
   const systemPrompt = buildExtractionPrompt(children, curriculum, language);
 
-  // Call Haiku with tool_use
+  // Call Sonnet with tool_use for rock-solid extraction
   try {
     const response = await anthropic.messages.create({
-      model: HAIKU_MODEL,
+      model: AI_MODEL,
       max_tokens: 1024,
       system: systemPrompt,
       tools: [getVoiceNoteToolDefinition()],
