@@ -19,7 +19,7 @@ import { processTeacherConversation } from '@/lib/montree/guru/post-conversation
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
 const MAX_TOOL_ROUNDS = 3;
-const API_TIMEOUT_MS = 25_000; // 25s timeout per API call (under Vercel/Railway 30s limit)
+const API_TIMEOUT_MS = 55_000; // 55s timeout per API call (Railway allows 5min; 25s was too short for tool_use rounds)
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
