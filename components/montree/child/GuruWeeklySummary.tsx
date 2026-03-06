@@ -69,7 +69,7 @@ export default function GuruWeeklySummary({
   const [adviceExpanded, setAdviceExpanded] = useState(false);
 
   // Show nothing if we have no data at all
-  if (!summary && !thisWeek && !nextWeek && !oneLiner) return null;
+  if (!summary && !thisWeek && !nextWeek && !oneLiner && !advice) return null;
 
   const formatDate = (dateStr: string) => {
     try {
@@ -116,7 +116,7 @@ export default function GuruWeeklySummary({
   };
 
   // If we have the new fields, show the enhanced view
-  const hasNewFormat = thisWeek || nextWeek || oneLiner;
+  const hasNewFormat = thisWeek || nextWeek || oneLiner || advice;
 
   return (
     <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-4 mb-4">
@@ -215,7 +215,7 @@ export default function GuruWeeklySummary({
                     {advice}
                   </div>
                   <div className="mt-2 flex justify-end">
-                    <CopyButton text={advice} label="Advice" />
+                    <CopyButton text={advice || ''} label="Advice" />
                   </div>
                 </div>
               )}
