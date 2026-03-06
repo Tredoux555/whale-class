@@ -15,6 +15,7 @@ import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain';
+import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
 const MAX_TOOL_ROUNDS = 3;
@@ -611,6 +612,25 @@ export async function POST(request: NextRequest) {
       // Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
       // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
+      // Post-conversation processing for teachers: extract summary + apply work recs
+      // Fire-and-forget — never blocks the response
+      if (isTeacher && !isGreetingTrigger && !saveError) {
+        processTeacherConversation({
+          childId: child_id,
+          childName: childContext.name || 'Unknown',
+          question,
+          response: responseText,
+          currentWorks: (childContext.focus_works || []).map(fw => ({
+            area: fw.area,
+            work_name: fw.work_name || '',
+            status: 'assigned',
+          })),
+          interactionId: saved?.id,
+        }).catch(err =>
+          console.error('[Guru] Post-conversation processing error:', err instanceof Error ? err.message : String(err))
+        );
+      }
+
       // Actions are internal (saved in context_snapshot) — never exposed to the parent
       return NextResponse.json({
         success: true,
@@ -701,7 +721,25 @@ export async function POST(request: NextRequest) {
     // 7. Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
     // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
-    // 8. Return response
+    // 8. Post-conversation processing for structured teacher mode
+    if (!saveError) {
+      processTeacherConversation({
+        childId: child_id,
+        childName: childContext.name || 'Unknown',
+        question,
+        response: parsed.insight || responseText,
+        currentWorks: (childContext.focus_works || []).map(fw => ({
+          area: fw.area,
+          work_name: fw.work_name || '',
+          status: 'assigned',
+        })),
+        interactionId: saved?.id,
+      }).catch(err =>
+        console.error('[Guru] Post-conversation processing error (structured):', err instanceof Error ? err.message : String(err))
+      );
+    }
+
+    // 9. Return response
     return NextResponse.json({
       success: true,
       insight: parsed.insight,

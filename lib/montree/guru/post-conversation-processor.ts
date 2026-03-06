@@ -92,7 +92,7 @@ Extract these items for the teacher's weekly admin report (all in third person a
 Respond in JSON only:
 {
   "this_week": "...",
-  "next_week": "${childName} did ... this week, next week ... will ...",
+  "next_week": "...",
   "one_liner": "${childName} did ... this week, next week ... will ...",
   "advice": "...(1-2 paragraphs of deep developmental advice)...",
   "summary": "...(~30 words combined)...",
