@@ -1,7 +1,7 @@
 // lib/montree/guru/post-conversation-processor.ts
 // Post-conversation processor: after a teacher asks the Guru about a child,
-// a cheap Haiku call extracts a 30-word summary + work recommendations.
-// Summary is saved to child settings; work changes are applied automatically.
+// a cheap Haiku call extracts weekly admin items (this_week, next_week, one_liner,
+// advice, summary) + work recommendations. Saved to child settings; work changes applied automatically.
 // This runs fire-and-forget — never blocks the main Guru response.
 
 import { getSupabase } from '@/lib/supabase-client';
@@ -137,7 +137,7 @@ JSON:`;
 
     const supabase = getSupabase();
 
-    // 1. Save summary + 3 copy-paste items to child settings
+    // 1. Save weekly admin items to child settings
     await updateChildSettings(childId, {
       guru_weekly_summary: extraction.summary.slice(0, 300), // Safety cap
       guru_weekly_this_week: (extraction.this_week || '').slice(0, 300),

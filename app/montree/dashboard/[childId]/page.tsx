@@ -589,7 +589,7 @@ export default function WeekPage() {
         )}
       </div>
 
-      {/* Guru Weekly Admin — 3 copy-paste items (this week / next week / one-liner) */}
+      {/* Guru Weekly Admin — copy-paste items + expandable advice */}
       {!isHomeschoolParent(session) && (
         <GuruWeeklySummary
           summary={guruSummary}
