@@ -19,6 +19,7 @@ import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
 import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import GuruChatThread from '@/components/montree/guru/GuruChatThread';
+import WeeklyAdminCard from '@/components/montree/voice-notes/WeeklyAdminCard';
 
 
 interface Child {
@@ -252,6 +253,13 @@ export default function DashboardPage() {
           />
         );
       })()}
+
+      {/* Weekly Admin Card — teachers only */}
+      {!isParent && session?.classroom?.id && children.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 pt-4">
+          <WeeklyAdminCard classroomId={session.classroom.id} />
+        </div>
+      )}
 
       {/* Student Grid — teachers always see this; home parents only see empty state (add first child) */}
       <main className={`max-w-6xl mx-auto px-4 py-8 ${isParent && children.length > 0 ? 'hidden' : ''}`}>
