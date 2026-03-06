@@ -232,33 +232,36 @@ export default function WeekPage() {
     };
   }, [childId]);
 
-  // PRE-CACHE curriculum for all areas (runs once on mount)
+  // PRE-CACHE curriculum for all areas — SINGLE fetch, split client-side
+  // PERF: Was 5 separate API calls (one per area). Now 1 call returning all 329 works.
   useEffect(() => {
     const classroomId = session?.classroom?.id;
-    const areas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    if (Object.keys(curriculum).length >= 5) return; // Already cached all areas
 
-    // Load all areas in parallel in the background
-    areas.forEach(async (areaKey) => {
-      if (curriculum[areaKey]) return; // Skip if already cached
-      try {
-        const url = classroomId
-          ? `/api/montree/works/search?area=${encodeURIComponent(areaKey)}&classroom_id=${classroomId}`
-          : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const works = (data.works || []).map((w: Record<string, unknown>, idx: number) => ({
-          id: String(w.id),
-          name: String(w.name),
-          name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
-          status: 'not_started',
-          sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
-          dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
-        }));
-        setCurriculum(prev => ({ ...prev, [areaKey]: works }));
-      } catch (err) {
-        console.error(`Failed to pre-cache ${areaKey}:`, err);
-      }
-    });
+    const url = classroomId
+      ? `/api/montree/works/search?classroom_id=${classroomId}`
+      : `/api/montree/works/search`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        const allCurrWorks = data.works || [];
+        const byArea: Record<string, CurriculumWork[]> = {};
+        for (const w of allCurrWorks) {
+          const areaKey = w.area?.area_key || 'unknown';
+          if (!byArea[areaKey]) byArea[areaKey] = [];
+          byArea[areaKey].push({
+            id: String(w.id),
+            name: String(w.name),
+            name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+            status: 'not_started',
+            sequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
+            dbSequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
+          } as CurriculumWork & { status: string; sequence: number; dbSequence: number });
+        }
+        setCurriculum(byArea);
+      })
+      .catch(() => {});
   }, [session?.classroom?.id]); // Only re-run if classroom changes
 
   // Open wheel picker for a specific area - INSTANT with cached data
