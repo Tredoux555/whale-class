@@ -53,13 +53,132 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 **Remaining (wiring only — keys exist):** Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
 **Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_CLEANUP_MAR1.md`
 
-### Curriculum Inconsistency Resolution (Priority #8 — Deferred)
+### ~~Curriculum Inconsistency Resolution~~ — ✅ MOSTLY DONE (Priority #8)
 
-**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed.
+**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed. Area key aliases + empty-result safety added to search API (Mar 4). Whale Class reseeded to 329 works. WorkWheelPicker now preserves DB sequence order.
 
 ---
 
-## CURRENT STATUS (Mar 2, 2026)
+## CURRENT STATUS (Mar 5, 2026)
+
+### Session Work (Mar 5, 2026)
+
+**RAZ Reading Tracker Redesign — COMPLETE + DEPLOYED (1 new/rewritten file, 2 modified, ~600 lines):**
+
+Complete UI redesign of `/montree/dashboard/raz` from table-based layout to status-first rapid-fire camera flow. 3 build iterations with 2 full audit cycles (16 total issues found and fixed).
+
+**New UX:** Each student card shows 4 status buttons (Read / Not Read / No Folder / Absent). Tapping "Read" triggers a rapid-fire 3-photo camera sequence (Book → Signature → New Book) with non-blocking background uploads — zero lag between students.
+
+**Architecture (v3 — ref-based):**
+- `flowRef` as single source of truth for camera state (set synchronously, avoids React batching issues)
+- `cameraFlowUI` state only for rendering
+- `sessionRef` / `dateRef` avoid stale closures in callbacks
+- `openCamera()` sets ref FIRST, then state, then triggers file input
+- Single `handlePhotoCapture` with empty deps array (reads from refs)
+- Upload merges only photo URL field, never overwrites status
+- Unique upload keys for retakes (`retake-${childId}-${photoType}`)
+- AbortController cleanup on unmount for all in-flight uploads
+
+**Files:**
+- `app/montree/dashboard/raz/page.tsx` — Complete rewrite (~600 lines), 3 iterations + 2 audit cycles
+- `app/api/montree/raz/route.ts` — Auth fix (3 instances)
+- `app/api/montree/raz/upload/route.ts` — Auth fix (1 instance)
+
+**CRITICAL Auth Bug Fixed:** All RAZ API routes returned 401 on every request. Root cause: `verifySchoolRequest()` returns `VerifiedRequest | NextResponse` but RAZ routes checked `auth.valid` (doesn't exist on either type — always `undefined`). Fixed to `if (auth instanceof NextResponse) return auth;` pattern. 4 instances across 2 files.
+
+**Also this session:**
+- Migration 134 run (feature toggles: 3 tables + 6 features seeded + RAZ tracker table)
+- Migration 135 run (voice observation: 4 tables + storage bucket)
+- Voice Observations feature enabled for Beijing International school
+- Voice observation bug fix: missing `.json()` on `montreeApi()` calls in voice observation page
+- AMI English Language Progression document generated
+
+**Performance Optimization — COMPLETE + AUDITED (2 new files, 4 modified, ~470 lines):**
+
+Zero-dependency performance infrastructure to eliminate page load lag. Three pillars:
+
+1. **SWR Data Cache** (`lib/montree/cache.ts`, ~300 lines) — `useMontreeData<T>()` hook with stale-while-revalidate caching (30s TTL), request deduplication, window focus refetch, LRU eviction at 100 entries. Also exports `invalidateCache()`, `setCacheData()`, `prefetchUrl()`.
+2. **Client-Side Image Compression** (`compressImage()` in cache.ts) — Canvas API reduces 5MB phone photos to ~150KB JPEG before upload. Never rejects (try/catch wrapper, all error paths resolve with original file).
+3. **Skeleton Loading Screens** (`components/montree/Skeletons.tsx`, ~170 lines) — 6 page-specific skeletons (Dashboard, WeekView, Gallery, Progress, RAZ, Curriculum) replacing blank pages and bouncing emoji spinners.
+
+**Wired into 4 pages:** Dashboard (SWR cache + skeleton + homeschool redirect flash fix + searchParams fix), RAZ (image compression + skeleton), Child Week View (skeleton), Progress (skeleton).
+
+**Audit:** 18 issues found (5 CRITICAL, 1 HIGH, 12 MEDIUM). All 5 CRITICALs + 1 HIGH fixed:
+- compressImage: wrapped in try/catch, never rejects
+- Dashboard: early return with skeleton during homeschool redirect (prevents teacher UI flash)
+- prefetchUrl: .finally() in chain, error guards, evictOldest()
+- searchParams: extracted primitive boolean to avoid object reference in useEffect deps
+
+**Files:**
+- `lib/montree/cache.ts` — NEW (~300 lines)
+- `components/montree/Skeletons.tsx` — NEW (~170 lines)
+- `app/montree/dashboard/page.tsx` — SWR cache + skeleton + redirect fix + searchParams fix
+- `app/montree/dashboard/raz/page.tsx` — Image compression + skeleton
+- `app/montree/dashboard/[childId]/page.tsx` — Skeleton
+- `app/montree/dashboard/[childId]/progress/page.tsx` — Skeleton
+
+**Deploy:** ✅ RAZ page pushed. ✅ Auth fix pushed (commit `2c8aec00`). ⚠️ Performance files need manual push (VM disk full — 6 files listed above).
+**Handoffs:** `docs/handoffs/HANDOFF_RAZ_TRACKER_REDESIGN_MAR5.md`, `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md`
+
+---
+
+## PREVIOUS STATUS (Mar 4, 2026)
+
+### Session Work (Mar 4, 2026)
+
+**Voice Observation System — COMPLETE + DEPLOYED (20 new files, 4 modified, ~3,730 lines, commit `005bc94a`):**
+
+Premium ($1000/month) hands-free classroom observation system. Teachers record work cycles, AI transcribes (Whisper), identifies students (Jaro-Winkler), matches works to 329-work curriculum (fuzzy-matcher), and proposes progress updates (Haiku tool_use). Teacher reviews and commits at end-of-day. ALL audio/transcripts permanently deleted after commit.
+
+**Build methodology:** 3 plan-audit cycles + 3 build-audit cycles. 9 issues found and fixed across 3 audit cycles.
+
+**New files (20):**
+- `migrations/135_voice_observations.sql` — 4 tables (sessions, extractions, audio_chunks, student_aliases) + `voice-obs` private storage bucket
+- `lib/montree/voice/audio-processor.ts` (~344 lines) — Whisper transcription orchestrator, cost calculator, cleanup, session processor
+- `lib/montree/voice/observation-analyzer.ts` (~303 lines) — Haiku tool_use analysis pipeline, transcript segmentation, extraction consolidation
+- `lib/montree/voice/student-matcher.ts` (~170 lines) — Jaro-Winkler name matching + alias learning
+- `lib/montree/voice/prompts.ts` (~175 lines) — Haiku system prompt + tool definition
+- `lib/montree/voice/index.ts` — Barrel exports
+- 9 API routes: `start`, `upload`, `pause`, `end`, `status`, `review`, `extraction/[extractionId]`, `commit`, `history`
+- `app/montree/dashboard/voice-observation/page.tsx` — 6-state machine (idle→recording→paused→processing→review→committed)
+- 4 components: `VoiceObservationRecorder`, `VoiceObservationProgress`, `VoiceObservationReview`, `ExtractionCard`
+
+**Modified files (4):**
+- `migrations/134_feature_toggles_and_raz_tracker.sql` — Added `voice_observations` to feature seed
+- `components/montree/DashboardHeader.tsx` — Added 🎙️ nav link (gated: feature toggle, not role)
+- `lib/montree/i18n/en.ts` + `zh.ts` — ~57 `voiceObs.*` keys each
+
+**Also deployed this session:**
+- Migration 134 run (feature toggles: 3 tables + 6 features seeded + RAZ tracker table)
+- Migration 135 run (voice observation: 4 tables + storage bucket)
+- Voice Observations feature enabled for Beijing International school
+
+**Deploy:** ✅ Code pushed, Railway build succeeded, API responding in production.
+**Handoff:** `docs/handoffs/HANDOFF_VOICE_OBSERVATION_SYSTEM_MAR4.md`
+**Plan:** `.claude/plans/cryptic-tumbling-turing.md`
+
+**Curriculum Fixes — COMPLETE + DEPLOYED (3 files modified, commits `70a60756` through `b998e868`):**
+
+4 issues fixed in late session:
+
+1. **Voice obs nav link gating** — Changed from `!isHomeschoolParent()` to feature-toggle-based gating. DashboardHeader now fetches `/api/montree/features?school_id=...` and checks `voice_observations` enabled state.
+
+2. **CRITICAL: Curriculum area filtering bug** — WorkWheelPicker showed ALL areas' works when selecting Math. Root cause: `montree_classroom_curriculum_areas` had old keys (`math`, `science_culture`) instead of canonical (`mathematics`, `cultural`). Three-pronged fix: DB keys updated, API hardened with `normalizeAreaKey()` alias map + empty-result safety (returns `[]` instead of all works when area not found), setup-stream verified correct.
+
+3. **Missing curriculum works** — Whale Class had only 63/329 works (partial legacy seed). Reseeded via existing `/api/montree/admin/reseed-curriculum` endpoint → 329 works + 5 areas confirmed.
+
+4. **WorkWheelPicker sequence ordering** — `mergeWorksWithCurriculum()` was overwriting DB sequences with `idx + 1` (array position). Fixed to preserve original DB sequences. Imported/custom works get derived sequence from neighbours. Pure curriculum order with status checkmarks on assigned works.
+
+**Modified files (3):**
+- `components/montree/DashboardHeader.tsx` — Feature toggle gating for voice obs nav link
+- `app/api/montree/works/search/route.ts` — Area key normalization + empty-result safety net
+- `lib/montree/work-matching.ts` — Preserve DB sequences instead of renumbering
+
+**Handoff:** `docs/handoffs/HANDOFF_CURRICULUM_FIXES_MAR4.md`
+
+---
+
+## PREVIOUS STATUS (Mar 2, 2026)
 
 ### Session Work (Mar 2, 2026)
 
@@ -97,6 +216,7 @@ Cleaned up cluttered marketing hub, installed master outreach letter, and built 
 ---
 
 ## PREVIOUS STATUS (Mar 1, 2026)
+
 
 ### Session Work (Mar 1, 2026 — Late Session)
 
@@ -1796,6 +1916,8 @@ Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple
 - `montree_media_children` — links group photos to multiple children
 - `montree_guru_interactions`, `montree_child_mental_profiles`, `montree_behavioral_observations`
 - `montree_child_extras` — explicitly-added extra works per child (UNIQUE child_id+work_name)
+- `montree_raz_records` — RAZ reading tracker records (child_id, date, status, 3 photo URLs)
+- `montree_feature_toggles`, `montree_school_features`, `montree_feature_audit_log` — feature flag system
 - `montree_community_works` — public community works library (title, area, materials, photos, videos, PDFs, AI guide, moderation status, stats)
 - `montree_community_backups` — daily JSON backup records (date, work_count, storage_path)
 - `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
@@ -1859,6 +1981,8 @@ RESEND_FROM_EMAIL=...
 | `/montree/dashboard/vocabulary-flashcards` | Vocab Flashcards tool |
 | `/montree/dashboard/capture` | Photo/video capture |
 | `/montree/dashboard/guru` | AI teacher advisor |
+| `/montree/dashboard/raz` | RAZ Reading Tracker (status-first camera flow) |
+| `/montree/dashboard/voice-observation` | Voice Observation recording + review |
 | `/montree/dashboard/games/*` | 27+ educational games |
 
 ### Parent Portal
@@ -2049,7 +2173,11 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_TEACHER_GURU_I18N_MAR1.md` | **CURRENT** — Teacher conversational guru + guide Chinese translation + i18n fixes |
+| `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | **CURRENT** — SWR cache + skeletons + image compression + audit fixes |
+| `docs/handoffs/HANDOFF_RAZ_TRACKER_REDESIGN_MAR5.md` | RAZ tracker redesign (status-first camera flow) + API auth fix |
+| `docs/handoffs/HANDOFF_VOICE_OBSERVATION_SYSTEM_MAR4.md` | Voice observation system (20 new files, Whisper + Haiku pipeline) |
+| `docs/handoffs/HANDOFF_CURRICULUM_FIXES_MAR4.md` | Curriculum area filtering bug + WorkWheelPicker sequence fix |
+| `docs/handoffs/HANDOFF_TEACHER_GURU_I18N_MAR1.md` | Teacher conversational guru + guide Chinese translation + i18n fixes |
 | `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md` | Wooden shelf UI + OpenAI TTS voice for home parents |
 | `docs/HANDOFF_GURU_CHAT_OVERHAUL_FEB26.md` | Guru WhatsApp-style chat for parents (concern picker, conversational prompts, chat thread) |
 | `docs/HANDOFF_I18N_SALES_PLAYBOOK_FEB25.md` | Bilingual i18n system (140 keys EN/ZH) + Sales Playbook (28-day plan, 6 schools) |
