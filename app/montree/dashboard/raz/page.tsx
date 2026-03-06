@@ -210,17 +210,20 @@ export default function RazTrackerPage() {
     openCamera(child.id, child.name, step, true);
   }
 
-  // Open camera — sets ref synchronously THEN triggers file input
+  // Open camera — sets ref synchronously, shows overlay with tap-to-capture button
+  // Mobile browsers block programmatic file input clicks — user must tap a real button
   function openCamera(childId: string, childName: string, step: number, oneShot: boolean) {
     const flow: CameraFlowState = { childId, childName, step, oneShot };
     flowRef.current = flow;          // Ref set FIRST — synchronous, no batching
-    setCameraFlowUI(flow);           // State for UI re-render
-    setTimeout(() => {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-        fileInputRef.current.click();
-      }
-    }, 150);
+    setCameraFlowUI(flow);           // State for UI re-render — shows tap-to-capture overlay
+  }
+
+  // Called by the visible "Take Photo" button — real user gesture so file input works
+  function triggerCamera() {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
   }
 
   function endCameraFlow() {
@@ -359,38 +362,68 @@ export default function RazTrackerPage() {
         onChange={handlePhotoCapture}
       />
 
-      {/* Camera flow overlay */}
+      {/* Camera flow overlay — full-screen tap-to-capture */}
       {cameraFlowUI && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0,
-          background: cameraFlowUI.oneShot ? '#3b82f6' : '#22c55e',
-          color: '#fff', padding: '12px 16px',
-          zIndex: 100, display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          position: 'fixed', inset: 0, zIndex: 100,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 16, padding: 24,
         }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{cameraFlowUI.childName}</div>
-            <div style={{ fontSize: 13, opacity: 0.9 }}>
-              {cameraFlowUI.oneShot
-                ? `📸 Retake: ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]}`
-                : `📸 ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]} (${cameraFlowUI.step + 1}/3)`
-              }
-            </div>
+          <div style={{ fontSize: 14, color: '#94a3b8', letterSpacing: 1 }}>
+            {cameraFlowUI.childName}
           </div>
+          {!cameraFlowUI.oneShot && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              {PHOTO_SEQUENCE.map((pt, i) => (
+                <div key={pt} style={{
+                  width: 10, height: 10, borderRadius: '50%',
+                  background: i < cameraFlowUI.step ? '#22c55e' : i === cameraFlowUI.step ? '#fff' : '#475569',
+                  transition: 'background 0.2s',
+                }} />
+              ))}
+            </div>
+          )}
+          <button
+            onClick={triggerCamera}
+            style={{
+              width: 140, height: 140, borderRadius: '50%',
+              background: cameraFlowUI.oneShot ? '#3b82f6' : '#22c55e',
+              border: '4px solid rgba(255,255,255,0.3)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: '#fff', gap: 4,
+              boxShadow: '0 0 40px rgba(34,197,94,0.3)',
+            }}
+          >
+            <span style={{ fontSize: 36 }}>📸</span>
+            <span style={{ fontSize: 12, fontWeight: 700 }}>TAP</span>
+          </button>
+          <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginTop: 8 }}>
+            {cameraFlowUI.oneShot
+              ? `Retake: ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]}`
+              : PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]
+            }
+          </div>
+          {!cameraFlowUI.oneShot && (
+            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+              Photo {cameraFlowUI.step + 1} of 3
+            </div>
+          )}
           <button
             onClick={endCameraFlow}
             style={{
-              background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: 8,
-              padding: '6px 14px', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: 14,
+              marginTop: 24, background: 'none', border: '1px solid #475569',
+              borderRadius: 8, padding: '8px 24px', color: '#94a3b8',
+              cursor: 'pointer', fontSize: 14,
             }}
           >
-            Skip
+            {cameraFlowUI.oneShot ? 'Cancel' : 'Skip remaining'}
           </button>
         </div>
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: cameraFlowUI ? 56 : 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 0 }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>📚 RAZ Reading Tracker</h1>
           <p style={{ fontSize: 13, color: '#94a3b8', margin: '4px 0 0' }}>
