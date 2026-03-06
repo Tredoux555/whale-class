@@ -1,8 +1,8 @@
 'use client';
 
 // components/montree/child/GuruWeeklySummary.tsx
-// Displays the Guru's weekly admin copy-paste items on the child's week view.
-// 3 items: This Week, Next Week, One-Liner — each with its own copy button.
+// Displays the Guru's weekly admin on the child's week view.
+// 4 items: This Week, Next Week, One-Liner (factual), Advice (expandable)
 // Data comes from montree_children.settings (guru_weekly_*)
 
 import { useState } from 'react';
@@ -12,6 +12,7 @@ interface GuruWeeklySummaryProps {
   thisWeek: string | null;
   nextWeek: string | null;
   oneLiner: string | null;
+  advice: string | null;
   updatedAt: string | null;
   childName: string;
   childId: string;
@@ -59,11 +60,13 @@ export default function GuruWeeklySummary({
   thisWeek,
   nextWeek,
   oneLiner,
+  advice,
   updatedAt,
   childName,
   childId,
 }: GuruWeeklySummaryProps) {
   const [copyAllDone, setCopyAllDone] = useState(false);
+  const [adviceExpanded, setAdviceExpanded] = useState(false);
 
   // Show nothing if we have no data at all
   if (!summary && !thisWeek && !nextWeek && !oneLiner) return null;
@@ -87,12 +90,12 @@ export default function GuruWeeklySummary({
     }
   };
 
-  // Copy all 3 items formatted for pasting
+  // Copy all 3 copy-paste items formatted for pasting (advice excluded — it's for the profile)
   const handleCopyAll = async () => {
     const parts = [];
     if (thisWeek) parts.push(`This Week: ${thisWeek}`);
     if (nextWeek) parts.push(`Next Week: ${nextWeek}`);
-    if (oneLiner) parts.push(`Summary: ${oneLiner}`);
+    if (oneLiner) parts.push(`${oneLiner}`);
     const text = parts.join('\n');
     try {
       await navigator.clipboard.writeText(text);
@@ -112,7 +115,7 @@ export default function GuruWeeklySummary({
     }
   };
 
-  // If we have the 3 new fields, show the enhanced view
+  // If we have the new fields, show the enhanced view
   const hasNewFormat = thisWeek || nextWeek || oneLiner;
 
   return (
@@ -164,12 +167,12 @@ export default function GuruWeeklySummary({
             </div>
           )}
 
-          {/* One-Liner */}
+          {/* One-Liner — factual only */}
           {oneLiner && (
             <div className="flex items-start gap-2 mb-3">
               <div className="flex-1">
                 <div className="text-xs font-semibold text-purple-600 mb-0.5">ONE-LINER</div>
-                <p className="text-gray-800 text-sm font-medium italic">{oneLiner}</p>
+                <p className="text-gray-800 text-sm font-medium">{oneLiner}</p>
               </div>
               <CopyButton text={oneLiner} label="One-Liner" />
             </div>
@@ -190,6 +193,34 @@ export default function GuruWeeklySummary({
               <><span>📋</span> Copy all 3</>
             )}
           </button>
+
+          {/* Guru Advice — expandable deep insight */}
+          {advice && (
+            <div className="mt-3 pt-3 border-t border-violet-200/50">
+              <button
+                onClick={() => setAdviceExpanded(!adviceExpanded)}
+                className="flex items-center gap-1.5 text-xs font-semibold text-violet-700 hover:text-violet-900 transition-colors w-full text-left"
+              >
+                <span>{adviceExpanded ? '▼' : '▶'}</span>
+                <span>Guru Advice</span>
+                {!adviceExpanded && (
+                  <span className="text-violet-400 font-normal ml-1 truncate flex-1">
+                    — {advice.slice(0, 60)}...
+                  </span>
+                )}
+              </button>
+              {adviceExpanded && (
+                <div className="mt-2 bg-white/60 rounded-xl p-3 border border-violet-100">
+                  <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+                    {advice}
+                  </div>
+                  <div className="mt-2 flex justify-end">
+                    <CopyButton text={advice} label="Advice" />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </>
       ) : (
         <>

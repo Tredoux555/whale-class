@@ -77,6 +77,7 @@ export default function WeekPage() {
   const [guruThisWeek, setGuruThisWeek] = useState<string | null>(null);
   const [guruNextWeek, setGuruNextWeek] = useState<string | null>(null);
   const [guruOneLiner, setGuruOneLiner] = useState<string | null>(null);
+  const [guruAdvice, setGuruAdvice] = useState<string | null>(null);
   const [guruSummaryUpdatedAt, setGuruSummaryUpdatedAt] = useState<string | null>(null);
 
   // All works combined (for checking if already added)
@@ -221,6 +222,7 @@ export default function WeekPage() {
           setGuruThisWeek(settings.guru_weekly_this_week || null);
           setGuruNextWeek(settings.guru_weekly_next_week || null);
           setGuruOneLiner(settings.guru_weekly_one_liner || null);
+          setGuruAdvice(settings.guru_weekly_advice || null);
           setGuruSummaryUpdatedAt(settings.guru_weekly_summary_updated_at || null);
         }
       })
@@ -594,6 +596,7 @@ export default function WeekPage() {
           thisWeek={guruThisWeek}
           nextWeek={guruNextWeek}
           oneLiner={guruOneLiner}
+          advice={guruAdvice}
           updatedAt={guruSummaryUpdatedAt}
           childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
           childId={childId}
