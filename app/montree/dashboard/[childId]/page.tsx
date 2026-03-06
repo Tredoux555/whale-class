@@ -25,7 +25,7 @@ import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import GuruWeeklySummary from '@/components/montree/child/GuruWeeklySummary';
 import PrintButton from '@/components/montree/child/PrintButton';
-import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
+// ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
 interface Assignment {
@@ -600,13 +600,6 @@ export default function WeekPage() {
           advice={guruAdvice}
           updatedAt={guruSummaryUpdatedAt}
           childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          childId={childId}
-        />
-      )}
-
-      {/* Voice Note Recorder — teachers only */}
-      {!isHomeschoolParent(session) && (
-        <ChildVoiceNote
           childId={childId}
         />
       )}

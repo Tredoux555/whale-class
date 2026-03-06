@@ -3,6 +3,7 @@
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
+import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import { useI18n } from '@/lib/montree/i18n';
 
 export interface Assignment {
@@ -160,19 +161,30 @@ export default function FocusWorksSection({
                         value={notes[work.work_name] || ''}
                         onChange={(e) => setNotes(prev => ({ ...prev, [work.work_name]: e.target.value }))}
                         placeholder={t('focusWorks.addObservation')}
-                        className="w-full p-3 rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:outline-none
+                        className="w-full p-3 pb-10 rounded-lg text-sm resize-none focus:ring-2 focus:ring-amber-400 focus:outline-none
                           bg-gradient-to-b from-amber-100 to-amber-50 border-0 shadow-md
                           text-amber-900 placeholder-amber-400"
                         rows={2}
                       />
-                      <button
-                        onClick={() => onSaveNote(work)}
-                        disabled={!notes[work.work_name]?.trim() || savingNote === work.work_name}
-                        className="absolute bottom-2 right-2 px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
-                          disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
-                      >
-                        {savingNote === work.work_name ? '...' : '📌 ' + t('focusWorks.save')}
-                      </button>
+                      <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+                        {!isParent && (
+                          <ChildVoiceNote
+                            childId={childId}
+                            onTranscript={(text) => setNotes(prev => ({
+                              ...prev,
+                              [work.work_name]: prev[work.work_name] ? prev[work.work_name] + ' ' + text : text,
+                            }))}
+                          />
+                        )}
+                        <button
+                          onClick={() => onSaveNote(work)}
+                          disabled={!notes[work.work_name]?.trim() || savingNote === work.work_name}
+                          className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
+                            disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
+                        >
+                          {savingNote === work.work_name ? '...' : '📌 ' + t('focusWorks.save')}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
