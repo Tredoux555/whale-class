@@ -59,7 +59,49 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ---
 
-## CURRENT STATUS (Mar 5, 2026)
+## CURRENT STATUS (Mar 6, 2026)
+
+### Session Work (Mar 6, 2026)
+
+**Voice Notes + Weekly Admin Generator — COMPLETE + DEPLOYED (9 new files, 4 modified, ~1,940 lines, 3 audit cycles, commit `e2068e01`):**
+
+Two-part feature: inline voice note recorder for child observations + weekly admin document generator for government-required school paperwork.
+
+**Part 1 — Voice Notes:** Teachers tap 🎙️ next to Save in any expanded work card's observation textarea. Records audio → Whisper transcribes → Sonnet extracts (child, work, area, status, behavioral notes) via `tool_use` → auto-applies to progress when confidence ≥ 0.85 (child match) + ≥ 0.7 (work match + status). Transcript fills textarea so teacher can edit before saving.
+
+**Part 2 — Weekly Admin Generator:** Dashboard card generates copy-paste-ready narrative summaries + weekly plan tables for government-required school documents. Uses Sonnet via streaming. Rate limited 3/day per classroom.
+
+**New files (9):**
+- `migrations/136_voice_notes_weekly_admin.sql` — 2 tables (`montree_voice_notes`, `montree_weekly_admin_output`) + indexes + RLS + trigger
+- `lib/montree/voice-notes/extraction.ts` (~310 lines) — Sonnet `tool_use` extraction, Jaro-Winkler name matching, fuzzyScore work matching
+- `lib/montree/voice-notes/weekly-admin.ts` (~250 lines) — Sonnet narrative generation + plan tables
+- `lib/montree/voice-notes/index.ts` — Barrel exports
+- `app/api/montree/voice-notes/transcribe/route.ts` — Whisper transcription endpoint
+- `app/api/montree/voice-notes/route.ts` — POST (create + extract + auto-apply) + GET (fetch notes)
+- `app/api/montree/voice-notes/weekly-admin/route.ts` — POST (generate) + GET (fetch)
+- `components/montree/voice-notes/ChildVoiceNote.tsx` — Compact inline mic button (7×7, next to Save)
+- `components/montree/voice-notes/WeeklyAdminCard.tsx` — Dashboard card with copy buttons
+
+**Modified files (4):**
+- `components/montree/child/FocusWorksSection.tsx` — Wired mic button next to Save, `pb-10` textarea padding
+- `app/montree/dashboard/[childId]/page.tsx` — Removed standalone ChildVoiceNote, now inline in FocusWorksSection
+- `app/montree/dashboard/page.tsx` — Wired WeeklyAdminCard on teacher dashboard
+- `lib/montree/i18n/en.ts` + `zh.ts` — ~30 `voiceNotes.*` + ~15 `weeklyAdmin.*` keys each
+
+**Voice Note Inline Relocation (late session):** Moved from standalone floating component above focus works to compact mic button next to Save in each observation textarea. `onTranscript` callback fills textarea with transcript. useEffect cleanup on unmount (aborts fetch, stops recorder, releases mic).
+
+**Model upgrade:** Extraction changed from Haiku to Sonnet (`AI_MODEL`) for rock-solid structured extraction.
+
+**3 Audit Cycles:** Cycle 1 (2 issues), Cycle 2 (5 issues), Cycle 3 (0 issues) + inline relocation audit (2 issues). All fixed.
+
+**Railway Deploy Fix:** Auto-deploy broken for this session. Fixed via Railway GraphQL API `serviceInstanceDeployV2` mutation with explicit `commitSha`. Migration 136 run manually.
+
+**Deploy:** ✅ Code pushed + deployed via GraphQL API. Migration 136 run.
+**Handoffs:** `docs/handoffs/HANDOFF_VOICE_NOTE_INLINE_MAR6.md`
+
+---
+
+## PREVIOUS STATUS (Mar 5, 2026)
 
 ### Session Work (Mar 5, 2026)
 
