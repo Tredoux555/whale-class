@@ -1257,10 +1257,6 @@ export const en = {
   'placeholder.photoCaption': 'Add a caption or notes about this photo...',
   'placeholder.addTag': 'Add a tag...',
 
-  // Accessibility
-  'a11y.giveFeedback': 'Give feedback',
-  'a11y.closeDetails': 'Close work details',
-
   // Phase 10 — Feedback
   'feedback.title': 'Quick Feedback',
   'feedback.success': 'Thanks for your feedback!',
