@@ -246,7 +246,7 @@ export function useWorkOperations({
     }
   }, [childId, wheelPickerArea, allWorks, setExtraWorks, setWheelPickerOpen]);
 
-  // Add work as an EXTRA (not focus)
+  // Add work as an EXTRA (not focus) — OPTIMISTIC
   const addWork = useCallback(async (work: CurriculumWork, selectedArea: string | null) => {
     // Check if already exists in focus or extras
     const existing = allWorks.find(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
@@ -255,27 +255,40 @@ export function useWorkOperations({
       return;
     }
 
+    const area = work.area_id || selectedArea || 'unknown';
+
+    // OPTIMISTIC UPDATE — add to UI immediately
+    const newExtra: Assignment = {
+      work_name: work.name,
+      area,
+      status: 'presented',
+      is_focus: false,
+      is_extra: true,
+    };
+    setExtraWorks(prev => [...prev, newExtra]);
+    toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
+
+    // Background API call
     try {
-      // Add the new work as an extra (presented status)
-      await fetch('/api/montree/progress/update', {
+      const res = await fetch('/api/montree/progress/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           child_id: childId,
           work_name: work.name,
-          area: work.area_id || selectedArea,
+          area,
           status: 'presented',
           is_focus: false,
           is_extra: true,
         }),
       });
-
-      toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
-      fetchAssignments();
+      if (!res.ok) throw new Error('Save failed');
     } catch {
+      // Revert on failure
+      setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
       toast.error(t('toast.failedToAdd' as any));
     }
-  }, [childId, allWorks, fetchAssignments]);
+  }, [childId, allWorks, setExtraWorks]);
 
   // Save note (uses work_name as key)
   const saveNote = useCallback(async (work: Assignment, noteText: string) => {
