@@ -26,14 +26,29 @@ export default function DashboardHeader() {
     setSession(sess);
 
     // Check if voice observations feature is enabled for this school
+    // PERF: Cache in sessionStorage (5 min TTL) to avoid API call on every page navigation
     if (sess.school?.id) {
+      const cacheKey = `montree_features_${sess.school.id}`;
+      try {
+        const cached = sessionStorage.getItem(cacheKey);
+        if (cached) {
+          const { voice, raz, ts } = JSON.parse(cached);
+          if (Date.now() - ts < 5 * 60 * 1000) {
+            setVoiceObsEnabled(voice);
+            setRazTrackerEnabled(raz);
+            return;
+          }
+        }
+      } catch {}
+
       montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
         .then((res) => res.json())
         .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
-          const voiceFeature = data.features?.find((f) => f.feature_key === 'voice_observations');
-          setVoiceObsEnabled(voiceFeature?.enabled || false);
-          const razFeature = data.features?.find((f) => f.feature_key === 'raz_reading_tracker');
-          setRazTrackerEnabled(razFeature?.enabled || false);
+          const voice = data.features?.find((f) => f.feature_key === 'voice_observations')?.enabled || false;
+          const raz = data.features?.find((f) => f.feature_key === 'raz_reading_tracker')?.enabled || false;
+          setVoiceObsEnabled(voice);
+          setRazTrackerEnabled(raz);
+          try { sessionStorage.setItem(cacheKey, JSON.stringify({ voice, raz, ts: Date.now() })); } catch {}
         })
         .catch(() => {});
     }
