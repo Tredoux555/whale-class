@@ -76,8 +76,11 @@ export default function RazTrackerPage() {
   const flowRef = useRef<CameraFlowState | null>(null);
   const [cameraFlowUI, setCameraFlowUI] = useState<CameraFlowState | null>(null);
 
-  // Busy guard
+  // Busy guard — only blocks during active camera flow, NOT during uploads
   const [busy, setBusy] = useState(false);
+
+  // Photo lightbox viewer
+  const [viewingPhoto, setViewingPhoto] = useState<{ url: string; label: string; childName: string } | null>(null);
 
   // Track in-flight uploads
   const [uploading, setUploading] = useState<Set<string>>(new Set());
@@ -184,15 +187,15 @@ export default function RazTrackerPage() {
     }
 
     if (status === 'read') {
-      // Read: save status first, then camera
+      // Read: save status in background (fire-and-forget), open camera IMMEDIATELY
       setBusy(true);
-      const success = await setStatus(child.id, 'read');
-      if (!mountedRef.current) return;
-      if (success) {
-        openCamera(child.id, child.name, 0, false);
-      } else {
-        setBusy(false);
-      }
+      // Optimistic update — show green border instantly
+      setRecords(prev => ({
+        ...prev,
+        [child.id]: { ...prev[child.id], child_id: child.id, record_date: selectedDate, status: 'read' },
+      }));
+      setStatus(child.id, 'read'); // background — don't await
+      openCamera(child.id, child.name, 0, false);
     } else {
       // Non-read: save with error feedback
       const success = await setStatus(child.id, status);
@@ -328,7 +331,16 @@ export default function RazTrackerPage() {
     } else {
       const nextStep = step + 1;
       if (nextStep < PHOTO_SEQUENCE.length) {
-        openCamera(childId, childName, nextStep, false);
+        // Update flow to next step
+        const nextFlow: CameraFlowState = { childId, childName, step: nextStep, oneShot: false };
+        flowRef.current = nextFlow;
+        setCameraFlowUI(nextFlow);
+        // Try auto-open camera — synchronous click preserves user gesture from onChange
+        // If browser blocks it, the overlay TAP button is the fallback
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+          fileInputRef.current.click();
+        }
       } else {
         endCameraFlow();
         toast.success(`✅ ${childName} done!`, { duration: 1500 });
@@ -419,6 +431,29 @@ export default function RazTrackerPage() {
           >
             {cameraFlowUI.oneShot ? 'Cancel' : 'Skip remaining'}
           </button>
+        </div>
+      )}
+
+      {/* Photo lightbox viewer */}
+      {viewingPhoto && (
+        <div
+          onClick={() => setViewingPhoto(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.92)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            padding: 16, cursor: 'pointer',
+          }}
+        >
+          <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 8 }}>
+            {viewingPhoto.childName} — {viewingPhoto.label}
+          </div>
+          <img
+            src={viewingPhoto.url}
+            alt={viewingPhoto.label}
+            style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8, objectFit: 'contain' }}
+          />
+          <div style={{ fontSize: 13, color: '#64748b', marginTop: 12 }}>Tap anywhere to close</div>
         </div>
       )}
 
@@ -578,33 +613,44 @@ export default function RazTrackerPage() {
                 </div>
               </div>
 
-              {/* Photo thumbnails — tappable for retake */}
+              {/* Photo thumbnails — tap to view, retake button overlay */}
               {hasPhotos && (
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   {PHOTO_SEQUENCE.map(pt => {
                     const url = record?.[PHOTO_URL_KEYS[pt]] as string | undefined;
                     if (!url) return null;
                     return (
-                      <button
-                        key={pt}
-                        onClick={() => retakePhoto(child, pt)}
-                        disabled={busy}
-                        title={`Retake ${PHOTO_LABELS[pt]}`}
-                        aria-label={`Retake ${PHOTO_LABELS[pt]}`}
-                        style={{
-                          width: 48, height: 48, borderRadius: 6, overflow: 'hidden',
-                          flexShrink: 0, padding: 0, border: '2px solid transparent',
-                          cursor: busy ? 'default' : 'pointer', background: 'none',
-                          position: 'relative',
-                        }}
-                      >
-                        <img src={url} alt={PHOTO_LABELS[pt]} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
-                        <div style={{
-                          position: 'absolute', bottom: 1, right: 1,
-                          background: 'rgba(0,0,0,0.6)', borderRadius: 4,
-                          fontSize: 10, padding: '1px 3px', color: '#fff',
-                        }}>↻</div>
-                      </button>
+                      <div key={pt} style={{ position: 'relative', flexShrink: 0 }}>
+                        {/* Tap to view full-size */}
+                        <button
+                          onClick={() => setViewingPhoto({ url, label: PHOTO_LABELS[pt], childName: child.name })}
+                          aria-label={`View ${PHOTO_LABELS[pt]}`}
+                          style={{
+                            width: 56, height: 56, borderRadius: 6, overflow: 'hidden',
+                            padding: 0, border: '2px solid #334155', cursor: 'pointer', background: 'none',
+                          }}
+                        >
+                          <img src={url} alt={PHOTO_LABELS[pt]} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
+                        </button>
+                        {/* Label */}
+                        <div style={{ fontSize: 9, color: '#64748b', textAlign: 'center', marginTop: 2 }}>
+                          {PHOTO_LABELS[pt].split(' ')[0]}
+                        </div>
+                        {/* Retake icon */}
+                        <button
+                          onClick={() => retakePhoto(child, pt)}
+                          disabled={busy}
+                          aria-label={`Retake ${PHOTO_LABELS[pt]}`}
+                          style={{
+                            position: 'absolute', top: -4, right: -4,
+                            width: 20, height: 20, borderRadius: '50%',
+                            background: '#3b82f6', border: '2px solid #0f172a',
+                            color: '#fff', fontSize: 10, cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            padding: 0,
+                          }}
+                        >↻</button>
+                      </div>
                     );
                   })}
                 </div>
