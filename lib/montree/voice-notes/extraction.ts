@@ -242,7 +242,7 @@ export async function extractFromVoiceNote(
     }
 
     if (!extraction) {
-      // Haiku didn't call the tool — no extractable data
+      // Sonnet didn't call the tool — no extractable data
       return {
         child_name_spoken: '',
         child_id: null,
@@ -293,7 +293,7 @@ export async function extractFromVoiceNote(
       next_steps: extraction.next_steps || null,
     };
   } catch (err) {
-    console.error('[voice-notes] Haiku extraction error:', err);
+    console.error('[voice-notes] Sonnet extraction error:', err);
     return null;
   }
 }

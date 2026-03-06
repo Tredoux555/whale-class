@@ -7,7 +7,7 @@ Moved voice note recorder from standalone floating component to inline mic butto
 ## Changes
 
 ### 1. ChildVoiceNote Rewrite — Compact Inline Button
-**File:** `components/montree/voice-notes/ChildVoiceNote.tsx` (rewritten, ~190 lines → ~190 lines)
+**File:** `components/montree/voice-notes/ChildVoiceNote.tsx` (rewritten, ~230 lines)
 
 **Before:** Standalone 12×12 green circle with status text and accumulated notes list. Floated above focus works section, disconnected from observation flow.
 
@@ -20,6 +20,7 @@ Key changes:
 - Simplified states: `idle | recording | processing | done | error` (was 6 states, now 5)
 - Auto-dismiss status text after 3-4 seconds
 - All processing (transcribe → extract → save) still runs, just doesn't render results inline
+- **Unmount cleanup:** useEffect cleanup aborts in-flight requests, stops MediaRecorder, releases mic stream
 
 ### 2. FocusWorksSection — Mic Button Wired In
 **File:** `components/montree/child/FocusWorksSection.tsx` (modified)
@@ -42,6 +43,14 @@ Key changes:
 - Changed `HAIKU_MODEL` → `AI_MODEL` (Sonnet `claude-sonnet-4-20250514`)
 - Cost: ~$0.003 → ~$0.05 per note (still negligible)
 - Rationale: Rock-solid structured extraction for work matching + status confidence
+- Fixed stale "Haiku" references in comments
+
+## Audit (2 issues found, both fixed)
+
+| # | Severity | Issue | Fix |
+|---|----------|-------|-----|
+| 1 | CRITICAL | `ChildVoiceNote` missing unmount cleanup — mic stays open and fetches continue when work card collapses | Added `useEffect` cleanup: aborts controller, stops MediaRecorder, releases mic stream tracks |
+| 2 | MEDIUM | Stale "Haiku" comments in `extraction.ts` (L245, L296) after Sonnet upgrade | Updated to "Sonnet" |
 
 ## UX Flow (After)
 
@@ -57,13 +66,13 @@ Key changes:
 
 | File | Change |
 |------|--------|
-| `components/montree/voice-notes/ChildVoiceNote.tsx` | Full rewrite — compact inline button |
+| `components/montree/voice-notes/ChildVoiceNote.tsx` | Full rewrite — compact inline button + unmount cleanup |
 | `components/montree/child/FocusWorksSection.tsx` | Import + wire mic next to Save |
 | `app/montree/dashboard/[childId]/page.tsx` | Remove standalone voice note block |
-| `lib/montree/voice-notes/extraction.ts` | Haiku → Sonnet model upgrade |
+| `lib/montree/voice-notes/extraction.ts` | Haiku → Sonnet model upgrade + comment fixes |
 
 ## Push Command
 
 ```bash
-git add components/montree/voice-notes/ChildVoiceNote.tsx components/montree/child/FocusWorksSection.tsx app/montree/dashboard/\\[childId\\]/page.tsx lib/montree/voice-notes/extraction.ts && git commit -m "refactor: move voice note mic inline next to Save + upgrade to Sonnet" && git push origin main
+git add components/montree/voice-notes/ChildVoiceNote.tsx components/montree/child/FocusWorksSection.tsx app/montree/dashboard/\[childId\]/page.tsx lib/montree/voice-notes/extraction.ts docs/handoffs/HANDOFF_VOICE_NOTE_INLINE_MAR6.md && git commit -m "refactor: move voice note mic inline next to Save + upgrade to Sonnet" && git push origin main
 ```
