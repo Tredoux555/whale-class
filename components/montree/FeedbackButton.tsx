@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas-pro';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, TranslationKey } from '@/lib/montree/i18n';
 
 interface FeedbackButtonProps {
   // Optional overrides - if not provided, auto-detects from session
@@ -283,11 +283,11 @@ export default function FeedbackButton({
           setIsOpen(false);
         }, 1500);
       } else {
-        alert(t('feedback.send_failed'));
+        alert(t('feedback.sendFailed'));
       }
     } catch (error) {
       console.error('Feedback error:', error);
-      alert(t('feedback.send_failed'));
+      alert(t('feedback.sendFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -356,7 +356,7 @@ export default function FeedbackButton({
                     ×
                   </button>
                   <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 text-white text-xs rounded">
-                    📸 {t('feedback.screenshot_attached')}
+                    📸 {t('feedback.screenshotAttached')}
                   </div>
                 </div>
               ) : (
@@ -377,12 +377,12 @@ export default function FeedbackButton({
                   ) : screenshotError ? (
                     <>
                       <span>⚠️</span>
-                      {t('feedback.capture_failed')}
+                      {t('feedback.captureFailed')}
                     </>
                   ) : (
                     <>
                       <span>📸</span>
-                      {t('feedback.capture_screen')}
+                      {t('feedback.captureScreen')}
                     </>
                   )}
                 </button>
@@ -419,7 +419,7 @@ export default function FeedbackButton({
                   <span className="animate-spin">⏳</span> {t('feedback.sending')}
                 </span>
               ) : (
-                `${t('feedback.send')}${screenshot ? ` ${t('feedback.with_screenshot')}` : ''} →`
+                `${t('feedback.send')}${screenshot ? ` ${t('feedback.withScreenshot')}` : ''} →`
               )}
             </button>
           </div>

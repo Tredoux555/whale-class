@@ -236,7 +236,7 @@ export default function GuruChatThread({
           timestamp: new Date().toISOString(),
         };
         setMessages(prev => [...prev, guruMsg]);
-      } else if (data.error === 'guru_limit_reached') {
+      } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
         onGuruLimitReached?.();
         toast.error(t('guru.limitReachedUpgrade'));
       } else {
