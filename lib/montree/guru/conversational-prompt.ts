@@ -7,6 +7,7 @@ import { KnowledgeResult, formatKnowledgeForPrompt } from './knowledge-retriever
 import { getConcernById } from './concern-mappings';
 import { getRelevantPsychologyKnowledge } from './knowledge/psychology-foundations';
 import { formatSensitivePeriodsForPrompt } from './knowledge/sensitive-periods';
+import { formatLanguageProgressionForPrompt } from './knowledge/ami-language-progression';
 
 const CONVERSATIONAL_SYSTEM_PROMPT = `You are a warm, knowledgeable Montessori guide AND emotional support system for homeschool parents. You're like a wise friend who has 30 years of Montessori experience AND deep empathy for the emotional reality of parenting. You're chatting through a messaging app.
 
@@ -107,6 +108,7 @@ YOUR PERSONALITY:
 YOUR EXPERTISE COVERS EVERYTHING A TEACHER NEEDS:
 1. Curriculum & Materials:
    - Deep knowledge of every Montessori work across all 5 areas
+   - EXPERT on the AMI English Language Progression (43 works, 5 categories) — you can guide teachers step-by-step through every language work from Vocabulary Enrichment to Homonyms
    - Presentation techniques, extensions, variations
    - When to introduce works, prerequisites, progression sequences
    - DIY alternatives and material modifications
@@ -158,6 +160,31 @@ PSYCHOLOGICAL FOUNDATIONS (use naturally, don't lecture):
 - Erikson: Age-stage tensions (autonomy vs shame, initiative vs guilt)
 - Dweck: Growth mindset — how you praise matters (process over outcome)
 - Kohn: Intrinsic motivation — why Montessori's reward-free approach works
+
+TOOL USE — UPDATING THE CHILD'S SHELF:
+You have tools to actively manage the child's Montessori shelf. When the teacher discusses a child and the conversation suggests work changes:
+- Use set_focus_work to update what the child should work on next week
+- Use update_progress to mark works as mastered/practicing/presented
+- Use save_observation for notable behavioral observations
+- ALWAYS use tools when you recommend a specific work change — don't just say it, DO it
+- After using tools, confirm to the teacher: "I've updated [child]'s shelf — [work name] is now set for language."
+- The teacher can then print the updated weekly plan.
+
+"WEEKLY ADMIN" COMMAND:
+When the teacher says "weekly admin" or "give me the weekly admin" for a child, do ALL of these:
+1. Look at the child's current shelf, progress, and your teacher notes
+2. Use update_progress to mark any works that should change status based on what happened this week
+3. Use set_focus_work to set the recommended works for NEXT week (use tools — actually update the system)
+4. Then respond with EXACTLY this format (3 items the teacher can copy-paste):
+
+**THIS WEEK:** [1-2 sentences — what the child worked on and how they did, referencing specific works and your notes]
+
+**NEXT WEEK:** [1-2 sentences — what you just set on their shelf and why]
+
+**ONE-LINER:** [Single sentence, max 15 words, capturing the big picture]
+
+Then add a brief paragraph of advice — especially for the language area, referencing the AMI progression.
+Do NOT ask follow-up questions. Just do it. The teacher wants quick copy-paste output + updated shelf.
 
 CONVERSATION MEMORY:
 If you have previous messages, build on them naturally:
@@ -374,8 +401,10 @@ function buildEmotionalMirroringInstructions(
 
 export type GuruMode = 'SETUP' | 'INTAKE' | 'CHECKIN' | 'REFLECTION' | 'NORMAL';
 
-/** Modes where Guru tools (shelf/progress/observations) are enabled */
-export const TOOL_ENABLED_MODES: GuruMode[] = ['SETUP', 'INTAKE', 'CHECKIN'];
+/** Modes where Guru tools (shelf/progress/observations) are enabled.
+ * NORMAL included so teachers can ask the Guru to update works during conversation.
+ * REFLECTION excluded to keep those chats lightweight. */
+export const TOOL_ENABLED_MODES: GuruMode[] = ['SETUP', 'INTAKE', 'CHECKIN', 'NORMAL'];
 
 export interface ConversationalPromptParts {
   systemPrompt: string;
@@ -584,6 +613,15 @@ export function buildConversationalPrompt(
     if (deepPsychKnowledge) {
       systemPrompt += `\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don't ${isTeacher ? 'lecture' : 'dump all of this on the parent'}):\n` + deepPsychKnowledge;
     }
+  }
+
+  // AMI English Language Progression — inject for all tiers, child-specific context
+  const languageProgression = formatLanguageProgressionForPrompt(
+    childContext.focus_works?.map(fw => ({ area: fw.area, work_name: fw.work_name })),
+    childAgeMonths > 0 ? childAgeMonths : undefined,
+  );
+  if (languageProgression) {
+    systemPrompt += `\n\nAMI ENGLISH LANGUAGE CURRICULUM (use this to guide language work — you are an expert on the 43-work AMI language progression):\n` + languageProgression;
   }
 
   // First message gets a special greeting instruction

@@ -178,6 +178,10 @@ function GuruContent() {
             onChange={(e) => {
               const child = children.find(c => c.id === e.target.value);
               setSelectedChild(child || null);
+              // Update URL so browser back/forward preserves child context
+              if (child) {
+                window.history.replaceState(null, '', `/montree/dashboard/guru?child=${child.id}`);
+              }
             }}
             className={`w-full p-2 rounded-lg border text-sm ${
               isParent

@@ -23,6 +23,8 @@ import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
+import GuruWeeklySummary from '@/components/montree/child/GuruWeeklySummary';
+import PrintButton from '@/components/montree/child/PrintButton';
 
 
 interface Assignment {
@@ -69,6 +71,13 @@ export default function WeekPage() {
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
+  // Guru weekly summary state
+  const [guruSummary, setGuruSummary] = useState<string | null>(null);
+  const [guruThisWeek, setGuruThisWeek] = useState<string | null>(null);
+  const [guruNextWeek, setGuruNextWeek] = useState<string | null>(null);
+  const [guruOneLiner, setGuruOneLiner] = useState<string | null>(null);
+  const [guruSummaryUpdatedAt, setGuruSummaryUpdatedAt] = useState<string | null>(null);
 
   // All works combined (for checking if already added)
   const allWorks = [...focusWorks, ...extraWorks];
@@ -199,6 +208,24 @@ export default function WeekPage() {
         setLoading(false);
       });
   };
+
+  // Fetch guru weekly summary from child settings
+  useEffect(() => {
+    if (!childId) return;
+    fetch(`/api/montree/children/${childId}?fields=settings`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const settings = data?.child?.settings || data?.settings || {};
+        if (settings.guru_weekly_summary) {
+          setGuruSummary(settings.guru_weekly_summary);
+          setGuruThisWeek(settings.guru_weekly_this_week || null);
+          setGuruNextWeek(settings.guru_weekly_next_week || null);
+          setGuruOneLiner(settings.guru_weekly_one_liner || null);
+          setGuruSummaryUpdatedAt(settings.guru_weekly_summary_updated_at || null);
+        }
+      })
+      .catch(() => {});
+  }, [childId]);
 
   // Fetch on mount and when childId changes
   useEffect(() => {
@@ -547,15 +574,31 @@ export default function WeekPage() {
         />
         </div>
         {!isHomeschoolParent(session) && (
-          <button
-            data-tutorial="invite-parent-button"
-            onClick={() => setInviteModalOpen(true)}
-            className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
-          >
-            👨‍👩‍👧 {t('weekview.inviteParent')}
-          </button>
+          <>
+            <PrintButton childId={childId} schoolId={session?.school?.id} />
+            <button
+              data-tutorial="invite-parent-button"
+              onClick={() => setInviteModalOpen(true)}
+              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
+            >
+              👨‍👩‍👧 {t('weekview.inviteParent')}
+            </button>
+          </>
         )}
       </div>
+
+      {/* Guru Weekly Admin — 3 copy-paste items (this week / next week / one-liner) */}
+      {!isHomeschoolParent(session) && (
+        <GuruWeeklySummary
+          summary={guruSummary}
+          thisWeek={guruThisWeek}
+          nextWeek={guruNextWeek}
+          oneLiner={guruOneLiner}
+          updatedAt={guruSummaryUpdatedAt}
+          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          childId={childId}
+        />
+      )}
 
       {/* FOCUS WORKS - One per area, with extras grouped underneath */}
       <div data-tutorial="focus-section">

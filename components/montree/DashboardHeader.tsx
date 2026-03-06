@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
@@ -15,10 +15,18 @@ import LanguageToggle from './LanguageToggle';
 
 export default function DashboardHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
   const [razTrackerEnabled, setRazTrackerEnabled] = useState(false);
+
+  // Extract childId from URL when on a child's page (e.g. /montree/dashboard/[childId]/...)
+  // This ensures the Guru link carries the current child context
+  const childIdFromPath = (() => {
+    const match = pathname.match(/\/montree\/dashboard\/([a-f0-9-]{36})/);
+    return match ? match[1] : null;
+  })();
 
   useEffect(() => {
     const sess = getSession();
@@ -84,7 +92,7 @@ export default function DashboardHeader() {
             📚
           </Link>
           <Link
-            href="/montree/dashboard/guru"
+            href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
             data-tutorial="guru-link"
             data-guide="nav-guru"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
