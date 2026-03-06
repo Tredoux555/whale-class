@@ -31,6 +31,7 @@ interface ExtractionResult {
   this_week: string;
   next_week: string;
   one_liner: string;
+  advice: string;
   work_changes: WorkChange[];
 }
 
@@ -80,17 +81,20 @@ Extract these items for the teacher's weekly admin report (all in third person a
 
 2. NEXT WEEK: 1-2 sentences — what the child will focus on next week based on the Guru's recommendations. Example: "Next week Joey will begin Moveable Alphabet word-building and continue Sandpaper Letters with new letter group."
 
-3. ONE LINER: Exactly 1 short sentence (max 15 words) capturing the overall picture. Example: "Joey is building strong phonemic awareness and is ready for word-building."
+3. ONE LINER: Purely factual, max 15 words. Format: "${childName} did [X] this week, next week [they] will do [Y]". NO opinions, NO observations, NO assessments — just facts. Example: "Joey did Sandpaper Letters (s,m,a,t) this week, next week he will start Moveable Alphabet."
 
-4. SUMMARY: Combine this_week + next_week into a single 30-word paragraph for the weekly plan print view.
+4. ADVICE: 1-2 paragraphs of deep developmental advice from the Guru's response. Extract the expert analysis — AMI progression insights, sensitive period observations, developmental psychology, WHY certain works are recommended, what to watch for. This is the Guru's unique value. If the response doesn't contain deep advice, write it based on the child's current works and progress. Max 500 words.
 
-5. WORK CHANGES: If the Guru explicitly recommended adding or changing specific works, list them. Only include changes the Guru clearly recommended — do NOT invent changes. Use exact work names from the Montessori curriculum.
+5. SUMMARY: Combine this_week + next_week into a single 30-word paragraph for the weekly plan print view.
+
+6. WORK CHANGES: If the Guru explicitly recommended adding or changing specific works, list them. Only include changes the Guru clearly recommended — do NOT invent changes. Use exact work names from the Montessori curriculum.
 
 Respond in JSON only:
 {
   "this_week": "...",
-  "next_week": "...",
-  "one_liner": "...",
+  "next_week": "${childName} did ... this week, next week ... will ...",
+  "one_liner": "${childName} did ... this week, next week ... will ...",
+  "advice": "...(1-2 paragraphs of deep developmental advice)...",
   "summary": "...(~30 words combined)...",
   "work_changes": [
     { "action": "add", "area": "language", "work_name": "Sandpaper Letters" }
@@ -102,7 +106,7 @@ JSON:`;
 
     const msg = await anthropic.messages.create({
       model: HAIKU_MODEL,
-      max_tokens: 512,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: extractionPrompt }],
     });
 
@@ -139,6 +143,7 @@ JSON:`;
       guru_weekly_this_week: (extraction.this_week || '').slice(0, 300),
       guru_weekly_next_week: (extraction.next_week || '').slice(0, 300),
       guru_weekly_one_liner: (extraction.one_liner || '').slice(0, 150),
+      guru_weekly_advice: (extraction.advice || '').slice(0, 2000),
       guru_weekly_summary_updated_at: new Date().toISOString(),
       guru_weekly_summary_interaction_id: interactionId || null,
     });
