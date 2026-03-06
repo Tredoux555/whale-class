@@ -5,7 +5,7 @@
 // Tap mic → record → stop → Whisper transcribe → Sonnet extract → auto-update progress
 // Transcript fills the textarea so teacher can edit before saving
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -29,6 +29,17 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Cleanup on unmount: stop recording + abort in-flight requests
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
+      }
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
 
   // Process: transcribe → extract → save
   const processRecording = useCallback(async () => {
