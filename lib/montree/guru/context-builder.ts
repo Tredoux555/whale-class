@@ -30,6 +30,9 @@ export interface ChildContext {
   // Work session notes
   teacher_notes: TeacherNote[];
 
+  // Voice notes (from voice recording feature)
+  voice_notes: VoiceNote[];
+
   // Focus works (current shelf)
   focus_works: Array<{ area: string; work_name: string; set_at: string; set_by: string }>;
 
@@ -124,6 +127,14 @@ export interface TeacherNote {
   work_name: string;
   notes: string;
   observed_at: string;
+}
+
+export interface VoiceNote {
+  work_name: string | null;
+  transcript: string | null;
+  behavioral_notes: string | null;
+  next_steps: string | null;
+  created_at: string;
 }
 
 function calculateAge(dateOfBirth: string): { years: number; months: number } {
@@ -306,13 +317,30 @@ export async function buildChildContext(
       observed_at: s.observed_at,
     }));
 
-  // 7. Fetch focus works (current shelf)
+  // 7. Fetch voice notes (last 30 days)
+  const { data: voiceNotesData } = await supabase
+    .from('montree_voice_notes')
+    .select('work_name, transcript, behavioral_notes, next_steps, created_at')
+    .eq('child_id', childId)
+    .gte('created_at', thirtyDaysAgo.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  const voiceNotes: VoiceNote[] = (voiceNotesData || []).map(v => ({
+    work_name: v.work_name,
+    transcript: v.transcript,
+    behavioral_notes: v.behavioral_notes,
+    next_steps: v.next_steps,
+    created_at: v.created_at,
+  }));
+
+  // 8. Fetch focus works (current shelf)
   const { data: focusWorks } = await supabase
     .from('montree_child_focus_works')
     .select('area, work_name, set_at, set_by')
     .eq('child_id', childId);
 
-  // 8. Fetch child settings for guru profile
+  // 9. Fetch child settings for guru profile
   const { data: childSettings } = await supabase
     .from('montree_children')
     .select('settings')
@@ -335,6 +363,7 @@ export async function buildChildContext(
     recent_observations: recentObservations,
     past_interactions: pastInteractions,
     teacher_notes: teacherNotes,
+    voice_notes: voiceNotes,
     focus_works: (focusWorks || []).map(fw => ({
       area: fw.area,
       work_name: fw.work_name,
@@ -474,12 +503,41 @@ export function formatContextForPrompt(context: ChildContext): string {
     lines.push('');
   }
 
-  // Teacher notes
+  // Teacher notes (from work sessions)
   if (context.teacher_notes.length > 0) {
     lines.push('TEACHER NOTES:');
     context.teacher_notes.slice(0, 10).forEach(note => {
       const date = new Date(note.observed_at).toLocaleDateString();
       lines.push(`[${date}] ${note.work_name}: ${note.notes}`);
+    });
+    lines.push('');
+  }
+
+  // Progress notes (from work tracking updates)
+  const worksWithNotes = context.current_works.filter(w => w.notes && w.notes.trim());
+  if (worksWithNotes.length > 0) {
+    lines.push('PROGRESS NOTES:');
+    worksWithNotes.slice(0, 15).forEach(work => {
+      const date = new Date(work.last_worked).toLocaleDateString();
+      lines.push(`[${date}] ${work.work_name} (${work.status}): ${work.notes}`);
+    });
+    lines.push('');
+  }
+
+  // Voice notes (from voice recording observations)
+  if (context.voice_notes && context.voice_notes.length > 0) {
+    lines.push('VOICE OBSERVATION NOTES:');
+    context.voice_notes.slice(0, 10).forEach(vn => {
+      const date = new Date(vn.created_at).toLocaleDateString();
+      const workLabel = vn.work_name || 'General';
+      const parts: string[] = [];
+      if (vn.transcript) parts.push(`Transcript: ${vn.transcript}`);
+      if (vn.behavioral_notes) parts.push(`Behavior: ${vn.behavioral_notes}`);
+      if (vn.next_steps) parts.push(`Next steps: ${vn.next_steps}`);
+      if (parts.length > 0) {
+        lines.push(`[${date}] ${workLabel}:`);
+        parts.forEach(p => lines.push(`  ${p}`));
+      }
     });
     lines.push('');
   }
