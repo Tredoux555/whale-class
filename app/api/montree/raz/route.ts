@@ -28,6 +28,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verify child access if child_id is provided
+    if (childId) {
+      const childCheck = await verifyChildBelongsToSchool(childId, auth.schoolId!);
+      if (!childCheck.allowed) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
+    }
+
     let query = supabase.from('raz_reading_records').select('*');
 
     if (childId) {
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Verify child belongs to this school
     const childCheck = await verifyChildBelongsToSchool(child_id, auth.schoolId!);
-    if (!childCheck) {
+    if (!childCheck.allowed) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
@@ -156,7 +164,7 @@ export async function PATCH(request: NextRequest) {
     // Verify child ownership if child_id provided
     if (child_id) {
       const childCheck = await verifyChildBelongsToSchool(child_id, auth.schoolId!);
-      if (!childCheck) {
+      if (!childCheck.allowed) {
         return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
       }
     }

@@ -350,7 +350,7 @@ export default function PortalChat({
         if (data.actions?.some((a: { success: boolean }) => a.success)) {
           onShelfUpdated?.();
         }
-      } else if (data.error === 'guru_limit_reached') {
+      } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
         onGuruLimitReached?.();
         toast.error(t('home.portal.limitReached'));
       } else {
