@@ -1,14 +1,13 @@
 // /montree/dashboard/raz/page.tsx
-// RAZ Reading Tracker - Streamlined: status-first, Read triggers camera flow
-// Flow: Tap Read → camera opens → Book → Signature → New Book → done, next kid
-// Not Read / No Folder / Absent = one tap, no camera
+// RAZ Reading Tracker - Custom camera via getUserMedia for instant captures
+// Flow: Tap Read → live camera preview → tap tap tap (3 photos) → done, next kid
+// No iOS "Use Photo" confirmation, no file picker, no delay between shots
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
-import { compressImage } from '@/lib/montree/cache';
 import { RAZSkeleton } from '@/components/montree/Skeletons';
 
 interface Child {
@@ -43,9 +42,9 @@ const STATUS_CONFIG: Record<StatusType, { label: string; emoji: string; color: s
 
 const PHOTO_SEQUENCE: PhotoType[] = ['book', 'signature', 'new_book'];
 const PHOTO_LABELS: Record<PhotoType, string> = {
-  book: 'Book Read',
-  signature: 'Signature',
-  new_book: 'New Book',
+  book: '📖 Book',
+  signature: '✍️ Signature',
+  new_book: '📗 New Book',
 };
 const PHOTO_URL_KEYS: Record<PhotoType, keyof RazRecord> = {
   book: 'book_photo_url',
@@ -53,12 +52,13 @@ const PHOTO_URL_KEYS: Record<PhotoType, keyof RazRecord> = {
   new_book: 'new_book_photo_url',
 };
 
-// All camera flow state lives in a ref — set synchronously, no React batching issues
 interface CameraFlowState {
   childId: string;
   childName: string;
-  step: number;       // index into PHOTO_SEQUENCE
-  oneShot: boolean;   // true = retake single photo, don't continue sequence
+  step: number;
+  oneShot: boolean;
+  // Local preview URLs for instant feedback (before upload finishes)
+  previews: (string | null)[];
 }
 
 export default function RazTrackerPage() {
@@ -68,16 +68,21 @@ export default function RazTrackerPage() {
   const [records, setRecords] = useState<Record<string, RazRecord>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
 
-  // Camera flow — ref is the source of truth, state is for UI rendering only
-  const flowRef = useRef<CameraFlowState | null>(null);
-  const [cameraFlowUI, setCameraFlowUI] = useState<CameraFlowState | null>(null);
+  // Custom camera refs
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
-  // Busy guard — only blocks during active camera flow, NOT during uploads
-  const [busy, setBusy] = useState(false);
+  // Camera flow state
+  const [cameraFlow, setCameraFlow] = useState<CameraFlowState | null>(null);
+  const flowRef = useRef<CameraFlowState | null>(null);
+
+  // File input fallback (for browsers without getUserMedia)
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [useFallback, setUseFallback] = useState(false);
 
   // Photo lightbox viewer
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; label: string; childName: string } | null>(null);
@@ -113,9 +118,9 @@ export default function RazTrackerPage() {
   useEffect(() => {
     return () => {
       mountedRef.current = false;
+      stopCamera();
       uploadAbortRefs.current.forEach(c => c.abort());
       uploadAbortRefs.current.clear();
-      flowRef.current = null;
     };
   }, []);
 
@@ -130,7 +135,6 @@ export default function RazTrackerPage() {
       const childData = await childRes.json();
       const razData = await razRes.json();
       setChildren(childData.children || []);
-
       const recordMap: Record<string, RazRecord> = {};
       (razData.records || []).forEach((r: RazRecord) => { recordMap[r.child_id] = r; });
       setRecords(recordMap);
@@ -141,142 +145,116 @@ export default function RazTrackerPage() {
     setLoading(false);
   }
 
-  // Set status via API — returns true on success
-  async function setStatus(childId: string, newStatus: StatusType): Promise<boolean> {
-    const sess = sessionRef.current;
-    if (!sess?.classroom?.id) return false;
+  // --- Camera functions ---
+
+  async function startCamera(childId: string, childName: string, step: number, oneShot: boolean) {
+    const flow: CameraFlowState = { childId, childName, step, oneShot, previews: [null, null, null] };
+    flowRef.current = flow;
+    setCameraFlow(flow);
+
     try {
-      const res = await fetch('/api/montree/raz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          classroom_id: sess.classroom.id,
-          date: dateRef.current,
-          status: newStatus,
-          recorded_by: sess.teacher?.name || 'teacher',
-        }),
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 960 } },
+        audio: false,
       });
-      const data = await res.json();
-      if (data.success && res.ok) {
-        if (mountedRef.current) {
-          setRecords(prev => ({ ...prev, [childId]: data.record }));
-        }
-        return true;
+      if (!mountedRef.current) { stream.getTracks().forEach(t => t.stop()); return; }
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
       }
-      if (mountedRef.current) toast.error('Failed to save');
-      return false;
     } catch {
-      if (mountedRef.current) toast.error('Failed to save');
-      return false;
+      // getUserMedia failed (permission denied, not supported) → fall back to file input
+      if (!mountedRef.current) return;
+      setUseFallback(true);
+      triggerFileInput();
     }
   }
 
-  // Handle status button tap
-  async function handleStatusTap(child: Child, status: StatusType) {
-    if (busy) return;
-
-    const currentStatus = records[child.id]?.status;
-
-    // Tapping same status = toggle off → persist as not_read
-    if (currentStatus === status) {
-      setBusy(true);
-      await setStatus(child.id, 'not_read');
-      if (mountedRef.current) setBusy(false);
-      return;
-    }
-
-    if (status === 'read') {
-      // Read: save status in background (fire-and-forget), open camera IMMEDIATELY
-      setBusy(true);
-      // Optimistic update — show green border instantly
-      setRecords(prev => ({
-        ...prev,
-        [child.id]: { ...prev[child.id], child_id: child.id, record_date: selectedDate, status: 'read' },
-      }));
-      setStatus(child.id, 'read'); // background — don't await
-      openCamera(child.id, child.name, 0, false);
-    } else {
-      // Non-read: save with error feedback
-      const success = await setStatus(child.id, status);
-      if (!success && mountedRef.current) {
-        toast.error(`Failed to mark ${child.name}`);
-      }
-    }
-  }
-
-  // Retake a specific photo
-  function retakePhoto(child: Child, photoType: PhotoType) {
-    if (busy) return;
-    setBusy(true);
-    const step = PHOTO_SEQUENCE.indexOf(photoType);
-    openCamera(child.id, child.name, step, true);
-  }
-
-  // Open camera — sets ref synchronously, shows overlay with tap-to-capture button
-  // Mobile browsers block programmatic file input clicks — user must tap a real button
-  function openCamera(childId: string, childName: string, step: number, oneShot: boolean) {
-    const flow: CameraFlowState = { childId, childName, step, oneShot };
-    flowRef.current = flow;          // Ref set FIRST — synchronous, no batching
-    setCameraFlowUI(flow);           // State for UI re-render — shows tap-to-capture overlay
-  }
-
-  // Called by the visible "Take Photo" button — real user gesture so file input works
-  function triggerCamera() {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
-    }
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
   }
 
   function endCameraFlow() {
+    stopCamera();
     flowRef.current = null;
-    setCameraFlowUI(null);
-    setBusy(false);
+    setCameraFlow(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
-  // Single photo capture handler — reads from flowRef (always in sync)
-  const handlePhotoCapture = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  // Capture a frame from the live video — INSTANT, no confirmation
+  function captureFrame() {
     const flow = flowRef.current;
+    if (!flow) return;
 
-    // No file or no active flow → user dismissed camera
-    if (!e.target.files?.[0] || !flow) {
-      endCameraFlow();
-      return;
-    }
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
 
     const sess = sessionRef.current;
-    if (!sess?.classroom?.id) {
-      endCameraFlow();
-      return;
-    }
+    if (!sess?.classroom?.id) return;
 
-    const rawFile = e.target.files[0];
+    // Draw current video frame to canvas
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 960;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Get local preview URL immediately
+    const previewUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+    // Update flow with preview
+    const newPreviews = [...flow.previews];
+    newPreviews[flow.step] = previewUrl;
+    const updatedFlow = { ...flow, previews: newPreviews };
+
     const { childId, childName, step, oneShot } = flow;
     const photoType = PHOTO_SEQUENCE[step];
     const date = dateRef.current;
 
-    // Reset file input immediately
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    // Convert canvas to blob and upload in background
+    canvas.toBlob((blob) => {
+      if (!blob || !mountedRef.current) return;
+      const file = new File([blob], `raz-${photoType}-${Date.now()}.jpg`, { type: 'image/jpeg' });
+      uploadPhoto(file, childId, date, photoType, sess.classroom.id);
+    }, 'image/jpeg', 0.8);
 
-    // Background upload with AbortController
-    const uploadKey = `${oneShot ? 'retake-' : ''}${childId}-${photoType}`;
+    // Flash feedback
+    toast.success(`${PHOTO_LABELS[photoType]}`, { duration: 800 });
+
+    // Advance to next step or finish
+    if (oneShot) {
+      endCameraFlow();
+    } else {
+      const nextStep = step + 1;
+      if (nextStep < PHOTO_SEQUENCE.length) {
+        const nextFlow = { ...updatedFlow, step: nextStep };
+        flowRef.current = nextFlow;
+        setCameraFlow(nextFlow);
+        // Camera stays open — no delay, just tap again
+      } else {
+        endCameraFlow();
+        toast.success(`✅ ${childName} done!`, { duration: 1200 });
+      }
+    }
+  }
+
+  // Background upload — fire and forget
+  function uploadPhoto(file: File, childId: string, date: string, photoType: PhotoType, classroomId: string) {
+    const uploadKey = `${childId}-${photoType}`;
     const uploadController = new AbortController();
     uploadAbortRefs.current.set(uploadKey, uploadController);
+    if (mountedRef.current) setUploading(prev => new Set(prev).add(uploadKey));
 
-    if (mountedRef.current) {
-      setUploading(prev => new Set(prev).add(uploadKey));
-    }
-
-    // Compress image client-side (5MB phone photo → ~150KB) then upload
-    compressImage(rawFile, 1200, 0.8).then(file => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('childId', childId);
     formData.append('date', date);
     formData.append('photoType', photoType);
-    formData.append('classroomId', sess.classroom.id);
+    formData.append('classroomId', classroomId);
 
     fetch('/api/montree/raz/upload', {
       method: 'POST',
@@ -287,20 +265,11 @@ export default function RazTrackerPage() {
       .then(data => {
         if (!mountedRef.current) return;
         if (data.success) {
-          // Only merge the photo URL — never overwrite status
           setRecords(prev => {
             const existing = prev[childId];
             if (!existing) return { ...prev, [childId]: data.record };
-            return {
-              ...prev,
-              [childId]: {
-                ...existing,
-                [PHOTO_URL_KEYS[photoType]]: data.record[PHOTO_URL_KEYS[photoType]],
-              },
-            };
+            return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: data.record[PHOTO_URL_KEYS[photoType]] } };
           });
-        } else {
-          toast.error(`Failed: ${PHOTO_LABELS[photoType]}`);
         }
       })
       .catch(err => {
@@ -310,221 +279,321 @@ export default function RazTrackerPage() {
       .finally(() => {
         uploadAbortRefs.current.delete(uploadKey);
         if (mountedRef.current) {
-          setUploading(prev => {
-            const next = new Set(prev);
-            next.delete(uploadKey);
-            return next;
-          });
+          setUploading(prev => { const n = new Set(prev); n.delete(uploadKey); return n; });
         }
       });
-    }); // end compressImage
+  }
 
-    // Quick feedback
-    toast.success(
-      oneShot ? `📸 Retaken: ${PHOTO_LABELS[photoType]}` : `📸 ${PHOTO_LABELS[photoType]} — ${childName}`,
-      { duration: 1200 },
-    );
+  // --- File input fallback ---
 
-    // Continue sequence or end
+  function triggerFileInput() {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  }
+
+  const handleFileCapture = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const flow = flowRef.current;
+    if (!e.target.files?.[0] || !flow) { endCameraFlow(); return; }
+    const sess = sessionRef.current;
+    if (!sess?.classroom?.id) { endCameraFlow(); return; }
+
+    const file = e.target.files[0];
+    const { childId, childName, step, oneShot } = flow;
+    const photoType = PHOTO_SEQUENCE[step];
+    if (fileInputRef.current) fileInputRef.current.value = '';
+
+    uploadPhoto(file, childId, dateRef.current, photoType, sess.classroom.id);
+    toast.success(`${PHOTO_LABELS[photoType]}`, { duration: 800 });
+
     if (oneShot) {
       endCameraFlow();
     } else {
       const nextStep = step + 1;
       if (nextStep < PHOTO_SEQUENCE.length) {
-        // Update flow to next step
-        const nextFlow: CameraFlowState = { childId, childName, step: nextStep, oneShot: false };
+        const nextFlow = { ...flow, step: nextStep };
         flowRef.current = nextFlow;
-        setCameraFlowUI(nextFlow);
-        // Try auto-open camera — synchronous click preserves user gesture from onChange
-        // If browser blocks it, the overlay TAP button is the fallback
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-          fileInputRef.current.click();
-        }
+        setCameraFlow(nextFlow);
+        // Try auto-open file input from onChange context
+        if (fileInputRef.current) { fileInputRef.current.value = ''; fileInputRef.current.click(); }
       } else {
         endCameraFlow();
-        toast.success(`✅ ${childName} done!`, { duration: 1500 });
+        toast.success(`✅ ${childName} done!`, { duration: 1200 });
       }
     }
-  }, []); // No deps needed — reads everything from refs
+  }, []);
 
-  // Stats
-  const totalKids = children.length;
+  // --- Status + record management ---
+
+  async function setStatus(childId: string, newStatus: StatusType): Promise<boolean> {
+    const sess = sessionRef.current;
+    if (!sess?.classroom?.id) return false;
+    try {
+      const res = await fetch('/api/montree/raz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId, classroom_id: sess.classroom.id,
+          date: dateRef.current, status: newStatus,
+          recorded_by: sess.teacher?.name || 'teacher',
+        }),
+      });
+      const data = await res.json();
+      if (data.success && res.ok) {
+        if (mountedRef.current) setRecords(prev => ({ ...prev, [childId]: data.record }));
+        return true;
+      }
+      if (mountedRef.current) toast.error('Failed to save');
+      return false;
+    } catch {
+      if (mountedRef.current) toast.error('Failed to save');
+      return false;
+    }
+  }
+
+  function handleStatusTap(child: Child, status: StatusType) {
+    if (cameraFlow) return; // camera is open, ignore
+
+    const currentStatus = records[child.id]?.status;
+
+    // Toggle off
+    if (currentStatus === status) {
+      setStatus(child.id, 'not_read');
+      setRecords(prev => ({
+        ...prev,
+        [child.id]: { ...prev[child.id], child_id: child.id, record_date: selectedDate, status: 'not_read' },
+      }));
+      return;
+    }
+
+    if (status === 'read') {
+      // Optimistic update + fire-and-forget save + open camera
+      setRecords(prev => ({
+        ...prev,
+        [child.id]: { ...prev[child.id], child_id: child.id, record_date: selectedDate, status: 'read' },
+      }));
+      setStatus(child.id, 'read');
+      if (useFallback) {
+        // File input fallback
+        const flow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null] };
+        flowRef.current = flow;
+        setCameraFlow(flow);
+        triggerFileInput();
+      } else {
+        startCamera(child.id, child.name, 0, false);
+      }
+    } else {
+      // Non-read: optimistic + background save
+      setRecords(prev => ({
+        ...prev,
+        [child.id]: { ...prev[child.id], child_id: child.id, record_date: selectedDate, status },
+      }));
+      setStatus(child.id, status);
+    }
+  }
+
+  function retakePhoto(child: Child, photoType: PhotoType) {
+    if (cameraFlow) return;
+    const step = PHOTO_SEQUENCE.indexOf(photoType);
+    if (useFallback) {
+      const flow: CameraFlowState = { childId: child.id, childName: child.name, step, oneShot: true, previews: [null, null, null] };
+      flowRef.current = flow;
+      setCameraFlow(flow);
+      triggerFileInput();
+    } else {
+      startCamera(child.id, child.name, step, true);
+    }
+  }
+
+  // --- Stats ---
   const readCount = children.filter(c => records[c.id]?.status === 'read').length;
   const notReadCount = children.filter(c => records[c.id]?.status === 'not_read').length;
   const noFolderCount = children.filter(c => records[c.id]?.status === 'no_folder').length;
   const absentCount = children.filter(c => records[c.id]?.status === 'absent').length;
-  const unmarked = totalKids - readCount - notReadCount - noFolderCount - absentCount;
+  const unmarked = children.length - readCount - notReadCount - noFolderCount - absentCount;
 
-  if (loading) {
-    return <RAZSkeleton />;
-  }
+  if (loading) return <RAZSkeleton />;
 
+  // --- Render ---
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#e2e8f0', padding: '16px' }}>
       <Toaster position="top-center" />
 
-      {/* Hidden file input for camera */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style={{ display: 'none' }}
-        onChange={handlePhotoCapture}
-      />
+      {/* Hidden canvas for frame capture */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-      {/* Camera flow overlay — full-screen tap-to-capture */}
-      {cameraFlowUI && (
+      {/* Hidden file input (fallback) */}
+      <input ref={fileInputRef} type="file" accept="image/*" capture="environment"
+        style={{ display: 'none' }} onChange={handleFileCapture} />
+
+      {/* ========= CUSTOM CAMERA OVERLAY ========= */}
+      {cameraFlow && !useFallback && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100,
-          background: 'rgba(0,0,0,0.85)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          gap: 16, padding: 24,
+          background: '#000', display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ fontSize: 14, color: '#94a3b8', letterSpacing: 1 }}>
-            {cameraFlowUI.childName}
+          {/* Top bar: child name + step */}
+          <div style={{
+            padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            background: 'rgba(0,0,0,0.7)', zIndex: 2,
+          }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{cameraFlow.childName}</div>
+              <div style={{ fontSize: 13, color: '#94a3b8' }}>
+                {cameraFlow.oneShot
+                  ? `Retake: ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}`
+                  : `${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}  •  ${cameraFlow.step + 1}/3`
+                }
+              </div>
+            </div>
+            <button onClick={endCameraFlow} style={{
+              background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
+              padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
+            }}>
+              {cameraFlow.oneShot ? 'Cancel' : 'Done'}
+            </button>
           </div>
-          {!cameraFlowUI.oneShot && (
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-              {PHOTO_SEQUENCE.map((pt, i) => (
-                <div key={pt} style={{
-                  width: 10, height: 10, borderRadius: '50%',
-                  background: i < cameraFlowUI.step ? '#22c55e' : i === cameraFlowUI.step ? '#fff' : '#475569',
-                  transition: 'background 0.2s',
-                }} />
+
+          {/* Live video feed */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%', objectFit: 'cover',
+              }}
+            />
+            {/* Step label overlay */}
+            <div style={{
+              position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+              background: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: '6px 16px',
+              color: '#fff', fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap',
+            }}>
+              {PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}
+            </div>
+          </div>
+
+          {/* Bottom controls */}
+          <div style={{
+            padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 20, background: 'rgba(0,0,0,0.85)',
+          }}>
+            {/* Previews of captured shots */}
+            <div style={{ display: 'flex', gap: 6, position: 'absolute', left: 16 }}>
+              {cameraFlow.previews.map((prev, i) => (
+                <div key={i} style={{
+                  width: 36, height: 36, borderRadius: 6, overflow: 'hidden',
+                  border: i === cameraFlow.step ? '2px solid #22c55e' : '2px solid #334155',
+                  background: '#1e293b',
+                }}>
+                  {prev ? (
+                    <img src={prev} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#475569' }}>
+                      {i + 1}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
-          )}
-          <button
-            onClick={triggerCamera}
-            style={{
-              width: 140, height: 140, borderRadius: '50%',
-              background: cameraFlowUI.oneShot ? '#3b82f6' : '#22c55e',
-              border: '4px solid rgba(255,255,255,0.3)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: '#fff', gap: 4,
-              boxShadow: '0 0 40px rgba(34,197,94,0.3)',
-            }}
-          >
-            <span style={{ fontSize: 36 }}>📸</span>
-            <span style={{ fontSize: 12, fontWeight: 700 }}>TAP</span>
-          </button>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', marginTop: 8 }}>
-            {cameraFlowUI.oneShot
-              ? `Retake: ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]}`
-              : PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlowUI.step]]
-            }
+
+            {/* CAPTURE BUTTON — the magic tap */}
+            <button
+              onClick={captureFrame}
+              style={{
+                width: 72, height: 72, borderRadius: '50%',
+                background: '#fff', border: '4px solid rgba(255,255,255,0.3)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 0 20px rgba(255,255,255,0.2)',
+                position: 'relative',
+              }}
+            >
+              <div style={{
+                width: 60, height: 60, borderRadius: '50%',
+                background: '#fff', border: '3px solid #e2e8f0',
+              }} />
+            </button>
+
+            {/* Progress dots */}
+            {!cameraFlow.oneShot && (
+              <div style={{ display: 'flex', gap: 6, position: 'absolute', right: 24 }}>
+                {PHOTO_SEQUENCE.map((_, i) => (
+                  <div key={i} style={{
+                    width: 8, height: 8, borderRadius: '50%',
+                    background: i < cameraFlow.step ? '#22c55e' : i === cameraFlow.step ? '#fff' : '#475569',
+                  }} />
+                ))}
+              </div>
+            )}
           </div>
-          {!cameraFlowUI.oneShot && (
-            <div style={{ fontSize: 13, color: '#94a3b8' }}>
-              Photo {cameraFlowUI.step + 1} of 3
-            </div>
-          )}
-          <button
-            onClick={endCameraFlow}
-            style={{
-              marginTop: 24, background: 'none', border: '1px solid #475569',
-              borderRadius: 8, padding: '8px 24px', color: '#94a3b8',
-              cursor: 'pointer', fontSize: 14,
-            }}
-          >
-            {cameraFlowUI.oneShot ? 'Cancel' : 'Skip remaining'}
-          </button>
         </div>
       )}
 
       {/* Photo lightbox viewer */}
       {viewingPhoto && (
-        <div
-          onClick={() => setViewingPhoto(null)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 200,
-            background: 'rgba(0,0,0,0.92)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            padding: 16, cursor: 'pointer',
-          }}
-        >
+        <div onClick={() => setViewingPhoto(null)} style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(0,0,0,0.92)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          padding: 16, cursor: 'pointer',
+        }}>
           <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 8 }}>
             {viewingPhoto.childName} — {viewingPhoto.label}
           </div>
-          <img
-            src={viewingPhoto.url}
-            alt={viewingPhoto.label}
-            style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8, objectFit: 'contain' }}
-          />
+          <img src={viewingPhoto.url} alt={viewingPhoto.label}
+            style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8, objectFit: 'contain' }} />
           <div style={{ fontSize: 13, color: '#64748b', marginTop: 12 }}>Tap anywhere to close</div>
         </div>
       )}
 
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, marginTop: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>📚 RAZ Reading Tracker</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>📚 RAZ Tracker</h1>
           <p style={{ fontSize: 13, color: '#94a3b8', margin: '4px 0 0' }}>
-            {session?.classroom?.name || 'Classroom'} &middot; {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            {session?.classroom?.name || 'Classroom'} · {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </p>
         </div>
-        <button
-          onClick={() => router.push('/montree/dashboard')}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}
-        >
+        <button onClick={() => router.push('/montree/dashboard')}
+          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>
           ← Back
         </button>
       </div>
 
       {/* Date Picker */}
       <div style={{ marginBottom: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate + 'T12:00:00');
-            d.setDate(d.getDate() - 1);
-            setSelectedDate(d.toISOString().split('T')[0]);
-          }}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}
-        >←</button>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={e => setSelectedDate(e.target.value)}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', fontSize: 14, flex: 1 }}
-        />
-        <button
-          onClick={() => {
-            const d = new Date(selectedDate + 'T12:00:00');
-            d.setDate(d.getDate() + 1);
-            setSelectedDate(d.toISOString().split('T')[0]);
-          }}
-          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}
-        >→</button>
-        <button
-          onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-          style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}
-        >Today</button>
+        <button onClick={() => {
+          const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() - 1);
+          setSelectedDate(d.toISOString().split('T')[0]);
+        }} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}>←</button>
+        <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+          style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', fontSize: 14, flex: 1 }} />
+        <button onClick={() => {
+          const d = new Date(selectedDate + 'T12:00:00'); d.setDate(d.getDate() + 1);
+          setSelectedDate(d.toISOString().split('T')[0]);
+        }} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}>→</button>
+        <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+          style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>Today</button>
       </div>
 
       {/* Stats Bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 20 }}>
-        <div style={{ background: '#dcfce7', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#166534' }}>{readCount}</div>
-          <div style={{ fontSize: 11, color: '#166534' }}>📖 Read</div>
-        </div>
-        <div style={{ background: '#fee2e2', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#991b1b' }}>{notReadCount}</div>
-          <div style={{ fontSize: 11, color: '#991b1b' }}>❌ Not Read</div>
-        </div>
-        <div style={{ background: '#fef3c7', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#92400e' }}>{noFolderCount}</div>
-          <div style={{ fontSize: 11, color: '#92400e' }}>📁 No Folder</div>
-        </div>
-        <div style={{ background: '#f3f4f6', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#4b5563' }}>{absentCount}</div>
-          <div style={{ fontSize: 11, color: '#4b5563' }}>🚫 Absent</div>
-        </div>
-        <div style={{ background: '#1e293b', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: '#94a3b8' }}>{unmarked}</div>
-          <div style={{ fontSize: 11, color: '#64748b' }}>⏳ Unmarked</div>
-        </div>
+        {[
+          { count: readCount, bg: '#dcfce7', fg: '#166534', label: '📖 Read' },
+          { count: notReadCount, bg: '#fee2e2', fg: '#991b1b', label: '❌ Not' },
+          { count: noFolderCount, bg: '#fef3c7', fg: '#92400e', label: '📁 No F' },
+          { count: absentCount, bg: '#f3f4f6', fg: '#4b5563', label: '🚫 Away' },
+          { count: unmarked, bg: '#1e293b', fg: '#94a3b8', label: '⏳' },
+        ].map(s => (
+          <div key={s.label} style={{ background: s.bg, borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
+            <div style={{ fontSize: 20, fontWeight: 700, color: s.fg }}>{s.count}</div>
+            <div style={{ fontSize: 10, color: s.fg }}>{s.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* Children List */}
@@ -535,24 +604,16 @@ export default function RazTrackerPage() {
           const config = status ? STATUS_CONFIG[status] : null;
           const photoCount = [record?.book_photo_url, record?.signature_photo_url, record?.new_book_photo_url].filter(Boolean).length;
           const hasPhotos = photoCount > 0;
-          const isUploading = uploading.has(`${child.id}-book`) || uploading.has(`${child.id}-signature`) || uploading.has(`${child.id}-new_book`)
-            || uploading.has(`retake-${child.id}-book`) || uploading.has(`retake-${child.id}-signature`) || uploading.has(`retake-${child.id}-new_book`);
-          const isInCameraFlow = cameraFlowUI?.childId === child.id;
+          const isUploading = uploading.has(`${child.id}-book`) || uploading.has(`${child.id}-signature`) || uploading.has(`${child.id}-new_book`);
 
           return (
-            <div
-              key={child.id}
-              style={{
-                background: isInCameraFlow ? '#1a2e1a' : '#1e293b',
-                borderRadius: 12,
-                padding: '10px 12px',
-                border: config ? `2px solid ${config.color}` : '2px solid #334155',
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {/* Single row: Avatar + Name + Status buttons */}
+            <div key={child.id} style={{
+              background: '#1e293b', borderRadius: 12, padding: '10px 12px',
+              border: config ? `2px solid ${config.color}` : '2px solid #334155',
+              transition: 'border-color 0.15s ease',
+            }}>
+              {/* Row: Avatar + Name + Status buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {/* Avatar */}
                 <div style={{
                   width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                   background: child.color || '#334155',
@@ -561,21 +622,17 @@ export default function RazTrackerPage() {
                 }}>
                   {child.photo_url ? (
                     <img src={child.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    child.avatar_emoji || child.name.charAt(0)
-                  )}
+                  ) : (child.avatar_emoji || child.name.charAt(0))}
                   {isUploading && (
                     <div style={{
                       position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%',
                     }}>
                       <div style={{ width: 14, height: 14, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
                     </div>
                   )}
                 </div>
 
-                {/* Name + photo count */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.name}</span>
@@ -585,35 +642,27 @@ export default function RazTrackerPage() {
                   </div>
                 </div>
 
-                {/* Status buttons */}
                 <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                   {(Object.entries(STATUS_CONFIG) as [StatusType, typeof STATUS_CONFIG[StatusType]][]).map(([key, cfg]) => (
-                    <button
-                      key={key}
-                      onClick={() => handleStatusTap(child, key)}
-                      disabled={busy}
-                      aria-label={cfg.label}
+                    <button key={key} onClick={() => handleStatusTap(child, key)}
+                      disabled={!!cameraFlow} aria-label={cfg.label}
                       style={{
                         width: 40, height: 40,
                         background: status === key ? cfg.bg : '#0f172a',
                         border: status === key ? `2px solid ${cfg.color}` : '1px solid #334155',
                         borderRadius: 8,
                         color: status === key ? cfg.color : '#64748b',
-                        fontSize: 18, cursor: busy ? 'default' : 'pointer',
+                        fontSize: 18, cursor: cameraFlow ? 'default' : 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: 0, opacity: cameraFlow ? 0.5 : 1,
                         transition: 'all 0.12s ease',
-                        padding: 0,
-                        opacity: busy ? 0.5 : 1,
                       }}
-                      title={cfg.label}
-                    >
-                      {cfg.emoji}
-                    </button>
+                    >{cfg.emoji}</button>
                   ))}
                 </div>
               </div>
 
-              {/* Photo thumbnails — tap to view, retake button overlay */}
+              {/* Photo thumbnails — tap to view, retake overlay */}
               {hasPhotos && (
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   {PHOTO_SEQUENCE.map(pt => {
@@ -621,35 +670,23 @@ export default function RazTrackerPage() {
                     if (!url) return null;
                     return (
                       <div key={pt} style={{ position: 'relative', flexShrink: 0 }}>
-                        {/* Tap to view full-size */}
-                        <button
-                          onClick={() => setViewingPhoto({ url, label: PHOTO_LABELS[pt], childName: child.name })}
+                        <button onClick={() => setViewingPhoto({ url, label: PHOTO_LABELS[pt], childName: child.name })}
                           aria-label={`View ${PHOTO_LABELS[pt]}`}
-                          style={{
-                            width: 56, height: 56, borderRadius: 6, overflow: 'hidden',
-                            padding: 0, border: '2px solid #334155', cursor: 'pointer', background: 'none',
-                          }}
-                        >
+                          style={{ width: 56, height: 56, borderRadius: 6, overflow: 'hidden', padding: 0, border: '2px solid #334155', cursor: 'pointer', background: 'none' }}>
                           <img src={url} alt={PHOTO_LABELS[pt]} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
                         </button>
-                        {/* Label */}
                         <div style={{ fontSize: 9, color: '#64748b', textAlign: 'center', marginTop: 2 }}>
-                          {PHOTO_LABELS[pt].split(' ')[0]}
+                          {PHOTO_LABELS[pt].split(' ')[1]}
                         </div>
-                        {/* Retake icon */}
-                        <button
-                          onClick={() => retakePhoto(child, pt)}
-                          disabled={busy}
+                        <button onClick={() => retakePhoto(child, pt)} disabled={!!cameraFlow}
                           aria-label={`Retake ${PHOTO_LABELS[pt]}`}
                           style={{
                             position: 'absolute', top: -4, right: -4,
                             width: 20, height: 20, borderRadius: '50%',
                             background: '#3b82f6', border: '2px solid #0f172a',
                             color: '#fff', fontSize: 10, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            padding: 0,
-                          }}
-                        >↻</button>
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                          }}>↻</button>
                       </div>
                     );
                   })}
@@ -660,7 +697,6 @@ export default function RazTrackerPage() {
         })}
       </div>
 
-      {/* Empty state */}
       {children.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
@@ -670,12 +706,7 @@ export default function RazTrackerPage() {
       )}
 
       <div style={{ height: 80 }} />
-
-      <style>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
