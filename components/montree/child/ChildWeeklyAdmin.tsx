@@ -5,7 +5,7 @@
 // Replaces GuruWeeklySummary — always renders (shows generate button even with no data)
 // Sections: Plan Row, Per-Area Details, Full Summary, This/Next/OneLiner, Advice
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -107,23 +107,44 @@ export default function ChildWeeklyAdmin({
   const [advice, setAdvice] = useState(initialAdvice);
   const [updatedAt, setUpdatedAt] = useState(initialUpdatedAt);
 
+  // Sync local state when props change (e.g. parent refetches after childId change)
+  useEffect(() => {
+    setPlanRow(initialPlanRow);
+    setAreaDetails(initialAreaDetails);
+    setFullSummary(initialFullSummary);
+    setThisWeek(initialThisWeek);
+    setNextWeek(initialNextWeek);
+    setOneLiner(initialOneLiner);
+    setAdvice(initialAdvice);
+    setUpdatedAt(initialUpdatedAt);
+  }, [initialPlanRow, initialAreaDetails, initialFullSummary, initialThisWeek, initialNextWeek, initialOneLiner, initialAdvice, initialUpdatedAt]);
+
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [expandedArea, setExpandedArea] = useState<string | null>(null);
   const [showFullSummary, setShowFullSummary] = useState(false);
   const [showAdvice, setShowAdvice] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const hasData = planRow || areaDetails || fullSummary || thisWeek;
 
   // ---- Generate ----
 
+  // Abort on unmount
+  useEffect(() => {
+    return () => { abortRef.current?.abort(); };
+  }, []);
+
   const handleGenerate = useCallback(async () => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
     setGenerating(true);
     setError('');
     try {
       const res = await montreeApi(`/api/montree/children/${childId}/weekly-admin`, {
         method: 'POST',
         body: JSON.stringify({ locale }),
+        signal: abortRef.current.signal,
       });
       const data = await res.json();
       if (!res.ok) {
@@ -141,7 +162,8 @@ export default function ChildWeeklyAdmin({
         setUpdatedAt(new Date().toISOString());
         onGenerated?.();
       }
-    } catch {
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setError(t('childAdmin.generateError'));
     } finally {
       setGenerating(false);
@@ -165,11 +187,11 @@ export default function ChildWeeklyAdmin({
       const diffMins = Math.floor(diffMs / 60000);
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return date.toLocaleDateString();
+      if (diffMins < 1) return isZh ? '刚刚' : 'Just now';
+      if (diffMins < 60) return isZh ? `${diffMins}分钟前` : `${diffMins}m ago`;
+      if (diffHours < 24) return isZh ? `${diffHours}小时前` : `${diffHours}h ago`;
+      if (diffDays < 7) return isZh ? `${diffDays}天前` : `${diffDays}d ago`;
+      return date.toLocaleDateString(isZh ? 'zh-CN' : 'en-US');
     } catch { return ''; }
   };
 
