@@ -47,21 +47,22 @@ export async function POST(request: NextRequest) {
     
     const supabase = getSupabase();
     
+    // Table schema (migration 060): id, child_id, work_id (NOT NULL), assignment_id,
+    // session_type, duration_minutes, notes, media_urls, observed_at, created_at
+    // Note: work_name, area, teacher_id, status columns do NOT exist in the table
+    const insertRecord: Record<string, unknown> = {
+      child_id,
+      work_id: work_id || work_name || 'unknown',
+      session_type: session_type || 'observation',
+      notes: notes ? `${work_name ? `[${work_name}]${area ? ` (${area})` : ''} ` : ''}${notes}` : null,
+      media_urls: media_urls || [],
+      duration_minutes: duration_minutes || null,
+      observed_at: new Date().toISOString(),
+    };
+
     const { data, error } = await supabase
       .from('montree_work_sessions')
-      .insert({
-        child_id,
-        work_id: work_id || work_name || 'unknown',
-        work_name: work_name || null,
-        area: area || null,
-        session_type: session_type || 'observation',
-        notes: notes || null,
-        media_urls: media_urls || [],
-        duration_minutes: duration_minutes || null,
-        teacher_id: teacher_id || null,
-        status: status || null,
-        observed_at: new Date().toISOString(),
-      })
+      .insert(insertRecord)
       .select()
       .single();
     

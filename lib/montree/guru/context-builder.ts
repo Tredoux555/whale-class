@@ -301,9 +301,10 @@ export async function buildChildContext(
   }));
 
   // 6. Fetch teacher notes from work sessions (last 20)
+  // Note: table has work_id (NOT work_name), notes, observed_at per migration 060
   const { data: workSessions } = await supabase
     .from('montree_work_sessions')
-    .select('work_name, notes, observed_at')
+    .select('work_id, notes, observed_at')
     .eq('child_id', childId)
     .not('notes', 'is', null)
     .order('observed_at', { ascending: false })
@@ -312,7 +313,7 @@ export async function buildChildContext(
   const teacherNotes: TeacherNote[] = (workSessions || [])
     .filter(s => s.notes && s.notes.trim())
     .map(s => ({
-      work_name: s.work_name,
+      work_name: s.work_id || 'Unknown',
       notes: s.notes,
       observed_at: s.observed_at,
     }));
