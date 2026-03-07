@@ -1,8 +1,8 @@
 // lib/montree/voice-notes/extraction.ts
 // Core AI extraction for teacher voice notes
-// Uses Sonnet tool_use to extract structured observation data from transcribed voice notes
+// Uses Haiku tool_use to extract structured observation data from transcribed voice notes
 
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { matchStudentName, loadAliases } from '@/lib/montree/voice/student-matcher';
 import { fuzzyScore } from '@/lib/montree/work-matching';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
@@ -217,10 +217,10 @@ export async function extractFromVoiceNote(
   // Build system prompt
   const systemPrompt = buildExtractionPrompt(children, curriculum, language);
 
-  // Call Sonnet with tool_use for rock-solid extraction
+  // Call Haiku with tool_use for fast, cheap extraction
   try {
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: HAIKU_MODEL,
       max_tokens: 1024,
       system: systemPrompt,
       tools: [getVoiceNoteToolDefinition()],
@@ -242,7 +242,7 @@ export async function extractFromVoiceNote(
     }
 
     if (!extraction) {
-      // Sonnet didn't call the tool — no extractable data
+      // Haiku didn't call the tool — no extractable data
       return {
         child_name_spoken: '',
         child_id: null,
@@ -293,7 +293,7 @@ export async function extractFromVoiceNote(
       next_steps: extraction.next_steps || null,
     };
   } catch (err) {
-    console.error('[voice-notes] Sonnet extraction error:', err);
+    console.error('[voice-notes] Haiku extraction error:', err);
     return null;
   }
 }

@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       .from('montree_work_sessions')
       .insert({
         child_id,
-        work_id: work_id || null,
+        work_id: work_id || work_name || 'unknown',
         work_name: work_name || null,
         area: area || null,
         session_type: session_type || 'observation',
