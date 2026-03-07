@@ -355,8 +355,17 @@ export async function executeTool(
     case 'browse_curriculum': {
       const area = input.area as string;
       if (!area) return { success: false, message: 'Missing area' };
+      const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      if (!validAreas.includes(area)) {
+        return { success: false, message: `Invalid area: "${area}". Must be one of: ${validAreas.join(', ')}` };
+      }
 
-      const allWorks = loadAllCurriculumWorks();
+      let allWorks;
+      try {
+        allWorks = loadAllCurriculumWorks();
+      } catch {
+        return { success: false, message: 'Curriculum data unavailable' };
+      }
       let works = allWorks.filter(w => w.area_key === area);
 
       const category = input.category as string | undefined;
@@ -367,28 +376,36 @@ export async function executeTool(
         );
       }
 
-      // Cap at 50 to avoid token explosion
-      const capped = works.slice(0, 50);
+      // Cap at 30 to avoid token explosion
+      const capped = works.slice(0, 30);
       const formatted = capped.map(w => ({
         name: w.name,
         category: w.category_name || 'Uncategorized',
         age_range: w.age_range || 'N/A',
-        description: w.description ? w.description.slice(0, 100) : '',
-        sequence: w.sequence,
+        description: w.description ? w.description.slice(0, 80) : '',
       }));
 
       return {
         success: true,
-        message: `${AREA_LABELS[area] || area}: ${formatted.length} works found${category ? ` in category "${category}"` : ''}.\n${JSON.stringify(formatted, null, 1)}`
+        message: `${AREA_LABELS[area] || area}: ${formatted.length} works found${works.length > 30 ? ` (showing first 30 of ${works.length})` : ''}${category ? ` in category "${category}"` : ''}.\n${JSON.stringify(formatted, null, 1)}`
       };
     }
 
     case 'get_child_curriculum_status': {
       const area = input.area as string;
       if (!area) return { success: false, message: 'Missing area' };
+      const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      if (!validAreas.includes(area)) {
+        return { success: false, message: `Invalid area: "${area}". Must be one of: ${validAreas.join(', ')}` };
+      }
 
       // Get all curriculum works for this area
-      const allWorks = loadAllCurriculumWorks();
+      let allWorks;
+      try {
+        allWorks = loadAllCurriculumWorks();
+      } catch {
+        return { success: false, message: 'Curriculum data unavailable' };
+      }
       const areaWorks = allWorks.filter(w => w.area_key === area);
 
       // Fetch child's progress records for this area
@@ -421,7 +438,6 @@ export async function executeTool(
         const progress = progressMap.get(w.name.toLowerCase());
         return {
           name: w.name,
-          sequence: w.sequence,
           status: progress?.status || 'not_started',
           is_focus: w.name.toLowerCase() === focusWorkName,
         };
@@ -444,7 +460,12 @@ export async function executeTool(
       if (!query || query.length < 2) return { success: false, message: 'Query must be at least 2 characters' };
 
       const queryLower = query.toLowerCase();
-      const allWorks = loadAllCurriculumWorks();
+      let allWorks;
+      try {
+        allWorks = loadAllCurriculumWorks();
+      } catch {
+        return { success: false, message: 'Curriculum data unavailable' };
+      }
 
       const matches = allWorks.filter(w => {
         const searchable = [
