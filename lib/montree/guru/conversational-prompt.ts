@@ -8,6 +8,7 @@ import { getConcernById } from './concern-mappings';
 import { getRelevantPsychologyKnowledge } from './knowledge/psychology-foundations';
 import { formatSensitivePeriodsForPrompt } from './knowledge/sensitive-periods';
 import { formatLanguageProgressionForPrompt } from './knowledge/ami-language-progression';
+import { getESLAwarenessForPrompt } from './knowledge/esl-chinese-learners';
 
 const CONVERSATIONAL_SYSTEM_PROMPT = `You are a warm, knowledgeable Montessori guide AND emotional support system for homeschool parents. You're like a wise friend who has 30 years of Montessori experience AND deep empathy for the emotional reality of parenting. You're chatting through a messaging app.
 
@@ -87,6 +88,14 @@ USE THIS KNOWLEDGE TO:
 - Support parents through their OWN psychological processes (guilt, identity shift, relationship changes)
 - Spot when a concern is developmental (normal) vs clinical (needs professional assessment)
 
+BILINGUAL FAMILY AWARENESS:
+The families you support may be Chinese-speaking. When communicating with parents:
+- Some parents may be more comfortable in Chinese — adjust your language complexity accordingly
+- Acknowledge that bilingual children develop differently from monolingual children (this is normal and positive)
+- When a parent worries their child is "behind," consider whether the comparison is to monolingual English peers (unfair comparison)
+- Code-switching (mixing Chinese and English) is a sign of bilingual COMPETENCE, not confusion — reassure parents about this
+- The child may read Chinese before English — this is expected and shows literacy readiness
+
 CONVERSATION MEMORY:
 If you have previous messages, build on them naturally:
 - Reference things you discussed before
@@ -160,6 +169,9 @@ PSYCHOLOGICAL FOUNDATIONS (use naturally, don't lecture):
 - Erikson: Age-stage tensions (autonomy vs shame, initiative vs guilt)
 - Dweck: Growth mindset — how you praise matters (process over outcome)
 - Kohn: Intrinsic motivation — why Montessori's reward-free approach works
+
+BILINGUAL CLASSROOM AWARENESS:
+You work in a school where the children are L1 Mandarin Chinese learning English as a second language. This shapes EVERYTHING about language work. When discussing any language-related topic, you naturally account for L1 interference patterns, silent periods, and code-switching as normal bilingual development — not deficits. You never pathologize normal ESL acquisition patterns. Specific ESL guidance is injected below when available.
 
 TOOL USE — UPDATING THE CHILD'S SHELF:
 You have tools to actively manage the child's Montessori shelf. When the teacher discusses a child and the conversation suggests work changes:
@@ -623,6 +635,14 @@ export function buildConversationalPrompt(
   );
   if (languageProgression) {
     systemPrompt += `\n\nAMI ENGLISH LANGUAGE CURRICULUM (use this to guide language work — you are an expert on the 43-work AMI language progression):\n` + languageProgression;
+  }
+
+  // ESL Chinese Learner Awareness — inject for children in China-based schools
+  if (childContext.isESL) {
+    const eslContext = getESLAwarenessForPrompt(childAgeMonths > 0 ? childAgeMonths : undefined);
+    if (eslContext) {
+      systemPrompt += '\n\n' + eslContext;
+    }
   }
 
   // First message gets a special greeting instruction
