@@ -59,7 +59,82 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ---
 
-## CURRENT STATUS (Mar 6, 2026)
+## CURRENT STATUS (Mar 8, 2026)
+
+### Session Work (Mar 8, 2026)
+
+**Guru Curriculum Access + Weekly Admin System + Performance Analysis — COMPLETE + DEPLOYED (3 modified files, 1 new file, 2 commits `45b6aedf` + `bd90c3ba`):**
+
+Multi-part session: gave the Guru read-only curriculum browsing tools, built per-child + batch weekly admin generation, debugged two production issues, and did deep Guru performance analysis.
+
+**Part 1 — Weekly Admin Per-Child + Batch (earlier in session, from previous context):**
+Extended the weekly admin generator to support per-child generation AND batch "Generate All" for the whole classroom. Fixed 404 on weekly admin route (missing route file) and Guru hanging issue (conversation memory query returning too many rows).
+
+**Part 2 — Guru Curriculum Tools (3 read-only tools added to 12 total):**
+Guru previously had 9 action tools but couldn't SEE the curriculum. Added 3 read-only tools so it can browse, search, and check progress before recommending works:
+
+- `browse_curriculum` — Browse works by area, optional category filter. Caps at 30 results with 80-char descriptions.
+- `get_child_curriculum_status` — Child's progress across all works in an area (mastered/practicing/presented/not_started + current focus work). 2 parallel DB queries.
+- `search_curriculum` — Keyword search across name/description/category/materials. Caps at 20 results.
+
+All 3 tools: area enum validation, try-catch on curriculum loading, token-optimized output. Available in SETUP, INTAKE, CHECKIN, NORMAL modes (not REFLECTION).
+
+**Files modified (3):**
+- `lib/montree/guru/tool-definitions.ts` — 3 new tool schemas added to `GURU_TOOLS` array (now 12 total: 9 action + 3 read-only)
+- `lib/montree/guru/tool-executor.ts` — 3 new case blocks with enum validation, try-catch, AREA_LABELS map
+- `lib/montree/guru/conversational-prompt.ts` — CURRICULUM BROWSING section added to TOOL_USE_INSTRUCTIONS
+
+**Audit (4 issues found, all fixed in commit `bd90c3ba`):**
+- CRITICAL: Area enum not validated (could silently return empty) → added `validAreas` check
+- HIGH: No try-catch on `loadAllCurriculumWorks()` → wrapped with graceful error
+- HIGH: Token explosion risk (50 results × 100-char descriptions) → reduced to 30 results × 80-char descriptions, removed sequence field
+- MEDIUM: Description truncation inconsistency → standardized to 80 chars
+
+**Part 3 — Guru Performance Analysis:**
+Investigated 10-30s response times. Found system prompt is ~52,000 chars (~13,000 tokens). Biggest contributors: psychology knowledge (5,000 tokens), tool definitions (2,800 tokens), sensitive periods (1,500 tokens). Total input per call: 20-25K tokens. Conclusion: 10-30s is normal for Sonnet with this context + up to 3 tool rounds. Haiku not viable — lacks nuance for developmental psychology.
+
+**Part 4 — Marketing Quotes:**
+Added "Killer Quotes — Use These Everywhere" section to nerve-center/page.tsx (Playbook tab). 3 amber-themed quote cards: speed vs expert consultation, short-form social media version, parent-facing feature depth angle.
+
+**Deploy:** ✅ Committed + pushed from Mac via Desktop Commander.
+**Handoff:** `docs/handoffs/HANDOFF_CURRICULUM_TOOLS_MAR8.md`
+
+---
+
+## PREVIOUS STATUS (Mar 7, 2026)
+
+### Session Work (Mar 7, 2026)
+
+**ESL Guru Upgrade + Spy Game & Command Cards Generators — COMPLETE + DEPLOYED (4 new files, 5 modified, 1,621 insertions, commit `908d93bc`):**
+
+Three-part session: ESL intelligence for the Guru, plus two new printable generators for the Montree library tools page.
+
+**Part 1 — ESL Guru Upgrade (1 new, 3 modified):**
+Guru now recognizes L1 Chinese children learning English. New `esl-chinese-learners.ts` knowledge file (~200 lines): 5 developmental stages (Silent Period → Advanced Fluency), Mandarin phonological challenges (th/v/r/l, clusters, final consonants), L1 transfer patterns, classroom strategies (TPR, comprehensible input). `context-builder.ts` auto-detects ESL status from school settings or name heuristics. `conversational-prompt.ts` injects ESL context into all Guru conversations. `ami-language-progression.ts` got `eslNotes` on 12 language works.
+
+**Part 2 — Spy Game Generator (1 new file, ~700 lines):**
+`app/montree/library/tools/spy-game/page.tsx` — 3 ESL-friendly levels: Sound Spy (12 sounds, Mandarin-shared first), Word Spy (CVC by vowel), Action Spy (16 TPR commands). 3 print modes (mission cards, code cards, spy report). Custom word/action input + quick-add CVC sets.
+
+**Part 3 — Command Cards Generator (1 new file, ~480 lines):**
+`app/montree/library/tools/command-cards/page.tsx` — AMI Language Work #24. 3 levels: single commands (24 verbs + optional Chinese), two-action phrases (16), action chains (12). Cards per page, border color, font settings.
+
+**Part 4 — Integration (3 modified):**
+- `tools/page.tsx` — 2 new TOOLS entries
+- `en.ts` + `zh.ts` — 30 new i18n keys each (perfect parity)
+
+**Also this session (earlier commits):**
+- Fixed 500 on POST `/api/montree/sessions` (work_id NOT NULL) — commit `5db683b9`
+- Fixed context-builder wrong column (work_name → work_id) — commit `b964cea1`
+- Reverted voice note extraction from Sonnet back to Haiku
+
+**Audit:** 4 issues found and fixed (dead MissionCard interface, unused pageNum variable, missing escapeHtml on Chinese text, comment concatenation). Zero TS errors.
+
+**Deploy:** ✅ Pushed from Mac, Railway auto-deploy.
+**Handoff:** `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md`
+
+---
+
+## PREVIOUS STATUS (Mar 6, 2026)
 
 ### Session Work (Mar 6, 2026)
 
@@ -2215,7 +2290,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | **CURRENT** — SWR cache + skeletons + image compression + audit fixes |
+| `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | **CURRENT** — ESL Guru upgrade + Spy Game & Command Cards generators |
+| `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | SWR cache + skeletons + image compression + audit fixes |
 | `docs/handoffs/HANDOFF_RAZ_TRACKER_REDESIGN_MAR5.md` | RAZ tracker redesign (status-first camera flow) + API auth fix |
 | `docs/handoffs/HANDOFF_VOICE_OBSERVATION_SYSTEM_MAR4.md` | Voice observation system (20 new files, Whisper + Haiku pipeline) |
 | `docs/handoffs/HANDOFF_CURRICULUM_FIXES_MAR4.md` | Curriculum area filtering bug + WorkWheelPicker sequence fix |
