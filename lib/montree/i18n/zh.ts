@@ -2263,6 +2263,32 @@ export const zh = {
   'voiceNotes.error': '出了点问题',
 
   // 每周行政生成器
+  // Per-Child Weekly Admin
+  'childAdmin.title': '每周行政',
+  'childAdmin.generate': '生成',
+  'childAdmin.regenerate': '重新生成',
+  'childAdmin.generating': '生成中...',
+  'childAdmin.generateError': '生成每周行政失败',
+  'childAdmin.planRow': '计划行',
+  'childAdmin.areaDetails': '分区详情',
+  'childAdmin.fullSummary': '完整总结',
+  'childAdmin.thisWeek': '本周',
+  'childAdmin.nextWeek': '下周',
+  'childAdmin.oneLiner': '一句话总结',
+  'childAdmin.advice': '顾问建议',
+  'childAdmin.noData': '点击生成按钮为此学生创建每周行政。',
+
+  // Batch Admin (dashboard)
+  'batchAdmin.title': '批量生成每周行政',
+  'batchAdmin.generateAll': '全部生成',
+  'batchAdmin.progress': '生成中...',
+  'batchAdmin.done': '完成',
+  'batchAdmin.failed': '失败',
+  'batchAdmin.retryFailed': '重试失败',
+  'batchAdmin.copyAllRows': '复制所有计划行',
+  'batchAdmin.cancel': '取消',
+
+  // Weekly Admin Generator (legacy)
   'weeklyAdmin.title': '每周行政',
   'weeklyAdmin.thisWeek': '本周',
   'weeklyAdmin.notes': '条笔记',

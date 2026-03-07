@@ -2262,7 +2262,32 @@ export const en = {
   'voiceNotes.tapToRecord': 'Tap to record a voice note',
   'voiceNotes.error': 'Something went wrong',
 
-  // Weekly Admin Generator
+  // Per-Child Weekly Admin
+  'childAdmin.title': 'Weekly Admin',
+  'childAdmin.generate': 'Generate',
+  'childAdmin.regenerate': 'Regenerate',
+  'childAdmin.generating': 'Generating...',
+  'childAdmin.generateError': 'Failed to generate weekly admin',
+  'childAdmin.planRow': 'Plan Row',
+  'childAdmin.areaDetails': 'Per-Area Details',
+  'childAdmin.fullSummary': 'Full Summary',
+  'childAdmin.thisWeek': 'This Week',
+  'childAdmin.nextWeek': 'Next Week',
+  'childAdmin.oneLiner': 'One-Liner',
+  'childAdmin.advice': 'Guru Advice',
+  'childAdmin.noData': 'Tap Generate to create weekly admin for this child.',
+
+  // Batch Admin (dashboard)
+  'batchAdmin.title': 'Generate All Weekly Admin',
+  'batchAdmin.generateAll': 'Generate All',
+  'batchAdmin.progress': 'Generating...',
+  'batchAdmin.done': 'Done',
+  'batchAdmin.failed': 'Failed',
+  'batchAdmin.retryFailed': 'Retry Failed',
+  'batchAdmin.copyAllRows': 'Copy All Plan Rows',
+  'batchAdmin.cancel': 'Cancel',
+
+  // Weekly Admin Generator (legacy)
   'weeklyAdmin.title': 'Weekly Admin',
   'weeklyAdmin.thisWeek': 'This week',
   'weeklyAdmin.notes': 'notes',

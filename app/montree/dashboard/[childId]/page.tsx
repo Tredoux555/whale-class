@@ -23,7 +23,7 @@ import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import GuruWeeklySummary from '@/components/montree/child/GuruWeeklySummary';
+import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
@@ -74,12 +74,34 @@ export default function WeekPage() {
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
 
   // Guru weekly summary state
-  const [guruSummary, setGuruSummary] = useState<string | null>(null);
+  // Weekly admin settings (all from child settings JSONB)
+  const [guruPlanRow, setGuruPlanRow] = useState<Record<string, string> | null>(null);
+  const [guruAreaDetails, setGuruAreaDetails] = useState<Record<string, { work: string; this_week: string; next_week: string }> | null>(null);
+  const [guruFullSummary, setGuruFullSummary] = useState<string | null>(null);
   const [guruThisWeek, setGuruThisWeek] = useState<string | null>(null);
   const [guruNextWeek, setGuruNextWeek] = useState<string | null>(null);
   const [guruOneLiner, setGuruOneLiner] = useState<string | null>(null);
   const [guruAdvice, setGuruAdvice] = useState<string | null>(null);
   const [guruSummaryUpdatedAt, setGuruSummaryUpdatedAt] = useState<string | null>(null);
+
+  // Fetch guru weekly settings from child settings JSONB
+  const fetchGuruSettings = () => {
+    if (!childId) return;
+    fetch(`/api/montree/children/${childId}?fields=settings`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const settings = data?.child?.settings || data?.settings || {};
+        setGuruPlanRow(settings.guru_weekly_plan_row || null);
+        setGuruAreaDetails(settings.guru_weekly_area_details || null);
+        setGuruFullSummary(settings.guru_weekly_full_summary || null);
+        setGuruThisWeek(settings.guru_weekly_this_week || null);
+        setGuruNextWeek(settings.guru_weekly_next_week || null);
+        setGuruOneLiner(settings.guru_weekly_one_liner || null);
+        setGuruAdvice(settings.guru_weekly_advice || null);
+        setGuruSummaryUpdatedAt(settings.guru_weekly_summary_updated_at || null);
+      })
+      .catch(() => {});
+  };
 
   // All works combined (for checking if already added)
   const allWorks = [...focusWorks, ...extraWorks];
@@ -214,20 +236,7 @@ export default function WeekPage() {
   // Fetch guru weekly summary from child settings
   useEffect(() => {
     if (!childId) return;
-    fetch(`/api/montree/children/${childId}?fields=settings`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        const settings = data?.child?.settings || data?.settings || {};
-        if (settings.guru_weekly_summary) {
-          setGuruSummary(settings.guru_weekly_summary);
-          setGuruThisWeek(settings.guru_weekly_this_week || null);
-          setGuruNextWeek(settings.guru_weekly_next_week || null);
-          setGuruOneLiner(settings.guru_weekly_one_liner || null);
-          setGuruAdvice(settings.guru_weekly_advice || null);
-          setGuruSummaryUpdatedAt(settings.guru_weekly_summary_updated_at || null);
-        }
-      })
-      .catch(() => {});
+    fetchGuruSettings();
   }, [childId]);
 
   // Fetch on mount and when childId changes
@@ -590,17 +599,20 @@ export default function WeekPage() {
         )}
       </div>
 
-      {/* Guru Weekly Admin — copy-paste items + expandable advice */}
+      {/* Per-Child Weekly Admin — plan row, per-area details, full summary, advice */}
       {!isHomeschoolParent(session) && (
-        <GuruWeeklySummary
-          summary={guruSummary}
+        <ChildWeeklyAdmin
+          childId={childId}
+          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          planRow={guruPlanRow}
+          areaDetails={guruAreaDetails}
+          fullSummary={guruFullSummary}
           thisWeek={guruThisWeek}
           nextWeek={guruNextWeek}
           oneLiner={guruOneLiner}
           advice={guruAdvice}
           updatedAt={guruSummaryUpdatedAt}
-          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          childId={childId}
+          onGenerated={fetchGuruSettings}
         />
       )}
 
