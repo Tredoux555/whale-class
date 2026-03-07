@@ -53,7 +53,14 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 **Remaining (wiring only — keys exist):** Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
 **Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_CLEANUP_MAR1.md`
 
-### ~~Curriculum Inconsistency Resolution~~ — ✅ MOSTLY DONE (Priority #8)
+### Per-School Guru Personality Settings (Priority #8 — NEW)
+
+**Status:** DESIGNED, ready to build. ~1-2 hours.
+**What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school. Guru reads but never self-edits. No migration needed — uses existing `montree_schools.settings` JSONB column.
+**Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
+**Files:** 2 new (API route + settings UI), 5 modified (context-builder, conversational-prompt, route.ts, admin page, i18n)
+
+### ~~Curriculum Inconsistency Resolution~~ — ✅ MOSTLY DONE (Priority #9)
 
 **Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed. Area key aliases + empty-result safety added to search API (Mar 4). Whale Class reseeded to 329 works. WorkWheelPicker now preserves DB sequence order.
 
