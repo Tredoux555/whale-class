@@ -22,6 +22,8 @@ export interface LanguageWork {
   levels?: string[];
   /** Critical AMI notes */
   amiNotes?: string[];
+  /** ESL-specific adaptation note for L1 Chinese learners */
+  eslNote?: string;
 }
 
 export const LANGUAGE_WORKS: LanguageWork[] = [
@@ -108,6 +110,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Readiness for Sandpaper Letters: child can identify initial sounds reliably, ending sounds, and begins hearing middle sounds.',
       'Objects by sound: /b/ ball,bus,bear,button,bell; /k/ cat,cup,car,cow,cap; /d/ dog,duck,doll,drum; /f/ fish,fan,fox,fork,fig; /m/ mat,mop,map,mouse,mirror; /s/ sun,sock,soap,star,spoon; /t/ top,tin,tent,tiger,truck.',
     ],
+    eslNote: 'For L1 Chinese learners: START with shared Mandarin-English sounds (/m/, /s/, /f/, /n/, /l/, /p/, /t/, /k/). These children already hear these sounds from Mandarin. DEFER difficult sounds (/θ/ th, /ð/ the, /v/, English /r/) until the child is confident with shared sounds. Ending sounds are EXTRA hard — Mandarin has almost no final consonants. Expect "ca" for "cat" and "do" for "dog" — this is L1 transfer, not a hearing problem.',
   },
   {
     number: 5,
@@ -226,6 +229,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'NEVER introduce visually similar letters at same time: b/d, p/q, m/n should be in DIFFERENT groups.',
       'Always use the SOUND, never the letter NAME.',
     ],
+    eslNote: 'For L1 Chinese learners: These children have EXCELLENT stroke-order discipline from Chinese character writing — leverage this strength. Their fine motor skills for tracing are often superior. The Three-Period Lesson may need a LONGER Period 2 for English-specific sounds (/θ/, /v/, /r/) that don\'t exist in Mandarin. Start Group 1 with sounds shared across both languages.',
   },
   {
     number: 11,
@@ -286,6 +290,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Do NOT correct spelling at this stage. "kat" for "cat" is phonetically correct and shows excellent encoding.',
       'CVC objects by vowel: short-a (cat,hat,mat,bag,pan,fan,van,map,jam), short-e (pen,hen,net,jet,bed,leg,web,gem), short-i (pig,wig,fig,pin,lip,tip,zip,kit), short-o (dog,log,pot,mop,box,fox), short-u (cup,bus,rug,mug,bug,jug,tub,sun,nut).',
     ],
+    eslNote: 'For L1 Chinese learners: Expect Mandarin-influenced phonetic spelling — missing final consonants ("ca" for "cat", "do" for "dog") and vowel epenthesis in clusters ("belack" for "black"). This is L1 transfer, NOT a deficit. The child is applying Mandarin syllable structure (mostly CV) to English. Accept it, celebrate the encoding attempt, and the final consonants will develop over time as their English phonological awareness grows.',
   },
   {
     number: 14,
@@ -338,6 +343,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Gradually increase to 5-10 objects per session.',
     ],
     amiNotes: ['Object Boxes come BEFORE Pink/Blue/Green Series because matching label to 3D object is easier than matching to 2D picture. AMI always moves concrete → abstract.'],
+    eslNote: 'For L1 Chinese learners: Object Boxes are especially powerful because the 3D object provides a concrete meaning anchor — the child doesn\'t need English vocabulary to understand what the word represents. Start with objects whose names use shared Mandarin-English sounds (mat, sun, mop, fan). The child\'s strong visual memory from Chinese character recognition supports whole-word recognition here.',
   },
   {
     number: 17,
@@ -354,6 +360,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Level 4 — Sentences: "The cat sat on the mat."',
       'Level 5 — Booklets: 4-8 pages, one sentence per page with picture. First "books."',
     ],
+    eslNote: 'For L1 Chinese learners: CVC final consonants are THE hardest part — Mandarin has almost no final stops (/t/, /d/, /g/, /k/, /p/, /b/). The child may read "ca" for "cat" or "cu" for "cup". This is expected L1 transfer. Give extra time at Level 1 (picture-word matching) to build final consonant awareness. Use objects from Sound Games that emphasize the ending sound. The -at, -an, -ig families work well as entry points.',
   },
   {
     number: 18,
@@ -373,6 +380,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Triple blends: str, spr, scr, spl, squ (strip, spring, scrap, split, squid)',
       'Final blends: -nd, -nk, -nt, -mp, -ft, -lk, -lt, -sk (hand, sink, tent, lamp, milk)',
     ],
+    eslNote: 'For L1 Chinese learners: Consonant blends are EXTREMELY difficult — Mandarin has ZERO consonant clusters. Every Mandarin syllable starts with at most one consonant. Children will insert vowels to break clusters ("belack" for "black", "fulag" for "flag"). This is a normal L1 strategy, not a reading error. Start with L-blends and S-blends (closer to Mandarin phonotactics) before R-blends. Final blends (-nd, -nk, -mp) are doubly hard: both a cluster AND in final position.',
   },
   {
     number: 19,
@@ -467,6 +475,7 @@ export const LANGUAGE_WORKS: LanguageWork[] = [
       'Level 2 — Two-step: "Walk to the door." "Pick up the red ball."',
       'Level 3 — Complex: "Take three steps forward, turn left, and pick up the pencil next to the blue book."',
     ],
+    eslNote: 'For L1 Chinese learners: Command Cards are especially powerful for ESL because they prove comprehension through ACTION — the child doesn\'t need to produce English speech, just demonstrate understanding by doing. Start Level 1 with single-word action verbs the child already understands orally (run, hop, sit, clap). The physical response builds confidence. For Level 2-3, keep vocabulary within the child\'s spoken comprehension range — the reading challenge is enough without also testing unknown vocabulary.',
   },
   {
     number: 25,
@@ -814,6 +823,9 @@ export function getLanguageProgressionForChild(
     }
     if (mw.amiNotes && mw.amiNotes.length > 0) {
       parts.push(`AMI Note: ${mw.amiNotes[0]}`);
+    }
+    if (mw.eslNote) {
+      parts.push(`ESL Adaptation: ${mw.eslNote}`);
     }
   }
 

@@ -62,6 +62,10 @@ export interface ChildContext {
     outcome: string;
     recorded_at: string;
   }>;
+
+  // ESL context (school-level — detected from school location/name)
+  isESL?: boolean;
+  l1Language?: string;
 }
 
 export interface MentalProfile {
@@ -349,6 +353,42 @@ export async function buildChildContext(
     .single();
   const settings = (childSettings?.settings as Record<string, unknown>) || {};
 
+  // 10. Detect ESL context from school (school-level, not per-child)
+  // Look up school via classroom → school join
+  let isESL = false;
+  let l1Language: string | undefined;
+  try {
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('school_id')
+      .eq('id', child.classroom_id)
+      .single();
+    if (classroom?.school_id) {
+      const { data: school } = await supabase
+        .from('montree_schools')
+        .select('name, settings')
+        .eq('id', classroom.school_id)
+        .single();
+      if (school) {
+        // Check school name/settings for China-based schools
+        const schoolName = (school.name || '').toLowerCase();
+        const schoolSettings = (school.settings as Record<string, unknown>) || {};
+        const location = ((schoolSettings.location as string) || '').toLowerCase();
+        if (
+          schoolName.includes('beijing') || schoolName.includes('shanghai') ||
+          schoolName.includes('china') || schoolName.includes('qingdao') ||
+          location.includes('china') || location.includes('beijing') ||
+          location.includes('shanghai') || location.includes('中国')
+        ) {
+          isESL = true;
+          l1Language = 'Mandarin Chinese';
+        }
+      }
+    }
+  } catch {
+    // ESL detection is non-critical — fail silently
+  }
+
   return {
     id: child.id,
     name: child.name.split(' ')[0], // First name only for privacy
@@ -384,6 +424,8 @@ export async function buildChildContext(
       outcome: o.outcome as string,
       recorded_at: o.recorded_at as string,
     })),
+    isESL,
+    l1Language,
   };
 }
 
@@ -394,6 +436,9 @@ export function formatContextForPrompt(context: ChildContext): string {
   lines.push(`CHILD: ${context.name}`);
   lines.push(`AGE: ${context.age_years} years, ${context.age_months} months`);
   lines.push(`TIME AT SCHOOL: ${context.time_at_school}`);
+  if (context.isESL && context.l1Language) {
+    lines.push(`LANGUAGE: L1 ${context.l1Language} — learning English as a second language`);
+  }
   lines.push('');
 
   // Progress summary

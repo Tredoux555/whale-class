@@ -56,6 +56,20 @@ const TOOLS = [
     descKey: 'tools.picture_bingo_desc',
     gradient: 'from-teal-500 to-emerald-600',
   },
+  {
+    href: '/montree/library/tools/spy-game',
+    icon: '🔍',
+    titleKey: 'tools.spy_game',
+    descKey: 'tools.spy_game_desc',
+    gradient: 'from-slate-600 to-gray-800',
+  },
+  {
+    href: '/montree/library/tools/command-cards',
+    icon: '📋',
+    titleKey: 'tools.command_cards',
+    descKey: 'tools.command_cards_desc',
+    gradient: 'from-pink-500 to-rose-600',
+  },
 ];
 
 export default function LibraryToolsPage() {
