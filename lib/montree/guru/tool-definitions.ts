@@ -1,6 +1,6 @@
 // lib/montree/guru/tool-definitions.ts
 // Anthropic tool-use definitions for Guru-driven home system
-// 6 tools that let the Guru manage a child's Montessori shelf, progress, and observations
+// 9 action tools + 3 curriculum read-only tools = 12 total
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
@@ -228,6 +228,55 @@ export const GURU_TOOLS: Tool[] = [
         }
       },
       required: ["guidance_given", "outcome"]
+    }
+  },
+  // --- Curriculum Read-Only Tools ---
+  {
+    name: "browse_curriculum",
+    description: "Browse the Montessori curriculum. Returns works for a given area, optionally filtered by category. Use this to see what works are available before recommending or setting focus works.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        area: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural"],
+          description: "The Montessori area to browse"
+        },
+        category: {
+          type: "string",
+          description: "Optional category name to filter (e.g. 'Pouring', 'Linear Counting'). Omit to see all works in the area."
+        }
+      },
+      required: ["area"]
+    }
+  },
+  {
+    name: "get_child_curriculum_status",
+    description: "Get the child's progress for all works in a specific area. Shows which works are mastered, practicing, presented, or not started, plus which work is currently on their shelf. Use this to understand where the child is in the curriculum sequence before making recommendations.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        area: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural"],
+          description: "The Montessori area to check"
+        }
+      },
+      required: ["area"]
+    }
+  },
+  {
+    name: "search_curriculum",
+    description: "Search the entire curriculum by keyword. Matches against work names, descriptions, materials, and categories. Returns matching works across all areas. Use when looking for a specific work or topic.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description: "Search keyword (e.g. 'counting', 'sandpaper', 'pouring', 'geography')"
+        }
+      },
+      required: ["query"]
     }
   }
 ];
