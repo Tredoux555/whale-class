@@ -257,7 +257,7 @@ export default function DashboardPage() {
       {/* Weekly Admin Card — teachers only */}
       {!isParent && session?.classroom?.id && children.length > 0 && (
         <div className="max-w-6xl mx-auto px-4 pt-4">
-          <WeeklyAdminCard classroomId={session.classroom.id} />
+          <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
         </div>
       )}
 

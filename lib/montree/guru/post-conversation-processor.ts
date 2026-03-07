@@ -33,6 +33,10 @@ interface ExtractionResult {
   one_liner: string;
   advice: string;
   work_changes: WorkChange[];
+  // Optional per-area fields (Haiku may or may not produce these)
+  plan_row?: Record<string, string>;
+  area_details?: Record<string, { work: string; this_week: string; next_week: string }>;
+  full_summary?: string;
 }
 
 const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
@@ -102,6 +106,17 @@ Respond in JSON only:
 }
 
 If no work changes were recommended, use an empty array for work_changes.
+
+7. PLAN ROW (optional — include if you have enough info): For each of the 5 areas (practical_life, sensorial, mathematics, language, cultural), suggest one work name for next week. Include a "notes" field.
+   "plan_row": { "practical_life": "...", "sensorial": "...", "mathematics": "...", "language": "...", "cultural": "...", "notes": "..." }
+
+8. AREA DETAILS (optional — include if the conversation covered multiple areas): Per-area breakdown.
+   "area_details": { "practical_life": { "work": "...", "this_week": "...", "next_week": "..." }, ... }
+
+9. FULL SUMMARY (optional): Area-prefixed narrative covering all areas discussed.
+   "full_summary": "Practical Life: ... Sensorial: ... Mathematics: ..."
+
+Items 7-9 are optional — only include them if the conversation provides enough information.
 JSON:`;
 
     const msg = await anthropic.messages.create({
@@ -138,7 +153,7 @@ JSON:`;
     const supabase = getSupabase();
 
     // 1. Save weekly admin items to child settings
-    await updateChildSettings(childId, {
+    const settingsUpdate: Record<string, unknown> = {
       guru_weekly_summary: extraction.summary.slice(0, 300), // Safety cap
       guru_weekly_this_week: (extraction.this_week || '').slice(0, 300),
       guru_weekly_next_week: (extraction.next_week || '').slice(0, 300),
@@ -146,7 +161,20 @@ JSON:`;
       guru_weekly_advice: (extraction.advice || '').slice(0, 2000),
       guru_weekly_summary_updated_at: new Date().toISOString(),
       guru_weekly_summary_interaction_id: interactionId || null,
-    });
+    };
+
+    // Optional per-area fields (only save if Haiku produced them)
+    if (extraction.plan_row && typeof extraction.plan_row === 'object') {
+      settingsUpdate.guru_weekly_plan_row = extraction.plan_row;
+    }
+    if (extraction.area_details && typeof extraction.area_details === 'object') {
+      settingsUpdate.guru_weekly_area_details = extraction.area_details;
+    }
+    if (extraction.full_summary && typeof extraction.full_summary === 'string') {
+      settingsUpdate.guru_weekly_full_summary = extraction.full_summary.slice(0, 5000);
+    }
+
+    await updateChildSettings(childId, settingsUpdate);
 
     // 2. Apply work changes (if any)
     const changes = Array.isArray(extraction.work_changes) ? extraction.work_changes : [];
