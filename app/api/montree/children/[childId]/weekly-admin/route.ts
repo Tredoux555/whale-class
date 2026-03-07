@@ -177,6 +177,11 @@ function parseResponse(text: string): ParsedResult | null {
   if (jsonStr.startsWith('```')) {
     jsonStr = jsonStr.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
   }
+  // Try to extract JSON object if surrounded by text
+  if (!jsonStr.startsWith('{')) {
+    const match = jsonStr.match(/\{[\s\S]*\}/);
+    if (match) jsonStr = match[0];
+  }
   try {
     const parsed = JSON.parse(jsonStr);
     // Validate required fields
@@ -186,8 +191,16 @@ function parseResponse(text: string): ParsedResult | null {
     }
     return parsed as ParsedResult;
   } catch {
-    console.error('[weekly-admin] Failed to parse JSON:', jsonStr.slice(0, 200));
-    return null;
+    // Try fixing common JSON issues: trailing commas
+    try {
+      const fixed = jsonStr.replace(/,(\s*[}\]])/g, '$1');
+      const parsed = JSON.parse(fixed);
+      if (!parsed.plan_row || !parsed.area_details || !parsed.full_summary) return null;
+      return parsed as ParsedResult;
+    } catch {
+      console.error('[weekly-admin] Failed to parse JSON:', jsonStr.slice(0, 300));
+      return null;
+    }
   }
 }
 
@@ -225,16 +238,16 @@ export async function POST(
       return NextResponse.json({ error: 'locale must be "en" or "zh"' }, { status: 400 });
     }
 
-    // Rate limit: 30/day per IP
+    // Rate limit: 100/day per IP (high to allow batch generation of full classroom)
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const supabase = getSupabase();
     const { allowed } = await checkRateLimit(
       supabase, ip,
-      `/api/montree/children/weekly-admin:${childId}`,
-      30, 1440
+      '/api/montree/children/weekly-admin',
+      100, 1440
     );
     if (!allowed) {
-      return NextResponse.json({ error: 'Rate limit reached (30/day)' }, { status: 429 });
+      return NextResponse.json({ error: 'Rate limit reached (100/day)' }, { status: 429 });
     }
 
     if (!anthropic) {
@@ -256,6 +269,8 @@ export async function POST(
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
+
+    const childName = child.name || child.first_name || 'Student';
 
     // 4 parallel DB queries
     const [focusRes, progressRes, guruRes] = await Promise.all([
@@ -290,7 +305,7 @@ export async function POST(
 
     // Build prompt
     const prompt = buildPerChildPrompt(
-      child.name, focusWorks, progressRecords, guruInteractions,
+      childName, focusWorks, progressRecords, guruInteractions,
       locale, weekStart, weekEnd
     );
 
@@ -319,8 +334,9 @@ export async function POST(
       return NextResponse.json({ error: 'Failed to parse AI response' }, { status: 500 });
     }
 
-    // Save to child settings
-    await updateChildSettings(childId, {
+    // Save to child settings (catch separately to still return data on save failure)
+    try {
+      await updateChildSettings(childId, {
       guru_weekly_plan_row: parsed.plan_row,
       guru_weekly_area_details: parsed.area_details,
       guru_weekly_full_summary: parsed.full_summary,
@@ -330,7 +346,11 @@ export async function POST(
       guru_weekly_advice: parsed.advice,
       guru_weekly_summary: `${parsed.this_week} ${parsed.next_week}`.slice(0, 300),
       guru_weekly_summary_updated_at: new Date().toISOString(),
-    });
+      });
+    } catch (saveErr) {
+      console.error('[weekly-admin] Failed to save settings:', saveErr);
+      // Still return the data even if save fails — user can retry
+    }
 
     return NextResponse.json({
       success: true,
