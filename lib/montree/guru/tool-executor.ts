@@ -350,6 +350,128 @@ export async function executeTool(
       return { success: true, message: `${emoji} Outcome recorded` };
     }
 
+    // --- Curriculum Read-Only Tools ---
+
+    case 'browse_curriculum': {
+      const area = input.area as string;
+      if (!area) return { success: false, message: 'Missing area' };
+
+      const allWorks = loadAllCurriculumWorks();
+      let works = allWorks.filter(w => w.area_key === area);
+
+      const category = input.category as string | undefined;
+      if (category) {
+        const catLower = category.toLowerCase();
+        works = works.filter(w =>
+          w.category_name?.toLowerCase().includes(catLower)
+        );
+      }
+
+      // Cap at 50 to avoid token explosion
+      const capped = works.slice(0, 50);
+      const formatted = capped.map(w => ({
+        name: w.name,
+        category: w.category_name || 'Uncategorized',
+        age_range: w.age_range || 'N/A',
+        description: w.description ? w.description.slice(0, 100) : '',
+        sequence: w.sequence,
+      }));
+
+      return {
+        success: true,
+        message: `${AREA_LABELS[area] || area}: ${formatted.length} works found${category ? ` in category "${category}"` : ''}.\n${JSON.stringify(formatted, null, 1)}`
+      };
+    }
+
+    case 'get_child_curriculum_status': {
+      const area = input.area as string;
+      if (!area) return { success: false, message: 'Missing area' };
+
+      // Get all curriculum works for this area
+      const allWorks = loadAllCurriculumWorks();
+      const areaWorks = allWorks.filter(w => w.area_key === area);
+
+      // Fetch child's progress records for this area
+      const { data: progressRecords } = await supabase
+        .from('montree_child_progress')
+        .select('work_name, status, mastered_at, presented_at')
+        .eq('child_id', childId)
+        .eq('area', area);
+
+      // Fetch child's current focus work for this area
+      const { data: focusWork } = await supabase
+        .from('montree_child_focus_works')
+        .select('work_name')
+        .eq('child_id', childId)
+        .eq('area', area)
+        .maybeSingle();
+
+      // Build progress map
+      const progressMap = new Map<string, { status: string; mastered_at?: string }>();
+      for (const p of (progressRecords || [])) {
+        progressMap.set(p.work_name.toLowerCase(), {
+          status: p.status,
+          mastered_at: p.mastered_at || undefined,
+        });
+      }
+
+      const focusWorkName = focusWork?.work_name?.toLowerCase() || '';
+
+      const statusList = areaWorks.map(w => {
+        const progress = progressMap.get(w.name.toLowerCase());
+        return {
+          name: w.name,
+          sequence: w.sequence,
+          status: progress?.status || 'not_started',
+          is_focus: w.name.toLowerCase() === focusWorkName,
+        };
+      });
+
+      // Summary counts
+      const counts = { mastered: 0, practicing: 0, presented: 0, not_started: 0 };
+      for (const s of statusList) {
+        if (s.status in counts) counts[s.status as keyof typeof counts]++;
+      }
+
+      return {
+        success: true,
+        message: `${AREA_LABELS[area] || area} — ${counts.mastered} mastered, ${counts.practicing} practicing, ${counts.presented} presented, ${counts.not_started} not started.\n${JSON.stringify(statusList, null, 1)}`
+      };
+    }
+
+    case 'search_curriculum': {
+      const query = input.query as string;
+      if (!query || query.length < 2) return { success: false, message: 'Query must be at least 2 characters' };
+
+      const queryLower = query.toLowerCase();
+      const allWorks = loadAllCurriculumWorks();
+
+      const matches = allWorks.filter(w => {
+        const searchable = [
+          w.name,
+          w.description || '',
+          w.category_name || '',
+          (w.materials || []).join(' '),
+        ].join(' ').toLowerCase();
+        return searchable.includes(queryLower);
+      });
+
+      // Cap at 20
+      const capped = matches.slice(0, 20);
+      const formatted = capped.map(w => ({
+        name: w.name,
+        area: AREA_LABELS[w.area_key] || w.area_key,
+        category: w.category_name || 'Uncategorized',
+        age_range: w.age_range || 'N/A',
+        description: w.description ? w.description.slice(0, 80) : '',
+      }));
+
+      return {
+        success: true,
+        message: `Found ${matches.length} works matching "${query}"${matches.length > 20 ? ' (showing first 20)' : ''}.\n${JSON.stringify(formatted, null, 1)}`
+      };
+    }
+
     default:
       console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
       return { success: false, message: `Unknown tool: ${toolName}` };
