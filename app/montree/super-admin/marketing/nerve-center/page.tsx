@@ -404,9 +404,26 @@ export default function NerveCenterPage() {
             </div>
           </Section>
 
+          <Section title="Killer Quotes — Use These Everywhere">
+            <div className="space-y-3">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                <p className="text-amber-300 text-sm italic">{'"'}A teacher wanting this kind of developmental insight would normally need to book time with a senior AMI trainer or educational psychologist. The Guru delivers that in under half a minute, for fractions of a cent. Teachers can absolutely wait for that.{'"'}</p>
+                <p className="text-amber-500/60 text-xs mt-2">— Guru value proposition (speed vs expert consultation)</p>
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                <p className="text-amber-300 text-sm italic">{'"'}What used to require a 30-minute consultation with a senior AMI trainer now takes 15 seconds and costs less than a penny.{'"'}</p>
+                <p className="text-amber-500/60 text-xs mt-2">— Short-form version for social media</p>
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
+                <p className="text-amber-300 text-sm italic">{'"'}The Guru knows 13 developmental psychologists, 329 Montessori works, every sensitive period for your child{"\'"}s age, and your child{"\'"}s complete learning history. It gives you personalised expert guidance in seconds — not days.{'"'}</p>
+                <p className="text-amber-500/60 text-xs mt-2">— Feature depth angle (for parents who want to know what{"\'"}s under the hood)</p>
+              </div>
+            </div>
+          </Section>
+
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
             <p className="text-emerald-400 text-sm font-semibold">The #1 Rule for Montree Marketing</p>
-            <p className="text-emerald-300/80 text-sm mt-1">Authenticity + community beats polish + perfection. Raw classroom moments, real student progress, genuine teacher stories will outperform highly produced content in 2026. You ARE a Montessori teacher — that's your unfair advantage. Nobody else in EdTech has that.</p>
+            <p className="text-emerald-300/80 text-sm mt-1">Authenticity + community beats polish + perfection. Raw classroom moments, real student progress, genuine teacher stories will outperform highly produced content in 2026. You ARE a Montessori teacher — that{"\'"}s your unfair advantage. Nobody else in EdTech has that.</p>
           </div>
         </div>
       )}
