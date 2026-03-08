@@ -1,6 +1,6 @@
 // Classroom Overview Print Page
-// Shows ALL children with their current shelf works + large writing space
-// Optimized for printing on A4 landscape
+// 20 students on 2 A4 pages (10 per page, 5×2 grid)
+// Works listed small in top-right corner, rest of box blank for handwritten notes
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,6 +24,13 @@ interface ChildData {
 }
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+const AREA_LETTERS: Record<string, string> = {
+  practical_life: 'PL',
+  sensorial: 'S',
+  mathematics: 'M',
+  language: 'L',
+  cultural: 'C',
+};
 
 export default function ClassroomOverviewPage() {
   const router = useRouter();
@@ -39,16 +46,21 @@ export default function ClassroomOverviewPage() {
       router.push('/montree/login');
       return;
     }
-    // Redirect homeschool parents — they only have 1 child
     if (isHomeschoolParent(sess)) {
       router.push('/montree/dashboard');
       return;
     }
     setSession(sess);
 
-    // Fetch all children + focus works
+    // Guard: must have a classroom to fetch children
+    if (!sess.classroom?.id) {
+      setError(true);
+      setLoading(false);
+      return;
+    }
+
     const controller = new AbortController();
-    montreeApi(`/api/montree/focus-works/batch?classroom_id=${sess.classroom?.id}`, { signal: controller.signal })
+    montreeApi(`/api/montree/focus-works/batch?classroom_id=${sess.classroom.id}`, { signal: controller.signal })
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -71,15 +83,9 @@ export default function ClassroomOverviewPage() {
     return AREA_CONFIG[normalized] || { name: area, icon: '?', color: '#888' };
   };
 
-  const getAreaLabel = (area: string): string => {
-    const key = `areas.${area}` as keyof typeof t;
-    return t(key as any) || getAreaConfig(area).name;
-  };
-
   const today = new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
   });
 
@@ -102,19 +108,32 @@ export default function ClassroomOverviewPage() {
     );
   }
 
+  // Split children into pages of 10
+  const pages: ChildData[][] = [];
+  for (let i = 0; i < children.length; i += 10) {
+    pages.push(children.slice(i, i + 10));
+  }
+
   return (
     <>
-      {/* Print styles */}
       <style jsx global>{`
         @media print {
           @page {
             size: A4 landscape;
-            margin: 8mm;
+            margin: 6mm;
           }
-          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            margin: 0;
+            padding: 0;
+          }
           .no-print { display: none !important; }
-          .print-page-break { page-break-after: always; }
-          .print-avoid-break { page-break-inside: avoid; }
+          .print-page { page-break-after: always; }
+          .print-page:last-child { page-break-after: auto; }
+        }
+        @media screen {
+          .print-page { margin-bottom: 24px; }
         }
       `}</style>
 
@@ -135,81 +154,126 @@ export default function ClassroomOverviewPage() {
         </button>
       </div>
 
-      {/* Print content */}
-      <div className="bg-white min-h-screen">
-        {/* Header — prints on every page via repeat */}
-        <div className="px-6 pt-4 pb-2 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">
-                📋 {session?.classroom?.name || t('print.classOverview')}
-              </h1>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {t('print.date')}: {today} &nbsp;|&nbsp; {t('print.teacher')}: {session?.teacher?.name || ''}
-              </p>
-            </div>
-            <span className="text-2xl no-print">🌳</span>
+      {/* Pages */}
+      <div className="bg-white">
+        {children.length === 0 ? (
+          <div className="text-center py-20 text-gray-400 text-lg">
+            {t('dashboard.noStudents')}
           </div>
-        </div>
+        ) : (
+          pages.map((pageChildren, pageIdx) => (
+            <div
+              key={pageIdx}
+              className="print-page"
+              style={{ width: '100%', minHeight: '100vh' }}
+            >
+              {/* Page header — compact */}
+              <div style={{ padding: '4px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb' }}>
+                <span style={{ fontWeight: 700, fontSize: '11px', color: '#374151' }}>
+                  {session?.classroom?.name || t('print.classOverview')}
+                </span>
+                <span style={{ fontSize: '10px', color: '#9ca3af' }}>
+                  {today} — {session?.teacher?.name} — {locale === 'zh' ? '页' : 'p'}{pageIdx + 1}/{pages.length}
+                </span>
+              </div>
 
-        {/* Children grid — 4 per page (2×2) */}
-        <div className="px-4 py-3">
-          {children.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              {t('dashboard.noStudents')}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {children.map((child, idx) => (
-                <div
-                  key={child.id}
-                  className={`print-avoid-break border border-gray-200 rounded-lg p-3 flex flex-col ${
-                    idx > 0 && idx % 4 === 0 ? 'print-page-break' : ''
-                  }`}
-                  style={{ minHeight: '45vh' }}
-                >
-                  {/* Child name */}
-                  <div className="flex items-center gap-2 mb-2 pb-1.5 border-b border-gray-100">
-                    <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
-                      {child.name.charAt(0).toUpperCase()}
-                    </span>
-                    <span className="font-bold text-gray-800 text-base">{child.name}</span>
+              {/* 5×2 grid of student boxes */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(5, 1fr)',
+                  gridTemplateRows: 'repeat(2, 1fr)',
+                  gap: '0px',
+                  height: 'calc(100vh - 28px)',
+                  padding: '0',
+                  borderTop: '1px solid #d1d5db',
+                  borderLeft: '1px solid #d1d5db',
+                }}
+              >
+                {pageChildren.map((child) => (
+                  <div
+                    key={child.id}
+                    style={{
+                      borderRight: '1px solid #d1d5db',
+                      borderBottom: '1px solid #d1d5db',
+                      padding: '6px 8px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {/* Child name — top left, bold */}
+                    <div style={{
+                      fontWeight: 700,
+                      fontSize: '13px',
+                      color: '#111827',
+                      lineHeight: '1.2',
+                      paddingRight: '50%',
+                      marginBottom: '2px',
+                    }}>
+                      {child.name}
+                    </div>
+
+                    {/* Focus works — top right corner, small text */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '5px',
+                      right: '6px',
+                      textAlign: 'right',
+                      maxWidth: '55%',
+                    }}>
+                      {AREAS.map(area => {
+                        const fw = child.focus_works[area];
+                        if (!fw) return null;
+                        const config = getAreaConfig(area);
+                        const workName = locale === 'zh' && fw.chineseName ? fw.chineseName : fw.name;
+                        // Truncate long work names
+                        const shortName = workName.length > 25 ? workName.slice(0, 23) + '…' : workName;
+                        return (
+                          <div key={area} style={{ fontSize: '7px', lineHeight: '1.4', color: '#6b7280' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              width: '10px',
+                              height: '10px',
+                              borderRadius: '50%',
+                              backgroundColor: config.color,
+                              color: 'white',
+                              fontSize: '5px',
+                              fontWeight: 700,
+                              textAlign: 'center',
+                              lineHeight: '10px',
+                              marginRight: '2px',
+                              verticalAlign: 'middle',
+                            }}>
+                              {AREA_LETTERS[area] || '?'}
+                            </span>
+                            {shortName}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Rest of box is blank — for handwritten notes */}
+                    <div style={{ flex: 1 }} />
                   </div>
+                ))}
 
-                  {/* Focus works — compact list */}
-                  <div className="space-y-0.5 mb-2">
-                    {AREAS.map(area => {
-                      const config = getAreaConfig(area);
-                      const fw = child.focus_works[area];
-                      const workName = fw
-                        ? (locale === 'zh' && fw.chineseName ? fw.chineseName : fw.name)
-                        : null;
-
-                      return (
-                        <div key={area} className="flex items-center gap-1.5">
-                          <span
-                            className="w-4 h-4 rounded-full flex items-center justify-center text-white flex-shrink-0"
-                            style={{ backgroundColor: config.color, fontSize: '7px', fontWeight: 700 }}
-                          >
-                            {config.icon}
-                          </span>
-                          <span className="text-gray-700" style={{ fontSize: '9px', lineHeight: '1.3' }}>
-                            {workName || (
-                              <span className="text-gray-300 italic">{t('print.noFocusWork')}</span>
-                            )}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Large writing space — fills remaining card height */}
-                  <div className="flex-1 bg-gray-50/30 rounded-md min-h-[100px]" />
-                </div>
-              ))}
+                {/* Fill empty slots if less than 10 children on this page */}
+                {Array.from({ length: 10 - pageChildren.length }).map((_, i) => (
+                  <div
+                    key={`empty-${i}`}
+                    style={{
+                      borderRight: '1px solid #e5e7eb',
+                      borderBottom: '1px solid #e5e7eb',
+                      backgroundColor: '#fafafa',
+                    }}
+                  />
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          ))
+        )}
       </div>
     </>
   );
