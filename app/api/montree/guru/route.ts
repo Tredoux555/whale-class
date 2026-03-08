@@ -411,8 +411,8 @@ export async function POST(request: NextRequest) {
 
       // Detect explicit shelf/progress update requests — force tool_choice: "any" so the model
       // MUST call at least one tool instead of just verbally suggesting works.
-      // Pattern covers: weekly admin, shelf updates, progress updates, work recommendations
-      const shelfUpdatePattern = /weekly admin|update.*shelf|update.*her|update.*his|set.*focus|change.*work|replace.*work|put.*on.*shelf|update.*progress|mark.*master|new works? for|rotate.*shelf|recommend.*work|suggest.*work|what.*should.*work on/i;
+      // Patterns are specific to avoid false positives on casual messages containing "her"/"his".
+      const shelfUpdatePattern = /weekly admin|update\s+(the\s+)?shelf|set\s+(the\s+)?focus|change\s+(the\s+)?work|replace\s+(the\s+)?work|put\s+\w+\s+on\s+(the\s+)?shelf|update\s+(the\s+)?progress|mark\s+\w+\s+as\s+master|new works?\s+for|rotate\s+(the\s+)?shelf|recommend\s+(a\s+|some\s+)?works?|suggest\s+(a\s+|some\s+)?works?|what\s+should\s+\w+\s+work\s+on/i;
       const forceToolUse = toolsEnabled && shelfUpdatePattern.test(question);
 
       // Build API params — tools only included when mode requires them
@@ -542,53 +542,13 @@ export async function POST(request: NextRequest) {
         }};
       }
 
-      // SAFETY NET 2: Detect tool hallucination — model CLAIMS to have updated the shelf
-      // in its text response but didn't actually call any tools. Force a retry with tool_choice: "any".
+      // Monitor tool hallucination (log only — no retry to avoid doubling latency)
+      // The prompt instructions + tool_choice:"any" for explicit requests handle reliability.
+      // A retry would add another 15-30s API call, causing the Guru to hang/timeout.
       if (toolsEnabled && actionsTaken.length === 0 && responseText.trim()) {
-        const claimsAction = /I've (updated|marked|set|changed|put|added|moved|cleared|removed)|Done —|✅.*shelf|mastered.*!/i.test(responseText);
+        const claimsAction = /I've (updated|marked|set|changed|put|added|moved|cleared|removed)|Done —/i.test(responseText);
         if (claimsAction) {
-          console.warn(`[Guru] Tool hallucination detected — model claims action but made 0 tool calls. Retrying with forced tools.`);
-          const retryResponse = await withTimeout(
-            anthropic.messages.create({
-              model: guruModel,
-              max_tokens: guruMaxTokens,
-              system: systemPrompt,
-              tools: GURU_TOOLS,
-              tool_choice: { type: "any" },
-              messages: [
-                ...currentMessages,
-                { role: 'assistant' as const, content: responseText },
-                { role: 'user' as const, content: 'You said you updated things but no actual changes were made. Please use the tools NOW to make the changes you described. Call set_focus_work, update_progress, etc. as needed.' },
-              ],
-            }),
-            API_TIMEOUT_MS,
-            'Guru tool hallucination retry'
-          );
-
-          // Execute any tools from the retry
-          if (retryResponse.stop_reason === 'tool_use') {
-            const retryToolBlocks = retryResponse.content.filter(
-              (b): b is Extract<typeof b, { type: 'tool_use' }> => b.type === 'tool_use'
-            );
-            for (const toolCall of retryToolBlocks) {
-              try {
-                const result = await executeTool(toolCall.name, toolCall.input as Record<string, unknown>, child_id);
-                actionsTaken.push({ tool: toolCall.name, ...result });
-                console.log(`[Guru] Retry tool ${toolCall.name}: ${result.success ? '✅' : '❌'} ${result.message}`);
-              } catch (err) {
-                console.error(`[Guru] Retry tool ${toolCall.name} failed:`, err);
-              }
-            }
-          }
-
-          // Update token counts
-          const rt = retryResponse.usage || {};
-          response = { ...response, usage: {
-            input_tokens: (response.usage?.input_tokens || 0) + (rt.input_tokens || 0),
-            output_tokens: (response.usage?.output_tokens || 0) + (rt.output_tokens || 0),
-            cache_creation_input_tokens: 0,
-            cache_read_input_tokens: 0,
-          }};
+          console.warn(`[Guru] Tool hallucination detected — model claims action but made 0 tool calls. Response: "${responseText.slice(0, 200)}..."`);
         }
       }
 
