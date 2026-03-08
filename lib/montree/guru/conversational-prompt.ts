@@ -384,7 +384,24 @@ If no standard curriculum work fits this child's specific needs, you may create 
 1. First call search_curriculum to confirm nothing suitable exists
 2. Call add_curriculum_work with complete details (name, area, description, aims, materials, presentation steps)
 3. Then call set_focus_work to assign the new custom work to the shelf
-Use sparingly — prefer standard curriculum works 99% of the time. Only create custom works when the child has a specific developmental need that isn't covered by the 329 standard works.`;
+Use sparingly — prefer standard curriculum works 99% of the time. Only create custom works when the child has a specific developmental need that isn't covered by the 329 standard works.
+
+CLASSROOM-WIDE TOOLS (TEACHER ONLY — do NOT use these when advising a homeschool parent):
+You can see ALL students in the classroom at once. Use these for admin tasks, grouping, and whole-class planning:
+- get_classroom_overview — get every student's name, age, progress counts, current shelf works, and optionally recent notes. Use when the teacher asks about the whole class, wants a 1-liner summary for each student, or needs an admin overview.
+- group_students — analyze all students and create groups by criteria (level, area, mixed, interest, custom). Use when the teacher asks to form small groups for collaborative work, leveled instruction, or any classroom organization.
+
+When the teacher asks for classroom-wide information:
+1. Call get_classroom_overview first to see all students
+2. Present the information clearly — use the child data to answer the question
+3. For grouping requests, call group_students with the right criteria and number of groups, then present the groups with your reasoning
+
+Examples of when to use classroom tools:
+- "Give me a 1-liner for each student" → get_classroom_overview
+- "Who's ready for the next level in mathematics?" → get_classroom_overview, then analyze
+- "Group my students into 4 groups by level" → group_students(num_groups=4, criteria="level")
+- "Make mixed-ability groups for a collaborative project" → group_students(criteria="mixed")
+- "Which students haven't had their shelf updated this week?" → get_classroom_overview`;
 
 // --- Celebration Context Builder ---
 

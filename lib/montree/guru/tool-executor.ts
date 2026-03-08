@@ -649,6 +649,234 @@ export async function executeTool(
       return { success: true, message: `Created custom work "${work_name}" in ${AREA_LABELS[area] || area}` };
     }
 
+    // --- Classroom-Wide Tools (teacher only) ---
+
+    case 'get_classroom_overview': {
+      // Get classroom_id from the child
+      const { data: childData } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', childId)
+        .single();
+
+      if (!childData?.classroom_id) {
+        return { success: false, message: 'Could not find classroom for this child' };
+      }
+      const classroomId = childData.classroom_id;
+
+      // Fetch all children in this classroom
+      const { data: children, error: childrenError } = await supabase
+        .from('montree_children')
+        .select('id, name, date_of_birth')
+        .eq('classroom_id', classroomId)
+        .order('name');
+
+      if (childrenError || !children) {
+        return { success: false, message: 'Failed to fetch classroom students' };
+      }
+
+      if (children.length === 0) {
+        return { success: true, message: 'No students in this classroom.' };
+      }
+
+      // Fetch all progress records for these children in one query
+      const childIds = children.map(c => c.id);
+      const { data: allProgress } = await supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, area, status')
+        .in('child_id', childIds);
+
+      // Fetch all focus works for these children
+      const { data: allFocusWorks } = await supabase
+        .from('montree_child_focus_works')
+        .select('child_id, area, work_name')
+        .in('child_id', childIds);
+
+      // Optionally fetch recent observations
+      const includeNotes = input.include_notes === true;
+      let observationMap: Map<string, string[]> = new Map();
+      if (includeNotes) {
+        const { data: recentObs } = await supabase
+          .from('montree_behavioral_observations')
+          .select('child_id, behavior_description')
+          .in('child_id', childIds)
+          .order('created_at', { ascending: false })
+          .limit(Math.min(children.length * 3, 200)); // ~3 per child, capped at 200
+        if (recentObs) {
+          for (const obs of recentObs) {
+            const existing = observationMap.get(obs.child_id) || [];
+            if (existing.length < 2) { // max 2 per child to save tokens
+              existing.push(obs.behavior_description.slice(0, 80));
+              observationMap.set(obs.child_id, existing);
+            }
+          }
+        }
+      }
+
+      // Build progress map per child
+      const progressByChild = new Map<string, { mastered: number; practicing: number; presented: number; not_started: number }>();
+      for (const p of (allProgress || [])) {
+        const counts = progressByChild.get(p.child_id) || { mastered: 0, practicing: 0, presented: 0, not_started: 0 };
+        if (p.status === 'mastered') counts.mastered++;
+        else if (p.status === 'practicing') counts.practicing++;
+        else if (p.status === 'presented') counts.presented++;
+        else counts.not_started++;
+        progressByChild.set(p.child_id, counts);
+      }
+
+      // Build focus works map per child
+      const focusByChild = new Map<string, string[]>();
+      for (const fw of (allFocusWorks || [])) {
+        const works = focusByChild.get(fw.child_id) || [];
+        works.push(`${fw.work_name} (${AREA_LABELS[fw.area] || fw.area})`);
+        focusByChild.set(fw.child_id, works);
+      }
+
+      // Build compact summaries
+      const now = new Date();
+      const summaries = children.map(c => {
+        let ageStr = '';
+        if (c.date_of_birth) {
+          try {
+            const dob = new Date(c.date_of_birth);
+            if (!isNaN(dob.getTime())) {
+              const ageMonths = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
+              const y = Math.floor(ageMonths / 12);
+              const m = ageMonths % 12;
+              ageStr = `${y}y${m}m`;
+            }
+          } catch { /* malformed date — skip */ }
+        }
+
+        const counts = progressByChild.get(c.id) || { mastered: 0, practicing: 0, presented: 0, not_started: 0 };
+        const focus = focusByChild.get(c.id) || [];
+        const notes = observationMap.get(c.id) || [];
+
+        const line: Record<string, unknown> = {
+          name: c.name,
+          age: ageStr || 'N/A',
+          mastered: counts.mastered,
+          practicing: counts.practicing,
+          presented: counts.presented,
+          shelf: focus.length > 0 ? focus : 'empty',
+        };
+        if (includeNotes && notes.length > 0) {
+          line.recent_notes = notes;
+        }
+        return line;
+      });
+
+      return {
+        success: true,
+        message: `Classroom overview — ${children.length} students:\n${JSON.stringify(summaries, null, 1)}`
+      };
+    }
+
+    case 'group_students': {
+      const numGroups = input.num_groups as number;
+      const criteria = input.criteria as string;
+
+      if (!numGroups || numGroups < 2 || numGroups > 10) {
+        return { success: false, message: 'num_groups must be between 2 and 10' };
+      }
+      const validCriteria = ['level', 'area', 'mixed', 'interest', 'custom'];
+      if (!criteria || !validCriteria.includes(criteria)) {
+        return { success: false, message: `Invalid criteria: "${criteria}". Must be one of: ${validCriteria.join(', ')}` };
+      }
+
+      // Get classroom_id from child
+      const { data: childData2 } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', childId)
+        .single();
+
+      if (!childData2?.classroom_id) {
+        return { success: false, message: 'Could not find classroom for this child' };
+      }
+      const classroomId2 = childData2.classroom_id;
+
+      // Fetch all children
+      const { data: children2 } = await supabase
+        .from('montree_children')
+        .select('id, name, date_of_birth')
+        .eq('classroom_id', classroomId2)
+        .order('name');
+
+      if (!children2 || children2.length === 0) {
+        return { success: true, message: 'No students in this classroom to group.' };
+      }
+
+      const childIds2 = children2.map(c => c.id);
+
+      // Fetch all progress
+      const { data: allProgress2 } = await supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, area, status')
+        .in('child_id', childIds2);
+
+      // Fetch all focus works
+      const { data: allFocusWorks2 } = await supabase
+        .from('montree_child_focus_works')
+        .select('child_id, area, work_name')
+        .in('child_id', childIds2);
+
+      // Build per-child data for Claude to reason about
+      const focusArea = (input.focus_area as string) || 'all';
+      const customInstructions = (input.custom_instructions as string) || '';
+
+      const studentData = children2.map(c => {
+        const progress = (allProgress2 || []).filter(p => p.child_id === c.id);
+        const focusWorks = (allFocusWorks2 || []).filter(fw => fw.child_id === c.id);
+
+        // Count by area
+        const areaCounts: Record<string, { mastered: number; practicing: number; presented: number }> = {};
+        for (const p of progress) {
+          const a = p.area;
+          if (!areaCounts[a]) areaCounts[a] = { mastered: 0, practicing: 0, presented: 0 };
+          if (p.status === 'mastered') areaCounts[a].mastered++;
+          else if (p.status === 'practicing') areaCounts[a].practicing++;
+          else if (p.status === 'presented') areaCounts[a].presented++;
+        }
+
+        const totalMastered = progress.filter(p => p.status === 'mastered').length;
+        const currentFocus = focusWorks.map(fw => `${fw.work_name} (${fw.area})`);
+
+        let ageStr = '';
+        if (c.date_of_birth) {
+          try {
+            const dob = new Date(c.date_of_birth);
+            if (!isNaN(dob.getTime())) {
+              const now2 = new Date();
+              const ageMonths = (now2.getFullYear() - dob.getFullYear()) * 12 + (now2.getMonth() - dob.getMonth());
+              ageStr = `${Math.floor(ageMonths / 12)}y${ageMonths % 12}m`;
+            }
+          } catch { /* malformed date — skip */ }
+        }
+
+        const data: Record<string, unknown> = {
+          name: c.name,
+          age: ageStr || 'N/A',
+          total_mastered: totalMastered,
+          current_works: currentFocus.length > 0 ? currentFocus : 'none',
+        };
+
+        // Include area-specific data when focusing on a specific area
+        if (focusArea !== 'all') {
+          data.area_progress = areaCounts[focusArea] || { mastered: 0, practicing: 0, presented: 0 };
+        } else {
+          data.area_progress = areaCounts;
+        }
+
+        return data;
+      });
+
+      return {
+        success: true,
+        message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups})${customInstructions ? `\nInstructions: ${customInstructions}` : ''}\n\nStudent data:\n${JSON.stringify(studentData, null, 1)}\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students and explain your reasoning.`
+      };
+    }
+
     default:
       console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
       return { success: false, message: `Unknown tool: ${toolName}` };
