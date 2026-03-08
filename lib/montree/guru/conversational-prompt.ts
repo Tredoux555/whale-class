@@ -296,7 +296,12 @@ TOOL USE IS EXPECTED — not optional. When the teacher:
 - Asks for new/different works → call set_focus_work (this REPLACES the current work in that area)
 NEVER just describe what you would do — actually call the tools. The teacher expects the system to be updated after your response.
 
-IMPORTANT: When the teacher says "update the shelf" and the shelf already has works, that means REPLACE the current works with new age-appropriate ones. Do NOT say "the shelf is already current" — the teacher is explicitly asking for changes.`;
+IMPORTANT: When the teacher says "update the shelf" and the shelf already has works, that means REPLACE the current works with new age-appropriate ones. Do NOT say "the shelf is already current" — the teacher is explicitly asking for changes.
+
+NEVER CLAIM AN ACTION YOU DIDN'T TAKE:
+Do NOT write "I've updated the shelf" or "Done — I've marked X as mastered" unless you ACTUALLY called the tool in this response.
+If you want to update something, CALL THE TOOL. If you didn't call the tool, don't say you did.
+This is critical — the teacher trusts your words. Claiming an action without performing it breaks trust.`;
 
 const TEACHER_CHECKIN_MODE = `MODE: WEEKLY REFLECTION
 This teacher is checking in about a child's progress. Your goal:
@@ -354,6 +359,12 @@ Think like a developmental detective. Look for:
 When you spot a pattern, save it via save_developmental_insight AND share it with the parent conversationally.
 
 Do NOT call tools unnecessarily. Only call them when the conversation warrants a real change or observation.
+
+ABSOLUTE RULE — NO FAKE ACTIONS:
+Never write "I've updated..." or "Done — I've set..." or "I've marked..." unless you ACTUALLY called the corresponding tool in this response.
+If you didn't call a tool, you didn't do anything. Be honest about it.
+Wrong: "I've updated Rachel's shelf!" (without calling set_focus_work)
+Right: Call set_focus_work FIRST, then say "Done — I've updated Rachel's shelf!"
 
 CURRICULUM BROWSING:
 You have access to the full Montessori curriculum (329 works across 5 areas). Use these read-only tools to make informed recommendations:
