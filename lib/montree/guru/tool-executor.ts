@@ -41,6 +41,37 @@ async function getChildSettingsForUpdate(childId: string): Promise<Record<string
   return (child?.settings as Record<string, unknown>) || {};
 }
 
+// Helper: resolve target_child_id with same-classroom security check
+async function resolveTargetChild(
+  input: Record<string, unknown>,
+  currentChildId: string
+): Promise<{ childId: string; error?: string }> {
+  const targetId = input.target_child_id as string | undefined;
+  if (!targetId || targetId === currentChildId) {
+    return { childId: currentChildId };
+  }
+
+  // Verify both children are in the same classroom
+  const supabase = getSupabase();
+  const { data: children } = await supabase
+    .from('montree_children')
+    .select('id, classroom_id')
+    .in('id', [currentChildId, targetId]);
+
+  if (!children || children.length < 2) {
+    return { childId: currentChildId, error: `Target child "${targetId}" not found` };
+  }
+
+  const current = children.find(c => c.id === currentChildId);
+  const target = children.find(c => c.id === targetId);
+
+  if (!current || !target || current.classroom_id !== target.classroom_id) {
+    return { childId: currentChildId, error: 'Target child is not in the same classroom' };
+  }
+
+  return { childId: targetId };
+}
+
 export async function executeTool(
   toolName: string,
   input: Record<string, unknown>,
@@ -54,6 +85,11 @@ export async function executeTool(
       const work_name = input.work_name as string;
       if (!area || !work_name) return { success: false, message: 'Missing area or work_name' };
       if (work_name.length > 200) return { success: false, message: 'Work name too long' };
+
+      // Resolve target child (supports cross-child batch updates)
+      const resolved = await resolveTargetChild(input, childId);
+      if (resolved.error) return { success: false, message: resolved.error };
+      const effectiveChildId = resolved.childId;
 
       // Validate work_name exists in curriculum (prevents Claude hallucinating work names)
       if (VALID_WORK_NAMES.size > 0 && !VALID_WORK_NAMES.has(work_name.toLowerCase())) {
@@ -72,7 +108,7 @@ export async function executeTool(
       const { error } = await supabase
         .from('montree_child_focus_works')
         .upsert({
-          child_id: childId,
+          child_id: effectiveChildId,
           area,
           work_name,
           set_at: new Date().toISOString(),
@@ -88,7 +124,7 @@ export async function executeTool(
       const { data: existingProgress } = await supabase
         .from('montree_child_progress')
         .select('id')
-        .eq('child_id', childId)
+        .eq('child_id', effectiveChildId)
         .eq('work_name', work_name)
         .maybeSingle();
 
@@ -96,7 +132,7 @@ export async function executeTool(
         await supabase
           .from('montree_child_progress')
           .insert({
-            child_id: childId,
+            child_id: effectiveChildId,
             work_name,
             area,
             status: 'presented',
@@ -109,10 +145,10 @@ export async function executeTool(
       const reason = input.reason as string | undefined;
       if (reason) {
         try {
-          const currentSettings = await getChildSettingsForUpdate(childId);
+          const currentSettings = await getChildSettingsForUpdate(effectiveChildId);
           const guruReasons = (currentSettings.guru_area_reasons as Record<string, string>) || {};
           guruReasons[area] = reason.slice(0, 500);
-          await updateChildSettings(childId, { guru_area_reasons: guruReasons });
+          await updateChildSettings(effectiveChildId, { guru_area_reasons: guruReasons });
         } catch {
           // Non-critical — don't fail the whole operation if reason storage fails
         }
@@ -124,10 +160,16 @@ export async function executeTool(
     case 'clear_focus_work': {
       const area = input.area as string;
       if (!area) return { success: false, message: 'Missing area' };
+
+      // Resolve target child (supports cross-child batch updates)
+      const resolvedClear = await resolveTargetChild(input, childId);
+      if (resolvedClear.error) return { success: false, message: resolvedClear.error };
+      const effectiveClearId = resolvedClear.childId;
+
       const { error } = await supabase
         .from('montree_child_focus_works')
         .delete()
-        .eq('child_id', childId)
+        .eq('child_id', effectiveClearId)
         .eq('area', area);
 
       if (error) return { success: false, message: 'Failed to clear focus work' };
@@ -142,6 +184,11 @@ export async function executeTool(
 
       if (!work_name || !area || !status) return { success: false, message: 'Missing work_name, area, or status' };
 
+      // Resolve target child (supports cross-child batch updates)
+      const resolvedProgress = await resolveTargetChild(input, childId);
+      if (resolvedProgress.error) return { success: false, message: resolvedProgress.error };
+      const effectiveProgressId = resolvedProgress.childId;
+
       // Validate area enum
       const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
       if (!validAreas.includes(area)) {
@@ -155,7 +202,7 @@ export async function executeTool(
       }
 
       const record: Record<string, unknown> = {
-        child_id: childId,
+        child_id: effectiveProgressId,
         work_name,
         area,
         status,
@@ -168,7 +215,7 @@ export async function executeTool(
         const { data: existing } = await supabase
           .from('montree_child_progress')
           .select('mastered_at')
-          .eq('child_id', childId)
+          .eq('child_id', effectiveProgressId)
           .eq('work_name', work_name)
           .maybeSingle();
 
@@ -182,7 +229,7 @@ export async function executeTool(
         const { data: existing } = await supabase
           .from('montree_child_progress')
           .select('presented_at')
-          .eq('child_id', childId)
+          .eq('child_id', effectiveProgressId)
           .eq('work_name', work_name)
           .maybeSingle();
 
@@ -753,6 +800,7 @@ export async function executeTool(
         const notes = observationMap.get(c.id) || [];
 
         const line: Record<string, unknown> = {
+          id: c.id,
           name: c.name,
           age: ageStr || 'N/A',
           mastered: counts.mastered,
@@ -855,6 +903,7 @@ export async function executeTool(
         }
 
         const data: Record<string, unknown> = {
+          id: c.id,
           name: c.name,
           age: ageStr || 'N/A',
           total_mastered: totalMastered,
