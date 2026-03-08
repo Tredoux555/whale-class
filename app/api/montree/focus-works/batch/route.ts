@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     // 1. Fetch all children in this classroom (sorted by name)
     const { data: children, error: childErr } = await supabase
       .from('montree_children')
-      .select('id, name, date_of_birth, photo_url')
+      .select('id, name, photo_url')
       .eq('classroom_id', classroomId)
       .order('name', { ascending: true });
 
