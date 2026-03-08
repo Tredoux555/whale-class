@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
-import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 
 export async function GET(request: NextRequest) {
@@ -58,13 +58,12 @@ export async function GET(request: NextRequest) {
     // Transform to milestones format — locale-aware
     const locale = getLocaleFromRequest(request.url);
     const t = getTranslator(locale);
-    const cnMap = getChineseNameMap();
     const milestones = (progress || [])
       .filter(p => p.work)
       .map(p => {
         const workName = (p.work as Record<string, unknown>).name as string;
         const areaId = (p.work as Record<string, unknown>).area_id as string;
-        const chineseName = workName ? cnMap.get(workName.toLowerCase().trim()) || null : null;
+        const chineseName = workName ? getChineseNameForWork(workName) : null;
         const displayName = locale === 'zh' && chineseName ? chineseName : workName;
         return {
           id: p.id,

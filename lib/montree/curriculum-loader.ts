@@ -231,15 +231,160 @@ export function getChineseNameMap(): Map<string, string> {
 }
 
 /**
+ * Get Chinese name for a work, using exact match first then fuzzy matching.
+ * Convenience wrapper for routes that look up individual work names.
+ */
+export function getChineseNameForWork(workName: string): string | null {
+  const map = getChineseNameMap();
+  const key = workName.toLowerCase().trim();
+  // Exact match
+  const exact = map.get(key);
+  if (exact) return exact;
+  // Fuzzy match
+  return fuzzyMatchChineseName(workName, map) || null;
+}
+
+/**
+ * Fuzzy match a work name against the Chinese name map.
+ * Handles cases like "Geometry Cabinet and Cards" matching "Geometric Cabinet",
+ * or "Puzzle of the Bird" matching "Parts of a Bird".
+ *
+ * Strategy: normalize both names by removing common suffixes/filler words,
+ * then try substring matching (shorter name contained in longer name).
+ */
+function fuzzyMatchChineseName(workName: string, map: Map<string, string>): string | undefined {
+  const input = workName.toLowerCase().trim();
+
+  // 1. Exact match (already tried by caller, but included for completeness)
+  const exact = map.get(input);
+  if (exact) return exact;
+
+  // 2. Strip common suffixes/additions and try again
+  // e.g., "Geometry Cabinet and Cards" → try "Geometry Cabinet"
+  const strippedInput = input
+    .replace(/\s+and\s+.+$/, '')      // Remove " and ..." suffix
+    .replace(/\s+with\s+.+$/, '')     // Remove " with ..." suffix
+    .replace(/\s*\(.*\)$/, '')        // Remove parenthetical
+    .trim();
+  if (strippedInput !== input) {
+    const match = map.get(strippedInput);
+    if (match) return match;
+  }
+
+  // 3. Substring matching: check if DB name contains a curriculum name or vice versa
+  // This handles "Puzzle of the Bird" matching "Parts of a Bird" via shared keywords
+  const inputWords = new Set(input.split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'for', 'with', 'of', 'a', 'an'].includes(w)));
+
+  let bestMatch: string | undefined;
+  let bestScore = 0;
+
+  for (const [key, cn] of map.entries()) {
+    const keyWords = new Set(key.split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'for', 'with', 'of', 'a', 'an'].includes(w)));
+
+    // Count shared meaningful words
+    let shared = 0;
+    for (const w of inputWords) {
+      if (keyWords.has(w)) shared++;
+      // Also check partial word matches (e.g., "geometric" vs "geometry")
+      else {
+        for (const kw of keyWords) {
+          if ((w.length >= 4 && kw.startsWith(w.slice(0, 4))) || (kw.length >= 4 && w.startsWith(kw.slice(0, 4)))) {
+            shared += 0.8;
+            break;
+          }
+        }
+      }
+    }
+
+    // Require at least 1 meaningful shared word and >50% overlap with shorter set
+    const minLen = Math.min(inputWords.size, keyWords.size);
+    if (shared >= 1 && minLen > 0 && shared / minLen > 0.5 && shared > bestScore) {
+      bestScore = shared;
+      bestMatch = cn;
+    }
+  }
+
+  return bestMatch;
+}
+
+/**
  * Enrich an array of work objects with chineseName from curriculum data.
  * Works on any object that has a `work_name` string property.
+ * Uses fuzzy matching to handle name variations between DB and static JSON.
  */
 export function enrichWithChineseNames<T extends { work_name?: string }>(
   items: T[]
 ): (T & { chineseName?: string })[] {
   const map = getChineseNameMap();
   return items.map(item => {
-    const cn = item.work_name ? map.get(item.work_name.toLowerCase().trim()) : undefined;
-    return cn ? { ...item, chineseName: cn } : item;
+    if (!item.work_name) return item;
+    // Try exact match first
+    const exact = map.get(item.work_name.toLowerCase().trim());
+    if (exact) return { ...item, chineseName: exact };
+    // Fall back to fuzzy matching
+    const fuzzy = fuzzyMatchChineseName(item.work_name, map);
+    return fuzzy ? { ...item, chineseName: fuzzy } : item;
   });
+}
+
+/**
+ * Cached works list for findCurriculumWorkByName (avoids re-loading on every call).
+ */
+let _allWorksCache: CurriculumWork[] | null = null;
+
+/**
+ * Find a curriculum work by fuzzy name matching.
+ * Returns the best-matching CurriculumWork or undefined.
+ * Used by the guide API to fall back to static JSON data.
+ */
+export function findCurriculumWorkByName(workName: string): CurriculumWork | undefined {
+  if (!_allWorksCache) _allWorksCache = loadAllCurriculumWorks();
+  const works = _allWorksCache;
+  const input = workName.toLowerCase().trim();
+
+  // 1. Exact name match
+  const exact = works.find(w => w.name.toLowerCase().trim() === input);
+  if (exact) return exact;
+
+  // 2. Stripped suffix match
+  const stripped = input
+    .replace(/\s+and\s+.+$/, '')
+    .replace(/\s+with\s+.+$/, '')
+    .replace(/\s*\(.*\)$/, '')
+    .trim();
+  if (stripped !== input) {
+    const match = works.find(w => w.name.toLowerCase().trim() === stripped);
+    if (match) return match;
+  }
+
+  // 3. Keyword overlap matching (same algorithm as fuzzy Chinese name matching)
+  const inputWords = new Set(input.split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'for', 'with', 'of', 'a', 'an'].includes(w)));
+  let bestWork: CurriculumWork | undefined;
+  let bestScore = 0;
+
+  for (const work of works) {
+    const key = work.name.toLowerCase().trim();
+    const keyWords = new Set(key.split(/\s+/).filter(w => w.length > 2 && !['the', 'and', 'for', 'with', 'of', 'a', 'an'].includes(w)));
+
+    let shared = 0;
+    for (const w of inputWords) {
+      if (keyWords.has(w)) shared++;
+      else {
+        for (const kw of keyWords) {
+          if ((w.length >= 4 && kw.startsWith(w.slice(0, 4))) || (kw.length >= 4 && w.startsWith(kw.slice(0, 4)))) {
+            shared += 0.8;
+            break;
+          }
+        }
+      }
+    }
+
+    const minLen = Math.min(inputWords.size, keyWords.size);
+    if (shared >= 1 && minLen > 0 && shared / minLen > 0.5 && shared > bestScore) {
+      bestScore = shared;
+      bestWork = work;
+    }
+  }
+
+  return bestWork;
 }

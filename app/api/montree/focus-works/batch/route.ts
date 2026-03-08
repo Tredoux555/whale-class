@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,16 +78,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Enrich with Chinese names
-    const cnMap = getChineseNameMap();
-
-    // 4. Group focus works by child_id
+    // 3. Group focus works by child_id, enriched with Chinese names (fuzzy matching)
     const focusByChild: Record<string, Record<string, { name: string; chineseName: string | null }>> = {};
     for (const fw of allFocusWorks || []) {
       if (!focusByChild[fw.child_id]) focusByChild[fw.child_id] = {};
       focusByChild[fw.child_id][fw.area] = {
         name: fw.work_name,
-        chineseName: fw.work_name ? cnMap.get(fw.work_name.toLowerCase().trim()) || null : null,
+        chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
       };
     }
 

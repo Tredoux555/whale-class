@@ -7,27 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 const ALL_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
-// Build Chinese name lookup from static curriculum
-let chineseNameMap: Record<string, string> | null = null;
-function getChineseNameMap(): Record<string, string> {
-  if (chineseNameMap) return chineseNameMap;
-  try {
-    const allWorks = loadAllCurriculumWorks();
-    chineseNameMap = {};
-    for (const w of allWorks) {
-      if (w.chineseName) {
-        chineseNameMap[w.name.toLowerCase()] = w.chineseName;
-      }
-    }
-    return chineseNameMap;
-  } catch {
-    return {};
-  }
-}
+// Chinese name lookup now uses centralized getChineseNameForWork() from curriculum-loader
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,14 +78,11 @@ export async function GET(request: NextRequest) {
     const settings = (childData?.settings as Record<string, unknown>) || {};
     const guruReasons = (settings.guru_area_reasons as Record<string, string>) || {};
 
-    // 4. Build Chinese name map
-    const cnMap = getChineseNameMap();
-
-    // 5. Build shelf response — merge focus works with progress + chinese names + reasons
+    // 4. Build shelf response — merge focus works with progress + chinese names (fuzzy) + reasons
     const shelf = (focusWorks || []).map(fw => ({
       area: fw.area,
       work_name: fw.work_name,
-      chineseName: cnMap[fw.work_name.toLowerCase()] || null,
+      chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
       status: progressMap[fw.work_name] || 'not_started',
       set_at: fw.set_at,
       set_by: fw.set_by,

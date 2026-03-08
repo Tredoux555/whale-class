@@ -1,12 +1,13 @@
 // /api/montree/works/guide/route.ts
 // GET quick guide for a work by name
-// Checks classroom curriculum first, then falls back to master Brain
+// Checks classroom curriculum first, then master Brain DB, then static JSON
 // Supports locale=zh for Chinese translation of guide content
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { findCurriculumWorkByName } from '@/lib/montree/curriculum-loader';
 
 export async function GET(request: NextRequest) {
   try {
@@ -64,7 +65,29 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 3. Return data or fallback
+    // 3. Fall back to static curriculum JSON (comprehensive guides with fuzzy matching)
+    if (!guideData) {
+      try {
+        const staticWork = findCurriculumWorkByName(workName);
+        if (staticWork && (staticWork.quick_guide || (staticWork.presentation_steps && staticWork.presentation_steps.length > 0))) {
+          guideData = {
+            name: staticWork.name,
+            quick_guide: staticWork.quick_guide || null,
+            video_search_terms: null,
+            parent_description: staticWork.parent_description || null,
+            direct_aims: staticWork.direct_aims || [],
+            materials: staticWork.materials || [],
+            presentation_steps: staticWork.presentation_steps || [],
+            control_of_error: staticWork.control_of_error || null,
+            why_it_matters: staticWork.why_it_matters || null,
+          };
+        }
+      } catch (err) {
+        console.error('[Guide API] Static curriculum fallback failed:', err);
+      }
+    }
+
+    // 4. Return data or fallback
     if (!guideData) {
       return NextResponse.json({
         name: workName,
@@ -86,7 +109,7 @@ export async function GET(request: NextRequest) {
       why_it_matters: guideData.why_it_matters,
     };
 
-    // 4. Translate to Chinese if locale is zh and we have content
+    // 5. Translate to Chinese if locale is zh and we have content
     if (locale === 'zh' && anthropic && (result.quick_guide || result.presentation_steps)) {
       try {
         const translated = await translateGuideToZh(result);
