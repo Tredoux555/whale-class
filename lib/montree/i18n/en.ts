@@ -189,6 +189,9 @@ export const en = {
   'nav.shelf': 'Shelf',
   'nav.portal': 'Portal',
   'nav.logout': 'Logout',
+  'nav.searchStudents': 'Jump to student...',
+  'nav.noStudentsFound': 'No students found',
+  'nav.currentStudent': 'current',
 
   // Students Page
   'students.title': 'Students',

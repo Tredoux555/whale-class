@@ -189,6 +189,9 @@ export const zh = {
   'nav.shelf': '书架',
   'nav.portal': '对话',
   'nav.logout': '退出',
+  'nav.searchStudents': '跳转到学生...',
+  'nav.noStudentsFound': '未找到学生',
+  'nav.currentStudent': '当前',
 
   // Students Page
   'students.title': '学生',

@@ -18,9 +18,9 @@ import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
-const MAX_TOOL_ROUNDS = 2;
-const API_TIMEOUT_MS = 35_000; // 35s timeout per API call (Sonnet typically 10-25s; was 55s — way too generous)
-const TOTAL_REQUEST_TIMEOUT_MS = 55_000; // 55s total for the entire request including all tool rounds
+const MAX_TOOL_ROUNDS = 4; // Increased from 2: classroom-wide ops need overview → search → multiple set_focus_work calls
+const API_TIMEOUT_MS = 35_000; // 35s timeout per API call (Sonnet typically 10-25s)
+const TOTAL_REQUEST_TIMEOUT_MS = 90_000; // 90s total for entire request (was 55s — too tight for batch shelf updates across 20 students)
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -434,7 +434,7 @@ export async function POST(request: NextRequest) {
       // Detect explicit shelf/progress update requests — force tool_choice: "any" so the model
       // MUST call at least one tool instead of just verbally suggesting works.
       // Patterns are specific to avoid false positives on casual messages containing "her"/"his".
-      const shelfUpdatePattern = /weekly admin|update\s+(the\s+)?shelf|set\s+(the\s+)?focus|change\s+(the\s+)?work|replace\s+(the\s+)?work|put\s+\w+\s+on\s+(the\s+)?shelf|update\s+(the\s+)?progress|mark\s+\w+\s+as\s+master|new works?\s+for|rotate\s+(the\s+)?shelf|recommend\s+(a\s+|some\s+)?works?|suggest\s+(a\s+|some\s+)?works?|what\s+should\s+\w+\s+work\s+on/i;
+      const shelfUpdatePattern = /weekly admin|update\s+(\w+\s+)?shelf|set\s+(the\s+)?focus|change\s+(the\s+)?work|replace\s+(the\s+)?work|put\s+\w+\s+on\s+(\w+\s+)?shelf|update\s+(\w+\s+)?progress|mark\s+\w+\s+as\s+master|new works?\s+for|rotate\s+(the\s+)?shelf|recommend\s+(a\s+|some\s+)?works?|suggest\s+(a\s+|some\s+)?works?|what\s+should\s+\w+\s+work\s+on|fix\s+(\w+\s+)?shelf|match\s+(\w+\s+)?shelf|put\s+it\s+(on|in)\s/i;
       const forceToolUse = toolsEnabled && shelfUpdatePattern.test(question);
 
       // Build API params — tools only included when mode requires them
