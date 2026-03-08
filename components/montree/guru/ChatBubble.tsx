@@ -2,12 +2,14 @@
 // Single chat message bubble for the Guru conversational thread
 'use client';
 
+import { useState } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface ChatBubbleProps {
   content: string;
   isUser: boolean;
   timestamp?: string;
+  imageUrl?: string;
 }
 
 function formatRelativeTime(dateStr: string, t: any): string {
@@ -69,8 +71,9 @@ function renderInlineBold(text: string) {
   });
 }
 
-export default function ChatBubble({ content, isUser, timestamp }: ChatBubbleProps) {
+export default function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
   const { t } = useI18n();
+  const [imgError, setImgError] = useState(false);
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {/* Guru avatar */}
@@ -88,6 +91,13 @@ export default function ChatBubble({ content, isUser, timestamp }: ChatBubblePro
               : 'bg-white border border-[#0D3330]/10 text-[#0D3330] rounded-bl-md shadow-sm'
           }`}
         >
+          {/* Image attachment */}
+          {imageUrl && !imgError && (
+            <div className="mb-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={imageUrl} alt="Attached image" className="max-w-full max-h-48 rounded-lg object-contain" onError={() => setImgError(true)} />
+            </div>
+          )}
           {isUser ? (
             <p className="text-sm leading-relaxed">{content}</p>
           ) : (

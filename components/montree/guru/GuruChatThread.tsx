@@ -18,6 +18,7 @@ interface ChatMessage {
   content: string;
   isUser: boolean;
   timestamp: string;
+  imageUrl?: string;
 }
 
 interface GuruChatThreadProps {
@@ -41,8 +42,10 @@ export default function GuruChatThread({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [pendingImage, setPendingImage] = useState<{ url: string; uploading: boolean } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const firstName = childName.split(' ')[0];
 
   // Auto-scroll to bottom when messages change
@@ -197,6 +200,9 @@ export default function GuruChatThread({
   const handleSend = async () => {
     const text = inputText.trim();
     if (!text || sending) return;
+    if (pendingImage?.uploading) return; // Wait for image upload
+
+    const imageUrl = pendingImage?.url || undefined;
 
     // Add user message immediately
     const userMsg: ChatMessage = {
@@ -204,9 +210,11 @@ export default function GuruChatThread({
       content: text,
       isUser: true,
       timestamp: new Date().toISOString(),
+      imageUrl,
     };
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
+    setPendingImage(null); // Clear pending image
     setSending(true);
 
     // Reset textarea height
@@ -227,6 +235,7 @@ export default function GuruChatThread({
           question: text,
           classroom_id: classroomId,
           conversational: true,
+          ...(imageUrl ? { image_url: imageUrl } : {}),
         }),
         signal: controller.signal,
       });
@@ -272,6 +281,91 @@ export default function GuruChatThread({
       handleSend();
     }
   };
+
+  // Handle image upload
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image too large (max 10MB)');
+      return;
+    }
+
+    const uploadController = new AbortController();
+
+    try {
+      // Compress image using canvas before uploading
+      const compressed = await compressImageForChat(file);
+
+      // Show uploading state AFTER compression succeeds (prevents stuck state if compression fails)
+      setPendingImage({ url: '', uploading: true });
+
+      // Upload to Supabase storage via media upload route
+      const formData = new FormData();
+      formData.append('file', compressed);
+      formData.append('child_id', childId);
+      formData.append('type', 'guru_image');
+
+      const res = await fetch('/api/montree/media/upload', {
+        method: 'POST',
+        body: formData,
+        signal: uploadController.signal,
+      });
+
+      if (!res.ok) throw new Error('Upload failed');
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        setPendingImage({ url: data.url, uploading: false });
+      } else {
+        throw new Error('No URL returned');
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      toast.error(t('guru.imageUploadFailed') || 'Image upload failed');
+      setPendingImage(null);
+    }
+  };
+
+  // Simple image compressor for chat
+  async function compressImageForChat(file: File): Promise<File> {
+    let bitmap: ImageBitmap | null = null;
+    try {
+      const maxDim = 1024;
+      bitmap = await createImageBitmap(file);
+      const { width, height } = bitmap;
+
+      if (width <= maxDim && height <= maxDim && file.size <= 500 * 1024) {
+        bitmap.close();
+        bitmap = null;
+        return file; // Small enough already
+      }
+
+      const scale = Math.min(maxDim / width, maxDim / height, 1);
+      const canvas = new OffscreenCanvas(Math.round(width * scale), Math.round(height * scale));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { bitmap.close(); bitmap = null; return file; }
+
+      ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
+      bitmap = null;
+
+      const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.8 });
+      return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+    } catch {
+      return file;
+    } finally {
+      if (bitmap) { try { bitmap.close(); } catch { /* already closed */ } }
+    }
+  }
 
   // Theme colors — teachers get violet/indigo, parents get botanical green
   const headerGradient = isTeacher
@@ -339,6 +433,7 @@ export default function GuruChatThread({
             content={msg.content}
             isUser={msg.isUser}
             timestamp={msg.timestamp}
+            imageUrl={msg.imageUrl}
           />
         ))}
 
@@ -361,7 +456,51 @@ export default function GuruChatThread({
 
       {/* Input area — fixed at bottom */}
       <div className={`border-t ${isTeacher ? 'border-gray-200' : 'border-[#0D3330]/10'} bg-white px-3 py-3`}>
+        {/* Image preview */}
+        {pendingImage && (
+          <div className="mb-2 flex items-center gap-2">
+            {pendingImage.uploading ? (
+              <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={pendingImage.url} alt="Upload preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                <button
+                  onClick={() => setPendingImage(null)}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+            <span className="text-xs text-gray-400">
+              {pendingImage.uploading ? (t('guru.imageUploading') || 'Uploading...') : (t('guru.uploadImage') || 'Image ready')}
+            </span>
+          </div>
+        )}
+
         <div className="flex items-end gap-2">
+          {/* Image upload button */}
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+          <button
+            onClick={() => imageInputRef.current?.click()}
+            disabled={sending || !!pendingImage}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${
+              isTeacher ? 'text-violet-500 hover:bg-violet-50' : 'text-[#0D3330]/60 hover:bg-[#0D3330]/5'
+            }`}
+            title={t('guru.uploadImage') || 'Upload image'}
+          >
+            📷
+          </button>
+
           {/* Voice button */}
           <VoiceNoteButton
             onTranscription={handleVoiceTranscription}

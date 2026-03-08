@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
+import TeachingInstructions from '@/components/montree/guru/TeachingInstructions';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -284,6 +285,13 @@ export default function FocusWorksSection({
                           </button>
                         </div>
                       </div>
+
+                      {/* Personalized Teaching Instructions */}
+                      <TeachingInstructions
+                        childId={childId}
+                        workName={focusWork.work_name}
+                        area={focusWork.area}
+                      />
                     </>
                   ) : (
                     /* No focus work — show add button */
