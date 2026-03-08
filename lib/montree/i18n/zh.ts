@@ -397,6 +397,12 @@ export const zh = {
   'focusWorks.addObservation': '添加观察...',
   'focusWorks.save': '保存',
   'focusWorks.empty': '轻按下方区域图标设置焦点任务。',
+  'focusWorks.guruAdvice': '顾问建议',
+  'focusWorks.thisWeek': '本周',
+  'focusWorks.nextWeek': '下周',
+  'focusWorks.noWorkInArea': '未分配任务',
+  'focusWorks.addOne': '添加任务',
+  'focusWorks.showMore': '查看更多...',
 
   // Work Picker Modal
   'workPicker.addExtraWork': '添加额外任务',

@@ -121,7 +121,6 @@ export default function ChildWeeklyAdmin({
 
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [expandedArea, setExpandedArea] = useState<string | null>(null);
   const [showFullSummary, setShowFullSummary] = useState(false);
   const [showAdvice, setShowAdvice] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -198,14 +197,10 @@ export default function ChildWeeklyAdmin({
   // ---- Render ----
 
   return (
-    <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-4 mb-4">
-      {/* Header */}
+    <div className="p-4">
+      {/* Header — Generate/Regenerate */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-lg">🧠</span>
-          <span className="font-semibold text-violet-800 text-sm">
-            {t('childAdmin.title')}
-          </span>
           {updatedAt && (
             <span className="text-xs text-violet-400">
               {formatDate(updatedAt)}
@@ -277,59 +272,8 @@ export default function ChildWeeklyAdmin({
           )}
         </div>
       )}
-      {/* ---- Section B: Per-Area Details ---- */}
-      {areaDetails && (
-        <div className="mb-3 space-y-1">
-          <span className="text-xs font-semibold text-violet-700 uppercase">
-            {t('childAdmin.areaDetails')}
-          </span>
-          {AREAS.map(area => {
-            const cfg = AREA_CONFIG[area];
-            const detail = areaDetails[area];
-            if (!detail) return null;
-            const isExpanded = expandedArea === area;
-            return (
-              <div key={area} className="border rounded-lg overflow-hidden" style={{ borderColor: cfg.color + '30' }}>
-                <button
-                  onClick={() => setExpandedArea(isExpanded ? null : area)}
-                  className="w-full flex items-center justify-between p-2.5 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                      style={{ backgroundColor: cfg.color }}
-                    >
-                      {(isZh ? cfg.labelZh : cfg.label).charAt(0)}
-                    </div>
-                    <span className="text-sm font-medium text-gray-700">
-                      {isZh ? cfg.labelZh : cfg.label}: {detail.work}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CopyBtn
-                      text={`${isZh ? cfg.labelZh : cfg.label}: ${detail.this_week}\n${t('childAdmin.nextWeek')}: ${detail.next_week}`}
-                      label={cfg.label}
-                    />
-                    <span className="text-gray-400 text-xs">{isExpanded ? '▲' : '▼'}</span>
-                  </div>
-                </button>
-                {isExpanded && (
-                  <div className="px-3 pb-3 space-y-2 bg-white">
-                    <div>
-                      <div className="text-xs font-semibold text-violet-600 mb-0.5">{t('childAdmin.thisWeek').toUpperCase()}</div>
-                      <p className="text-sm text-gray-700 leading-relaxed">{detail.this_week}</p>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-indigo-600 mb-0.5">{t('childAdmin.nextWeek').toUpperCase()}</div>
-                      <p className="text-sm text-gray-700 leading-relaxed">{detail.next_week}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+      {/* Section B (Per-Area Details) removed — now shown inline in FocusWorksSection */}
+
       {/* ---- Section C: Full Summary (for Chinese doc) ---- */}
       {fullSummary && (
         <div className="mb-3 border border-violet-100 rounded-lg overflow-hidden">

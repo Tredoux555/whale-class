@@ -4,7 +4,7 @@
 // Layout handles auth + header + tabs
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
@@ -599,24 +599,7 @@ export default function WeekPage() {
         )}
       </div>
 
-      {/* Per-Child Weekly Admin — plan row, per-area details, full summary, advice */}
-      {!isHomeschoolParent(session) && (
-        <ChildWeeklyAdmin
-          childId={childId}
-          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          planRow={guruPlanRow}
-          areaDetails={guruAreaDetails}
-          fullSummary={guruFullSummary}
-          thisWeek={guruThisWeek}
-          nextWeek={guruNextWeek}
-          oneLiner={guruOneLiner}
-          advice={guruAdvice}
-          updatedAt={guruSummaryUpdatedAt}
-          onGenerated={fetchGuruSettings}
-        />
-      )}
-
-      {/* FOCUS WORKS - One per area, with extras grouped underneath */}
+      {/* FOCUS WORKS — Unified area view with inline Guru advice */}
       <div data-tutorial="focus-section">
       <FocusWorksSection
         focusWorks={focusWorks}
@@ -634,6 +617,7 @@ export default function WeekPage() {
         childId={childId}
         getAreaConfig={getAreaConfig}
         isHomeschoolParent={isHomeschoolParent(session)}
+        guruAreaDetails={guruAreaDetails}
       />
       </div>
 
@@ -659,6 +643,23 @@ export default function WeekPage() {
         <span className="font-medium text-emerald-600">{t('weekview.addWork')}</span>
         <span className="text-emerald-600">{t('weekview.browseAll')}</span>
       </button>
+
+      {/* Weekly Admin — collapsed by default, for government doc copy-paste */}
+      {!isHomeschoolParent(session) && (
+        <WeeklyAdminCollapsible
+          childId={childId}
+          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          planRow={guruPlanRow}
+          areaDetails={guruAreaDetails}
+          fullSummary={guruFullSummary}
+          thisWeek={guruThisWeek}
+          nextWeek={guruNextWeek}
+          oneLiner={guruOneLiner}
+          advice={guruAdvice}
+          updatedAt={guruSummaryUpdatedAt}
+          onGenerated={fetchGuruSettings}
+        />
+      )}
 
       {/* Wheel Picker for browsing works in an area */}
       <WorkWheelPicker
@@ -751,6 +752,32 @@ export default function WeekPage() {
             router.push('/montree/dashboard');
           }}
         />
+      )}
+    </div>
+  );
+}
+
+// Collapsible wrapper for ChildWeeklyAdmin — collapsed by default at bottom of page
+function WeeklyAdminCollapsible(props: React.ComponentProps<typeof ChildWeeklyAdmin>) {
+  const [isOpen, setIsOpen] = useState(false);
+  const { t } = useI18n();
+
+  return (
+    <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 hover:bg-violet-100/50 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-lg">📋</span>
+          <span className="font-semibold text-violet-800 text-sm">{t('childAdmin.title')}</span>
+        </div>
+        <span className="text-violet-400 text-sm">{isOpen ? '▲' : '▼'}</span>
+      </button>
+      {isOpen && (
+        <div className="px-0">
+          <ChildWeeklyAdmin {...props} />
+        </div>
       )}
     </div>
   );

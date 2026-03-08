@@ -397,6 +397,12 @@ export const en = {
   'focusWorks.addObservation': 'Add observation...',
   'focusWorks.save': 'Save',
   'focusWorks.empty': 'Tap an area icon below to set focus works.',
+  'focusWorks.guruAdvice': "Guru's Advice",
+  'focusWorks.thisWeek': 'This Week',
+  'focusWorks.nextWeek': 'Next Week',
+  'focusWorks.noWorkInArea': 'No work assigned',
+  'focusWorks.addOne': 'Add a work',
+  'focusWorks.showMore': 'Show more...',
 
   // Work Picker Modal
   'workPicker.addExtraWork': 'Add Extra Work',
