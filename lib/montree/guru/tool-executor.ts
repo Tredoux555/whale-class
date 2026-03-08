@@ -81,6 +81,20 @@ export async function executeTool(
         }, { onConflict: 'child_id,area' });
 
       if (error) return { success: false, message: 'Failed to set focus work' };
+
+      // Store Guru's reasoning per area in child settings (for ShelfView display)
+      const reason = input.reason as string | undefined;
+      if (reason) {
+        try {
+          const currentSettings = await getChildSettingsForUpdate(childId);
+          const guruReasons = (currentSettings.guru_area_reasons as Record<string, string>) || {};
+          guruReasons[area] = reason.slice(0, 500);
+          await updateChildSettings(childId, { guru_area_reasons: guruReasons });
+        } catch {
+          // Non-critical — don't fail the whole operation if reason storage fails
+        }
+      }
+
       return { success: true, message: `✅ ${AREA_LABELS[area] || area}: ${work_name}` };
     }
 

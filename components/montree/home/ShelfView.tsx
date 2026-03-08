@@ -1,6 +1,7 @@
 // components/montree/home/ShelfView.tsx
 // Visual Montessori wooden shelf — 3 planks with works as tappable 3D objects
 // Tap a work → QuickGuideModal (same as teacher experience)
+// Search bar above shelf — search all curriculum works, click to set focus work
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -13,9 +14,18 @@ import { QuickGuideData } from '@/components/montree/curriculum/types';
 interface ShelfWork {
   area: string;
   work_name: string;
+  chineseName?: string | null;
   status: string;
   set_at: string;
   set_by: string;
+  guru_reason?: string | null;
+}
+
+interface CurriculumWork {
+  name: string;
+  chineseName?: string;
+  area: string;
+  category?: string;
 }
 
 interface ShelfViewProps {
@@ -70,6 +80,30 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   const [shelf, setShelf] = useState<ShelfWork[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Search bar state
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState<CurriculumWork[]>([]);
+  const [allCurriculumWorks, setAllCurriculumWorks] = useState<CurriculumWork[]>([]);
+  const [settingWork, setSettingWork] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Dismiss search dropdown on click outside
+  useEffect(() => {
+    if (!searchResults.length) return;
+    const handler = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchResults([]);
+        setSearchText('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [searchResults.length]);
+
+  // Per-area expanded reason
+  const [expandedArea, setExpandedArea] = useState<string | null>(null);
+
   // Guide modal state
   const [guideOpen, setGuideOpen] = useState(false);
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
@@ -78,6 +112,43 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   const [guideLoading, setGuideLoading] = useState(false);
   const shelfAbortRef = useRef<AbortController | null>(null);
   const guideAbortRef = useRef<AbortController | null>(null);
+
+  // Load all curriculum works for search
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/montree/works/search?q=', { signal: controller.signal })
+      .then(r => r.json())
+      .then(data => {
+        if (controller.signal.aborted) return;
+        if (data.works) {
+          // Normalize API response: chinese_name → chineseName, area.area_key → area
+          const normalized: CurriculumWork[] = data.works.map((w: Record<string, unknown>) => ({
+            name: w.name as string,
+            chineseName: (w.chinese_name as string) || undefined,
+            area: typeof w.area === 'object' && w.area !== null
+              ? (w.area as Record<string, string>).area_key
+              : (w.area as string),
+          }));
+          setAllCurriculumWorks(normalized);
+        }
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, []);
+
+  // Filter search results as user types
+  useEffect(() => {
+    if (!searchText.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const needle = searchText.toLowerCase();
+    const matches = allCurriculumWorks.filter(w =>
+      w.name.toLowerCase().includes(needle) ||
+      (w.chineseName && w.chineseName.includes(searchText))
+    ).slice(0, 8);
+    setSearchResults(matches);
+  }, [searchText, allCurriculumWorks]);
 
   const fetchShelf = useCallback(async () => {
     shelfAbortRef.current?.abort();
@@ -111,6 +182,32 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     };
   }, []);
 
+  // Set a focus work from search → auto-updates shelf
+  const setFocusWork = useCallback(async (work: CurriculumWork) => {
+    setSettingWork(true);
+    setSearchText('');
+    setSearchResults([]);
+    try {
+      const res = await fetch('/api/montree/shelf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          area: work.area,
+          work_name: work.name,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await fetchShelf();
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSettingWork(false);
+    }
+  }, [childId, fetchShelf]);
+
   // Open guide for a work (same pattern as teacher week view)
   const openWorkGuide = useCallback(async (workName: string) => {
     guideAbortRef.current?.abort();
@@ -123,9 +220,13 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     setGuideData(null);
 
     try {
-      const url = classroomId
+      let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
+      // Fix: pass locale so guide content translates to Chinese
+      if (locale && locale !== 'en') {
+        url += `&locale=${locale}`;
+      }
       const res = await fetch(url, { signal: controller.signal });
       const data = await res.json();
       if (!controller.signal.aborted) setGuideData(data);
@@ -134,7 +235,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       setGuideData(null);
     }
     if (!controller.signal.aborted) setGuideLoading(false);
-  }, [classroomId]);
+  }, [classroomId, locale]);
 
   // Distribute works across 3 shelves
   const shelves = distributeToShelves(shelf);
@@ -156,9 +257,123 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       <h2 className={`text-center text-lg font-semibold ${BIO.text.primary} pt-5 pb-1`}>
         {t('home.shelf.title')}
       </h2>
-      <p className={`text-center text-xs ${BIO.text.muted} mb-4 px-6`}>
+      <p className={`text-center text-xs ${BIO.text.muted} mb-2 px-6`}>
         {t('home.shelf.tapToPresent')}
       </p>
+
+      {/* Search bar — search all curriculum works */}
+      <div ref={searchContainerRef} className="px-4 mb-3 relative">
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm">🔍</span>
+          <input
+            ref={searchRef}
+            type="text"
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder={t('home.shelf.searchPlaceholder')}
+            className="w-full pl-9 pr-8 py-2.5 rounded-xl text-sm text-white/90 placeholder-white/30 outline-none"
+            style={{
+              background: 'rgba(255,255,255,0.08)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          />
+          {searchText && (
+            <button
+              onClick={() => { setSearchText(''); setSearchResults([]); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 text-xs"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        {/* Search results dropdown */}
+        {searchResults.length > 0 && (
+          <div
+            className="absolute left-4 right-4 top-full mt-1 rounded-xl overflow-hidden z-20"
+            style={{
+              background: 'rgba(20,30,25,0.95)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            }}
+          >
+            {searchResults.map(work => {
+              const colors = AREA_COLORS[work.area] || AREA_COLORS.practical_life;
+              return (
+                <button
+                  key={`${work.area}-${work.name}`}
+                  onClick={() => setFocusWork(work)}
+                  disabled={settingWork}
+                  className="w-full text-left px-4 py-2.5 flex items-center gap-3 transition-colors hover:bg-white/5 active:bg-white/10 disabled:opacity-50"
+                >
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: colors.bg }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-white/85 truncate">
+                      {locale === 'zh' && work.chineseName ? work.chineseName : work.name}
+                    </div>
+                    <div className="text-[10px] text-white/40">
+                      {t(`area.${work.area}` as any)}
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-white/25 flex-shrink-0">
+                    {t('home.shelf.setWork')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* No results */}
+        {searchText.trim() && searchResults.length === 0 && allCurriculumWorks.length > 0 && (
+          <div
+            className="absolute left-4 right-4 top-full mt-1 rounded-xl py-3 px-4 z-20"
+            style={{
+              background: 'rgba(20,30,25,0.95)',
+              border: '1px solid rgba(255,255,255,0.12)',
+            }}
+          >
+            <p className="text-xs text-white/40 text-center">{t('home.shelf.noResults')}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Per-area Guru recommendation (expanded) */}
+      {expandedArea && (() => {
+        const areaWork = shelf.find(s => s.area === expandedArea);
+        const reason = areaWork?.guru_reason;
+        const colors = AREA_COLORS[expandedArea] || AREA_COLORS.practical_life;
+        return (
+          <div className="px-4 mb-3">
+            <div
+              className="rounded-xl px-4 py-3"
+              style={{
+                background: `linear-gradient(135deg, ${colors.glow} 0%, rgba(255,255,255,0.03) 100%)`,
+                border: `1px solid ${colors.border}`,
+              }}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-white/80">
+                  {t('home.shelf.guruReason')} — {t(`area.${expandedArea}` as any)}
+                </span>
+                <button
+                  onClick={() => setExpandedArea(null)}
+                  className="text-white/30 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-xs text-white/60 leading-relaxed">
+                {reason || t('home.shelf.noReason')}
+              </p>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Shelf unit — 3 planks */}
       <div className="px-4 pb-8">
@@ -186,6 +401,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
               isLast={rowIdx === 2}
               onWorkTap={openWorkGuide}
               onEmptyTap={() => onAskGuide(t('home.shelf.suggestWork'))}
+              onAreaTap={(area: string) => setExpandedArea(prev => prev === area ? null : area)}
               t={t}
             />
           ))}
@@ -243,12 +459,14 @@ function ShelfPlank({
   isLast,
   onWorkTap,
   onEmptyTap,
+  onAreaTap,
   t,
 }: {
   items: (ShelfWork | null)[];
   isLast: boolean;
   onWorkTap: (workName: string) => void;
   onEmptyTap: () => void;
+  onAreaTap: (area: string) => void;
   t: (key: string) => string;
 }) {
   return (
@@ -260,6 +478,7 @@ function ShelfPlank({
             key={item ? item.work_name : `empty-${idx}`}
             work={item}
             onTap={() => item ? onWorkTap(item.work_name) : onEmptyTap()}
+            onAreaTap={item ? () => onAreaTap(item.area) : undefined}
             t={t}
           />
         ))}
@@ -298,10 +517,12 @@ function ShelfPlank({
 function ShelfObject({
   work,
   onTap,
+  onAreaTap,
   t,
 }: {
   work: ShelfWork | null;
   onTap: () => void;
+  onAreaTap?: () => void;
   t: (key: string) => string;
 }) {
   const { locale } = useI18n();
@@ -381,11 +602,20 @@ function ShelfObject({
       <span
         className="text-[10px] font-medium text-white/75 text-center leading-tight max-w-full truncate px-0.5"
       >
-        {locale === 'zh' && (work as any).chineseName ? (work as any).chineseName : work.work_name}
+        {locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}
       </span>
 
-      {/* Area label */}
-      <span className="text-[8px] text-center" style={{ color: colors.bg, opacity: 0.6 }}>
+      {/* Area label — tappable to show Guru recommendation */}
+      <span
+        className="text-[8px] text-center cursor-pointer active:opacity-80"
+        style={{ color: colors.bg, opacity: 0.6 }}
+        onClick={e => {
+          if (onAreaTap) {
+            e.stopPropagation();
+            onAreaTap();
+          }
+        }}
+      >
         {t(`area.${work.area}` as any) || BIO.areaLabel[work.area] || work.area}
       </span>
     </button>

@@ -41,6 +41,10 @@ export default function WorkWheelPicker({
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  // Type-to-jump search state
+  const [searchText, setSearchText] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
   // Add Work form state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newWorkName, setNewWorkName] = useState('');
@@ -51,6 +55,23 @@ export default function WorkWheelPicker({
   const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[area.replace('math', 'mathematics')] || {
     name: area, icon: '📋', color: '#888'
   };
+
+  // Type-to-jump: scroll wheel to first matching work as user types
+  useEffect(() => {
+    if (!searchText.trim() || works.length === 0) return;
+    const needle = searchText.toLowerCase();
+    const matchIdx = works.findIndex(w => w.name.toLowerCase().includes(needle));
+    if (matchIdx >= 0 && matchIdx !== selectedIndex) {
+      setSelectedIndex(matchIdx);
+      scrollToIndex(matchIdx);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+  }, [searchText, works]);
+
+  // Clear search on close
+  useEffect(() => {
+    if (!isOpen) setSearchText('');
+  }, [isOpen]);
 
   // Find initial index based on currentWorkName
   useEffect(() => {
@@ -202,7 +223,7 @@ export default function WorkWheelPicker({
     >
       {/* Header */}
       <div
-        className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-4"
+        className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-3"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between text-white">
@@ -219,6 +240,28 @@ export default function WorkWheelPicker({
             <h2 className="font-bold text-lg mt-1">{areaConfig.name}</h2>
           </div>
           <div className="w-10" /> {/* Spacer for centering */}
+        </div>
+        {/* Type-to-jump search */}
+        <div className="mt-3 relative">
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            placeholder={t('workWheel.typeToSearch')}
+            className="w-full px-4 py-2 pl-9 rounded-xl bg-white/15 text-white placeholder-white/40 border border-white/20 focus:outline-none focus:border-white/50 text-sm"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">
+            🔍
+          </span>
+          {searchText && (
+            <button
+              onClick={() => setSearchText('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 

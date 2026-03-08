@@ -1575,6 +1575,7 @@ export const zh = {
   'workWheel.insertAfterPosition': '插入位置...',
   'workWheel.addWork': '添加工作',
   'workWheel.addCustomWork': '+ 添加自定义工作到{area}',
+  'workWheel.typeToSearch': '输入跳转...',
 
   // Audit — Messaging
   'messaging.pleaseWriteMessage': '请写一条消息',
@@ -1716,6 +1717,11 @@ export const zh = {
   'home.shelf.askGuide': '咨询指导',
   'home.shelf.viewGuide': '查看{name}的指南',
   'home.shelf.suggestWork': '能给我的孩子推荐一项工作吗？',
+  'home.shelf.searchPlaceholder': '搜索工作...',
+  'home.shelf.noResults': '未找到工作',
+  'home.shelf.setWork': '设定',
+  'home.shelf.guruReason': '导师推荐',
+  'home.shelf.noReason': '暂无推荐 — 向导师咨询推荐工作！',
 
   // Admin Teachers
   'admin.teachers.title': '教师管理',

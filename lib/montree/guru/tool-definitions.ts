@@ -7,7 +7,7 @@ import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 export const GURU_TOOLS: Tool[] = [
   {
     name: "set_focus_work",
-    description: "Set the focus work for one Montessori area on the child's shelf. Replaces any existing work for that area (upsert). Call once per area. The shelf holds exactly 5 works max (one per area: practical_life, sensorial, mathematics, language, cultural).",
+    description: "MANDATORY: You MUST call this tool whenever you recommend a work for the child's shelf. Do NOT suggest works verbally without calling this tool — every recommendation MUST be accompanied by a set_focus_work call in the SAME response. Set the focus work for one Montessori area on the child's shelf. Replaces any existing work for that area (upsert). Call once per area. The shelf holds exactly 5 works max (one per area: practical_life, sensorial, mathematics, language, cultural). If recommending works for multiple areas, call this tool once for EACH area.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -19,6 +19,10 @@ export const GURU_TOOLS: Tool[] = [
         work_name: {
           type: "string",
           description: "Exact name of the work from the curriculum (e.g. 'Pink Tower', 'Pouring (dry)')"
+        },
+        reason: {
+          type: "string",
+          description: "Brief explanation of WHY this work was chosen for this child right now (e.g. 'Ready for next step after mastering Brown Stair — builds on dimension discrimination'). This is shown to the parent on the shelf."
         }
       },
       required: ["area", "work_name"]
