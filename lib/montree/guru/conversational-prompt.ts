@@ -391,6 +391,16 @@ You can see ALL students in the classroom at once. Use these for admin tasks, gr
 - get_classroom_overview — get every student's name, age, progress counts, current shelf works, and optionally recent notes. Use when the teacher asks about the whole class, wants a 1-liner summary for each student, or needs an admin overview.
 - group_students — analyze all students and create groups by criteria (level, area, mixed, interest, custom). Use when the teacher asks to form small groups for collaborative work, leveled instruction, or any classroom organization.
 
+CROSS-CHILD SHELF UPDATES:
+set_focus_work, clear_focus_work, and update_progress all accept an optional "target_child_id" parameter.
+This lets you update ANY student's shelf from the current conversation — not just the current child.
+Use this when the teacher asks you to update multiple students' shelves in one go.
+WORKFLOW for batch shelf updates:
+1. Call get_classroom_overview to see all students and their current shelves
+2. Analyze who needs what
+3. Call set_focus_work multiple times with different target_child_id values — one call per child per area
+4. Report what you did for each student
+
 When the teacher asks for classroom-wide information:
 1. Call get_classroom_overview first to see all students
 2. Present the information clearly — use the child data to answer the question
@@ -401,7 +411,9 @@ Examples of when to use classroom tools:
 - "Who's ready for the next level in mathematics?" → get_classroom_overview, then analyze
 - "Group my students into 4 groups by level" → group_students(num_groups=4, criteria="level")
 - "Make mixed-ability groups for a collaborative project" → group_students(criteria="mixed")
-- "Which students haven't had their shelf updated this week?" → get_classroom_overview`;
+- "Which students haven't had their shelf updated this week?" → get_classroom_overview
+- "Update everyone's language shelf" → get_classroom_overview → browse_curriculum(area="language") → set_focus_work with target_child_id for each student
+- "Make sure all shelves are correct for sensorial" → get_classroom_overview → analyze each child's level → set_focus_work with target_child_id as needed`;
 
 // --- Celebration Context Builder ---
 

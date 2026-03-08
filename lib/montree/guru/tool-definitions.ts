@@ -23,6 +23,10 @@ export const GURU_TOOLS: Tool[] = [
         reason: {
           type: "string",
           description: "Brief explanation of WHY this work was chosen for this child right now (e.g. 'Ready for next step after mastering Brown Stair — builds on dimension discrimination'). This is shown to the parent on the shelf."
+        },
+        target_child_id: {
+          type: "string",
+          description: "Optional: set a DIFFERENT child's shelf (must be in the same classroom). Use when doing batch shelf updates across multiple students via get_classroom_overview. Omit to target the current child."
         }
       },
       required: ["area", "work_name"]
@@ -37,6 +41,10 @@ export const GURU_TOOLS: Tool[] = [
         area: {
           type: "string",
           enum: ["practical_life", "sensorial", "mathematics", "language", "cultural"]
+        },
+        target_child_id: {
+          type: "string",
+          description: "Optional: clear a DIFFERENT child's shelf slot (must be in same classroom). Omit for current child."
         }
       },
       required: ["area"]
@@ -58,7 +66,11 @@ export const GURU_TOOLS: Tool[] = [
           type: "string",
           enum: ["not_started", "presented", "practicing", "mastered"]
         },
-        notes: { type: "string", description: "Optional notes about this update" }
+        notes: { type: "string", description: "Optional notes about this update" },
+        target_child_id: {
+          type: "string",
+          description: "Optional: update a DIFFERENT child's progress (must be in same classroom). Omit for current child."
+        }
       },
       required: ["work_name", "area", "status"]
     }
