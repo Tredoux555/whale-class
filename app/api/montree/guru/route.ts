@@ -393,8 +393,8 @@ export async function POST(request: NextRequest) {
     if (isConversational) {
       // =============================================
       // CONVERSATIONAL MODE
-      // Tools only enabled for SETUP/INTAKE/CHECKIN.
-      // NORMAL/REFLECTION = pure conversation, no tools.
+      // Tools enabled for SETUP/INTAKE/CHECKIN/NORMAL.
+      // REFLECTION = pure conversation, no tools.
       // =============================================
       let currentMessages: MessageParam[] = [
         ...conversationMessages.map(m => ({ ...m })),
@@ -405,9 +405,14 @@ export async function POST(request: NextRequest) {
       const guruModel = getModelForTier(guruTier) || AI_MODEL;
       const guruMaxTokens = guruTier === 'sonnet' ? 4096 : 3072;
 
-      // Only enable tools for modes that genuinely need them (shelf setup, intake, check-ins)
-      // NORMAL and REFLECTION = pure conversation — tools cause over-eager behavior
+      // Tools enabled for SETUP, INTAKE, CHECKIN, NORMAL modes
+      // REFLECTION = pure conversation, no tools
       const toolsEnabled = TOOL_ENABLED_MODES.includes(guruMode);
+
+      // Detect explicit shelf/progress update requests — force tool_choice: "any" so the model
+      // MUST call at least one tool instead of just verbally suggesting works
+      const shelfUpdatePattern = /weekly admin|update.*shelf|set.*focus|change.*work|replace.*work|put.*on.*shelf|update.*progress|mark.*master|new works? for/i;
+      const forceToolUse = toolsEnabled && shelfUpdatePattern.test(question);
 
       // Build API params — tools only included when mode requires them
       const baseApiParams = {
@@ -417,7 +422,7 @@ export async function POST(request: NextRequest) {
         messages: currentMessages,
       };
       const apiParams = toolsEnabled
-        ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: { type: "auto" as const } }
+        ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: forceToolUse ? { type: "any" as const } : { type: "auto" as const } }
         : baseApiParams;
 
       let response = await withTimeout(
@@ -538,6 +543,9 @@ export async function POST(request: NextRequest) {
 
       // Log cost estimate (Haiku: $0.80/$4.00 per 1M, Sonnet: $3/$15 per 1M)
       const { input_tokens = 0, output_tokens = 0 } = response.usage || {};
+      if (forceToolUse) {
+        console.log(`[Guru] Forced tool_choice=any for shelf update request. Actions: ${actionsTaken.length}`);
+      }
       const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
       const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
       console.log(`[Guru] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
