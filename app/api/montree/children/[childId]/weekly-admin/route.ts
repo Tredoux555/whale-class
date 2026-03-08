@@ -282,7 +282,7 @@ export async function POST(
 
       // 2. Recent progress this week
       supabase
-        .from('montree_child_work_progress')
+        .from('montree_child_progress')
         .select('work_name, area, status, updated_at')
         .eq('child_id', childId)
         .gte('updated_at', weekStart)

@@ -186,6 +186,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Also ensure work exists in progress table (so teacher week view can see it)
+    const { data: existingProgress } = await supabase
+      .from('montree_child_progress')
+      .select('id')
+      .eq('child_id', child_id)
+      .eq('work_name', work_name)
+      .maybeSingle();
+
+    if (!existingProgress) {
+      await supabase
+        .from('montree_child_progress')
+        .insert({
+          child_id,
+          work_name,
+          area,
+          status: 'presented',
+          presented_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+    }
+
     return NextResponse.json({ success: true });
 
   } catch (error) {
