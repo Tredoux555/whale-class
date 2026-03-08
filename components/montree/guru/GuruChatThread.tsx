@@ -215,6 +215,10 @@ export default function GuruChatThread({
     }
 
     try {
+      // 60s client-side timeout prevents indefinite "typing..." indicator
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 60_000);
+
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -224,7 +228,9 @@ export default function GuruChatThread({
           classroom_id: classroomId,
           conversational: true,
         }),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       const data = await res.json();
 
