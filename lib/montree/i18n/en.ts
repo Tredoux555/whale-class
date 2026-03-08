@@ -1575,6 +1575,7 @@ export const en = {
   'workWheel.insertAfterPosition': 'Insert after position...',
   'workWheel.addWork': 'Add Work',
   'workWheel.addCustomWork': '+ Add custom work to {area}',
+  'workWheel.typeToSearch': 'Type to jump...',
 
   // Audit — Messaging
   'messaging.pleaseWriteMessage': 'Please write a message',
@@ -1716,6 +1717,11 @@ export const en = {
   'home.shelf.askGuide': 'Ask guide',
   'home.shelf.viewGuide': 'View guide for {name}',
   'home.shelf.suggestWork': 'Can you suggest a work for my child?',
+  'home.shelf.searchPlaceholder': 'Search works...',
+  'home.shelf.noResults': 'No works found',
+  'home.shelf.setWork': 'Set',
+  'home.shelf.guruReason': 'Guru recommendation',
+  'home.shelf.noReason': 'No recommendation yet — ask the Guru to suggest works!',
 
   // Admin Teachers
   'admin.teachers.title': 'Teachers',
