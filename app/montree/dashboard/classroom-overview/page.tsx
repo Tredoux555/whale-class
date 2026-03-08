@@ -209,40 +209,32 @@ export default function ClassroomOverviewPage() {
                       fontSize: '13px',
                       color: '#111827',
                       lineHeight: '1.2',
-                      paddingRight: '50%',
-                      marginBottom: '2px',
+                      marginBottom: '3px',
                     }}>
                       {child.name}
                     </div>
 
-                    {/* Focus works — top right corner, small text */}
-                    <div style={{
-                      position: 'absolute',
-                      top: '5px',
-                      right: '6px',
-                      textAlign: 'right',
-                      maxWidth: '55%',
-                    }}>
+                    {/* Focus works — below name, small text */}
+                    <div>
                       {AREAS.map(area => {
                         const fw = child.focus_works[area];
                         if (!fw) return null;
                         const config = getAreaConfig(area);
                         const workName = locale === 'zh' && fw.chineseName ? fw.chineseName : fw.name;
-                        // Truncate long work names
-                        const shortName = workName.length > 25 ? workName.slice(0, 23) + '…' : workName;
+                        const shortName = workName.length > 30 ? workName.slice(0, 28) + '…' : workName;
                         return (
-                          <div key={area} style={{ fontSize: '7px', lineHeight: '1.4', color: '#6b7280' }}>
+                          <div key={area} style={{ fontSize: '7px', lineHeight: '1.3', color: '#6b7280' }}>
                             <span style={{
                               display: 'inline-block',
-                              width: '10px',
-                              height: '10px',
+                              width: '8px',
+                              height: '8px',
                               borderRadius: '50%',
                               backgroundColor: config.color,
                               color: 'white',
                               fontSize: '5px',
                               fontWeight: 700,
                               textAlign: 'center',
-                              lineHeight: '10px',
+                              lineHeight: '8px',
                               marginRight: '2px',
                               verticalAlign: 'middle',
                             }}>
