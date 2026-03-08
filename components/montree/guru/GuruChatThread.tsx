@@ -248,8 +248,12 @@ export default function GuruChatThread({
       } else {
         toast.error(data.error || t('guru.failedResponse'));
       }
-    } catch {
-      toast.error(t('guru.connectionFailed'));
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        toast.error(t('guru.timeout') || 'The Guru took too long. Please try again.');
+      } else {
+        toast.error(t('guru.connectionFailed'));
+      }
     } finally {
       setSending(false);
     }

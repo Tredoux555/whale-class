@@ -427,6 +427,9 @@ export async function POST(request: NextRequest) {
         ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: forceToolUse ? { type: "any" as const } : { type: "auto" as const } }
         : baseApiParams;
 
+      // Track total time for all API calls + tool rounds combined
+      const requestStart = Date.now();
+
       let response = await withTimeout(
         anthropic.messages.create(apiParams),
         API_TIMEOUT_MS,
@@ -438,7 +441,6 @@ export async function POST(request: NextRequest) {
 
       // Multi-turn tool loop (only runs if tools were enabled and Claude chose to use them)
       // Also enforce total request timeout to prevent indefinite hanging.
-      const requestStart = Date.now();
       while (response.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS && (Date.now() - requestStart) < TOTAL_REQUEST_TIMEOUT_MS) {
         rounds++;
         const toolUseBlocks = response.content.filter(
