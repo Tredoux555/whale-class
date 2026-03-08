@@ -62,7 +62,7 @@ export async function buildClassroomContext(
       .select('child_id, area, work_name')
       .in('child_id', childIds),
     supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('child_id, status')
       .in('child_id', childIds),
     supabase

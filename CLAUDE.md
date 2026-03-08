@@ -14,59 +14,102 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🔥 NEXT SESSION PRIORITIES
 
-### ~~Deploy Cross-Pollination Security Fix~~ — ✅ DONE (Priority #0 — commit `f310a63b`)
+### Deploy Classroom Overview + Guru Whole-Class + Audit Fixes (Priority #0 — URGENT)
 
-All 6 remaining routes patched with `verifyChildBelongsToSchool`: media/upload, reports/generate, reports/pdf, reports/send, focus-works, guru/stream.
+All code is local, NOT yet pushed. Features are broken in production without these fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: classroom overview + guru whole-class mode + 5 audit fixes" && git push origin main`
 
-### ~~Push English Corner Redirect Fix~~ — ✅ DONE (commit `6de6ad86`)
+**5 audit fixes included:** batch/route.ts auth fix (CRITICAL), classroom-context-builder wrong table name (CRITICAL), guru route school verification (HIGH), tool-executor classroomIdOverride (HIGH), batch route consolidation (LOW).
 
-English Corner iframe → direct redirect. Pushed with bug fixes commit.
+### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
-### Seed Community Library (Priority #2)
+**Problem:** When Chinese is selected, UI labels translate correctly but **work names stay English** ("Dropper Water Transfer" instead of Chinese). Affects: FocusWorksSection work names, Weekly Admin generated content, classroom overview print page.
+
+**Root cause:** The Weekly Admin API (`/api/montree/children/[childId]/weekly-admin/route.ts`) passes English `work_name` from `montree_child_focus_works` to Claude without enriching with Chinese names. The child dashboard's focus works fetch may also lack enrichment. The `enrichWithChineseNames()` function exists in curriculum-loader.ts and works in the progress API — just needs to be wired into more places.
+
+**Fix plan (~1hr):**
+1. `weekly-admin/route.ts` — Import `getChineseNameMap()`, enrich focus work names before passing to Claude prompt context
+2. Verify child dashboard focus works fetch includes Chinese name enrichment (check what API the `[childId]/page.tsx` focus works section uses)
+3. `classroom-overview/page.tsx` — Already enriches via batch API's `getChineseNameMap()` — verify it works
+4. Ensure Claude's `outputLang` directive is working for narrative generation in Weekly Admin
+
+### Fix `{count}m ago` Timestamp Bug (Priority #2)
+
+GuruChatThread welcome message shows literal `{count}m ago` instead of actual time. Check timestamp formatting in GuruChatThread — likely a missing i18n interpolation or template literal issue.
+
+### Seed Community Library (Priority #3)
 
 Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
 
-### ~~Test All Onboarding Guides on Mobile~~ — HIDDEN (Priority #3)
+### Per-School Guru Personality Settings (Priority #4)
 
-**Status:** ALL guides HIDDEN (not deleted) as of Feb 27. User decided onboarding guides are unnecessary — the UI is intuitive enough. All guide renders wrapped with `false &&` so they never show. Code and components preserved for potential reinstatement.
-- To re-enable: search for `HIDDEN: onboarding guides disabled` across 6 files and remove the `false &&`
-- Files modified: `dashboard/page.tsx`, `[childId]/page.tsx`, `students/page.tsx`, `principal/setup/page.tsx`, `admin/layout.tsx`
-- Components preserved: WeekViewGuide, StudentFormGuide, PrincipalSetupGuide, PrincipalAdminGuide, WelcomeModal, DashboardGuide
-
-### ~~Push Home Parent Redesign~~ — ✅ DONE + ENHANCED (Priority #4 — PUSHED)
-
-Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modified. Built + 4 audit cycles. Enhanced with wooden shelf UI + OpenAI TTS voice.
-**Handoff:** `docs/handoffs/HANDOFF_WOODEN_SHELF_TTS_FEB27.md`
+**Status:** DESIGNED, ready to build. ~1-2 hours.
+**What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school.
+**Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
 
 ### Stripe Setup (Priority #5 — Deferred)
 
 **Needs:** `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`, `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM`
 
-### Story Vault Image Viewer (Priority #6 — Deferred)
+### i18n Remaining Wiring (Priority #6)
+
+Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
+
+### Story Vault Image Viewer (Priority #7 — Deferred)
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
-
-### ~~i18n Full Migration~~ — ✅ DONE + DEEP CLEANUP (Priority #7)
-
-**Status:** ALL user-facing pages migrated. 194 → **~1,490 translation keys** across ~90 files. en.ts and zh.ts at perfect parity. 3-cycle deep cleanup completed Mar 1.
-**Done:** Server-side translator for API routes. Report system (PDF, email, generation) fully locale-aware. chineseName wired on 6 components. Parent dashboard, PortalChat, ShelfView, admin/teachers, admin/guru, vocab flashcards all wired with `useI18n()`.
-**Remaining (wiring only — keys exist):** Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
-**Handoff:** `docs/handoffs/HANDOFF_I18N_FULL_CLEANUP_MAR1.md`
-
-### Per-School Guru Personality Settings (Priority #8 — NEW)
-
-**Status:** DESIGNED, ready to build. ~1-2 hours.
-**What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school. Guru reads but never self-edits. No migration needed — uses existing `montree_schools.settings` JSONB column.
-**Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
-**Files:** 2 new (API route + settings UI), 5 modified (context-builder, conversational-prompt, route.ts, admin page, i18n)
-
-### ~~Curriculum Inconsistency Resolution~~ — ✅ MOSTLY DONE (Priority #9)
-
-**Status:** Deep audit completed (Feb 17). Static JSON is authoritative source (329 works). `setup-stream` route fixed. Area key aliases + empty-result safety added to search API (Mar 4). Whale Class reseeded to 329 works. WorkWheelPicker now preserves DB sequence order.
 
 ---
 
 ## CURRENT STATUS (Mar 8, 2026)
+
+### Session Work (Mar 8, 2026 — Late Night Session)
+
+**Classroom Overview Print Page + Guru Whole-Class Mode — COMPLETE, NOT YET DEPLOYED (3 new files, 9 modified, 2 build-audit cycles):**
+
+Two features built across 2 sessions (continued from previous context that ran out). 5 audit bugs found and fixed.
+
+**Feature 1 — Classroom Overview Print Page:**
+A4 landscape print page showing all children with focus works + large writing space. 2×2 grid (4 per page), auto page breaks, Chinese name support. Accessed via 📋 icon in DashboardHeader.
+
+**New files (2):**
+- `app/montree/dashboard/classroom-overview/page.tsx` — Print-optimized page (~200 lines)
+- `app/api/montree/focus-works/batch/route.ts` — Batch fetch all children + focus works for classroom
+
+**Feature 2 — Guru "Whole Class" Mode:**
+Teachers select "👥 Whole Class" from Guru dropdown. Guru gets context for ALL students — can suggest teaching groups, compare progress, plan lessons. Tools work via `student_name` parameter resolved to child_id.
+
+**New file (1):**
+- `lib/montree/guru/classroom-context-builder.ts` — Builds compact context for all children (4 parallel Supabase queries, token-efficient formatting)
+
+**Modified files (9):**
+- `app/api/montree/guru/route.ts` — Whole-class branching: skip per-child auth, validate classroom, buildClassroomContext, resolveStudentName helper, tool loop with CHILD_SCOPED_TOOLS whitelist, interaction save with null child_id
+- `lib/montree/guru/conversational-prompt.ts` — Added `buildClassroomModePrompt()` + CLASSROOM_MODE_SYSTEM_PROMPT
+- `lib/montree/guru/tool-definitions.ts` — Added `student_name` to 4 tools (set_focus_work, clear_focus_work, update_progress, save_observation)
+- `lib/montree/guru/tool-executor.ts` — Added `classroomIdOverride` param, fixed get_classroom_overview + group_students for whole-class mode
+- `components/montree/guru/GuruChatThread.tsx` — isWholeClassMode prop, welcome messages, placeholder text
+- `app/montree/dashboard/guru/page.tsx` — Whole class dropdown option, URL deep linking
+- `components/montree/DashboardHeader.tsx` — 📋 nav icon (teachers only)
+- `lib/montree/i18n/en.ts` — 9 new keys
+- `lib/montree/i18n/zh.ts` — 9 new keys (perfect parity)
+
+**Timeouts adjusted:** MAX_TOOL_ROUNDS 2→4, TOTAL_REQUEST_TIMEOUT_MS 55s→90s (classroom ops need more rounds)
+
+**Audit fixes (5 bugs, all fixed):**
+1. CRITICAL: `batch/route.ts` — `auth.classroomId` is optional, strict equality always rejected → DB school verification
+2. CRITICAL: `classroom-context-builder.ts` — wrong table `montree_child_work_progress` → `montree_child_progress`
+3. HIGH: `guru/route.ts` — no school verification for whole-class classroom_id → added DB check
+4. HIGH: `tool-executor.ts` — `get_classroom_overview`/`group_students` pass 'whole_class' as childId → added classroomIdOverride
+5. LOW: `batch/route.ts` — redundant getSupabase() calls → consolidated
+
+**Production bugs seen (not yet deployed):**
+- Guru whole-class shows "No students found in classroom" (wrong table name in context builder)
+- POST `/api/montree/guru` returns 404 (same root cause)
+- `{count}m ago` timestamp shows as literal string in GuruChatThread (not yet fixed)
+
+**i18n gap found:** Work names don't translate to Chinese in FocusWorksSection and Weekly Admin. UI labels translate fine. Root cause: Weekly Admin API doesn't enrich focus work names with `getChineseNameMap()` before passing to Claude. Fix planned for next session.
+
+**Deploy:** ⚠️ NOT YET PUSHED. All changes local. Push from Mac to deploy.
+**Handoff:** `docs/handoffs/HANDOFF_CLASSROOM_OVERVIEW_GURU_WHOLECLASS_MAR8.md`
 
 ### Session Work (Mar 8, 2026 — Late Session)
 

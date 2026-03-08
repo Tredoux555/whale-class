@@ -6,7 +6,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
-import { AREA_CONFIG } from '@/lib/montree/types';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,15 +22,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const supabase = getSupabase();
+
     // Verify the classroom belongs to the authenticated user's school
-    if (classroomId !== auth.classroomId) {
+    // auth.classroomId is optional in JWT (principals may not have one)
+    // so verify via DB: classroom must belong to the same school
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('school_id')
+      .eq('id', classroomId)
+      .single();
+
+    if (!classroom || classroom.school_id !== auth.schoolId) {
       return NextResponse.json(
         { success: false, error: 'Access denied' },
         { status: 403 }
       );
     }
-
-    const supabase = getSupabase();
 
     // 1. Fetch all children in this classroom (sorted by name)
     const { data: children, error: childErr } = await supabase
@@ -85,7 +92,6 @@ export async function GET(request: NextRequest) {
     }
 
     // 5. Build response — each child with their focus works by area
-    const areas = Object.keys(AREA_CONFIG);
     const result = children.map(child => ({
       id: child.id,
       name: child.name,
@@ -96,7 +102,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       children: result,
-      areas,
     });
 
   } catch (error) {

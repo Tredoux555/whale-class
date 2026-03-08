@@ -136,6 +136,15 @@ export async function POST(request: NextRequest) {
       if (!effectiveClassroomId) {
         return NextResponse.json({ success: false, error: 'classroom_id is required for whole-class mode' }, { status: 400 });
       }
+      // Verify the classroom belongs to this teacher's school
+      const { data: classroomCheck } = await getSupabase()
+        .from('montree_classrooms')
+        .select('school_id')
+        .eq('id', effectiveClassroomId)
+        .single();
+      if (!classroomCheck || classroomCheck.school_id !== auth.schoolId) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
       classroom_id = effectiveClassroomId;
     }
 
@@ -570,7 +579,8 @@ export async function POST(request: NextRequest) {
             const result = await executeTool(
               toolCall.name,
               toolInput,
-              effectiveChildId
+              effectiveChildId,
+              isWholeClassMode ? classroom_id! : undefined
             );
             actionsTaken.push({ tool: toolCall.name, ...result });
             toolResults.push({

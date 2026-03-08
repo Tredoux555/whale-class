@@ -75,7 +75,8 @@ async function resolveTargetChild(
 export async function executeTool(
   toolName: string,
   input: Record<string, unknown>,
-  childId: string
+  childId: string,
+  classroomIdOverride?: string
 ): Promise<ToolResult> {
   const supabase = getSupabase();
 
@@ -699,17 +700,21 @@ export async function executeTool(
     // --- Classroom-Wide Tools (teacher only) ---
 
     case 'get_classroom_overview': {
-      // Get classroom_id from the child
-      const { data: childData } = await supabase
-        .from('montree_children')
-        .select('classroom_id')
-        .eq('id', childId)
-        .single();
+      // Get classroom_id — use override (whole-class mode) or look up from child
+      let classroomIdForOverview = classroomIdOverride;
+      if (!classroomIdForOverview) {
+        const { data: childData } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomIdForOverview = childData?.classroom_id;
+      }
 
-      if (!childData?.classroom_id) {
+      if (!classroomIdForOverview) {
         return { success: false, message: 'Could not find classroom for this child' };
       }
-      const classroomId = childData.classroom_id;
+      const classroomId = classroomIdForOverview;
 
       // Fetch all children in this classroom
       const { data: children, error: childrenError } = await supabase
@@ -832,17 +837,20 @@ export async function executeTool(
         return { success: false, message: `Invalid criteria: "${criteria}". Must be one of: ${validCriteria.join(', ')}` };
       }
 
-      // Get classroom_id from child
-      const { data: childData2 } = await supabase
-        .from('montree_children')
-        .select('classroom_id')
-        .eq('id', childId)
-        .single();
+      // Get classroom_id — use override (whole-class mode) or look up from child
+      let classroomId2 = classroomIdOverride;
+      if (!classroomId2) {
+        const { data: childData2 } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomId2 = childData2?.classroom_id;
+      }
 
-      if (!childData2?.classroom_id) {
+      if (!classroomId2) {
         return { success: false, message: 'Could not find classroom for this child' };
       }
-      const classroomId2 = childData2.classroom_id;
 
       // Fetch all children
       const { data: children2 } = await supabase
