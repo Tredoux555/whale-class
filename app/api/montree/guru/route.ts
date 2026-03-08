@@ -18,8 +18,9 @@ import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
-const MAX_TOOL_ROUNDS = 3;
-const API_TIMEOUT_MS = 55_000; // 55s timeout per API call (Railway allows 5min; 25s was too short for tool_use rounds)
+const MAX_TOOL_ROUNDS = 2;
+const API_TIMEOUT_MS = 35_000; // 35s timeout per API call (Sonnet typically 10-25s; was 55s — way too generous)
+const TOTAL_REQUEST_TIMEOUT_MS = 55_000; // 55s total for the entire request including all tool rounds
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -436,7 +437,9 @@ export async function POST(request: NextRequest) {
       let rounds = 0;
 
       // Multi-turn tool loop (only runs if tools were enabled and Claude chose to use them)
-      while (response.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS) {
+      // Also enforce total request timeout to prevent indefinite hanging.
+      const requestStart = Date.now();
+      while (response.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS && (Date.now() - requestStart) < TOTAL_REQUEST_TIMEOUT_MS) {
         rounds++;
         const toolUseBlocks = response.content.filter(
           (b): b is Extract<typeof b, { type: 'tool_use' }> => b.type === 'tool_use'
@@ -488,8 +491,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (rounds >= MAX_TOOL_ROUNDS && response.stop_reason === 'tool_use') {
-        console.warn(`[Guru] Max tool rounds (${MAX_TOOL_ROUNDS}) reached.`);
+      if (response.stop_reason === 'tool_use') {
+        const reason = rounds >= MAX_TOOL_ROUNDS ? `max rounds (${MAX_TOOL_ROUNDS})` : `total timeout (${Date.now() - requestStart}ms)`;
+        console.warn(`[Guru] Tool loop stopped: ${reason}. Actions completed: ${actionsTaken.length}`);
       }
 
       // Extract final text response
@@ -499,47 +503,17 @@ export async function POST(request: NextRequest) {
         .join('\n');
 
       // SAFETY NET: If tools consumed the response (Claude used tools but produced no text),
-      // make one final call WITHOUT tools to force a proper text answer.
-      // This ensures the parent ALWAYS gets a real conversational response.
+      // generate a simple summary from tool results — NO extra API call (saves 15-30s).
       if (!responseText.trim() && actionsTaken.length > 0) {
-        console.warn(`[Guru] No text after ${rounds} tool rounds. Making fallback text-only call.`);
-        const actionSummary = actionsTaken
+        console.warn(`[Guru] No text after ${rounds} tool rounds. Generating summary from tool results.`);
+        responseText = actionsTaken
           .filter(a => a.success)
-          .map(a => `${a.tool}: ${a.message}`)
-          .join('; ');
-
-        const fallbackMessages: MessageParam[] = [
-          ...currentMessages,
-          {
-            role: 'user' as const,
-            content: `You just performed these actions: ${actionSummary}. Now respond to the parent naturally about what you did and answer their original question. Do NOT list tool names — speak conversationally.`,
-          },
-        ];
-
-        const fallbackResponse = await withTimeout(
-          anthropic.messages.create({
-            model: guruModel,
-            max_tokens: guruMaxTokens,
-            system: systemPrompt,
-            messages: fallbackMessages,
-          }),
-          API_TIMEOUT_MS,
-          'Guru fallback text call'
-        );
-
-        responseText = fallbackResponse.content
-          .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
-          .map(b => b.text)
-          .join('\n');
-
-        // Update token counts to include fallback call
-        const fb = fallbackResponse.usage || {};
-        response = { ...response, usage: {
-          input_tokens: (response.usage?.input_tokens || 0) + (fb.input_tokens || 0),
-          output_tokens: (response.usage?.output_tokens || 0) + (fb.output_tokens || 0),
-          cache_creation_input_tokens: 0,
-          cache_read_input_tokens: 0,
-        }};
+          .map(a => a.message)
+          .join('\n\n');
+        // Wrap in a friendly prefix
+        if (responseText) {
+          responseText = `Done! Here's what I did:\n\n${responseText}`;
+        }
       }
 
       // Monitor tool hallucination (log only — no retry to avoid doubling latency)
