@@ -6,6 +6,30 @@ Enhanced the "weekly admin" command with a 4th item (ADVICE) containing deep dev
 
 ---
 
+## 🚨 NEXT SESSION — FIRST THING
+
+### Guru Not Responding (500 Error) — PUSH REQUIRED
+
+The Guru is **completely broken in production** — returns 500 on every request that triggers tool_use (including "weekly admin"). The fix is in this commit but **NOT YET PUSHED**. Push these 5 files IMMEDIATELY:
+
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add \
+  lib/montree/guru/conversational-prompt.ts \
+  lib/montree/guru/post-conversation-processor.ts \
+  components/montree/child/GuruWeeklySummary.tsx \
+  app/montree/dashboard/\[childId\]/page.tsx \
+  app/api/montree/guru/route.ts \
+  docs/handoffs/HANDOFF_WEEKLY_ADMIN_GURU_TIMEOUT_MAR6.md && \
+git commit -m "feat: weekly admin advice + fix guru timeout (25s→55s)" && \
+git push origin main
+```
+
+**Root cause:** `API_TIMEOUT_MS` was 25s (set for Vercel limits), but Railway allows 5 minutes. The weekly admin tool_use rounds exceed 25s → timeout → 500. Fix: bumped to 55s.
+
+**Railway logs show:** `[Guru] Error: Error: Guru tool round 3 timed out after 25000ms`
+
+---
+
 ## What Changed
 
 ### 1. Weekly Admin: 4 Items Instead of 3

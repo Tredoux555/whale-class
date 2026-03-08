@@ -192,6 +192,14 @@ export const en = {
   'nav.searchStudents': 'Jump to student...',
   'nav.noStudentsFound': 'No students found',
   'nav.currentStudent': 'current',
+  'nav.classroomOverview': 'Classroom Overview',
+
+  // Print / Classroom Overview
+  'print.classOverview': 'Classroom Overview',
+  'print.date': 'Date',
+  'print.teacher': 'Teacher',
+  'print.noFocusWork': 'No work set',
+  'print.printPage': 'Print',
 
   // Students Page
   'students.title': 'Students',
@@ -296,6 +304,8 @@ export const en = {
   'weekview.workAdded': 'Work added!',
   'weekview.failedToLoad': 'Failed to load works',
   'weekview.loadingProgress': 'Loading...',
+  'weekview.noWorksFound': 'No works found',
+  'weekview.printWeeklyPlan': 'Print Weekly Plan',
 
   // Curriculum Page
   'curriculum.worksAvailable': 'works available',
@@ -406,6 +416,8 @@ export const en = {
   'focusWorks.noWorkInArea': 'No work assigned',
   'focusWorks.addOne': 'Add a work',
   'focusWorks.showMore': 'Show more...',
+  'focusWorks.quickGuide': 'Quick Guide',
+  'focusWorks.capture': 'Capture',
 
   // Work Picker Modal
   'workPicker.addExtraWork': 'Add Extra Work',
@@ -1056,6 +1068,9 @@ export const en = {
   'guru.guruAdvisor': 'Guru Advisor',
   'guru.teacherWelcome': 'Hi! I\'m your Montessori colleague. Ask me anything about {name} — curriculum, development, classroom strategies, parent communication, or anything else.',
   'guru.teacherAskPlaceholder': 'Ask about this student...',
+  'guru.wholeClass': 'Whole Class',
+  'guru.wholeClassWelcome': 'Ask me about your whole class — I can suggest teaching groups, compare progress, and help plan lessons.',
+  'guru.wholeClassPlaceholder': 'Ask about your whole class...',
 
   // Phase 7 — Guru Onboarding
   'guru.onboardingTitle': 'Montessori Guide',

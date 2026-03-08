@@ -26,6 +26,7 @@ interface GuruChatThreadProps {
   childName: string;
   classroomId?: string;
   isTeacher?: boolean;
+  isWholeClassMode?: boolean;
   onGuruLimitReached?: () => void;
 }
 
@@ -34,6 +35,7 @@ export default function GuruChatThread({
   childName,
   classroomId,
   isTeacher = false,
+  isWholeClassMode = false,
   onGuruLimitReached,
 }: GuruChatThreadProps) {
   const { t } = useI18n();
@@ -88,10 +90,13 @@ export default function GuruChatThread({
             }
             setMessages(chatMessages);
           } else {
-            // Teacher welcome message
+            // Teacher welcome message (or whole class mode)
+            const welcomeContent = isWholeClassMode
+              ? `${t('guru.wholeClassWelcome')} 👥`
+              : `${t('guru.teacherWelcome').replace('{name}', firstName)} 👋`;
             setMessages([{
               id: 'welcome',
-              content: `${t('guru.teacherWelcome').replace('{name}', firstName)} 👋`,
+              content: welcomeContent,
               isUser: false,
               timestamp: new Date().toISOString(),
             }]);
@@ -176,7 +181,7 @@ export default function GuruChatThread({
     };
 
     init();
-  }, [childId, childName, isTeacher]);
+  }, [childId, childName, isTeacher, isWholeClassMode]);
 
   // Handle onboarding complete
   const handleOnboardingComplete = (selectedConcerns: string[]) => {
@@ -514,7 +519,7 @@ export default function GuruChatThread({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isTeacher ? t('guru.teacherAskPlaceholder') : t('guru.askPlaceholder').replace('{name}', firstName)}
+              placeholder={isWholeClassMode ? t('guru.wholeClassPlaceholder') : isTeacher ? t('guru.teacherAskPlaceholder') : t('guru.askPlaceholder').replace('{name}', firstName)}
               disabled={sending}
               rows={1}
               className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none disabled:opacity-50 ${

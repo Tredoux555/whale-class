@@ -238,14 +238,14 @@ export default function FocusWorksSection({
                           onClick={() => onOpenQuickGuide(focusWork.work_name, focusWork.chineseName)}
                           className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                         >
-                          📖 Quick Guide
+                          📖 {t('focusWorks.quickGuide')}
                         </button>
                         <button
                           {...(areaIdx === 0 ? { 'data-guide': 'capture-btn' } : {})}
                           onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(focusWork.work_name)}&area=${encodeURIComponent(focusWork.area)}`}
                           className="flex-1 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
                         >
-                          📸 Capture
+                          📸 {t('focusWorks.capture')}
                         </button>
                       </div>
 
@@ -326,7 +326,7 @@ export default function FocusWorksSection({
                         <button
                           onClick={() => onRemoveExtra(extra)}
                           className="text-gray-400 hover:text-red-500 text-xs p-1"
-                          title="Remove"
+                          title={t('common.remove')}
                         >
                           ✕
                         </button>

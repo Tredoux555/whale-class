@@ -190,6 +190,7 @@ export const zh = {
   'nav.portal': '对话',
   'nav.logout': '退出',
   'nav.searchStudents': '跳转到学生...',
+  'nav.classroomOverview': '班级总览',
   'nav.noStudentsFound': '未找到学生',
   'nav.currentStudent': '当前',
 
@@ -296,6 +297,8 @@ export const zh = {
   'weekview.workAdded': '工作已添加！',
   'weekview.failedToLoad': '加载工作失败',
   'weekview.loadingProgress': '加载中...',
+  'weekview.noWorksFound': '未找到工作',
+  'weekview.printWeeklyPlan': '打印周计划',
 
   // Curriculum Page
   'curriculum.worksAvailable': '项工作可用',
@@ -406,6 +409,8 @@ export const zh = {
   'focusWorks.noWorkInArea': '未分配任务',
   'focusWorks.addOne': '添加任务',
   'focusWorks.showMore': '查看更多...',
+  'focusWorks.quickGuide': '快速指南',
+  'focusWorks.capture': '拍照记录',
 
   // Work Picker Modal
   'workPicker.addExtraWork': '添加额外任务',
@@ -1056,6 +1061,16 @@ export const zh = {
   'guru.guruAdvisor': '蒙台梭利顾问',
   'guru.teacherWelcome': '你好！我是你的蒙台梭利同事。关于{name}的任何问题都可以问我——课程、发展、课堂策略、家长沟通等等。',
   'guru.teacherAskPlaceholder': '询问关于这位学生...',
+  'guru.wholeClass': '全班',
+  'guru.wholeClassWelcome': '关于全班的任何问题都可以问我——我可以建议教学分组、比较进度、帮助规划课程。',
+  'guru.wholeClassPlaceholder': '关于全班的问题...',
+
+  // Print — Classroom Overview
+  'print.classOverview': '班级总览',
+  'print.date': '日期',
+  'print.teacher': '教师',
+  'print.noFocusWork': '未设置工作',
+  'print.printPage': '打印',
 
   // Phase 7 — Guru Onboarding
   'guru.onboardingTitle': '蒙特梭利导师',

@@ -68,7 +68,40 @@ Portal + Shelf two-tab interface with bioluminescent theme. 11 new files, 5 modi
 
 ## CURRENT STATUS (Mar 8, 2026)
 
-### Session Work (Mar 8, 2026)
+### Session Work (Mar 8, 2026 — Late Session)
+
+**Guru Reliability Fix — Hanging/Timeout Resolution — COMPLETE + DEPLOYED (3 commits: `0b60fccb`, `70469eb9`, `ea3dc455`):**
+
+Deep audit + 3-commit fix for Guru hanging on tool-use requests. Root cause: multi-round tool loop + hallucination retry + fallback API call = up to 275s worst case. Fixed to 55s max.
+
+**Root causes found:**
+1. CRITICAL: Hallucination retry safety net (commit `1b38a482`) added a SECOND full Anthropic API call when it detected the model claiming actions without tool calls. Each call up to 55s = total 110s+.
+2. HIGH: Fallback text-only API call (lines 504-543) fired when tools produced no text — another 15-55s API call on top.
+3. HIGH: MAX_TOOL_ROUNDS=3 × API_TIMEOUT=55s = 165s worst case for tool loop alone.
+4. MEDIUM: `shelfUpdatePattern` regex too broad (`update.*her`, `mastered.*!`) — false positives forced unnecessary tool_choice:"any".
+5. LOW: No client-side fetch timeout — typing indicator showed forever if server hung.
+
+**Fixes applied (3 files modified):**
+- `app/api/montree/guru/route.ts`:
+  - MAX_TOOL_ROUNDS 3→2, API_TIMEOUT_MS 55s→35s
+  - Added TOTAL_REQUEST_TIMEOUT_MS=55s wrapping initial call + all tool rounds
+  - Removed hallucination retry (replaced with log-only monitoring)
+  - Removed fallback text-only API call (replaced with server-side summary from tool results)
+  - Tightened `shelfUpdatePattern` regex with `\s+` word boundaries
+- `components/montree/guru/GuruChatThread.tsx`:
+  - Added 60s client-side fetch timeout with AbortController
+  - AbortError caught separately → shows "took too long" instead of "connection failed"
+- `lib/montree/guru/conversational-prompt.ts`:
+  - Added anti-hallucination instructions to TEACHER_NORMAL_MODE and TOOL_USE_INSTRUCTIONS
+  - Added SPEED RULE: batch multiple tool calls in single response to minimize rounds
+
+**Latency analysis (before vs after):**
+- Before: Initial(55s) + 3 rounds(55s×3) + fallback(55s) + retry(55s) = **275s worst case**
+- After: Total capped at 55s, per-round 35s, max 2 rounds, no fallback, no retry = **55s max**
+
+**Deploy:** ✅ 3 commits pushed to main, Railway auto-deploy.
+
+### Session Work (Mar 8, 2026 — Earlier)
 
 **Guru Curriculum Access + Weekly Admin System + Performance Analysis — COMPLETE + DEPLOYED (3 modified files, 1 new file, 2 commits `45b6aedf` + `bd90c3ba`):**
 

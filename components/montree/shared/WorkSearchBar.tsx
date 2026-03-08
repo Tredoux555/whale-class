@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface WorkItem {
   id?: string;
@@ -31,9 +32,11 @@ export default function WorkSearchBar({
   curriculum,
   onSelectWork,
   onFocus,
-  placeholder = 'Search works...',
+  placeholder: placeholderProp,
   maxResults = 8,
 }: WorkSearchBarProps) {
+  const { t } = useI18n();
+  const placeholder = placeholderProp || t('weekview.findWork');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -153,7 +156,7 @@ export default function WorkSearchBar({
         <div className="absolute top-full right-0 mt-1 w-72 sm:w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50 overflow-hidden">
           {results.length === 0 ? (
             <div className="px-4 py-3 text-sm text-gray-400 text-center">
-              No works found
+              {t('weekview.noWorksFound')}
             </div>
           ) : (
             <div className="max-h-80 overflow-y-auto">
