@@ -39,8 +39,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize area aliases (DB may have 'math' instead of 'mathematics', etc.)
+    const AREA_ALIASES: Record<string, string> = {
+      math: 'mathematics', maths: 'mathematics',
+      science_culture: 'cultural', science: 'cultural', culture: 'cultural',
+      practical: 'practical_life', pl: 'practical_life',
+      sensory: 'sensorial',
+      lang: 'language',
+    };
+    const normalizedArea = AREA_ALIASES[area] || area;
     const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-    if (!validAreas.includes(area)) {
+    if (!validAreas.includes(normalizedArea)) {
       return NextResponse.json(
         { success: false, error: 'Invalid area' },
         { status: 400 }
@@ -154,7 +163,7 @@ ${recentObs}
 CURRENT FOCUS WORKS:
 ${currentWorks}
 
-WORK TO TEACH: ${work_name} (${area.replace('_', ' ')})
+WORK TO TEACH: ${work_name} (${normalizedArea.replace('_', ' ')})
 
 ${guideStr}
 

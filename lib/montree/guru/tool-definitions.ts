@@ -1,6 +1,6 @@
 // lib/montree/guru/tool-definitions.ts
 // Anthropic tool-use definitions for Guru-driven home system
-// 9 action tools + 3 curriculum read-only tools = 12 total
+// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools = 15 total
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
@@ -336,6 +336,49 @@ export const GURU_TOOLS: Tool[] = [
         }
       },
       required: ["work_name", "area", "description", "direct_aims", "materials", "presentation_steps"]
+    }
+  },
+  // --- Classroom-Wide Tools (teacher only) ---
+  {
+    name: "get_classroom_overview",
+    description: "Get a complete overview of ALL students in the classroom — their names, ages, current shelf works, progress counts, and recent status. Use this when the teacher asks about the whole class, wants to compare students, plan group work, generate admin summaries, or needs a 1-liner for each student. Returns a compact summary of every child.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        include_notes: {
+          type: "boolean",
+          description: "Include recent observation notes per child (default false — set true for detailed admin reports)"
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "group_students",
+    description: "Analyze all students in the classroom and create groups based on specified criteria. Use when the teacher asks to form small groups for collaborative work, level-based grouping, area-based grouping, or any classroom organization task. Returns suggested groups with reasoning.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        num_groups: {
+          type: "number",
+          description: "Number of groups to create (e.g., 4)"
+        },
+        criteria: {
+          type: "string",
+          enum: ["level", "area", "mixed", "interest", "custom"],
+          description: "Grouping strategy: 'level' = similar mastery levels together, 'area' = by strongest Montessori area, 'mixed' = diverse levels in each group for peer learning, 'interest' = based on current works/areas of focus, 'custom' = teacher specifies in instructions"
+        },
+        focus_area: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural", "all"],
+          description: "Which Montessori area to base grouping on (use 'all' for overall progress)"
+        },
+        custom_instructions: {
+          type: "string",
+          description: "Additional instructions for grouping (e.g., 'separate Amy and Kevin', 'keep siblings together')"
+        }
+      },
+      required: ["num_groups", "criteria"]
     }
   }
 ];
