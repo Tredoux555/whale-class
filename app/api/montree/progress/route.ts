@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   let progress: any[] = [];
   try {
     let query = supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('*')
       .eq('child_id', childId);
 
@@ -78,29 +78,12 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query.order('updated_at', { ascending: false });
 
     if (error) {
-      // Table might not exist or query failed — try alternate table name
       if (process.env.NODE_ENV === 'development') {
-        console.warn('[PROGRESS API] montree_child_work_progress query error:', error.message, error.code);
-        console.warn('[PROGRESS API] Trying montree_child_progress fallback...');
+        console.warn('[PROGRESS API] Query error:', error.message, error.code);
       }
-
-      // Fallback: try the other table name
-      const fallback = await supabase
-        .from('montree_child_progress')
-        .select('*')
-        .eq('child_id', childId)
-        .order('updated_at', { ascending: false });
-
-      if (fallback.error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[PROGRESS API] Fallback also failed:', fallback.error.message);
-        }
-        return NextResponse.json(EMPTY_RESPONSE);
-      }
-      progress = fallback.data || [];
-    } else {
-      progress = data || [];
+      return NextResponse.json(EMPTY_RESPONSE);
     }
+    progress = data || [];
   } catch {
     return NextResponse.json(EMPTY_RESPONSE);
   }

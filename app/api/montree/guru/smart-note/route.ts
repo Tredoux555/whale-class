@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Get child's current works for context
     const { data: progressData } = await supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('work_name, status, area')
       .eq('child_id', child_id);
 

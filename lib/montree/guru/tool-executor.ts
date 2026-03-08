@@ -82,6 +82,29 @@ export async function executeTool(
 
       if (error) return { success: false, message: 'Failed to set focus work' };
 
+      // CRITICAL: Also ensure work exists in progress table (so week view can see it)
+      // Without this, set_focus_work only writes to montree_child_focus_works which
+      // the week view doesn't read as a source of works — only for the is_focus flag.
+      const { data: existingProgress } = await supabase
+        .from('montree_child_progress')
+        .select('id')
+        .eq('child_id', childId)
+        .eq('work_name', work_name)
+        .maybeSingle();
+
+      if (!existingProgress) {
+        await supabase
+          .from('montree_child_progress')
+          .insert({
+            child_id: childId,
+            work_name,
+            area,
+            status: 'presented',
+            presented_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+      }
+
       // Store Guru's reasoning per area in child settings (for ShelfView display)
       const reason = input.reason as string | undefined;
       if (reason) {

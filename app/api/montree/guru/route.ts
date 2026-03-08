@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
       // Fetch child settings + focus works count + last interaction in parallel
       const [childSettingsResult, focusWorksResult, lastInteractionResult] = await Promise.all([
         supabaseForGreeting.from('montree_children').select('settings').eq('id', child_id).single(),
-        supabaseForGreeting.from('montree_child_work_progress').select('id', { count: 'exact', head: true }).eq('child_id', child_id).eq('is_focus', true),
+        supabaseForGreeting.from('montree_child_focus_works').select('id', { count: 'exact', head: true }).eq('child_id', child_id),
         supabaseForGreeting.from('montree_guru_interactions').select('asked_at').eq('child_id', child_id).order('asked_at', { ascending: false }).limit(1).single(),
       ]);
 
