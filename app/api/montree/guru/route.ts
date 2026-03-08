@@ -317,12 +317,24 @@ export async function POST(request: NextRequest) {
     let classroomContext: ClassroomContext | null = null;
 
     if (isWholeClassMode) {
+      console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
       classroomContext = await buildClassroomContext(supabase, classroom_id!);
+      console.log('[Guru] Classroom context result:', classroomContext?.child_count, 'children, name:', classroomContext?.classroom_name);
       if (!classroomContext || classroomContext.child_count === 0) {
-        return NextResponse.json(
-          { success: false, error: 'No students found in classroom' },
-          { status: 404 }
-        );
+        console.error('[Guru] No students found for classroom_id:', classroom_id, '— trying auth.classroomId:', auth.classroomId);
+        // Fallback: try auth.classroomId if different from body classroom_id
+        if (auth.classroomId && auth.classroomId !== classroom_id) {
+          classroomContext = await buildClassroomContext(supabase, auth.classroomId);
+          console.log('[Guru] Fallback classroom context:', classroomContext?.child_count, 'children');
+        }
+        if (!classroomContext || classroomContext.child_count === 0) {
+          return NextResponse.json(
+            { success: false, error: `No students found in classroom (id: ${classroom_id})` },
+            { status: 404 }
+          );
+        }
+        // Fallback succeeded — update classroom_id
+        classroom_id = auth.classroomId;
       }
     } else {
       childContext = await buildChildContext(supabase, child_id);
@@ -906,6 +918,11 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
+
+    // Whole-class mode: return empty history (no per-child history to show)
+    if (childId === 'whole_class') {
+      return NextResponse.json({ success: true, history: [] });
+    }
 
     const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
     if (!access.allowed) {
