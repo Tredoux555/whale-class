@@ -96,18 +96,29 @@ export async function POST(request: NextRequest) {
 
     const photoUrl = urlData.publicUrl;
 
-    // Check if record exists
-    const { data: existing } = await supabase
-      .from('raz_reading_records')
-      .select('id')
+    // Race condition fix: setStatus() and uploadPhoto() fire nearly simultaneously.
+    // Always try UPDATE first — the status POST creates the record via UPSERT.
+    // If UPDATE matches 0 rows (status POST hasn't completed yet), try INSERT.
+    // If INSERT hits a duplicate key (status POST completed between our checks), retry UPDATE.
+    let data = null;
+    let dbError = null;
+
+    // Step 1: Try UPDATE (most common path — record already exists from status POST)
+    const updateResult = await supabase.from('raz_reading_records')
+      .update({ [updateField]: photoUrl })
       .eq('child_id', childId)
       .eq('record_date', date)
+      .select()
       .maybeSingle();
 
-    let data, dbError;
-    if (!existing) {
-      // Create new record with photo
-      const result = await supabase.from('raz_reading_records')
+    if (updateResult.error) {
+      // UPDATE itself failed (connection error, etc.) — don't try INSERT, just fail
+      dbError = updateResult.error;
+    } else if (updateResult.data) {
+      data = updateResult.data;
+    } else {
+      // Step 2: Record doesn't exist yet — try INSERT
+      const insertResult = await supabase.from('raz_reading_records')
         .insert({
           child_id: childId,
           classroom_id: classroomId,
@@ -117,18 +128,21 @@ export async function POST(request: NextRequest) {
         })
         .select()
         .single();
-      data = result.data;
-      dbError = result.error;
-    } else {
-      // Update ONLY the photo URL (never overwrite status)
-      const result = await supabase.from('raz_reading_records')
-        .update({ [updateField]: photoUrl })
-        .eq('child_id', childId)
-        .eq('record_date', date)
-        .select()
-        .single();
-      data = result.data;
-      dbError = result.error;
+
+      if (insertResult.error?.code === '23505') {
+        // Step 3: Duplicate key — status POST completed between our checks. Retry UPDATE.
+        const retryResult = await supabase.from('raz_reading_records')
+          .update({ [updateField]: photoUrl })
+          .eq('child_id', childId)
+          .eq('record_date', date)
+          .select()
+          .single();
+        data = retryResult.data;
+        dbError = retryResult.error;
+      } else {
+        data = insertResult.data;
+        dbError = insertResult.error;
+      }
     }
 
     if (dbError) {

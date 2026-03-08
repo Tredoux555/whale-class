@@ -264,12 +264,17 @@ export default function RazTrackerPage() {
       .then(res => res.json())
       .then(data => {
         if (!mountedRef.current) return;
-        if (data.success) {
+        if (data.success && data.record) {
+          // Safely merge only the photo URL field (never overwrite other fields)
+          const photoUrlValue = data.record[PHOTO_URL_KEYS[photoType]];
           setRecords(prev => {
             const existing = prev[childId];
             if (!existing) return { ...prev, [childId]: data.record };
-            return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: data.record[PHOTO_URL_KEYS[photoType]] } };
+            return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: photoUrlValue } };
           });
+        } else if (!data.success) {
+          // Server returned an error response (e.g., DB failure, validation error)
+          if (mountedRef.current) toast.error(`Upload failed: ${PHOTO_LABELS[photoType]}`);
         }
       })
       .catch(err => {
@@ -315,8 +320,13 @@ export default function RazTrackerPage() {
         const nextFlow = { ...flow, step: nextStep };
         flowRef.current = nextFlow;
         setCameraFlow(nextFlow);
-        // Try auto-open file input from onChange context
-        if (fileInputRef.current) { fileInputRef.current.value = ''; fileInputRef.current.click(); }
+        // Try auto-open file input — if this fails silently on mobile,
+        // the fallback banner (with "Open Camera" button) lets the user continue
+        try {
+          if (fileInputRef.current) { fileInputRef.current.value = ''; fileInputRef.current.click(); }
+        } catch {
+          // Some browsers throw on programmatic click — banner provides manual trigger
+        }
       } else {
         endCameraFlow();
         toast.success(`✅ ${childName} done!`, { duration: 1200 });
@@ -426,6 +436,35 @@ export default function RazTrackerPage() {
       {/* Hidden file input (fallback) */}
       <input ref={fileInputRef} type="file" accept="image/*" capture="environment"
         style={{ display: 'none' }} onChange={handleFileCapture} />
+
+      {/* ========= FALLBACK MODE BANNER (file input) ========= */}
+      {cameraFlow && useFallback && (
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
+          background: '#1e293b', borderTop: '2px solid #22c55e',
+          padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>
+              📷 {cameraFlow.childName} — {PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}
+              {!cameraFlow.oneShot && ` (${cameraFlow.step + 1}/3)`}
+            </div>
+            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+              {cameraFlow.oneShot ? 'Take retake photo' : 'Take photo to continue'}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={() => triggerFileInput()} style={{
+              background: '#22c55e', border: 'none', borderRadius: 8,
+              padding: '8px 14px', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}>📷 Open Camera</button>
+            <button onClick={endCameraFlow} style={{
+              background: '#334155', border: 'none', borderRadius: 8,
+              padding: '8px 14px', color: '#94a3b8', fontSize: 13, cursor: 'pointer',
+            }}>Cancel</button>
+          </div>
+        </div>
+      )}
 
       {/* ========= CUSTOM CAMERA OVERLAY ========= */}
       {cameraFlow && !useFallback && (

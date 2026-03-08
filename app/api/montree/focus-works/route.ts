@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 // ============================================
 // GET: Get focus works for a child
@@ -51,14 +51,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Convert to area -> work mapping, enriched with Chinese names
-    const cnMap = getChineseNameMap();
+    // Convert to area -> work mapping, enriched with Chinese names (fuzzy matching)
     const focusByArea: Record<string, any> = {};
     for (const fw of focusWorks || []) {
       focusByArea[fw.area] = {
         id: fw.work_id,
         name: fw.work_name,
-        chineseName: fw.work_name ? cnMap.get(fw.work_name.toLowerCase().trim()) || null : null,
+        chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
         set_at: fw.set_at,
         set_by: fw.set_by,
       };
@@ -67,7 +66,7 @@ export async function GET(request: NextRequest) {
     // Also enrich raw array
     const enrichedRaw = (focusWorks || []).map(fw => ({
       ...fw,
-      chineseName: fw.work_name ? cnMap.get(fw.work_name.toLowerCase().trim()) || null : null,
+      chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
     }));
 
     return NextResponse.json({

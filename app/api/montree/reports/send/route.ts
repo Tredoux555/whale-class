@@ -7,7 +7,7 @@ import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator } from '@/lib/montree/i18n/server';
-import { getChineseNameMap } from '@/lib/montree/curriculum-loader';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 export async function POST(request: NextRequest) {
   try {
@@ -197,7 +197,6 @@ export async function POST(request: NextRequest) {
       return 'presented';
     };
 
-    const cnMap = getChineseNameMap();
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
       works: works.map(w => {
@@ -209,7 +208,7 @@ export async function POST(request: NextRequest) {
 
         return {
           name: w.work_name,
-          chineseName: cnMap.get(workNameLower.trim()) || null,
+          chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
           area: w.area,
           status: w.status === 'completed' ? 'mastered' : w.status,
           status_label: getStatusLabel(w.status),
@@ -287,9 +286,8 @@ export async function POST(request: NextRequest) {
 
       const worksHtml = works.length > 0
         ? works.map(w => {
-            const displayName = locale === 'zh' && cnMap.get((w.work_name || '').toLowerCase().trim())
-              ? cnMap.get((w.work_name || '').toLowerCase().trim())
-              : w.work_name;
+            const cnName = w.work_name ? getChineseNameForWork(w.work_name) : null;
+            const displayName = locale === 'zh' && cnName ? cnName : w.work_name;
             return `<li>${statusEmoji(w.status)} ${displayName}</li>`;
           }).join('')
         : `<li>${t('report.email.noProgress' as any, 'No new progress this period')}</li>`;

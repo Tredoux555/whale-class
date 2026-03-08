@@ -47,7 +47,8 @@ export async function POST(request: NextRequest) {
       sensory: 'sensorial',
       lang: 'language',
     };
-    const normalizedArea = AREA_ALIASES[area] || area;
+    const areaLower = typeof area === 'string' ? area.toLowerCase().trim() : '';
+    const normalizedArea = AREA_ALIASES[areaLower] || areaLower;
     const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
     if (!validAreas.includes(normalizedArea)) {
       return NextResponse.json(
@@ -99,41 +100,62 @@ export async function POST(request: NextRequest) {
     }
 
     // Build child context
-    const childContext = await buildChildContext(supabase, child_id);
+    let childContext;
+    try {
+      childContext = await buildChildContext(supabase, child_id);
+    } catch (ctxErr) {
+      console.error('[Teaching Instructions] buildChildContext failed:', ctxErr);
+      return NextResponse.json({ success: false, error: 'Failed to build child context' }, { status: 500 });
+    }
     if (!childContext) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
     }
 
-    // Fetch work guide from curriculum
-    const { data: workData } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('quick_guide, presentation_steps, materials, direct_aims, indirect_aims, description, why_it_matters')
-      .eq('classroom_id', childContext.classroom_id)
-      .ilike('name', work_name)
-      .limit(1)
-      .maybeSingle();
+    // Fetch work guide from curriculum (non-critical — proceed without it)
+    let workData = null;
+    try {
+      const { data } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('quick_guide, presentation_steps, materials, direct_aims, indirect_aims, description, why_it_matters')
+        .eq('classroom_id', childContext.classroom_id)
+        .ilike('name', work_name)
+        .limit(1)
+        .maybeSingle();
+      workData = data;
+    } catch (guideErr) {
+      console.error('[Teaching Instructions] Curriculum guide fetch failed:', guideErr);
+      // Continue without guide — AI can still generate instructions
+    }
 
     // Build context strings
     const childAge = childContext.age_years
       ? `${childContext.age_years} years${childContext.age_months ? ` ${childContext.age_months} months` : ''}`
       : 'unknown age';
 
+    // Safe array helper for guru_child_profile fields (could be string, array, or undefined)
+    const safeArray = (val: unknown): string[] => {
+      if (Array.isArray(val)) return val.map(String);
+      if (typeof val === 'string' && val.trim()) return [val];
+      return [];
+    };
+
     const profile = childContext.guru_child_profile;
+    const safeStr = (val: unknown): string => (typeof val === 'string' ? val : '') || 'N/A';
     const profileStr = profile
-      ? `Personality: ${profile.personality || 'N/A'}
-Strengths: ${(profile.strengths || []).join(', ') || 'N/A'}
-Challenges: ${(profile.challenges || []).join(', ') || 'N/A'}
-Interests: ${(profile.interests || []).join(', ') || 'N/A'}
-Learning style: ${profile.learning_style || 'N/A'}`
+      ? `Personality: ${safeStr(profile.personality)}
+Strengths: ${safeArray(profile.strengths).join(', ') || 'N/A'}
+Challenges: ${safeArray(profile.challenges).join(', ') || 'N/A'}
+Interests: ${safeArray(profile.interests).join(', ') || 'N/A'}
+Learning style: ${safeStr(profile.learning_style)}`
       : 'No detailed profile available yet.';
 
     const recentObs = (childContext.recent_observations || [])
       .slice(0, 5)
-      .map(o => `- ${o.behavior_description}${o.emotional_state ? ` (${o.emotional_state})` : ''}`)
+      .map(o => `- ${o.behavior_description}`)
       .join('\n') || 'No recent observations.';
 
     const currentWorks = (childContext.focus_works || [])
-      .map(fw => `- ${fw.work_name} (${fw.area}: ${fw.status || 'not_started'})`)
+      .map(fw => `- ${fw.work_name} (${fw.area})`)
       .join('\n') || 'No current focus works.';
 
     const guideStr = workData
@@ -230,7 +252,8 @@ Use markdown formatting (headers, bold, numbered lists).`;
     });
 
   } catch (err) {
-    console.error('[Teaching Instructions] Error:', err);
+    const errMsg = err instanceof Error ? err.message : String(err);
+    console.error('[Teaching Instructions] Error:', errMsg);
     return NextResponse.json(
       { success: false, error: 'Internal error' },
       { status: 500 }
