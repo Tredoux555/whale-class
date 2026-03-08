@@ -27,6 +27,10 @@ export const GURU_TOOLS: Tool[] = [
         target_child_id: {
           type: "string",
           description: "Optional: set a DIFFERENT child's shelf (must be in the same classroom). Use when doing batch shelf updates across multiple students via get_classroom_overview. Omit to target the current child."
+        },
+        student_name: {
+          type: "string",
+          description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
         }
       },
       required: ["area", "work_name"]
@@ -45,6 +49,10 @@ export const GURU_TOOLS: Tool[] = [
         target_child_id: {
           type: "string",
           description: "Optional: clear a DIFFERENT child's shelf slot (must be in same classroom). Omit for current child."
+        },
+        student_name: {
+          type: "string",
+          description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
         }
       },
       required: ["area"]
@@ -70,6 +78,10 @@ export const GURU_TOOLS: Tool[] = [
         target_child_id: {
           type: "string",
           description: "Optional: update a DIFFERENT child's progress (must be in same classroom). Omit for current child."
+        },
+        student_name: {
+          type: "string",
+          description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
         }
       },
       required: ["work_name", "area", "status"]
@@ -114,6 +126,10 @@ export const GURU_TOOLS: Tool[] = [
         developmental_note: {
           type: "string",
           description: "What this might indicate developmentally"
+        },
+        student_name: {
+          type: "string",
+          description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
         }
       },
       required: ["behavior_description"]

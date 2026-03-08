@@ -8,9 +8,10 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS, getModelForTier } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
+import { buildClassroomContext, formatClassroomContextForPrompt, type ClassroomContext } from '@/lib/montree/guru/classroom-context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
-import { buildConversationalPrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
+import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
@@ -59,6 +60,27 @@ export interface GuruResponse {
   error?: string;
 }
 
+// Helper: resolve student name to child_id in whole-class mode
+function resolveStudentName(
+  studentName: string,
+  classroomContext: ClassroomContext
+): { childId: string } | { error: string } {
+  const lower = studentName.toLowerCase().trim();
+  // Exact match first
+  const exact = classroomContext.children.find(c => c.name.toLowerCase() === lower);
+  if (exact) return { childId: exact.id };
+  // Prefix match (e.g. "Joey" matches "Joey L." but not "Maria" matching "Mariana")
+  const prefixMatches = classroomContext.children.filter(c =>
+    c.name.toLowerCase().startsWith(lower) || lower.startsWith(c.name.toLowerCase())
+  );
+  if (prefixMatches.length === 1) return { childId: prefixMatches[0].id };
+  if (prefixMatches.length > 1) {
+    const names = prefixMatches.map(c => c.name).join(', ');
+    return { error: `Multiple matches for "${studentName}": ${names}. Please be more specific.` };
+  }
+  return { error: `Student "${studentName}" not found in this classroom. Available: ${classroomContext.children.map(c => c.name).join(', ')}` };
+}
+
 // ============================================
 // POST: Ask the Guru a question
 // ============================================
@@ -101,9 +123,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
-    if (!access.allowed) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    // Whole-class mode: skip child access check, validate classroom instead
+    const isWholeClassMode = child_id === 'whole_class';
+    if (!isWholeClassMode) {
+      const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+      if (!access.allowed) {
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      }
+    } else {
+      // Ensure classroom_id is provided for whole-class mode
+      const effectiveClassroomId = classroom_id || auth.classroomId;
+      if (!effectiveClassroomId) {
+        return NextResponse.json({ success: false, error: 'classroom_id is required for whole-class mode' }, { status: 400 });
+      }
+      classroom_id = effectiveClassroomId;
     }
 
     // Handle greeting trigger — Portal auto-greeting on app open
@@ -111,7 +144,7 @@ export async function POST(request: NextRequest) {
     // Proactive context is computed during greeting and passed through to prompt builders
     let greetingProactiveContext: ProactiveContext | undefined;
 
-    if (isGreetingTrigger) {
+    if (isGreetingTrigger && !isWholeClassMode) {
       const supabaseForGreeting = getSupabase();
 
       // Fetch child settings + focus works count + last interaction in parallel
@@ -279,14 +312,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1. Build child context
-    const childContext = await buildChildContext(supabase, child_id);
+    // 1. Build child context (or classroom context for whole-class mode)
+    let childContext: ChildContext | null = null;
+    let classroomContext: ClassroomContext | null = null;
 
-    if (!childContext) {
-      return NextResponse.json(
-        { success: false, error: 'Child not found' },
-        { status: 404 }
-      );
+    if (isWholeClassMode) {
+      classroomContext = await buildClassroomContext(supabase, classroom_id!);
+      if (!classroomContext || classroomContext.child_count === 0) {
+        return NextResponse.json(
+          { success: false, error: 'No students found in classroom' },
+          { status: 404 }
+        );
+      }
+    } else {
+      childContext = await buildChildContext(supabase, child_id);
+      if (!childContext) {
+        return NextResponse.json(
+          { success: false, error: 'Child not found' },
+          { status: 404 }
+        );
+      }
     }
 
     // 2. Retrieve relevant knowledge
@@ -299,7 +344,13 @@ export async function POST(request: NextRequest) {
     const isConversational = conversational === true;
     const isTeacher = !isParentRole;
 
-    if (isConversational) {
+    if (isWholeClassMode) {
+      // Whole-class mode: build classroom-specific prompt
+      const classroomPrompt = buildClassroomModePrompt(question, classroomContext!, knowledge);
+      guruMode = 'NORMAL';
+      systemPrompt = classroomPrompt.systemPrompt;
+      userPrompt = classroomPrompt.userPrompt;
+    } else if (isConversational) {
       // Fetch saved concerns + settings for conversational context
       const { data: childSettingsRecord } = await supabase
         .from('montree_children')
@@ -310,11 +361,11 @@ export async function POST(request: NextRequest) {
       const savedConcerns = (childSettings.guru_concerns as string[]) || [];
 
       // Check if this is the first message (no conversation history)
-      const isFirstMessage = !childContext.past_interactions || childContext.past_interactions.length === 0;
+      const isFirstMessage = !childContext!.past_interactions || childContext!.past_interactions.length === 0;
 
       // Fetch self-learning intelligence (both brain wisdom + cross-family patterns)
-      const childAgeMonths = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
-      const activeAreas = childContext.focus_works?.map(fw => fw.area) || [];
+      const childAgeMonths = (childContext!.age_years || 0) * 12 + (childContext!.age_months || 0);
+      const activeAreas = childContext!.focus_works?.map(fw => fw.area) || [];
       const parentConf = (childSettings?.guru_parent_current_state as Record<string, unknown>)?.confidence_level as string | undefined;
 
       // Issue #25: Ensure savedConcerns is always a valid array
@@ -343,8 +394,8 @@ export async function POST(request: NextRequest) {
 
       // Compute celebration context if we have proactive data (greeting trigger)
       let proactiveForPrompt: ProactiveContext | undefined = greetingProactiveContext;
-      if (proactiveForPrompt && childContext.past_interactions) {
-        const celebrationText = buildCelebrationContext(childContext, childContext.past_interactions as Array<{
+      if (proactiveForPrompt && childContext!.past_interactions) {
+        const celebrationText = buildCelebrationContext(childContext!, childContext!.past_interactions as Array<{
           question: string;
           response_insight: string;
           asked_at: string;
@@ -355,7 +406,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const convPrompt = buildConversationalPrompt(question, childContext, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher);
+      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher);
       guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt
@@ -367,7 +418,7 @@ export async function POST(request: NextRequest) {
       }
       userPrompt = convPrompt.userPrompt;
     } else {
-      const structured = buildGuruPrompt(question, childContext, knowledge, {
+      const structured = buildGuruPrompt(question, childContext!, knowledge, {
         isHomeschoolParent: isParentRole,
         isPrincipal,
       });
@@ -388,7 +439,7 @@ export async function POST(request: NextRequest) {
     // The Guru remembers the last 5 conversations about this child
     const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
-    if (childContext.past_interactions && childContext.past_interactions.length > 0) {
+    if (!isWholeClassMode && childContext?.past_interactions && childContext.past_interactions.length > 0) {
       // Oldest first so conversation flows naturally
       const chronological = [...childContext.past_interactions].reverse();
       for (const interaction of chronological) {
@@ -471,10 +522,43 @@ export async function POST(request: NextRequest) {
         const toolResults: ToolResultBlockParam[] = [];
         for (const toolCall of toolUseBlocks) {
           try {
+            // In whole-class mode, resolve student_name to child_id before executing tool
+            let effectiveChildId = child_id;
+            const toolInput = toolCall.input as Record<string, unknown>;
+            // Tools that operate on a specific child need student_name in whole-class mode
+            const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile'];
+            if (isWholeClassMode && classroomContext && CHILD_SCOPED_TOOLS.includes(toolCall.name)) {
+              const studentName = toolInput.student_name as string | undefined;
+              if (studentName) {
+                const resolved = resolveStudentName(studentName, classroomContext);
+                if ('error' in resolved) {
+                  actionsTaken.push({ tool: toolCall.name, success: false, message: resolved.error });
+                  toolResults.push({
+                    type: 'tool_result' as const,
+                    tool_use_id: toolCall.id,
+                    is_error: true,
+                    content: JSON.stringify({ success: false, message: resolved.error }),
+                  });
+                  continue;
+                }
+                effectiveChildId = resolved.childId;
+              } else {
+                // No student_name provided — error
+                const msg = `In whole-class mode, provide student_name to identify which student. Available: ${classroomContext.children.map(c => c.name).join(', ')}`;
+                actionsTaken.push({ tool: toolCall.name, success: false, message: msg });
+                toolResults.push({
+                  type: 'tool_result' as const,
+                  tool_use_id: toolCall.id,
+                  is_error: true,
+                  content: JSON.stringify({ success: false, message: msg }),
+                });
+                continue;
+              }
+            }
             const result = await executeTool(
               toolCall.name,
-              toolCall.input as Record<string, unknown>,
-              child_id
+              toolInput,
+              effectiveChildId
             );
             actionsTaken.push({ tool: toolCall.name, ...result });
             toolResults.push({
@@ -565,15 +649,26 @@ export async function POST(request: NextRequest) {
       const { data: saved, error: saveError } = await supabase
         .from('montree_guru_interactions')
         .insert({
-          child_id,
+          child_id: isWholeClassMode ? null : child_id,
           teacher_id: teacherId || null,
-          classroom_id: classroom_id || childContext.classroom_id,
+          classroom_id: classroom_id || (childContext ? childContext.classroom_id : null),
           question,
-          question_type: 'chat',
-          context_snapshot: {
-            child_name: childContext.name,
-            age: `${childContext.age_years}y ${childContext.age_months}m`,
-            mastered_count: childContext.mastered_count || 0,
+          question_type: isWholeClassMode ? 'whole_class' : 'chat',
+          context_snapshot: isWholeClassMode ? {
+            whole_class: true,
+            classroom_name: classroomContext?.classroom_name,
+            child_count: classroomContext?.child_count,
+            conversational: true,
+            mode: guruMode,
+            tools_enabled: toolsEnabled,
+            tool_rounds: rounds,
+            actions_taken: actionsTaken.length,
+            guru_tier: guruTier,
+            est_cost: estCost,
+          } : {
+            child_name: childContext!.name,
+            age: `${childContext!.age_years}y ${childContext!.age_months}m`,
+            mastered_count: childContext!.mastered_count || 0,
             conversational: true,
             mode: guruMode,
             tools_enabled: toolsEnabled,
@@ -596,55 +691,53 @@ export async function POST(request: NextRequest) {
 
       // Self-learning: feed this conversation into both pattern database AND brain
       // Fire-and-forget — never blocks the response
-      // Re-compute values for self-learning (original declarations are in prompt-building scope above)
-      const childAgeMonthsForLearning = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
-      const activeAreasForLearning = childContext.focus_works?.map(fw => fw.area) || [];
+      // Skip for whole-class mode (self-learning is per-child)
+      const childAgeMonthsForLearning = isWholeClassMode ? 0 : ((childContext!.age_years || 0) * 12 + (childContext!.age_months || 0));
+      const activeAreasForLearning = isWholeClassMode ? [] : (childContext!.focus_works?.map(fw => fw.area) || []);
 
-      if (actionsTaken.length > 0) {
-        learnFromConversation(child_id, childAgeMonthsForLearning).catch(err =>
-          console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
-        );
-      }
+      // Self-learning and post-conversation processing — skip for whole-class mode (per-child only)
+      if (!isWholeClassMode && childContext) {
+        if (actionsTaken.length > 0) {
+          learnFromConversation(child_id, childAgeMonthsForLearning).catch(err =>
+            console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
+          );
+        }
 
-      // Record learning for the brain (every conversation, not just tool-use ones)
-      // Only record if save succeeded — need a valid conversation_id
-      if (!saveError) {
-        recordLearning({
-          conversation_id: saved?.id as string | undefined,
-          child_age_months: childAgeMonthsForLearning,
-          areas: activeAreasForLearning,
-          learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
-          description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
-          context: `Child ${childContext.name || 'unknown'}, ${childAgeMonthsForLearning}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
-          tags: [
-            ...activeAreasForLearning.map(a => a.replace('practical_life', 'practical')),
-            `age_${Math.round(childAgeMonthsForLearning / 12)}`,
-          ].filter(Boolean),
-        }).catch(err =>
-          console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
-        );
-      }
+        // Record learning for the brain (every conversation, not just tool-use ones)
+        if (!saveError) {
+          recordLearning({
+            conversation_id: saved?.id as string | undefined,
+            child_age_months: childAgeMonthsForLearning,
+            areas: activeAreasForLearning,
+            learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
+            description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
+            context: `Child ${childContext.name || 'unknown'}, ${childAgeMonthsForLearning}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
+            tags: [
+              ...activeAreasForLearning.map(a => a.replace('practical_life', 'practical')),
+              `age_${Math.round(childAgeMonthsForLearning / 12)}`,
+            ].filter(Boolean),
+          }).catch(err =>
+            console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
+          );
+        }
 
-      // Issue DA#4: Removed increment_guru_prompts RPC — daily rate limiter counts from
-      // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
-
-      // Post-conversation processing for teachers: extract summary + apply work recs
-      // Fire-and-forget — never blocks the response
-      if (isTeacher && !isGreetingTrigger && !saveError) {
-        processTeacherConversation({
-          childId: child_id,
-          childName: childContext.name || 'Unknown',
-          question,
-          response: responseText,
-          currentWorks: (childContext.focus_works || []).map(fw => ({
-            area: fw.area,
-            work_name: fw.work_name || '',
-            status: 'assigned',
-          })),
-          interactionId: saved?.id,
-        }).catch(err =>
-          console.error('[Guru] Post-conversation processing error:', err instanceof Error ? err.message : String(err))
-        );
+        // Post-conversation processing for teachers: extract summary + apply work recs
+        if (isTeacher && !isGreetingTrigger && !saveError) {
+          processTeacherConversation({
+            childId: child_id,
+            childName: childContext.name || 'Unknown',
+            question,
+            response: responseText,
+            currentWorks: (childContext.focus_works || []).map(fw => ({
+              area: fw.area,
+              work_name: fw.work_name || '',
+              status: 'assigned',
+            })),
+            interactionId: saved?.id,
+          }).catch(err =>
+            console.error('[Guru] Post-conversation processing error:', err instanceof Error ? err.message : String(err))
+          );
+        }
       }
 
       // Actions are internal (saved in context_snapshot) — never exposed to the parent
@@ -685,16 +778,16 @@ export async function POST(request: NextRequest) {
       .insert({
         child_id,
         teacher_id: teacherId || null, // Issue DA#1: Use resolved teacherId so daily count query matches
-        classroom_id: classroom_id || childContext.classroom_id,
+        classroom_id: classroom_id || childContext!.classroom_id,
         question,
         question_type: detectQuestionType(question),
         context_snapshot: {
-          child_name: childContext.name,
-          age: `${childContext.age_years}y ${childContext.age_months}m`,
-          mastered_count: childContext.mastered_count || 0,
-          has_mental_profile: !!childContext.mental_profile,
-          observations_count: childContext.recent_observations.length,
-          notes_count: childContext.teacher_notes.length,
+          child_name: childContext!.name,
+          age: `${childContext!.age_years}y ${childContext!.age_months}m`,
+          mastered_count: childContext!.mastered_count || 0,
+          has_mental_profile: !!childContext!.mental_profile,
+          observations_count: childContext!.recent_observations.length,
+          notes_count: childContext!.teacher_notes.length,
           topics_used: knowledge.topics_used,
         },
         response_insight: parsed.insight,
@@ -714,7 +807,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Self-learning: feed teacher conversations into the brain too
-    if (!saveError) {
+    if (!saveError && childContext) {
       const childAgeMonths = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
       const activeAreas = childContext.focus_works?.map(fw => fw.area) || [];
       recordLearning({
@@ -738,7 +831,7 @@ export async function POST(request: NextRequest) {
     // montree_guru_interactions table directly, so guru_prompts_used column is dead overhead.
 
     // 8. Post-conversation processing for structured teacher mode
-    if (!saveError) {
+    if (!saveError && childContext) {
       processTeacherConversation({
         childId: child_id,
         childName: childContext.name || 'Unknown',

@@ -65,9 +65,13 @@ function GuruContent() {
         setChildren(kids);
 
         if (preselectedChildId) {
-          const preselected = kids.find((c: Child) => c.id === preselectedChildId);
-          if (preselected) {
-            setSelectedChild(preselected);
+          if (preselectedChildId === 'whole_class') {
+            setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
+          } else {
+            const preselected = kids.find((c: Child) => c.id === preselectedChildId);
+            if (preselected) {
+              setSelectedChild(preselected);
+            }
           }
         }
 
@@ -176,11 +180,16 @@ function GuruContent() {
           <select
             value={activeChild?.id || ''}
             onChange={(e) => {
-              const child = children.find(c => c.id === e.target.value);
-              setSelectedChild(child || null);
-              // Update URL so browser back/forward preserves child context
-              if (child) {
-                window.history.replaceState(null, '', `/montree/dashboard/guru?child=${child.id}`);
+              const val = e.target.value;
+              if (val === 'whole_class') {
+                setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
+                window.history.replaceState(null, '', '/montree/dashboard/guru?child=whole_class');
+              } else {
+                const child = children.find(c => c.id === val);
+                setSelectedChild(child || null);
+                if (child) {
+                  window.history.replaceState(null, '', `/montree/dashboard/guru?child=${child.id}`);
+                }
               }
             }}
             className={`w-full p-2 rounded-lg border text-sm ${
@@ -189,6 +198,9 @@ function GuruContent() {
                 : 'border-gray-200 bg-gray-50 text-gray-800 focus:ring-2 focus:ring-violet-500'
             }`}
           >
+            {!isParent && (
+              <option value="whole_class">👥 {t('guru.wholeClass')}</option>
+            )}
             {children.map(child => (
               <option key={child.id} value={child.id}>{child.name}</option>
             ))}
@@ -203,6 +215,7 @@ function GuruContent() {
           childName={activeChild.name}
           classroomId={session?.classroom?.id}
           isTeacher={!isParent}
+          isWholeClassMode={activeChild.id === 'whole_class'}
           onGuruLimitReached={() => {
             setShowPaywall(true);
             if (guruStatus) {

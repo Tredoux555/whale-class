@@ -176,6 +176,16 @@ export default function DashboardHeader() {
           >
             📚
           </Link>
+          {!isHome && (
+            <Link
+              href="/montree/dashboard/classroom-overview"
+              data-guide="nav-overview"
+              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+              title={t('nav.classroomOverview')}
+            >
+              📋
+            </Link>
+          )}
           <Link
             href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
             data-tutorial="guru-link"
