@@ -21,10 +21,10 @@ function formatRelativeTime(dateStr: string, t: any): string {
   const diffDays = Math.floor(diffMs / 86400000);
 
   if (diffMins < 1) return t('time.justNow');
-  if (diffMins < 60) return t('time.minutesAgo').replace('{minutes}', diffMins.toString());
-  if (diffHours < 24) return t('time.hoursAgo').replace('{hours}', diffHours.toString());
+  if (diffMins < 60) return t('time.minutesAgo').replace('{count}', diffMins.toString());
+  if (diffHours < 24) return t('time.hoursAgo').replace('{count}', diffHours.toString());
   if (diffDays === 1) return t('time.yesterday');
-  if (diffDays < 7) return t('time.daysAgo').replace('{days}', diffDays.toString());
+  if (diffDays < 7) return t('time.daysAgo').replace('{count}', diffDays.toString());
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 

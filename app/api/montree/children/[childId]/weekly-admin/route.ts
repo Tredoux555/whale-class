@@ -8,6 +8,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+import { enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
 
 // ---- Types ----
 
@@ -15,6 +16,7 @@ interface FocusWork {
   area: string;
   work_name: string;
   status?: string;
+  chineseName?: string;
 }
 
 interface ProgressRecord {
@@ -63,14 +65,21 @@ function buildPerChildPrompt(
 ): string {
   const isZh = locale === 'zh';
   const labels = AREA_LABELS[locale] || AREA_LABELS.en;
-  // Build focus works context
+  // Build focus works context (use Chinese names when locale is zh)
   const worksContext = focusWorks.length > 0
-    ? focusWorks.map(w => `• ${labels[w.area] || w.area}: ${w.work_name} (${w.status || 'assigned'})`).join('\n')
+    ? focusWorks.map(w => {
+        const workDisplay = isZh && w.chineseName ? w.chineseName : w.work_name;
+        return `• ${labels[w.area] || w.area}: ${workDisplay} (${w.status || 'assigned'})`;
+      }).join('\n')
     : 'No focus works currently assigned.';
 
-  // Build progress context
-  const progressContext = progressRecords.length > 0
-    ? progressRecords.map(p => `• ${labels[p.area] || p.area}: ${p.work_name} → ${p.status} (${p.updated_at.split('T')[0]})`).join('\n')
+  // Build progress context (enrich with Chinese names when locale is zh)
+  const enrichedProgress = enrichWithChineseNames(progressRecords);
+  const progressContext = enrichedProgress.length > 0
+    ? enrichedProgress.map(p => {
+        const workDisplay = isZh && p.chineseName ? p.chineseName : p.work_name;
+        return `• ${labels[p.area] || p.area}: ${workDisplay} → ${p.status} (${p.updated_at.split('T')[0]})`;
+      }).join('\n')
     : 'No progress changes this week.';
 
   // Build guru context
@@ -299,7 +308,8 @@ export async function POST(
         .limit(5),
     ]);
 
-    const focusWorks: FocusWork[] = focusRes.data || [];
+    const rawFocusWorks: FocusWork[] = focusRes.data || [];
+    const focusWorks = enrichWithChineseNames(rawFocusWorks);
     const progressRecords: ProgressRecord[] = progressRes.data || [];
     const guruInteractions: GuruInteraction[] = guruRes.data || [];
 
