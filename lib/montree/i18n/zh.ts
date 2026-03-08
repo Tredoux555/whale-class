@@ -2313,4 +2313,17 @@ export const zh = {
   'weeklyAdmin.copy': '复制',
   'weeklyAdmin.copyAll': '复制全部',
   'weeklyAdmin.copied': '已复制！',
+
+  // Guru Teaching Instructions + Image Upload
+  'guru.teachingInstructions': '如何教授此工作',
+  'guru.instructionsLoading': '正在生成个性化教学指导...',
+  'guru.instructionsError': '无法生成教学指导',
+  'guru.instructionsRetry': '重试',
+  'guru.instructionsRegenerate': '重新生成',
+  'guru.instructionsGenerated': '生成于 {date}',
+  'guru.customWorkCreated': '已创建自定义工作：{name}',
+  'guru.uploadImage': '上传图片',
+  'guru.imageUploading': '上传中...',
+  'guru.removeImage': '移除图片',
+  'guru.imageUploadFailed': '图片上传失败',
 } as const;

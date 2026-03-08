@@ -39,6 +39,7 @@ export interface GuruRequest {
   teacher_id?: string;
   role?: string; // 'principal' skips freemium checks and uses principal prompt
   conversational?: boolean; // true = WhatsApp-style chat for homeschool parents
+  image_url?: string; // optional image for vision analysis
 }
 
 export interface GuruResponse {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    let { child_id, question, classroom_id, teacher_id, role, conversational } = body;
+    let { child_id, question, classroom_id, teacher_id, role, conversational, image_url } = body;
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -86,6 +87,18 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'child_id and question are required' },
         { status: 400 }
       );
+    }
+
+    // Validate image_url if provided (must be HTTPS URL from trusted storage)
+    if (image_url) {
+      try {
+        const parsedUrl = new URL(image_url);
+        if (parsedUrl.protocol !== 'https:') {
+          image_url = undefined; // Silently drop non-HTTPS URLs
+        }
+      } catch {
+        image_url = undefined; // Silently drop malformed URLs
+      }
     }
 
     const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
@@ -397,9 +410,17 @@ export async function POST(request: NextRequest) {
       // Tools enabled for SETUP/INTAKE/CHECKIN/NORMAL.
       // REFLECTION = pure conversation, no tools.
       // =============================================
+      // Build user content — with image if provided
+      const userContent: MessageParam['content'] = image_url
+        ? [
+            { type: 'image' as const, source: { type: 'url' as const, url: image_url } },
+            { type: 'text' as const, text: userPrompt },
+          ]
+        : userPrompt;
+
       let currentMessages: MessageParam[] = [
         ...conversationMessages.map(m => ({ ...m })),
-        { role: 'user' as const, content: userPrompt },
+        { role: 'user' as const, content: userContent },
       ];
 
       // Select model and token limit based on guru tier

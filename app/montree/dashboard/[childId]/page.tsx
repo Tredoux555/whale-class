@@ -657,29 +657,6 @@ export default function WeekPage() {
       />
       </div>
 
-      {/* Add Work Button */}
-      <button
-        data-tutorial="add-work-button"
-        onClick={openPicker}
-        className="w-full py-4 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-300
-          hover:border-emerald-400 hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
-      >
-        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-          <span className="text-2xl text-emerald-600">+</span>
-        </div>
-        <span className="font-medium text-gray-600">{t('weekview.addWork')}</span>
-      </button>
-
-      {/* Browse All Works */}
-      <button
-        onClick={openPicker}
-        className="w-full py-4 bg-white rounded-2xl shadow-sm hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
-      >
-        <span className="text-emerald-600">🔍</span>
-        <span className="font-medium text-emerald-600">{t('weekview.addWork')}</span>
-        <span className="text-emerald-600">{t('weekview.browseAll')}</span>
-      </button>
-
       {/* Weekly Admin — collapsed by default, for government doc copy-paste */}
       {!isHomeschoolParent(session) && (
         <WeeklyAdminCollapsible

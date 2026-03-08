@@ -530,6 +530,125 @@ export async function executeTool(
       };
     }
 
+    case 'add_curriculum_work': {
+      const work_name = input.work_name as string;
+      const area = input.area as string;
+      const description = input.description as string;
+
+      if (!work_name || !area || !description) {
+        return { success: false, message: 'Missing work_name, area, or description' };
+      }
+      if (work_name.length > 200) return { success: false, message: 'Work name too long (max 200)' };
+      if (description.length > 1000) return { success: false, message: 'Description too long (max 1000)' };
+
+      const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      if (!validAreas.includes(area)) {
+        return { success: false, message: `Invalid area: "${area}"` };
+      }
+
+      // Get classroom_id from child
+      const { data: childData } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', childId)
+        .single();
+
+      if (!childData?.classroom_id) {
+        return { success: false, message: 'Could not find classroom for this child' };
+      }
+      const classroomId = childData.classroom_id;
+
+      // Get or create area_id
+      let { data: areaRow } = await supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id')
+        .eq('classroom_id', classroomId)
+        .eq('area_key', area)
+        .maybeSingle();
+
+      if (!areaRow) {
+        // Auto-seed all 5 areas for this classroom
+        const areaSeeds = validAreas.map((aKey, idx) => ({
+          classroom_id: classroomId,
+          area_key: aKey,
+          name: AREA_LABELS[aKey] || aKey,
+          sequence: idx + 1,
+        }));
+        await supabase.from('montree_classroom_curriculum_areas').insert(areaSeeds);
+        const { data: newArea } = await supabase
+          .from('montree_classroom_curriculum_areas')
+          .select('id')
+          .eq('classroom_id', classroomId)
+          .eq('area_key', area)
+          .maybeSingle();
+        areaRow = newArea;
+      }
+
+      if (!areaRow) return { success: false, message: 'Failed to get or create area' };
+
+      // Check for duplicate work name in this classroom
+      const { data: existing } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id')
+        .eq('classroom_id', classroomId)
+        .ilike('name', work_name)
+        .maybeSingle();
+
+      if (existing) {
+        return { success: false, message: `Work "${work_name}" already exists in this classroom curriculum` };
+      }
+
+      // Calculate next sequence number
+      const { data: maxSeqRow } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('sequence')
+        .eq('area_id', areaRow.id)
+        .order('sequence', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const nextSequence = (maxSeqRow?.sequence || 0) + 1;
+
+      // Build work_key
+      const slug = work_name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const workKey = `custom_${slug}_${Date.now()}`;
+
+      // Prepare fields
+      const directAims = (input.direct_aims as string[])?.slice(0, 10) || [];
+      const indirectAims = (input.indirect_aims as string[])?.slice(0, 10) || [];
+      const materials = (input.materials as string[])?.slice(0, 15) || [];
+      const presentationSteps = (input.presentation_steps as string[])?.slice(0, 15) || [];
+      const quickGuide = ((input.quick_guide as string) || '').slice(0, 500);
+      const whyItMatters = ((input.why_it_matters as string) || '').slice(0, 500);
+      const ageRange = ((input.age_range as string) || '3-6').slice(0, 20);
+
+      const { error: insertError } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .insert({
+          classroom_id: classroomId,
+          area_id: areaRow.id,
+          work_key: workKey,
+          name: work_name,
+          description,
+          why_it_matters: whyItMatters || null,
+          direct_aims: directAims,
+          indirect_aims: indirectAims,
+          materials,
+          quick_guide: quickGuide || null,
+          presentation_steps: presentationSteps,
+          age_range: ageRange,
+          is_custom: true,
+          is_active: true,
+          sequence: nextSequence,
+        });
+
+      if (insertError) {
+        console.error('[Tool] add_curriculum_work insert failed:', insertError.message);
+        return { success: false, message: 'Failed to create custom work' };
+      }
+
+      return { success: true, message: `Created custom work "${work_name}" in ${AREA_LABELS[area] || area}` };
+    }
+
     default:
       console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
       return { success: false, message: `Unknown tool: ${toolName}` };

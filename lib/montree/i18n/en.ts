@@ -2312,6 +2312,19 @@ export const en = {
   'weeklyAdmin.copy': 'Copy',
   'weeklyAdmin.copyAll': 'Copy All',
   'weeklyAdmin.copied': 'Copied!',
+
+  // Guru Teaching Instructions + Image Upload
+  'guru.teachingInstructions': 'How to Teach This',
+  'guru.instructionsLoading': 'Generating personalized instructions...',
+  'guru.instructionsError': 'Could not generate instructions',
+  'guru.instructionsRetry': 'Try again',
+  'guru.instructionsRegenerate': 'Regenerate',
+  'guru.instructionsGenerated': 'Generated {date}',
+  'guru.customWorkCreated': 'Created custom work: {name}',
+  'guru.uploadImage': 'Upload image',
+  'guru.imageUploading': 'Uploading...',
+  'guru.removeImage': 'Remove image',
+  'guru.imageUploadFailed': 'Image upload failed',
 } as const;
 
 export type TranslationKey = keyof typeof en;

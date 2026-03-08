@@ -282,5 +282,60 @@ export const GURU_TOOLS: Tool[] = [
       },
       required: ["query"]
     }
+  },
+  {
+    name: "add_curriculum_work",
+    description: "Create a new custom Montessori work when no standard curriculum work fits this child's needs. ONLY use after calling search_curriculum and browse_curriculum to confirm nothing suitable exists. The work is added to this child's classroom curriculum permanently. After creating, call set_focus_work to assign it to the shelf.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        work_name: {
+          type: "string",
+          description: "Clear, specific work name (e.g., 'Sorting by Texture Boxes', 'Water Transfer with Baster')"
+        },
+        area: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural"],
+          description: "The Montessori area this work belongs to"
+        },
+        description: {
+          type: "string",
+          description: "1-2 sentence overview of what the work is and its purpose"
+        },
+        why_it_matters: {
+          type: "string",
+          description: "Developmental benefit and connection to Montessori philosophy"
+        },
+        direct_aims: {
+          type: "array",
+          items: { type: "string" },
+          description: "What the child directly learns (e.g., 'discrimination of textures', 'fine motor control')"
+        },
+        indirect_aims: {
+          type: "array",
+          items: { type: "string" },
+          description: "What they learn indirectly (e.g., 'concentration', 'order')"
+        },
+        materials: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of materials needed, with DIY alternatives if possible"
+        },
+        quick_guide: {
+          type: "string",
+          description: "Quick 2-3 sentence overview for the teacher"
+        },
+        presentation_steps: {
+          type: "array",
+          items: { type: "string" },
+          description: "Step-by-step presentation instructions (6-10 steps)"
+        },
+        age_range: {
+          type: "string",
+          description: "Recommended age (e.g., '3-4 years', '4-5 years')"
+        }
+      },
+      required: ["work_name", "area", "description", "direct_aims", "materials", "presentation_steps"]
+    }
   }
 ];

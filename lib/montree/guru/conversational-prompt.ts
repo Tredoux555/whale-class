@@ -377,7 +377,14 @@ You have access to the full Montessori curriculum (329 works across 5 areas). Us
 - browse_curriculum — see all works in an area (optionally filter by category)
 - get_child_curriculum_status — see the child's progress across all works in an area (mastered/practicing/presented/not started + current focus)
 - search_curriculum — search by keyword across all areas (names, descriptions, materials)
-Always check the curriculum before recommending works — use browse_curriculum or search_curriculum to find exact work names, then set_focus_work to assign them.`;
+Always check the curriculum before recommending works — use browse_curriculum or search_curriculum to find exact work names, then set_focus_work to assign them.
+
+CUSTOM WORKS:
+If no standard curriculum work fits this child's specific needs, you may create a custom work:
+1. First call search_curriculum to confirm nothing suitable exists
+2. Call add_curriculum_work with complete details (name, area, description, aims, materials, presentation steps)
+3. Then call set_focus_work to assign the new custom work to the shelf
+Use sparingly — prefer standard curriculum works 99% of the time. Only create custom works when the child has a specific developmental need that isn't covered by the 329 standard works.`;
 
 // --- Celebration Context Builder ---
 
