@@ -434,17 +434,52 @@ export default function WeekPage() {
     fetchAssignments,
   });
 
-  // Wrapper for saveNote to update local notes state
+  // Smart note processing indicator (🧠 on save button while Haiku parses)
+  const [smartNoteProcessing, setSmartNoteProcessing] = useState<string | null>(null);
+
+  // Wrapper for saveNote — saves note AND fires smart-note AI in parallel
   const onSaveNote = async (work: Assignment) => {
     const noteText = notes[work.work_name];
     if (!noteText?.trim()) return;
 
     setSavingNote(work.work_name);
+
+    // 1. Save the raw note (existing flow)
     const success = await saveNoteFromHook(work, noteText);
     if (success) {
       setNotes(prev => ({ ...prev, [work.work_name]: '' }));
     }
     setSavingNote(null);
+
+    // 2. Fire smart-note AI in parallel (non-blocking)
+    setSmartNoteProcessing(work.work_name);
+    try {
+      const res = await fetch('/api/montree/guru/smart-note', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          area: work.area,
+          note_text: noteText,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const actions = data.actions || [];
+        for (const action of actions) {
+          if (action.success) {
+            toast.success(`🧠 ${action.message}`);
+          }
+        }
+        // Refresh works display if any actions were taken
+        if (actions.some((a: { success: boolean }) => a.success)) {
+          fetchAssignments();
+        }
+      }
+    } catch {
+      // Smart-note failure is silent — note already saved
+    }
+    setSmartNoteProcessing(null);
   };
 
   // Wrapper for addWork to handle picker state
@@ -618,6 +653,7 @@ export default function WeekPage() {
         getAreaConfig={getAreaConfig}
         isHomeschoolParent={isHomeschoolParent(session)}
         guruAreaDetails={guruAreaDetails}
+        smartNoteProcessing={smartNoteProcessing}
       />
       </div>
 

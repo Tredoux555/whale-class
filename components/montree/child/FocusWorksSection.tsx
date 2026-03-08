@@ -40,6 +40,7 @@ export interface FocusWorksSectionProps {
   getAreaConfig: (area: string) => AreaConfig;
   isHomeschoolParent?: boolean;
   guruAreaDetails?: Record<string, AreaDetail> | null;
+  smartNoteProcessing?: string | null;
 }
 
 export const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
@@ -75,6 +76,7 @@ export default function FocusWorksSection({
   getAreaConfig,
   isHomeschoolParent: isParent = false,
   guruAreaDetails,
+  smartNoteProcessing,
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
@@ -278,7 +280,7 @@ export default function FocusWorksSection({
                             className="px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-lg
                               disabled:opacity-50 hover:bg-amber-600 active:scale-95 shadow-sm"
                           >
-                            {savingNote === focusWork.work_name ? '...' : '📌 ' + t('focusWorks.save')}
+                            {savingNote === focusWork.work_name ? '...' : smartNoteProcessing === focusWork.work_name ? '🧠' : '📌 ' + t('focusWorks.save')}
                           </button>
                         </div>
                       </div>
