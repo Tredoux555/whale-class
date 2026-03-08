@@ -223,9 +223,9 @@ export default function GuruChatThread({
     }
 
     try {
-      // 60s client-side timeout prevents indefinite "typing..." indicator
+      // 95s client-side timeout (server allows 90s for batch classroom operations)
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 60_000);
+      const timeout = setTimeout(() => controller.abort(), 95_000);
 
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
