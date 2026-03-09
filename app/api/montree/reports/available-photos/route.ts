@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,6 +23,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
+    // SECURITY: Verify child belongs to the authenticated user's school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     // Get child info including classroom_id
     const { data: child } = await supabase
       .from('montree_children')
@@ -36,7 +43,7 @@ export async function GET(request: NextRequest) {
     // Get ALL photos for this child from montree_media table
     const { data: mediaPhotos } = await supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
+      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible')
       .eq('child_id', childId)
       .eq('media_type', 'photo')
       .order('captured_at', { ascending: false });
@@ -84,6 +91,7 @@ export async function GET(request: NextRequest) {
       work_name: p.work_id ? workIdToName.get(p.work_id) : null,
       caption: p.caption,
       created_at: p.captured_at,
+      parent_visible: p.parent_visible !== false, // Default true for backward compat
     }));
 
     return NextResponse.json({

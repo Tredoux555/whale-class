@@ -223,11 +223,12 @@ export async function POST(request: NextRequest) {
     const matched = worksWithDetails.filter(w => w._matched_brain).length;
     const unmatched = worksWithDetails.filter(w => !w._matched_brain).map(w => w.name);
 
-    // Get photos from montree_media
+    // Get photos from montree_media (only parent-visible ones for reports)
     const { data: mediaItems } = await supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
       .eq('child_id', child_id)
+      .neq('parent_visible', false)
       .gte('captured_at', week_start)
       .lte('captured_at', week_end || new Date().toISOString())
       .limit(10);

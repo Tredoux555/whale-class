@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id', { count: 'exact' })
       .eq('child_id', childId)
-      .eq('parent_visible', true)  // Only approved photos
+      .neq('parent_visible', false)  // Only parent-visible photos (neq false = true + null for backward compat)
       .order('captured_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

@@ -191,7 +191,7 @@ export async function PATCH(request: NextRequest) {
     const supabase = getSupabase();
     const body = await request.json();
 
-    const { id, caption, child_id, work_id, tags } = body;
+    const { id, caption, child_id, work_id, tags, parent_visible } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
@@ -205,11 +205,18 @@ export async function PATCH(request: NextRequest) {
     if (child_id !== undefined) updateData.child_id = child_id;
     if (work_id !== undefined) updateData.work_id = work_id;
     if (tags !== undefined) updateData.tags = tags;
+    if (typeof parent_visible === 'boolean') updateData.parent_visible = parent_visible;
 
-    const { data: media, error } = await supabase
+    // Scope to authenticated user's school to prevent cross-school updates
+    const schoolId = typeof auth === 'object' && 'schoolId' in auth ? auth.schoolId : null;
+    let updateQuery = supabase
       .from('montree_media')
       .update(updateData)
-      .eq('id', id)
+      .eq('id', id);
+    if (schoolId) {
+      updateQuery = updateQuery.eq('school_id', schoolId);
+    }
+    const { data: media, error } = await updateQuery
       .select()
       .single();
 
