@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface TeacherActivity {
   teacher_id: string;
@@ -50,24 +51,26 @@ const ACTIVITY_ICONS: Record<string, string> = {
   session: '🎯',
 };
 
-const ACTIVITY_LABELS: Record<string, string> = {
-  photo: 'Photo',
-  work_update: 'Work Update',
-  observation: 'Observation',
-  session: 'Session',
-};
+function getActivityLabels(t: (key: string) => string): Record<string, string> {
+  return {
+    photo: t('admin.activity.labelPhoto'),
+    work_update: t('admin.activity.labelWorkUpdate'),
+    observation: t('admin.activity.labelObservation'),
+    session: t('admin.activity.labelSession'),
+  };
+}
 
-function formatTimeAgo(dateString: string | null): string {
-  if (!dateString) return 'Never';
+function formatTimeAgo(dateString: string | null, t: (key: string) => string): string {
+  if (!dateString) return t('time.never');
 
   const date = new Date(dateString);
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-  if (seconds < 60) return 'Just now';
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+  if (seconds < 60) return t('time.justNow');
+  if (seconds < 3600) return t('time.minutesAgo').replace('{count}', Math.floor(seconds / 60).toString());
+  if (seconds < 86400) return t('time.hoursAgo').replace('{count}', Math.floor(seconds / 3600).toString());
+  if (seconds < 604800) return t('time.daysAgo').replace('{count}', Math.floor(seconds / 86400).toString());
 
   return date.toLocaleDateString();
 }
@@ -100,6 +103,8 @@ function SimpleSparkline({ data }: { data: number[] }) {
 
 export default function ActivityPage() {
   const router = useRouter();
+  const { t } = useI18n();
+  const activityLabels = getActivityLabels(t);
   const [teachers, setTeachers] = useState<TeacherActivity[]>([]);
   const [students, setStudents] = useState<StudentCoverage[]>([]);
   const [feed, setFeed] = useState<ActivityFeed[]>([]);
@@ -174,7 +179,7 @@ export default function ActivityPage() {
       <div className="flex items-center justify-center min-h-screen bg-gray-950">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading activity data...</p>
+          <p className="text-gray-400">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -186,7 +191,7 @@ export default function ActivityPage() {
       <div className="border-b border-gray-800 bg-gray-900/50 backdrop-blur sticky top-0 z-10">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-emerald-400">Activity Dashboard</h1>
+            <h1 className="text-2xl font-bold text-emerald-400">{t('admin.activity.title')}</h1>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setAutoRefresh(!autoRefresh)}
@@ -196,7 +201,7 @@ export default function ActivityPage() {
                     : 'bg-gray-800 text-gray-400 border border-gray-700'
                 }`}
               >
-                {autoRefresh ? '🔄 Live' : '⏸ Paused'}
+                {autoRefresh ? `🔄 ${t('admin.activity.live')}` : `⏸ ${t('admin.activity.paused')}`}
               </button>
               <button
                 onClick={() => {
@@ -205,7 +210,7 @@ export default function ActivityPage() {
                 }}
                 className="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white text-sm font-medium transition-colors border border-gray-700"
               >
-                🔄 Refresh
+                🔄 {t('admin.activity.refresh')}
               </button>
             </div>
           </div>
@@ -213,19 +218,19 @@ export default function ActivityPage() {
           {/* Summary Cards */}
           <div className="grid grid-cols-4 gap-4">
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-sm mb-1">Total Teachers</div>
+              <div className="text-gray-400 text-sm mb-1">{t('admin.activity.totalTeachers')}</div>
               <div className="text-3xl font-bold text-emerald-400">{summary?.total_teachers || 0}</div>
             </div>
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-sm mb-1">Active This Week</div>
+              <div className="text-gray-400 text-sm mb-1">{t('admin.activity.activeThisWeek')}</div>
               <div className="text-3xl font-bold text-emerald-400">{summary?.active_this_week || 0}</div>
             </div>
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-sm mb-1">Students Documented</div>
+              <div className="text-gray-400 text-sm mb-1">{t('admin.activity.studentsDocumented')}</div>
               <div className="text-3xl font-bold text-emerald-400">{summary?.total_students_covered_this_week || 0}</div>
             </div>
             <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
-              <div className="text-gray-400 text-sm mb-1">Needs Attention</div>
+              <div className="text-gray-400 text-sm mb-1">{t('admin.activity.needsAttention')}</div>
               <div className="text-3xl font-bold text-amber-400">{summary?.students_without_activity || 0}</div>
             </div>
           </div>
@@ -234,9 +239,9 @@ export default function ActivityPage() {
         {/* Tabs */}
         <div className="border-t border-gray-800 flex gap-1 px-6 bg-gray-950">
           {[
-            { id: 'overview', label: '👥 Teacher Activity', icon: '📊' },
-            { id: 'coverage', label: '👧 Student Coverage', icon: '📋' },
-            { id: 'feed', label: '⏱️ Activity Feed', icon: '🔔' },
+            { id: 'overview', label: `👥 ${t('admin.activity.teacherActivity')}`, icon: '📊' },
+            { id: 'coverage', label: `👧 ${t('admin.activity.studentCoverage')}`, icon: '📋' },
+            { id: 'feed', label: `⏱️ ${t('admin.activity.activityFeed')}`, icon: '🔔' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -260,7 +265,7 @@ export default function ActivityPage() {
             <div className="space-y-3">
               {teachers.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <p>No teacher activity data yet</p>
+                  <p>{t('admin.activity.noTeacherData')}</p>
                 </div>
               ) : (
                 teachers.map((teacher) => {
@@ -289,7 +294,7 @@ export default function ActivityPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-bold text-emerald-400">{totalActivityWeek}</div>
-                          <div className="text-gray-400 text-sm">actions this week</div>
+                          <div className="text-gray-400 text-sm">{t('admin.activity.actionsThisWeek')}</div>
                         </div>
                       </div>
 
@@ -298,7 +303,7 @@ export default function ActivityPage() {
                         <div className="bg-gray-800/40 rounded p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">📷</span>
-                            <span className="text-gray-400 text-xs">Photos</span>
+                            <span className="text-gray-400 text-xs">{t('admin.activity.photos')}</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-xl font-bold text-emerald-400">{teacher.photos_this_week}</span>
@@ -309,7 +314,7 @@ export default function ActivityPage() {
                         <div className="bg-gray-800/40 rounded p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">✓</span>
-                            <span className="text-gray-400 text-xs">Updates</span>
+                            <span className="text-gray-400 text-xs">{t('admin.activity.updates')}</span>
                           </div>
                           <div className="flex justify-between items-center">
                             <span className="text-xl font-bold text-emerald-400">{teacher.work_updates_this_week}</span>
@@ -320,7 +325,7 @@ export default function ActivityPage() {
                         <div className="bg-gray-800/40 rounded p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">👁️</span>
-                            <span className="text-gray-400 text-xs">Observations</span>
+                            <span className="text-gray-400 text-xs">{t('admin.activity.observations')}</span>
                           </div>
                           <div className="text-xl font-bold text-emerald-400">{teacher.observations_this_week}</div>
                         </div>
@@ -328,7 +333,7 @@ export default function ActivityPage() {
                         <div className="bg-gray-800/40 rounded p-3">
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">🎯</span>
-                            <span className="text-gray-400 text-xs">Sessions</span>
+                            <span className="text-gray-400 text-xs">{t('admin.activity.sessions')}</span>
                           </div>
                           <div className="text-xl font-bold text-emerald-400">{teacher.sessions_this_week}</div>
                         </div>
@@ -337,14 +342,14 @@ export default function ActivityPage() {
                       {/* Last Active */}
                       <div className="flex items-center justify-between text-sm text-gray-400 pt-3 border-t border-gray-800">
                         <div>
-                          <span>Last active: </span>
+                          <span>{t('admin.activity.lastActive')}</span>
                           <span className="text-gray-300 font-medium">
-                            {formatTimeAgo(teacher.last_active_at)}
+                            {formatTimeAgo(teacher.last_active_at, t)}
                           </span>
                           {teacher.last_activity_type && (
                             <span className="ml-2">
                               ({ACTIVITY_ICONS[teacher.last_activity_type]}{' '}
-                              {ACTIVITY_LABELS[teacher.last_activity_type]})
+                              {activityLabels[teacher.last_activity_type]})
                             </span>
                           )}
                         </div>
@@ -362,7 +367,7 @@ export default function ActivityPage() {
             <div className="space-y-2">
               {students.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <p>No student data yet</p>
+                  <p>{t('admin.activity.noStudentData')}</p>
                 </div>
               ) : (
                 students.map((student) => {
@@ -382,16 +387,16 @@ export default function ActivityPage() {
                         <div className="flex gap-4 text-sm text-gray-400">
                           {student.last_photo_at && (
                             <span>
-                              📷 Photo: {formatTimeAgo(student.last_photo_at)}
+                              📷 {t('admin.activity.photo')} {formatTimeAgo(student.last_photo_at, t)}
                             </span>
                           )}
                           {student.last_update_at && (
                             <span>
-                              ✓ Update: {formatTimeAgo(student.last_update_at)}
+                              ✓ {t('admin.activity.update')} {formatTimeAgo(student.last_update_at, t)}
                             </span>
                           )}
                           {!student.last_photo_at && !student.last_update_at && (
-                            <span className="text-gray-500 italic">No activity recorded</span>
+                            <span className="text-gray-500 italic">{t('admin.activity.noActivityRecorded')}</span>
                           )}
                         </div>
                       </div>
@@ -404,7 +409,7 @@ export default function ActivityPage() {
                         <div className="text-2xl font-bold text-emerald-400">
                           {student.days_without_activity === 999 ? '—' : student.days_without_activity}
                         </div>
-                        <div className="text-gray-400 text-xs">days idle</div>
+                        <div className="text-gray-400 text-xs">{t('admin.activity.daysIdle')}</div>
                       </div>
                     </div>
                   );
@@ -419,7 +424,7 @@ export default function ActivityPage() {
             <div className="space-y-3">
               {feed.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <p>No recent activity</p>
+                  <p>{t('admin.activity.noRecentActivity')}</p>
                 </div>
               ) : (
                 feed.map((event, i) => (
@@ -436,7 +441,7 @@ export default function ActivityPage() {
                         )}
                       </div>
                       <div className="text-sm text-gray-500 mt-1">
-                        {formatTimeAgo(event.timestamp)}
+                        {formatTimeAgo(event.timestamp, t)}
                       </div>
                     </div>
                   </div>

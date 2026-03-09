@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Student {
   id: string;
@@ -16,19 +17,7 @@ interface Student {
   classroom_icon?: string;
 }
 
-const AGE_OPTIONS = [
-  { value: '', label: 'Select age' },
-  { value: 2, label: '2 years old' },
-  { value: 2.5, label: '2½ years old' },
-  { value: 3, label: '3 years old' },
-  { value: 3.5, label: '3½ years old' },
-  { value: 4, label: '4 years old' },
-  { value: 4.5, label: '4½ years old' },
-  { value: 5, label: '5 years old' },
-  { value: 5.5, label: '5½ years old' },
-  { value: 6, label: '6 years old' },
-  { value: 6.5, label: '6½ years old' },
-];
+// AGE_OPTIONS will be generated inside component using translation keys
 
 interface Classroom {
   id: string;
@@ -38,6 +27,7 @@ interface Classroom {
 
 export default function StudentsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [students, setStudents] = useState<Student[]>([]);
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [loading, setLoading] = useState(true);
@@ -142,14 +132,14 @@ export default function StudentsPage() {
       closeModal();
     } catch (err) {
       console.error('Save error:', err);
-      alert('Failed to save student');
+      alert(t('admin.students.failedToSave'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (studentId: string, studentName: string) => {
-    if (!confirm(`Remove ${studentName} from the school?`)) return;
+    if (!confirm(t('admin.students.confirmRemove').replace('{name}', studentName))) return;
 
     try {
       const res = await fetch(`/api/montree/admin/students?id=${studentId}`, {
@@ -162,7 +152,7 @@ export default function StudentsPage() {
       await fetchData();
     } catch (err) {
       console.error('Delete error:', err);
-      alert('Failed to remove student');
+      alert(t('admin.students.failedToRemove'));
     }
   };
 
@@ -201,23 +191,23 @@ export default function StudentsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link href="/montree/admin" className="text-emerald-300 text-sm hover:text-white mb-1 inline-block">
-              ← Back to Admin
+              {t('admin.students.backToAdmin')}
             </Link>
-            <h1 className="text-2xl font-bold text-white">Students</h1>
-            <p className="text-emerald-300 text-sm">{students.length} total</p>
+            <h1 className="text-2xl font-bold text-white">{t('admin.students.title')}</h1>
+            <p className="text-emerald-300 text-sm">{t('admin.students.total').replace('{count}', students.length.toString())}</p>
           </div>
           <div className="flex gap-2">
             <Link
               href="/montree/admin/import"
               className="px-4 py-2 bg-white/10 text-emerald-300 border border-emerald-500/30 rounded-lg font-medium hover:bg-emerald-500/20 transition-colors"
             >
-              📄 Import
+              📄 {t('admin.students.import')}
             </Link>
             <button
               onClick={openAddModal}
               className="px-4 py-2 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors"
             >
-              + Add Student
+              {t('admin.students.addStudent')}
             </button>
           </div>
         </div>
@@ -232,7 +222,7 @@ export default function StudentsPage() {
                 : 'bg-white/10 text-emerald-200 hover:bg-white/20'
             }`}
           >
-            All ({students.length})
+            {t('admin.students.all').replace('{count}', students.length.toString())}
           </button>
           {classrooms.map(c => {
             const count = students.filter(s => s.classroom_id === c.id).length;
@@ -256,13 +246,13 @@ export default function StudentsPage() {
         {filteredStudents.length === 0 ? (
           <div className="bg-white/10 border border-emerald-600/30 rounded-xl p-12 text-center">
             <span className="text-5xl mb-4 block">👶</span>
-            <h3 className="text-white font-semibold mb-2">No students yet</h3>
-            <p className="text-emerald-300 mb-6">Add your first student to get started</p>
+            <h3 className="text-white font-semibold mb-2">{t('admin.students.noStudentsYet')}</h3>
+            <p className="text-emerald-300 mb-6">{t('admin.students.addFirstStudent')}</p>
             <button
               onClick={openAddModal}
               className="px-6 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
             >
-              + Add Student
+              {t('admin.students.addStudent')}
             </button>
           </div>
         ) : (
@@ -274,7 +264,7 @@ export default function StudentsPage() {
                   {selectedClassroom === 'all' && (
                     <h2 className="text-emerald-300 text-sm font-medium mb-3 flex items-center gap-2">
                       <span>{classroom?.icon || '📚'}</span>
-                      <span>{classroom?.name || 'Unassigned'}</span>
+                      <span>{classroom?.name || t('admin.students.unassigned')}</span>
                       <span className="text-emerald-400/50">({classStudents.length})</span>
                     </h2>
                   )}
@@ -296,7 +286,7 @@ export default function StudentsPage() {
                             <h3 className="text-white font-medium">{student.name}</h3>
                             {student.age && (
                               <p className="text-emerald-300 text-sm">
-                                {student.age % 1 === 0.5 ? `${Math.floor(student.age)}½` : student.age} years old
+                                {t('admin.students.yearsOld').replace('{age}', student.age % 1 === 0.5 ? `${Math.floor(student.age)}½` : student.age.toString())}
                               </p>
                             )}
                           </div>
@@ -306,13 +296,13 @@ export default function StudentsPage() {
                             onClick={() => openEditModal(student)}
                             className="px-3 py-1.5 bg-white/10 text-white rounded-lg text-sm hover:bg-white/20 transition-colors"
                           >
-                            Edit
+                            {t('admin.students.edit')}
                           </button>
                           <button
                             onClick={() => handleDelete(student.id, student.name)}
                             className="px-3 py-1.5 bg-red-500/20 text-red-300 rounded-lg text-sm hover:bg-red-500/30 transition-colors"
                           >
-                            Remove
+                            {t('admin.students.remove')}
                           </button>
                         </div>
                       </div>
@@ -329,37 +319,45 @@ export default function StudentsPage() {
           <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div className="bg-emerald-900 rounded-2xl p-6 max-w-md w-full border border-emerald-700">
               <h2 className="text-xl font-bold text-white mb-6">
-                {editingStudent ? 'Edit Student' : 'Add Student'}
+                {editingStudent ? t('admin.students.editStudent') : t('admin.students.addStudentModal')}
               </h2>
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-emerald-300 text-sm mb-1">Name *</label>
+                  <label className="block text-emerald-300 text-sm mb-1">{t('admin.students.nameLabel')}</label>
                   <input
                     type="text"
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
-                    placeholder="e.g. Rachel"
+                    placeholder={t('admin.students.namePlaceholder')}
                     className="w-full p-3 bg-black/20 border border-emerald-600 rounded-lg text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
                     autoFocus
                   />
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300 text-sm mb-1">Age</label>
+                  <label className="block text-emerald-300 text-sm mb-1">{t('admin.students.ageLabel')}</label>
                   <select
                     value={formAge}
                     onChange={(e) => setFormAge(e.target.value ? parseFloat(e.target.value) : '')}
                     className="w-full p-3 bg-black/20 border border-emerald-600 rounded-lg text-white focus:border-emerald-400 focus:outline-none"
                   >
-                    {AGE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
+                    <option value="">{t('admin.students.selectAge')}</option>
+                    <option value="2">{t('admin.students.age2')}</option>
+                    <option value="2.5">{t('admin.students.age2half')}</option>
+                    <option value="3">{t('admin.students.age3')}</option>
+                    <option value="3.5">{t('admin.students.age3half')}</option>
+                    <option value="4">{t('admin.students.age4')}</option>
+                    <option value="4.5">{t('admin.students.age4half')}</option>
+                    <option value="5">{t('admin.students.age5')}</option>
+                    <option value="5.5">{t('admin.students.age5half')}</option>
+                    <option value="6">{t('admin.students.age6')}</option>
+                    <option value="6.5">{t('admin.students.age6half')}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300 text-sm mb-1">Classroom *</label>
+                  <label className="block text-emerald-300 text-sm mb-1">{t('admin.students.classroomLabel')}</label>
                   <select
                     value={formClassroom}
                     onChange={(e) => setFormClassroom(e.target.value)}
@@ -379,14 +377,14 @@ export default function StudentsPage() {
                   onClick={closeModal}
                   className="flex-1 py-3 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-colors"
                 >
-                  Cancel
+                  {t('admin.students.cancel')}
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={!formName.trim() || !formClassroom || saving}
                   className="flex-1 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 disabled:bg-emerald-800 disabled:cursor-not-allowed transition-colors"
                 >
-                  {saving ? 'Saving...' : editingStudent ? 'Save Changes' : 'Add Student'}
+                  {saving ? t('admin.students.saving') : editingStudent ? t('admin.students.saveChanges') : t('admin.students.addStudentModal')}
                 </button>
               </div>
             </div>

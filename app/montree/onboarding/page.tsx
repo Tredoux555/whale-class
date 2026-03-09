@@ -5,6 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n } from '@/lib/montree/i18n';
 import CurriculumPicker from './components/CurriculumPicker';
 import AgePicker from './components/AgePicker';
 import { Work, Student, CURRICULUM_AREAS, AGE_OPTIONS } from './types';
@@ -16,6 +17,7 @@ const generateId = () =>
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState(0);
   const [session, setSession] = useState<{ teacher?: { role?: string; has_completed_tutorial?: boolean }; classroom?: { id?: string }; onboarded?: boolean } | null>(null);
   const isParent = session?.teacher?.role === 'homeschool_parent';
@@ -307,7 +309,7 @@ export default function OnboardingPage() {
     }
 
     if (finalStudents.length === 0) {
-      setError(isParent ? 'Please add at least one child to continue' : 'Please add at least one student to continue');
+      setError(isParent ? t('validation.addAtLeastOneChild') : t('validation.addAtLeastOneStudent'));
       return;
     }
 
@@ -362,20 +364,19 @@ export default function OnboardingPage() {
 
           {/* Welcome headline */}
           <h1 className="text-3xl font-bold text-slate-800 mb-3">
-            Welcome to Montree
+            {t('onboarding.welcome')}
           </h1>
           <p className="text-emerald-600 text-lg mb-8">
-            Where every child&apos;s journey matters
+            {t('onboarding.tagline')}
           </p>
 
           {/* Inspiring message */}
           <div className="text-left space-y-4 mb-8">
             <p className="text-slate-600 leading-relaxed">
-              You&apos;re about to experience a new way to nurture growth —
-              tracking progress that celebrates each small victory.
+              {t('onboarding.experienceIntro')}
             </p>
             <p className="text-slate-500 leading-relaxed text-sm">
-              Your dashboard awaits. Add {isParent ? 'your children' : 'students'} whenever you&apos;re ready.
+              {t('onboarding.dashboardAwaits')} {isParent ? t('common.yourChildren') : t('common.students')}
             </p>
           </div>
 
@@ -392,7 +393,7 @@ export default function OnboardingPage() {
             }}
             className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
           >
-            {isParent ? 'Enter My Home →' : 'Enter My Classroom →'}
+            {isParent ? t('onboarding.enterMyHome') : t('onboarding.enterMyClassroom')}
           </button>
 
           {session?.teacher?.name && (
@@ -412,9 +413,9 @@ export default function OnboardingPage() {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">{isParent ? 'Add Your Children' : 'Add Your Students'}</h1>
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">{isParent ? t('onboarding.addChildren') : t('onboarding.addStudents')}</h1>
             <p className="text-blue-600 font-medium">
-              {session?.classroom?.name || 'Your Classroom'}
+              {session?.classroom?.name || t('onboarding.yourClassroom')}
             </p>
           </div>
 
@@ -429,8 +430,8 @@ export default function OnboardingPage() {
             <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
               <span>👶</span>
               {editingStudentIndex !== null
-                ? `Edit ${isParent ? 'Child' : 'Student'}`
-                : `New ${isParent ? 'Child' : 'Student'}`}
+                ? (isParent ? t('onboarding.editChild') : t('onboarding.editStudent'))
+                : (isParent ? t('onboarding.newChild') : t('onboarding.newStudent'))}
             </h2>
 
             {/* Name Input */}
@@ -439,7 +440,7 @@ export default function OnboardingPage() {
                 type="text"
                 value={currentStudent.name}
                 onChange={(e) => setCurrentStudent({ ...currentStudent, name: e.target.value })}
-                placeholder={isParent ? "Child's name" : "Student's name"}
+                placeholder={isParent ? t('onboarding.childNamePlaceholder') : t('onboarding.studentNamePlaceholder')}
                 className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none text-lg transition-colors"
                 autoFocus
               />
@@ -456,15 +457,15 @@ export default function OnboardingPage() {
             {/* Curriculum Progress */}
             <div className="border-t border-slate-100 pt-5">
               <h3 className="text-slate-700 font-medium mb-2 flex items-center gap-2">
-                <span>📊</span> Current Progress
+                <span>📊</span> {t('onboarding.currentProgress')}
               </h3>
               <p className="text-slate-400 text-xs mb-4">
-                Select the most recent work they&apos;ve been presented in each area.
+                {isParent ? t('onboarding.selectMostRecent').replace('{role}', 'child') : t('onboarding.selectMostRecent').replace('{role}', 'student')}
               </p>
 
               {loadingCurriculum || seedingCurriculum ? (
                 <div className="text-slate-500 text-center py-4">
-                  {seedingCurriculum ? 'Setting up curriculum...' : 'Loading curriculum...'}
+                  {seedingCurriculum ? t('onboarding.settingUpCurriculum') : t('onboarding.loadingCurriculum')}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -498,8 +499,8 @@ export default function OnboardingPage() {
               className="w-full mt-6 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {editingStudentIndex !== null
-                ? `✓ Update ${isParent ? 'Child' : 'Student'}`
-                : `+ Add ${isParent ? 'Child' : 'Student'}`}
+                ? (isParent ? t('onboarding.updateChild') : t('onboarding.updateStudent'))
+                : (isParent ? t('onboarding.addChild') : t('onboarding.addStudent'))}
             </button>
 
             {editingStudentIndex !== null && (
@@ -510,7 +511,7 @@ export default function OnboardingPage() {
                 }}
                 className="w-full mt-2 py-2 text-slate-500 hover:text-slate-700"
               >
-                Cancel Edit
+                {t('onboarding.cancelEdit')}
               </button>
             )}
           </div>
@@ -520,7 +521,7 @@ export default function OnboardingPage() {
             <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-6 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
                 <span>👥</span>
-                {isParent ? 'Children' : 'Students'} Added ({students.length})
+                {isParent ? t('onboarding.childrenAdded') : t('onboarding.studentsAdded')} ({students.length})
               </h2>
 
               <div className="space-y-2">
@@ -538,7 +539,9 @@ export default function OnboardingPage() {
                         <div>
                           <p className="text-slate-700 font-medium">{student.name}</p>
                           <p className="text-slate-400 text-xs">
-                            {student.age} yrs • {progressCount > 0 ? `${progressCount} areas started` : 'New to Montessori'}
+                            {progressCount > 0
+                              ? t('onboarding.yearsAreas').replace('{age}', student.age.toString()).replace('{count}', progressCount.toString())
+                              : t('onboarding.newToMontessori')}
                           </p>
                         </div>
                       </div>
@@ -547,7 +550,7 @@ export default function OnboardingPage() {
                           onClick={() => editStudent(index)}
                           className="px-3 py-1.5 bg-slate-200 text-slate-600 rounded-lg text-sm hover:bg-slate-300"
                         >
-                          Edit
+                          {t('common.edit')}
                         </button>
                         <button
                           onClick={() => removeStudent(index)}
@@ -569,15 +572,15 @@ export default function OnboardingPage() {
             disabled={loading || students.length === 0}
             className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Saving...' : students.length === 0
-              ? `Add at least 1 ${isParent ? 'child' : 'student'} to continue`
-              : `Save ${students.length} ${isParent
-                  ? (students.length !== 1 ? 'Children' : 'Child')
-                  : (students.length !== 1 ? 'Students' : 'Student')} & Continue →`}
+            {loading ? t('common.saving') : students.length === 0
+              ? (isParent ? t('onboarding.addAtLeastOneChild') : t('onboarding.addAtLeastOneStudent'))
+              : `${t('common.save')} ${students.length} ${isParent
+                  ? (students.length !== 1 ? t('onboarding.saveChildren').replace('{count}', students.length.toString()) : t('onboarding.saveChild').replace('{count}', students.length.toString()))
+                  : (students.length !== 1 ? t('onboarding.saveStudents').replace('{count}', students.length.toString()) : t('onboarding.saveStudent').replace('{count}', students.length.toString()))} & ${t('common.continue')} →`}
           </button>
 
           <p className="text-center text-slate-400 text-xs mt-4">
-            You must add {isParent ? 'your children' : 'your students'} before using Montree
+            {isParent ? t('onboarding.mustAddBefore') : t('onboarding.mustAddStudentsBefore')}
           </p>
         </div>
       </div>
@@ -595,33 +598,32 @@ export default function OnboardingPage() {
 
         {/* Headline */}
         <h1 className="text-3xl font-bold text-slate-800 mb-3">
-          Beautiful.
+          {t('onboarding.beautiful')}
         </h1>
         <p className="text-emerald-600 text-lg mb-6">
-          {students.length} {students.length === 1 ? 'young mind' : 'young minds'} ready to flourish.
+          {students.length === 1 ? t('onboarding.mindReady').replace('{count}', '1') : t('onboarding.mindsReady').replace('{count}', students.length.toString())}
         </p>
 
         {/* Inspiring message */}
         <p className="text-slate-500 leading-relaxed mb-8">
-          Every great journey starts with a single step.
-          You&apos;ve just taken yours.
+          {t('onboarding.journeyStarts')}
         </p>
 
         {/* What awaits - more poetic */}
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-5 mb-8 text-left border border-emerald-100">
-          <p className="text-slate-700 font-medium mb-3">What awaits you:</p>
+          <p className="text-slate-700 font-medium mb-3">{t('onboarding.whatAwaits')}</p>
           <div className="space-y-3 text-slate-600 text-sm">
             <p className="flex items-start gap-3">
               <span className="text-emerald-500 mt-0.5">→</span>
-              <span>A living map of each child&apos;s unique path</span>
+              <span>{t('onboarding.livingMap')}</span>
             </p>
             <p className="flex items-start gap-3">
               <span className="text-emerald-500 mt-0.5">→</span>
-              <span>{isParent ? 'Effortless tracking that frees you to focus on your child' : 'Effortless tracking that frees you to teach'}</span>
+              <span>{t('onboarding.effortlessTracking')}</span>
             </p>
             <p className="flex items-start gap-3">
               <span className="text-emerald-500 mt-0.5">→</span>
-              <span>{isParent ? 'A beautiful record of your homeschool journey' : 'Stories to share with the families who trust you'}</span>
+              <span>{t('onboarding.beautifulRecord')}</span>
             </p>
           </div>
         </div>
@@ -630,7 +632,7 @@ export default function OnboardingPage() {
           onClick={() => router.push('/montree/dashboard')}
           className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
         >
-          Go to Dashboard →
+          {t('onboarding.goToDashboard')}
         </button>
       </div>
     </div>

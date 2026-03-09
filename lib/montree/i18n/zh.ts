@@ -718,11 +718,13 @@ export const zh = {
   'admin.modal.cancel': '取消',
   'admin.modal.save': '保存',
   'admin.modal.saving': '正在保存...',
+  'admin.principalLabel': '校长：',
   'admin.settings.title': '学校设置',
   'admin.settings.schoolName': '学校名称',
   'admin.settings.principalName': '校长名称',
   'admin.settings.email': '邮箱',
   'admin.settings.newPassword': '新密码（留空保持不变）',
+  'admin.settings.passwordPlaceholder': '••••••••',
 
   // Phase 4 — Gallery
   'gallery.gallery': '相册',
@@ -1091,6 +1093,7 @@ export const zh = {
   'time.hoursAgo': '{count}小时前',
   'time.yesterday': '昨天',
   'time.daysAgo': '{count}天前',
+  'time.never': '未曾',
 
   // Phase 7 — Guru Dashboard Cards
   'guru.todayPlan': '今日计划',
@@ -2019,6 +2022,10 @@ export const zh = {
   'admin.activity.noActivityRecorded': '无活动记录',
   'admin.activity.daysIdle': '天未活跃',
   'admin.activity.noRecentActivity': '无近期活动',
+  'admin.activity.labelPhoto': '照片',
+  'admin.activity.labelWorkUpdate': '工作更新',
+  'admin.activity.labelObservation': '观察',
+  'admin.activity.labelSession': '会话',
 
   // --- Admin Billing ---
   'admin.billing.title': '账单',
@@ -2039,6 +2046,25 @@ export const zh = {
   'admin.billing.status': '状态',
   'admin.billing.invoice': '发票',
   'admin.billing.download': '下载',
+  'admin.billing.planClassroom': '课堂',
+  'admin.billing.planSchool': '学校',
+  'admin.billing.planEnterprise': '企业',
+  'admin.billing.featureUpTo50': '最多 50 名学生',
+  'admin.billing.featureFullCurriculum': '完整蒙特梭利课程',
+  'admin.billing.featureParentPortal': '家长门户网站',
+  'admin.billing.featureProgressTracking': '进度跟踪和报告',
+  'admin.billing.featureEmailSupport': '电子邮件支持',
+  'admin.billing.featureUpTo200': '最多 200 名学生',
+  'admin.billing.featureAllClassroom': '所有课堂功能',
+  'admin.billing.featureMultiClassroom': '多个课堂管理',
+  'admin.billing.featureAdvancedAnalytics': '高级分析',
+  'admin.billing.featurePrioritySupport': '优先级支持',
+  'admin.billing.featureUnlimited': '无限学生',
+  'admin.billing.featureAllSchool': '所有学校功能',
+  'admin.billing.featureCustomBranding': '自定义品牌',
+  'admin.billing.featureApiAccess': 'API 访问',
+  'admin.billing.featureDedicatedManager': '专属账户经理',
+  'admin.billing.featurePhoneSupport': '电话和视频支持',
 
   // --- Onboarding Expanded ---
   'onboarding.welcome': '欢迎来到 Montree',
@@ -2083,6 +2109,7 @@ export const zh = {
   'onboarding.effortlessTracking': '自然流畅的记录体验',
   'onboarding.beautifulRecord': '成长与发现的精美记录',
   'onboarding.goToDashboard': '前往仪表板 →',
+  'onboarding.yourClassroom': '您的教室',
 
   // --- Photo Edit Modal ---
   'photoEdit.title': '编辑照片',
@@ -2103,6 +2130,7 @@ export const zh = {
   'photoEdit.cancel': '取消',
   'photoEdit.saving': '保存中...',
   'photoEdit.saveChanges': '✓ 保存更改',
+  'photoEdit.saveSuccess': '照片已成功更新',
 
   // --- Sensitive Periods (parent weekly review) ---
   'sensitivePeriod.order.name': '秩序',
@@ -2440,4 +2468,36 @@ export const zh = {
   'snap.sharedWithParents': '照片已分享给家长',
   'snap.hiddenFromParents': '照片已从家长报告中隐藏',
   'snap.toggleFailed': '更新可见性失败',
+
+  // --- RAZ 阅读追踪 ---
+  'raz.title': 'RAZ 阅读追踪',
+  'raz.statusRead': '已读',
+  'raz.statusNotRead': '未读',
+  'raz.statusNoFolder': '无文件夹',
+  'raz.statusAbsent': '缺席',
+  'raz.photoBook': '📖 书本',
+  'raz.photoSignature': '✍️ 签名',
+  'raz.photoNewBook': '📗 新书',
+  'raz.failedToLoad': '加载数据失败',
+  'raz.childDone': '✅ {name} 完成',
+  'raz.cameraFailed': '拍照失败 — 请重试',
+  'raz.uploadFailed': '上传失败',
+  'raz.failedToSave': '保存失败',
+  'raz.takeRetakePhoto': '重新拍照',
+  'raz.takePhoto': '拍照继续',
+  'raz.retake': '重拍: {label}',
+  'raz.doneBackToList': '完成 — 返回列表',
+  'raz.searchPlaceholder': '输入名字...',
+  'raz.classroom': '教室',
+  'raz.viewPhoto': '查看{label}',
+  'raz.retakePhoto': '重拍{label}',
+  'raz.noStudents': '未找到学生',
+  'raz.allDone': '全部完成！',
+  'raz.remaining': '剩余 {count} 人',
+  'raz.cameraPermission': '需要相机权限',
+  'raz.openCamera': '打开相机',
+  'raz.nextQuestion': '下一个？',
+  'raz.tapToClose': '点击任意地方关闭',
+  'raz.today': '今天',
+  'raz.addStudentsFirst': '请先在管理面板中添加学生。',
 } as const;
