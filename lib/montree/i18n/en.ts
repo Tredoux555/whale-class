@@ -2421,6 +2421,11 @@ export const en = {
   'snap.sensitivePeriod': 'Sensitive Period',
   'snap.noDetailedNotes': 'No detailed notes',
   'snap.identified': 'Identified',
+
+  // Snap: background analysis
+  'snap.analyzingInBackground': 'Analyzing in background...',
+  'snap.viewResult': 'View',
+  'snap.analyzingCount': 'Analyzing photos...',
 } as const;
 
 export type TranslationKey = keyof typeof en;
