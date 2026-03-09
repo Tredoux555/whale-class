@@ -28,6 +28,7 @@ export const zh = {
   'common.update': '更新',
   'common.saveAll': '全部保存',
   'common.tryAgain': '重试',
+  'common.networkError': '网络错误',
   'common.connectionError': '连接失败，请重试。',
   'common.students': '位学生',
   'common.adding': '添加中...',
@@ -2359,6 +2360,24 @@ export const zh = {
   'batchAdmin.retryFailed': '重试失败',
   'batchAdmin.copyAllRows': '复制所有计划行',
   'batchAdmin.cancel': '取消',
+
+  // Batch Parent Reports
+  'batchReports.title': '每周家长报告',
+  'batchReports.generateAll': '一键生成',
+  'batchReports.cancel': '取消',
+  'batchReports.generating': '正在生成报告...',
+  'batchReports.done': '完成',
+  'batchReports.failed': '失败',
+  'batchReports.retryFailed': '重试',
+  'batchReports.hideDetails': '隐藏详情',
+  'batchReports.showDetails': '显示详情',
+  'batchReports.childrenCount': '{count}个学生',
+  'batchReports.activitiesThisWeek': '项本周活动',
+  'batchReports.masteredLabel': '项掌握',
+  'batchReports.worksLabel': '活动',
+  'batchReports.areasLabel': '领域',
+  'batchReports.savedAsDrafts': '报告已保存为草稿。在每个孩子的报告页面查看和发送。',
+  'batchReports.masteredCount': '{name}已掌握{count}项活动——太棒了！',
 
   // Weekly Admin Generator (legacy)
   'weeklyAdmin.title': '每周行政',

@@ -20,6 +20,7 @@ import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import GuruChatThread from '@/components/montree/guru/GuruChatThread';
 import WeeklyAdminCard from '@/components/montree/voice-notes/WeeklyAdminCard';
+import BatchReportsCard from '@/components/montree/reports/BatchReportsCard';
 
 
 interface Child {
@@ -254,10 +255,11 @@ export default function DashboardPage() {
         );
       })()}
 
-      {/* Weekly Admin Card — teachers only */}
+      {/* Weekly Admin Card + Batch Reports — teachers only */}
       {!isParent && session?.classroom?.id && children.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-4">
+        <div className="max-w-6xl mx-auto px-4 pt-4 space-y-0">
           <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+          <BatchReportsCard classroomId={session.classroom.id} children={children} />
         </div>
       )}
 
