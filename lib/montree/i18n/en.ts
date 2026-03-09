@@ -56,6 +56,8 @@ export const en = {
   'auth.principalLoginLink': 'Principal? Login here →',
   'auth.teacherLoginLink': '← Teacher Login',
   'auth.noCode': "Don't have a code? Get started →",
+  'auth.unifiedSubtitle': 'Enter your code to continue',
+  'auth.unifiedHint': 'Teachers, principals, and parents — all use the same login code.',
 
   // Signup / Try
   'signup.iAmA': "I'm a...",
