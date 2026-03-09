@@ -82,9 +82,9 @@ export async function POST(request: NextRequest) {
       });
 
     if (uploadError) {
-      console.error('RAZ upload error:', uploadError);
+      console.error('RAZ storage upload error:', uploadError.message, uploadError.error, uploadError.statusCode);
       return NextResponse.json(
-        { success: false, error: 'Upload failed' },
+        { success: false, error: `Storage upload failed: ${uploadError.message || 'unknown'}` },
         { status: 500 }
       );
     }
@@ -146,9 +146,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (dbError) {
-      console.error('RAZ DB update error:', dbError);
+      console.error('RAZ DB update error:', dbError.message, dbError.code, dbError.details);
       return NextResponse.json(
-        { success: false, error: 'Failed to save photo reference' },
+        { success: false, error: `DB error: ${dbError.message || 'unknown'}` },
         { status: 500 }
       );
     }

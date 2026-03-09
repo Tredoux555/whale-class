@@ -217,7 +217,11 @@ export default function RazTrackerPage() {
 
     // Convert canvas to blob and upload in background
     canvas.toBlob((blob) => {
-      if (!blob || !mountedRef.current) return;
+      if (!mountedRef.current) return;
+      if (!blob || blob.size === 0) {
+        toast.error('Camera capture failed — try again');
+        return;
+      }
       const file = new File([blob], `raz-${photoType}-${Date.now()}.jpg`, { type: 'image/jpeg' });
       uploadPhoto(file, childId, date, photoType, sess.classroom.id);
     }, 'image/jpeg', 0.8);
@@ -261,7 +265,18 @@ export default function RazTrackerPage() {
       body: formData,
       signal: uploadController.signal,
     })
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          // Non-2xx status — try to parse error body for detail
+          let errorMsg = `HTTP ${res.status}`;
+          try {
+            const errData = await res.json();
+            if (errData?.error) errorMsg = errData.error;
+          } catch { /* response wasn't JSON, use HTTP status */ }
+          throw new Error(errorMsg);
+        }
+        return res.json();
+      })
       .then(data => {
         if (!mountedRef.current) return;
         if (data.success && data.record) {
@@ -272,14 +287,20 @@ export default function RazTrackerPage() {
             if (!existing) return { ...prev, [childId]: data.record };
             return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: photoUrlValue } };
           });
+        } else if (data.success && data.photoUrl) {
+          // Upload succeeded but record might be null — still update with photoUrl
+          setRecords(prev => {
+            const existing = prev[childId];
+            if (!existing) return prev;
+            return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: data.photoUrl } };
+          });
         } else if (!data.success) {
-          // Server returned an error response (e.g., DB failure, validation error)
-          if (mountedRef.current) toast.error(`Upload failed: ${PHOTO_LABELS[photoType]}`);
+          if (mountedRef.current) toast.error(`Upload failed: ${data.error || PHOTO_LABELS[photoType]}`);
         }
       })
       .catch(err => {
         if (err?.name === 'AbortError') return;
-        if (mountedRef.current) toast.error(`Upload failed: ${PHOTO_LABELS[photoType]}`);
+        if (mountedRef.current) toast.error(`Upload failed: ${err.message || PHOTO_LABELS[photoType]}`);
       })
       .finally(() => {
         uploadAbortRefs.current.delete(uploadKey);
