@@ -91,11 +91,15 @@ export default function RazTrackerPage() {
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const uploadAbortRefs = useRef<Map<string, AbortController>>(new Map());
 
-  // Session ref for use inside callbacks without stale closures
+  // Refs for use inside callbacks without stale closures
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const dateRef = useRef(selectedDate);
   dateRef.current = selectedDate;
+  const childrenRef = useRef(children);
+  childrenRef.current = children;
+  const recordsRef = useRef(records);
+  recordsRef.current = records;
 
   // Auth check
   useEffect(() => {
@@ -143,6 +147,49 @@ export default function RazTrackerPage() {
       toast.error('Failed to load data');
     }
     setLoading(false);
+  }
+
+  // --- Auto-advance: find next child who hasn't been marked yet ---
+
+  function getNextUnmarkedChild(afterChildId: string): Child | null {
+    const kids = childrenRef.current;
+    const recs = recordsRef.current;
+    const currentIdx = kids.findIndex(c => c.id === afterChildId);
+    if (currentIdx === -1) return null;
+    // Search forward from current child
+    for (let i = currentIdx + 1; i < kids.length; i++) {
+      if (!recs[kids[i].id]?.status || recs[kids[i].id]?.status === 'not_read') {
+        return kids[i];
+      }
+    }
+    return null;
+  }
+
+  function advanceToNextChild(finishedChildId: string, finishedChildName: string) {
+    const sess = sessionRef.current;
+    if (!sess?.classroom?.id) { endCameraFlow(); return; }
+
+    const next = getNextUnmarkedChild(finishedChildId);
+    if (!next) {
+      // No more unmarked children — done!
+      endCameraFlow();
+      toast.success(`✅ ${finishedChildName} done! All students checked.`, { duration: 1500 });
+      return;
+    }
+
+    // Set "read" status on next child (optimistic + background save)
+    setRecords(prev => ({
+      ...prev,
+      [next.id]: { ...prev[next.id], child_id: next.id, record_date: dateRef.current, status: 'read' },
+    }));
+    setStatus(next.id, 'read');
+
+    // Keep camera open — just switch to new child's flow
+    toast.success(`✅ ${finishedChildName} done → ${next.name}`, { duration: 1000 });
+    const nextFlow: CameraFlowState = { childId: next.id, childName: next.name, step: 0, oneShot: false, previews: [null, null, null] };
+    flowRef.current = nextFlow;
+    setCameraFlow(nextFlow);
+    // Camera stream stays open — no stopCamera/startCamera cycle needed
   }
 
   // --- Camera functions ---
@@ -240,8 +287,8 @@ export default function RazTrackerPage() {
         setCameraFlow(nextFlow);
         // Camera stays open — no delay, just tap again
       } else {
-        endCameraFlow();
-        toast.success(`✅ ${childName} done!`, { duration: 1200 });
+        // All 3 photos done → auto-advance to next child (camera stays open)
+        advanceToNextChild(childId, childName);
       }
     }
   }
@@ -349,8 +396,8 @@ export default function RazTrackerPage() {
           // Some browsers throw on programmatic click — banner provides manual trigger
         }
       } else {
-        endCameraFlow();
-        toast.success(`✅ ${childName} done!`, { duration: 1200 });
+        // All 3 photos done → auto-advance to next child
+        advanceToNextChild(childId, childName);
       }
     }
   }, []);
@@ -507,12 +554,22 @@ export default function RazTrackerPage() {
                 }
               </div>
             </div>
-            <button onClick={endCameraFlow} style={{
-              background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
-              padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
-            }}>
-              {cameraFlow.oneShot ? 'Cancel' : 'Done'}
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {!cameraFlow.oneShot && (
+                <button onClick={() => advanceToNextChild(cameraFlow.childId, cameraFlow.childName)} style={{
+                  background: 'rgba(34,197,94,0.3)', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 8,
+                  padding: '8px 14px', color: '#4ade80', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                }}>
+                  Skip →
+                </button>
+              )}
+              <button onClick={endCameraFlow} style={{
+                background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
+                padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
+              }}>
+                {cameraFlow.oneShot ? 'Cancel' : 'Done'}
+              </button>
+            </div>
           </div>
 
           {/* Live video feed */}
