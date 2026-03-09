@@ -185,6 +185,16 @@ export default function RazTrackerPage() {
     setCameraFlow(nextFlow);
   }
 
+  function markChildInPicker(child: Child, status: StatusType) {
+    // Mark a child with a non-read status from the picker (no camera)
+    setRecords(prev => ({
+      ...prev,
+      [child.id]: { ...prev[child.id], child_id: child.id, record_date: dateRef.current, status },
+    }));
+    setStatus(child.id, status);
+    toast.success(`${STATUS_CONFIG[status].emoji} ${child.name} — ${STATUS_CONFIG[status].label}`, { duration: 1000 });
+  }
+
   function finishAll() {
     // Teacher taps "Done" — close everything
     setPickingNextChild(false);
@@ -683,41 +693,64 @@ export default function RazTrackerPage() {
               const photoCount = [rec?.book_photo_url, rec?.signature_photo_url, rec?.new_book_photo_url].filter(Boolean).length;
 
               return (
-                <button
+                <div
                   key={child.id}
-                  onClick={() => pickChild(child)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
+                    display: 'flex', alignItems: 'center', gap: 8,
                     background: isDone ? '#0f2918' : isMarkedOther ? '#1a1a2e' : '#1e293b',
                     border: isDone ? '1px solid #166534' : isMarkedOther ? '1px solid #334155' : '1px solid #475569',
-                    borderRadius: 10, padding: '10px 14px',
-                    cursor: 'pointer', width: '100%', textAlign: 'left',
+                    borderRadius: 10, padding: '8px 10px',
                     opacity: isMarkedOther ? 0.5 : 1,
                   }}
                 >
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: child.color || '#334155',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 14, overflow: 'hidden', color: '#fff',
-                  }}>
-                    {child.photo_url ? (
-                      <img src={child.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (child.avatar_emoji || child.name.charAt(0))}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>{child.name}</div>
-                  </div>
-                  {isDone ? (
-                    <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>✅ Done</span>
-                  ) : isMarkedOther ? (
-                    <span style={{ fontSize: 12, color: '#64748b' }}>{STATUS_CONFIG[rec.status]?.emoji} {STATUS_CONFIG[rec.status]?.label}</span>
-                  ) : photoCount > 0 ? (
-                    <span style={{ fontSize: 12, color: '#94a3b8' }}>📷 {photoCount}/3</span>
-                  ) : (
-                    <span style={{ fontSize: 20 }}>📸</span>
+                  {/* Tap name/avatar area → read + camera */}
+                  <button
+                    onClick={() => pickChild(child)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0,
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left',
+                    }}
+                  >
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                      background: child.color || '#334155',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 14, overflow: 'hidden', color: '#fff',
+                    }}>
+                      {child.photo_url ? (
+                        <img src={child.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (child.avatar_emoji || child.name.charAt(0))}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.name}</div>
+                    </div>
+                    {isDone ? (
+                      <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 600, flexShrink: 0 }}>✅</span>
+                    ) : photoCount > 0 ? (
+                      <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>📷{photoCount}/3</span>
+                    ) : null}
+                  </button>
+                  {/* Status buttons: Not Read / No Folder / Absent */}
+                  {!isDone && (
+                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                      {(['not_read', 'no_folder', 'absent'] as StatusType[]).map(st => (
+                        <button
+                          key={st}
+                          onClick={() => markChildInPicker(child, st)}
+                          style={{
+                            width: 32, height: 32, borderRadius: 6,
+                            background: rec?.status === st ? STATUS_CONFIG[st].bg : '#0f172a',
+                            border: rec?.status === st ? `2px solid ${STATUS_CONFIG[st].color}` : '1px solid #334155',
+                            color: rec?.status === st ? STATUS_CONFIG[st].color : '#64748b',
+                            fontSize: 14, cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+                          }}
+                          aria-label={STATUS_CONFIG[st].label}
+                        >{STATUS_CONFIG[st].emoji}</button>
+                      ))}
+                    </div>
                   )}
-                </button>
+                </div>
               );
             })}
           </div>
