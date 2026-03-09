@@ -87,13 +87,40 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 });
     }
 
-    // Enrich all reports with descriptions from database
-    const enrichedReports = await Promise.all(
-      (data || []).map(async (report: { content: Record<string, unknown>; classroom_id: string | null }) => ({
-        ...report,
-        content: await enrichReportContent(report.content, supabase, report.classroom_id),
-      }))
-    );
+    // Enrich all reports — batch curriculum fetch by unique classroom IDs (avoid N+1)
+    const uniqueClassroomIds = [...new Set((data || []).map((r: { classroom_id: string | null }) => r.classroom_id).filter(Boolean))] as string[];
+    const descriptionsByClassroom = new Map<string, Map<string, { description: string; why_it_matters: string }>>();
+
+    if (uniqueClassroomIds.length > 0) {
+      const { data: allCurriculumWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('classroom_id, name, parent_description, why_it_matters')
+        .in('classroom_id', uniqueClassroomIds);
+
+      for (const work of allCurriculumWorks || []) {
+        if (!work.name || !work.parent_description) continue;
+        if (!descriptionsByClassroom.has(work.classroom_id)) {
+          descriptionsByClassroom.set(work.classroom_id, new Map());
+        }
+        descriptionsByClassroom.get(work.classroom_id)!.set(work.name.toLowerCase(), {
+          description: work.parent_description,
+          why_it_matters: work.why_it_matters || '',
+        });
+      }
+    }
+
+    const enrichedReports = (data || []).map((report: { content: Record<string, unknown>; classroom_id: string | null }) => {
+      const content = report.content;
+      if (!content?.works || !report.classroom_id) return report;
+      const descriptions = descriptionsByClassroom.get(report.classroom_id);
+      if (!descriptions) return report;
+      const enrichedWorks = (content.works as Array<Record<string, unknown>>).map((work) => {
+        if (work.parent_description) return work;
+        const desc = descriptions.get(((work.name as string) || '').toLowerCase());
+        return { ...work, parent_description: desc?.description || null, why_it_matters: desc?.why_it_matters || null };
+      });
+      return { ...report, content: { ...content, works: enrichedWorks } };
+    });
 
     return NextResponse.json({ success: true, reports: enrichedReports });
   } catch (error) {
@@ -139,14 +166,35 @@ export async function POST(request: NextRequest) {
     const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
     const school_id = classroom?.school_id;
 
-    // STEP 1: Get ALL curriculum works for this classroom (with work_key for brain lookup)
-    const { data: curriculumWorks } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select(`
-        id, name, work_key, name_chinese,
-        area:montree_classroom_curriculum_areas!area_id (area_key, name, icon)
-      `)
-      .eq('classroom_id', child.classroom_id);
+    // PARALLEL: Fetch curriculum, brain works, and progress all at once
+    const weekStartTime = `${week_start}T00:00:00`;
+    const weekEndTime = week_end ? `${week_end}T23:59:59` : new Date().toISOString();
+
+    const [
+      { data: curriculumWorks, error: currError },
+      { data: brainWorks, error: brainError },
+      { data: allProgress, error: progressError },
+    ] = await Promise.all([
+      // STEP 1: Get ALL curriculum works for this classroom
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, work_key, name_chinese, area:montree_classroom_curriculum_areas!area_id(area_key, name, icon)')
+        .eq('classroom_id', child.classroom_id),
+      // STEP 2: Get ALL brain works (parent descriptions)
+      supabase
+        .from('montessori_works')
+        .select('slug, parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters'),
+      // STEP 3: Get child's progress
+      supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, updated_at, presented_at, notes')
+        .eq('child_id', child_id),
+    ]);
+
+    if (currError || brainError || progressError) {
+      console.error('Report data fetch error:', currError || brainError || progressError);
+      return NextResponse.json({ error: 'Failed to load report data' }, { status: 500 });
+    }
 
     // Build curriculum lookup by lowercase name
     const curriculumByName = new Map<string, Record<string, unknown>>();
@@ -155,29 +203,12 @@ export async function POST(request: NextRequest) {
       if (name) curriculumByName.set(name.toLowerCase(), cw);
     }
 
-    // STEP 2: Get ALL brain works (parent descriptions)
-    const { data: brainWorks } = await supabase
-      .from('montessori_works')
-      .select('slug, parent_explanation_simple, parent_explanation_detailed, parent_why_it_matters');
-
     // Build brain lookup by slug (work_key)
     const brainBySlug = new Map<string, Record<string, unknown>>();
     for (const bw of brainWorks || []) {
       const slug = bw.slug as string | undefined;
       if (slug) brainBySlug.set(slug, bw);
     }
-
-    // STEP 3: Get child's progress for this week
-    // Add time component to make date range inclusive
-    const weekStartTime = `${week_start}T00:00:00`;
-    const weekEndTime = week_end ? `${week_end}T23:59:59` : new Date().toISOString();
-
-    // Get ALL progress for this child, then filter by date in JS
-    // This handles records with NULL updated_at (old records before fix)
-    const { data: allProgress, error: progressError } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, updated_at, presented_at, notes')
-      .eq('child_id', child_id);
 
     // Filter to this week - check updated_at first, fallback to presented_at
     const weekProgress = (allProgress || []).filter(p => {
@@ -223,31 +254,32 @@ export async function POST(request: NextRequest) {
     const matched = worksWithDetails.filter(w => w._matched_brain).length;
     const unmatched = worksWithDetails.filter(w => !w._matched_brain).map(w => w.name);
 
-    // Get photos from montree_media (only parent-visible ones for reports)
-    const { data: mediaItems } = await supabase
-      .from('montree_media')
-      .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
-      .eq('child_id', child_id)
-      .neq('parent_visible', false)
-      .gte('captured_at', week_start)
-      .lte('captured_at', week_end || new Date().toISOString())
-      .limit(10);
+    // PARALLEL: Fetch photos and overall stats together
+    const [{ data: mediaItems }, { data: overallProgress }] = await Promise.all([
+      supabase
+        .from('montree_media')
+        .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
+        .eq('child_id', child_id)
+        .neq('parent_visible', false)
+        .gte('captured_at', week_start)
+        .lte('captured_at', week_end || new Date().toISOString())
+        .limit(10),
+      supabase
+        .from('montree_child_progress')
+        .select('status')
+        .eq('child_id', child_id),
+    ]);
 
     // Build photo URLs
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const photos = (mediaItems || []).map((item: { id: string; storage_path: string; thumbnail_path?: string; caption?: string; captured_at: string; work_id?: string }) => ({
       id: item.id,
-      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.storage_path}`,
-      thumbnail_url: item.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${item.thumbnail_path}` : null,
+      url: `${supabaseUrl}/storage/v1/object/public/montree-media/${item.storage_path}`,
+      thumbnail_url: item.thumbnail_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${item.thumbnail_path}` : null,
       caption: item.caption,
       captured_at: item.captured_at,
       work_id: item.work_id,
     }));
-
-    // Overall stats
-    const { data: overallProgress } = await supabase
-      .from('montree_child_progress')
-      .select('status')
-      .eq('child_id', child_id);
 
     const stats = { presented: 0, practicing: 0, mastered: 0, total: overallProgress?.length || 0 };
     for (const p of overallProgress || []) {

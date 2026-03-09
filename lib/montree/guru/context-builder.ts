@@ -205,13 +205,88 @@ export async function buildChildContext(
   // Use enrolled_at if available, otherwise fall back to created_at
   const timeAtSchool = calculateTimeAtSchool(child.enrolled_at || child.created_at);
 
-  // 2. Fetch mental profile (if exists)
-  const { data: profile } = await supabase
-    .from('montree_child_mental_profiles')
-    .select('*')
-    .eq('child_id', childId)
-    .single();
+  // PERFORMANCE: Fetch ALL child data in parallel (queries 2-9 don't depend on each other)
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+  const [
+    { data: profile },
+    { data: progress },
+    { data: observations },
+    { data: pastGuru },
+    { data: workSessions },
+    { data: voiceNotesData },
+    { data: focusWorks },
+    { data: childSettings },
+    eslResult,
+  ] = await Promise.all([
+    // 2. Mental profile
+    supabase
+      .from('montree_child_mental_profiles')
+      .select('temperament_activity_level, temperament_regularity, temperament_initial_reaction, temperament_adaptability, temperament_intensity, temperament_mood_quality, temperament_distractibility, temperament_persistence, temperament_sensory_threshold, learning_modality_visual, learning_modality_auditory, learning_modality_kinesthetic, baseline_focus_minutes, optimal_time_of_day, sensitive_period_order, sensitive_period_language, sensitive_period_movement, sensitive_period_sensory, sensitive_period_small_objects, sensitive_period_grace_courtesy, family_notes, sleep_status, special_considerations, successful_strategies, challenging_triggers')
+      .eq('child_id', childId)
+      .single(),
+    // 3. Progress (limit 100 — no need for full history)
+    supabase
+      .from('montree_child_progress')
+      .select('work_name, area, status, created_at, notes')
+      .eq('child_id', childId)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    // 4. Observations (last 30 days)
+    supabase
+      .from('montree_behavioral_observations')
+      .select('observed_at, behavior_description, antecedent, behavior_function, intervention_used, effectiveness')
+      .eq('child_id', childId)
+      .gte('observed_at', thirtyDaysAgo.toISOString())
+      .order('observed_at', { ascending: false })
+      .limit(10),
+    // 5. Past guru interactions
+    supabase
+      .from('montree_guru_interactions')
+      .select('asked_at, question, response_insight, outcome, context_snapshot')
+      .eq('child_id', childId)
+      .order('asked_at', { ascending: false })
+      .limit(5),
+    // 6. Teacher notes from work sessions
+    supabase
+      .from('montree_work_sessions')
+      .select('work_id, notes, observed_at')
+      .eq('child_id', childId)
+      .not('notes', 'is', null)
+      .order('observed_at', { ascending: false })
+      .limit(20),
+    // 7. Voice notes (last 30 days)
+    supabase
+      .from('montree_voice_notes')
+      .select('work_name, transcript, behavioral_notes, next_steps, created_at')
+      .eq('child_id', childId)
+      .gte('created_at', thirtyDaysAgo.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(20),
+    // 8. Focus works (current shelf)
+    supabase
+      .from('montree_child_focus_works')
+      .select('area, work_name, set_at, set_by')
+      .eq('child_id', childId)
+      .limit(20),
+    // 9. Child settings for guru profile
+    supabase
+      .from('montree_children')
+      .select('settings')
+      .eq('id', childId)
+      .single(),
+    // 10. ESL detection — classroom → school join
+    supabase
+      .from('montree_classrooms')
+      .select('school:montree_schools!school_id(name, settings)')
+      .eq('id', child.classroom_id)
+      .single()
+      .then(r => r.data)
+      .catch(() => null),
+  ]);
+
+  // Process mental profile
   const mentalProfile: MentalProfile | null = profile ? {
     temperament: {
       activity_level: profile.temperament_activity_level,
@@ -246,13 +321,7 @@ export async function buildChildContext(
     challenging_triggers: profile.challenging_triggers || [],
   } : null;
 
-  // 3. Fetch current progress
-  const { data: progress } = await supabase
-    .from('montree_child_progress')
-    .select('work_name, area, status, created_at, notes')
-    .eq('child_id', childId)
-    .order('created_at', { ascending: false });
-
+  // Process progress
   const currentWorks: WorkProgress[] = (progress || []).map(p => ({
     work_name: p.work_name,
     area: p.area,
@@ -261,24 +330,12 @@ export async function buildChildContext(
     notes: p.notes,
   }));
 
-  // Count by status
   const statusCounts = currentWorks.reduce((acc, w) => {
     acc[w.status] = (acc[w.status] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
 
-  // 4. Fetch recent behavioral observations (last 30 days)
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  const { data: observations } = await supabase
-    .from('montree_behavioral_observations')
-    .select('*')
-    .eq('child_id', childId)
-    .gte('observed_at', thirtyDaysAgo.toISOString())
-    .order('observed_at', { ascending: false })
-    .limit(10);
-
+  // Process observations
   const recentObservations: Observation[] = (observations || []).map(o => ({
     observed_at: o.observed_at,
     behavior_description: o.behavior_description,
@@ -288,14 +345,7 @@ export async function buildChildContext(
     effectiveness: o.effectiveness,
   }));
 
-  // 5. Fetch past guru interactions (last 5)
-  const { data: pastGuru } = await supabase
-    .from('montree_guru_interactions')
-    .select('asked_at, question, response_insight, outcome, context_snapshot')
-    .eq('child_id', childId)
-    .order('asked_at', { ascending: false })
-    .limit(5);
-
+  // Process past interactions
   const pastInteractions: PastInteraction[] = (pastGuru || []).map(g => ({
     asked_at: g.asked_at,
     question: g.question,
@@ -304,16 +354,7 @@ export async function buildChildContext(
     context_snapshot: g.context_snapshot as Record<string, unknown> | undefined,
   }));
 
-  // 6. Fetch teacher notes from work sessions (last 20)
-  // Note: table has work_id (NOT work_name), notes, observed_at per migration 060
-  const { data: workSessions } = await supabase
-    .from('montree_work_sessions')
-    .select('work_id, notes, observed_at')
-    .eq('child_id', childId)
-    .not('notes', 'is', null)
-    .order('observed_at', { ascending: false })
-    .limit(20);
-
+  // Process teacher notes
   const teacherNotes: TeacherNote[] = (workSessions || [])
     .filter(s => s.notes && s.notes.trim())
     .map(s => ({
@@ -322,15 +363,7 @@ export async function buildChildContext(
       observed_at: s.observed_at,
     }));
 
-  // 7. Fetch voice notes (last 30 days)
-  const { data: voiceNotesData } = await supabase
-    .from('montree_voice_notes')
-    .select('work_name, transcript, behavioral_notes, next_steps, created_at')
-    .eq('child_id', childId)
-    .gte('created_at', thirtyDaysAgo.toISOString())
-    .order('created_at', { ascending: false })
-    .limit(20);
-
+  // Process voice notes
   const voiceNotes: VoiceNote[] = (voiceNotesData || []).map(v => ({
     work_name: v.work_name,
     transcript: v.transcript,
@@ -339,54 +372,30 @@ export async function buildChildContext(
     created_at: v.created_at,
   }));
 
-  // 8. Fetch focus works (current shelf)
-  const { data: focusWorks } = await supabase
-    .from('montree_child_focus_works')
-    .select('area, work_name, set_at, set_by')
-    .eq('child_id', childId);
-
-  // 9. Fetch child settings for guru profile
-  const { data: childSettings } = await supabase
-    .from('montree_children')
-    .select('settings')
-    .eq('id', childId)
-    .single();
+  // Process settings
   const settings = (childSettings?.settings as Record<string, unknown>) || {};
 
-  // 10. Detect ESL context from school (school-level, not per-child)
-  // Look up school via classroom → school join
+  // Process ESL detection
   let isESL = false;
   let l1Language: string | undefined;
   try {
-    const { data: classroom } = await supabase
-      .from('montree_classrooms')
-      .select('school_id')
-      .eq('id', child.classroom_id)
-      .single();
-    if (classroom?.school_id) {
-      const { data: school } = await supabase
-        .from('montree_schools')
-        .select('name, settings')
-        .eq('id', classroom.school_id)
-        .single();
-      if (school) {
-        // Check school name/settings for China-based schools
-        const schoolName = (school.name || '').toLowerCase();
-        const schoolSettings = (school.settings as Record<string, unknown>) || {};
-        const location = ((schoolSettings.location as string) || '').toLowerCase();
-        if (
-          schoolName.includes('beijing') || schoolName.includes('shanghai') ||
-          schoolName.includes('china') || schoolName.includes('qingdao') ||
-          location.includes('china') || location.includes('beijing') ||
-          location.includes('shanghai') || location.includes('中国')
-        ) {
-          isESL = true;
-          l1Language = 'Mandarin Chinese';
-        }
+    const school = (eslResult as Record<string, unknown>)?.school as Record<string, unknown> | null;
+    if (school) {
+      const schoolName = ((school.name as string) || '').toLowerCase();
+      const schoolSettings = (school.settings as Record<string, unknown>) || {};
+      const location = ((schoolSettings.location as string) || '').toLowerCase();
+      if (
+        schoolName.includes('beijing') || schoolName.includes('shanghai') ||
+        schoolName.includes('china') || schoolName.includes('qingdao') ||
+        location.includes('china') || location.includes('beijing') ||
+        location.includes('shanghai') || location.includes('中国')
+      ) {
+        isESL = true;
+        l1Language = 'Mandarin Chinese';
       }
     }
   } catch {
-    // ESL detection is non-critical — fail silently
+    // ESL detection is non-critical
   }
 
   return {

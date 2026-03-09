@@ -57,47 +57,45 @@ function GuruContent() {
       toast(t('guru.upgradeCancelled'));
     }
 
-    // Fetch children
-    fetch(`/api/montree/children?classroom_id=${sess.classroom?.id}`)
-      .then(r => r.json())
-      .then(data => {
-        const kids = data.children || [];
-        setChildren(kids);
-
-        if (preselectedChildId) {
-          if (preselectedChildId === 'whole_class') {
-            setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
-          } else {
-            const preselected = kids.find((c: Child) => c.id === preselectedChildId);
-            if (preselected) {
-              setSelectedChild(preselected);
-            }
-          }
-        }
-
-        setPageLoading(false);
-      })
-      .catch(() => {
-        toast.error(t('dashboard.failedToLoad'));
-        setPageLoading(false);
-      });
-
-    // Fetch guru status for homeschool parents (billing/trial)
-    if (isHomeschoolParent(sess)) {
-      fetch('/api/montree/guru/status')
+    // PARALLEL: Fetch children + guru status together
+    const isParentUser = isHomeschoolParent(sess);
+    const fetches: Promise<void>[] = [
+      // Fetch children
+      fetch(`/api/montree/children?classroom_id=${sess.classroom?.id}`)
         .then(r => r.json())
         .then(data => {
-          if (data.success) {
-            setGuruStatus(data);
-            if (data.is_locked) {
-              setShowPaywall(true);
+          const kids = data.children || [];
+          setChildren(kids);
+          if (preselectedChildId) {
+            if (preselectedChildId === 'whole_class') {
+              setSelectedChild({ id: 'whole_class', name: t('guru.wholeClass') });
+            } else {
+              const preselected = kids.find((c: Child) => c.id === preselectedChildId);
+              if (preselected) setSelectedChild(preselected);
             }
           }
         })
         .catch(() => {
-          // Non-critical — allow usage
-        });
+          toast.error(t('dashboard.failedToLoad'));
+        }),
+    ];
+
+    // Fetch guru status for homeschool parents (billing/trial)
+    if (isParentUser) {
+      fetches.push(
+        fetch('/api/montree/guru/status')
+          .then(r => r.json())
+          .then(data => {
+            if (data.success) {
+              setGuruStatus(data);
+              if (data.is_locked) setShowPaywall(true);
+            }
+          })
+          .catch(() => { /* Non-critical */ })
+      );
     }
+
+    Promise.all(fetches).finally(() => setPageLoading(false));
   }, [router, preselectedChildId, upgradeResult]);
 
   const handleUpgrade = async () => {

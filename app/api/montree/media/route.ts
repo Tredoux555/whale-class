@@ -28,12 +28,25 @@ export async function GET(request: NextRequest) {
       if (!access.allowed) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 });
       }
-      // First, get the child's classroom to fetch curriculum works
-      const { data: childData } = await supabase
-        .from('montree_children')
-        .select('classroom_id')
-        .eq('id', childId)
-        .single();
+      // PARALLEL: Fetch child classroom, direct media, and group links all at once
+      const [
+        { data: childData, error: childError },
+        { data: directMedia, error: mediaError },
+        { data: groupLinks, error: linkError },
+      ] = await Promise.all([
+        supabase.from('montree_children').select('classroom_id').eq('id', childId).single(),
+        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at').eq('child_id', childId).order('captured_at', { ascending: false }),
+        supabase.from('montree_media_children').select('media_id').eq('child_id', childId),
+      ]);
+
+      if (childError || !childData) {
+        console.error('Child lookup error:', childError?.message);
+        return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+      }
+      if (mediaError || linkError) {
+        console.error('Media fetch error:', mediaError?.message || linkError?.message);
+        return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
+      }
 
       // Get curriculum works to map work_id to work_name and area
       const workIdToInfo = new Map<string, { name: string; area: string }>();
@@ -48,19 +61,6 @@ export async function GET(request: NextRequest) {
           workIdToInfo.set(w.id, { name: w.name, area: areaKey });
         }
       }
-
-      // Query 1: Direct photos where child_id matches (simple query, no FK join)
-      const { data: directMedia } = await supabase
-        .from('montree_media')
-        .select('*')
-        .eq('child_id', childId)
-        .order('captured_at', { ascending: false });
-
-      // Query 2: Group photos via junction table
-      const { data: groupLinks } = await supabase
-        .from('montree_media_children')
-        .select('media_id')
-        .eq('child_id', childId);
 
       const groupMediaIds = (groupLinks || []).map((link: { media_id: string }) => link.media_id);
 
