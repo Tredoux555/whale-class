@@ -2,7 +2,7 @@
 // Single chat message bubble for the Guru conversational thread
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface ChatBubbleProps {
@@ -71,7 +71,7 @@ function renderInlineBold(text: string) {
   });
 }
 
-export default function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
+function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
   return (
@@ -114,3 +114,6 @@ export default function ChatBubble({ content, isUser, timestamp, imageUrl }: Cha
     </div>
   );
 }
+
+// PERF: Memoize to prevent re-rendering all previous messages when a new one is added
+export default memo(ChatBubble);

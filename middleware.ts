@@ -175,23 +175,18 @@ export async function middleware(req: NextRequest) {
     return res;
   }
   
-  // CRITICAL FIX #3: Check admin-token BEFORE Supabase (faster, no network)
-  // This allows admin routes to bypass Supabase entirely if admin-token is valid
-  const adminToken = req.cookies.get('admin-token')?.value;
+  // Only verify admin JWT for /admin routes (skip crypto work for all other routes)
   let hasAdminAuth = false;
-  
-  if (adminToken) {
-    try {
-      hasAdminAuth = await verifyAdminToken(adminToken);
-    } catch (error) {
-      console.error('[MIDDLEWARE] Error verifying admin token:', error);
-      hasAdminAuth = false;
+  if (pathname.startsWith('/admin')) {
+    const adminToken = req.cookies.get('admin-token')?.value;
+    if (adminToken) {
+      try {
+        hasAdminAuth = !!(await verifyAdminToken(adminToken));
+        if (hasAdminAuth) return res;
+      } catch (error) {
+        console.error('[MIDDLEWARE] Error verifying admin token:', error);
+      }
     }
-  }
-
-  // If admin-token is valid, allow access to admin routes immediately
-  if (hasAdminAuth && pathname.startsWith('/admin')) {
-    return res;
   }
 
   // Skip auth check if Supabase not configured (build time)

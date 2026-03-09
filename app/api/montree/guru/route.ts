@@ -243,11 +243,23 @@ export async function POST(request: NextRequest) {
     if (isPrincipal) {
       // Principals get unlimited access, skip all freemium checks
     } else if (teacherId) {
-      const { data: teacherData } = await supabase
-        .from('montree_teachers')
-        .select('role, guru_plan, guru_subscription_status, guru_current_period_end, guru_tier, created_at')
-        .eq('id', teacherId)
-        .single();
+      // PERF: Fire teacher data + today's message count in parallel
+      // The count query doesn't depend on teacher data — both need only teacherId
+      const now = new Date();
+      const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+      const [{ data: teacherData }, { count: todayCount, error: countError }] = await Promise.all([
+        supabase
+          .from('montree_teachers')
+          .select('role, guru_plan, guru_subscription_status, guru_current_period_end, guru_tier, created_at')
+          .eq('id', teacherId)
+          .single(),
+        supabase
+          .from('montree_guru_interactions')
+          .select('id', { count: 'exact', head: true })
+          .eq('teacher_id', teacherId)
+          .gte('asked_at', todayStartUTC.toISOString()),
+      ]);
 
       const t = teacherData as Record<string, unknown> | null;
       // Extract guru tier (haiku or sonnet)
@@ -286,19 +298,7 @@ export async function POST(request: NextRequest) {
           // Daily limit based on tier
           const dailyLimit = !isPaid ? 3 : guruTier === 'haiku' ? 10 : 5;
 
-          // Count today's messages from interactions table (no counter drift)
-          // Issue HC#1: Use UTC midnight for consistent daily boundary regardless of server timezone
-          const now = new Date();
-          const todayStartUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-          // Issue HC#2: Race condition between count and AI call — accepted risk.
-          // Window is ~2-5s (AI response time). Worst case: 1 extra message per day.
-          // Cost impact: $0.01-$0.05. Not worth advisory locks for this use case.
-          const { count: todayCount, error: countError } = await supabase
-            .from('montree_guru_interactions')
-            .select('id', { count: 'exact', head: true })
-            .eq('teacher_id', teacherId)
-            .gte('asked_at', todayStartUTC.toISOString());
-
+          // Count already fetched in parallel above
           const messagesUsedToday = countError ? 0 : (todayCount || 0);
 
           if (messagesUsedToday >= dailyLimit) {

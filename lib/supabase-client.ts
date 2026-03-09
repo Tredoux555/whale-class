@@ -23,7 +23,9 @@ const fetchWithRetry: typeof fetch = async (input, init) => {
                         error?.message?.includes('fetch failed') ||
                         error?.message?.includes('CONNECT_TIMEOUT');
       if (attempt < MAX_RETRIES && isTimeout) {
-        const delay = 1000 * (attempt + 1);
+        // Exponential backoff with jitter: 50-100ms, 100-200ms (vs old 1s, 2s)
+        const baseDelay = 50 * Math.pow(2, attempt);
+        const delay = baseDelay + Math.random() * baseDelay;
         await new Promise(r => setTimeout(r, delay));
         continue;
       }
