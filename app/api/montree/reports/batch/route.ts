@@ -97,8 +97,8 @@ export async function POST(request: NextRequest) {
         .select('id, storage_path, caption, captured_at')
         .eq('child_id', child_id)
         .neq('parent_visible', false)
-        .gte('captured_at', weekStart)
-        .lte('captured_at', weekEnd)
+        .gte('captured_at', `${weekStart}T00:00:00.000Z`)
+        .lte('captured_at', `${weekEnd}T23:59:59.999Z`)
         .limit(MAX_PHOTOS_PER_REPORT),
     ]);
 
