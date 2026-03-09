@@ -2433,4 +2433,11 @@ export const zh = {
   'snap.analyzingInBackground': '后台分析中...',
   'snap.viewResult': '查看',
   'snap.analyzingCount': '正在分析照片...',
+  // Snap: parent visibility
+  'snap.parentReportLabel': '家长报告',
+  'snap.visible': '可见',
+  'snap.hidden': '已隐藏',
+  'snap.sharedWithParents': '照片已分享给家长',
+  'snap.hiddenFromParents': '照片已从家长报告中隐藏',
+  'snap.toggleFailed': '更新可见性失败',
 } as const;

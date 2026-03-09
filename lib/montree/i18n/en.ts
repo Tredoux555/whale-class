@@ -2432,6 +2432,13 @@ export const en = {
   'snap.analyzingInBackground': 'Analyzing in background...',
   'snap.viewResult': 'View',
   'snap.analyzingCount': 'Analyzing photos...',
+  // Snap: parent visibility
+  'snap.parentReportLabel': 'Parent Report',
+  'snap.visible': 'Visible',
+  'snap.hidden': 'Hidden',
+  'snap.sharedWithParents': 'Photo shared with parents',
+  'snap.hiddenFromParents': 'Photo hidden from parent report',
+  'snap.toggleFailed': 'Failed to update visibility',
 } as const;
 
 export type TranslationKey = keyof typeof en;

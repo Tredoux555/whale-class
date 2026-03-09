@@ -140,7 +140,8 @@ export async function POST(request: NextRequest) {
       let photoQuery = supabase
         .from('montree_media')
         .select('id, storage_path, work_id, caption, captured_at')
-        .eq('child_id', child_id);
+        .eq('child_id', child_id)
+        .neq('parent_visible', false);
 
       if (lastReportDate) {
         photoQuery = photoQuery.gt('captured_at', lastReportDate);

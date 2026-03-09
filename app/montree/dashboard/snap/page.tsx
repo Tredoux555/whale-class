@@ -203,17 +203,21 @@ export default function SnapIdentifyPage() {
   // Result viewing
   const [result, setResult] = useState<SnapResult | null>(null);
   const [resultChild, setResultChild] = useState<Child | null>(null);
+  const [parentVisible, setParentVisible] = useState(true);
 
   // Camera state
   const [isStreaming, setIsStreaming] = useState(false);
   const [narrativeCopied, setNarrativeCopied] = useState(false);
   const [showZh, setShowZh] = useState(false);
 
+  const [togglingVisibility, setTogglingVisibility] = useState(false);
+
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
 
   // Load session + children
   useEffect(() => {
@@ -234,6 +238,7 @@ export default function SnapIdentifyPage() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      mountedRef.current = false;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(t => t.stop());
         streamRef.current = null;
@@ -359,6 +364,7 @@ export default function SnapIdentifyPage() {
       formData.append('child_id', child.id);
 
       const controller = new AbortController();
+      abortRef.current = controller;
       const timeout = setTimeout(() => controller.abort(), 60000);
 
       const res = await montreeApi('/api/montree/guru/snap-identify', {
@@ -368,20 +374,20 @@ export default function SnapIdentifyPage() {
       });
 
       clearTimeout(timeout);
+      abortRef.current = null;
 
       if (!res.ok) {
         let errMsg = 'Analysis failed';
         try { const d = await res.json(); if (d?.error) errMsg = d.error; } catch { /* */ }
         toast.error(`❌ ${child.name}: ${errMsg}`, { duration: 6000 });
-        setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
+        URL.revokeObjectURL(snap.preview);
+        if (mountedRef.current) setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
         return;
       }
 
       const data = await res.json();
-      setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
-
-      // Clean up the preview URL now that we're done
       URL.revokeObjectURL(snap.preview);
+      if (mountedRef.current) setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
 
       if (data.success) {
         toast.success(
@@ -391,9 +397,11 @@ export default function SnapIdentifyPage() {
             action: {
               label: t('snap.viewResult') || 'View',
               onClick: () => {
-                setResult(data as SnapResult);
-                setResultChild(child);
-                setPhase('result');
+                if (mountedRef.current) {
+                  setResult(data as SnapResult);
+                  setResultChild(child);
+                  setPhase('result');
+                }
               },
             },
           }
@@ -402,8 +410,8 @@ export default function SnapIdentifyPage() {
         toast.error(`❌ ${child.name}: ${data.error || t('snap.couldNotIdentify')}`, { duration: 6000 });
       }
     } catch (err) {
-      setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
       URL.revokeObjectURL(snap.preview);
+      if (mountedRef.current) setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
       if (err instanceof DOMException && err.name === 'AbortError') {
         toast.error(`⏱ ${child.name}: ${t('snap.tookTooLong')}`, { duration: 6000 });
       } else {
@@ -422,6 +430,7 @@ export default function SnapIdentifyPage() {
     setResultChild(null);
     setNarrativeCopied(false);
     setShowZh(false);
+    setParentVisible(true);
     setPhase('camera');
   }, [stopCamera, heldSnap]);
 
@@ -433,6 +442,30 @@ export default function SnapIdentifyPage() {
       setTimeout(() => setNarrativeCopied(false), 2000);
     });
   }, [result, showZh]);
+
+  const toggleParentVisible = useCallback(async () => {
+    if (!result?.media_id || togglingVisibility) return;
+    const newVal = !parentVisible;
+    setTogglingVisibility(true);
+    setParentVisible(newVal);
+    try {
+      await montreeApi('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: result.media_id, parent_visible: newVal }),
+      });
+      toast(newVal
+        ? `👁 ${t('snap.sharedWithParents') || 'Photo shared with parents'}`
+        : `🙈 ${t('snap.hiddenFromParents') || 'Photo hidden from parent report'}`,
+        { duration: 3000 }
+      );
+    } catch {
+      setParentVisible(!newVal); // revert on failure
+      toast.error(t('snap.toggleFailed') || 'Failed to update');
+    } finally {
+      setTogglingVisibility(false);
+    }
+  }, [result, parentVisible, togglingVisibility, t]);
 
   if (!session) return null;
 
@@ -776,7 +809,7 @@ export default function SnapIdentifyPage() {
             </Section>
           )}
 
-          {/* 8. Status confirmation */}
+          {/* 8. Status confirmation + parent visibility toggle */}
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
             <p className="text-emerald-700 text-sm">
               {result.progress_updated
@@ -786,6 +819,36 @@ export default function SnapIdentifyPage() {
             </p>
             <p className="text-emerald-600 text-xs mt-1">{t('snap.photoSaved')}</p>
           </div>
+
+          {/* Parent report visibility toggle */}
+          <button
+            onClick={toggleParentVisible}
+            disabled={togglingVisibility}
+            className={`w-full rounded-xl p-3 flex items-center justify-between transition-colors ${
+              togglingVisibility ? 'opacity-60 cursor-not-allowed' : ''
+            } ${
+              parentVisible
+                ? 'bg-white border border-gray-200 hover:bg-gray-50'
+                : 'bg-amber-50 border border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{parentVisible ? '👁' : '🙈'}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {t('snap.parentReportLabel') || 'Parent Report'}
+              </span>
+            </div>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+              parentVisible
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-amber-100 text-amber-700'
+            }`}>
+              {parentVisible
+                ? (t('snap.visible') || 'Visible')
+                : (t('snap.hidden') || 'Hidden')
+              }
+            </span>
+          </button>
 
           {/* 9. Actions */}
           <div className="flex gap-3 pt-2">
