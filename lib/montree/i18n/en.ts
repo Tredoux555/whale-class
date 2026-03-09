@@ -2343,6 +2343,84 @@ export const en = {
   'guru.imageUploading': 'Uploading...',
   'guru.removeImage': 'Remove image',
   'guru.imageUploadFailed': 'Image upload failed',
+
+  // Snap & Identify
+  'snap.title': '📸 Snap & Identify',
+  'snap.selectChildDesc': 'Select a child, then take a photo of them doing a work. The Guru will do a complete AMI observation analysis.',
+  'snap.photographing': 'Photographing:',
+  'snap.changeChild': 'Change',
+  'snap.hint': 'Capture the materials clearly — the Guru will do the rest',
+  'snap.retake': 'Retake',
+  'snap.analyzeWork': '🧠 Analyze Work',
+  'snap.uploadFromGallery': 'Or upload from gallery',
+  'snap.cameraNotAvailable': 'Camera not available — use file picker instead',
+  // Analysis progress phases
+  'snap.progressUploading': 'Uploading photo...',
+  'snap.progressAnalyzing': 'Guru is analyzing the work...',
+  'snap.progressWriting': 'Writing observation notes...',
+  'snap.progressAnalyzingProgression': 'Analyzing progression...',
+  'snap.analyzingSubtext': 'Complete AMI observation in progress',
+  // Result display
+  'snap.confidenceHigh': '✓ High confidence',
+  'snap.confidenceMedium': '~ Medium confidence',
+  'snap.confidenceLow': '⚠ Low confidence — verify',
+  // Section titles
+  'snap.sectionObservation': 'Observation Notes',
+  'snap.sectionAreaProgress': 'Area Progress',
+  'snap.sectionCrossArea': 'Cross-Area Analysis',
+  'snap.sectionNextSteps': 'Next Steps',
+  'snap.sectionWeeklyAdmin': 'Weekly Admin',
+  // Observation labels
+  'snap.concentration': 'Concentration',
+  'snap.independence': 'Independence',
+  'snap.emotional': 'Emotional',
+  'snap.technique': 'Technique',
+  'snap.repetition': 'Repetition',
+  'snap.selfCorrecting': 'Self-correcting',
+  'snap.controlOfError': 'Control of error',
+  // Normalization labels
+  'snap.normalized': 'Normalized',
+  'snap.normalizing': 'Normalizing',
+  'snap.deviated': 'Deviated',
+  // Next steps labels
+  'snap.stay': 'Stay on this work',
+  'snap.advance': 'Ready to advance',
+  'snap.revisitPrerequisites': 'Revisit prerequisites',
+  'snap.tryVariation': 'Try a variation',
+  'snap.nextInSequence': 'Next in sequence',
+  'snap.variationsToTry': 'Variations to try',
+  'snap.priorityActions': 'Priority Actions',
+  // Cross area
+  'snap.foundationGaps': 'Foundation Gaps',
+  'snap.recommendedWorks': 'Recommended Support Works',
+  // Status
+  'snap.progressUpdated': 'progress updated',
+  'snap.progressIssue': 'Progress update had an issue — you may want to update manually',
+  'snap.photoSaved': 'Photo saved to gallery for parent reports',
+  'snap.snapAnother': 'Snap another',
+  'snap.changeChildBtn': 'Change child',
+  'snap.viewProgress': 'View full progress →',
+  'snap.copyNarrative': 'Copy',
+  'snap.copied': 'Copied!',
+  'snap.tookTooLong': 'Analysis took too long — try a clearer photo',
+  'snap.analysisFailed': 'Failed to analyze photo',
+  'snap.couldNotIdentify': 'Could not identify the work',
+
+  // Snap: work cycle phases
+  'snap.cyclePreparation': 'Preparation',
+  'snap.cycleActiveWork': 'Active Work',
+  'snap.cycleRepetition': 'Repetition',
+  'snap.cycleRestoration': 'Restoration',
+  'snap.cycleUnclear': 'Unclear',
+  // Snap: trajectory labels
+  'snap.trajectoryAccelerating': 'Accelerating',
+  'snap.trajectorySteady': 'Steady',
+  'snap.trajectoryPlateau': 'Plateau',
+  'snap.trajectoryFirstObservation': 'First Observation',
+  // Snap: misc
+  'snap.sensitivePeriod': 'Sensitive Period',
+  'snap.noDetailedNotes': 'No detailed notes',
+  'snap.identified': 'Identified',
 } as const;
 
 export type TranslationKey = keyof typeof en;

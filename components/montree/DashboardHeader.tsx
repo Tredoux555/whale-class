@@ -176,6 +176,14 @@ export default function DashboardHeader() {
           >
             📚
           </Link>
+          <Link
+            href="/montree/dashboard/snap"
+            data-guide="nav-snap"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title={t('snap.title') || 'Snap & Identify'}
+          >
+            📸
+          </Link>
           {!isHome && (
             <Link
               href="/montree/dashboard/classroom-overview"

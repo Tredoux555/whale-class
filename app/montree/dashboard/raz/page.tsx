@@ -87,6 +87,13 @@ export default function RazTrackerPage() {
   // Photo lightbox viewer
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; label: string; childName: string } | null>(null);
 
+  // After 3rd photo: show child picker instead of auto-advancing
+  const [pickingNextChild, setPickingNextChild] = useState(false);
+  const [childSearch, setChildSearch] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  // Track children whose 3-photo flow just finished (uploads still in-flight)
+  const [justFinished, setJustFinished] = useState<Set<string>>(new Set());
+
   // Track in-flight uploads
   const [uploading, setUploading] = useState<Set<string>>(new Set());
   const uploadAbortRefs = useRef<Map<string, AbortController>>(new Map());
@@ -96,10 +103,7 @@ export default function RazTrackerPage() {
   sessionRef.current = session;
   const dateRef = useRef(selectedDate);
   dateRef.current = selectedDate;
-  const childrenRef = useRef(children);
-  childrenRef.current = children;
-  const recordsRef = useRef(records);
-  recordsRef.current = records;
+  // childrenRef / recordsRef removed — were only used by deleted auto-advance logic
 
   // Auth check
   useEffect(() => {
@@ -149,47 +153,42 @@ export default function RazTrackerPage() {
     setLoading(false);
   }
 
-  // --- Auto-advance: find next child who hasn't been marked yet ---
+  // --- Child picker: teacher selects next child manually ---
 
-  function getNextUnmarkedChild(afterChildId: string): Child | null {
-    const kids = childrenRef.current;
-    const recs = recordsRef.current;
-    const currentIdx = kids.findIndex(c => c.id === afterChildId);
-    if (currentIdx === -1) return null;
-    // Search forward from current child
-    for (let i = currentIdx + 1; i < kids.length; i++) {
-      if (!recs[kids[i].id]?.status || recs[kids[i].id]?.status === 'not_read') {
-        return kids[i];
-      }
+  function showChildPicker(finishedChildName: string) {
+    // After 3rd photo — show child picker overlay (camera stays open in background)
+    const flow = flowRef.current;
+    if (flow) {
+      setJustFinished(prev => new Set(prev).add(flow.childId));
     }
-    return null;
+    toast.success(`✅ ${finishedChildName} done`, { duration: 1000 });
+    setChildSearch('');
+    setPickingNextChild(true);
+    // Auto-focus search input after render
+    setTimeout(() => searchInputRef.current?.focus(), 100);
   }
 
-  function advanceToNextChild(finishedChildId: string, finishedChildName: string) {
-    const sess = sessionRef.current;
-    if (!sess?.classroom?.id) { endCameraFlow(); return; }
+  function pickChild(child: Child) {
+    // Teacher selected next child from picker — start their 3-photo flow
+    setPickingNextChild(false);
 
-    const next = getNextUnmarkedChild(finishedChildId);
-    if (!next) {
-      // No more unmarked children — done!
-      endCameraFlow();
-      toast.success(`✅ ${finishedChildName} done! All students checked.`, { duration: 1500 });
-      return;
-    }
-
-    // Set "read" status on next child (optimistic + background save)
+    // Set "read" status optimistically + background save
     setRecords(prev => ({
       ...prev,
-      [next.id]: { ...prev[next.id], child_id: next.id, record_date: dateRef.current, status: 'read' },
+      [child.id]: { ...prev[child.id], child_id: child.id, record_date: dateRef.current, status: 'read' },
     }));
-    setStatus(next.id, 'read');
+    setStatus(child.id, 'read');
 
-    // Keep camera open — just switch to new child's flow
-    toast.success(`✅ ${finishedChildName} done → ${next.name}`, { duration: 1000 });
-    const nextFlow: CameraFlowState = { childId: next.id, childName: next.name, step: 0, oneShot: false, previews: [null, null, null] };
+    // Camera stream stays open — just switch to new child's flow
+    const nextFlow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null] };
     flowRef.current = nextFlow;
     setCameraFlow(nextFlow);
-    // Camera stream stays open — no stopCamera/startCamera cycle needed
+  }
+
+  function finishAll() {
+    // Teacher taps "Done" — close everything
+    setPickingNextChild(false);
+    endCameraFlow();
   }
 
   // --- Camera functions ---
@@ -287,8 +286,8 @@ export default function RazTrackerPage() {
         setCameraFlow(nextFlow);
         // Camera stays open — no delay, just tap again
       } else {
-        // All 3 photos done → auto-advance to next child (camera stays open)
-        advanceToNextChild(childId, childName);
+        // All 3 photos done → show child picker (camera stays open, uploads continue in background)
+        showChildPicker(childName);
       }
     }
   }
@@ -396,8 +395,8 @@ export default function RazTrackerPage() {
           // Some browsers throw on programmatic click — banner provides manual trigger
         }
       } else {
-        // All 3 photos done → auto-advance to next child
-        advanceToNextChild(childId, childName);
+        // All 3 photos done → show child picker
+        showChildPicker(childName);
       }
     }
   }, []);
@@ -556,11 +555,11 @@ export default function RazTrackerPage() {
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               {!cameraFlow.oneShot && (
-                <button onClick={() => advanceToNextChild(cameraFlow.childId, cameraFlow.childName)} style={{
+                <button onClick={() => showChildPicker(cameraFlow.childName)} style={{
                   background: 'rgba(34,197,94,0.3)', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 8,
                   padding: '8px 14px', color: '#4ade80', fontSize: 13, cursor: 'pointer', fontWeight: 600,
                 }}>
-                  Skip →
+                  Next →
                 </button>
               )}
               <button onClick={endCameraFlow} style={{
@@ -646,6 +645,90 @@ export default function RazTrackerPage() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ========= CHILD PICKER OVERLAY (after 3rd photo) ========= */}
+      {pickingNextChild && cameraFlow && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 150,
+          background: 'rgba(0,0,0,0.85)',
+          display: 'flex', flexDirection: 'column',
+          overflowY: 'auto',
+        }}>
+          <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0, whiteSpace: 'nowrap' }}>Next?</h2>
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={childSearch}
+              onChange={e => setChildSearch(e.target.value)}
+              placeholder="Type name..."
+              autoComplete="off"
+              style={{
+                flex: 1, background: '#1e293b', border: '2px solid #475569', borderRadius: 10,
+                padding: '10px 14px', color: '#fff', fontSize: 15, outline: 'none',
+              }}
+              onFocus={e => { e.target.style.borderColor = '#22c55e'; }}
+              onBlur={e => { e.target.style.borderColor = '#475569'; }}
+            />
+          </div>
+
+          <div style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto' }}>
+            {children.filter(c => !childSearch || c.name.toLowerCase().includes(childSearch.toLowerCase())).map(child => {
+              const rec = records[child.id];
+              const isDone = justFinished.has(child.id) || (rec?.status === 'read' && rec.book_photo_url && rec.signature_photo_url && rec.new_book_photo_url);
+              const isMarkedOther = rec?.status && rec.status !== 'read' && rec.status !== 'not_read';
+              const photoCount = [rec?.book_photo_url, rec?.signature_photo_url, rec?.new_book_photo_url].filter(Boolean).length;
+
+              return (
+                <button
+                  key={child.id}
+                  onClick={() => pickChild(child)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    background: isDone ? '#0f2918' : isMarkedOther ? '#1a1a2e' : '#1e293b',
+                    border: isDone ? '1px solid #166534' : isMarkedOther ? '1px solid #334155' : '1px solid #475569',
+                    borderRadius: 10, padding: '10px 14px',
+                    cursor: 'pointer', width: '100%', textAlign: 'left',
+                    opacity: isMarkedOther ? 0.5 : 1,
+                  }}
+                >
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                    background: child.color || '#334155',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, overflow: 'hidden', color: '#fff',
+                  }}>
+                    {child.photo_url ? (
+                      <img src={child.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (child.avatar_emoji || child.name.charAt(0))}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>{child.name}</div>
+                  </div>
+                  {isDone ? (
+                    <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>✅ Done</span>
+                  ) : isMarkedOther ? (
+                    <span style={{ fontSize: 12, color: '#64748b' }}>{STATUS_CONFIG[rec.status]?.emoji} {STATUS_CONFIG[rec.status]?.label}</span>
+                  ) : photoCount > 0 ? (
+                    <span style={{ fontSize: 12, color: '#94a3b8' }}>📷 {photoCount}/3</span>
+                  ) : (
+                    <span style={{ fontSize: 20 }}>📸</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          <div style={{ padding: '12px 16px 24px', display: 'flex', justifyContent: 'center' }}>
+            <button onClick={finishAll} style={{
+              background: '#334155', border: 'none', borderRadius: 10,
+              padding: '12px 32px', color: '#e2e8f0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+            }}>
+              Done — Back to List
+            </button>
           </div>
         </div>
       )}
