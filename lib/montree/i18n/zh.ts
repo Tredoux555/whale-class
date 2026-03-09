@@ -56,6 +56,8 @@ export const zh = {
   'auth.principalLoginLink': '校长？在这里登录 →',
   'auth.teacherLoginLink': '← 教师登录',
   'auth.noCode': '没有代码？立即注册 →',
+  'auth.unifiedSubtitle': '输入您的代码继续',
+  'auth.unifiedHint': '教师、校长和家长 — 都使用相同的登录代码。',
 
   // Signup / Try
   'signup.iAmA': '我是...',
