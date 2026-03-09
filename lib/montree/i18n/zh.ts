@@ -2350,6 +2350,10 @@ export const zh = {
   // Snap & Identify
   'snap.title': '📸 拍照识别',
   'snap.selectChildDesc': '选择一个孩子，然后拍一张他们做工作的照片。Guru会进行完整的AMI观察分析。',
+  'snap.snapFirstHint': '拍摄任何正在工作的孩子——之后再标记',
+  'snap.tagChild': '标记孩子 →',
+  'snap.whoIsThis': '这是谁？',
+  'snap.tapToTag': '点击孩子开始分析',
   'snap.photographing': '正在拍摄：',
   'snap.changeChild': '更换',
   'snap.hint': '请清晰拍摄教具——Guru会完成剩下的工作',
