@@ -148,7 +148,7 @@ export default function AdminPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white">{school?.name}</h1>
-            <p className="text-emerald-300 text-sm">Principal: {principal?.name}</p>
+            <p className="text-emerald-300 text-sm">{t('admin.principalLabel')} {principal?.name}</p>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600">⚙️</button>
@@ -308,7 +308,7 @@ export default function AdminPage() {
               </div>
               <div>
                 <label className="block text-emerald-300 text-sm mb-1">{t('admin.settings.newPassword')}</label>
-                <input type="password" value={settingsForm.new_password} onChange={e => setSettingsForm(f => ({ ...f, new_password: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder="••••••••" />
+                <input type="password" value={settingsForm.new_password} onChange={e => setSettingsForm(f => ({ ...f, new_password: e.target.value }))} className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white" placeholder={t('admin.settings.passwordPlaceholder')} />
               </div>
             </div>
             <div className="flex gap-3 mt-6">

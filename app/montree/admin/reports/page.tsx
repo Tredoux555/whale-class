@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface ClassroomStats {
   id: string;
@@ -27,6 +28,7 @@ interface SchoolStats {
 
 export default function ReportsPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [schoolStats, setSchoolStats] = useState<SchoolStats | null>(null);
   const [classroomStats, setClassroomStats] = useState<ClassroomStats[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +70,7 @@ export default function ReportsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch reports:', error);
-      toast.error('Failed to load reports');
+      toast.error(t('admin.error.loadDashboard'));
     } finally {
       setLoading(false);
     }
@@ -88,11 +90,11 @@ export default function ReportsPage() {
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
         <Link href="/montree/admin" className="text-emerald-400 hover:text-emerald-300 text-sm mb-4 inline-block">
-          ← Back to Admin
+          {t('admin.reports.backToAdmin')}
         </Link>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-light text-white">
-            📊 <span className="font-semibold">School Reports</span>
+            📊 <span className="font-semibold">{t('admin.reports.title')}</span>
           </h1>
           <div className="flex gap-2">
             {(['week', 'month', 'all'] as const).map(range => (
@@ -105,7 +107,7 @@ export default function ReportsPage() {
                     : 'bg-white/10 text-white/70 hover:bg-white/20'
                 }`}
               >
-                {range === 'week' ? 'This Week' : range === 'month' ? 'This Month' : 'All Time'}
+                {range === 'week' ? t('admin.reports.thisWeek') : range === 'month' ? t('admin.reports.thisMonth') : t('admin.reports.allTime')}
               </button>
             ))}
           </div>
@@ -115,18 +117,18 @@ export default function ReportsPage() {
       {/* School Overview Cards */}
       {schoolStats && (
         <div className="max-w-6xl mx-auto mb-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard icon="👨‍🎓" label="Students" value={schoolStats.total_students} />
-          <StatCard icon="👩‍🏫" label="Teachers" value={schoolStats.total_teachers} />
-          <StatCard icon="🏫" label="Classrooms" value={schoolStats.total_classrooms} />
-          <StatCard icon="✅" label="Works Done" value={schoolStats.total_works_completed} />
-          <StatCard icon="📈" label="Avg Progress" value={`${schoolStats.avg_progress}%`} />
-          <StatCard icon="🔥" label="Active" value={schoolStats.active_this_week} />
+          <StatCard icon="👨‍🎓" label={t('admin.reports.students')} value={schoolStats.total_students} />
+          <StatCard icon="👩‍🏫" label={t('admin.reports.teachers')} value={schoolStats.total_teachers} />
+          <StatCard icon="🏫" label={t('admin.reports.classrooms')} value={schoolStats.total_classrooms} />
+          <StatCard icon="✅" label={t('admin.reports.worksDone')} value={schoolStats.total_works_completed} />
+          <StatCard icon="📈" label={t('admin.reports.avgProgress')} value={`${schoolStats.avg_progress}%`} />
+          <StatCard icon="🔥" label={t('admin.reports.active')} value={schoolStats.active_this_week} />
         </div>
       )}
 
       {/* Classroom Breakdown */}
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-xl font-semibold text-white mb-4">Classroom Breakdown</h2>
+        <h2 className="text-xl font-semibold text-white mb-4">{t('admin.reports.classroomBreakdown')}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classroomStats.map(classroom => (
             <div key={classroom.id} className="bg-white/10 backdrop-blur rounded-2xl p-5">
@@ -136,14 +138,14 @@ export default function ReportsPage() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">{classroom.name}</h3>
-                  <p className="text-white/50 text-sm">{classroom.student_count} students</p>
+                  <p className="text-white/50 text-sm">{t('admin.reports.studentsCount').replace('{count}', String(classroom.student_count))}</p>
                 </div>
               </div>
               
               {/* Progress Bar */}
               <div className="mb-3">
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-white/70">Average Progress</span>
+                  <span className="text-white/70">{t('admin.reports.averageProgress')}</span>
                   <span className="text-emerald-400 font-medium">{classroom.avg_progress}%</span>
                 </div>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -155,7 +157,7 @@ export default function ReportsPage() {
               </div>
               
               <div className="flex justify-between text-sm">
-                <span className="text-white/50">Works this {timeRange}</span>
+                <span className="text-white/50">{t('admin.reports.worksThisPeriod').replace('{period}', timeRange)}</span>
                 <span className="text-white font-medium">{classroom.works_completed_this_week}</span>
               </div>
             </div>

@@ -725,11 +725,13 @@ export const en = {
   'admin.modal.cancel': 'Cancel',
   'admin.modal.save': 'Save',
   'admin.modal.saving': 'Saving...',
+  'admin.principalLabel': 'Principal:',
   'admin.settings.title': 'School Settings',
   'admin.settings.schoolName': 'School Name',
   'admin.settings.principalName': 'Principal Name',
   'admin.settings.email': 'Email',
   'admin.settings.newPassword': 'New Password (leave blank to keep)',
+  'admin.settings.passwordPlaceholder': '••••••••',
 
   // Phase 4 — Gallery
   'gallery.gallery': 'Gallery',
@@ -1091,6 +1093,7 @@ export const en = {
   'time.hoursAgo': '{count}h ago',
   'time.yesterday': 'Yesterday',
   'time.daysAgo': '{count}d ago',
+  'time.never': 'Never',
 
   // Phase 7 — Guru Dashboard Cards
   'guru.todayPlan': "Today's Plan",
@@ -2019,6 +2022,10 @@ export const en = {
   'admin.activity.noActivityRecorded': 'No activity recorded',
   'admin.activity.daysIdle': 'days idle',
   'admin.activity.noRecentActivity': 'No recent activity',
+  'admin.activity.labelPhoto': 'Photo',
+  'admin.activity.labelWorkUpdate': 'Work Update',
+  'admin.activity.labelObservation': 'Observation',
+  'admin.activity.labelSession': 'Session',
 
   // --- Admin Billing ---
   'admin.billing.title': 'Billing',
@@ -2039,6 +2046,25 @@ export const en = {
   'admin.billing.status': 'Status',
   'admin.billing.invoice': 'Invoice',
   'admin.billing.download': 'Download',
+  'admin.billing.planClassroom': 'Classroom',
+  'admin.billing.planSchool': 'School',
+  'admin.billing.planEnterprise': 'Enterprise',
+  'admin.billing.featureUpTo50': 'Up to 50 students',
+  'admin.billing.featureFullCurriculum': 'Full Montessori curriculum',
+  'admin.billing.featureParentPortal': 'Parent portal access',
+  'admin.billing.featureProgressTracking': 'Progress tracking & reports',
+  'admin.billing.featureEmailSupport': 'Email support',
+  'admin.billing.featureUpTo200': 'Up to 200 students',
+  'admin.billing.featureAllClassroom': 'All Classroom features',
+  'admin.billing.featureMultiClassroom': 'Multi-classroom management',
+  'admin.billing.featureAdvancedAnalytics': 'Advanced analytics',
+  'admin.billing.featurePrioritySupport': 'Priority support',
+  'admin.billing.featureUnlimited': 'Unlimited students',
+  'admin.billing.featureAllSchool': 'All School features',
+  'admin.billing.featureCustomBranding': 'Custom branding',
+  'admin.billing.featureApiAccess': 'API access',
+  'admin.billing.featureDedicatedManager': 'Dedicated account manager',
+  'admin.billing.featurePhoneSupport': 'Phone & video support',
 
   // --- Onboarding Expanded ---
   'onboarding.welcome': 'Welcome to Montree',
@@ -2083,6 +2109,7 @@ export const en = {
   'onboarding.effortlessTracking': 'Effortless tracking that feels natural',
   'onboarding.beautifulRecord': 'A beautiful record of growth and discovery',
   'onboarding.goToDashboard': 'Go to Dashboard →',
+  'onboarding.yourClassroom': 'Your Classroom',
 
   // --- Photo Edit Modal ---
   'photoEdit.title': 'Edit Photo',
@@ -2103,6 +2130,7 @@ export const en = {
   'photoEdit.cancel': 'Cancel',
   'photoEdit.saving': 'Saving...',
   'photoEdit.saveChanges': '✓ Save Changes',
+  'photoEdit.saveSuccess': 'Photo updated successfully',
 
   // --- Sensitive Periods (parent weekly review) ---
   'sensitivePeriod.order.name': 'Order',
@@ -2432,6 +2460,38 @@ export const en = {
   'snap.analyzingInBackground': 'Analyzing in background...',
   'snap.viewResult': 'View',
   'snap.analyzingCount': 'Analyzing photos...',
+
+  // --- RAZ Reading Tracker ---
+  'raz.title': 'RAZ Reading Tracker',
+  'raz.statusRead': 'Read',
+  'raz.statusNotRead': 'Not Read',
+  'raz.statusNoFolder': 'No Folder',
+  'raz.statusAbsent': 'Absent',
+  'raz.photoBook': '📖 Book',
+  'raz.photoSignature': '✍️ Signature',
+  'raz.photoNewBook': '📗 New Book',
+  'raz.failedToLoad': 'Failed to load data',
+  'raz.childDone': '✅ {name} done',
+  'raz.cameraFailed': 'Camera capture failed — try again',
+  'raz.uploadFailed': 'Upload failed',
+  'raz.failedToSave': 'Failed to save',
+  'raz.takeRetakePhoto': 'Take retake photo',
+  'raz.takePhoto': 'Take photo to continue',
+  'raz.retake': 'Retake: {label}',
+  'raz.doneBackToList': 'Done — Back to List',
+  'raz.searchPlaceholder': 'Type name...',
+  'raz.classroom': 'Classroom',
+  'raz.viewPhoto': 'View {label}',
+  'raz.retakePhoto': 'Retake {label}',
+  'raz.noStudents': 'No students found',
+  'raz.allDone': 'All done!',
+  'raz.remaining': '{count} remaining',
+  'raz.cameraPermission': 'Camera permission needed',
+  'raz.openCamera': 'Open Camera',
+  'raz.nextQuestion': 'Next?',
+  'raz.tapToClose': 'Tap anywhere to close',
+  'raz.today': 'Today',
+  'raz.addStudentsFirst': 'Add students in the admin panel first.',
   // Snap: parent visibility
   'snap.parentReportLabel': 'Parent Report',
   'snap.visible': 'Visible',

@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import { RAZSkeleton } from '@/components/montree/Skeletons';
 
@@ -33,24 +34,31 @@ interface RazRecord {
 type StatusType = 'read' | 'not_read' | 'no_folder' | 'absent';
 type PhotoType = 'book' | 'signature' | 'new_book';
 
-const STATUS_CONFIG: Record<StatusType, { label: string; emoji: string; color: string; bg: string }> = {
-  read: { label: 'Read', emoji: '📖', color: '#22c55e', bg: '#dcfce7' },
-  not_read: { label: 'Not Read', emoji: '❌', color: '#ef4444', bg: '#fee2e2' },
-  no_folder: { label: 'No Folder', emoji: '📁', color: '#f59e0b', bg: '#fef3c7' },
-  absent: { label: 'Absent', emoji: '🚫', color: '#6b7280', bg: '#f3f4f6' },
+const STATUS_CONFIG_BASE: Record<StatusType, { emoji: string; color: string; bg: string }> = {
+  read: { emoji: '📖', color: '#22c55e', bg: '#dcfce7' },
+  not_read: { emoji: '❌', color: '#ef4444', bg: '#fee2e2' },
+  no_folder: { emoji: '📁', color: '#f59e0b', bg: '#fef3c7' },
+  absent: { emoji: '🚫', color: '#6b7280', bg: '#f3f4f6' },
 };
 
 const PHOTO_SEQUENCE: PhotoType[] = ['book', 'signature', 'new_book'];
-const PHOTO_LABELS: Record<PhotoType, string> = {
-  book: '📖 Book',
-  signature: '✍️ Signature',
-  new_book: '📗 New Book',
-};
+const getPhotoLabels = (t: ReturnType<typeof useI18n>['t']) => ({
+  book: t('raz.photoBook'),
+  signature: t('raz.photoSignature'),
+  new_book: t('raz.photoNewBook'),
+});
 const PHOTO_URL_KEYS: Record<PhotoType, keyof RazRecord> = {
   book: 'book_photo_url',
   signature: 'signature_photo_url',
   new_book: 'new_book_photo_url',
 };
+
+const getStatusConfig = (t: ReturnType<typeof useI18n>['t']) => ({
+  read: { emoji: '📖', color: '#22c55e', bg: '#dcfce7', label: t('raz.statusRead') },
+  not_read: { emoji: '❌', color: '#ef4444', bg: '#fee2e2', label: t('raz.statusNotRead') },
+  no_folder: { emoji: '📁', color: '#f59e0b', bg: '#fef3c7', label: t('raz.statusNoFolder') },
+  absent: { emoji: '🚫', color: '#6b7280', bg: '#f3f4f6', label: t('raz.statusAbsent') },
+});
 
 interface CameraFlowState {
   childId: string;
@@ -63,6 +71,7 @@ interface CameraFlowState {
 
 export default function RazTrackerPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [records, setRecords] = useState<Record<string, RazRecord>>({});
@@ -148,7 +157,7 @@ export default function RazTrackerPage() {
       setRecords(recordMap);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      toast.error('Failed to load data');
+      toast.error(t('raz.failedToLoad'));
     }
     setLoading(false);
   }
@@ -161,7 +170,8 @@ export default function RazTrackerPage() {
     if (flow) {
       setJustFinished(prev => new Set(prev).add(flow.childId));
     }
-    toast.success(`✅ ${finishedChildName} done`, { duration: 1000 });
+    const doneMsg = t('raz.childDone').replace('{name}', finishedChildName);
+    toast.success(doneMsg, { duration: 1000 });
     setChildSearch('');
     setPickingNextChild(true);
     // Auto-focus search input after render
@@ -192,7 +202,9 @@ export default function RazTrackerPage() {
       [child.id]: { ...prev[child.id], child_id: child.id, record_date: dateRef.current, status },
     }));
     setStatus(child.id, status);
-    toast.success(`${STATUS_CONFIG[status].emoji} ${child.name} — ${STATUS_CONFIG[status].label}`, { duration: 1000 });
+    const cfg = STATUS_CONFIG_BASE[status];
+    const label = status === 'read' ? t('raz.statusRead') : status === 'not_read' ? t('raz.statusNotRead') : status === 'no_folder' ? t('raz.statusNoFolder') : t('raz.statusAbsent');
+    toast.success(`${cfg.emoji} ${child.name} — ${label}`, { duration: 1000 });
   }
 
   function finishAll() {
@@ -275,7 +287,7 @@ export default function RazTrackerPage() {
     canvas.toBlob((blob) => {
       if (!mountedRef.current) return;
       if (!blob || blob.size === 0) {
-        toast.error('Camera capture failed — try again');
+        toast.error(t('raz.cameraFailed'));
         return;
       }
       const file = new File([blob], `raz-${photoType}-${Date.now()}.jpg`, { type: 'image/jpeg' });
@@ -283,7 +295,8 @@ export default function RazTrackerPage() {
     }, 'image/jpeg', 0.8);
 
     // Flash feedback
-    toast.success(`${PHOTO_LABELS[photoType]}`, { duration: 800 });
+    const photoLabels = getPhotoLabels(t);
+    toast.success(`${photoLabels[photoType]}`, { duration: 800 });
 
     // Advance to next step or finish
     if (oneShot) {
@@ -304,6 +317,7 @@ export default function RazTrackerPage() {
 
   // Background upload — fire and forget
   function uploadPhoto(file: File, childId: string, date: string, photoType: PhotoType, classroomId: string) {
+    const photoLabels = getPhotoLabels(t);
     const uploadKey = `${childId}-${photoType}`;
     const uploadController = new AbortController();
     uploadAbortRefs.current.set(uploadKey, uploadController);
@@ -351,12 +365,12 @@ export default function RazTrackerPage() {
             return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: data.photoUrl } };
           });
         } else if (!data.success) {
-          if (mountedRef.current) toast.error(`Upload failed: ${data.error || PHOTO_LABELS[photoType]}`);
+          if (mountedRef.current) toast.error(`${t('raz.uploadFailed')}: ${data.error || photoLabels[photoType]}`);
         }
       })
       .catch(err => {
         if (err?.name === 'AbortError') return;
-        if (mountedRef.current) toast.error(`Upload failed: ${err.message || PHOTO_LABELS[photoType]}`);
+        if (mountedRef.current) toast.error(`${t('raz.uploadFailed')}: ${err.message || photoLabels[photoType]}`);
       })
       .finally(() => {
         uploadAbortRefs.current.delete(uploadKey);
@@ -387,7 +401,8 @@ export default function RazTrackerPage() {
     if (fileInputRef.current) fileInputRef.current.value = '';
 
     uploadPhoto(file, childId, dateRef.current, photoType, sess.classroom.id);
-    toast.success(`${PHOTO_LABELS[photoType]}`, { duration: 800 });
+    const photoLabels = getPhotoLabels(t);
+    toast.success(`${photoLabels[photoType]}`, { duration: 800 });
 
     if (oneShot) {
       endCameraFlow();
@@ -431,10 +446,10 @@ export default function RazTrackerPage() {
         if (mountedRef.current) setRecords(prev => ({ ...prev, [childId]: data.record }));
         return true;
       }
-      if (mountedRef.current) toast.error('Failed to save');
+      if (mountedRef.current) toast.error(t('raz.failedToSave'));
       return false;
     } catch {
-      if (mountedRef.current) toast.error('Failed to save');
+      if (mountedRef.current) toast.error(t('raz.failedToSave'));
       return false;
     }
   }
@@ -503,6 +518,9 @@ export default function RazTrackerPage() {
   if (loading) return <RAZSkeleton />;
 
   // --- Render ---
+  const STATUS_CONFIG = getStatusConfig(t);
+  const PHOTO_LABELS = getPhotoLabels(t);
+
   return (
     <div style={{ minHeight: '100vh', background: '#0f172a', color: '#e2e8f0', padding: '16px' }}>
       <Toaster position="top-center" />
@@ -527,18 +545,18 @@ export default function RazTrackerPage() {
               {!cameraFlow.oneShot && ` (${cameraFlow.step + 1}/3)`}
             </div>
             <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
-              {cameraFlow.oneShot ? 'Take retake photo' : 'Take photo to continue'}
+              {cameraFlow.oneShot ? t('raz.takeRetakePhoto') : t('raz.takePhoto')}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={() => triggerFileInput()} style={{
               background: '#22c55e', border: 'none', borderRadius: 8,
               padding: '8px 14px', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer',
-            }}>📷 Open Camera</button>
+            }}>📷 {t('raz.openCamera')}</button>
             <button onClick={endCameraFlow} style={{
               background: '#334155', border: 'none', borderRadius: 8,
               padding: '8px 14px', color: '#94a3b8', fontSize: 13, cursor: 'pointer',
-            }}>Cancel</button>
+            }}>{t('common.cancel')}</button>
           </div>
         </div>
       )}
@@ -558,7 +576,7 @@ export default function RazTrackerPage() {
               <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{cameraFlow.childName}</div>
               <div style={{ fontSize: 13, color: '#94a3b8' }}>
                 {cameraFlow.oneShot
-                  ? `Retake: ${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}`
+                  ? t('raz.retake').replace('{label}', PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]])
                   : `${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}  •  ${cameraFlow.step + 1}/3`
                 }
               </div>
@@ -576,7 +594,7 @@ export default function RazTrackerPage() {
                 background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
                 padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
               }}>
-                {cameraFlow.oneShot ? 'Cancel' : 'Done'}
+                {cameraFlow.oneShot ? t('common.cancel') : t('common.done')}
               </button>
             </div>
           </div>
@@ -668,13 +686,13 @@ export default function RazTrackerPage() {
           overflowY: 'auto',
         }}>
           <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0, whiteSpace: 'nowrap' }}>Next?</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0, whiteSpace: 'nowrap' }}>{t('raz.nextQuestion')}</h2>
             <input
               ref={searchInputRef}
               type="text"
               value={childSearch}
               onChange={e => setChildSearch(e.target.value)}
-              placeholder="Type name..."
+              placeholder={t('raz.searchPlaceholder')}
               autoComplete="off"
               style={{
                 flex: 1, background: '#1e293b', border: '2px solid #475569', borderRadius: 10,
@@ -760,7 +778,7 @@ export default function RazTrackerPage() {
               background: '#334155', border: 'none', borderRadius: 10,
               padding: '12px 32px', color: '#e2e8f0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
             }}>
-              Done — Back to List
+              {t('raz.doneBackToList')}
             </button>
           </div>
         </div>
@@ -779,21 +797,21 @@ export default function RazTrackerPage() {
           </div>
           <img src={viewingPhoto.url} alt={viewingPhoto.label}
             style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: 8, objectFit: 'contain' }} />
-          <div style={{ fontSize: 13, color: '#64748b', marginTop: 12 }}>Tap anywhere to close</div>
+          <div style={{ fontSize: 13, color: '#64748b', marginTop: 12 }}>{t('raz.tapToClose')}</div>
         </div>
       )}
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>📚 RAZ Tracker</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>📚 {t('raz.title')}</h1>
           <p style={{ fontSize: 13, color: '#94a3b8', margin: '4px 0 0' }}>
-            {session?.classroom?.name || 'Classroom'} · {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
+            {session?.classroom?.name || t('raz.classroom')} · {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
           </p>
         </div>
         <button onClick={() => router.push('/montree/dashboard')}
           style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}>
-          ← Back
+          ← {t('common.back')}
         </button>
       </div>
 
@@ -810,16 +828,16 @@ export default function RazTrackerPage() {
           setSelectedDate(d.toISOString().split('T')[0]);
         }} style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 16 }}>→</button>
         <button onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-          style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>Today</button>
+          style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>{t('raz.today')}</button>
       </div>
 
       {/* Stats Bar */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 20 }}>
         {[
-          { count: readCount, bg: '#dcfce7', fg: '#166534', label: '📖 Read' },
-          { count: notReadCount, bg: '#fee2e2', fg: '#991b1b', label: '❌ Not' },
-          { count: noFolderCount, bg: '#fef3c7', fg: '#92400e', label: '📁 No F' },
-          { count: absentCount, bg: '#f3f4f6', fg: '#4b5563', label: '🚫 Away' },
+          { count: readCount, bg: '#dcfce7', fg: '#166534', label: `📖 ${t('raz.statusRead')}` },
+          { count: notReadCount, bg: '#fee2e2', fg: '#991b1b', label: `❌ ${t('raz.statusNotRead')}` },
+          { count: noFolderCount, bg: '#fef3c7', fg: '#92400e', label: `📁 ${t('raz.statusNoFolder')}` },
+          { count: absentCount, bg: '#f3f4f6', fg: '#4b5563', label: `🚫 ${t('raz.statusAbsent')}` },
           { count: unmarked, bg: '#1e293b', fg: '#94a3b8', label: '⏳' },
         ].map(s => (
           <div key={s.label} style={{ background: s.bg, borderRadius: 10, padding: '10px 4px', textAlign: 'center' }}>
@@ -933,8 +951,8 @@ export default function RazTrackerPage() {
       {children.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
-          <p>No children found in this classroom.</p>
-          <p style={{ fontSize: 13 }}>Add students in the admin panel first.</p>
+          <p>{t('raz.noStudents')}</p>
+          <p style={{ fontSize: 13 }}>{t('raz.addStudentsFirst')}</p>
         </div>
       )}
 

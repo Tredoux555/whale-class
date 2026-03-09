@@ -150,7 +150,7 @@ export default function PhotoEditModal({
           work_name: availableWorks.find(w => w.id === result.media.work_id)?.name || media.work_name,
         };
         onSave?.(enhancedMedia);
-        toast.success('Photo updated successfully');
+        toast.success(t('photoEdit.saveSuccess' as TranslationKey) || 'Photo updated successfully');
         onClose();
       }
     } catch (err) {
@@ -175,7 +175,7 @@ export default function PhotoEditModal({
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50">
-          <h2 className="text-lg font-bold text-gray-800">Edit Photo</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t('photoEdit.title' as TranslationKey)}</h2>
           <button
             onClick={onClose}
             disabled={isSaving}
@@ -209,7 +209,7 @@ export default function PhotoEditModal({
           {/* Caption */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Caption
+              {t('photoEdit.caption' as TranslationKey)}
             </label>
             <textarea
               value={formData.caption}
@@ -223,7 +223,7 @@ export default function PhotoEditModal({
           {/* Assign Child */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Child Assignment {formData.child_id && <span className="text-xs text-gray-500">(Group photo)</span>}
+              {t('photoEdit.childAssignment' as TranslationKey)} {formData.child_id && <span className="text-xs text-gray-500">{t('photoEdit.groupPhoto' as TranslationKey)}</span>}
             </label>
             {availableChildren.length > 0 ? (
               <select
@@ -234,7 +234,7 @@ export default function PhotoEditModal({
                 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
-                <option value="">No specific child (group photo)</option>
+                <option value="">{t('photoEdit.noSpecificChild' as TranslationKey)}</option>
                 {availableChildren.map(child => (
                   <option key={child.id} value={child.id}>
                     {child.name}
@@ -243,18 +243,18 @@ export default function PhotoEditModal({
               </select>
             ) : (
               <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
-                No children available
+                {t('photoEdit.noChildrenAvailable' as TranslationKey)}
               </div>
             )}
             {selectedChild && (
-              <p className="text-xs text-gray-600 mt-1">Selected: {selectedChild.name}</p>
+              <p className="text-xs text-gray-600 mt-1">{t('photoEdit.selected' as TranslationKey, { name: selectedChild.name })}</p>
             )}
           </div>
 
           {/* Assign Work */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Curriculum Work
+              {t('photoEdit.curriculumWork' as TranslationKey)}
             </label>
             {availableWorks.length > 0 ? (
               <select
@@ -265,7 +265,7 @@ export default function PhotoEditModal({
                 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
-                <option value="">No work assigned</option>
+                <option value="">{t('photoEdit.noWorkAssigned' as TranslationKey)}</option>
                 {availableWorks.map(work => (
                   <option key={work.id} value={work.id}>
                     {work.name}
@@ -274,7 +274,7 @@ export default function PhotoEditModal({
               </select>
             ) : (
               <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
-                No works available
+                {t('photoEdit.noWorksAvailable' as TranslationKey)}
               </div>
             )}
             {selectedWork && areaConfig && (
@@ -293,7 +293,7 @@ export default function PhotoEditModal({
           {/* Tags */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Tags
+              {t('photoEdit.tags' as TranslationKey)}
             </label>
             <div className="flex gap-2 mb-2">
               <input
@@ -313,7 +313,7 @@ export default function PhotoEditModal({
                 onClick={handleAddTag}
                 className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
               >
-                Add
+                {t('photoEdit.addButton' as TranslationKey)}
               </button>
             </div>
 
@@ -340,10 +340,10 @@ export default function PhotoEditModal({
 
           {/* Metadata */}
           <div className="bg-gray-50 p-3 rounded-lg text-xs text-gray-600 border border-gray-200">
-            <p className="font-semibold mb-1 text-gray-700">Metadata</p>
+            <p className="font-semibold mb-1 text-gray-700">{t('photoEdit.metadata' as TranslationKey)}</p>
             <p>ID: {media.id}</p>
-            <p>Captured: {new Date(media.captured_at).toLocaleString()}</p>
-            <p>By: {media.captured_by}</p>
+            <p>{t('photoEdit.captured' as TranslationKey, { timestamp: new Date(media.captured_at).toLocaleString() })}</p>
+            <p>{t('photoEdit.by' as TranslationKey, { teacher: media.captured_by })}</p>
           </div>
         </div>
 
@@ -354,7 +354,7 @@ export default function PhotoEditModal({
             disabled={isSaving}
             className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            Cancel
+            {t('photoEdit.cancel' as TranslationKey)}
           </button>
           <button
             onClick={handleSave}
@@ -364,10 +364,10 @@ export default function PhotoEditModal({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Saving...
+                {t('photoEdit.saving' as TranslationKey)}
               </>
             ) : (
-              <>✓ Save Changes</>
+              <>{t('photoEdit.saveChanges' as TranslationKey)}</>
             )}
           </button>
         </div>
