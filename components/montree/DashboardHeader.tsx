@@ -203,16 +203,14 @@ export default function DashboardHeader() {
           >
             🧠
           </Link>
-          {razTrackerEnabled && (
-            <Link
-              href="/montree/dashboard/raz"
-              data-guide="nav-raz"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-              title="RAZ Reading Tracker"
-            >
-              📖
-            </Link>
-          )}
+          <Link
+            href="/montree/dashboard/raz"
+            data-guide="nav-raz"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title="RAZ Reading Tracker"
+          >
+            📖
+          </Link>
           {voiceObsEnabled && (
             <Link
               href="/montree/dashboard/voice-observation"
