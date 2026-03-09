@@ -3,7 +3,7 @@
 // Contains: Montree logo, Language toggle, Inbox, Curriculum, Guru, Student Search, Logout
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, clearSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
@@ -115,10 +115,12 @@ export default function DashboardHeader() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filtered students based on search query
-  const filtered = searchQuery.trim()
-    ? students.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : students;
+  // PERF: Memoize filtered students to avoid re-filtering on every render
+  const filtered = useMemo(() => {
+    if (!searchQuery.trim()) return students;
+    const q = searchQuery.toLowerCase();
+    return students.filter(s => s.name.toLowerCase().includes(q));
+  }, [searchQuery, students]);
 
   const handleStudentSelect = useCallback((student: StudentOption) => {
     setSearchQuery('');

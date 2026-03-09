@@ -102,7 +102,11 @@ export function loadCurriculumAreas(): CurriculumArea[] {
  *
  * So Number Rods (30101) correctly comes BEFORE Addition Strip Board (30503)
  */
+let _loadAllWorksCache: CurriculumWork[] | null = null;
+
 export function loadAllCurriculumWorks(): CurriculumWork[] {
+  if (_loadAllWorksCache) return _loadAllWorksCache;
+
   const works: CurriculumWork[] = [];
 
   for (const area of AREAS) {
@@ -161,6 +165,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
   // Sort by global sequence to verify order
   works.sort((a, b) => a.sequence - b.sequence);
 
+  _loadAllWorksCache = works;
   return works;
 }
 
