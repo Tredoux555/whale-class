@@ -2344,4 +2344,82 @@ export const zh = {
   'guru.imageUploading': '上传中...',
   'guru.removeImage': '移除图片',
   'guru.imageUploadFailed': '图片上传失败',
+
+  // Snap & Identify
+  'snap.title': '📸 拍照识别',
+  'snap.selectChildDesc': '选择一个孩子，然后拍一张他们做工作的照片。Guru会进行完整的AMI观察分析。',
+  'snap.photographing': '正在拍摄：',
+  'snap.changeChild': '更换',
+  'snap.hint': '请清晰拍摄教具——Guru会完成剩下的工作',
+  'snap.retake': '重拍',
+  'snap.analyzeWork': '🧠 分析工作',
+  'snap.uploadFromGallery': '或从相册上传',
+  'snap.cameraNotAvailable': '相机不可用——请使用文件选择器',
+  // Analysis progress phases
+  'snap.progressUploading': '正在上传照片...',
+  'snap.progressAnalyzing': 'Guru正在分析工作...',
+  'snap.progressWriting': '正在撰写观察记录...',
+  'snap.progressAnalyzingProgression': '正在分析发展进度...',
+  'snap.analyzingSubtext': '正在进行完整的AMI观察分析',
+  // Result display
+  'snap.confidenceHigh': '✓ 高置信度',
+  'snap.confidenceMedium': '~ 中等置信度',
+  'snap.confidenceLow': '⚠ 低置信度——请核实',
+  // Section titles
+  'snap.sectionObservation': '观察记录',
+  'snap.sectionAreaProgress': '领域进度',
+  'snap.sectionCrossArea': '跨领域分析',
+  'snap.sectionNextSteps': '下一步计划',
+  'snap.sectionWeeklyAdmin': '周报记录',
+  // Observation labels
+  'snap.concentration': '专注力',
+  'snap.independence': '独立性',
+  'snap.emotional': '情绪',
+  'snap.technique': '技巧',
+  'snap.repetition': '重复',
+  'snap.selfCorrecting': '自我纠正',
+  'snap.controlOfError': '错误控制',
+  // Normalization labels
+  'snap.normalized': '正常化',
+  'snap.normalizing': '正常化中',
+  'snap.deviated': '偏离',
+  // Next steps labels
+  'snap.stay': '继续这个工作',
+  'snap.advance': '可以进阶',
+  'snap.revisitPrerequisites': '回顾先决条件',
+  'snap.tryVariation': '尝试变化',
+  'snap.nextInSequence': '序列中的下一个',
+  'snap.variationsToTry': '建议尝试的变化',
+  'snap.priorityActions': '优先行动',
+  // Cross area
+  'snap.foundationGaps': '基础差距',
+  'snap.recommendedWorks': '建议支持工作',
+  // Status
+  'snap.progressUpdated': '进度已更新',
+  'snap.progressIssue': '进度更新遇到问题——您可能需要手动更新',
+  'snap.photoSaved': '照片已保存到相册，用于家长周报',
+  'snap.snapAnother': '再拍一张',
+  'snap.changeChildBtn': '更换孩子',
+  'snap.viewProgress': '查看完整进度 →',
+  'snap.copyNarrative': '复制',
+  'snap.copied': '已复制！',
+  'snap.tookTooLong': '分析时间过长——请拍摄更清晰的照片',
+  'snap.analysisFailed': '照片分析失败',
+  'snap.couldNotIdentify': '无法识别工作',
+
+  // Snap: work cycle phases
+  'snap.cyclePreparation': '准备',
+  'snap.cycleActiveWork': '主动工作',
+  'snap.cycleRepetition': '重复',
+  'snap.cycleRestoration': '整理归位',
+  'snap.cycleUnclear': '不确定',
+  // Snap: trajectory labels
+  'snap.trajectoryAccelerating': '加速进步',
+  'snap.trajectorySteady': '稳步发展',
+  'snap.trajectoryPlateau': '平台期',
+  'snap.trajectoryFirstObservation': '首次观察',
+  // Snap: misc
+  'snap.sensitivePeriod': '敏感期',
+  'snap.noDetailedNotes': '无详细笔记',
+  'snap.identified': '已识别',
 } as const;
