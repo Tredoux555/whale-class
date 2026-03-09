@@ -2422,4 +2422,9 @@ export const zh = {
   'snap.sensitivePeriod': '敏感期',
   'snap.noDetailedNotes': '无详细笔记',
   'snap.identified': '已识别',
+
+  // Snap: background analysis
+  'snap.analyzingInBackground': '后台分析中...',
+  'snap.viewResult': '查看',
+  'snap.analyzingCount': '正在分析照片...',
 } as const;

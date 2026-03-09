@@ -171,6 +171,13 @@ function AreaBar({ area, stats }: { area: string; stats: AreaStatData }) {
   );
 }
 
+interface PendingSnap {
+  childName: string;
+  childId: string;
+  preview: string;
+  startedAt: number;
+}
+
 export default function SnapIdentifyPage() {
   const router = useRouter();
   const { t } = useI18n();
@@ -185,6 +192,7 @@ export default function SnapIdentifyPage() {
   const [narrativeCopied, setNarrativeCopied] = useState(false);
   const [showZh, setShowZh] = useState(false);
   const [analyzeProgress, setAnalyzeProgress] = useState('');
+  const [pendingSnaps, setPendingSnaps] = useState<PendingSnap[]>([]);
 
   // Camera refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -301,23 +309,42 @@ export default function SnapIdentifyPage() {
   const submitForAnalysis = useCallback(async () => {
     if (!capturedBlob || !selectedChild) return;
 
-    setPhase('analyzing');
-    setAnalyzeProgress(t('snap.progressUploading'));
+    // Capture references before resetting UI
+    const blob = capturedBlob;
+    const child = selectedChild;
+    const preview = capturedPreview || '';
+
     stopCamera();
 
+    // Add to pending list and immediately reset UI so teacher can keep working
+    const pendingEntry: PendingSnap = {
+      childName: child.name,
+      childId: child.id,
+      preview,
+      startedAt: Date.now(),
+    };
+    setPendingSnaps(prev => [...prev, pendingEntry]);
+
+    // Show a brief toast so teacher knows it's working
+    toast(
+      `📸 ${t('snap.analyzingInBackground') || `Analyzing ${child.name}'s work in background...`}`,
+      { duration: 3000 }
+    );
+
+    // Reset to camera for same child (most common flow: snap multiple kids in sequence)
+    setCapturedBlob(null);
+    setCapturedPreview(null);
+    setPhase('select-child');
+    setSelectedChild(null);
+
+    // Run analysis in background
     try {
       const formData = new FormData();
-      formData.append('file', capturedBlob, 'snap.jpg');
-      formData.append('child_id', selectedChild.id);
-
-      // Show progress phases for UX
-      const progressTimer = setTimeout(() => setAnalyzeProgress(t('snap.progressAnalyzing')), 2000);
-      const progressTimer2 = setTimeout(() => setAnalyzeProgress(t('snap.progressWriting')), 6000);
-      const progressTimer3 = setTimeout(() => setAnalyzeProgress(t('snap.progressAnalyzingProgression')), 10000);
+      formData.append('file', blob, 'snap.jpg');
+      formData.append('child_id', child.id);
 
       const controller = new AbortController();
-      abortRef.current = controller;
-      const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+      const timeout = setTimeout(() => controller.abort(), 60000);
 
       const res = await montreeApi('/api/montree/guru/snap-identify', {
         method: 'POST',
@@ -326,37 +353,49 @@ export default function SnapIdentifyPage() {
       });
 
       clearTimeout(timeout);
-      clearTimeout(progressTimer);
-      clearTimeout(progressTimer2);
-      clearTimeout(progressTimer3);
-      abortRef.current = null;
 
       if (!res.ok) {
         let errMsg = 'Analysis failed';
         try { const d = await res.json(); if (d?.error) errMsg = d.error; } catch { /* */ }
-        toast.error(errMsg);
-        setPhase('camera');
+        toast.error(`❌ ${child.name}: ${errMsg}`, { duration: 6000 });
+        setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
         return;
       }
 
       const data = await res.json();
+      setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
+
       if (data.success) {
-        setResult(data as SnapResult);
-        setPhase('result');
-        toast.success(`${t('snap.identified')}: ${data.work_name}`);
+        // Show success toast with option to view results
+        toast.success(
+          `✅ ${child.name}: ${data.work_name} — ${data.status}${data.progress_updated ? ' (progress saved)' : ''}`,
+          {
+            duration: 8000,
+            action: {
+              label: t('snap.viewResult') || 'View',
+              onClick: () => {
+                setResult(data as SnapResult);
+                setSelectedChild(child);
+                setPhase('result');
+              },
+            },
+          }
+        );
       } else {
-        toast.error(data.error || t('snap.couldNotIdentify'));
-        setPhase('camera');
+        toast.error(
+          `❌ ${child.name}: ${data.error || t('snap.couldNotIdentify')}`,
+          { duration: 6000 }
+        );
       }
     } catch (err) {
+      setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
       if (err instanceof DOMException && err.name === 'AbortError') {
-        toast.error(t('snap.tookTooLong'));
+        toast.error(`⏱ ${child.name}: ${t('snap.tookTooLong')}`, { duration: 6000 });
       } else {
-        toast.error(t('snap.analysisFailed'));
+        toast.error(`❌ ${child.name}: ${t('snap.analysisFailed')}`, { duration: 6000 });
       }
-      setPhase('camera');
     }
-  }, [capturedBlob, selectedChild, stopCamera]);
+  }, [capturedBlob, selectedChild, capturedPreview, stopCamera]);
 
   const startOver = useCallback(() => {
     stopCamera();
@@ -489,15 +528,20 @@ export default function SnapIdentifyPage() {
         </div>
       )}
 
-      {/* Phase: Analyzing */}
-      {phase === 'analyzing' && (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mb-6" />
-          <p className="text-lg font-medium text-gray-700">{analyzeProgress || 'Analyzing...'}</p>
-          <p className="text-sm text-gray-400 mt-2">{t('snap.analyzingSubtext')}</p>
-          {capturedPreview && (
-            <img src={capturedPreview} alt="" className="w-32 h-24 object-cover rounded-lg mt-4 opacity-60" />
-          )}
+      {/* Pending analyses floating indicator */}
+      {pendingSnaps.length > 0 && phase !== 'result' && (
+        <div className="fixed bottom-6 left-4 right-4 z-50 max-w-lg mx-auto">
+          <div className="bg-violet-600 text-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">
+                {t('snap.analyzingCount') || `Analyzing ${pendingSnaps.length} photo${pendingSnaps.length > 1 ? 's' : ''}...`}
+              </p>
+              <p className="text-xs text-white/70 truncate">
+                {pendingSnaps.map(p => p.childName).join(', ')}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
