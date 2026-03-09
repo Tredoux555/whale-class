@@ -14,11 +14,11 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🔥 NEXT SESSION PRIORITIES
 
-### Deploy Classroom Overview + Guru Whole-Class + Audit Fixes (Priority #0 — URGENT)
+### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. Features are broken in production without these fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: classroom overview + guru whole-class mode + 5 audit fixes" && git push origin main`
+All code is local, NOT yet pushed. Multiple features + batch reports + audit fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: batch generate all parent reports + classroom overview + guru whole-class + audit fixes" && git push origin main`
 
-**5 audit fixes included:** batch/route.ts auth fix (CRITICAL), classroom-context-builder wrong table name (CRITICAL), guru route school verification (HIGH), tool-executor classroomIdOverride (HIGH), batch route consolidation (LOW).
+**Includes:** Batch parent reports (2 new files), classroom overview print page (2 new files), guru whole-class mode (1 new file, 9 modified), 10 audit fixes across 6 cycles, photo-insight word boundary fix, reports/generate i18n fix, 17 new i18n keys.
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -60,7 +60,34 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 8, 2026)
+## CURRENT STATUS (Mar 10, 2026)
+
+### Session Work (Mar 10, 2026)
+
+**Batch Parent Reports "Generate All" + 5 Audit Fixes — COMPLETE, NOT YET DEPLOYED (2 new files, 6 modified, 6 audit cycles):**
+
+Built "Generate All Reports" dashboard card for teachers to generate weekly parent reports for ALL children at once. Also fixed 5 pre-existing audit findings.
+
+**New files (2):**
+- `app/api/montree/reports/batch/route.ts` — Per-child batch report API. Auth + rate limit (50/day) + 5 parallel DB queries (child, weekProgress, focusWorks, allProgress, media) + saves draft to `montree_weekly_reports`. Locale validated against `['en', 'zh']` whitelist. supabaseUrl guard for photo URLs.
+- `components/montree/reports/BatchReportsCard.tsx` — Dashboard card with sequential generation loop, AbortController, mountedRef pattern, progress bar, expandable per-child results, retry failed. Full i18n (16 keys).
+
+**Modified files (6):**
+- `app/montree/dashboard/page.tsx` — Wired BatchReportsCard after WeeklyAdminCard (teachers only)
+- `lib/montree/i18n/en.ts` — 17 new keys (16 `batchReports.*` + `common.networkError`)
+- `lib/montree/i18n/zh.ts` — 17 matching Chinese keys (perfect parity)
+- `app/api/montree/guru/photo-insight/route.ts` — Word boundary regex fix (CRITICAL: "hand" was matching "Sand Tray") + error handling on media update
+- `components/montree/guru/PhotoInsightButton.tsx` — Hardcoded title → i18n `t()` call
+- `app/api/montree/reports/generate/route.ts` — Removed ALL hardcoded Chinese, unified i18n for both locales
+
+**6 Audit Cycles:** Cycle 1 (29 issues → all fixed, full API rewrite + component rewrite), Cycle 2 (3 real fixes: locale validation, supabaseUrl guard, networkError key), Cycle 3 (CLEAN), Deep audit API (1 fix: date format consistency), Deep audit UI (CLEAN), Deep audit i18n (CLEAN).
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac to deploy. No new migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md`
+
+---
+
+## PREVIOUS STATUS (Mar 8, 2026)
 
 ### Session Work (Mar 8, 2026 — Late Night Session)
 
@@ -2373,7 +2400,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | **CURRENT** — ESL Guru upgrade + Spy Game & Command Cards generators |
+| `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | **CURRENT** — Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |
+| `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | ESL Guru upgrade + Spy Game & Command Cards generators |
 | `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | SWR cache + skeletons + image compression + audit fixes |
 | `docs/handoffs/HANDOFF_RAZ_TRACKER_REDESIGN_MAR5.md` | RAZ tracker redesign (status-first camera flow) + API auth fix |
 | `docs/handoffs/HANDOFF_VOICE_OBSERVATION_SYSTEM_MAR4.md` | Voice observation system (20 new files, Whisper + Haiku pipeline) |

@@ -228,6 +228,20 @@ export default function GuruChatThread({
     }
 
     try {
+      // Guard: whole-class mode requires a valid classroomId
+      if (isWholeClassMode && !classroomId) {
+        console.error('[GuruChat] Whole-class mode but no classroomId available');
+        const errorMsg: ChatMessage = {
+          id: `guru-error-${Date.now()}`,
+          content: 'Unable to load classroom data. Please go back to the dashboard and try again, or select a specific student.',
+          isUser: false,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, errorMsg]);
+        setSending(false);
+        return;
+      }
+
       // 95s client-side timeout (server allows 90s for batch classroom operations)
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 95_000);
@@ -238,7 +252,7 @@ export default function GuruChatThread({
         body: JSON.stringify({
           child_id: childId,
           question: text,
-          classroom_id: classroomId,
+          classroom_id: classroomId || undefined, // Don't send null, let server use auth.classroomId
           conversational: true,
           ...(imageUrl ? { image_url: imageUrl } : {}),
         }),

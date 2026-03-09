@@ -4,7 +4,7 @@
 // Parent portal layout with PWA install banner and feedback button
 
 import InstallBanner from '@/components/montree/InstallBanner';
-import FeedbackButton from '@/components/montree/FeedbackButton';
+// FeedbackButton removed Mar 10 — users can email feedback directly
 
 export default function ParentLayout({
   children,
@@ -15,7 +15,6 @@ export default function ParentLayout({
     <>
       {children}
       <InstallBanner />
-      <FeedbackButton userType="parent" />
     </>
   );
 }
