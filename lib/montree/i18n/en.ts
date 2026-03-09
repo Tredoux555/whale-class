@@ -2349,6 +2349,10 @@ export const en = {
   // Snap & Identify
   'snap.title': '📸 Snap & Identify',
   'snap.selectChildDesc': 'Select a child, then take a photo of them doing a work. The Guru will do a complete AMI observation analysis.',
+  'snap.snapFirstHint': 'Take a photo of any child working — tag them after',
+  'snap.tagChild': 'Tag Child →',
+  'snap.whoIsThis': 'Who is this?',
+  'snap.tapToTag': 'Tap the child to start analysis',
   'snap.photographing': 'Photographing:',
   'snap.changeChild': 'Change',
   'snap.hint': 'Capture the materials clearly — the Guru will do the rest',

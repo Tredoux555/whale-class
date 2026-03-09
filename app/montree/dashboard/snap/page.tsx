@@ -1,6 +1,6 @@
 // app/montree/dashboard/snap/page.tsx
-// "Snap & Identify v1" — One photo replaces the teacher's entire observation-analysis-planning workflow.
-// Sonnet identifies work, writes AMI observation, analyzes progression, recommends next steps.
+// "Snap & Identify v2" — Photo first, tag child after.
+// Flow: Camera → Review photo → Pick child → Analysis runs in background → Toast result
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -80,7 +80,23 @@ interface SnapResult {
   progress_updated: boolean;
 }
 
-type Phase = 'select-child' | 'camera' | 'analyzing' | 'result';
+// A captured snap waiting to be tagged or being analyzed
+interface HeldSnap {
+  id: number;
+  blob: Blob;
+  preview: string;
+  capturedAt: number;
+}
+
+interface PendingAnalysis {
+  id: number;
+  childName: string;
+  childId: string;
+  preview: string;
+  startedAt: number;
+}
+
+type Phase = 'camera' | 'review' | 'tag-child' | 'result';
 
 const STATUS_EMOJI: Record<string, string> = {
   presented: '📋',
@@ -116,7 +132,6 @@ const ADVANCE_LABELS: Record<string, { emoji: string; label: string; color: stri
   try_variation: { emoji: '🔀', label: 'Try a variation', color: 'bg-violet-50 text-violet-800' },
 };
 
-// i18n key maps — translate DB enum values to snap.* translation keys
 const CYCLE_I18N_KEY: Record<string, string> = {
   preparation: 'snap.cyclePreparation', active_work: 'snap.cycleActiveWork',
   repetition: 'snap.cycleRepetition', restoration: 'snap.cycleRestoration', unclear: 'snap.cycleUnclear',
@@ -150,7 +165,6 @@ function Section({ title, emoji, defaultOpen = false, children: content }: {
   );
 }
 
-// Area progress bar
 function AreaBar({ area, stats }: { area: string; stats: AreaStatData }) {
   const config = AREA_CONFIG[area as keyof typeof AREA_CONFIG];
   const pct = stats.total_in_curriculum > 0 ? Math.round((stats.mastered / stats.total_in_curriculum) * 100) : 0;
@@ -171,40 +185,40 @@ function AreaBar({ area, stats }: { area: string; stats: AreaStatData }) {
   );
 }
 
-interface PendingSnap {
-  childName: string;
-  childId: string;
-  preview: string;
-  startedAt: number;
-}
+let snapIdCounter = 0;
 
 export default function SnapIdentifyPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
-  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
-  const [phase, setPhase] = useState<Phase>('select-child');
+  const [phase, setPhase] = useState<Phase>('camera');
+
+  // The photo currently being held (taken but not yet tagged)
+  const [heldSnap, setHeldSnap] = useState<HeldSnap | null>(null);
+
+  // Background analyses in progress
+  const [pendingAnalyses, setPendingAnalyses] = useState<PendingAnalysis[]>([]);
+
+  // Result viewing
   const [result, setResult] = useState<SnapResult | null>(null);
-  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
-  const [capturedPreview, setCapturedPreview] = useState<string | null>(null);
+  const [resultChild, setResultChild] = useState<Child | null>(null);
+
+  // Camera state
   const [isStreaming, setIsStreaming] = useState(false);
   const [narrativeCopied, setNarrativeCopied] = useState(false);
   const [showZh, setShowZh] = useState(false);
-  const [analyzeProgress, setAnalyzeProgress] = useState('');
-  const [pendingSnaps, setPendingSnaps] = useState<PendingSnap[]>([]);
 
-  // Camera refs
+  // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const previewUrlRef = useRef<string | null>(null);
 
   // Load session + children
   useEffect(() => {
     const sess = getSession();
-    if (!sess) { router.push('/montree/login'); return; }
+    if (!sess) { router.push('/montree/login-select'); return; }
     setSession(sess);
 
     if (sess.classroom?.id) {
@@ -217,7 +231,7 @@ export default function SnapIdentifyPage() {
     }
   }, [router]);
 
-  // Cleanup camera, object URLs, and in-flight fetches on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (streamRef.current) {
@@ -228,12 +242,16 @@ export default function SnapIdentifyPage() {
         abortRef.current.abort();
         abortRef.current = null;
       }
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
-      }
     };
   }, []);
+
+  // Auto-start camera when entering camera phase
+  useEffect(() => {
+    if (phase === 'camera' && !heldSnap) {
+      const timer = setTimeout(() => startCamera(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, heldSnap]);
 
   const startCamera = useCallback(async () => {
     try {
@@ -251,7 +269,7 @@ export default function SnapIdentifyPage() {
       toast(t('snap.cameraNotAvailable'));
       fileInputRef.current?.click();
     }
-  }, []);
+  }, [t]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -260,15 +278,6 @@ export default function SnapIdentifyPage() {
     }
     setIsStreaming(false);
   }, []);
-
-  const handleChildSelect = useCallback((child: Child) => {
-    setSelectedChild(child);
-    setPhase('camera');
-    setResult(null);
-    setCapturedBlob(null);
-    setCapturedPreview(null);
-    setTimeout(() => startCamera(), 100);
-  }, [startCamera]);
 
   const captureFromCamera = useCallback(() => {
     if (!videoRef.current) return;
@@ -280,10 +289,15 @@ export default function SnapIdentifyPage() {
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) { toast.error('Failed to capture photo'); return; }
-      setCapturedBlob(blob);
       const url = URL.createObjectURL(blob);
-      previewUrlRef.current = url;
-      setCapturedPreview(url);
+      const snap: HeldSnap = {
+        id: ++snapIdCounter,
+        blob,
+        preview: url,
+        capturedAt: Date.now(),
+      };
+      setHeldSnap(snap);
+      setPhase('review');
       stopCamera();
     }, 'image/jpeg', 0.85);
   }, [stopCamera]);
@@ -291,56 +305,57 @@ export default function SnapIdentifyPage() {
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setCapturedBlob(file);
     const url = URL.createObjectURL(file);
-    previewUrlRef.current = url;
-    setCapturedPreview(url);
+    const snap: HeldSnap = {
+      id: ++snapIdCounter,
+      blob: file,
+      preview: url,
+      capturedAt: Date.now(),
+    };
+    setHeldSnap(snap);
+    setPhase('review');
     stopCamera();
   }, [stopCamera]);
 
-  const retake = useCallback(() => {
-    setCapturedBlob(null);
-    if (capturedPreview) URL.revokeObjectURL(capturedPreview);
-    setCapturedPreview(null);
+  const retakePhoto = useCallback(() => {
+    if (heldSnap) {
+      URL.revokeObjectURL(heldSnap.preview);
+      setHeldSnap(null);
+    }
     setPhase('camera');
-    setTimeout(() => startCamera(), 100);
-  }, [capturedPreview, startCamera]);
+  }, [heldSnap]);
 
-  const submitForAnalysis = useCallback(async () => {
-    if (!capturedBlob || !selectedChild) return;
+  const proceedToTag = useCallback(() => {
+    setPhase('tag-child');
+  }, []);
 
-    // Capture references before resetting UI
-    const blob = capturedBlob;
-    const child = selectedChild;
-    const preview = capturedPreview || '';
+  // Tag a child and submit for background analysis
+  const tagChildAndSubmit = useCallback(async (child: Child) => {
+    if (!heldSnap) return;
 
-    stopCamera();
+    // Capture references
+    const snap = heldSnap;
+    const analysisId = snap.id;
 
-    // Add to pending list and immediately reset UI so teacher can keep working
-    const pendingEntry: PendingSnap = {
+    // Add to pending analyses
+    const pending: PendingAnalysis = {
+      id: analysisId,
       childName: child.name,
       childId: child.id,
-      preview,
+      preview: snap.preview,
       startedAt: Date.now(),
     };
-    setPendingSnaps(prev => [...prev, pendingEntry]);
+    setPendingAnalyses(prev => [...prev, pending]);
 
-    // Show a brief toast so teacher knows it's working
-    toast(
-      `📸 ${t('snap.analyzingInBackground') || `Analyzing ${child.name}'s work in background...`}`,
-      { duration: 3000 }
-    );
+    // Toast and reset to camera immediately
+    toast(`📸 ${child.name} — ${t('snap.analyzingInBackground') || 'Analyzing in background...'}`, { duration: 3000 });
+    setHeldSnap(null);
+    setPhase('camera');
 
-    // Reset to camera for same child (most common flow: snap multiple kids in sequence)
-    setCapturedBlob(null);
-    setCapturedPreview(null);
-    setPhase('select-child');
-    setSelectedChild(null);
-
-    // Run analysis in background
+    // Background analysis
     try {
       const formData = new FormData();
-      formData.append('file', blob, 'snap.jpg');
+      formData.append('file', snap.blob, 'snap.jpg');
       formData.append('child_id', child.id);
 
       const controller = new AbortController();
@@ -358,67 +373,57 @@ export default function SnapIdentifyPage() {
         let errMsg = 'Analysis failed';
         try { const d = await res.json(); if (d?.error) errMsg = d.error; } catch { /* */ }
         toast.error(`❌ ${child.name}: ${errMsg}`, { duration: 6000 });
-        setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
+        setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
         return;
       }
 
       const data = await res.json();
-      setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
+      setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
+
+      // Clean up the preview URL now that we're done
+      URL.revokeObjectURL(snap.preview);
 
       if (data.success) {
-        // Show success toast with option to view results
         toast.success(
-          `✅ ${child.name}: ${data.work_name} — ${data.status}${data.progress_updated ? ' (progress saved)' : ''}`,
+          `✅ ${child.name}: ${data.work_name} — ${data.status}${data.progress_updated ? ' (saved)' : ''}`,
           {
             duration: 8000,
             action: {
               label: t('snap.viewResult') || 'View',
               onClick: () => {
                 setResult(data as SnapResult);
-                setSelectedChild(child);
+                setResultChild(child);
                 setPhase('result');
               },
             },
           }
         );
       } else {
-        toast.error(
-          `❌ ${child.name}: ${data.error || t('snap.couldNotIdentify')}`,
-          { duration: 6000 }
-        );
+        toast.error(`❌ ${child.name}: ${data.error || t('snap.couldNotIdentify')}`, { duration: 6000 });
       }
     } catch (err) {
-      setPendingSnaps(prev => prev.filter(p => p.startedAt !== pendingEntry.startedAt));
+      setPendingAnalyses(prev => prev.filter(p => p.id !== analysisId));
+      URL.revokeObjectURL(snap.preview);
       if (err instanceof DOMException && err.name === 'AbortError') {
         toast.error(`⏱ ${child.name}: ${t('snap.tookTooLong')}`, { duration: 6000 });
       } else {
         toast.error(`❌ ${child.name}: ${t('snap.analysisFailed')}`, { duration: 6000 });
       }
     }
-  }, [capturedBlob, selectedChild, capturedPreview, stopCamera]);
+  }, [heldSnap, t]);
 
-  const startOver = useCallback(() => {
+  const backToCamera = useCallback(() => {
     stopCamera();
-    setCapturedBlob(null);
-    if (capturedPreview) URL.revokeObjectURL(capturedPreview);
-    setCapturedPreview(null);
+    if (heldSnap) {
+      URL.revokeObjectURL(heldSnap.preview);
+      setHeldSnap(null);
+    }
     setResult(null);
-    setSelectedChild(null);
-    setPhase('select-child');
-    setNarrativeCopied(false);
-    setShowZh(false);
-  }, [stopCamera, capturedPreview]);
-
-  const snapAnother = useCallback(() => {
-    setCapturedBlob(null);
-    if (capturedPreview) URL.revokeObjectURL(capturedPreview);
-    setCapturedPreview(null);
-    setResult(null);
+    setResultChild(null);
     setNarrativeCopied(false);
     setShowZh(false);
     setPhase('camera');
-    setTimeout(() => startCamera(), 100);
-  }, [capturedPreview, startCamera]);
+  }, [stopCamera, heldSnap]);
 
   const copyNarrative = useCallback(() => {
     if (!result) return;
@@ -447,18 +452,71 @@ export default function SnapIdentifyPage() {
         <div className="w-16" />
       </div>
 
-      {/* Phase: Select Child */}
-      {phase === 'select-child' && (
+      {/* Phase: Camera — take photo first, no child selected yet */}
+      {phase === 'camera' && !heldSnap && (
+        <div className="flex flex-col items-center">
+          <div className="bg-white px-4 py-2 w-full max-w-lg text-center shadow-sm">
+            <p className="text-sm text-gray-600">{t('snap.snapFirstHint') || 'Take a photo of any child working — tag them after'}</p>
+          </div>
+
+          <div className="relative w-full max-w-lg aspect-[4/3] bg-black">
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+            {isStreaming && (
+              <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center bg-gradient-to-t from-black/60">
+                <button
+                  onClick={captureFromCamera}
+                  className="w-16 h-16 rounded-full bg-white border-4 border-violet-400 shadow-lg active:scale-95 transition-transform"
+                  aria-label="Capture photo"
+                />
+              </div>
+            )}
+          </div>
+
+          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileInput} className="hidden" />
+          <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-violet-600 hover:text-violet-700 underline">
+            {t('snap.uploadFromGallery')}
+          </button>
+        </div>
+      )}
+
+      {/* Phase: Review — photo taken, confirm or retake */}
+      {phase === 'review' && heldSnap && (
+        <div className="flex flex-col items-center">
+          <div className="relative w-full max-w-lg">
+            <img src={heldSnap.preview} alt="Captured" className="w-full aspect-[4/3] object-cover" />
+            <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/60">
+              <button onClick={retakePhoto} className="px-5 py-2.5 bg-white/90 text-gray-700 rounded-lg font-medium shadow-md">
+                {t('snap.retake')}
+              </button>
+              <button onClick={proceedToTag} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg font-medium shadow-md hover:bg-violet-700">
+                {t('snap.tagChild') || 'Tag Child →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Phase: Tag Child — pick which child this photo belongs to */}
+      {phase === 'tag-child' && heldSnap && (
         <div className="max-w-lg mx-auto p-4">
-          <p className="text-gray-600 mb-4 text-center">
-            {t('snap.selectChildDesc') || 'Select a child, then take a photo of them doing a work. The Guru will do a complete AMI observation analysis.'}
-          </p>
+          {/* Thumbnail of the held snap */}
+          <div className="flex items-center gap-3 mb-4 bg-white rounded-xl p-3 shadow-sm">
+            <img src={heldSnap.preview} alt="Snap" className="w-16 h-12 rounded-lg object-cover" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-gray-800">{t('snap.whoIsThis') || 'Who is this?'}</p>
+              <p className="text-xs text-gray-500">{t('snap.tapToTag') || 'Tap the child to start analysis'}</p>
+            </div>
+            <button onClick={retakePhoto} className="text-xs text-gray-400 hover:text-gray-600">
+              {t('snap.retake')}
+            </button>
+          </div>
+
           <div className="space-y-2">
             {children.map(child => (
               <button
                 key={child.id}
-                onClick={() => handleChildSelect(child)}
-                className="w-full flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-left"
+                onClick={() => tagChildAndSubmit(child)}
+                className="w-full flex items-center gap-3 p-3 bg-white rounded-xl shadow-sm hover:shadow-md hover:bg-violet-50 transition-all text-left"
               >
                 {child.photo_url ? (
                   <img src={child.photo_url} alt="" className="w-10 h-10 rounded-full object-cover" />
@@ -468,77 +526,28 @@ export default function SnapIdentifyPage() {
                   </span>
                 )}
                 <span className="font-medium text-gray-800">{child.name}</span>
-                <span className="ml-auto text-violet-500">📸</span>
+                <span className="ml-auto text-violet-500">→</span>
               </button>
             ))}
           </div>
+
           {children.length === 0 && (
             <p className="text-center text-gray-400 py-8">{t('common.loading')}</p>
           )}
         </div>
       )}
 
-      {/* Phase: Camera */}
-      {phase === 'camera' && selectedChild && (
-        <div className="flex flex-col items-center">
-          <div className="bg-white px-4 py-2 flex items-center gap-2 w-full max-w-lg justify-center shadow-sm">
-            <span className="text-sm text-gray-500">{t('snap.photographing')}</span>
-            <span className="font-semibold text-violet-700">{selectedChild.name}</span>
-            <button onClick={startOver} className="ml-auto text-xs text-gray-400 hover:text-gray-600">{t('snap.changeChild')}</button>
-          </div>
-
-          {!capturedPreview ? (
-            <div className="relative w-full max-w-lg aspect-[4/3] bg-black">
-              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-              {isStreaming && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center bg-gradient-to-t from-black/60">
-                  <button
-                    onClick={captureFromCamera}
-                    className="w-16 h-16 rounded-full bg-white border-4 border-violet-400 shadow-lg active:scale-95 transition-transform"
-                    aria-label="Capture photo"
-                  />
-                </div>
-              )}
-              <div className="absolute top-4 left-4 right-4 text-center">
-                <p className="bg-black/50 text-white text-sm px-3 py-1.5 rounded-lg inline-block">
-                  {t('snap.hint')}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="relative w-full max-w-lg">
-              <img src={capturedPreview} alt="Captured" className="w-full aspect-[4/3] object-cover" />
-              <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/60">
-                <button onClick={retake} className="px-5 py-2.5 bg-white/90 text-gray-700 rounded-lg font-medium shadow-md">
-                  {t('snap.retake')}
-                </button>
-                <button onClick={submitForAnalysis} className="px-5 py-2.5 bg-violet-600 text-white rounded-lg font-medium shadow-md hover:bg-violet-700">
-                  {t('snap.analyzeWork')}
-                </button>
-              </div>
-            </div>
-          )}
-
-          <input ref={fileInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileInput} className="hidden" />
-          {!capturedPreview && (
-            <button onClick={() => fileInputRef.current?.click()} className="mt-3 text-sm text-violet-600 hover:text-violet-700 underline">
-              {t('snap.uploadFromGallery')}
-            </button>
-          )}
-        </div>
-      )}
-
       {/* Pending analyses floating indicator */}
-      {pendingSnaps.length > 0 && phase !== 'result' && (
+      {pendingAnalyses.length > 0 && phase !== 'result' && (
         <div className="fixed bottom-6 left-4 right-4 z-50 max-w-lg mx-auto">
           <div className="bg-violet-600 text-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium">
-                {t('snap.analyzingCount') || `Analyzing ${pendingSnaps.length} photo${pendingSnaps.length > 1 ? 's' : ''}...`}
+                {t('snap.analyzingCount') || `Analyzing ${pendingAnalyses.length} photo${pendingAnalyses.length > 1 ? 's' : ''}...`}
               </p>
               <p className="text-xs text-white/70 truncate">
-                {pendingSnaps.map(p => p.childName).join(', ')}
+                {pendingAnalyses.map(p => p.childName).join(', ')}
               </p>
             </div>
           </div>
@@ -546,7 +555,7 @@ export default function SnapIdentifyPage() {
       )}
 
       {/* Phase: Result */}
-      {phase === 'result' && result && selectedChild && (
+      {phase === 'result' && result && resultChild && (
         <div className="max-w-lg mx-auto p-4 space-y-3">
 
           {/* 1. Photo + Work ID Card */}
@@ -597,7 +606,7 @@ export default function SnapIdentifyPage() {
             </div>
           </div>
 
-          {/* 2. Observation Notes (default open) */}
+          {/* 2. Observation Notes */}
           <Section title={t('snap.sectionObservation')} emoji="👁" defaultOpen>
             <p className="text-gray-700 text-sm leading-relaxed mb-3">{obs.detailed_notes || t('snap.noDetailedNotes')}</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
@@ -654,7 +663,7 @@ export default function SnapIdentifyPage() {
             </div>
           )}
 
-          {/* 4. Strengths & Weaknesses */}
+          {/* 4. Area Progress */}
           <Section title={t('snap.sectionAreaProgress')} emoji="📊">
             {result.area_stats && (
               <div className="space-y-2 mb-3">
@@ -707,7 +716,7 @@ export default function SnapIdentifyPage() {
             </Section>
           ) : null}
 
-          {/* 6. Next Steps (default open) */}
+          {/* 6. Next Steps */}
           <Section title={t('snap.sectionNextSteps')} emoji="🎯" defaultOpen>
             {nextSteps.stay_or_advance && ADVANCE_LABELS[nextSteps.stay_or_advance] && (
               <div className={`inline-block text-sm font-medium px-3 py-1.5 rounded-lg mb-3 ${ADVANCE_LABELS[nextSteps.stay_or_advance].color}`}>
@@ -771,7 +780,7 @@ export default function SnapIdentifyPage() {
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
             <p className="text-emerald-700 text-sm">
               {result.progress_updated
-                ? `✅ ${selectedChild.name} — ${t('snap.progressUpdated')} — ${result.work_name} → ${result.status}`
+                ? `✅ ${resultChild.name} — ${t('snap.progressUpdated')} — ${result.work_name} → ${result.status}`
                 : `⚠️ ${t('snap.progressIssue')}`
               }
             </p>
@@ -781,24 +790,18 @@ export default function SnapIdentifyPage() {
           {/* 9. Actions */}
           <div className="flex gap-3 pt-2">
             <button
-              onClick={snapAnother}
+              onClick={backToCamera}
               className="flex-1 py-3 bg-violet-600 text-white rounded-xl font-medium hover:bg-violet-700 transition-colors"
             >
-              📸 {t('snap.snapAnother')} ({selectedChild.name})
-            </button>
-            <button
-              onClick={startOver}
-              className="py-3 px-4 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition-colors"
-            >
-              {t('snap.changeChildBtn')}
+              📸 {t('snap.snapAnother') || 'Snap Another'}
             </button>
           </div>
 
           <button
-            onClick={() => router.push(`/montree/dashboard/${selectedChild.id}/progress`)}
+            onClick={() => router.push(`/montree/dashboard/${resultChild.id}/progress`)}
             className="w-full py-2.5 text-sm text-violet-600 hover:text-violet-700 underline"
           >
-            {selectedChild.name} — {t('snap.viewProgress')}
+            {resultChild.name} — {t('snap.viewProgress')}
           </button>
         </div>
       )}
