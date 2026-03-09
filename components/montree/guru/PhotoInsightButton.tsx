@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface PhotoInsightButtonProps {
   childId: string;
@@ -8,6 +9,7 @@ interface PhotoInsightButtonProps {
 }
 
 export default function PhotoInsightButton({ childId, mediaId }: PhotoInsightButtonProps) {
+  const { locale, t } = useI18n();
   const [insight, setInsight] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -21,7 +23,7 @@ export default function PhotoInsightButton({ childId, mediaId }: PhotoInsightBut
       const res = await fetch('/api/montree/guru/photo-insight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ child_id: childId, media_id: mediaId }),
+        body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
       });
 
       const data = await res.json();
@@ -38,7 +40,7 @@ export default function PhotoInsightButton({ childId, mediaId }: PhotoInsightBut
   };
 
   return (
-    <div className="mt-1">
+    <div className="mt-2 space-y-1">
       {!insight && !error && (
         <button
           onClick={handleClick}
@@ -49,29 +51,26 @@ export default function PhotoInsightButton({ childId, mediaId }: PhotoInsightBut
           {loading ? (
             <>
               <span className="animate-spin text-xs">⏳</span>
-              <span>Observing...</span>
+              <span>{t('guru.observing')}</span>
             </>
           ) : (
             <>
               <span>🌿</span>
-              <span>What does the Guru see?</span>
+              <span>{t('guru.whatDoesGuruSee')}</span>
             </>
           )}
         </button>
       )}
 
       {insight && (
-        <div className="mt-1 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-          <p className="text-xs text-emerald-800 leading-relaxed">
-            <span className="font-medium">🌿 Guru: </span>
-            {insight}
-          </p>
-        </div>
+        <p className="text-xs text-gray-700 leading-relaxed italic">
+          <span className="font-medium text-emerald-700">🌿 Guru:</span> {insight}
+        </p>
       )}
 
       {error && (
-        <p className="text-xs text-gray-400 mt-1">
-          Couldn&apos;t analyze this photo right now.
+        <p className="text-xs text-gray-400">
+          {t('guru.couldNotAnalyzePhoto')}
         </p>
       )}
     </div>

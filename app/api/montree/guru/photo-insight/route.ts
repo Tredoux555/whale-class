@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { child_id, media_id } = body;
+    const { child_id, media_id, locale = 'en' } = body;
 
     if (!child_id || !media_id) {
       return NextResponse.json(
@@ -93,16 +93,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Photo URL not accessible' }, { status: 400 });
     }
 
-    // Call Sonnet with vision
-    const message = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: 300,
-      system: `You are a warm, observant Montessori guide. You're looking at a photo of a child working. Comment on what you observe in 2-3 sentences:
+    // Build locale-aware system prompt
+    const systemPrompt = locale === 'zh'
+      ? `You are a warm, observant Montessori guide. You're looking at a photo of a child working. Comment on what you observe in 2-3 sentences in Simplified Chinese:
 - What Montessori activity or work do you see?
 - Note concentration, grip, posture, or technique (be specific and positive)
 - Keep it warm and encouraging — this goes to the parent
 
-Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Montessori activity, comment on what you observe about the child's engagement.`,
+Respond ENTIRELY in Simplified Chinese. Do NOT use headers or English text. Just 2-3 flowing sentences in Chinese. If the photo isn't clearly a Montessori activity, comment on what you observe about the child's engagement.`
+      : `You are a warm, observant Montessori guide. You're looking at a photo of a child working. Comment on what you observe in 2-3 sentences:
+- What Montessori activity or work do you see?
+- Note concentration, grip, posture, or technique (be specific and positive)
+- Keep it warm and encouraging — this goes to the parent
+
+Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Montessori activity, comment on what you observe about the child's engagement.`;
+
+    // Call Sonnet with vision
+    const message = await anthropic.messages.create({
+      model: AI_MODEL,
+      max_tokens: 300,
+      system: systemPrompt,
       messages: [{
         role: 'user',
         content: [
@@ -123,6 +133,23 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('');
 
+    // Try to identify the work from the response or current works
+    // This helps tag the photo with the activity the child was doing
+    let identifiedWorkName: string | null = null;
+    let identifiedArea: string | null = null;
+
+    if (currentWorks && currentWorks.length > 0) {
+      // Simple heuristic: check if any current work name is mentioned in the insight
+      const insightLower = insightText.toLowerCase();
+      for (const work of currentWorks) {
+        if (work.work_name && insightLower.includes(work.work_name.toLowerCase())) {
+          identifiedWorkName = work.work_name;
+          identifiedArea = work.area;
+          break; // Use the first match
+        }
+      }
+    }
+
     // Get classroom_id for the insert
     const { data: childRecord } = await supabase
       .from('montree_children')
@@ -130,7 +157,7 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
       .eq('id', child_id)
       .single();
 
-    // Cache per media_id
+    // Cache per media_id in guru interactions
     await supabase
       .from('montree_guru_interactions')
       .insert({
@@ -146,6 +173,18 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
           photo_url: photoUrl,
         },
       });
+
+    // Update the media record with identified work metadata (if found)
+    if (identifiedWorkName && identifiedArea) {
+      await supabase
+        .from('montree_media')
+        .update({
+          work_name: identifiedWorkName,
+          area: identifiedArea,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', media_id);
+    }
 
     return NextResponse.json({ success: true, insight: insightText });
 

@@ -7,7 +7,7 @@ import type { PDFReportData } from '@/lib/montree/reports/pdf-types';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
-import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator } from '@/lib/montree/i18n/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,6 +59,10 @@ export async function GET(request: NextRequest) {
       .gte('updated_at', startDate)
       .lte('updated_at', endDate + 'T23:59:59');
 
+    // Get locale and translator for home extensions
+    const locale = getLocaleFromRequest(request.url);
+    const t = getTranslator(locale);
+
     // Build highlights from progress, enriched with Chinese names
     // Status values: not_started, presented, practicing, mastered
     const highlights = (progress || [])
@@ -70,7 +74,7 @@ export async function GET(request: NextRequest) {
         workArea: p.area,
         observation: p.notes || `Working on ${p.work_name}`,
         developmentalNote: p.status === 'mastered' ? 'Mastered this skill!' : undefined,
-        homeExtension: getHomeExtension(p.area),
+        homeExtension: getHomeExtension(p.area, t),
       }));
 
     // Build PDF data
@@ -88,7 +92,6 @@ export async function GET(request: NextRequest) {
     };
 
     // Generate PDF with locale support
-    const locale = getLocaleFromRequest(request.url);
     const pdfBuffer = await generateReportPDF(pdfData, locale);
 
     // Return as downloadable PDF
@@ -105,13 +108,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getHomeExtension(area: string): string {
-  const extensions: Record<string, string> = {
-    practical_life: 'Practice pouring water or folding clothes at home',
-    sensorial: 'Sort objects by color, size, or shape together',
-    mathematics: 'Count items during daily activities like setting the table',
-    language: 'Read together and point out letters in books and signs',
-    cultural: 'Explore nature walks and discuss plants and animals',
+function getHomeExtension(area: string, t: (key: string) => string): string {
+  const keyMap: Record<string, string> = {
+    practical_life: 'homeExtension.practicalLife',
+    sensorial: 'homeExtension.sensorial',
+    mathematics: 'homeExtension.mathematics',
+    language: 'homeExtension.language',
+    cultural: 'homeExtension.cultural',
   };
-  return extensions[area] || 'Continue exploring and learning together!';
+  const key = keyMap[area] || 'homeExtension.default';
+  return t(key);
 }

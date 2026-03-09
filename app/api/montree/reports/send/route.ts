@@ -20,8 +20,8 @@ export async function POST(request: NextRequest) {
     );
 
     const body = await request.json();
-    const { child_id } = body;
-    const locale = getLocaleFromRequest(request.url);
+    const { child_id, locale: requestLocale } = body;
+    const locale = (requestLocale as 'en' | 'zh') || getLocaleFromRequest(request.url);
     const t = getTranslator(locale);
 
     if (!child_id) {
