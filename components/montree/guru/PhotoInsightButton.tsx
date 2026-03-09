@@ -46,7 +46,7 @@ export default function PhotoInsightButton({ childId, mediaId }: PhotoInsightBut
           onClick={handleClick}
           disabled={loading}
           className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50"
-          title="Ask the Guru about this photo"
+          title={t('guru.whatDoesGuruSee')}
         >
           {loading ? (
             <>

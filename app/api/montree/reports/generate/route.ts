@@ -169,56 +169,37 @@ function generateParentReport(
   const t = getTranslator(locale);
   const firstName = analysis.child_name.split(' ')[0];
 
-  // Generate greeting based on emotional state
-  // For Chinese, provide sensible defaults if translation keys don't exist
+  // Generate greeting based on emotional state — using i18n keys for both locales
   let greeting: string;
-  if (locale === 'zh') {
-    if (analysis.emotional_state === 'positive') {
-      greeting = `${firstName}这一周在教室里表现得很积极主动！`;
-    } else {
-      greeting = `${firstName}在教室里度过了美好的一周！`;
-    }
+  if (analysis.emotional_state === 'positive') {
+    greeting = t('report.generate.activeWeek' as any, `${firstName} had an active and engaged week!`).replace('{name}', firstName);
   } else {
     greeting = t('report.generate.wonderfulWeek' as any, `${firstName} had a wonderful week in the classroom!`).replace('{name}', firstName);
-    if (analysis.emotional_state === 'positive') {
-      greeting = t('report.generate.activeWeek' as any, `${firstName} had an active and engaged week!`).replace('{name}', firstName);
-    }
   }
 
-  // Generate highlights
+  // Generate highlights — using i18n keys for both locales
   const highlights: string[] = [];
   if (analysis.repetition_highlights.length > 0) {
-    let deepConcentration: string;
-    if (locale === 'zh') {
-      deepConcentration = `${firstName}在${analysis.repetition_highlights[0].work}上表现出了深度的专注力（${analysis.repetition_highlights[0].count}次）。`;
-    } else {
-      deepConcentration = t('report.generate.deepConcentration' as any, `${firstName} showed deep concentration with {works}.`)
+    const worksText = `${analysis.repetition_highlights[0].work} (${analysis.repetition_highlights[0].count}x)`;
+    highlights.push(
+      t('report.generate.deepConcentration' as any, `${firstName} showed deep concentration with {works}.`)
         .replace('{name}', firstName)
-        .replace('{works}', `${analysis.repetition_highlights[0].work} (${analysis.repetition_highlights[0].count}x)`);
-    }
-    highlights.push(deepConcentration);
+        .replace('{works}', worksText)
+    );
   }
   if (analysis.concentration_assessment === 'strong') {
-    let excellentFocus: string;
-    if (locale === 'zh') {
-      excellentFocus = `${firstName}在工作时间展现了出色的专注力。`;
-    } else {
-      excellentFocus = t('report.generate.excellentFocus' as any, `${firstName} demonstrated excellent focus during work time.`)
-        .replace('{name}', firstName);
-    }
-    highlights.push(excellentFocus);
+    highlights.push(
+      t('report.generate.excellentFocus' as any, `${firstName} demonstrated excellent focus during work time.`)
+        .replace('{name}', firstName)
+    );
   }
   const activePeriods = analysis.detected_sensitive_periods.filter(p => p.status === 'active');
   if (activePeriods.length > 0) {
-    let specialInterest: string;
-    if (locale === 'zh') {
-      specialInterest = `${firstName}对${activePeriods[0].period_name}领域表现出了特殊的兴趣。`;
-    } else {
-      specialInterest = t('report.generate.specialInterest' as any, `${firstName} is showing special interest in the {area} area.`)
+    highlights.push(
+      t('report.generate.specialInterest' as any, `${firstName} is showing special interest in the {area} area.`)
         .replace('{name}', firstName)
-        .replace('{area}', activePeriods[0].period_name.toLowerCase());
-    }
-    highlights.push(specialInterest);
+        .replace('{area}', activePeriods[0].period_name.toLowerCase())
+    );
   }
 
   // Generate areas explored
@@ -234,30 +215,16 @@ function generateParentReport(
       };
     });
 
-  // Home suggestions
-  let homeSuggestions: string[];
-  if (locale === 'zh') {
-    homeSuggestions = [
-      '继续在家里鼓励独立性——让他们帮忙做简单的家务！',
-      '每天一起阅读，并指出环境中的字母。',
-      '提供分类、计数和整理的机会。',
-    ];
-  } else {
-    homeSuggestions = [
-      t('report.generate.encourageIndependence' as any, 'Continue encouraging independence at home — let them help with simple tasks!'),
-      t('report.generate.readTogether' as any, 'Read together daily and point out letters in the environment.'),
-      t('report.generate.sortAndCount' as any, 'Provide opportunities for sorting, counting, and organizing.'),
-    ];
-  }
+  // Home suggestions — using i18n keys for both locales
+  const homeSuggestions: string[] = [
+    t('report.generate.encourageIndependence' as any, 'Continue encouraging independence at home — let them help with simple tasks!'),
+    t('report.generate.readTogether' as any, 'Read together daily and point out letters in the environment.'),
+    t('report.generate.sortAndCount' as any, 'Provide opportunities for sorting, counting, and organizing.'),
+  ];
 
-  // Closing
-  let closing: string;
-  if (locale === 'zh') {
-    closing = `我们很高兴${firstName}在我们的教室里。下周见！`;
-  } else {
-    closing = t('report.generate.loveHaving' as any, `We love having ${firstName} in our classroom. See you next week!`)
-      .replace('{name}', firstName);
-  }
+  // Closing — using i18n keys for both locales
+  const closing = t('report.generate.loveHaving' as any, `We love having ${firstName} in our classroom. See you next week!`)
+    .replace('{name}', firstName);
 
   return {
     type: 'parent',

@@ -28,6 +28,7 @@ export const en = {
   'common.update': 'Update',
   'common.saveAll': 'Save All',
   'common.tryAgain': 'Try again',
+  'common.networkError': 'Network error',
   'common.connectionError': 'Connection error. Please try again.',
   'common.students': 'students',
   'common.adding': 'Adding...',
@@ -2358,6 +2359,24 @@ export const en = {
   'batchAdmin.retryFailed': 'Retry Failed',
   'batchAdmin.copyAllRows': 'Copy All Plan Rows',
   'batchAdmin.cancel': 'Cancel',
+
+  // Batch Parent Reports
+  'batchReports.title': 'Weekly Parent Reports',
+  'batchReports.generateAll': 'Generate All',
+  'batchReports.cancel': 'Cancel',
+  'batchReports.generating': 'Generating reports...',
+  'batchReports.done': 'Done',
+  'batchReports.failed': 'Failed',
+  'batchReports.retryFailed': 'Retry',
+  'batchReports.hideDetails': 'Hide details',
+  'batchReports.showDetails': 'Show details',
+  'batchReports.childrenCount': '{count} children',
+  'batchReports.activitiesThisWeek': 'activities this week',
+  'batchReports.masteredLabel': 'mastered',
+  'batchReports.worksLabel': 'works',
+  'batchReports.areasLabel': 'areas',
+  'batchReports.savedAsDrafts': 'Reports saved as drafts. View and send from each child\'s Reports tab.',
+  'batchReports.masteredCount': '{name} has mastered {count} works — amazing!',
 
   // Weekly Admin Generator (legacy)
   'weeklyAdmin.title': 'Weekly Admin',

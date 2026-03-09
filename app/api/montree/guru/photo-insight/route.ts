@@ -139,13 +139,18 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
     let identifiedArea: string | null = null;
 
     if (currentWorks && currentWorks.length > 0) {
-      // Simple heuristic: check if any current work name is mentioned in the insight
+      // Word-boundary matching to avoid false positives (e.g., "hand" matching "Sand Tray")
+      // Only match work names with 3+ characters to avoid noise
       const insightLower = insightText.toLowerCase();
       for (const work of currentWorks) {
-        if (work.work_name && insightLower.includes(work.work_name.toLowerCase())) {
-          identifiedWorkName = work.work_name;
-          identifiedArea = work.area;
-          break; // Use the first match
+        if (work.work_name && work.work_name.length >= 3) {
+          const escaped = work.work_name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+          if (regex.test(insightLower)) {
+            identifiedWorkName = work.work_name;
+            identifiedArea = work.area;
+            break;
+          }
         }
       }
     }
@@ -176,7 +181,7 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
 
     // Update the media record with identified work metadata (if found)
     if (identifiedWorkName && identifiedArea) {
-      await supabase
+      const { error: mediaUpdateError } = await supabase
         .from('montree_media')
         .update({
           work_name: identifiedWorkName,
@@ -184,6 +189,10 @@ Do NOT use headers. Just 2-3 flowing sentences. If the photo isn't clearly a Mon
           updated_at: new Date().toISOString(),
         })
         .eq('id', media_id);
+
+      if (mediaUpdateError) {
+        console.error('[Guru PhotoInsight] Failed to update media metadata:', mediaUpdateError);
+      }
     }
 
     return NextResponse.json({ success: true, insight: insightText });
