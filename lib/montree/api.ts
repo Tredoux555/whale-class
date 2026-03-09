@@ -65,10 +65,26 @@ export async function montreeApi(
     }
   }
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  // Add request timeout (30s default) to prevent hanging requests
+  const timeoutMs = 30000;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  // If caller provided a signal, listen for their abort too
+  if (options.signal) {
+    options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   // If server returns 401, the token is expired or invalid
   if (response.status === 401) {
