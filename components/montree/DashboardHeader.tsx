@@ -163,6 +163,9 @@ export default function DashboardHeader() {
 
         {/* Right: Action icons */}
         <div className="flex items-center gap-2">
+          {/* Language toggle — always visible, far left */}
+          <LanguageToggle />
+
           {/* Primary tools — always visible */}
           <Link
             href="/montree/dashboard/snap"
@@ -201,7 +204,6 @@ export default function DashboardHeader() {
               📖
             </Link>
           )}
-          <LanguageToggle />
           <InboxButton
             conversationId={session.teacher.id}
             userName={session.teacher.name || 'Teacher'}

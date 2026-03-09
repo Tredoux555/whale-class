@@ -44,13 +44,16 @@ export interface FocusWorksSectionProps {
   smartNoteProcessing?: string | null;
 }
 
-export const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
-  not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
-  presented: { label: 'P', bg: 'bg-amber-300', text: 'text-amber-800' },
-  practicing: { label: 'Pr', bg: 'bg-blue-400', text: 'text-blue-800' },
-  mastered: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' },
-  completed: { label: 'M', bg: 'bg-emerald-400', text: 'text-emerald-800' }, // Legacy alias
-};
+// Status config with translated labels
+function getStatusConfig(t: (key: string) => string): Record<string, { label: string; bg: string; text: string }> {
+  return {
+    not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
+    presented: { label: t('status.presented'), bg: 'bg-amber-300', text: 'text-amber-800' },
+    practicing: { label: t('status.practicing'), bg: 'bg-blue-400', text: 'text-blue-800' },
+    mastered: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' },
+    completed: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' }, // Legacy alias
+  };
+}
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -81,6 +84,7 @@ export default function FocusWorksSection({
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
+  const statusConfig = getStatusConfig(t);
 
   // Copy text to clipboard
   const copyText = async (text: string) => {
@@ -109,8 +113,8 @@ export default function FocusWorksSection({
           const areaExtras = extraWorks.filter(e => normalizeArea(e.area) === area);
 
           const status = focusWork
-            ? (STATUS_CONFIG[focusWork.status] || STATUS_CONFIG.not_started)
-            : STATUS_CONFIG.not_started;
+            ? (statusConfig[focusWork.status] || statusConfig.not_started)
+            : statusConfig.not_started;
           const isExpanded = expandedIndex === area;
           const guruDetail = guruAreaDetails?.[area] || null;
 
@@ -310,7 +314,7 @@ export default function FocusWorksSection({
               {isExpanded && areaExtras.length > 0 && (
                 <div className="ml-8 space-y-1">
                   {areaExtras.map((extra) => {
-                    const extraStatus = STATUS_CONFIG[extra.status] || STATUS_CONFIG.not_started;
+                    const extraStatus = statusConfig[extra.status] || statusConfig.not_started;
                     return (
                       <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
                         <span className="text-xs text-gray-400">└</span>

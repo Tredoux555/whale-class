@@ -149,6 +149,14 @@ export const zh = {
   'report.generate': '生成报告',
   'report.download': '下载PDF',
 
+  // Home Extensions (activities for parents to do at home)
+  'homeExtension.practicalLife': '在家练习倒水或折叠衣服',
+  'homeExtension.sensorial': '按颜色、大小或形状一起分类物体',
+  'homeExtension.mathematics': '在日常活动中数数，如摆放餐桌',
+  'homeExtension.language': '一起阅读，指出书籍和标志中的字母',
+  'homeExtension.cultural': '探索自然散步，讨论植物和动物',
+  'homeExtension.default': '继续一起探索和学习！',
+
   // Curriculum
   'curriculum.title': '课程',
   'curriculum.allWorks': '全部工作',
@@ -1212,6 +1220,10 @@ export const zh = {
   'parentReport.photosThisWeek': '本周照片',
   'parentReport.recommendationsForHome': '家庭建议',
   'parentReport.reportGenerated': '报告已生成',
+  'parentReport.statusMastered': '⭐ 已掌握',
+  'parentReport.statusPracticing': '🔄 练习中',
+  'parentReport.statusIntroduced': '🌱 已展示',
+  'parentReport.weekOf': '周',
 
   // Phase 9 — Library
   'library.openResource': '打开资源',
@@ -2374,6 +2386,9 @@ export const zh = {
   'guru.imageUploading': '上传中...',
   'guru.removeImage': '移除图片',
   'guru.imageUploadFailed': '图片上传失败',
+  'guru.observing': '正在观察...',
+  'guru.whatDoesGuruSee': 'Guru看到什么了？',
+  'guru.couldNotAnalyzePhoto': '暂无法分析此照片。',
 
   // Snap & Identify
   'snap.title': '📸 拍照识别',

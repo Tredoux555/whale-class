@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface HighlightItem {
   work: string;
@@ -118,7 +119,7 @@ export default function ParentReportPage() {
     }
     // Last resort: use created_at
     const created = new Date(report.created_at);
-    const weekOf = locale === 'zh' ? '周' : 'Week of';
+    const weekOf = t('parentReport.weekOf' as any);
     return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
   };
 
@@ -172,10 +173,11 @@ export default function ParentReportPage() {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
       {/* Header */}
       <header className="bg-white shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 py-4">
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/montree/parent/dashboard" className="text-emerald-600 hover:underline text-sm flex items-center gap-1">
             ← {t('common.backToDashboard')}
           </Link>
+          <LanguageToggle />
         </div>
       </header>
 
@@ -293,14 +295,13 @@ export default function ParentReportPage() {
                       </div>
                     )}
                   </div>
-                ) : work.photo_url ? (
-                  <p className="text-gray-600 text-sm">
-                    {areaEmoji[work.area] || '📌'} Your child practiced this{' '}
-                    <span className="capitalize">{work.area.replace('_', ' ')}</span> activity.
-                  </p>
                 ) : (
-                  <p className="text-gray-500 text-sm capitalize">
-                    {areaEmoji[work.area] || '📌'} {work.area.replace('_', ' ')}
+                  // Fallback when no description - just show area and activity label
+                  <p className="text-gray-600 text-sm">
+                    {areaEmoji[work.area] || '📌'}
+                    {locale === 'zh'
+                      ? `您的孩子在这个${work.area.replace('_', ' ')}活动中进行了练习。`
+                      : `Your child practiced this ${work.area.replace('_', ' ')} activity.`}
                   </p>
                 )}
               </div>

@@ -149,6 +149,14 @@ export const en = {
   'report.generate': 'Generate Report',
   'report.download': 'Download PDF',
 
+  // Home Extensions (activities for parents to do at home)
+  'homeExtension.practicalLife': 'Practice pouring water or folding clothes at home',
+  'homeExtension.sensorial': 'Sort objects by color, size, or shape together',
+  'homeExtension.mathematics': 'Count items during daily activities like setting the table',
+  'homeExtension.language': 'Read together and point out letters in books and signs',
+  'homeExtension.cultural': 'Explore nature walks and discuss plants and animals',
+  'homeExtension.default': 'Continue exploring and learning together!',
+
   // Curriculum
   'curriculum.title': 'Curriculum',
   'curriculum.allWorks': 'All Works',
@@ -1212,6 +1220,10 @@ export const en = {
   'parentReport.photosThisWeek': 'Photos This Week',
   'parentReport.recommendationsForHome': 'Recommendations for Home',
   'parentReport.reportGenerated': 'Report generated',
+  'parentReport.statusMastered': '⭐ Mastered',
+  'parentReport.statusPracticing': '🔄 Practicing',
+  'parentReport.statusIntroduced': '🌱 Introduced',
+  'parentReport.weekOf': 'Week of',
 
   // Phase 9 — Library
   'library.openResource': 'Open Resource',
@@ -2373,6 +2385,9 @@ export const en = {
   'guru.imageUploading': 'Uploading...',
   'guru.removeImage': 'Remove image',
   'guru.imageUploadFailed': 'Image upload failed',
+  'guru.observing': 'Observing...',
+  'guru.whatDoesGuruSee': 'What does the Guru see?',
+  'guru.couldNotAnalyzePhoto': 'Couldn\'t analyze this photo right now.',
 
   // Snap & Identify
   'snap.title': '📸 Snap & Identify',
