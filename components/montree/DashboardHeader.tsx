@@ -161,21 +161,7 @@ export default function DashboardHeader() {
 
         {/* Right: Action icons */}
         <div className="flex items-center gap-2">
-          <LanguageToggle />
-          <InboxButton
-            conversationId={session.teacher.id}
-            userName={session.teacher.name || 'Teacher'}
-            data-tutorial="inbox-button"
-          />
-          <Link
-            href="/montree/dashboard/curriculum"
-            data-tutorial="curriculum-link"
-            data-guide="nav-curriculum"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title={t('nav.curriculum')}
-          >
-            📚
-          </Link>
+          {/* Primary tools — always visible */}
           <Link
             href="/montree/dashboard/snap"
             data-guide="nav-snap"
@@ -183,6 +169,15 @@ export default function DashboardHeader() {
             title={t('snap.title') || 'Snap & Identify'}
           >
             📸
+          </Link>
+          <Link
+            href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
+            data-tutorial="guru-link"
+            data-guide="nav-guru"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            title={t('nav.guru')}
+          >
+            🧠
           </Link>
           {!isHome && (
             <Link
@@ -194,36 +189,25 @@ export default function DashboardHeader() {
               📋
             </Link>
           )}
-          <Link
-            href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
-            data-tutorial="guru-link"
-            data-guide="nav-guru"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title={t('nav.guru')}
-          >
-            🧠
-          </Link>
-          <Link
-            href="/montree/dashboard/raz"
-            data-guide="nav-raz"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title="RAZ Reading Tracker"
-          >
-            📖
-          </Link>
-          {voiceObsEnabled && (
+          {razTrackerEnabled && (
             <Link
-              href="/montree/dashboard/voice-observation"
-              data-guide="nav-voice-obs"
+              href="/montree/dashboard/raz"
+              data-guide="nav-raz"
               className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-              title={t('voiceObs.title')}
+              title="RAZ Reading Tracker"
             >
-              🎙️
+              📖
             </Link>
           )}
+          <LanguageToggle />
+          <InboxButton
+            conversationId={session.teacher.id}
+            userName={session.teacher.name || 'Teacher'}
+            data-tutorial="inbox-button"
+          />
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}
-            className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm"
           >
             {t('auth.logout')}
           </button>
