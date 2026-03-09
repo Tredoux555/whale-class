@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import FeedbackButton from '@/components/montree/FeedbackButton';
+// FeedbackButton removed Mar 10 — users can email feedback directly
 import PrincipalAdminGuide from '@/components/montree/onboarding/PrincipalAdminGuide';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -68,8 +68,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {children}
       </main>
 
-      {/* Feedback Button */}
-      <FeedbackButton userType="principal" />
 
       {/* Principal Admin Guide — HIDDEN: onboarding guides disabled */}
       {false && <PrincipalAdminGuide principalName={principalName} />}

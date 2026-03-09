@@ -20,6 +20,7 @@ export interface ClassroomContext {
   child_count: number;
   age_range: { min: number; max: number };
   children: ClassroomChildSummary[];
+  error?: string; // Set when query fails (distinguishes from empty classroom)
 }
 
 function calculateAge(dateOfBirth: string): number {
@@ -37,45 +38,71 @@ export async function buildClassroomContext(
   supabase: SupabaseClient,
   classroomId: string
 ): Promise<ClassroomContext> {
+  const emptyResult = (error?: string): ClassroomContext => ({
+    classroom_name: '',
+    child_count: 0,
+    age_range: { min: 0, max: 0 },
+    children: [],
+    error,
+  });
+
+  if (!classroomId) {
+    console.error('[ClassroomContext] No classroomId provided');
+    return emptyResult('No classroom ID provided');
+  }
+
   // 1. Fetch all children in classroom
-  const { data: children } = await supabase
-    .from('montree_children')
-    .select('id, name, date_of_birth')
-    .eq('classroom_id', classroomId)
-    .order('name', { ascending: true });
+  let children: Array<{ id: string; name: string; date_of_birth: string | null }> | null = null;
+  try {
+    const { data, error } = await supabase
+      .from('montree_children')
+      .select('id, name, date_of_birth')
+      .eq('classroom_id', classroomId)
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('[ClassroomContext] Children query error for classroom:', classroomId, error);
+      return emptyResult(`Database error fetching children: ${error.message}`);
+    }
+    children = data;
+  } catch (err) {
+    console.error('[ClassroomContext] Children query exception for classroom:', classroomId, err);
+    return emptyResult('Exception fetching children from database');
+  }
 
   if (!children || children.length === 0) {
-    return {
-      classroom_name: '',
-      child_count: 0,
-      age_range: { min: 0, max: 0 },
-      children: [],
-    };
+    console.log('[ClassroomContext] No children found for classroom:', classroomId);
+    return emptyResult(); // No error — classroom is genuinely empty
   }
 
   const childIds = children.map(c => c.id);
 
   // 2. Parallel queries: focus works, progress, recent observations
+  // Each query is wrapped to prevent one failure from crashing all
   const [focusResult, progressResult, obsResult, classroomResult] = await Promise.all([
     supabase
       .from('montree_child_focus_works')
       .select('child_id, area, work_name')
-      .in('child_id', childIds),
+      .in('child_id', childIds)
+      .then(r => { if (r.error) console.error('[ClassroomContext] Focus works query error:', r.error); return r; }),
     supabase
       .from('montree_child_progress')
       .select('child_id, status')
-      .in('child_id', childIds),
+      .in('child_id', childIds)
+      .then(r => { if (r.error) console.error('[ClassroomContext] Progress query error:', r.error); return r; }),
     supabase
       .from('montree_behavioral_observations')
       .select('child_id, observation, created_at')
       .in('child_id', childIds)
       .order('created_at', { ascending: false })
-      .limit(Math.min(30, children.length * 2)), // ~2 per child, cap at 30 for token budget
+      .limit(Math.min(30, children.length * 2)) // ~2 per child, cap at 30 for token budget
+      .then(r => { if (r.error) console.error('[ClassroomContext] Observations query error:', r.error); return r; }),
     supabase
       .from('montree_classrooms')
       .select('name')
       .eq('id', classroomId)
-      .single(),
+      .single()
+      .then(r => { if (r.error) console.error('[ClassroomContext] Classroom name query error:', r.error); return r; }),
   ]);
 
   // Group focus works by child

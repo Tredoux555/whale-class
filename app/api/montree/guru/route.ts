@@ -328,18 +328,34 @@ export async function POST(request: NextRequest) {
     if (isWholeClassMode) {
       console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
       classroomContext = await buildClassroomContext(supabase, classroom_id!);
-      console.log('[Guru] Classroom context result:', classroomContext?.child_count, 'children, name:', classroomContext?.classroom_name);
-      if (!classroomContext || classroomContext.child_count === 0) {
-        console.error('[Guru] No students found for classroom_id:', classroom_id, '— trying auth.classroomId:', auth.classroomId);
+      console.log('[Guru] Classroom context result:', classroomContext?.child_count, 'children, name:', classroomContext?.classroom_name, 'error:', classroomContext?.error);
+
+      // Check for query errors first (different from empty classroom)
+      if (classroomContext?.error) {
+        console.error('[Guru] Classroom context query error:', classroomContext.error, '— classroom_id:', classroom_id);
         // Fallback: try auth.classroomId if different from body classroom_id
         if (auth.classroomId && auth.classroomId !== classroom_id) {
+          console.log('[Guru] Trying fallback auth.classroomId:', auth.classroomId);
+          classroomContext = await buildClassroomContext(supabase, auth.classroomId);
+          console.log('[Guru] Fallback result:', classroomContext?.child_count, 'children, error:', classroomContext?.error);
+        }
+      }
+
+      // Check for empty classroom (no error, just no children)
+      if (!classroomContext || classroomContext.child_count === 0) {
+        console.error('[Guru] No students found — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId, 'error:', classroomContext?.error);
+        // Fallback: try auth.classroomId if different and not already tried
+        if (auth.classroomId && auth.classroomId !== classroom_id && !classroomContext?.error) {
           classroomContext = await buildClassroomContext(supabase, auth.classroomId);
           console.log('[Guru] Fallback classroom context:', classroomContext?.child_count, 'children');
         }
         if (!classroomContext || classroomContext.child_count === 0) {
+          const debugInfo = classroomContext?.error
+            ? `Database error: ${classroomContext.error}`
+            : `No students found in classroom`;
           return NextResponse.json(
-            { success: false, error: `No students found in classroom (id: ${classroom_id})` },
-            { status: 404 }
+            { success: false, error: `${debugInfo} (classroom_id: ${classroom_id}, auth.classroomId: ${auth.classroomId || 'none'})` },
+            { status: classroomContext?.error ? 500 : 404 }
           );
         }
         // Fallback succeeded — update classroom_id
