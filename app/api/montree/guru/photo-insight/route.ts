@@ -5,7 +5,7 @@
 // "Self-driving car" model: Guru auto-manages, teacher can override anytime via shelf
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase-client';
+import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
@@ -133,14 +133,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI features are not enabled' }, { status: 503 });
     }
 
-    // Fetch the photo URL
+    // Fetch the photo storage path
     const { data: media } = await supabase
       .from('montree_media')
-      .select('file_url, media_type, child_id')
+      .select('storage_path, media_type, child_id')
       .eq('id', media_id)
       .maybeSingle();
 
-    if (!media?.file_url) {
+    if (!media?.storage_path) {
       return NextResponse.json({ success: false, error: 'Photo not found' }, { status: 404 });
     }
 
@@ -154,8 +154,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Only photos can be analyzed' }, { status: 400 });
     }
 
-    // Validate URL is proper HTTP(S)
-    const photoUrl = media.file_url;
+    // Build full public URL from storage path
+    const photoUrl = getPublicUrl('montree-media', media.storage_path);
     if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
       return NextResponse.json({ success: false, error: 'Photo URL not accessible' }, { status: 400 });
     }
@@ -199,6 +199,100 @@ export async function POST(request: NextRequest) {
         }`
       : '';
 
+    // ========================================================
+    // SELF-LEARNING CONTEXT: corrections, focus works, duplicates
+    // ========================================================
+
+    // 1. Fetch recent corrections for this classroom (teacher feedback loop)
+    let correctionsContext = '';
+    if (classroomId) {
+      try {
+        const { data: corrections } = await supabase
+          .from('montree_guru_corrections')
+          .select('original_work_name, corrected_work_name')
+          .eq('classroom_id', classroomId)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        if (corrections && corrections.length > 0) {
+          const unique = new Map<string, string>();
+          for (const c of corrections) {
+            if (c.original_work_name && c.corrected_work_name) {
+              unique.set(c.original_work_name, c.corrected_work_name);
+            }
+          }
+          if (unique.size > 0) {
+            correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):
+${Array.from(unique.entries()).map(([orig, fix]) => `- You said "${orig}" but teacher corrected to "${fix}"`).join('\n')}`;
+          }
+        }
+      } catch {
+        // Non-fatal — continue without corrections
+      }
+    }
+
+    // 2. Fetch child's current focus works (narrows candidate works significantly)
+    let focusWorksContext = '';
+    if (child_id) {
+      try {
+        const { data: focusWorks } = await supabase
+          .from('montree_child_focus_works')
+          .select('work_name, area, status')
+          .eq('child_id', child_id)
+          .limit(10);
+        if (focusWorks && focusWorks.length > 0) {
+          focusWorksContext = `\n\nCHILD'S CURRENT SHELF (focus works — MOST LIKELY what they're doing):
+${focusWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}
+IMPORTANT: The child is most likely working on one of these shelf works. Check these FIRST before guessing other works.`;
+        }
+      } catch {
+        // Non-fatal
+      }
+    }
+
+    // 3. Check for duplicate photos (same child, last 5 min — use same work for consistency)
+    let duplicateContext = '';
+    try {
+      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: recentPhotos } = await supabase
+        .from('montree_guru_interactions')
+        .select('context_snapshot')
+        .eq('child_id', child_id)
+        .eq('question_type', 'photo_insight')
+        .gte('created_at', fiveMinAgo)
+        .neq('question', `photo:${media_id}`)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (recentPhotos && recentPhotos.length > 0) {
+        const snapshot = recentPhotos[0].context_snapshot as Record<string, unknown>;
+        if (snapshot?.identified_work_name) {
+          duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): Previously identified as "${snapshot.identified_work_name}" (${snapshot.identified_area}). If this photo shows the same activity, use the same work name for consistency.`;
+        }
+      }
+    } catch {
+      // Non-fatal
+    }
+
+    // 4. Check per-work accuracy — disable auto-update for unreliable works
+    let accuracyData: Map<string, { ema: number; enabled: boolean }> = new Map();
+    if (classroomId) {
+      try {
+        const { data: accuracy } = await supabase
+          .from('montree_work_accuracy')
+          .select('work_name, accuracy_ema, auto_update_enabled')
+          .eq('classroom_id', classroomId);
+        if (accuracy) {
+          for (const a of accuracy) {
+            accuracyData.set(a.work_name, {
+              ema: typeof a.accuracy_ema === 'number' ? a.accuracy_ema : 0.5,
+              enabled: a.auto_update_enabled !== false,
+            });
+          }
+        }
+      } catch {
+        // Non-fatal
+      }
+    }
+
     // Locale-aware system prompt
     const langInstruction = locale === 'zh'
       ? 'Write the observation in Simplified Chinese.'
@@ -214,7 +308,7 @@ IMPORTANT:
 - Assess mastery based on visual evidence: correct completion = mastered, active work with some errors = practicing
 - Keep the observation to ONE warm, specific sentence about technique or concentration
 - If you cannot identify the work, describe what you see and set confidence low
-${curriculumHint}`;
+${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
     const apiPromise = anthropic.messages.create({
@@ -295,10 +389,15 @@ ${curriculumHint}`;
       : null;
 
     // Auto-update threshold: high confidence work match + clear mastery evidence
+    // SELF-LEARNING: Check per-work accuracy — disable auto-update for unreliable works
+    const workAccuracy = accuracyData.get(finalWorkName);
+    const accuracyGatePass = workAccuracy ? workAccuracy.enabled : true; // default: allow
+
     const shouldAutoUpdate = (
       curriculumMatch.confidence >= 0.7 &&
       input.confidence >= 0.7 &&
-      masteryEvidence !== null
+      masteryEvidence !== null &&
+      accuracyGatePass
     );
 
     let autoUpdated = false;
@@ -382,6 +481,23 @@ ${curriculumHint}`;
       }
     }
 
+    // SELF-LEARNING: Track this identification as "assumed correct" in accuracy table
+    // Only track when we actually auto-updated progress (full confidence + gate pass)
+    // If teacher later corrects it, the correction handler will mark it incorrect
+    if (shouldAutoUpdate && autoUpdated && finalWorkName && finalArea && classroomId) {
+      try {
+        await supabase.rpc('update_work_accuracy', {
+          p_classroom_id: classroomId,
+          p_work_name: finalWorkName,
+          p_work_id: null,
+          p_area: finalArea,
+          p_was_correct: true, // Assumed correct — corrections will adjust
+        });
+      } catch {
+        // Non-fatal — accuracy tracking is best-effort
+      }
+    }
+
     // Build clean insight text (1 sentence observation, not verbose)
     const insightText = input.observation || 'Photo analyzed';
 
@@ -421,7 +537,9 @@ ${curriculumHint}`;
       area: finalArea,
       mastery_evidence: masteryEvidence,
       auto_updated: autoUpdated,
-      confidence: Math.min(input.confidence, curriculumMatch.confidence >= 0.5 ? curriculumMatch.confidence : input.confidence),
+      accuracy_gate_blocked: !accuracyGatePass,
+      work_accuracy_ema: workAccuracy?.ema ?? null,
+      confidence: input.confidence,
     });
 
   } catch (error) {
