@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'Transcription service unavailable' }, { status: 503 });
+      console.error('[voice-notes] OPENAI_API_KEY not configured');
+      return NextResponse.json(
+        { error: 'Transcription service not configured', code: 'MISSING_API_KEY' },
+        { status: 503 }
+      );
     }
 
     // Prepare form data for Whisper API
@@ -45,33 +49,62 @@ export async function POST(request: NextRequest) {
     whisperForm.append('response_format', 'verbose_json');
     // Don't set language — let Whisper auto-detect (supports en + zh)
 
-    const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: whisperForm,
-    });
+    // Add timeout (30s) for Whisper API call
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    if (!whisperResponse.ok) {
-      const errorText = await whisperResponse.text().catch(() => 'Unknown error');
-      console.error('[voice-notes] Whisper API error:', whisperResponse.status, errorText);
-      return NextResponse.json({ error: 'Transcription failed' }, { status: 502 });
+    try {
+      const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: whisperForm,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!whisperResponse.ok) {
+        const errorText = await whisperResponse.text().catch(() => 'Unknown error');
+        console.error('[voice-notes] Whisper API error:', whisperResponse.status, errorText);
+        return NextResponse.json(
+          { error: 'Transcription failed', code: 'WHISPER_API_ERROR' },
+          { status: 502 }
+        );
+      }
+
+      const result = await whisperResponse.json();
+
+      // Calculate duration from Whisper response
+      const duration = result.duration ? Math.ceil(result.duration) : 0;
+
+      return NextResponse.json({
+        success: true,
+        transcript: result.text?.trim() || '',
+        language: result.language || 'en',
+        duration_seconds: duration,
+      });
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.error('[voice-notes] Whisper API timeout');
+        return NextResponse.json(
+          { error: 'Transcription took too long', code: 'TIMEOUT' },
+          { status: 504 }
+        );
+      }
+      console.error('[voice-notes] Whisper API error:', err);
+      return NextResponse.json(
+        { error: 'Transcription failed', code: 'API_ERROR' },
+        { status: 502 }
+      );
     }
-
-    const result = await whisperResponse.json();
-
-    // Calculate duration from Whisper response
-    const duration = result.duration ? Math.ceil(result.duration) : 0;
-
-    return NextResponse.json({
-      success: true,
-      transcript: result.text?.trim() || '',
-      language: result.language || 'en',
-      duration_seconds: duration,
-    });
   } catch (err) {
     console.error('[voice-notes] Transcribe error:', err);
-    return NextResponse.json({ error: 'Transcription failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Transcription failed', code: 'UNKNOWN_ERROR' },
+      { status: 500 }
+    );
   }
 }

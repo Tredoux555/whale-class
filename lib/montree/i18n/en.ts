@@ -2324,8 +2324,7 @@ export const en = {
   'voiceNotes.noNotes': 'No voice notes this week',
   'voiceNotes.micError': 'Microphone access denied',
   'voiceNotes.recordingError': 'Recording failed',
-  'voiceNotes.transcribeError': 'Transcription failed',
-  'voiceNotes.saveError': 'Failed to save voice note',
+  'voiceNotes.transcribeError': 'Could not transcribe',
   'voiceNotes.notesCount': 'notes',
   'voiceNotes.tooShort': 'Recording too short',
   'voiceNotes.noSpeech': 'No speech detected',
@@ -2334,6 +2333,10 @@ export const en = {
   'voiceNotes.startRecording': 'Start recording',
   'voiceNotes.tapToRecord': 'Tap to record a voice note',
   'voiceNotes.error': 'Something went wrong',
+  'voiceNotes.notConfigured': 'Voice notes not configured — contact admin',
+  'voiceNotes.analyzeError': 'Could not analyze — try a clearer recording',
+  'voiceNotes.saveError': 'Failed to save — try again',
+  'voiceNotes.adminContact': 'Contact your administrator to enable voice notes',
 
   // Per-Child Weekly Admin
   'childAdmin.title': 'Weekly Admin',
@@ -2407,6 +2410,11 @@ export const en = {
   'guru.observing': 'Observing...',
   'guru.whatDoesGuruSee': 'What does the Guru see?',
   'guru.couldNotAnalyzePhoto': 'Couldn\'t analyze this photo right now.',
+
+  // Photo Insight / Smart Capture
+  'photoInsight.progressAutoUpdated': '✓ Progress auto-updated (override anytime on the shelf)',
+  'photoInsight.analyzing': 'Analyzing...',
+  'photoInsight.photoAnalyzed': 'Photo analyzed',
 
   // Snap & Identify
   'snap.title': '📸 Snap & Identify',

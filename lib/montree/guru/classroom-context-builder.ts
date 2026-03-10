@@ -23,17 +23,6 @@ export interface ClassroomContext {
   error?: string; // Set when query fails (distinguishes from empty classroom)
 }
 
-function calculateAge(dateOfBirth: string): number {
-  const dob = new Date(dateOfBirth);
-  const now = new Date();
-  let age = now.getFullYear() - dob.getFullYear();
-  const monthDiff = now.getMonth() - dob.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) {
-    age--;
-  }
-  return Math.max(0, age);
-}
-
 export async function buildClassroomContext(
   supabase: SupabaseClient,
   classroomId: string
@@ -51,18 +40,18 @@ export async function buildClassroomContext(
     return emptyResult('No classroom ID provided');
   }
 
-  // 1. Fetch all children in classroom
-  let children: Array<{ id: string; name: string; date_of_birth: string | null }> | null = null;
+  // 1. Fetch all children in classroom (use 'age' column, not date_of_birth)
+  let children: Array<{ id: string; name: string; age: number | null }> | null = null;
   try {
     const { data, error } = await supabase
       .from('montree_children')
-      .select('id, name, date_of_birth')
+      .select('id, name, age')
       .eq('classroom_id', classroomId)
       .order('name', { ascending: true });
 
     if (error) {
       console.error('[ClassroomContext] Children query error for classroom:', classroomId, error);
-      return emptyResult(`Database error fetching children: ${error.message}`);
+      return emptyResult('Failed to load classroom data');
     }
     children = data;
   } catch (err) {
@@ -132,7 +121,8 @@ export async function buildClassroomContext(
   // Build child summaries
   const ages: number[] = [];
   const childSummaries: ClassroomChildSummary[] = children.map(child => {
-    const age = child.date_of_birth ? calculateAge(child.date_of_birth) : 0;
+    // Use age directly from DB (integer years), default to 0 if null
+    const age = child.age ?? 0;
     if (age > 0) ages.push(age);
     const progress = progressByChild[child.id] || { mastered: 0, practicing: 0, presented: 0 };
     return {

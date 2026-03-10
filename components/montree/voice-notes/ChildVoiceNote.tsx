@@ -74,7 +74,18 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
         signal: controller.signal,
       });
 
-      if (!transcribeRes.ok) throw new Error('Transcription failed');
+      if (!transcribeRes.ok) {
+        let errorMessage = t('voiceNotes.transcribeError');
+        try {
+          const errorData = await transcribeRes.json();
+          if (errorData.code === 'MISSING_API_KEY') {
+            errorMessage = t('voiceNotes.notConfigured');
+          } else if (errorData.code === 'TIMEOUT') {
+            errorMessage = t('voiceNotes.transcribeError');
+          }
+        } catch {}
+        throw new Error(errorMessage);
+      }
 
       const transcribeData = await transcribeRes.json();
       const transcript = transcribeData.transcript;
@@ -103,7 +114,20 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
         signal: controller.signal,
       });
 
-      if (!extractRes.ok) throw new Error('Extraction failed');
+      if (!extractRes.ok) {
+        let errorMessage = t('voiceNotes.processingError');
+        try {
+          const errorData = await extractRes.json();
+          if (errorData.code === 'EXTRACTION_FAILED') {
+            errorMessage = t('voiceNotes.analyzeError');
+          } else if (errorData.code === 'TABLE_NOT_FOUND') {
+            errorMessage = t('voiceNotes.notConfigured');
+          } else if (errorData.code === 'DB_ERROR') {
+            errorMessage = t('voiceNotes.saveError');
+          }
+        } catch {}
+        throw new Error(errorMessage);
+      }
 
       const extractData = await extractRes.json();
 
@@ -124,7 +148,8 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
     } catch (err) {
       if (controller.signal.aborted) return;
       console.error('[voice-note] Process error:', err);
-      setStatusText(t('voiceNotes.processingError'));
+      const errorMsg = err instanceof Error ? err.message : t('voiceNotes.processingError');
+      setStatusText(errorMsg);
       setState('error');
       setTimeout(() => setState('idle'), 3000);
     }

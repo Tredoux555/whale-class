@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
-import { extractFromVoiceNote, getWeekStart } from '@/lib/montree/voice-notes/extraction';
+import { extractFromVoiceNote, getWeekStart, type VoiceNoteExtraction } from '@/lib/montree/voice-notes/extraction';
 
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
@@ -44,12 +44,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract structured data via Haiku
-    const extraction = await extractFromVoiceNote(
-      transcript.trim(),
-      classroomId,
-      auth.schoolId,
-      language || 'auto'
-    );
+    let extraction: VoiceNoteExtraction | null;
+    try {
+      extraction = await extractFromVoiceNote(
+        transcript.trim(),
+        classroomId,
+        auth.schoolId,
+        language || 'auto'
+      );
+    } catch (extractErr) {
+      console.error('[voice-notes] Extraction error:', extractErr);
+      return NextResponse.json(
+        {
+          error: 'AI extraction failed',
+          code: 'EXTRACTION_FAILED',
+          details: extractErr instanceof Error ? extractErr.message : 'Unknown error',
+        },
+        { status: 502 }
+      );
+    }
 
     const weekStart = getWeekStart();
     const supabase = getSupabase();
@@ -79,15 +92,36 @@ export async function POST(request: NextRequest) {
       auto_applied: false,
     };
 
-    const { data: savedNote, error: saveError } = await supabase
-      .from('montree_voice_notes')
-      .insert(noteRecord)
-      .select('id')
-      .single();
+    let savedNote: any;
+    try {
+      const result = await supabase
+        .from('montree_voice_notes')
+        .insert(noteRecord)
+        .select('id')
+        .single();
 
-    if (saveError) {
-      console.error('[voice-notes] Save error:', saveError);
-      return NextResponse.json({ error: 'Failed to save voice note' }, { status: 500 });
+      if (result.error) {
+        console.error('[voice-notes] Save error:', result.error);
+        // Check if table exists
+        if (result.error.message?.includes('relation') || result.error.message?.includes('does not exist')) {
+          return NextResponse.json(
+            { error: 'Voice notes table not found', code: 'TABLE_NOT_FOUND' },
+            { status: 503 }
+          );
+        }
+        return NextResponse.json(
+          { error: 'Failed to save voice note', code: 'DB_ERROR' },
+          { status: 500 }
+        );
+      }
+
+      savedNote = result.data;
+    } catch (dbErr) {
+      console.error('[voice-notes] Database error:', dbErr);
+      return NextResponse.json(
+        { error: 'Database error', code: 'DB_ERROR' },
+        { status: 500 }
+      );
     }
 
     // Auto-apply to progress if high confidence

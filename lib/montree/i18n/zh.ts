@@ -2324,8 +2324,7 @@ export const zh = {
   'voiceNotes.noNotes': '本周暂无语音笔记',
   'voiceNotes.micError': '麦克风访问被拒绝',
   'voiceNotes.recordingError': '录音失败',
-  'voiceNotes.transcribeError': '转录失败',
-  'voiceNotes.saveError': '保存语音笔记失败',
+  'voiceNotes.transcribeError': '无法转录',
   'voiceNotes.notesCount': '条笔记',
   'voiceNotes.tooShort': '录音太短',
   'voiceNotes.noSpeech': '未检测到语音',
@@ -2334,6 +2333,10 @@ export const zh = {
   'voiceNotes.startRecording': '开始录音',
   'voiceNotes.tapToRecord': '点击录制语音笔记',
   'voiceNotes.error': '出了点问题',
+  'voiceNotes.notConfigured': '语音笔记未配置 — 请联系管理员',
+  'voiceNotes.analyzeError': '无法分析 — 请尝试更清晰的录音',
+  'voiceNotes.saveError': '保存失败 — 请重试',
+  'voiceNotes.adminContact': '请联系管理员启用语音笔记',
 
   // 每周行政生成器
   // Per-Child Weekly Admin
@@ -2408,6 +2411,11 @@ export const zh = {
   'guru.observing': '正在观察...',
   'guru.whatDoesGuruSee': 'Guru看到什么了？',
   'guru.couldNotAnalyzePhoto': '暂无法分析此照片。',
+
+  // Photo Insight / Smart Capture
+  'photoInsight.progressAutoUpdated': '✓ 进度已自动更新（可在书架中手动调整）',
+  'photoInsight.analyzing': '正在分析...',
+  'photoInsight.photoAnalyzed': '照片已分析',
 
   // Snap & Identify
   'snap.title': '📸 拍照识别',
