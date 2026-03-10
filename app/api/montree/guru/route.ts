@@ -565,7 +565,7 @@ export async function POST(request: NextRequest) {
             let effectiveChildId = child_id;
             const toolInput = toolCall.input as Record<string, unknown>;
             // Tools that operate on a specific child need student_name in whole-class mode
-            const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile'];
+            const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile', 'get_child_recent_activity'];
             if (isWholeClassMode && classroomContext && CHILD_SCOPED_TOOLS.includes(toolCall.name)) {
               const studentName = toolInput.student_name as string | undefined;
               if (studentName) {

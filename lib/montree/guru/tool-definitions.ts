@@ -1,6 +1,6 @@
 // lib/montree/guru/tool-definitions.ts
 // Anthropic tool-use definitions for Guru-driven home system
-// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools = 15 total
+// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools + 3 daily activity tools = 18 total
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
@@ -407,6 +407,59 @@ export const GURU_TOOLS: Tool[] = [
         }
       },
       required: ["num_groups", "criteria"]
+    }
+  },
+
+  // --- Daily Activity Tools (read-only, classroom-wide or per-child) ---
+
+  {
+    name: "get_daily_activity",
+    description: "Get a summary of ALL classroom activity for a specific date. Returns: progress changes (new presentations, mastery), voice notes recorded, behavioral observations, photos taken, and RAZ reading records. Use this whenever a teacher asks 'what happened today?', 'what was done?', 'who worked on what?', or any question about daily activity. Defaults to today if no date provided.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        date: {
+          type: "string",
+          description: "Date to query in YYYY-MM-DD format. Defaults to today. Max 30 days back."
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "get_child_recent_activity",
+    description: "Get a detailed timeline of a specific child's recent activity. Returns chronological list of: progress changes, voice notes, observations, photos, and reading records over the past N days. Use when a teacher asks about a specific student's recent work.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        student_name: {
+          type: "string",
+          description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
+        },
+        days: {
+          type: "number",
+          description: "Number of days to look back. Default 7, max 30."
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: "get_classroom_media_summary",
+    description: "Get a summary of photos and videos captured in the classroom for a specific date. Returns per-child counts and captions/tags (not the actual image URLs). Use when teachers ask about photos taken, documentation captured, or want to see what was recorded visually.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        date: {
+          type: "string",
+          description: "Date to query in YYYY-MM-DD format. Defaults to today. Max 30 days back."
+        },
+        student_name: {
+          type: "string",
+          description: "Optional: filter to a specific student's media only."
+        }
+      },
+      required: []
     }
   }
 ];
