@@ -85,6 +85,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
     }
 
+    // Verify classroom belongs to this school (cross-pollination protection)
+    const { data: classroomCheck } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', classroom_id)
+      .eq('school_id', auth.schoolId)
+      .maybeSingle();
+
+    if (!classroomCheck) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 403 });
+    }
+
     // SEED FROM BRAIN
     if (action === 'seed' || action === 'seed_from_brain' || action === 'seed_works') {
       // Check for existing areas first
@@ -210,7 +222,7 @@ export async function POST(request: NextRequest) {
       .select('id')
       .eq('classroom_id', classroom_id)
       .eq('area_key', normalizedAreaKey)
-      .single();
+      .maybeSingle();
 
     // If area doesn't exist, auto-seed all areas for this classroom
     if (!areaData) {
@@ -235,7 +247,7 @@ export async function POST(request: NextRequest) {
         .select('id')
         .eq('classroom_id', classroom_id)
         .eq('area_key', normalizedAreaKey)
-        .single();
+        .maybeSingle();
 
       areaData = newAreaData;
     }
@@ -301,11 +313,17 @@ export async function POST(request: NextRequest) {
       is_active: true,
       age_range: age_range || '3-6',
       why_it_matters: why_it_matters || null,
-      direct_aims: direct_aims || [],
-      indirect_aims: indirect_aims || [],
-      materials: materials || [],
+      direct_aims: Array.isArray(direct_aims) ? direct_aims : [],
+      indirect_aims: Array.isArray(indirect_aims) ? indirect_aims : [],
+      materials: Array.isArray(materials) ? materials : [],
       teacher_notes: teacher_notes || null,
-      is_custom: is_custom || true,
+      is_custom: is_custom !== undefined ? is_custom : true,
+      source: body.source || 'teacher_manual',
+      prompt_used: body.prompt_used || null,
+      reference_photo_url: body.reference_photo_url || null,
+      quick_guide: body.quick_guide || null,
+      parent_description: body.parent_description || null,
+      presentation_steps: body.presentation_steps || [],
     };
 
     const { data, error } = await supabase
@@ -349,7 +367,8 @@ export async function PATCH(request: NextRequest) {
       'name', 'name_chinese', 'description', 'parent_description',
       'why_it_matters', 'age_range', 'direct_aims', 'indirect_aims',
       'materials', 'prerequisites', 'teacher_notes', 'is_active', 'sequence',
-      'photo_url',
+      'photo_url', 'quick_guide', 'presentation_steps', 'reference_photo_url',
+      'source', 'prompt_used',
     ];
 
     for (const field of allowedFields) {

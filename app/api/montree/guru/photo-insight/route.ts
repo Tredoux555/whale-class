@@ -177,12 +177,44 @@ export async function POST(request: NextRequest) {
       ? `Current works on shelf:\n${currentWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}`
       : 'No current works tracked yet.';
 
-    // Load curriculum for matching
+    // Load curriculum for matching (static 329 + classroom custom works)
     let curriculum: CurriculumWork[] = [];
     try {
       curriculum = loadAllCurriculumWorks();
     } catch (err) {
       console.error('[PhotoInsight] Failed to load curriculum:', err);
+    }
+
+    // Also load custom works from this classroom's DB (teacher-created)
+    let classroomCustomWorks: Array<{ id: string; name: string; area_key: string; work_key: string }> = [];
+    if (classroomId) {
+      try {
+        const { data: customWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id, name, work_key, area:montree_classroom_curriculum_areas!area_id(area_key)')
+          .eq('classroom_id', classroomId)
+          .eq('is_custom', true)
+          .eq('is_active', true);
+        if (customWorks) {
+          classroomCustomWorks = customWorks.map(w => ({
+            id: w.id,
+            name: w.name,
+            area_key: (w.area as unknown as { area_key: string })?.area_key || 'practical_life',
+            work_key: w.work_key,
+          }));
+          // Add custom works to curriculum array for fuzzy matching
+          for (const cw of classroomCustomWorks) {
+            curriculum.push({
+              name: cw.name,
+              area_key: cw.area_key,
+              work_key: cw.work_key,
+              sequence: 9999,
+            } as CurriculumWork);
+          }
+        }
+      } catch {
+        // Non-fatal — continue without custom works
+      }
     }
 
     // Build curriculum context for Sonnet (top-level work names by area)
@@ -293,6 +325,11 @@ IMPORTANT: The child is most likely working on one of these shelf works. Check t
       }
     }
 
+    // ========================================================
+    // POST-IDENTIFICATION LOOKUPS (run after we have the match)
+    // These will be populated after Sonnet returns results
+    // ========================================================
+
     // Locale-aware system prompt
     const langInstruction = locale === 'zh'
       ? 'Write the observation in Simplified Chinese.'
@@ -381,6 +418,49 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     const finalWorkKey = curriculumMatch.confidence >= 0.5 && curriculumMatch.work
       ? curriculumMatch.work.work_key
       : null;
+
+    // ========================================================
+    // 3 LOOKUPS: Is this work in classroom? On child's shelf? What's the DB work_id?
+    // ========================================================
+    let inClassroom = false;
+    let inChildShelf = false;
+    let classroomWorkId: string | null = null;
+
+    if (classroomId && finalWorkName) {
+      try {
+        // Lookup 1: Is this work in the classroom curriculum?
+        const { data: classroomWork } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id')
+          .eq('classroom_id', classroomId)
+          .eq('name', finalWorkName)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+        if (classroomWork?.id) {
+          inClassroom = true;
+          classroomWorkId = classroomWork.id;
+        }
+
+        // Lookup 2: Is this work on the child's shelf (focus works)?
+        if (child_id) {
+          const { data: shelfWork } = await supabase
+            .from('montree_child_focus_works')
+            .select('id')
+            .eq('child_id', child_id)
+            .eq('work_name', finalWorkName)
+            .limit(1)
+            .maybeSingle();
+
+          if (shelfWork?.id) {
+            inChildShelf = true;
+          }
+        }
+      } catch {
+        // Non-fatal — lookups are for UI hints, not critical
+      }
+    }
 
     // Determine if we should auto-update progress
     const validStatuses = ['mastered', 'practicing', 'presented'];
@@ -486,17 +566,35 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     // If teacher later corrects it, the correction handler will mark it incorrect
     if (shouldAutoUpdate && autoUpdated && finalWorkName && finalArea && classroomId) {
       try {
-        await supabase.rpc('update_work_accuracy', {
+        const { error: rpcError } = await supabase.rpc('update_work_accuracy', {
           p_classroom_id: classroomId,
           p_work_name: finalWorkName,
           p_work_id: null,
           p_area: finalArea,
           p_was_correct: true, // Assumed correct — corrections will adjust
         });
-      } catch {
-        // Non-fatal — accuracy tracking is best-effort
+        if (rpcError) {
+          console.error('[PhotoInsight] update_work_accuracy RPC error:', rpcError.message);
+        }
+      } catch (err) {
+        console.error('[PhotoInsight] update_work_accuracy exception:', err);
       }
     }
+
+    // Determine scenario for client UI:
+    // A: Unknown work (low confidence) → "Teach Guru This Work"
+    // B: Standard/custom work NOT in classroom → "Add to Classroom"
+    // C: In classroom but NOT on shelf → "Add to Shelf"
+    // D: Happy path (in classroom + on shelf or auto-updated)
+    let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
+    if (curriculumMatch.confidence < 0.5) {
+      scenario = 'A'; // Unknown work
+    } else if (!inClassroom) {
+      scenario = 'B'; // Known work, not in this classroom
+    } else if (!inChildShelf && !autoUpdated) {
+      scenario = 'C'; // In classroom, not on shelf
+    }
+    // else scenario = 'D' (happy path)
 
     // Build clean insight text (1 sentence observation, not verbose)
     const insightText = input.observation || 'Photo analyzed';
@@ -522,6 +620,9 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
           sonnet_confidence: input.confidence,
           curriculum_match_confidence: curriculumMatch.confidence,
           auto_updated: autoUpdated,
+          scenario,
+          in_classroom: inClassroom,
+          in_child_shelf: inChildShelf,
           locale,
         },
       });
@@ -540,6 +641,11 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       accuracy_gate_blocked: !accuracyGatePass,
       work_accuracy_ema: workAccuracy?.ema ?? null,
       confidence: input.confidence,
+      // Work ingestion scenario hints
+      scenario,
+      in_classroom: inClassroom,
+      in_child_shelf: inChildShelf,
+      classroom_work_id: classroomWorkId,
     });
 
   } catch (error) {
