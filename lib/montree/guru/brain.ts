@@ -43,11 +43,13 @@ type BrainCategory =
   | 'behavioral_patterns'    // Recurring behavior → cause → solution chains
   | 'parent_psychology'      // What parents need emotionally at different stages
   | 'failure_modes'          // What DOESN'T work — avoid these approaches
-  | 'breakthrough_moments';  // Specific advice that led to breakthroughs
+  | 'breakthrough_moments'   // Specific advice that led to breakthroughs
+  | 'vision_learnings';      // Photo identification patterns — what works look like visually
 
 const VALID_CATEGORIES = new Set<string>([
   'developmental_wisdom', 'therapeutic_techniques', 'montessori_insights',
   'behavioral_patterns', 'parent_psychology', 'failure_modes', 'breakthrough_moments',
+  'vision_learnings',
 ]);
 
 interface RawLearning {
@@ -340,6 +342,7 @@ Categories:
 - parent_psychology: What parents need at different stages of their journey
 - failure_modes: Approaches that backfire or don't work
 - breakthrough_moments: Specific combinations that lead to breakthroughs
+- vision_learnings: Photo recognition patterns — what specific works LOOK LIKE, common misidentifications, visual cues that distinguish similar works
 
 Output ONLY valid JSON matching this schema:
 {
@@ -610,6 +613,7 @@ export async function getRelevantBrainWisdom(params: {
       parent_psychology: '🧠 Parent Support',
       failure_modes: '⚠️ Avoid',
       breakthrough_moments: '✨ Breakthroughs',
+      vision_learnings: '📷 Photo Recognition',
     };
 
     for (const [category, items] of grouped) {

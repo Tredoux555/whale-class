@@ -1,12 +1,13 @@
 // components/montree/media/PhotoEditModal.tsx
-// Modal for editing photo metadata (caption, work, tags, child)
+// Modal for editing photo metadata — searchable work picker + self-learning correction recording
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { montreeApi } from '@/lib/montree/api';
 
 interface PhotoEditModalProps {
   media: MontreeMedia | null;
@@ -16,11 +17,29 @@ interface PhotoEditModalProps {
   onSave?: (updatedMedia: MontreeMedia) => void;
 }
 
+interface AvailableWork {
+  id: string;
+  name: string;
+  chinese_name?: string;
+  area: string;
+  area_name: string;
+  area_color: string;
+  sequence: number;
+}
+
 interface EditFormData {
   caption: string;
   work_id: string | null;
   tags: string[];
   child_id: string | null;
+}
+
+// Track original Guru identification for correction recording
+interface OriginalIdentification {
+  work_name: string | null;
+  work_id: string | null;
+  area: string | null;
+  confidence: number | null;
 }
 
 export default function PhotoEditModal({
@@ -30,12 +49,12 @@ export default function PhotoEditModal({
   onClose,
   onSave,
 }: PhotoEditModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [availableChildren, setAvailableChildren] = useState<Array<{ id: string; name: string }>>([]);
-  const [availableWorks, setAvailableWorks] = useState<Array<{ id: string; name: string; area: string }>>([]);
+  const [availableWorks, setAvailableWorks] = useState<AvailableWork[]>([]);
   const [formData, setFormData] = useState<EditFormData>({
     caption: '',
     work_id: null,
@@ -44,12 +63,24 @@ export default function PhotoEditModal({
   });
   const [tagInput, setTagInput] = useState('');
 
+  // Searchable work picker state
+  const [workSearch, setWorkSearch] = useState('');
+  const [workPickerOpen, setWorkPickerOpen] = useState(false);
+  const workSearchRef = useRef<HTMLInputElement>(null);
+
+  // Track what Guru originally identified (for correction recording)
+  const [originalId, setOriginalId] = useState<OriginalIdentification>({
+    work_name: null, work_id: null, area: null, confidence: null,
+  });
+
   // Load image URL and fetch available data
   useEffect(() => {
     if (!media || !isOpen) return;
 
     setLoading(true);
-    
+    setWorkSearch('');
+    setWorkPickerOpen(false);
+
     // Load image
     const fetchImage = async () => {
       try {
@@ -57,9 +88,7 @@ export default function PhotoEditModal({
           `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}`
         );
         const data = await response.json();
-        if (data.url) {
-          setImageUrl(data.url);
-        }
+        if (data.url) setImageUrl(data.url);
       } catch (err) {
         console.error('Failed to fetch image URL:', err);
       }
@@ -73,23 +102,30 @@ export default function PhotoEditModal({
       child_id: media.child_id || null,
     });
 
+    // Track original identification for self-learning corrections
+    // work_name is looked up from availableWorks at correction time (line 188)
+    setOriginalId({
+      work_name: null,
+      work_id: media.work_id || null,
+      area: null,
+      confidence: null,
+    });
+
     // Fetch available children and works
     const fetchData = async () => {
       try {
-        // Get children from the same classroom/school
-        const childrenRes = await fetch(
+        const childrenRes = await montreeApi(
           `/api/montree/children?school_id=${media.school_id}&classroom_id=${media.classroom_id || ''}`
         );
         if (childrenRes.ok) {
           const childrenData = await childrenRes.json();
-          setAvailableChildren(childrenData.children || []);
+          setAvailableChildren(Array.isArray(childrenData?.children) ? childrenData.children : []);
         }
 
-        // Get available works
-        const worksRes = await fetch('/api/montree/works');
+        const worksRes = await montreeApi('/api/montree/works');
         if (worksRes.ok) {
           const worksData = await worksRes.json();
-          setAvailableWorks(worksData.works || []);
+          setAvailableWorks(Array.isArray(worksData?.works) ? worksData.works : []);
         }
       } catch (err) {
         console.error('Failed to fetch available data:', err);
@@ -102,21 +138,77 @@ export default function PhotoEditModal({
     fetchData();
   }, [media, isOpen]);
 
+  // Filter works by search query — grouped by area
+  const filteredWorks = useMemo(() => {
+    const query = workSearch.toLowerCase().trim();
+    const works = query
+      ? availableWorks.filter(w =>
+          w.name.toLowerCase().includes(query) ||
+          (w.chinese_name && w.chinese_name.includes(query)) ||
+          w.area_name.toLowerCase().includes(query)
+        )
+      : availableWorks;
+
+    // Group by area
+    const grouped: Record<string, AvailableWork[]> = {};
+    for (const w of works) {
+      const key = w.area_name || 'Other';
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(w);
+    }
+    return grouped;
+  }, [availableWorks, workSearch]);
+
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
-      setFormData(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()]
-      }));
+      setFormData(prev => ({ ...prev, tags: [...prev.tags, tagInput.trim()] }));
       setTagInput('');
     }
   };
 
   const handleRemoveTag = (tag: string) => {
-    setFormData(prev => ({
-      ...prev,
-      tags: prev.tags.filter(t => t !== tag)
-    }));
+    setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
+  };
+
+  const handleSelectWork = (work: AvailableWork) => {
+    setFormData(prev => ({ ...prev, work_id: work.id }));
+    setWorkPickerOpen(false);
+    setWorkSearch('');
+  };
+
+  const handleClearWork = () => {
+    setFormData(prev => ({ ...prev, work_id: null }));
+  };
+
+  // Record correction to self-learning system if teacher changed the work
+  const recordCorrectionIfNeeded = async (newWorkId: string | null) => {
+    // Only record if teacher changed from Guru's original identification
+    if (!media || !originalId.work_id || originalId.work_id === newWorkId) return;
+
+    const newWork = availableWorks.find(w => w.id === newWorkId);
+    const originalWork = availableWorks.find(w => w.id === originalId.work_id);
+
+    try {
+      await montreeApi('/api/montree/guru/corrections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_id: media.id,
+          child_id: media.child_id,
+          original_work_name: originalWork?.name || originalId.work_name,
+          original_work_id: originalId.work_id,
+          original_area: originalWork?.area || originalId.area,
+          original_confidence: originalId.confidence,
+          corrected_work_name: newWork?.name || null,
+          corrected_work_id: newWorkId,
+          corrected_area: newWork?.area || null,
+          correction_type: 'work_mismatch',
+        }),
+      });
+    } catch {
+      // Non-fatal — correction recording is best-effort
+      console.error('[PhotoEditModal] Failed to record correction');
+    }
   };
 
   const handleSave = async () => {
@@ -143,14 +235,19 @@ export default function PhotoEditModal({
 
       const result = await response.json();
       if (result.media) {
-        // Enhance media object with area and work_name
+        // Record correction for self-learning (fire-and-forget)
+        if (formData.work_id !== originalId.work_id) {
+          recordCorrectionIfNeeded(formData.work_id);
+        }
+
+        const selectedWork = availableWorks.find(w => w.id === result.media.work_id);
         const enhancedMedia = {
           ...result.media,
-          area: availableWorks.find(w => w.id === result.media.work_id)?.area || media.area,
-          work_name: availableWorks.find(w => w.id === result.media.work_id)?.name || media.work_name,
+          area: selectedWork?.area ?? (media as Record<string, unknown>).area ?? null,
+          work_name: selectedWork?.name ?? null,
         };
         onSave?.(enhancedMedia);
-        toast.success(t('photoEdit.saveSuccess' as TranslationKey) || 'Photo updated successfully');
+        toast.success(t('photoEdit.saveSuccess' as TranslationKey));
         onClose();
       }
     } catch (err) {
@@ -163,10 +260,9 @@ export default function PhotoEditModal({
 
   if (!isOpen || !media) return null;
 
-  // Get selected work info
   const selectedWork = availableWorks.find(w => w.id === formData.work_id);
   const selectedChild = availableChildren.find(c => c.id === formData.child_id);
-  const areaConfig = selectedWork 
+  const areaConfig = selectedWork
     ? AREA_CONFIG[selectedWork.area as keyof typeof AREA_CONFIG]
     : null;
 
@@ -223,22 +319,17 @@ export default function PhotoEditModal({
           {/* Assign Child */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t('photoEdit.childAssignment' as TranslationKey)} {formData.child_id && <span className="text-xs text-gray-500">{t('photoEdit.groupPhoto' as TranslationKey)}</span>}
+              {t('photoEdit.childAssignment' as TranslationKey)}
             </label>
             {availableChildren.length > 0 ? (
               <select
                 value={formData.child_id || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  child_id: e.target.value || null
-                }))}
+                onChange={(e) => setFormData(prev => ({ ...prev, child_id: e.target.value || null }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
                 <option value="">{t('photoEdit.noSpecificChild' as TranslationKey)}</option>
                 {availableChildren.map(child => (
-                  <option key={child.id} value={child.id}>
-                    {child.name}
-                  </option>
+                  <option key={child.id} value={child.id}>{child.name}</option>
                 ))}
               </select>
             ) : (
@@ -251,41 +342,111 @@ export default function PhotoEditModal({
             )}
           </div>
 
-          {/* Assign Work */}
+          {/* Assign Work — Searchable Picker */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {t('photoEdit.curriculumWork' as TranslationKey)}
             </label>
-            {availableWorks.length > 0 ? (
-              <select
-                value={formData.work_id || ''}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  work_id: e.target.value || null
-                }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-              >
-                <option value="">{t('photoEdit.noWorkAssigned' as TranslationKey)}</option>
-                {availableWorks.map(work => (
-                  <option key={work.id} value={work.id}>
-                    {work.name}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
-                {t('photoEdit.noWorksAvailable' as TranslationKey)}
-              </div>
-            )}
-            {selectedWork && areaConfig && (
-              <div className="mt-2 p-2 bg-emerald-50 rounded-lg border border-emerald-200 text-xs">
+
+            {/* Currently selected work display */}
+            {selectedWork && areaConfig ? (
+              <div className="mb-2 p-2.5 bg-emerald-50 rounded-lg border border-emerald-200 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span>{areaConfig.icon}</span>
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: selectedWork.area_color || areaConfig.color }}
+                  >
+                    {selectedWork.area_name?.charAt(0) || 'W'}
+                  </div>
                   <div>
-                    <p className="font-semibold text-emerald-900">{selectedWork.name}</p>
-                    <p className="text-emerald-700">{areaConfig.name}</p>
+                    <p className="font-semibold text-emerald-900 text-sm">
+                      {locale === 'zh' && selectedWork.chinese_name ? selectedWork.chinese_name : selectedWork.name}
+                    </p>
+                    <p className="text-emerald-700 text-xs">{selectedWork.area_name}</p>
                   </div>
                 </div>
+                <button
+                  onClick={handleClearWork}
+                  className="text-gray-400 hover:text-red-500 text-lg px-1"
+                  aria-label="Clear work"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : null}
+
+            {/* Search input */}
+            <div className="relative">
+              <input
+                ref={workSearchRef}
+                type="text"
+                value={workSearch}
+                onChange={(e) => {
+                  setWorkSearch(e.target.value);
+                  if (!workPickerOpen) setWorkPickerOpen(true);
+                }}
+                onFocus={() => setWorkPickerOpen(true)}
+                placeholder={selectedWork
+                  ? t('photoEdit.changeWork' as TranslationKey)
+                  : t('photoEdit.searchWorks' as TranslationKey)
+                }
+                className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+            </div>
+
+            {/* Dropdown work list */}
+            {workPickerOpen && availableWorks.length > 0 && (
+              <div className="mt-1 border border-gray-200 rounded-lg shadow-lg bg-white max-h-64 overflow-y-auto z-10 relative">
+                {/* Clear option */}
+                <button
+                  onClick={() => { handleClearWork(); setWorkPickerOpen(false); setWorkSearch(''); }}
+                  className="w-full px-3 py-2 text-left text-sm text-gray-500 hover:bg-gray-50 border-b"
+                >
+                  {t('photoEdit.noWorkAssigned' as TranslationKey)}
+                </button>
+
+                {Object.entries(filteredWorks).map(([areaName, works]) => (
+                  <div key={areaName}>
+                    {/* Area header */}
+                    <div className="px-3 py-1.5 bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider sticky top-0">
+                      {areaName}
+                    </div>
+                    {works.map(work => {
+                      const isSelected = formData.work_id === work.id;
+                      return (
+                        <button
+                          key={work.id}
+                          onClick={() => handleSelectWork(work)}
+                          className={`w-full px-3 py-2 text-left text-sm hover:bg-emerald-50 flex items-center gap-2 ${
+                            isSelected ? 'bg-emerald-100 font-semibold' : ''
+                          }`}
+                        >
+                          <div
+                            className="w-5 h-5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: work.area_color || '#666' }}
+                          />
+                          <span className="truncate">
+                            {locale === 'zh' && work.chinese_name ? work.chinese_name : work.name}
+                          </span>
+                          {isSelected && <span className="ml-auto text-emerald-600">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+
+                {Object.keys(filteredWorks).length === 0 && (
+                  <div className="px-3 py-4 text-center text-sm text-gray-400">
+                    {t('photoEdit.noMatchingWorks' as TranslationKey)}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {availableWorks.length === 0 && !loading && (
+              <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
+                {t('photoEdit.noWorksAvailable' as TranslationKey)}
               </div>
             )}
           </div>
@@ -300,11 +461,8 @@ export default function PhotoEditModal({
                 type="text"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddTag();
-                  }
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); }
                 }}
                 placeholder={t('placeholder.addTag' as TranslationKey)}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
@@ -317,21 +475,12 @@ export default function PhotoEditModal({
               </button>
             </div>
 
-            {/* Tag Pills */}
             {formData.tags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm"
-                  >
+                  <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-sm">
                     {tag}
-                    <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 text-emerald-600 hover:text-emerald-800 font-bold"
-                    >
-                      ✕
-                    </button>
+                    <button onClick={() => handleRemoveTag(tag)} className="ml-1 text-emerald-600 hover:text-emerald-800 font-bold">✕</button>
                   </span>
                 ))}
               </div>
@@ -343,7 +492,7 @@ export default function PhotoEditModal({
             <p className="font-semibold mb-1 text-gray-700">{t('photoEdit.metadata' as TranslationKey)}</p>
             <p>ID: {media.id}</p>
             <p>{t('photoEdit.captured' as TranslationKey, { timestamp: new Date(media.captured_at).toLocaleString() })}</p>
-            <p>{t('photoEdit.by' as TranslationKey, { teacher: media.captured_by })}</p>
+            <p>{t('photoEdit.by' as TranslationKey, { teacher: media.captured_by || 'Unknown' })}</p>
           </div>
         </div>
 
