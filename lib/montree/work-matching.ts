@@ -168,12 +168,14 @@ function scoreWork(
 
   // 1. Score against primary name
   let score = fuzzyScore(input, work.name);
+  if (score === 1.0) return score; // Exact match — no need to check further
 
   // 2. Score against aliases (take best)
   if (work.aliases && work.aliases.length > 0) {
     for (const alias of work.aliases) {
       const aliasScore = fuzzyScore(input, alias);
       if (aliasScore > score) score = aliasScore;
+      if (score === 1.0) return score; // Exact alias match
     }
   }
 
@@ -181,6 +183,7 @@ function scoreWork(
   if (work.chineseName) {
     const cnScore = fuzzyScore(input, work.chineseName);
     if (cnScore > score) score = cnScore;
+    if (score === 1.0) return score; // Exact Chinese name match
   }
 
   // 4. Materials boost (up to +0.15, capped)
@@ -260,8 +263,8 @@ export function matchToCurriculumV2(
     score: scoreWork(identifiedName, w, observationText),
   }));
 
-  // 3. Sort by score descending, take top 3 above threshold 0.2
-  scored.sort((a, b) => b.score - a.score);
+  // 3. Sort by score descending (stable: tiebreak by sequence for determinism)
+  scored.sort((a, b) => b.score - a.score || a.work.sequence - b.work.sequence);
   const candidates = scored.slice(0, 3).filter(c => c.score > 0.2);
 
   // 4. If area-constrained best is weak, retry with full curriculum (one retry only)
