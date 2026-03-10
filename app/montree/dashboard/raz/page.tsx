@@ -41,6 +41,24 @@ const STATUS_CONFIG_BASE: Record<StatusType, { emoji: string; color: string; bg:
   absent: { emoji: '🚫', color: '#6b7280', bg: '#f3f4f6' },
 };
 
+// Custom RAZ ordering — teacher-defined student sequence
+const RAZ_NAME_ORDER = [
+  'Amy', 'Austin', 'Eric', 'Hayden', 'Segina', 'Joey', 'Jimmy', 'Leo', 'Lucky',
+  'Mingxi', 'Maomao', 'Kevin', 'Yo-yo', 'Rachel', 'Ryan', 'Yueze', 'Henry', 'Kayla', 'Stella',
+];
+
+function sortChildrenForRaz(children: Child[]): Child[] {
+  return [...children].sort((a, b) => {
+    const aIdx = RAZ_NAME_ORDER.findIndex(n => a.name.toLowerCase().startsWith(n.toLowerCase()));
+    const bIdx = RAZ_NAME_ORDER.findIndex(n => b.name.toLowerCase().startsWith(n.toLowerCase()));
+    // Known names sort by their position; unknown names go to the end alphabetically
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+    if (aIdx !== -1) return -1;
+    if (bIdx !== -1) return 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
 const PHOTO_SEQUENCE: PhotoType[] = ['book', 'signature', 'new_book'];
 const getPhotoLabels = (t: ReturnType<typeof useI18n>['t']) => ({
   book: t('raz.photoBook'),
@@ -151,7 +169,7 @@ export default function RazTrackerPage() {
       ]);
       const childData = await childRes.json();
       const razData = await razRes.json();
-      setChildren(childData.children || []);
+      setChildren(sortChildrenForRaz(childData.children || []));
       const recordMap: Record<string, RazRecord> = {};
       (razData.records || []).forEach((r: RazRecord) => { recordMap[r.child_id] = r; });
       setRecords(recordMap);
