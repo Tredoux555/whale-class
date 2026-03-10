@@ -16,9 +16,9 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. Multiple features + batch reports + audit fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: batch generate all parent reports + classroom overview + guru whole-class + audit fixes" && git push origin main`
+All code is local, NOT yet pushed. Multiple features + smart capture + whole-class fix + batch reports + audit fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: smart capture rewrite + batch reports + whole-class guru fix + audit fixes" && git push origin main`
 
-**Includes:** Batch parent reports (2 new files), classroom overview print page (2 new files), guru whole-class mode (1 new file, 9 modified), 10 audit fixes across 6 cycles, photo-insight word boundary fix, reports/generate i18n fix, 17 new i18n keys.
+**Includes:** Smart Capture rewrite (2 rewritten files + 1 wiring fix + 2 i18n keys), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new files), classroom overview print page (2 new files), guru whole-class mode (1 new file, 9 modified), 10+ audit fixes across 9 audit passes, 19 new i18n keys.
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -62,7 +62,45 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ## CURRENT STATUS (Mar 10, 2026)
 
-### Session Work (Mar 10, 2026)
+### Session Work (Mar 10, 2026 — Late Session)
+
+**Smart Capture Rewrite + Whole-Class Guru Fix + FeedbackButton Removal — COMPLETE, NOT YET DEPLOYED (2 rewritten files, 6 modified, 9 audit passes):**
+
+Three changes in this session:
+
+**Feature 1 — Smart Capture / Photo Insight Complete Rewrite:**
+"Self-driving car" model — Guru auto-tags photos and upgrades progress; teacher overrides anytime on the shelf.
+
+**Rewritten files (2):**
+- `app/api/montree/guru/photo-insight/route.ts` — Complete rewrite (~420 lines). Sonnet vision + `tool_use` for structured extraction (work_name, area, mastery_evidence, confidence 0-1, observation). Curriculum fuzzy matching via `fuzzyScore()`. Auto-tags `montree_media.work_id` via classroom curriculum work lookup. Auto-upgrades `montree_child_progress` with upgrade-only protection (STATUS_RANK: never downgrade). Cache in `montree_guru_interactions`. Locale-aware Chinese system prompt. All `.maybeSingle()`.
+- `components/montree/guru/PhotoInsightButton.tsx` — Complete rewrite (~170 lines). AreaBadge + work name + status pill (mastered/practicing/presented with colors). Brief observation. Auto-update indicator with i18n. `onProgressUpdate` callback. AbortController cleanup.
+
+**Modified files (4):**
+- `app/montree/dashboard/[childId]/progress/page.tsx` — Extracted `fetchAll` from `useEffect` to `useCallback` (was inaccessible to JSX — CRITICAL bug caught in Audit Cycle 3). Added `useCallback` import. Wired `onProgressUpdate={fetchAll}`. Removed homeschool-only gate — Smart Capture now available to ALL users.
+- `lib/montree/i18n/en.ts` — 1 new key (`photoInsight.progressAutoUpdated`)
+- `lib/montree/i18n/zh.ts` — 1 matching Chinese key
+
+**3x3 Audit Results (9 passes):** Cycle 1: 12 issues (all fixed). Cycle 2: 2 issues (all fixed). Cycle 3: 2 issues (all fixed — useCallback extraction + text truncation). Final state: CLEAN.
+
+**Feature 2 — Whole-Class Guru 404 Fix:**
+Fixed "No students found in classroom" error when using Guru whole-class mode.
+
+**Modified files (3):**
+- `lib/montree/guru/classroom-context-builder.ts` — Individual try/catch per DB query, error tracking array, null/empty guards
+- `app/api/montree/guru/route.ts` — Distinguishes errors vs empty classroom, logs context errors
+- `components/montree/guru/GuruChatThread.tsx` — Client-side guard for missing classroomId
+
+**3x3 Audit Results (6 passes):** All clean after fixes.
+
+**Feature 3 — FeedbackButton Removal:**
+- `app/montree/dashboard/layout.tsx` — Removed FeedbackButton
+- `app/montree/admin/layout.tsx` — Removed FeedbackButton
+- `app/montree/parent/layout.tsx` — Removed FeedbackButton
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac to deploy. No new migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md`
+
+### Session Work (Mar 10, 2026 — Earlier)
 
 **Batch Parent Reports "Generate All" + 5 Audit Fixes — COMPLETE, NOT YET DEPLOYED (2 new files, 6 modified, 6 audit cycles):**
 
@@ -2400,7 +2438,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | **CURRENT** — Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |
+| `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | **CURRENT** — Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |
+| `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |
 | `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | ESL Guru upgrade + Spy Game & Command Cards generators |
 | `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | SWR cache + skeletons + image compression + audit fixes |
 | `docs/handoffs/HANDOFF_RAZ_TRACKER_REDESIGN_MAR5.md` | RAZ tracker redesign (status-first camera flow) + API auth fix |

@@ -188,10 +188,11 @@ export async function extractFromVoiceNote(
 ): Promise<VoiceNoteExtraction | null> {
   if (!anthropic) {
     console.error('[voice-notes] Anthropic client not available');
-    return null;
+    throw new Error('AI extraction service not available');
   }
 
   if (!transcript || transcript.trim().length < 5) {
+    console.warn('[voice-notes] Transcript too short or empty');
     return null;
   }
 
@@ -294,7 +295,7 @@ export async function extractFromVoiceNote(
     };
   } catch (err) {
     console.error('[voice-notes] Haiku extraction error:', err);
-    return null;
+    throw new Error(`Voice note analysis failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
   }
 }
 

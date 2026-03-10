@@ -3,7 +3,7 @@
 // Layout handles auth + header + tabs
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
@@ -93,110 +93,127 @@ export default function ProgressPage() {
     ? ((session?.classroom as unknown as { children: Array<{ id: string; name: string }> })?.children?.find(c => c.id === childId)?.name || 'Child')
     : 'Child';
 
-  // Fetch all data
-  useEffect(() => {
+  // Debounced fetchAll to prevent multiple SmartCaptures from triggering simultaneous refreshes
+  const debouncedFetchRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch all data — extracted as useCallback so PhotoInsightButton can trigger refresh
+  const fetchAll = useCallback(async () => {
     if (!childId) return;
+    setLoading(true);
+    try {
+      const [summaryRes, mediaRes, progressRes] = await Promise.all([
+        fetch(`/api/montree/progress/summary?child_id=${childId}`),
+        fetch(`/api/montree/media?child_id=${childId}&limit=20`),
+        fetch(`/api/montree/progress?child_id=${childId}&include_observations=true`),
+      ]);
 
-    const fetchAll = async () => {
-      setLoading(true);
-      try {
-        const [summaryRes, mediaRes, progressRes] = await Promise.all([
-          fetch(`/api/montree/progress/summary?child_id=${childId}`),
-          fetch(`/api/montree/media?child_id=${childId}&limit=20`),
-          fetch(`/api/montree/progress?child_id=${childId}&include_observations=true`),
-        ]);
+      const [summaryData, mediaData, progressData] = await Promise.all([
+        summaryRes.json(), mediaRes.json(), progressRes.json(),
+      ]);
 
-        const [summaryData, mediaData, progressData] = await Promise.all([
-          summaryRes.json(), mediaRes.json(), progressRes.json(),
-        ]);
-
-        // Summary → area bars
-        if (summaryData.success) {
-          setAreas(summaryData.areas || []);
-          setOverallPercent(summaryData.overall?.percent || 0);
-        }
-
-        // Stats from progress API
-        if (progressData.stats) {
-          setStats(progressData.stats);
-        }
-
-        // Media
-        setMedia((mediaData.media || []).filter((m: MediaItem) =>
-          m.media_type === 'photo' || m.media_type === 'image' || !m.media_type
-        ));
-
-        // Build timeline
-        const events: TimelineEvent[] = [];
-        const progress: ProgressItem[] = progressData.progress || [];
-        const observations: Observation[] = progressData.observations || [];
-
-        for (const p of progress) {
-          const s = typeof p.status === 'number'
-            ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : ''
-            : String(p.status);
-
-          if (s === 'mastered' || s === 'completed') {
-            events.push({
-              id: `m-${p.id}`, type: 'mastery',
-              date: p.mastered_at || p.updated_at,
-              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '⭐',
-            });
-          } else if (s === 'practicing') {
-            events.push({
-              id: `pr-${p.id}`, type: 'practicing',
-              date: p.updated_at,
-              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '🔄',
-            });
-          } else if (s === 'presented') {
-            events.push({
-              id: `ps-${p.id}`, type: 'presented',
-              date: p.presented_at || p.updated_at,
-              title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '📋',
-            });
-          }
-
-          if (p.notes) {
-            events.push({
-              id: `n-${p.id}`, type: 'note',
-              date: p.updated_at,
-              title: p.work_name, chineseTitle: p.chineseName, subtitle: p.notes,
-              area: p.area, icon: '📝',
-            });
-          }
-        }
-
-        for (const o of observations) {
-          events.push({
-            id: `o-${o.id}`, type: 'observation',
-            date: o.observed_at,
-            title: t('progress.observation'),
-            subtitle: o.behavior_description,
-            icon: '👁',
-          });
-        }
-
-        // Teacher notes from work_sessions (saved via Week tab)
-        const workNotes: { id: string; work_name: string; chineseName?: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
-        for (const wn of workNotes) {
-          events.push({
-            id: `wn-${wn.id}`, type: 'note',
-            date: wn.observed_at,
-            title: wn.work_name, chineseTitle: wn.chineseName, subtitle: wn.notes,
-            area: wn.area, icon: '📝',
-          });
-        }
-
-        events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-        setTimeline(events);
-      } catch (err) {
-        console.error('Progress fetch error:', err);
+      // Summary → area bars
+      if (summaryData.success) {
+        setAreas(summaryData.areas || []);
+        setOverallPercent(summaryData.overall?.percent || 0);
       }
-      setLoading(false);
-    };
 
+      // Stats from progress API
+      if (progressData.stats) {
+        setStats(progressData.stats);
+      }
+
+      // Media
+      setMedia((mediaData.media || []).filter((m: MediaItem) =>
+        m.media_type === 'photo' || m.media_type === 'image' || !m.media_type
+      ));
+
+      // Build timeline
+      const events: TimelineEvent[] = [];
+      const progress: ProgressItem[] = progressData.progress || [];
+      const observations: Observation[] = progressData.observations || [];
+
+      for (const p of progress) {
+        const s = typeof p.status === 'number'
+          ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : ''
+          : String(p.status);
+
+        if (s === 'mastered' || s === 'completed') {
+          events.push({
+            id: `m-${p.id}`, type: 'mastery',
+            date: p.mastered_at || p.updated_at,
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '⭐',
+          });
+        } else if (s === 'practicing') {
+          events.push({
+            id: `pr-${p.id}`, type: 'practicing',
+            date: p.updated_at,
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '🔄',
+          });
+        } else if (s === 'presented') {
+          events.push({
+            id: `ps-${p.id}`, type: 'presented',
+            date: p.presented_at || p.updated_at,
+            title: p.work_name, chineseTitle: p.chineseName, area: p.area, icon: '📋',
+          });
+        }
+
+        if (p.notes) {
+          events.push({
+            id: `n-${p.id}`, type: 'note',
+            date: p.updated_at,
+            title: p.work_name, chineseTitle: p.chineseName, subtitle: p.notes,
+            area: p.area, icon: '📝',
+          });
+        }
+      }
+
+      for (const o of observations) {
+        events.push({
+          id: `o-${o.id}`, type: 'observation',
+          date: o.observed_at,
+          title: t('progress.observation'),
+          subtitle: o.behavior_description,
+          icon: '👁',
+        });
+      }
+
+      // Teacher notes from work_sessions (saved via Week tab)
+      const workNotes: { id: string; work_name: string; chineseName?: string; area: string; notes: string; observed_at: string }[] = progressData.workNotes || [];
+      for (const wn of workNotes) {
+        events.push({
+          id: `wn-${wn.id}`, type: 'note',
+          date: wn.observed_at,
+          title: wn.work_name, chineseTitle: wn.chineseName, subtitle: wn.notes,
+          area: wn.area, icon: '📝',
+        });
+      }
+
+      events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      setTimeline(events);
+    } catch (err) {
+      console.error('Progress fetch error:', err);
+    }
+    setLoading(false);
+  }, [childId, t]);
+
+  // Debounced fetchAll to throttle multiple SmartCapture auto-updates
+  const debouncedFetchAll = useCallback(() => {
+    if (debouncedFetchRef.current) {
+      clearTimeout(debouncedFetchRef.current);
+    }
+    debouncedFetchRef.current = setTimeout(() => {
+      fetchAll();
+    }, 500); // Wait 500ms for multiple SmartCaptures to complete before refreshing
+  }, [fetchAll]);
+
+  useEffect(() => {
     fetchAll();
-  }, [childId]);
+    return () => {
+      if (debouncedFetchRef.current) {
+        clearTimeout(debouncedFetchRef.current);
+      }
+    };
+  }, [fetchAll]);
 
   // Filtered + grouped timeline
   const filtered = selectedArea
@@ -340,9 +357,7 @@ export default function ProgressPage() {
                     <p className="text-[10px] text-gray-500 mt-1 w-24 truncate text-center">{m.work_name}</p>
                   )}
                 </button>
-                {session && isHomeschoolParent(session) && (
-                  <PhotoInsightButton childId={childId} mediaId={m.id} />
-                )}
+                <PhotoInsightButton childId={childId} mediaId={m.id} onProgressUpdate={debouncedFetchAll} />
               </div>
             ))}
           </div>

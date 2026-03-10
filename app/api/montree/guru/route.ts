@@ -350,12 +350,14 @@ export async function POST(request: NextRequest) {
           console.log('[Guru] Fallback classroom context:', classroomContext?.child_count, 'children');
         }
         if (!classroomContext || classroomContext.child_count === 0) {
-          const debugInfo = classroomContext?.error
-            ? `Database error: ${classroomContext.error}`
-            : `No students found in classroom`;
+          // Never expose raw DB errors to client — return friendly message
+          const httpStatus = classroomContext?.error ? 500 : 404;
+          const userMessage = classroomContext?.error
+            ? 'Something went wrong loading your classroom data. Please try again.'
+            : 'No students found in this classroom. Please add students and try again.';
           return NextResponse.json(
-            { success: false, error: `${debugInfo} (classroom_id: ${classroom_id}, auth.classroomId: ${auth.classroomId || 'none'})` },
-            { status: classroomContext?.error ? 500 : 404 }
+            { success: false, error: userMessage },
+            { status: httpStatus }
           );
         }
         // Fallback succeeded — update classroom_id
