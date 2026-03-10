@@ -81,6 +81,7 @@
           ],
           "controlOfError": "Incorrect classification",
           "chineseName": "蒙特梭利分类卡片",
+          "aliases": ["Nomenclature Cards", "3-Part Cards", "Three Part Cards"],
           "levels": [
             {
               "level": 1,
@@ -174,6 +175,7 @@
           ],
           "controlOfError": "Incorrect sound identification",
           "chineseName": "蒙特梭利声音游戏",
+          "aliases": ["I Spy Game", "I Spy", "Sound Game"],
           "levels": [
             {
               "level": 1,
@@ -522,6 +524,7 @@
           ],
           "controlOfError": "Lines go outside shape",
           "chineseName": "蒙特梭利金属嵌板",
+          "aliases": ["Metal Inset Frames", "Insets for Design"],
           "levels": [
             {
               "level": 1,
@@ -613,6 +616,7 @@
           ],
           "controlOfError": "Texture provides tactile feedback on correct path",
           "chineseName": "蒙特梭利砂纸字母",
+          "aliases": ["Sand Letters", "Tactile Letters", "Sandpaper Alphabet"],
           "levels": [
             {
               "level": 1,
@@ -701,6 +705,7 @@
           ],
           "controlOfError": "Letter doesn't form correctly",
           "chineseName": "蒙特梭利沙盘书写",
+          "aliases": ["Sand Tray", "Letter Tracing Tray"],
           "levels": [
             {
               "level": 1,
@@ -778,6 +783,7 @@
           ],
           "controlOfError": "Word doesn't match intended word",
           "chineseName": "蒙特梭利活动字母",
+          "aliases": ["Movable Alphabet", "Large Movable Alphabet", "LMA"],
           "levels": [
             {
               "level": 1,
@@ -1153,6 +1159,7 @@
           ],
           "controlOfError": "Labels don't match objects",
           "chineseName": "蒙特梭利物品盒",
+          "aliases": ["Sound Boxes", "Phonetic Object Box"],
           "levels": [
             {
               "level": 1,
@@ -1202,6 +1209,7 @@
           ],
           "controlOfError": "Words don't match pictures",
           "chineseName": "蒙特梭利粉色系列",
+          "aliases": ["CVC Words", "Pink Reading Series"],
           "levels": [
             {
               "level": 1,
@@ -1267,6 +1275,7 @@
           ],
           "controlOfError": "Words don't decode correctly",
           "chineseName": "蒙特梭利蓝色系列",
+          "aliases": ["Consonant Blends", "Blue Reading Series"],
           "levels": [
             {
               "level": 1,
@@ -1421,6 +1430,7 @@
           ],
           "controlOfError": "Words don't decode correctly",
           "chineseName": "蒙特梭利绿色系列",
+          "aliases": ["Phonograms", "Green Reading Series"],
           "levels": [
             {
               "level": 1,
@@ -1495,6 +1505,7 @@
           ],
           "controlOfError": "Word not recognized",
           "chineseName": "蒙特梭利高频词",
+          "aliases": ["Sight Words", "High Frequency Words"],
           "levels": [
             {
               "level": 1,
@@ -1626,6 +1637,7 @@
           ],
           "controlOfError": "Action doesn't match command",
           "chineseName": "蒙特梭利命令卡",
+          "aliases": ["Action Reading Cards", "Reading Commands"],
           "levels": [
             {
               "level": 1,

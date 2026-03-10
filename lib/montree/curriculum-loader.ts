@@ -30,6 +30,7 @@ export interface CurriculumWork {
   work_key: string;
   name: string;
   chineseName?: string;  // Chinese translation of work name (from stem JSON)
+  aliases?: string[];    // Alternate names for fuzzy matching (from stem JSON)
   description?: string;
   age_range?: string;
   sequence: number;  // Global sequence across all areas
@@ -110,7 +111,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
   const works: CurriculumWork[] = [];
 
   for (const area of AREAS) {
-    const areaData = area.data as unknown as { categories?: Array<{ sequence?: number; name: string; works?: Array<{ id: string; name: string; chineseName?: string; description?: string; ageRange?: string; materials?: string[]; directAims?: string[]; indirectAims?: string[]; controlOfError?: string; prerequisites?: string[]; sequence?: number }> }> };
+    const areaData = area.data as unknown as { categories?: Array<{ sequence?: number; name: string; works?: Array<{ id: string; name: string; chineseName?: string; aliases?: string[]; description?: string; ageRange?: string; materials?: string[]; directAims?: string[]; indirectAims?: string[]; controlOfError?: string; prerequisites?: string[]; sequence?: number }> }> };
     const areaSeq = area.sequence;
 
     // Build guide lookup for this area
@@ -137,6 +138,7 @@ export function loadAllCurriculumWorks(): CurriculumWork[] {
           work_key: work.id,
           name: work.name,
           chineseName: work.chineseName || undefined,
+          aliases: work.aliases || [],
           description: work.description || null,
           age_range: work.ageRange || guide.age_range || '3-6',
           sequence: globalSequence,

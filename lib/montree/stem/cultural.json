@@ -39,6 +39,10 @@
                 "montessori sandpaper globe"
               ]
             }
+          ],
+          "aliases": [
+            "Sandpaper Globe",
+            "Land Water Globe"
           ]
         },
         {
@@ -70,6 +74,10 @@
                 "montessori colored globe"
               ]
             }
+          ],
+          "aliases": [
+            "Colored Globe",
+            "Continent Globe"
           ]
         },
         {
@@ -117,6 +125,10 @@
                 "montessori continent tracing"
               ]
             }
+          ],
+          "aliases": [
+            "World Map Puzzle",
+            "Map Puzzle World"
           ]
         },
         {
@@ -188,6 +200,10 @@
                 "montessori Australia map"
               ]
             }
+          ],
+          "aliases": [
+            "Continent Map Puzzles",
+            "Map Puzzles"
           ]
         },
         {
@@ -291,6 +307,11 @@
                 "montessori land water forms"
               ]
             }
+          ],
+          "aliases": [
+            "Landforms",
+            "Land Water Forms",
+            "Land and Water"
           ]
         },
         {
@@ -812,6 +833,10 @@
                 "montessori living non-living"
               ]
             }
+          ],
+          "aliases": [
+            "Living Non-Living Sort",
+            "Living Things Sort"
           ]
         },
         {
@@ -883,6 +908,10 @@
                 "montessori plant observation"
               ]
             }
+          ],
+          "aliases": [
+            "Puzzle of the Plant",
+            "Plant Puzzle"
           ]
         },
         {
@@ -914,6 +943,10 @@
                 "montessori parts flower puzzle"
               ]
             }
+          ],
+          "aliases": [
+            "Puzzle of the Flower",
+            "Flower Puzzle"
           ]
         },
         {
@@ -954,6 +987,10 @@
                 "montessori leaf shapes"
               ]
             }
+          ],
+          "aliases": [
+            "Puzzle of the Leaf",
+            "Leaf Puzzle"
           ]
         },
         {
@@ -1441,6 +1478,10 @@
                 "montessori parts fish puzzle"
               ]
             }
+          ],
+          "aliases": [
+            "Puzzle of the Fish",
+            "Fish Puzzle"
           ]
         },
         {
@@ -1534,6 +1575,10 @@
                 "montessori parts bird puzzle"
               ]
             }
+          ],
+          "aliases": [
+            "Puzzle of the Bird",
+            "Bird Puzzle"
           ]
         },
         {

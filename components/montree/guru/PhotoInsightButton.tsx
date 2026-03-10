@@ -10,6 +10,12 @@ import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
 
+interface CandidateWork {
+  name: string;
+  area: string;
+  score: number;
+}
+
 interface PhotoInsightResult {
   insight: string;
   work_name: string | null;
@@ -17,6 +23,8 @@ interface PhotoInsightResult {
   mastery_evidence: string | null;
   auto_updated: boolean;
   confidence?: number;
+  match_score?: number;
+  candidates?: CandidateWork[];
   scenario?: 'A' | 'B' | 'C' | 'D';
   in_classroom?: boolean;
   in_child_shelf?: boolean;
@@ -111,6 +119,8 @@ export default function PhotoInsightButton({
           mastery_evidence: data.mastery_evidence || null,
           auto_updated: data.auto_updated || false,
           confidence: data.confidence,
+          match_score: data.match_score ?? null,
+          candidates: Array.isArray(data.candidates) ? data.candidates : [],
           scenario: data.scenario || 'D',
           in_classroom: data.in_classroom || false,
           in_child_shelf: data.in_child_shelf || false,
@@ -290,15 +300,42 @@ export default function PhotoInsightButton({
             </p>
           )}
 
-          {/* Scenario-based CTAs */}
-          {!ctaDone && result.scenario === 'A' && onTeachWork && (
-            <button
-              onClick={handleTeachWork}
-              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
-            >
-              <span>📚</span>
-              <span>{t('photoInsight.teachGuruWork')}</span>
-            </button>
+          {/* Scenario A: Suggestion pills (top candidates) + Teach Guru fallback */}
+          {!ctaDone && result.scenario === 'A' && (
+            <div className="space-y-1.5">
+              {/* Show candidate suggestions if any exist */}
+              {result.candidates && result.candidates.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">{t('photoInsight.didYouMean')}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {result.candidates.map((c) => (
+                      <button
+                        key={c.name}
+                        onClick={() => {
+                          if (onTeachWork) {
+                            onTeachWork({ workName: c.name, area: c.area, mediaId });
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-colors"
+                      >
+                        <AreaBadge area={c.area} size="xs" />
+                        <span>{c.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Always show "Teach Guru" as fallback */}
+              {onTeachWork && (
+                <button
+                  onClick={handleTeachWork}
+                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
+                >
+                  <span>📚</span>
+                  <span>{t('photoInsight.teachGuruWork')}</span>
+                </button>
+              )}
+            </div>
           )}
 
           {!ctaDone && result.scenario === 'B' && (
@@ -329,6 +366,24 @@ export default function PhotoInsightButton({
               )}
               <span>{t('photoInsight.addToShelf')}</span>
             </button>
+          )}
+
+          {/* Scenario D low-confidence: subtle "Did you mean?" with alternatives */}
+          {!ctaDone && result.scenario === 'D' && result.match_score != null && result.match_score < 0.75 &&
+            result.candidates && result.candidates.length > 1 && (
+            <div>
+              <p className="text-xs text-gray-400">{t('photoInsight.didYouMean')}</p>
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {result.candidates.slice(1).map((c) => (
+                  <span
+                    key={c.name}
+                    className="text-xs text-gray-500 px-1.5 py-0.5 rounded bg-gray-50 border border-gray-100"
+                  >
+                    {c.name} ({Math.round(c.score * 100)}%)
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
           {ctaDone && (

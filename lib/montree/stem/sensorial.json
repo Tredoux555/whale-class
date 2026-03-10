@@ -342,6 +342,11 @@
                 "montessori pink tower brown stair extensions"
               ]
             }
+          ],
+          "aliases": [
+            "Tower of Cubes",
+            "Pink Cubes",
+            "Tower"
           ]
         },
         {
@@ -415,6 +420,11 @@
                 "montessori brown stair pink tower"
               ]
             }
+          ],
+          "aliases": [
+            "Broad Stair",
+            "Brown Stairs",
+            "Wide Stair"
           ]
         },
         {
@@ -481,6 +491,10 @@
                 "montessori red rods blindfolded"
               ]
             }
+          ],
+          "aliases": [
+            "Long Rods",
+            "Red Sticks"
           ]
         },
         {
@@ -570,6 +584,10 @@
                 "montessori knobless cylinders with blocks"
               ]
             }
+          ],
+          "aliases": [
+            "Colored Cylinders",
+            "Knobless Cylinder Set"
           ]
         },
         {
@@ -712,6 +730,11 @@
                 "montessori color box 1 naming"
               ]
             }
+          ],
+          "aliases": [
+            "Color Tablets Box 1",
+            "Primary Color Box",
+            "Colour Box 1"
           ]
         },
         {
@@ -769,6 +792,11 @@
                 "montessori color box 2 memory game"
               ]
             }
+          ],
+          "aliases": [
+            "Color Tablets Box 2",
+            "Secondary Color Box",
+            "Colour Box 2"
           ]
         },
         {
@@ -844,6 +872,11 @@
                 "montessori color box 3 distance grading"
               ]
             }
+          ],
+          "aliases": [
+            "Color Tablets Box 3",
+            "Color Gradation Box",
+            "Colour Box 3"
           ]
         }
       ]
@@ -968,6 +1001,10 @@
                 "montessori geometric cabinet blindfolded"
               ]
             }
+          ],
+          "aliases": [
+            "Geometry Cabinet",
+            "Geometric Cabinet and Cards"
           ]
         },
         {
@@ -1043,6 +1080,11 @@
                 "montessori geometric solids partner game"
               ]
             }
+          ],
+          "aliases": [
+            "3D Shapes",
+            "Geometric Forms",
+            "Solid Shapes"
           ]
         },
         {
@@ -1084,6 +1126,10 @@
                 "montessori constructive triangles no lines"
               ]
             }
+          ],
+          "aliases": [
+            "Rectangular Triangle Box",
+            "First Triangle Box"
           ]
         },
         {
@@ -1273,6 +1319,9 @@
                 "montessori binomial cube layers"
               ]
             }
+          ],
+          "aliases": [
+            "Binomial Box"
           ]
         },
         {
@@ -1322,6 +1371,9 @@
                 "montessori trinomial cube layers"
               ]
             }
+          ],
+          "aliases": [
+            "Trinomial Box"
           ]
         },
         {
@@ -1509,6 +1561,10 @@
                 "montessori touch board 3 gradations"
               ]
             }
+          ],
+          "aliases": [
+            "Rough and Smooth Boards",
+            "Tactile Boards"
           ]
         },
         {
@@ -1566,6 +1622,10 @@
                 "montessori touch tablets blindfolded grading"
               ]
             }
+          ],
+          "aliases": [
+            "Rough and Smooth Tablets",
+            "Tactile Tablets"
           ]
         },
         {
@@ -1615,6 +1675,10 @@
                 "montessori fabric naming"
               ]
             }
+          ],
+          "aliases": [
+            "Fabric Box",
+            "Textile Matching"
           ]
         },
         {
