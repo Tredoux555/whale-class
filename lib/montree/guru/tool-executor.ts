@@ -934,6 +934,421 @@ export async function executeTool(
       };
     }
 
+    // --- Daily Activity Tools (read-only) ---
+
+    case 'get_daily_activity': {
+      // Validate date parameter
+      const dateStr = input.date as string | undefined;
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (dateStr && !dateRegex.test(dateStr)) {
+        return { success: false, message: 'Invalid date format. Use YYYY-MM-DD.' };
+      }
+      const queryDate = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      if (queryDate < thirtyDaysAgo) {
+        return { success: false, message: 'Date must be within the last 30 days.' };
+      }
+
+      // Get classroom_id — use override (whole-class mode) or look up from child
+      let classroomIdDaily = classroomIdOverride;
+      if (!classroomIdDaily) {
+        const { data: childData } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomIdDaily = childData?.classroom_id;
+      }
+      if (!classroomIdDaily) {
+        return { success: false, message: 'Could not determine classroom.' };
+      }
+
+      // Get all children in classroom
+      const { data: dailyChildren } = await supabase
+        .from('montree_children')
+        .select('id, name')
+        .eq('classroom_id', classroomIdDaily)
+        .order('name');
+
+      if (!dailyChildren || dailyChildren.length === 0) {
+        return { success: true, message: 'No students in this classroom.' };
+      }
+
+      const dailyChildIds = dailyChildren.map(c => c.id);
+      const dailyDateStr = queryDate.toISOString().split('T')[0];
+      const dailyDateStart = dailyDateStr + 'T00:00:00';
+
+      // 5 parallel queries — wrapped in try/catch for graceful failure
+      let progressRes, voiceRes, obsRes, mediaRes, razRes;
+      try {
+        [progressRes, voiceRes, obsRes, mediaRes, razRes] = await Promise.all([
+          supabase
+            .from('montree_child_progress')
+            .select('child_id, work_name, area, status, updated_at')
+            .in('child_id', dailyChildIds)
+            .gte('updated_at', dailyDateStart)
+            .order('updated_at', { ascending: false })
+            .limit(100),
+          supabase
+            .from('montree_voice_notes')
+            .select('child_id, work_name, area, proposed_status, auto_applied')
+            .eq('classroom_id', classroomIdDaily)
+            .eq('voice_date', dailyDateStr)
+            .limit(50),
+          supabase
+            .from('montree_behavioral_observations')
+            .select('child_id, behavior_description, time_of_day')
+            .eq('classroom_id', classroomIdDaily)
+            .gte('observed_at', dailyDateStart)
+            .order('observed_at', { ascending: false })
+            .limit(50),
+          supabase
+            .from('montree_media')
+            .select('child_id, caption')
+            .eq('classroom_id', classroomIdDaily)
+            .gte('captured_at', dailyDateStart)
+            .limit(50),
+          supabase
+            .from('raz_reading_records')
+            .select('child_id, status, book_title')
+            .eq('classroom_id', classroomIdDaily)
+            .eq('record_date', dailyDateStr)
+            .limit(50),
+        ]);
+      } catch (err) {
+        console.error('[Tool] get_daily_activity query error:', err);
+        return { success: false, message: 'Failed to fetch daily activity data.' };
+      }
+
+      // Build per-child summaries
+      const childNameMap = new Map(dailyChildren.map(c => [c.id, c.name]));
+      const childSummaries = new Map<string, string[]>();
+
+      for (const p of (progressRes?.data || [])) {
+        const name = childNameMap.get(p.child_id) || 'Unknown';
+        const items = childSummaries.get(name) || [];
+        items.push(`${p.status === 'mastered' ? '⭐' : p.status === 'practicing' ? '🔄' : '📋'} ${p.work_name} (${AREA_LABELS[p.area] || p.area}) → ${p.status}`);
+        childSummaries.set(name, items);
+      }
+
+      for (const v of (voiceRes?.data || [])) {
+        const name = childNameMap.get(v.child_id) || 'Unknown';
+        const items = childSummaries.get(name) || [];
+        items.push(`🎙️ Voice note: ${v.work_name || 'general'}${v.auto_applied ? ' (auto-applied)' : ''}`);
+        childSummaries.set(name, items);
+      }
+
+      for (const o of (obsRes?.data || [])) {
+        const name = childNameMap.get(o.child_id) || 'Unknown';
+        const items = childSummaries.get(name) || [];
+        items.push(`👁️ ${(o.behavior_description || '').slice(0, 80)}${o.time_of_day ? ` (${o.time_of_day})` : ''}`);
+        childSummaries.set(name, items);
+      }
+
+      for (const m of (mediaRes?.data || [])) {
+        const name = childNameMap.get(m.child_id) || 'Unknown';
+        const items = childSummaries.get(name) || [];
+        const captionText = typeof m.caption === 'string' ? m.caption.slice(0, 60) : '';
+        items.push(`📸 Photo${captionText ? ': ' + captionText : ''}`);
+        childSummaries.set(name, items);
+      }
+
+      for (const r of (razRes?.data || [])) {
+        const name = childNameMap.get(r.child_id) || 'Unknown';
+        const items = childSummaries.get(name) || [];
+        items.push(`📖 RAZ: ${r.status}${r.book_title ? ' — ' + r.book_title : ''}`);
+        childSummaries.set(name, items);
+      }
+
+      if (childSummaries.size === 0) {
+        return { success: true, message: `No activity recorded for ${dailyDateStr}. This could mean no data has been entered yet today.` };
+      }
+
+      // Format output — cap total items at 50
+      let totalItems = 0;
+      const lines: string[] = [];
+      for (const [name, items] of childSummaries.entries()) {
+        const remaining = 50 - totalItems;
+        if (remaining <= 0) break;
+        const capped = items.slice(0, Math.min(items.length, remaining));
+        lines.push(`${name}:\n  ${capped.join('\n  ')}`);
+        totalItems += capped.length;
+      }
+
+      return {
+        success: true,
+        message: `Daily activity for ${dailyDateStr} — ${childSummaries.size} active students:\n\n${lines.join('\n\n')}`
+      };
+    }
+
+    case 'get_child_recent_activity': {
+      // Validate days parameter
+      const days = Math.min(Math.max(Math.round(Number(input.days) || 7), 1), 30);
+      const dateFrom = new Date();
+      dateFrom.setDate(dateFrom.getDate() - days);
+      const dateFromStr = dateFrom.toISOString().split('T')[0] + 'T00:00:00';
+
+      // In individual mode, use childId directly. In whole-class mode, childId is resolved by route.ts
+      const targetChildId = childId;
+      if (!targetChildId || targetChildId === 'whole_class') {
+        return { success: false, message: 'Could not determine which child to query. Please provide student_name.' };
+      }
+
+      // Get child name for output
+      const { data: childInfo } = await supabase
+        .from('montree_children')
+        .select('name')
+        .eq('id', targetChildId)
+        .single();
+      const childName = childInfo?.name || 'Unknown';
+
+      // 5 parallel queries scoped to one child
+      let progRes, vnRes, obRes, mdRes, rzRes;
+      try {
+        [progRes, vnRes, obRes, mdRes, rzRes] = await Promise.all([
+          supabase
+            .from('montree_child_progress')
+            .select('work_name, area, status, updated_at')
+            .eq('child_id', targetChildId)
+            .gte('updated_at', dateFromStr)
+            .order('updated_at', { ascending: false })
+            .limit(30),
+          supabase
+            .from('montree_voice_notes')
+            .select('work_name, area, proposed_status, auto_applied, voice_date, behavioral_notes')
+            .eq('child_id', targetChildId)
+            .gte('voice_date', dateFrom.toISOString().split('T')[0])
+            .order('voice_date', { ascending: false })
+            .limit(20),
+          supabase
+            .from('montree_behavioral_observations')
+            .select('behavior_description, time_of_day, observed_at')
+            .eq('child_id', targetChildId)
+            .gte('observed_at', dateFromStr)
+            .order('observed_at', { ascending: false })
+            .limit(15),
+          supabase
+            .from('montree_media')
+            .select('caption, captured_at')
+            .eq('child_id', targetChildId)
+            .gte('captured_at', dateFromStr)
+            .order('captured_at', { ascending: false })
+            .limit(15),
+          supabase
+            .from('raz_reading_records')
+            .select('status, book_title, record_date')
+            .eq('child_id', targetChildId)
+            .gte('record_date', dateFrom.toISOString().split('T')[0])
+            .order('record_date', { ascending: false })
+            .limit(10),
+        ]);
+      } catch (err) {
+        console.error('get_child_recent_activity DB error:', err);
+        return { success: false, message: 'Database error fetching child activity. Please try again.' };
+      }
+
+      // Build chronological timeline
+      type TimelineItem = { date: string; text: string };
+      const timeline: TimelineItem[] = [];
+
+      for (const p of (progRes?.data || [])) {
+        timeline.push({
+          date: typeof p.updated_at === 'string' ? p.updated_at.slice(0, 10) : '',
+          text: `${p.status === 'mastered' ? '⭐' : p.status === 'practicing' ? '🔄' : '📋'} ${p.work_name} (${AREA_LABELS[p.area] || p.area}) → ${p.status}`
+        });
+      }
+      for (const v of (vnRes?.data || [])) {
+        timeline.push({
+          date: typeof v.voice_date === 'string' ? v.voice_date.slice(0, 10) : '',
+          text: `🎙️ Voice note: ${v.work_name || 'general'}${typeof v.behavioral_notes === 'string' ? ' — ' + v.behavioral_notes.slice(0, 60) : ''}`
+        });
+      }
+      for (const o of (obRes?.data || [])) {
+        timeline.push({
+          date: typeof o.observed_at === 'string' ? o.observed_at.slice(0, 10) : '',
+          text: `👁️ ${(o.behavior_description || '').slice(0, 80)}${o.time_of_day ? ` (${o.time_of_day})` : ''}`
+        });
+      }
+      for (const m of (mdRes?.data || [])) {
+        timeline.push({
+          date: typeof m.captured_at === 'string' ? m.captured_at.slice(0, 10) : '',
+          text: `📸 Photo${typeof m.caption === 'string' ? ': ' + m.caption.slice(0, 60) : ''}`
+        });
+      }
+      for (const r of (rzRes?.data || [])) {
+        timeline.push({
+          date: typeof r.record_date === 'string' ? r.record_date : '',
+          text: `📖 RAZ: ${r.status}${r.book_title ? ' — ' + r.book_title : ''}`
+        });
+      }
+
+      if (timeline.length === 0) {
+        return { success: true, message: `No activity recorded for ${childName} in the last ${days} days.` };
+      }
+
+      // Sort by date descending, cap at 30
+      timeline.sort((a, b) => b.date.localeCompare(a.date));
+      const capped = timeline.slice(0, 30);
+
+      // Group by date
+      const grouped = new Map<string, string[]>();
+      for (const item of capped) {
+        const list = grouped.get(item.date) || [];
+        list.push(item.text);
+        grouped.set(item.date, list);
+      }
+
+      const lines: string[] = [];
+      for (const [date, items] of grouped.entries()) {
+        lines.push(`${date}:\n  ${items.join('\n  ')}`);
+      }
+
+      return {
+        success: true,
+        message: `${childName}'s activity (last ${days} days, ${capped.length} items):\n\n${lines.join('\n\n')}`
+      };
+    }
+
+    case 'get_classroom_media_summary': {
+      // Validate date
+      const mediaDateStr = input.date as string | undefined;
+      const mediaDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (mediaDateStr && !mediaDateRegex.test(mediaDateStr)) {
+        return { success: false, message: 'Invalid date format. Use YYYY-MM-DD.' };
+      }
+      const mediaDate = mediaDateStr ? new Date(mediaDateStr + 'T00:00:00') : new Date();
+      const mediaThirtyDaysAgo = new Date();
+      mediaThirtyDaysAgo.setDate(mediaThirtyDaysAgo.getDate() - 30);
+      if (mediaDate < mediaThirtyDaysAgo) {
+        return { success: false, message: 'Date must be within the last 30 days.' };
+      }
+
+      // Get classroom_id
+      let classroomIdMedia = classroomIdOverride;
+      if (!classroomIdMedia) {
+        const { data: childData } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomIdMedia = childData?.classroom_id;
+      }
+      if (!classroomIdMedia) {
+        return { success: false, message: 'Could not determine classroom.' };
+      }
+
+      const mediaQueryDate = mediaDate.toISOString().split('T')[0];
+      const mediaDateStart = mediaQueryDate + 'T00:00:00';
+      const mediaDateEnd = mediaQueryDate + 'T23:59:59';
+
+      // Get children for name mapping
+      const { data: mediaChildren } = await supabase
+        .from('montree_children')
+        .select('id, name')
+        .eq('classroom_id', classroomIdMedia);
+
+      const mediaChildNameMap = new Map((mediaChildren || []).map(c => [c.id, c.name]));
+
+      // Build query for media
+      let mediaQuery = supabase
+        .from('montree_media')
+        .select('id, child_id, caption, media_type, captured_at')
+        .eq('classroom_id', classroomIdMedia)
+        .gte('captured_at', mediaDateStart)
+        .lte('captured_at', mediaDateEnd)
+        .order('captured_at', { ascending: false })
+        .limit(30);
+
+      // Optional student_name filter — resolve to child_id
+      const studentNameFilter = input.student_name as string | undefined;
+      if (studentNameFilter) {
+        let filterChildId: string | null = null;
+        for (const [id, name] of mediaChildNameMap.entries()) {
+          if (name.toLowerCase().startsWith(studentNameFilter.toLowerCase())) {
+            filterChildId = id;
+            break;
+          }
+        }
+        if (!filterChildId) {
+          return { success: false, message: `Student "${studentNameFilter}" not found in classroom.` };
+        }
+        mediaQuery = mediaQuery.eq('child_id', filterChildId);
+      }
+
+      let mediaItems;
+      try {
+        const { data } = await mediaQuery;
+        mediaItems = data;
+      } catch (err) {
+        console.error('get_classroom_media_summary DB error:', err);
+        return { success: false, message: 'Database error fetching media. Please try again.' };
+      }
+
+      if (!mediaItems || mediaItems.length === 0) {
+        return { success: true, message: `No photos or videos captured on ${mediaQueryDate}${studentNameFilter ? ` for ${studentNameFilter}` : ''}.` };
+      }
+
+      // Also check group photos via montree_media_children junction
+      const mediaIds = mediaItems.filter(m => !m.child_id).map(m => m.id);
+      let groupPhotoChildren: { media_id: string; child_id: string }[] = [];
+      if (mediaIds.length > 0) {
+        try {
+          const { data: junctionData } = await supabase
+            .from('montree_media_children')
+            .select('media_id, child_id')
+            .in('media_id', mediaIds);
+          groupPhotoChildren = junctionData || [];
+        } catch (err) {
+          console.error('get_classroom_media_summary junction query error:', err);
+          // Continue without group photo data — individual photos still work
+        }
+      }
+
+      // Build per-child media counts
+      const perChild = new Map<string, { photos: number; videos: number; captions: string[] }>();
+
+      for (const m of mediaItems) {
+        // Determine which children this media belongs to
+        const childIds: string[] = [];
+        if (m.child_id) {
+          childIds.push(m.child_id);
+        } else {
+          // Group photo — find tagged children
+          const tagged = groupPhotoChildren.filter(g => g.media_id === m.id);
+          childIds.push(...tagged.map(t => t.child_id));
+        }
+
+        for (const cid of childIds) {
+          const name = mediaChildNameMap.get(cid) || 'Unknown';
+          const entry = perChild.get(name) || { photos: 0, videos: 0, captions: [] };
+          if (m.media_type === 'video') entry.videos++;
+          else entry.photos++;
+          if (typeof m.caption === 'string' && entry.captions.length < 3) {
+            entry.captions.push(m.caption.slice(0, 60));
+          }
+          perChild.set(name, entry);
+        }
+      }
+
+      // Format output
+      const totalPhotos = mediaItems.filter(m => m.media_type !== 'video').length;
+      const totalVideos = mediaItems.filter(m => m.media_type === 'video').length;
+
+      const lines: string[] = [];
+      for (const [name, data] of perChild.entries()) {
+        let line = `${name}: ${data.photos} photo${data.photos !== 1 ? 's' : ''}`;
+        if (data.videos > 0) line += `, ${data.videos} video${data.videos !== 1 ? 's' : ''}`;
+        if (data.captions.length > 0) line += `\n  Captions: ${data.captions.join('; ')}`;
+        lines.push(line);
+      }
+
+      return {
+        success: true,
+        message: `Media summary for ${mediaQueryDate} — ${totalPhotos} photos, ${totalVideos} videos across ${perChild.size} students:\n\n${lines.join('\n')}`
+      };
+    }
+
     default:
       console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
       return { success: false, message: `Unknown tool: ${toolName}` };
