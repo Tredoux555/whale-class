@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (cached?.response_insight) {
-      // Return cached structured response
+      // Return cached structured response (including work ingestion scenario data)
       const snapshot = (cached.context_snapshot as Record<string, unknown>) || {};
       return NextResponse.json({
         success: true,
@@ -126,6 +126,10 @@ export async function POST(request: NextRequest) {
         mastery_evidence: snapshot.mastery_evidence || null,
         auto_updated: snapshot.auto_updated || false,
         confidence: snapshot.sonnet_confidence || null,
+        scenario: snapshot.scenario || 'D',
+        in_classroom: snapshot.in_classroom || false,
+        in_child_shelf: snapshot.in_child_shelf || false,
+        classroom_work_id: snapshot.classroom_work_id || null,
       });
     }
 
@@ -369,7 +373,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       }],
     });
 
-    let timeoutHandle: ReturnType<typeof setTimeout>;
+    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutHandle = setTimeout(() => reject(new Error('Analysis took too long')), 45000);
     });
@@ -484,29 +488,19 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Update media record work_id for gallery tagging
     // montree_media has work_id column (not work_name/area) — gallery computes names from curriculum lookup
-    if (finalWorkName && classroomId) {
+    // Tag media with work_id (reuse classroomWorkId from earlier lookup — no extra DB query)
+    if (classroomWorkId) {
       try {
-        // Look up the classroom curriculum work ID by name to get the UUID
-        const { data: currWork } = await supabase
-          .from('montree_classroom_curriculum_works')
-          .select('id')
-          .eq('classroom_id', classroomId)
-          .eq('name', finalWorkName)
-          .limit(1)
-          .maybeSingle();
+        const { error: mediaUpdateError } = await supabase
+          .from('montree_media')
+          .update({
+            work_id: classroomWorkId,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', media_id);
 
-        if (currWork?.id) {
-          const { error: mediaUpdateError } = await supabase
-            .from('montree_media')
-            .update({
-              work_id: currWork.id,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', media_id);
-
-          if (mediaUpdateError) {
-            console.error('[PhotoInsight] Failed to update media work_id:', mediaUpdateError);
-          }
+        if (mediaUpdateError) {
+          console.error('[PhotoInsight] Failed to update media work_id:', mediaUpdateError);
         }
       } catch (err) {
         console.error('[PhotoInsight] Media tagging exception:', err);
@@ -623,6 +617,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
           scenario,
           in_classroom: inClassroom,
           in_child_shelf: inChildShelf,
+          classroom_work_id: classroomWorkId,
           locale,
         },
       });

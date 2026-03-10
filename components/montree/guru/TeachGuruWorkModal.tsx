@@ -53,6 +53,7 @@ export default function TeachGuruWorkModal({
   // Step 2 state
   const [content, setContent] = useState<GeneratedContent | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [dupWarning, setDupWarning] = useState<string | null>(null);
   const [generateError, setGenerateError] = useState(false);
 
@@ -64,6 +65,7 @@ export default function TeachGuruWorkModal({
     setDupWarning(null);
     setTeacherPrompt('');
     setGenerateError(false);
+    setSaveError(false);
   }, [initialWorkName, initialArea, isOpen]);
 
   useEffect(() => {
@@ -121,6 +123,7 @@ export default function TeachGuruWorkModal({
   const handleSave = useCallback(async () => {
     if (!content || saving || !workName.trim()) return;
     setSaving(true);
+    setSaveError(false);
 
     try {
       const res = await montreeApi('/api/montree/curriculum', {
@@ -149,9 +152,12 @@ export default function TeachGuruWorkModal({
           onWorkSaved({ id: data.work.id, name: workName.trim(), area: selectedArea });
         }
         onClose();
+      } else {
+        setSaveError(true);
       }
     } catch (err) {
       console.error('[TeachGuruWorkModal] Save error:', err);
+      if (mountedRef.current) setSaveError(true);
     } finally {
       if (mountedRef.current) setSaving(false);
     }
@@ -294,6 +300,13 @@ export default function TeachGuruWorkModal({
                 onChange={(v) => setContent({ ...content, direct_aims: v.split('\n').filter(Boolean) })}
                 rows={3}
               />
+
+              {/* Save error */}
+              {saveError && (
+                <p className="text-xs text-red-600 text-center">
+                  {t('common.networkError')}
+                </p>
+              )}
 
               {/* Action buttons */}
               <div className="flex gap-3 pt-2">
