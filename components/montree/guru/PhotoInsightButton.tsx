@@ -1,41 +1,22 @@
 'use client';
 
 // components/montree/guru/PhotoInsightButton.tsx
-// Smart Capture button — fire-and-forget photo analysis
+// Smart Capture button — true fire-and-forget photo analysis
+// Uses global photo-insight-store so processing survives navigation between children
 // Shows toast results + scenario-based CTAs for work ingestion
 // Scenarios: A (unknown work), B (not in classroom), C (not on shelf), D (happy path)
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect, useSyncExternalStore } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
-
-interface CandidateWork {
-  name: string;
-  area: string;
-  score: number;
-}
-
-interface PhotoInsightResult {
-  insight: string;
-  work_name: string | null;
-  area: string | null;
-  mastery_evidence: string | null;
-  auto_updated: boolean;
-  confidence?: number;
-  match_score?: number;
-  candidates?: CandidateWork[];
-  scenario?: 'A' | 'B' | 'C' | 'D';
-  in_classroom?: boolean;
-  in_child_shelf?: boolean;
-  classroom_work_id?: string | null;
-}
-
-interface PendingAnalysis {
-  id: string;
-  mediaId: string;
-  startTime: number;
-}
+import {
+  subscribe,
+  getSnapshot,
+  startAnalysis,
+  resetEntry,
+  type PhotoInsightResult,
+} from '@/lib/montree/photo-insight-store';
 
 interface PhotoInsightButtonProps {
   childId: string;
@@ -57,108 +38,35 @@ export default function PhotoInsightButton({
   childId, mediaId, classroomId, onProgressUpdate, onTeachWork, onAddToClassroom, onAddToShelf,
 }: PhotoInsightButtonProps) {
   const { locale, t } = useI18n();
-  const [result, setResult] = useState<PhotoInsightResult | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [error, setError] = useState(false);
   const [ctaLoading, setCtaLoading] = useState(false);
   const [ctaDone, setCtaDone] = useState(false);
 
-  const pendingRef = useRef<Map<string, PendingAnalysis>>(new Map());
-  const abortRef = useRef<AbortController | null>(null);
-  const mountedRef = useRef(true);
+  // Subscribe to the global store — re-renders when any entry changes
+  const storeSnapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const entry = storeSnapshot.get(mediaId);
 
-  useEffect(() => {
-    return () => {
-      mountedRef.current = false;
-      abortRef.current?.abort();
-    };
-  }, []);
+  const analyzing = entry?.status === 'analyzing';
+  const error = entry?.status === 'error';
+  const result: PhotoInsightResult | null = entry?.result || null;
 
-  // Reset state when mediaId changes (prevents showing stale results for wrong photo)
+  // Fire onProgressUpdate exactly once when auto_updated result arrives
+  const firedAutoUpdateRef = useRef<string | null>(null);
   useEffect(() => {
-    setResult(null);
-    setError(false);
-    setAnalyzing(false);
-    setCtaLoading(false);
-    setCtaDone(false);
-    pendingRef.current.clear();
-    abortRef.current?.abort();
-  }, [mediaId]);
+    if (result?.auto_updated && onProgressUpdate && firedAutoUpdateRef.current !== mediaId) {
+      firedAutoUpdateRef.current = mediaId;
+      onProgressUpdate();
+    }
+  }, [result, mediaId, onProgressUpdate]);
 
   const handleClick = useCallback(() => {
-    if (result) return;
+    if (result || analyzing) return;
+    startAnalysis(mediaId, childId, locale);
+  }, [result, analyzing, mediaId, childId, locale]);
 
-    const analysisId = `${mediaId}-${Date.now()}`;
-    const existing = Array.from(pendingRef.current.values());
-    if (existing.length > 0) return;
-
-    const pending: PendingAnalysis = { id: analysisId, mediaId, startTime: Date.now() };
-    pendingRef.current.set(analysisId, pending);
-    setAnalyzing(true);
-    setError(false);
-
-    const abortController = new AbortController();
-    abortRef.current = abortController;
-
-    // Client-side timeout: 60s to prevent stuck "analyzing..." spinner
-    const timeoutId = setTimeout(() => abortController.abort(), 60000);
-
-    montreeApi('/api/montree/guru/photo-insight', {
-      method: 'POST',
-      body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
-      signal: abortController.signal,
-    })
-      .then(async (res) => {
-        clearTimeout(timeoutId);
-        if (!mountedRef.current) return;
-        if (!pendingRef.current.has(analysisId)) return;
-
-        const data = await res.json();
-        if (!mountedRef.current) { pendingRef.current.delete(analysisId); return; }
-
-        if (!data.success) {
-          setError(true);
-          pendingRef.current.delete(analysisId);
-          setAnalyzing(false);
-          return;
-        }
-
-        setResult({
-          insight: data.insight,
-          work_name: data.work_name || null,
-          area: data.area || null,
-          mastery_evidence: data.mastery_evidence || null,
-          auto_updated: data.auto_updated || false,
-          confidence: data.confidence,
-          match_score: data.match_score ?? null,
-          candidates: Array.isArray(data.candidates) ? data.candidates : [],
-          scenario: data.scenario || 'D',
-          in_classroom: data.in_classroom || false,
-          in_child_shelf: data.in_child_shelf || false,
-          classroom_work_id: data.classroom_work_id || null,
-        });
-
-        if (data.auto_updated && onProgressUpdate) {
-          onProgressUpdate();
-        }
-
-        pendingRef.current.delete(analysisId);
-        setAnalyzing(false);
-      })
-      .catch((err) => {
-        clearTimeout(timeoutId);
-        if (!mountedRef.current) return;
-        if (err instanceof DOMException && err.name === 'AbortError') {
-          pendingRef.current.delete(analysisId);
-          setAnalyzing(false);
-          return;
-        }
-        setError(true);
-        pendingRef.current.delete(analysisId);
-        setAnalyzing(false);
-      });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [childId, mediaId, locale, onProgressUpdate]);
+  const handleRetry = useCallback(() => {
+    resetEntry(mediaId);
+    startAnalysis(mediaId, childId, locale);
+  }, [mediaId, childId, locale]);
 
   // CTA: Add known standard work to classroom (Scenario B)
   const handleAddToClassroom = useCallback(async () => {
@@ -189,7 +97,7 @@ export default function PhotoInsightButton({
     } catch {
       // Silently fail — teacher can add manually
     } finally {
-      if (mountedRef.current) setCtaLoading(false);
+      setCtaLoading(false);
     }
   }, [result, classroomId, ctaLoading, onAddToClassroom]);
 
@@ -221,7 +129,7 @@ export default function PhotoInsightButton({
     } catch {
       // Silently fail
     } finally {
-      if (mountedRef.current) setCtaLoading(false);
+      setCtaLoading(false);
     }
   }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate]);
 
@@ -247,7 +155,7 @@ export default function PhotoInsightButton({
         <>
           {error ? (
             <button
-              onClick={() => { setError(false); handleClick(); }}
+              onClick={handleRetry}
               className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
               title={t('common.tryAgain')}
             >
@@ -314,7 +222,6 @@ export default function PhotoInsightButton({
           {/* Scenario A: Suggestion pills (top candidates) + Teach Guru fallback */}
           {!ctaDone && result.scenario === 'A' && (
             <div className="space-y-1.5">
-              {/* Show candidate suggestions if any exist */}
               {result.candidates && result.candidates.length > 0 && (
                 <div>
                   <p className="text-xs text-gray-500 mb-1">{t('photoInsight.didYouMean')}</p>
@@ -336,7 +243,6 @@ export default function PhotoInsightButton({
                   </div>
                 </div>
               )}
-              {/* Always show "Teach Guru" as fallback */}
               {onTeachWork && (
                 <button
                   onClick={handleTeachWork}
