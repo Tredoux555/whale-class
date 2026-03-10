@@ -58,7 +58,6 @@ export async function POST(request: NextRequest) {
         {
           error: 'AI extraction failed',
           code: 'EXTRACTION_FAILED',
-          details: extractErr instanceof Error ? extractErr.message : 'Unknown error',
         },
         { status: 502 }
       );

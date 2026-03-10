@@ -12,7 +12,7 @@ interface ChatBubbleProps {
   imageUrl?: string;
 }
 
-function formatRelativeTime(dateStr: string, t: any): string {
+function formatRelativeTime(dateStr: string, t: (key: string) => string): string {
   const date = new Date(dateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
