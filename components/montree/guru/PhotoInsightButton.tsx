@@ -84,9 +84,8 @@ export default function PhotoInsightButton({
     // Client-side timeout: 60s to prevent stuck "analyzing..." spinner
     const timeoutId = setTimeout(() => abortController.abort(), 60000);
 
-    fetch('/api/montree/guru/photo-insight', {
+    montreeApi('/api/montree/guru/photo-insight', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
       signal: abortController.signal,
     })
