@@ -216,8 +216,8 @@ IMPORTANT:
 - If you cannot identify the work, describe what you see and set confidence low
 ${curriculumHint}`;
 
-    // Call Sonnet with vision + tool_use
-    const message = await anthropic.messages.create({
+    // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
+    const apiPromise = anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 500,
       system: systemPrompt,
@@ -236,6 +236,15 @@ ${curriculumHint}`;
           },
         ],
       }],
+    });
+
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutHandle = setTimeout(() => reject(new Error('Analysis took too long')), 45000);
+    });
+
+    const message = await Promise.race([apiPromise, timeoutPromise]).finally(() => {
+      clearTimeout(timeoutHandle);
     });
 
     // Extract tool use result

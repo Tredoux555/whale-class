@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       auto_applied: false,
     };
 
-    let savedNote: any;
+    let savedNote: { id: string };
     try {
       const result = await supabase
         .from('montree_voice_notes')
