@@ -10,7 +10,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
-import { fuzzyScore } from '@/lib/montree/work-matching';
+import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 
 // Tool definition for structured photo analysis
 const PHOTO_ANALYSIS_TOOL = {
@@ -46,39 +46,22 @@ const PHOTO_ANALYSIS_TOOL = {
   },
 };
 
-// Match Sonnet's identified work to curriculum
-function matchToCurriculum(
-  identifiedName: string,
-  curriculum: CurriculumWork[]
-): { work: CurriculumWork | null; confidence: number } {
-  if (!identifiedName) return { work: null, confidence: 0 };
-
-  let bestWork: CurriculumWork | null = null;
-  let bestScore = 0;
-
-  for (const w of curriculum) {
-    const score = fuzzyScore(identifiedName, w.name);
-    if (score > bestScore) {
-      bestScore = score;
-      bestWork = w;
-    }
-    // Also try Chinese name
-    if (w.chineseName) {
-      const cnScore = fuzzyScore(identifiedName, w.chineseName);
-      if (cnScore > bestScore) {
-        bestScore = cnScore;
-        bestWork = w;
-      }
-    }
-  }
-
-  return { work: bestWork, confidence: bestScore };
-}
+// Old matchToCurriculum removed — now using matchToCurriculumV2 from work-matching.ts
+// (area-constrained, alias-aware, materials-boosted, top-3 candidates)
 
 // Status rank for upgrade-only protection
 const STATUS_RANK: Record<string, number> = {
   'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
 };
+
+// Adaptive auto-update threshold based on per-work accuracy history
+// High EMA (>0.8) → lower threshold (0.6), Low EMA (<0.5) → higher threshold (0.85)
+function getAutoUpdateThreshold(ema: number | undefined): number {
+  if (ema === undefined) return 0.7; // default for new works
+  if (ema >= 0.8) return 0.6;  // historically accurate → trust more
+  if (ema >= 0.5) return 0.7;  // average → standard threshold
+  return 0.85;                  // historically inaccurate → require high confidence
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,7 +99,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (cached?.response_insight) {
-      // Return cached structured response (including work ingestion scenario data)
+      // Return cached structured response (including work ingestion scenario data + V2 candidates)
       const snapshot = (cached.context_snapshot as Record<string, unknown>) || {};
       return NextResponse.json({
         success: true,
@@ -126,6 +109,8 @@ export async function POST(request: NextRequest) {
         mastery_evidence: snapshot.mastery_evidence || null,
         auto_updated: snapshot.auto_updated || false,
         confidence: snapshot.sonnet_confidence || null,
+        match_score: snapshot.curriculum_match_score ?? null,
+        candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
         scenario: snapshot.scenario || 'D',
         in_classroom: snapshot.in_classroom || false,
         in_child_shelf: snapshot.in_child_shelf || false,
@@ -239,8 +224,9 @@ export async function POST(request: NextRequest) {
     // SELF-LEARNING CONTEXT: corrections, focus works, duplicates
     // ========================================================
 
-    // 1. Fetch recent corrections for this classroom (teacher feedback loop)
+    // 1. Fetch corrections for this classroom (used for BOTH prompt context AND V2 matching)
     let correctionsContext = '';
+    const correctionsMap = new Map<string, string>(); // lowercase original → corrected (for matchToCurriculumV2)
     if (classroomId) {
       try {
         const { data: corrections } = await supabase
@@ -248,17 +234,21 @@ export async function POST(request: NextRequest) {
           .select('original_work_name, corrected_work_name')
           .eq('classroom_id', classroomId)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(50);
         if (corrections && corrections.length > 0) {
-          const unique = new Map<string, string>();
+          const promptEntries: string[] = [];
           for (const c of corrections) {
             if (c.original_work_name && c.corrected_work_name) {
-              unique.set(c.original_work_name, c.corrected_work_name);
+              // For V2 matching (lowercase key)
+              correctionsMap.set(c.original_work_name.toLowerCase().trim(), c.corrected_work_name);
+              // For prompt context (show last 10 unique)
+              if (promptEntries.length < 10) {
+                promptEntries.push(`- You said "${c.original_work_name}" but teacher corrected to "${c.corrected_work_name}"`);
+              }
             }
           }
-          if (unique.size > 0) {
-            correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):
-${Array.from(unique.entries()).map(([orig, fix]) => `- You said "${orig}" but teacher corrected to "${fix}"`).join('\n')}`;
+          if (promptEntries.length > 0) {
+            correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):\n${promptEntries.join('\n')}`;
           }
         }
       } catch {
@@ -276,9 +266,9 @@ ${Array.from(unique.entries()).map(([orig, fix]) => `- You said "${orig}" but te
           .eq('child_id', child_id)
           .limit(10);
         if (focusWorks && focusWorks.length > 0) {
-          focusWorksContext = `\n\nCHILD'S CURRENT SHELF (focus works — MOST LIKELY what they're doing):
-${focusWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}
-IMPORTANT: The child is most likely working on one of these shelf works. Check these FIRST before guessing other works.`;
+          focusWorksContext = `\n\nPRIORITY WORKS — CHECK THESE FIRST (child's current shelf):
+${focusWorks.map((w, i) => `${i + 1}. ${w.work_name} (${w.area}, status: ${w.status})`).join('\n')}
+RULE: If the photo matches ANY of these shelf works, ALWAYS prefer it over a general curriculum guess. These are the works physically on this child's shelf right now.`;
         }
       } catch {
         // Non-fatal
@@ -309,7 +299,7 @@ IMPORTANT: The child is most likely working on one of these shelf works. Check t
     }
 
     // 4. Check per-work accuracy — disable auto-update for unreliable works
-    let accuracyData: Map<string, { ema: number; enabled: boolean }> = new Map();
+    const accuracyData: Map<string, { ema: number; enabled: boolean }> = new Map();
     if (classroomId) {
       try {
         const { data: accuracy } = await supabase
@@ -345,10 +335,15 @@ ${langInstruction}
 
 IMPORTANT:
 - Identify the SPECIFIC Montessori work name (e.g., "Color Box 2", "Pink Tower", "Sandpaper Letters")
-- Match to standard curriculum names when possible
+- Match to standard curriculum names when possible — use the EXACT name from the curriculum list below
 - Assess mastery based on visual evidence: correct completion = mastered, active work with some errors = practicing
 - Keep the observation to ONE warm, specific sentence about technique or concentration
 - If you cannot identify the work, describe what you see and set confidence low
+
+EXAMPLES (for calibration):
+- Photo of child stacking graduated pink cubes → work_name: "Pink Tower", area: "sensorial", confidence: 0.95
+- Photo of child tracing letters on textured cards → work_name: "Sandpaper Letters", area: "language", confidence: 0.9
+- Photo of child transferring beans with a spoon → work_name: "Spooning", area: "practical_life", confidence: 0.85
 ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
@@ -411,17 +406,21 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       observation: typeof rawInput.observation === 'string' ? rawInput.observation : '',
     };
 
-    // Match to curriculum for canonical work name + area
-    const curriculumMatch = matchToCurriculum(input.work_name, curriculum);
-    const finalWorkName = curriculumMatch.confidence >= 0.5 && curriculumMatch.work
-      ? curriculumMatch.work.name
-      : input.work_name;
-    const finalArea = curriculumMatch.confidence >= 0.5 && curriculumMatch.work
-      ? curriculumMatch.work.area_key
-      : (input.area !== 'unknown' ? input.area : null);
-    const finalWorkKey = curriculumMatch.confidence >= 0.5 && curriculumMatch.work
-      ? curriculumMatch.work.work_key
-      : null;
+    // Match to curriculum using V2 (area-constrained, alias-aware, materials-boosted)
+    // correctionsMap already built from step 1 above (shared with prompt context)
+    const matchResult = matchToCurriculumV2(
+      input.work_name,
+      input.area !== 'unknown' ? input.area : null,
+      curriculum,
+      correctionsMap,
+      input.observation,
+    );
+
+    const finalWorkName = matchResult.bestMatch?.name || input.work_name;
+    const finalArea = matchResult.bestMatch?.area_key
+      || (input.area !== 'unknown' ? input.area : null);
+    const finalWorkKey = matchResult.bestMatch?.work_key || null;
+    const matchScore = matchResult.bestScore;
 
     // ========================================================
     // 3 LOOKUPS: Is this work in classroom? On child's shelf? What's the DB work_id?
@@ -472,14 +471,13 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       ? input.mastery_evidence
       : null;
 
-    // Auto-update threshold: high confidence work match + clear mastery evidence
-    // SELF-LEARNING: Check per-work accuracy — disable auto-update for unreliable works
     const workAccuracy = accuracyData.get(finalWorkName);
-    const accuracyGatePass = workAccuracy ? workAccuracy.enabled : true; // default: allow
+    const accuracyGatePass = workAccuracy ? workAccuracy.enabled : true;
+    const autoUpdateThreshold = getAutoUpdateThreshold(workAccuracy?.ema);
 
     const shouldAutoUpdate = (
-      curriculumMatch.confidence >= 0.7 &&
-      input.confidence >= 0.7 &&
+      matchScore >= autoUpdateThreshold &&
+      input.confidence >= autoUpdateThreshold &&
       masteryEvidence !== null &&
       accuracyGatePass
     );
@@ -581,7 +579,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     // C: In classroom but NOT on shelf → "Add to Shelf"
     // D: Happy path (in classroom + on shelf or auto-updated)
     let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
-    if (curriculumMatch.confidence < 0.5) {
+    if (matchScore < 0.5) {
       scenario = 'A'; // Unknown work
     } else if (!inClassroom) {
       scenario = 'B'; // Known work, not in this classroom
@@ -612,12 +610,13 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
           identified_work_key: finalWorkKey,
           mastery_evidence: masteryEvidence,
           sonnet_confidence: input.confidence,
-          curriculum_match_confidence: curriculumMatch.confidence,
+          curriculum_match_score: matchScore,
           auto_updated: autoUpdated,
           scenario,
           in_classroom: inClassroom,
           in_child_shelf: inChildShelf,
           classroom_work_id: classroomWorkId,
+          candidates: matchResult.candidates.map(c => ({ name: c.work.name, area: c.work.area_key, score: c.score })),
           locale,
         },
       });
@@ -636,6 +635,13 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       accuracy_gate_blocked: !accuracyGatePass,
       work_accuracy_ema: workAccuracy?.ema ?? null,
       confidence: input.confidence,
+      match_score: matchScore,
+      // Top candidates for "Did you mean?" UI
+      candidates: matchResult.candidates.slice(0, 3).map(c => ({
+        name: c.work.name,
+        area: c.work.area_key,
+        score: Math.round(c.score * 100) / 100,
+      })),
       // Work ingestion scenario hints
       scenario,
       in_classroom: inClassroom,

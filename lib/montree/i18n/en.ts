@@ -2422,6 +2422,7 @@ export const en = {
   'photoInsight.addToClassroom': 'Add to Classroom',
   'photoInsight.addToShelf': 'Add to Shelf',
   'photoInsight.actionComplete': 'Done!',
+  'photoInsight.didYouMean': 'Did you mean?',
   'photoInsight.teachGuruTitle': 'Teach Smart Capture a New Work',
   'photoInsight.workNameLabel': 'Work Name',
   'photoInsight.workNamePlaceholder': 'e.g., Bead Threading, Color Sorting...',

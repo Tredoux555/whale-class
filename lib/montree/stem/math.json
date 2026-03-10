@@ -33,6 +33,10 @@
           ],
           "controlOfError": "Rods don't align correctly",
           "chineseName": "蒙特梭利数棒",
+          "aliases": [
+            "Red and Blue Rods",
+            "Number Sticks"
+          ],
           "levels": [
             {
               "level": 1,
@@ -123,6 +127,10 @@
                 "montessori sandpaper numerals number rods"
               ]
             }
+          ],
+          "aliases": [
+            "Sandpaper Numbers",
+            "Tactile Numbers"
           ]
         },
         {
@@ -199,6 +207,10 @@
                 "montessori spindle box rubber bands"
               ]
             }
+          ],
+          "aliases": [
+            "Spindle Box",
+            "Spindles"
           ]
         },
         {
@@ -251,6 +263,10 @@
                 "montessori cards counters odd even"
               ]
             }
+          ],
+          "aliases": [
+            "Cards and Counters",
+            "Odd and Even"
           ]
         },
         {
@@ -417,6 +433,11 @@
                 "montessori golden beads three period lesson"
               ]
             }
+          ],
+          "aliases": [
+            "Golden Bead Material",
+            "Decimal System",
+            "Golden Beads"
           ]
         },
         {
@@ -657,6 +678,10 @@
                 "montessori exchange game multiple"
               ]
             }
+          ],
+          "aliases": [
+            "Change Game",
+            "Trading Game"
           ]
         },
         {
@@ -892,6 +917,10 @@
                 "montessori teen board building teens"
               ]
             }
+          ],
+          "aliases": [
+            "Seguin Board A",
+            "Teens Board"
           ]
         },
         {
@@ -965,6 +994,10 @@
                 "montessori ten board counting tens"
               ]
             }
+          ],
+          "aliases": [
+            "Seguin Board C",
+            "Tens Board"
           ]
         },
         {
@@ -1082,6 +1115,10 @@
                 "montessori hundred board patterns"
               ]
             }
+          ],
+          "aliases": [
+            "100 Board",
+            "Hundred Chart"
           ]
         },
         {
@@ -1274,6 +1311,11 @@
                 "montessori short chain of 10"
               ]
             }
+          ],
+          "aliases": [
+            "Bead Chains Squares",
+            "Square Chains",
+            "Short Chains"
           ]
         },
         {
@@ -1375,6 +1417,11 @@
                 "montessori long chain of 10"
               ]
             }
+          ],
+          "aliases": [
+            "Bead Chains Cubes",
+            "Cube Chains",
+            "Long Chains"
           ]
         },
         {
@@ -1459,6 +1506,10 @@
                 "montessori snake game recording"
               ]
             }
+          ],
+          "aliases": [
+            "Snake Game Addition",
+            "Positive Snake"
           ]
         },
         {
@@ -1493,6 +1544,10 @@
                 "montessori subtraction snake game"
               ]
             }
+          ],
+          "aliases": [
+            "Snake Game Subtraction",
+            "Negative Snake"
           ]
         },
         {
@@ -1731,6 +1786,10 @@
                 "montessori multiplication recording"
               ]
             }
+          ],
+          "aliases": [
+            "Multiplication Bead Board",
+            "Bead Board"
           ]
         },
         {
@@ -1941,6 +2000,10 @@
                 "montessori stamp game division"
               ]
             }
+          ],
+          "aliases": [
+            "Stamp Game Exercise",
+            "Stamps"
           ]
         },
         {

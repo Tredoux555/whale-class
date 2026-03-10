@@ -1,4 +1,5 @@
 // Fuzzy matching utilities for intelligent work placement in curriculum
+import type { CurriculumWork } from './curriculum-loader';
 
 /**
  * Calculate fuzzy match score between two strings (0-1)
@@ -137,3 +138,140 @@ export const mergeWorksWithCurriculum = (
     return { ...w, dbSequence: w.sequence };
   });
 };
+
+// ================================================================
+// V2 MATCHING — Enhanced curriculum matching for Smart Capture
+// Area-constrained, alias-aware, materials-boosted, top-3 candidates
+// ================================================================
+
+interface MatchCandidate {
+  work: CurriculumWork;
+  score: number;
+}
+
+interface MatchResult {
+  candidates: MatchCandidate[];
+  bestMatch: CurriculumWork | null;
+  bestScore: number;
+}
+
+/**
+ * Score a single curriculum work against an identified name.
+ * Checks: exact name, aliases, Chinese name, and materials boost.
+ */
+function scoreWork(
+  identifiedName: string,
+  work: CurriculumWork,
+  observationText?: string,
+): number {
+  const input = identifiedName.toLowerCase().trim();
+
+  // 1. Score against primary name
+  let score = fuzzyScore(input, work.name);
+
+  // 2. Score against aliases (take best)
+  if (work.aliases && work.aliases.length > 0) {
+    for (const alias of work.aliases) {
+      const aliasScore = fuzzyScore(input, alias);
+      if (aliasScore > score) score = aliasScore;
+    }
+  }
+
+  // 3. Score against Chinese name
+  if (work.chineseName) {
+    const cnScore = fuzzyScore(input, work.chineseName);
+    if (cnScore > score) score = cnScore;
+  }
+
+  // 4. Materials boost (up to +0.15, capped)
+  // Cross-reference observation text with work's materials list
+  if (observationText && work.materials && work.materials.length > 0) {
+    const obsLower = observationText.toLowerCase();
+    let materialBoost = 0;
+    for (const mat of work.materials) {
+      // Check each meaningful word in the material name (>3 chars)
+      const matWords = mat.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+      for (const mw of matWords) {
+        if (obsLower.includes(mw)) {
+          materialBoost += 0.05;
+          break; // One hit per material item
+        }
+      }
+    }
+    score = Math.min(1.0, score + Math.min(materialBoost, 0.15));
+  }
+
+  return score;
+}
+
+/**
+ * Enhanced curriculum matching for Smart Capture.
+ *
+ * Strategy:
+ * 0. Check corrections alias map (instant exact match from teacher feedback)
+ * 1. Area-constrained first pass (filter to Sonnet's identified area)
+ * 2. Score each work (name + aliases + Chinese name + materials boost)
+ * 3. Return top 3 candidates
+ * 4. If area-constrained best < 0.5, retry with full curriculum (one retry only)
+ *
+ * @param identifiedName - Work name from Sonnet vision
+ * @param area - Area from Sonnet (null or 'unknown' = search all areas)
+ * @param curriculum - Full curriculum works array
+ * @param corrections - Map of original_name_lowercase → corrected_name (from montree_guru_corrections)
+ * @param observationText - Sonnet's observation text (for materials boost)
+ * @param isFallback - Internal: prevents infinite recursion on full-curriculum retry
+ */
+export function matchToCurriculumV2(
+  identifiedName: string,
+  area: string | null,
+  curriculum: CurriculumWork[],
+  corrections?: Map<string, string>,
+  observationText?: string,
+  isFallback?: boolean,
+): MatchResult {
+  if (!identifiedName) return { candidates: [], bestMatch: null, bestScore: 0 };
+
+  const input = identifiedName.toLowerCase().trim();
+
+  // 0. Check corrections alias map first (instant match from teacher feedback)
+  if (corrections && corrections.size > 0) {
+    const correctedName = corrections.get(input);
+    if (correctedName) {
+      const exactMatch = curriculum.find(w => w.name.toLowerCase().trim() === correctedName.toLowerCase().trim());
+      if (exactMatch) {
+        return {
+          candidates: [{ work: exactMatch, score: 1.0 }],
+          bestMatch: exactMatch,
+          bestScore: 1.0,
+        };
+      }
+    }
+  }
+
+  // 1. Area-constrained pool
+  const hasArea = area && area !== 'unknown';
+  const pool = hasArea
+    ? curriculum.filter(w => w.area_key === area)
+    : curriculum;
+
+  // 2. Score each work
+  const scored: MatchCandidate[] = pool.map(w => ({
+    work: w,
+    score: scoreWork(identifiedName, w, observationText),
+  }));
+
+  // 3. Sort by score descending, take top 3 above threshold 0.2
+  scored.sort((a, b) => b.score - a.score);
+  const candidates = scored.slice(0, 3).filter(c => c.score > 0.2);
+
+  // 4. If area-constrained best is weak, retry with full curriculum (one retry only)
+  if (!isFallback && hasArea && (candidates.length === 0 || candidates[0].score < 0.5)) {
+    return matchToCurriculumV2(identifiedName, null, curriculum, corrections, observationText, true);
+  }
+
+  return {
+    candidates,
+    bestMatch: candidates.length > 0 ? candidates[0].work : null,
+    bestScore: candidates.length > 0 ? candidates[0].score : 0,
+  };
+}

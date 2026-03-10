@@ -237,6 +237,7 @@
           ],
           "controlOfError": "Stepping off the line",
           "chineseName": "蒙特梭利走线",
+          "aliases": ["Line Walking", "Walking the Line"],
           "levels": [
             {
               "level": 1,
@@ -359,6 +360,7 @@
           ],
           "controlOfError": "Making any sound",
           "chineseName": "蒙特梭利安静游戏",
+          "aliases": ["Silence Activity", "Quiet Game"],
           "levels": [
             {
               "level": 1,
@@ -439,6 +441,7 @@
           ],
           "controlOfError": "Edges don't align",
           "chineseName": "蒙特梭利折布",
+          "aliases": ["Cloth Folding", "Napkin Folding"],
           "levels": [
             {
               "level": 1,
@@ -658,6 +661,7 @@
           ],
           "controlOfError": "Materials spill",
           "chineseName": "蒙特梭利勺子转移",
+          "aliases": ["Transfer with Spoon", "Spoon Transfer", "Dry Spooning"],
           "levels": [
             {
               "level": 1,
@@ -717,6 +721,7 @@
           ],
           "controlOfError": "Objects drop",
           "chineseName": "蒙特梭利夹子转移",
+          "aliases": ["Tong Transfer", "Using Tongs"],
           "levels": [
             {
               "level": 1,
@@ -878,6 +883,7 @@
           ],
           "controlOfError": "Spilled materials",
           "chineseName": "蒙特梭利干倒",
+          "aliases": ["Dry Pouring", "Dry Transfer Pouring"],
           "levels": [
             {
               "level": 1,
@@ -938,6 +944,7 @@
           ],
           "controlOfError": "Spilled water",
           "chineseName": "蒙特梭利倒水",
+          "aliases": ["Water Pouring", "Wet Pouring", "Water Transfer"],
           "levels": [
             {
               "level": 1,
@@ -1100,6 +1107,7 @@
           ],
           "controlOfError": "Drops miss container",
           "chineseName": "蒙特梭利滴管",
+          "aliases": ["Dropper Transfer", "Eye Dropper Transfer", "Dropper Water Transfer"],
           "levels": [
             {
               "level": 1,
@@ -1559,6 +1567,7 @@
           ],
           "controlOfError": "Bow doesn't hold",
           "chineseName": "蒙特梭利蝴蝶结框",
+          "aliases": ["Bow Frame", "Tying Bows"],
           "levels": [
             {
               "level": 1,
@@ -1597,6 +1606,7 @@
           ],
           "controlOfError": "Shoes not shiny",
           "chineseName": "蒙特梭利擦鞋",
+          "aliases": ["Polishing Shoes", "Boot Polishing"],
           "levels": [
             {
               "level": 1,
