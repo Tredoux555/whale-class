@@ -13,7 +13,6 @@ import { getSupabase } from '@/lib/supabase-client';
 interface Child {
   id: string;
   name: string;
-  first_name?: string;
 }
 
 export interface VoiceNoteExtraction {
@@ -202,7 +201,7 @@ export async function extractFromVoiceNote(
   const [childrenResult, aliases, curriculum] = await Promise.all([
     supabase
       .from('montree_children')
-      .select('id, name, first_name')
+      .select('id, name')
       .eq('classroom_id', classroomId)
       .order('name'),
     loadAliases(classroomId),
