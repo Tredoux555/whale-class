@@ -74,6 +74,17 @@ export default function PhotoInsightButton({
     };
   }, []);
 
+  // Reset state when mediaId changes (prevents showing stale results for wrong photo)
+  useEffect(() => {
+    setResult(null);
+    setError(false);
+    setAnalyzing(false);
+    setCtaLoading(false);
+    setCtaDone(false);
+    pendingRef.current.clear();
+    abortRef.current?.abort();
+  }, [mediaId]);
+
   const handleClick = useCallback(() => {
     if (result) return;
 
@@ -310,7 +321,7 @@ export default function PhotoInsightButton({
                   <div className="flex flex-wrap gap-1.5">
                     {result.candidates.map((c) => (
                       <button
-                        key={c.name}
+                        key={`${c.name}-${c.area}`}
                         onClick={() => {
                           if (onTeachWork) {
                             onTeachWork({ workName: c.name, area: c.area, mediaId });
@@ -376,7 +387,7 @@ export default function PhotoInsightButton({
               <div className="flex flex-wrap gap-1 mt-0.5">
                 {result.candidates.slice(1).map((c) => (
                   <span
-                    key={c.name}
+                    key={`${c.name}-${c.area}`}
                     className="text-xs text-gray-500 px-1.5 py-0.5 rounded bg-gray-50 border border-gray-100"
                   >
                     {c.name} ({Math.round(c.score * 100)}%)

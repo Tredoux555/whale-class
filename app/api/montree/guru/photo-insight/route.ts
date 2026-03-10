@@ -167,9 +167,11 @@ export async function POST(request: NextRequest) {
       : 'No current works tracked yet.';
 
     // Load curriculum for matching (static 329 + classroom custom works)
+    // IMPORTANT: Clone the array — loadAllCurriculumWorks() returns a cached reference.
+    // Pushing custom works into the original would permanently contaminate the module-level cache.
     let curriculum: CurriculumWork[] = [];
     try {
-      curriculum = loadAllCurriculumWorks();
+      curriculum = [...loadAllCurriculumWorks()];
     } catch (err) {
       console.error('[PhotoInsight] Failed to load curriculum:', err);
     }
@@ -393,6 +395,12 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
         mastery_evidence: null,
         auto_updated: false,
         confidence: null,
+        match_score: null,
+        candidates: [],
+        scenario: 'A' as const,
+        in_classroom: false,
+        in_child_shelf: false,
+        classroom_work_id: null,
       });
     }
 
