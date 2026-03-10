@@ -2,13 +2,13 @@
 
 // components/montree/guru/PhotoInsightButton.tsx
 // Smart Capture button — fire-and-forget photo analysis
-// Teacher taps button → immediately returns to work (never blocks)
-// Shows toast results as they come back asynchronously
-// Multiple photos can be analyzed simultaneously
+// Shows toast results + scenario-based CTAs for work ingestion
+// Scenarios: A (unknown work), B (not in classroom), C (not on shelf), D (happy path)
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
+import { montreeApi } from '@/lib/montree/api';
 
 interface PhotoInsightResult {
   insight: string;
@@ -17,6 +17,10 @@ interface PhotoInsightResult {
   mastery_evidence: string | null;
   auto_updated: boolean;
   confidence?: number;
+  scenario?: 'A' | 'B' | 'C' | 'D';
+  in_classroom?: boolean;
+  in_child_shelf?: boolean;
+  classroom_work_id?: string | null;
 }
 
 interface PendingAnalysis {
@@ -28,7 +32,11 @@ interface PendingAnalysis {
 interface PhotoInsightButtonProps {
   childId: string;
   mediaId: string;
-  onProgressUpdate?: () => void; // Callback to refresh shelf/progress (debounced)
+  classroomId?: string;
+  onProgressUpdate?: () => void;
+  onTeachWork?: (data: { workName: string; area: string | null; mediaId: string }) => void;
+  onAddToClassroom?: (data: { workName: string; area: string; classroomWorkId?: string | null }) => void;
+  onAddToShelf?: (data: { workName: string; area: string; classroomWorkId: string | null }) => void;
 }
 
 const STATUS_LABELS: Record<string, { en: string; zh: string; emoji: string }> = {
@@ -37,13 +45,16 @@ const STATUS_LABELS: Record<string, { en: string; zh: string; emoji: string }> =
   presented: { en: 'Presented', zh: '已展示', emoji: '📋' },
 };
 
-export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate }: PhotoInsightButtonProps) {
+export default function PhotoInsightButton({
+  childId, mediaId, classroomId, onProgressUpdate, onTeachWork, onAddToClassroom, onAddToShelf,
+}: PhotoInsightButtonProps) {
   const { locale, t } = useI18n();
   const [result, setResult] = useState<PhotoInsightResult | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState(false);
+  const [ctaLoading, setCtaLoading] = useState(false);
+  const [ctaDone, setCtaDone] = useState(false);
 
-  // Track in-flight analyses per photo
   const pendingRef = useRef<Map<string, PendingAnalysis>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
@@ -55,29 +66,24 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
     };
   }, []);
 
-  // Fire-and-forget analysis — never await, never block
   const handleClick = useCallback(() => {
-    if (result) return; // Already have result
+    if (result) return;
 
-    // Check analyzing state via ref to avoid stale closure
     const analysisId = `${mediaId}-${Date.now()}`;
     const existing = Array.from(pendingRef.current.values());
-    if (existing.length > 0) return; // Already analyzing this photo
+    if (existing.length > 0) return;
 
-    const pending: PendingAnalysis = {
-      id: analysisId,
-      mediaId,
-      startTime: Date.now(),
-    };
+    const pending: PendingAnalysis = { id: analysisId, mediaId, startTime: Date.now() };
     pendingRef.current.set(analysisId, pending);
     setAnalyzing(true);
     setError(false);
 
-    // Create abort controller for this analysis
     const abortController = new AbortController();
     abortRef.current = abortController;
 
-    // Fire the fetch IMMEDIATELY without awaiting — don't block UI
+    // Client-side timeout: 60s to prevent stuck "analyzing..." spinner
+    const timeoutId = setTimeout(() => abortController.abort(), 60000);
+
     fetch('/api/montree/guru/photo-insight', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -85,16 +91,12 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
       signal: abortController.signal,
     })
       .then(async (res) => {
+        clearTimeout(timeoutId);
         if (!mountedRef.current) return;
-
-        // Check if this analysis was aborted
         if (!pendingRef.current.has(analysisId)) return;
 
         const data = await res.json();
-        if (!mountedRef.current) {
-          pendingRef.current.delete(analysisId);
-          return;
-        }
+        if (!mountedRef.current) { pendingRef.current.delete(analysisId); return; }
 
         if (!data.success) {
           setError(true);
@@ -103,7 +105,6 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
           return;
         }
 
-        // Show result
         setResult({
           insight: data.insight,
           work_name: data.work_name || null,
@@ -111,20 +112,21 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
           mastery_evidence: data.mastery_evidence || null,
           auto_updated: data.auto_updated || false,
           confidence: data.confidence,
+          scenario: data.scenario || 'D',
+          in_classroom: data.in_classroom || false,
+          in_child_shelf: data.in_child_shelf || false,
+          classroom_work_id: data.classroom_work_id || null,
         });
 
-        // If progress was auto-updated, trigger refresh (non-blocking, via setTimeout)
         if (data.auto_updated && onProgressUpdate) {
-          setTimeout(() => {
-            onProgressUpdate();
-          }, 0);
+          onProgressUpdate();
         }
 
-        // Clean up pending
         pendingRef.current.delete(analysisId);
         setAnalyzing(false);
       })
       .catch((err) => {
+        clearTimeout(timeoutId);
         if (!mountedRef.current) return;
         if (err instanceof DOMException && err.name === 'AbortError') {
           pendingRef.current.delete(analysisId);
@@ -135,7 +137,85 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
         pendingRef.current.delete(analysisId);
         setAnalyzing(false);
       });
-  }, [childId, mediaId, locale, result, onProgressUpdate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId, mediaId, locale, onProgressUpdate]);
+
+  // CTA: Add known standard work to classroom (Scenario B)
+  const handleAddToClassroom = useCallback(async () => {
+    if (!result?.work_name || !result?.area || !classroomId || ctaLoading) return;
+    setCtaLoading(true);
+    try {
+      const res = await montreeApi(`/api/montree/curriculum`, {
+        method: 'POST',
+        body: JSON.stringify({
+          classroom_id: classroomId,
+          name: result.work_name,
+          area_key: result.area,
+          is_custom: false,
+          source: 'smart_capture',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCtaDone(true);
+        if (onAddToClassroom) {
+          onAddToClassroom({
+            workName: result.work_name!,
+            area: result.area!,
+            classroomWorkId: data.work?.id || null,
+          });
+        }
+      }
+    } catch {
+      // Silently fail — teacher can add manually
+    } finally {
+      if (mountedRef.current) setCtaLoading(false);
+    }
+  }, [result, classroomId, ctaLoading, onAddToClassroom]);
+
+  // CTA: Add to child's shelf (Scenario C)
+  const handleAddToShelf = useCallback(async () => {
+    if (!result?.work_name || !result?.area || !childId || ctaLoading) return;
+    setCtaLoading(true);
+    try {
+      const res = await montreeApi(`/api/montree/focus-works`, {
+        method: 'POST',
+        body: JSON.stringify({
+          child_id: childId,
+          work_name: result.work_name,
+          area: result.area,
+          work_id: result.classroom_work_id || undefined,
+        }),
+      });
+      if (res.ok) {
+        setCtaDone(true);
+        if (onAddToShelf) {
+          onAddToShelf({
+            workName: result.work_name!,
+            area: result.area!,
+            classroomWorkId: result.classroom_work_id || null,
+          });
+        }
+        if (onProgressUpdate) onProgressUpdate();
+      }
+    } catch {
+      // Silently fail
+    } finally {
+      if (mountedRef.current) setCtaLoading(false);
+    }
+  }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate]);
+
+  // CTA: Teach Guru this unknown work (Scenario A) — opens modal
+  const handleTeachWork = useCallback(() => {
+    if (!result?.work_name) return;
+    if (onTeachWork) {
+      onTeachWork({
+        workName: result.work_name,
+        area: result.area,
+        mediaId,
+      });
+    }
+  }, [result, mediaId, onTeachWork]);
 
   const statusInfo = result?.mastery_evidence
     ? STATUS_LABELS[result.mastery_evidence]
@@ -147,10 +227,7 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
         <>
           {error ? (
             <button
-              onClick={() => {
-                setError(false);
-                handleClick();
-              }}
+              onClick={() => { setError(false); handleClick(); }}
               className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
               title={t('common.tryAgain')}
             >
@@ -181,9 +258,9 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
 
       {result && (
         <div className="space-y-1.5">
-          {/* Work tag + area badge — clean formatting like gallery headers */}
+          {/* Work tag + area badge */}
           {result.work_name && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {result.area && <AreaBadge area={result.area} size="xs" />}
               <span className="text-sm font-semibold text-gray-800">
                 {result.work_name}
@@ -211,6 +288,53 @@ export default function PhotoInsightButton({ childId, mediaId, onProgressUpdate 
           {result.auto_updated && (
             <p className="text-xs text-emerald-600 italic">
               {t('photoInsight.progressAutoUpdated')}
+            </p>
+          )}
+
+          {/* Scenario-based CTAs */}
+          {!ctaDone && result.scenario === 'A' && onTeachWork && (
+            <button
+              onClick={handleTeachWork}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
+            >
+              <span>📚</span>
+              <span>{t('photoInsight.teachGuruWork')}</span>
+            </button>
+          )}
+
+          {!ctaDone && result.scenario === 'B' && (
+            <button
+              onClick={handleAddToClassroom}
+              disabled={ctaLoading}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition-colors disabled:opacity-50"
+            >
+              {ctaLoading ? (
+                <span className="animate-spin">⏳</span>
+              ) : (
+                <span>➕</span>
+              )}
+              <span>{t('photoInsight.addToClassroom')}</span>
+            </button>
+          )}
+
+          {!ctaDone && result.scenario === 'C' && (
+            <button
+              onClick={handleAddToShelf}
+              disabled={ctaLoading}
+              className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
+            >
+              {ctaLoading ? (
+                <span className="animate-spin">⏳</span>
+              ) : (
+                <span>📋</span>
+              )}
+              <span>{t('photoInsight.addToShelf')}</span>
+            </button>
+          )}
+
+          {ctaDone && (
+            <p className="text-xs text-emerald-600 italic">
+              ✓ {t('photoInsight.actionComplete')}
             </p>
           )}
         </div>

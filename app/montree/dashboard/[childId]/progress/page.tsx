@@ -13,6 +13,7 @@ import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
+import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 
 interface AreaSummary {
   area: string;
@@ -83,6 +84,7 @@ export default function ProgressPage() {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [historyArea, setHistoryArea] = useState<string | null>(null);
   const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
+  const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
   // Supabase URL for media
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -357,7 +359,13 @@ export default function ProgressPage() {
                     <p className="text-[10px] text-gray-500 mt-1 w-24 truncate text-center">{m.work_name}</p>
                   )}
                 </button>
-                <PhotoInsightButton childId={childId} mediaId={m.id} onProgressUpdate={debouncedFetchAll} />
+                <PhotoInsightButton
+                  childId={childId}
+                  mediaId={m.id}
+                  classroomId={session?.classroomId}
+                  onProgressUpdate={debouncedFetchAll}
+                  onTeachWork={(data) => setTeachModalData(data)}
+                />
               </div>
             ))}
           </div>
@@ -434,6 +442,19 @@ export default function ProgressPage() {
       />
 
       {/* ── Photo Viewer Overlay ── */}
+      {/* ── Teach Guru Work Modal ── */}
+      {teachModalData && session?.classroomId && (
+        <TeachGuruWorkModal
+          isOpen={true}
+          onClose={() => setTeachModalData(null)}
+          initialWorkName={teachModalData.workName}
+          initialArea={teachModalData.area}
+          mediaId={teachModalData.mediaId}
+          classroomId={session.classroomId}
+          onWorkSaved={() => { setTeachModalData(null); debouncedFetchAll(); }}
+        />
+      )}
+
       {photoViewerUrl && (
         <div
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
