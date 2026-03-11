@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
             p_area: original_area || null,
             p_was_correct: true,
           });
-        } catch {
-          // Non-fatal — accuracy tracking is best-effort
+        } catch (err) {
+          console.error('[Corrections] Confirm accuracy EMA error (non-fatal):', err);
         }
       }
       console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
@@ -99,8 +99,8 @@ export async function POST(request: NextRequest) {
           p_area: original_area || null,
           p_was_correct: false,
         });
-      } catch {
-        // Non-fatal — accuracy tracking is best-effort
+      } catch (err) {
+        console.error('[Corrections] Accuracy EMA error for original (non-fatal):', err);
       }
     }
 
@@ -114,8 +114,8 @@ export async function POST(request: NextRequest) {
           p_area: corrected_area || null,
           p_was_correct: true,
         });
-      } catch {
-        // Non-fatal
+      } catch (err) {
+        console.error('[Corrections] Accuracy EMA error for corrected (non-fatal):', err);
       }
     }
 

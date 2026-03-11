@@ -16,10 +16,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 4 features + fixes from Mar 8–10 sessions + fire-and-forget Smart Capture from Mar 11. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: smart capture rewrite + batch reports + whole-class guru fix + classroom overview + fire-and-forget + audit fixes" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–11 sessions + Smart Capture accuracy overhaul + Home Parent rebuild. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: home parent rebuild + smart capture accuracy + audit fixes" && git push origin main`
 
-**Includes:** Smart Capture rewrite (2 rewritten + 3 modified), fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 15+ audit cycles all clean, 23+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`
+**Includes:** Home Parent system rebuild (3×3×3 + 3 audit cycles, 18 issues fixed, 6 files, 27 new i18n keys), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 15+ audit cycles all clean, 55+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -62,6 +62,76 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 ---
 
 ## CURRENT STATUS (Mar 11, 2026)
+
+### Session Work (Mar 11, 2026 — Latest Session)
+
+**Home Parent System Rebuild — Feature Parity + Crash Fix — COMPLETE, NOT YET DEPLOYED (1 new + 5 modified files, 3×3×3 + 3 audit cycles, 18 issues fixed):**
+
+Full rebuild of the home parent system (`/montree/home/[childId]`) to achieve feature parity with the teacher system. Root cause of crashes: PortalChat's `handleSend` had zero timeout protection — Guru API hang froze UI indefinitely.
+
+**PortalChat.tsx (~668 lines, 8 changes):**
+- AbortController on handleSend with 95s hard timeout + 10s "still thinking" indicator (ROOT CAUSE FIX)
+- Image upload: camera button, `compressImage()` before upload to `/api/montree/media/upload`, URL sent to Guru
+- `res.ok` guards on all 3 fetch calls (history, greeting, guru) — prevents crash on non-JSON error responses
+- Specific error handling: AbortError, 429, `guru_daily_limit_reached`, connection failures — distinct i18n toasts
+- Image preview with close button above input
+- Timer cleanup: `clearTimeout` before setting new `thinkingTimerRef`
+- All hardcoded strings replaced with i18n `t()` calls
+
+**ShelfView.tsx (~878 lines, 9 changes):**
+- Progress update buttons: presented/practicing/mastered via `/api/montree/progress/update`
+- Observation notes: textarea + save via `/api/montree/observations`
+- Work detail bottom sheet: tap work → panel with progress, observations, "View Presentation Guide"
+- Backdrop click-to-close with `e.stopPropagation()` on inner panel
+- Fetch error retry UI with retry button
+- Navigation links footer: Progress + Browse Curriculum
+- Auto-close detail panel on shelf refresh (`setDetailWork(null)` in `fetchShelf`)
+- Stale closure fixes: `const currentWork = detailWork;` captured before async in `updateProgress` + `saveObservation`
+- `res.ok` guard on `fetchShelf` before `.json()`
+
+**ErrorBoundary.tsx (NEW, 64 lines):**
+- React error boundary wrapping both PortalChat and ShelfView
+- Accepts `title`, `fallbackMessage`, `retryLabel` props — all i18n-wired from parent page
+
+**page.tsx ([childId]/page.tsx, ~192 lines):**
+- ErrorBoundary wrapping both tabs with distinct fallback messages
+- `useI18n` imported and wired
+
+**i18n (en.ts + zh.ts — 27 new keys, perfect EN/ZH parity):**
+- `home.portal.*` — 7 keys (stillThinking, timeout, rateLimited, attachPhoto, selectImageFile, imageTooLarge, imageUploadFailed, photoAttached)
+- `home.shelf.*` — 15 keys (status, presented, practicing, mastered, observationLabel, observationPlaceholder, saveObservation, observationSaved, observationFailed, progressUpdated, progressFailed, viewPresentation, viewProgress, browseCurriculum, fetchError)
+- `home.error.*` — 4 keys (title, chatFailed, shelfFailed, tryAgain)
+- 1 key already added earlier: `home.portal.imageUploadFailed`
+
+**Build methodology:** 3×3×3 (3 plan-audit + 3 build-audit cycles) + 3 post-build audit-fix cycles. 18 total issues found and fixed. All cycles ended CLEAN.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+
+### Session Work (Mar 11, 2026 — Earlier Session)
+
+**Smart Capture Accuracy Overhaul — COMPLETE, NOT YET DEPLOYED (7 files modified, 3×3×3 process, 6 bugs caught + fixed):**
+
+Full 3×3×3 deep-dive/plan/build process to fix Smart Capture work misidentification. Eye Dropper was being tagged as "Folding Cloths", etc. 14 root causes identified, 10 fixed.
+
+**Core changes (4 files):**
+- `app/api/montree/guru/photo-insight/route.ts` — 8 surgical edits: full categorized curriculum hint (was `.slice(0,15)` hiding 77%), visual identification guide (~55 lines mapping tools→work names), confidence calibration, debiased focus works context, independent assessment for duplicates, GREEN/AMBER/RED confidence zones (0.95/0.5 thresholds), removed poisoned self-learning feedback loop, `needs_confirmation` in all response paths
+- `lib/montree/photo-insight-store.ts` — Added `needs_confirmation` to interface + API response mapping, `confirmEntry()`/`rejectEntry()` functions, extended InsightStatus union
+- `components/montree/guru/PhotoInsightButton.tsx` — AMBER zone confirm/reject UI buttons, `handleConfirm` (progress update + accuracy EMA via corrections API), `handleReject` (opens correction modal), GREEN zone auto-update indicator
+- `app/api/montree/guru/corrections/route.ts` — New `action: 'confirm'` branch: calls `update_work_accuracy` with `p_was_correct: true`, returns early without recording correction entry
+
+**i18n (2 files):**
+- `en.ts` + `zh.ts` — 5 new keys each (highConfidenceAutoUpdated, pendingConfirmation, confirmMatch, wrongMatch, confirmed) — perfect parity
+
+**Confidence zone system:**
+- GREEN (≥0.95 match AND ≥0.95 confidence): Auto-update progress silently
+- AMBER (0.5–0.95): Tag photo, show "Is this correct?" confirm/reject buttons
+- RED (<0.5): Scenario A (unknown work) — no progress update
+
+**3×3×3 Build Audit Results:** Cycle 1: 4 issues (2 CRITICAL: store missing needs_confirmation mapping, corrections API marking confirms as incorrect + 1 MEDIUM: wrong field name + 1 LOW). Cycle 2: 1 LOW. Cycle 3: 1 LOW cosmetic. All 6 fixed.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Include in consolidated push. No new migrations.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`
 
 ### Session Work (Mar 11, 2026 — Late Session)
 

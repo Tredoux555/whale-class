@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import { useI18n } from '@/lib/montree/i18n/context';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
@@ -113,6 +114,14 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   const shelfAbortRef = useRef<AbortController | null>(null);
   const guideAbortRef = useRef<AbortController | null>(null);
 
+  // Work detail panel state
+  const [detailWork, setDetailWork] = useState<ShelfWork | null>(null);
+  const [detailStatus, setDetailStatus] = useState<string>('');
+  const [observation, setObservation] = useState('');
+  const [savingProgress, setSavingProgress] = useState(false);
+  const [savingObs, setSavingObs] = useState(false);
+  const [fetchError, setFetchError] = useState(false);
+
   // Load all curriculum works for search
   useEffect(() => {
     const controller = new AbortController();
@@ -156,13 +165,16 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     shelfAbortRef.current = controller;
     try {
       const res = await fetch(`/api/montree/shelf?child_id=${childId}`, { signal: controller.signal });
+      if (!res.ok) throw new Error('Shelf fetch failed');
       const data = await res.json();
       if (!controller.signal.aborted && data.success) {
         setShelf(data.shelf || []);
+        setFetchError(false);
+        setDetailWork(null);
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
-      // Shelf fetch failed — show empty
+      setFetchError(true);
     } finally {
       if (!controller.signal.aborted) setLoading(false);
     }
@@ -197,16 +209,21 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
           work_name: work.name,
         }),
       });
+      if (!res.ok) {
+        toast.error(t('home.shelf.progressFailed'));
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         await fetchShelf();
       }
-    } catch {
-      // silently fail
+    } catch (err) {
+      console.error('Set focus work failed:', err);
+      toast.error(t('common.networkError'));
     } finally {
       setSettingWork(false);
     }
-  }, [childId, fetchShelf]);
+  }, [childId, fetchShelf, t]);
 
   // Open guide for a work (same pattern as teacher week view)
   const openWorkGuide = useCallback(async (workName: string) => {
@@ -237,6 +254,79 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     if (!controller.signal.aborted) setGuideLoading(false);
   }, [classroomId, locale]);
 
+  // Open work detail panel
+  const openWorkDetail = useCallback((work: ShelfWork) => {
+    setDetailWork(work);
+    setDetailStatus(work.status || 'not_started');
+    setObservation('');
+  }, []);
+
+  // Close work detail panel
+  const closeWorkDetail = useCallback(() => {
+    setDetailWork(null);
+  }, []);
+
+  // Update progress status
+  const updateProgress = useCallback(async (newStatus: string) => {
+    if (!detailWork || savingProgress) return;
+    const currentWork = detailWork; // capture before async
+    setSavingProgress(true);
+    try {
+      const res = await fetch('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          work_name: currentWork.work_name,
+          area: currentWork.area,
+          status: newStatus,
+        }),
+      });
+      if (res.ok) {
+        setDetailStatus(newStatus);
+        setShelf(prev => prev.map(w =>
+          w.work_name === currentWork.work_name ? { ...w, status: newStatus } : w
+        ));
+        toast.success(t('home.shelf.progressUpdated'));
+      } else {
+        toast.error(t('home.shelf.progressFailed'));
+      }
+    } catch {
+      toast.error(t('common.networkError'));
+    } finally {
+      setSavingProgress(false);
+    }
+  }, [detailWork, childId, t]);
+
+  // Save observation
+  const saveObservation = useCallback(async () => {
+    if (!detailWork || !observation.trim() || savingObs) return;
+    const currentWork = detailWork; // capture before async
+    setSavingObs(true);
+    try {
+      const res = await fetch('/api/montree/observations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          observation: observation.trim(),
+          work_name: currentWork.work_name,
+          area: currentWork.area,
+        }),
+      });
+      if (res.ok) {
+        toast.success(t('home.shelf.observationSaved'));
+        setObservation('');
+      } else {
+        toast.error(t('home.shelf.observationFailed'));
+      }
+    } catch {
+      toast.error(t('common.networkError'));
+    } finally {
+      setSavingObs(false);
+    }
+  }, [detailWork, childId, observation, t]);
+
   // Distribute works across 3 shelves
   const shelves = distributeToShelves(shelf);
 
@@ -246,6 +336,28 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-3">📚</div>
           <p className={`text-sm ${BIO.text.secondary}`}>{t('home.shelf.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className={`flex-1 flex items-center justify-center ${BIO.bg.deep}`}>
+        <div className="text-center px-6">
+          <div className="text-4xl mb-3">😔</div>
+          <p className={`text-sm ${BIO.text.secondary} mb-4`}>{t('home.shelf.fetchError')}</p>
+          <button
+            onClick={() => { setFetchError(false); setLoading(true); fetchShelf(); }}
+            className="px-6 py-2 rounded-xl text-sm font-medium"
+            style={{
+              background: 'rgba(74,222,128,0.15)',
+              border: '1px solid rgba(74,222,128,0.3)',
+              color: '#4ADE80',
+            }}
+          >
+            {t('common.tryAgain')}
+          </button>
         </div>
       </div>
     );
@@ -399,7 +511,10 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
               key={rowIdx}
               items={row}
               isLast={rowIdx === 2}
-              onWorkTap={openWorkGuide}
+              onWorkTap={(workName: string) => {
+                const work = shelf.find(w => w.work_name === workName);
+                if (work) openWorkDetail(work);
+              }}
               onEmptyTap={() => onAskGuide(t('home.shelf.suggestWork'))}
               onAreaTap={(area: string) => setExpandedArea(prev => prev === area ? null : area)}
               t={t}
@@ -424,6 +539,143 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
           <p className={`text-xs ${BIO.text.secondary}`}>
             {t('home.shelf.emptyMessage')}
           </p>
+        </div>
+      )}
+
+      {/* Navigation links */}
+      <div className="px-4 pb-6 flex gap-3">
+        <a
+          href={`/montree/dashboard/${childId}/progress`}
+          className="flex-1 py-3 rounded-xl text-center text-xs font-medium transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.6)',
+          }}
+        >
+          📊 {t('home.shelf.viewProgress')}
+        </a>
+        <a
+          href="/montree/dashboard/curriculum/browse"
+          className="flex-1 py-3 rounded-xl text-center text-xs font-medium transition-all"
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: 'rgba(255,255,255,0.6)',
+          }}
+        >
+          📚 {t('home.shelf.browseCurriculum')}
+        </a>
+      </div>
+
+      {/* Work Detail Panel */}
+      {detailWork && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={closeWorkDetail}>
+          <div
+            onClick={e => e.stopPropagation()}
+            className="w-full max-w-lg rounded-t-2xl overflow-y-auto"
+            style={{
+              background: 'linear-gradient(180deg, #0D2B27 0%, #0A1F1C 100%)',
+              border: '1px solid rgba(74,222,128,0.15)',
+              maxHeight: '80vh',
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <span className="text-2xl">{getWorkIcon(detailWork.work_name, detailWork.area)}</span>
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-white/90 truncate">
+                    {locale === 'zh' && detailWork.chineseName ? detailWork.chineseName : detailWork.work_name}
+                  </h3>
+                  <span className="text-xs" style={{ color: (AREA_COLORS[detailWork.area] || AREA_COLORS.practical_life).bg }}>
+                    {t(`area.${detailWork.area}` as any)}
+                  </span>
+                </div>
+              </div>
+              <button onClick={closeWorkDetail} className="text-white/40 text-lg p-1">✕</button>
+            </div>
+
+            {/* Progress Status Buttons */}
+            <div className="px-5 pb-4">
+              <p className="text-xs text-white/50 mb-2">{t('home.shelf.status')}</p>
+              <div className="flex gap-2">
+                {(['presented', 'practicing', 'mastered'] as const).map(s => {
+                  const isActive = detailStatus === s;
+                  const colors = {
+                    presented: { bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.5)', text: '#F59E0B' },
+                    practicing: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.5)', text: '#10B981' },
+                    mastered: { bg: 'rgba(74,222,128,0.15)', border: 'rgba(74,222,128,0.5)', text: '#4ADE80' },
+                  };
+                  const c = colors[s];
+                  return (
+                    <button
+                      key={s}
+                      onClick={() => updateProgress(s)}
+                      disabled={savingProgress}
+                      className="flex-1 py-2 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                      style={{
+                        background: isActive ? c.bg : 'rgba(255,255,255,0.04)',
+                        border: `1.5px solid ${isActive ? c.border : 'rgba(255,255,255,0.08)'}`,
+                        color: isActive ? c.text : 'rgba(255,255,255,0.5)',
+                      }}
+                    >
+                      {t(`home.shelf.${s}`)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Observation */}
+            <div className="px-5 pb-4">
+              <p className="text-xs text-white/50 mb-2">{t('home.shelf.observationLabel')}</p>
+              <textarea
+                value={observation}
+                onChange={e => setObservation(e.target.value)}
+                placeholder={t('home.shelf.observationPlaceholder')}
+                rows={3}
+                className="w-full px-3 py-2.5 rounded-xl text-sm text-white/90 placeholder-white/30 resize-none outline-none"
+                style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+              />
+              {observation.trim() && (
+                <button
+                  onClick={saveObservation}
+                  disabled={savingObs}
+                  className="mt-2 px-4 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
+                  style={{
+                    background: 'rgba(74,222,128,0.15)',
+                    border: '1px solid rgba(74,222,128,0.3)',
+                    color: '#4ADE80',
+                  }}
+                >
+                  {savingObs ? t('common.saving') : t('home.shelf.saveObservation')}
+                </button>
+              )}
+            </div>
+
+            {/* View Guide Button */}
+            <div className="px-5 pb-5">
+              <button
+                onClick={() => {
+                  const name = detailWork.work_name;
+                  closeWorkDetail();
+                  openWorkGuide(name);
+                }}
+                className="w-full py-3 rounded-xl text-sm font-medium transition-all"
+                style={{
+                  background: 'rgba(74,222,128,0.1)',
+                  border: '1px solid rgba(74,222,128,0.2)',
+                  color: '#4ADE80',
+                }}
+              >
+                {t('home.shelf.viewPresentation')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

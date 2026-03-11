@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from 'sonner';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import { useI18n } from '@/lib/montree/i18n/context';
+import { compressImage } from '@/lib/montree/cache';
 import VoiceNoteButton from '@/components/montree/guru/VoiceNoteButton';
 
 // TTS playback hook — manages audio state per message
@@ -156,8 +157,14 @@ export default function PortalChat({
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [thinkingLong, setThinkingLong] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const sendAbortRef = useRef<AbortController | null>(null);
+  const thinkingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const tts = useTTS();
 
   // Auto-scroll to bottom
@@ -195,9 +202,9 @@ export default function PortalChat({
       try {
         // 1. Load chat history
         const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal });
-        const histData = await histRes.json();
-
         if (signal.aborted) return;
+        if (!histRes.ok) throw new Error('History fetch failed');
+        const histData = await histRes.json();
 
         const chatMessages: ChatMessage[] = [];
 
@@ -257,7 +264,7 @@ export default function PortalChat({
           });
 
           if (signal.aborted) return;
-
+          if (!greetRes.ok) throw new Error('Greeting fetch failed');
           const greetData = await greetRes.json();
           if (greetData.success && greetData.insight) {
             cacheGreeting(childId, greetData.insight);
@@ -305,34 +312,135 @@ export default function PortalChat({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId]);
 
+  // Cleanup send abort on unmount
+  useEffect(() => {
+    return () => {
+      sendAbortRef.current?.abort();
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+    };
+  }, []);
+
+  // Image selection handler
+  const handleImageSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error(t('home.portal.selectImageFile'));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error(t('home.portal.imageTooLarge'));
+      return;
+    }
+
+    try {
+      const compressed = await compressImage(file);
+      setSelectedImage(compressed);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(compressed);
+    } catch {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  }, [t]);
+
+  const clearImage = useCallback(() => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
   // Send message
   const handleSend = async () => {
     const text = inputText.trim();
-    if (!text || sending) return;
+    if ((!text && !selectedImage) || sending) return;
+
+    // Cancel any previous in-flight request
+    sendAbortRef.current?.abort();
+    const controller = new AbortController();
+    sendAbortRef.current = controller;
 
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
-      content: text,
+      content: text || (selectedImage ? t('home.portal.photoAttached') : ''),
       isUser: true,
       timestamp: new Date().toISOString(),
     };
     setMessages(prev => [...prev, userMsg]);
     setInputText('');
     setSending(true);
+    setThinkingLong(false);
 
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
+    // "Still thinking..." after 10s
+    if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+    thinkingTimerRef.current = setTimeout(() => setThinkingLong(true), 10000);
+    // Hard timeout at 95s
+    const hardTimeout = setTimeout(() => controller.abort(), 95000);
+
     try {
+      // Upload image if selected
+      let imageUrl: string | null = null;
+      if (selectedImage) {
+        try {
+          const formData = new FormData();
+          formData.append('file', selectedImage);
+          formData.append('child_id', childId);
+          if (classroomId) formData.append('classroom_id', classroomId);
+
+          const uploadRes = await fetch('/api/montree/media/upload', {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal,
+          });
+
+          if (uploadRes.ok) {
+            const uploadData = await uploadRes.json();
+            imageUrl = uploadData.url || uploadData.publicUrl || null;
+          }
+        } catch (err) {
+          if (err instanceof DOMException && err.name === 'AbortError') {
+            clearTimeout(hardTimeout);
+            if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+            setSending(false);
+            setThinkingLong(false);
+            return;
+          }
+          // Image upload failed — continue with text only
+          console.error('Image upload failed:', err);
+          toast.error(t('home.portal.imageUploadFailed'));
+        }
+        clearImage();
+      }
+
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           child_id: childId,
-          question: text,
+          question: imageUrl ? (text ? `${text}\n\n[Photo: ${imageUrl}]` : `[Photo: ${imageUrl}]`) : text,
           classroom_id: classroomId,
           conversational: true,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(hardTimeout);
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+
+      if (!res.ok) {
+        if (res.status === 429) {
+          toast.error(t('home.portal.rateLimited'));
+        } else {
+          toast.error(t('home.portal.failedToRespond'));
+        }
+        return;
+      }
 
       const data = await res.json();
 
@@ -356,10 +464,18 @@ export default function PortalChat({
       } else {
         toast.error(data.error || t('home.portal.failedToRespond'));
       }
-    } catch {
-      toast.error(t('home.portal.connectionFailed'));
+    } catch (err) {
+      clearTimeout(hardTimeout);
+      if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        toast.error(t('home.portal.timeout'));
+      } else {
+        toast.error(t('home.portal.connectionFailed'));
+      }
     } finally {
       setSending(false);
+      setThinkingLong(false);
+      sendAbortRef.current = null;
     }
   };
 
@@ -462,15 +578,35 @@ export default function PortalChat({
               <span className="text-sm">🌿</span>
             </div>
             <div className={`${BIO.bg.card} border ${BIO.border.glow} rounded-2xl rounded-bl-md px-4 py-3`}>
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-[#4ADE80]/50 animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+                {thinkingLong && (
+                  <span className="text-[10px] text-white/40 ml-1">{t('home.portal.stillThinking')}</span>
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
+
+      {/* Image preview */}
+      {imagePreview && (
+        <div className={`border-t ${BIO.border.subtle} ${BIO.bg.surface} px-3 py-2`}>
+          <div className="relative inline-block">
+            <img src={imagePreview} alt="Preview" className="h-16 rounded-lg object-cover" />
+            <button
+              onClick={clearImage}
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input area */}
       <div className={`border-t ${BIO.border.subtle} ${BIO.bg.surface} px-3 py-3`}>
@@ -494,9 +630,31 @@ export default function PortalChat({
             />
           </div>
 
+          {/* Image upload button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
+            className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${BIO.btn.ghost}`}
+            title={t('home.portal.attachPhoto')}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+
+          {/* Hidden file input for images */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
+
           <button
             onClick={handleSend}
-            disabled={!inputText.trim() || sending}
+            disabled={(!inputText.trim() && !selectedImage) || sending}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed ${BIO.btn.mint}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
