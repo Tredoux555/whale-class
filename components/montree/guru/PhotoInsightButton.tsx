@@ -77,7 +77,7 @@ export default function PhotoInsightButton({
     try {
       // 1. Update progress (same as auto-update but teacher-initiated)
       if (result.mastery_evidence && ['mastered', 'practicing', 'presented'].includes(result.mastery_evidence)) {
-        await montreeApi(`/api/montree/progress/update`, {
+        const progressRes = await montreeApi(`/api/montree/progress/update`, {
           method: 'POST',
           body: JSON.stringify({
             child_id: childId,
@@ -87,6 +87,9 @@ export default function PhotoInsightButton({
             notes: `[Smart Capture — Confirmed] ${result.insight || ''}`,
           }),
         });
+        if (!progressRes.ok) {
+          console.error('[PhotoInsight] Progress update failed:', progressRes.status);
+        }
       }
       // 2. Mark correct in accuracy EMA (teacher confirmed = ground truth)
       if (classroomId) {

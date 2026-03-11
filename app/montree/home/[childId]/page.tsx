@@ -11,6 +11,8 @@ import PortalChat from '@/components/montree/home/PortalChat';
 import ShelfView from '@/components/montree/home/ShelfView';
 import BottomTabs from '@/components/montree/home/BottomTabs';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
+import ErrorBoundary from '@/components/montree/ErrorBoundary';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface Child {
   id: string;
@@ -30,6 +32,7 @@ export default function HomePage() {
   const [shelfBadge, setShelfBadge] = useState(false);
   const [shelfRefreshTrigger, setShelfRefreshTrigger] = useState(0);
   const [portalPrefill, setPortalPrefill] = useState('');
+  const { t } = useI18n();
 
   // Auth check
   useEffect(() => {
@@ -153,21 +156,25 @@ export default function HomePage() {
       {/* Content */}
       <main className="relative z-10 flex-1 overflow-hidden">
         {activeTab === 'portal' ? (
-          <PortalChat
-            childId={childId}
-            childName={selectedChild?.name || ''}
-            classroomId={session?.classroom?.id}
-            onShelfUpdated={handleShelfUpdated}
-            prefillMessage={portalPrefill}
-            onPrefillConsumed={() => setPortalPrefill('')}
-          />
+          <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.chatFailed')} retryLabel={t('home.error.tryAgain')}>
+            <PortalChat
+              childId={childId}
+              childName={selectedChild?.name || ''}
+              classroomId={session?.classroom?.id}
+              onShelfUpdated={handleShelfUpdated}
+              prefillMessage={portalPrefill}
+              onPrefillConsumed={() => setPortalPrefill('')}
+            />
+          </ErrorBoundary>
         ) : (
-          <ShelfView
-            childId={childId}
-            classroomId={session?.classroom?.id}
-            onAskGuide={handleAskGuide}
-            refreshTrigger={shelfRefreshTrigger}
-          />
+          <ErrorBoundary title={t('home.error.title')} fallbackMessage={t('home.error.shelfFailed')} retryLabel={t('home.error.tryAgain')}>
+            <ShelfView
+              childId={childId}
+              classroomId={session?.classroom?.id}
+              onAskGuide={handleAskGuide}
+              refreshTrigger={shelfRefreshTrigger}
+            />
+          </ErrorBoundary>
         )}
       </main>
 
