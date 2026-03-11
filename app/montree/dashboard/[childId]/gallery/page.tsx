@@ -1,222 +1,594 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Photo gallery browser for a student
-// Shows all photos in chronological order, organized by work/area
+// Gallery — the central workflow hub for managing captured work
+// Photo → Work → Description flow. All post-capture work happens here.
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
-import MediaGallery from '@/components/montree/media/MediaGallery';
-import PhotoDetailView from '@/components/montree/media/PhotoDetailView';
-import PhotoEditModal from '@/components/montree/media/PhotoEditModal';
-import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
+import { getSession } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
+import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import type { MontreeMedia } from '@/lib/montree/media/types';
-
-type FilterTab = 'all' | 'area' | 'work';
 
 interface GalleryItem extends MontreeMedia {
   area?: string;
   work_name?: string;
 }
 
-interface GroupedPhotos {
-  [key: string]: GalleryItem[];
+interface CurriculumWork {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  status?: string;
+  sequence?: number;
+  dbSequence?: number;
 }
 
 export default function GalleryPage() {
   const params = useParams();
   const childId = params.childId as string;
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const session = getSession();
 
-  // State
+  // Core state
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterTab, setFilterTab] = useState<FilterTab>('all');
+  const [childName, setChildName] = useState('');
+
+  // Filter state
+  const [filterTab, setFilterTab] = useState<'all' | 'area' | 'work'>('all');
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedWork, setSelectedWork] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<GalleryItem | null>(null);
-  const [editingPhoto, setEditingPhoto] = useState<GalleryItem | null>(null);
-  const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
+
+  // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
-  const [childName, setChildName] = useState<string>('');
+
+  // Editing state
+  const [editingCaption, setEditingCaption] = useState<string | null>(null); // photo id being edited
+  const [captionDraft, setCaptionDraft] = useState('');
+  const [savingCaption, setSavingCaption] = useState(false);
+
+  // Work picker state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerArea, setPickerArea] = useState('');
+  const [pickerPhotoId, setPickerPhotoId] = useState<string | null>(null);
+  const [pickerCurrentWork, setPickerCurrentWork] = useState<string | undefined>(undefined);
+  const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
+  const [allProgress, setAllProgress] = useState<Array<{ work_name: string; status: string }>>([]);
+
+  // Area picker state (shown when photo has no area before opening wheel picker)
+  const [showAreaPicker, setShowAreaPicker] = useState(false);
+  const [areaPickerPhotoId, setAreaPickerPhotoId] = useState<string | null>(null);
+
+  // Delete state
+  const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
+  // Photo detail expansion
+  const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+
+  // Image URL cache — use ref to avoid re-render loops
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const loadingUrlsRef = useRef<Set<string>>(new Set());
 
   // Fetch child info
   useEffect(() => {
     if (!childId) return;
-
-    fetch(`/api/montree/children/${childId}`)
+    const controller = new AbortController();
+    fetch(`/api/montree/children/${childId}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.child?.name) {
-          setChildName(data.child.name);
+        if (data?.child?.name) setChildName(data.child.name);
+      })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [childId]);
+
+  // Fetch photos
+  const fetchPhotos = useCallback(() => {
+    if (!childId) return;
+    setLoading(true);
+    fetch(`/api/montree/media?child_id=${childId}&limit=1000`)
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch');
+        return r.json();
+      })
+      .then(data => {
+        const sorted = (data.media || []).sort((a: GalleryItem, b: GalleryItem) =>
+          new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+        );
+        setPhotos(sorted);
+      })
+      .catch(() => toast.error(t('gallery.loadPhotosError')))
+      .finally(() => setLoading(false));
+  }, [childId]);
+
+  useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
+
+  // Fetch curriculum for wheel picker (lazy load)
+  const curriculumLoadedRef = useRef(false);
+  const loadCurriculum = useCallback(async () => {
+    if (curriculumLoadedRef.current) return;
+    curriculumLoadedRef.current = true;
+    try {
+      const res = await fetch('/api/montree/works/search');
+      const data = await res.json();
+      const byArea: Record<string, CurriculumWork[]> = {};
+      for (const w of data.works || []) {
+        const areaKey = w.area?.area_key || 'unknown';
+        if (!byArea[areaKey]) byArea[areaKey] = [];
+        byArea[areaKey].push({
+          id: w.id,
+          name: w.name,
+          name_chinese: w.name_chinese,
+          sequence: w.sequence,
+          dbSequence: w.sequence,
+        });
+      }
+      setCurriculum(byArea);
+    } catch {
+      curriculumLoadedRef.current = false; // Allow retry on error
+    }
+  }, []);
+
+  // Fetch child progress for status badges on works
+  useEffect(() => {
+    if (!childId) return;
+    fetch(`/api/montree/progress?child_id=${childId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.progress) {
+          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
+            work_name: p.work_name as string,
+            status: p.status as string,
+          })));
         }
       })
       .catch(() => {});
   }, [childId]);
 
-  // Fetch photos
-  useEffect(() => {
-    if (!childId) return;
-
-    setLoading(true);
-    fetch(`/api/montree/media?child_id=${childId}&limit=1000`)
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to fetch photos');
-        return r.json();
-      })
+  // Fetch image URL for a photo (ref-guarded to prevent duplicate requests)
+  const loadImageUrl = useCallback((photo: GalleryItem) => {
+    if (loadingUrlsRef.current.has(photo.id)) return;
+    loadingUrlsRef.current.add(photo.id);
+    fetch(`/api/montree/media/url?path=${encodeURIComponent(photo.storage_path)}`)
+      .then(r => r.json())
       .then(data => {
-        // Sort by captured_at descending (newest first)
-        const sorted = (data.media || []).sort((a: GalleryItem, b: GalleryItem) => {
-          return new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime();
-        });
-        setPhotos(sorted);
+        if (data.url) {
+          setImageUrls(prev => ({ ...prev, [photo.id]: data.url }));
+        }
       })
-      .catch(err => {
-        console.error('Error fetching photos:', err);
-        toast.error(t('gallery.loadPhotosError'));
-      })
-      .finally(() => setLoading(false));
-  }, [childId]);
+      .catch(() => {
+        loadingUrlsRef.current.delete(photo.id); // Allow retry on error
+      });
+  }, []);
 
-  // Get unique areas and works from photos
+  // Load image URLs when photos change (only new ones, guarded by ref)
+  useEffect(() => {
+    photos.forEach(p => loadImageUrl(p));
+  }, [photos, loadImageUrl]);
+
+  // Unique areas and works
   const uniqueAreas = Array.from(new Set(photos.map(p => p.area).filter(Boolean)));
-  const uniqueWorks = Array.from(new Set(photos.map(p => p.work_name || p.work_id).filter(Boolean)));
+  const uniqueWorks = Array.from(new Set(photos.map(p => p.work_name).filter(Boolean)));
 
-  // Filter photos based on selected tab and filters
+  // Filter photos
   const getFilteredPhotos = (): GalleryItem[] => {
-    let filtered = [...photos];
-
-    if (filterTab === 'area') {
-      if (selectedArea) {
-        filtered = filtered.filter(p => p.area === selectedArea);
-      }
-    } else if (filterTab === 'work') {
-      if (selectedWork) {
-        filtered = filtered.filter(p =>
-          (p.work_name === selectedWork || p.work_id === selectedWork)
-        );
-      }
+    if (filterTab === 'area' && selectedArea) {
+      return photos.filter(p => p.area === selectedArea);
     }
-
-    return filtered;
+    if (filterTab === 'work' && selectedWork) {
+      return photos.filter(p => p.work_name === selectedWork);
+    }
+    return photos;
   };
 
   const filteredPhotos = getFilteredPhotos();
 
-  // Group photos for display
-  const groupPhotosByWorkAndArea = (items: GalleryItem[]): GroupedPhotos => {
-    const grouped: GroupedPhotos = {};
+  // Group photos by work+area for the "all" view
+  const groupPhotosByWork = (items: GalleryItem[]) => {
+    const groups: Array<{ key: string; area: string; work: string; items: GalleryItem[] }> = [];
+    const map = new Map<string, GalleryItem[]>();
 
     items.forEach(item => {
-      const area = item.area || 'Untagged';
-      const work = item.work_name || item.work_id || 'No work tagged';
+      const area = item.area || 'untagged';
+      const work = item.work_name || 'Untagged';
       const key = `${area}|${work}`;
-
-      if (!grouped[key]) {
-        grouped[key] = [];
-      }
-      grouped[key].push(item);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(item);
     });
 
-    return grouped;
+    map.forEach((groupItems, key) => {
+      const [area, work] = key.split('|');
+      groups.push({ key, area, work, items: groupItems });
+    });
+
+    return groups;
   };
 
-  const groupedPhotos = filterTab === 'all' ? groupPhotosByWorkAndArea(filteredPhotos) : null;
+  // Format date
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
-  // Handle selection
-  const handleSelectionChange = (id: string, selected: boolean) => {
-    const newSelection = new Set(selectedIds);
-    if (selected) {
-      newSelection.add(id);
-    } else {
-      newSelection.delete(id);
+  const formatDateTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  // Open wheel picker for a specific photo
+  const openWorkPicker = async (photo: GalleryItem) => {
+    await loadCurriculum();
+    if (!photo.area) {
+      // No area yet — show area picker first
+      setAreaPickerPhotoId(photo.id);
+      setShowAreaPicker(true);
+      return;
     }
-    setSelectedIds(newSelection);
+    setPickerArea(photo.area);
+    setPickerPhotoId(photo.id);
+    setPickerCurrentWork(photo.work_name || undefined);
+    setPickerOpen(true);
   };
 
-  // Handle select all
-  const handleSelectAll = () => {
-    if (selectedIds.size === filteredPhotos.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredPhotos.map(p => p.id)));
-    }
+  // Handle area selection from area picker (for untagged photos)
+  const handleAreaSelected = (area: string) => {
+    setShowAreaPicker(false);
+    setPickerArea(area);
+    setPickerPhotoId(areaPickerPhotoId);
+    setPickerCurrentWork(undefined);
+    setPickerOpen(true);
+    setAreaPickerPhotoId(null);
   };
 
-  const getAreaConfig = (area: string) => {
-    return AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
-  };
+  // Handle work selection from wheel picker
+  const handleWorkSelected = async (work: CurriculumWork) => {
+    if (!pickerPhotoId) return;
 
-  // Handle single photo delete
-  const handleDeletePhoto = async () => {
-    if (!photoToDelete) return;
+    setPickerOpen(false);
 
-    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/montree/media?id=${photoToDelete.id}`, {
-        method: 'DELETE',
+      const res = await fetch('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: pickerPhotoId,
+          work_id: work.id,
+        }),
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete photo');
-      }
+      if (!res.ok) throw new Error('Failed to update');
 
-      setPhotos(photos.filter(p => p.id !== photoToDelete.id));
+      // Update local state
+      setPhotos(prev => prev.map(p =>
+        p.id === pickerPhotoId
+          ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea }
+          : p
+      ));
+      toast.success(t('gallery.workUpdated'));
+    } catch {
+      toast.error(t('gallery.workUpdateError'));
+    }
+  };
+
+  // Save caption/description edit
+  const saveCaption = async (photoId: string) => {
+    setSavingCaption(true);
+    try {
+      const res = await fetch('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: photoId, caption: captionDraft }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+
+      setPhotos(prev => prev.map(p =>
+        p.id === photoId ? { ...p, caption: captionDraft } : p
+      ));
+      setEditingCaption(null);
+      toast.success(t('gallery.descriptionSaved'));
+    } catch {
+      toast.error(t('gallery.descriptionSaveError'));
+    } finally {
+      setSavingCaption(false);
+    }
+  };
+
+  // Delete handlers
+  const handleDeletePhoto = async () => {
+    if (!photoToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/montree/media?id=${photoToDelete.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      setPhotos(prev => prev.filter(p => p.id !== photoToDelete.id));
       toast.success(t('gallery.photoDeletedSuccessfully'));
       setPhotoToDelete(null);
-      setSelectedPhoto(null);
-    } catch (err) {
-      console.error('Delete error:', err);
-      toast.error(err instanceof Error ? err.message : t('gallery.deletePhotoError'));
+    } catch {
+      toast.error(t('gallery.deletePhotoError'));
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Handle bulk delete
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-
     setIsDeleting(true);
     try {
-      const idsArray = Array.from(selectedIds);
-      const response = await fetch(`/api/montree/media?ids=${idsArray.join(',')}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete photos');
-      }
-
-      setPhotos(photos.filter(p => !selectedIds.has(p.id)));
+      const res = await fetch(`/api/montree/media?ids=${Array.from(selectedIds).join(',')}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)));
       toast.success(t('gallery.photosDeletedSuccessfully').replace('{count}', selectedIds.size.toString()));
       setSelectedIds(new Set());
       setShowBulkDeleteConfirm(false);
       setSelectionMode(false);
-    } catch (err) {
-      console.error('Bulk delete error:', err);
-      toast.error(err instanceof Error ? err.message : t('gallery.deletePhotosError'));
+    } catch {
+      toast.error(t('gallery.deletePhotosError'));
     } finally {
       setIsDeleting(false);
     }
   };
 
-  // Handle photo update after edit
-  const handlePhotoUpdated = (updatedMedia: MontreeMedia) => {
-    const updatedPhotos = photos.map(p =>
-      p.id === updatedMedia.id ? { ...updatedMedia, area: updatedMedia.area, work_name: updatedMedia.work_name } : p
-    ) as GalleryItem[];
-    setPhotos(updatedPhotos);
-    setEditingPhoto(null);
-    setSelectedPhoto({ ...updatedMedia, area: updatedMedia.area, work_name: updatedMedia.work_name } as GalleryItem);
+  // Progress update callback for PhotoInsight
+  const handleProgressUpdate = () => {
+    fetchPhotos();
+  };
+
+  // Get area config safely
+  const getAreaConfig = (area: string) =>
+    AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
+
+  // Merge curriculum works with progress statuses for the wheel picker
+  const getPickerWorks = (): CurriculumWork[] => {
+    const works = curriculum[pickerArea] || [];
+    return works.map(w => ({
+      ...w,
+      status: allProgress.find(p => p.work_name === w.name)?.status || 'not_started',
+    }));
+  };
+
+  // Render a single photo card (the core unit of the gallery)
+  const renderPhotoCard = (photo: GalleryItem) => {
+    const isExpanded = expandedPhoto === photo.id;
+    const isEditingThis = editingCaption === photo.id;
+    const url = imageUrls[photo.id];
+
+    return (
+      <div
+        key={photo.id}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+      >
+        {/* Photo + Date overlay */}
+        <div className="relative group">
+          {/* Selection checkbox */}
+          {selectionMode && (
+            <div className="absolute top-3 left-3 z-10">
+              <input
+                type="checkbox"
+                checked={selectedIds.has(photo.id)}
+                onChange={(e) => {
+                  const newSet = new Set(selectedIds);
+                  e.target.checked ? newSet.add(photo.id) : newSet.delete(photo.id);
+                  setSelectedIds(newSet);
+                }}
+                className="w-5 h-5 accent-emerald-500 cursor-pointer"
+              />
+            </div>
+          )}
+
+          {/* The image */}
+          <button
+            onClick={() => setExpandedPhoto(isExpanded ? null : photo.id)}
+            className="w-full"
+          >
+            {url ? (
+              <img
+                src={url}
+                alt={photo.work_name || photo.caption || 'Photo'}
+                className={`w-full object-cover transition-all ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}
+              />
+            ) : (
+              <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
+              </div>
+            )}
+          </button>
+
+          {/* Date badge — always visible */}
+          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm">
+            {formatDate(photo.captured_at)}
+          </div>
+
+          {/* Delete button (on hover/expanded) */}
+          {!selectionMode && (
+            <button
+              onClick={() => setPhotoToDelete(photo)}
+              className="absolute top-2 right-2 w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+              aria-label="Delete photo"
+            >
+              🗑
+            </button>
+          )}
+        </div>
+
+        {/* Work tag + Description section */}
+        <div className="p-3 space-y-2">
+          {/* Work tag bar — tappable to change */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => openWorkPicker(photo)}
+              className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left group/tag"
+            >
+              {photo.area ? (
+                <AreaBadge area={photo.area} size="sm" />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs">?</div>
+              )}
+              <span className="font-semibold text-gray-800 text-sm truncate flex-1">
+                {photo.work_name || t('gallery.untagged')}
+              </span>
+              <span className="text-gray-400 text-xs opacity-0 group-hover/tag:opacity-100 transition-opacity">
+                {t('gallery.tapToChange')}
+              </span>
+            </button>
+          </div>
+
+          {/* AI Description / Caption — editable */}
+          {isEditingThis ? (
+            <div className="space-y-2">
+              <textarea
+                value={captionDraft}
+                onChange={(e) => setCaptionDraft(e.target.value)}
+                className="w-full px-3 py-2 border border-emerald-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                rows={3}
+                autoFocus
+                placeholder={t('gallery.addDescription')}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setEditingCaption(null)}
+                  className="flex-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={() => saveCaption(photo.id)}
+                  disabled={savingCaption}
+                  className="flex-1 px-3 py-1.5 text-sm text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 disabled:opacity-50"
+                >
+                  {savingCaption ? '...' : t('common.save')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setEditingCaption(photo.id);
+                setCaptionDraft(photo.caption || '');
+              }}
+              className="w-full text-left"
+            >
+              {photo.caption ? (
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 hover:text-gray-800 transition-colors">
+                  {photo.caption}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-400 italic hover:text-gray-600 transition-colors">
+                  {t('gallery.tapToAddDescription')}
+                </p>
+              )}
+            </button>
+          )}
+
+          {/* Smart Capture / Photo Insight — shows AI analysis inline */}
+          <div className="pt-1">
+            <PhotoInsightButton
+              mediaId={photo.id}
+              childId={childId}
+              classroomId={session?.classroom?.id}
+              onProgressUpdate={handleProgressUpdate}
+            />
+          </div>
+
+          {/* Expanded details */}
+          {isExpanded && (
+            <div className="pt-2 border-t border-gray-100 space-y-2">
+              <p className="text-xs text-gray-500">{formatDateTime(photo.captured_at)}</p>
+              {photo.captured_by && (
+                <p className="text-xs text-gray-500">{t('gallery.capturedBy')} {photo.captured_by}</p>
+              )}
+              {photo.tags && photo.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {photo.tags.map(tag => (
+                    <span key={tag} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Render the grouped "all" view
+  const renderGroupedView = () => {
+    const groups = groupPhotosByWork(filteredPhotos);
+
+    if (groups.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <div className="text-4xl mb-3">📷</div>
+          <p className="text-gray-500">{t('gallery.noPhotos')}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {groups.map(group => {
+          const areaConfig = getAreaConfig(group.area);
+          return (
+            <div key={group.key}>
+              {/* Group header */}
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <AreaBadge area={group.area} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-800 text-sm truncate">{group.work}</p>
+                  {group.area !== 'untagged' && (
+                    <p className="text-xs text-gray-500">{areaConfig.name}</p>
+                  )}
+                </div>
+                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
+                  {group.items.length} {group.items.length !== 1 ? t('gallery.photos') : t('gallery.photo')}
+                </span>
+              </div>
+
+              {/* Photo cards in this group */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {group.items.map(photo => renderPhotoCard(photo))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render flat grid view (for area/work filters)
+  const renderFlatView = () => {
+    if (filteredPhotos.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <div className="text-4xl mb-3">📷</div>
+          <p className="text-gray-500">{loading ? t('gallery.loadingPhotos') : t('gallery.noPhotosInFilter')}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {filteredPhotos.map(photo => renderPhotoCard(photo))}
+      </div>
+    );
   };
 
   return (
@@ -224,18 +596,21 @@ export default function GalleryPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{childName ? `${childName}'s ${t('gallery.gallery')}` : t('gallery.photoGallery')}</h1>
-          <p className="text-sm text-gray-500 mt-1">{photos.length} {t('gallery.photosTotal')}</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {childName ? (locale === 'zh' ? `${childName}的${t('gallery.gallery')}` : `${childName}'s ${t('gallery.gallery')}`) : t('gallery.photoGallery')}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {photos.length} {t('gallery.photosTotal')}
+          </p>
         </div>
 
-        {/* Selection mode toggle */}
         {filteredPhotos.length > 0 && (
           <button
             onClick={() => {
               setSelectionMode(!selectionMode);
               setSelectedIds(new Set());
             }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
               selectionMode
                 ? 'bg-blue-500 text-white'
                 : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
@@ -247,60 +622,30 @@ export default function GalleryPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2">
-        <button
-          onClick={() => {
-            setFilterTab('all');
-            setSelectedArea(null);
-            setSelectedWork(null);
-          }}
-          className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
-            filterTab === 'all'
-              ? 'bg-emerald-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {t('gallery.allPhotos')}
-        </button>
-
-        <button
-          onClick={() => {
-            setFilterTab('area');
-            setSelectedWork(null);
-            if (!selectedArea && uniqueAreas.length > 0) {
-              setSelectedArea(uniqueAreas[0]);
-            }
-          }}
-          className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
-            filterTab === 'area'
-              ? 'bg-emerald-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {t('gallery.byArea')}
-        </button>
-
-        <button
-          onClick={() => {
-            setFilterTab('work');
-            setSelectedArea(null);
-            if (!selectedWork && uniqueWorks.length > 0) {
-              setSelectedWork(uniqueWorks[0]);
-            }
-          }}
-          className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors ${
-            filterTab === 'work'
-              ? 'bg-emerald-500 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {t('gallery.byWork')}
-        </button>
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {(['all', 'area', 'work'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => {
+              setFilterTab(tab);
+              if (tab === 'all') { setSelectedArea(null); setSelectedWork(null); }
+              if (tab === 'area' && !selectedArea && uniqueAreas.length > 0) setSelectedArea(uniqueAreas[0]);
+              if (tab === 'work' && !selectedWork && uniqueWorks.length > 0) setSelectedWork(uniqueWorks[0] || null);
+            }}
+            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors text-sm ${
+              filterTab === tab
+                ? 'bg-emerald-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {tab === 'all' ? t('gallery.allPhotos') : tab === 'area' ? t('gallery.byArea') : t('gallery.byWork')}
+          </button>
+        ))}
       </div>
 
-      {/* Sub-filters for Area/Work selection */}
+      {/* Area sub-filter */}
       {filterTab === 'area' && uniqueAreas.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {uniqueAreas.map(area => {
             const config = getAreaConfig(area || '');
             const count = photos.filter(p => p.area === area).length;
@@ -316,17 +661,18 @@ export default function GalleryPage() {
               >
                 <AreaBadge area={area || ''} size="xs" />
                 <span>{config.name}</span>
-                <span className="text-xs opacity-75">({count} {count !== 1 ? t('gallery.photos') : t('gallery.photo')})</span>
+                <span className="text-xs opacity-75">({count})</span>
               </button>
             );
           })}
         </div>
       )}
 
+      {/* Work sub-filter */}
       {filterTab === 'work' && uniqueWorks.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-1">
           {uniqueWorks.map(work => {
-            const count = photos.filter(p => p.work_name === work || p.work_id === work).length;
+            const count = photos.filter(p => p.work_name === work).length;
             return (
               <button
                 key={work}
@@ -338,7 +684,7 @@ export default function GalleryPage() {
                 }`}
               >
                 <span className="truncate">{work}</span>
-                <span className="text-xs opacity-75 ml-1">({count} {count !== 1 ? t('gallery.photos') : t('gallery.photo')})</span>
+                <span className="text-xs opacity-75 ml-1">({count})</span>
               </button>
             );
           })}
@@ -348,130 +694,106 @@ export default function GalleryPage() {
       {/* Selection toolbar */}
       {selectionMode && selectedIds.size > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
-          <div className="text-sm font-medium text-blue-900">
+          <span className="text-sm font-medium text-blue-900">
             {selectedIds.size} {selectedIds.size !== 1 ? t('gallery.photosSelected') : t('gallery.photoSelected')}
-          </div>
+          </span>
           <div className="flex gap-2">
             <button
-              onClick={handleSelectAll}
+              onClick={() => {
+                if (selectedIds.size === filteredPhotos.length) {
+                  setSelectedIds(new Set());
+                } else {
+                  setSelectedIds(new Set(filteredPhotos.map(p => p.id)));
+                }
+              }}
               className="text-sm px-3 py-1 bg-blue-200 text-blue-800 rounded hover:bg-blue-300"
             >
               {selectedIds.size === filteredPhotos.length ? t('gallery.deselectAll') : t('gallery.selectAll')}
             </button>
             <button
-              onClick={() => {
-                // TODO: Wire to reports later
-                toast.success(t('gallery.addedToReport').replace('{count}', selectedIds.size.toString()));
-                setSelectionMode(false);
-              }}
-              className="text-sm px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              {t('gallery.addToReport')}
-            </button>
-            <button
               onClick={() => setShowBulkDeleteConfirm(true)}
               className="text-sm px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
             >
-              🗑️ {t('gallery.deleteSelected')}
+              {t('gallery.deleteSelected')}
             </button>
           </div>
         </div>
       )}
 
-      {/* Gallery Display */}
-      {filterTab === 'all' ? (
-        // Grouped view (all)
-        <div className="space-y-6">
-          {Object.keys(groupedPhotos || {}).length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-4xl mb-3">📷</div>
-              <p className="text-gray-500">{t('gallery.noPhotos')}</p>
+      {/* Loading */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
+              <div className="aspect-[4/3] bg-gray-100 animate-pulse" />
+              <div className="p-3 space-y-2">
+                <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
+                <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
+              </div>
             </div>
-          ) : (
-            Object.entries(groupedPhotos || {}).map(([groupKey, items]) => {
-              const [area, work] = groupKey.split('|');
-              const areaConfig = getAreaConfig(area || '');
-
-              return (
-                <div key={groupKey} className="bg-white rounded-lg overflow-hidden shadow-sm">
-                  {/* Group header */}
-                  <div className="bg-gradient-to-r from-emerald-50 to-teal-50 px-4 py-3 border-l-4 border-emerald-500">
-                    <div className="flex items-center gap-2">
-                      <AreaBadge area={area || ''} size="sm" />
-                      <div className="flex-1">
-                        <p className="font-semibold text-gray-800">{work}</p>
-                        <p className="text-xs text-gray-500">{areaConfig.name}</p>
-                      </div>
-                      <span className="text-xs bg-white px-2 py-1 rounded-full text-gray-600 font-medium">
-                        {items.length} {items.length !== 1 ? t('gallery.photos') : t('gallery.photo')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Photos grid */}
-                  <div className="p-4">
-                    <MediaGallery
-                      media={items}
-                      loading={false}
-                      onMediaClick={selectionMode ? undefined : setSelectedPhoto}
-                      onMediaEdit={(media) => setEditingPhoto(media as GalleryItem)}
-                      onMediaDelete={(media) => setPhotoToDelete(media as GalleryItem)}
-                      emptyMessage={t('gallery.noPhotos')}
-                      selectedIds={selectedIds}
-                      onSelectionChange={handleSelectionChange}
-                      selectionMode={selectionMode}
-                      showActions={!selectionMode}
-                    />
-                  </div>
-                </div>
-              );
-            })
-          )}
+          ))}
         </div>
+      ) : filterTab === 'all' ? (
+        renderGroupedView()
       ) : (
-        // Simple grid view (area/work filtered)
-        <div className="bg-white rounded-lg p-4 shadow-sm">
-          <MediaGallery
-            media={filteredPhotos}
-            loading={loading}
-            onMediaClick={selectionMode ? undefined : setSelectedPhoto}
-            onMediaEdit={(media) => setEditingPhoto(media as GalleryItem)}
-            onMediaDelete={(media) => setPhotoToDelete(media as GalleryItem)}
-            emptyMessage={loading ? t('gallery.loadingPhotos') : t('gallery.noPhotosInFilter')}
-            selectedIds={selectedIds}
-            onSelectionChange={handleSelectionChange}
-            selectionMode={selectionMode}
-            showActions={!selectionMode}
-          />
+        renderFlatView()
+      )}
+
+      {/* Area Picker (for untagged photos) */}
+      {showAreaPicker && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
+        >
+          <div
+            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">{t('gallery.chooseArea')}</h3>
+              <button
+                onClick={() => { setShowAreaPicker(false); setAreaPickerPhotoId(null); }}
+                className="p-2 text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'].map(area => {
+                const config = getAreaConfig(area);
+                return (
+                  <button
+                    key={area}
+                    onClick={() => handleAreaSelected(area)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <AreaBadge area={area} size="md" />
+                    <span className="font-medium text-gray-800">{config.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Photo Detail Modal */}
-      <PhotoDetailView
-        media={selectedPhoto}
-        childName={childName}
-        isOpen={!!selectedPhoto}
-        onClose={() => setSelectedPhoto(null)}
-        onEdit={() => {
-          setEditingPhoto(selectedPhoto);
-          setSelectedPhoto(null);
-        }}
-        onDelete={() => {
-          setPhotoToDelete(selectedPhoto);
-          setSelectedPhoto(null);
+      {/* Work Wheel Picker */}
+      <WorkWheelPicker
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        area={pickerArea}
+        works={getPickerWorks()}
+        currentWorkName={pickerCurrentWork}
+        onSelectWork={(work, _status) => handleWorkSelected(work as CurriculumWork)}
+        onWorkAdded={() => {
+          // Refresh curriculum cache
+          curriculumLoadedRef.current = false;
+          setCurriculum({});
+          loadCurriculum();
         }}
       />
 
-      {/* Photo Edit Modal */}
-      <PhotoEditModal
-        media={editingPhoto}
-        childName={childName}
-        isOpen={!!editingPhoto}
-        onClose={() => setEditingPhoto(null)}
-        onSave={handlePhotoUpdated}
-      />
-
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <DeleteConfirmDialog
         isOpen={!!photoToDelete}
         count={1}
@@ -480,7 +802,7 @@ export default function GalleryPage() {
         isDeleting={isDeleting}
       />
 
-      {/* Bulk Delete Confirmation Dialog */}
+      {/* Bulk Delete Confirmation */}
       <DeleteConfirmDialog
         isOpen={showBulkDeleteConfirm}
         count={selectedIds.size}

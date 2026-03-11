@@ -767,6 +767,16 @@ export const en = {
   'gallery.deletePhotoError': 'Failed to delete photo',
   'gallery.photosDeletedSuccessfully': '{count} photos deleted successfully',
   'gallery.deletePhotosError': 'Failed to delete photos',
+  'gallery.untagged': 'Untagged',
+  'gallery.tapToChange': 'tap to change',
+  'gallery.tapToAddDescription': 'Tap to add a description...',
+  'gallery.addDescription': 'Add a description...',
+  'gallery.descriptionSaved': 'Description saved',
+  'gallery.descriptionSaveError': 'Failed to save description',
+  'gallery.workUpdated': 'Work tag updated',
+  'gallery.workUpdateError': 'Failed to update work tag',
+  'gallery.capturedBy': 'Captured by',
+  'gallery.chooseArea': 'Choose an area',
 
   // Phase 4 — Observations
   'observations.title': 'Observations',

@@ -760,6 +760,16 @@ export const zh = {
   'gallery.deletePhotoError': '删除照片失败',
   'gallery.photosDeletedSuccessfully': '{count}张照片已成功删除',
   'gallery.deletePhotosError': '删除照片失败',
+  'gallery.untagged': '未标记',
+  'gallery.tapToChange': '点击更改',
+  'gallery.tapToAddDescription': '点击添加描述...',
+  'gallery.addDescription': '添加描述...',
+  'gallery.descriptionSaved': '描述已保存',
+  'gallery.descriptionSaveError': '保存描述失败',
+  'gallery.workUpdated': '工作标签已更新',
+  'gallery.workUpdateError': '更新工作标签失败',
+  'gallery.capturedBy': '拍摄者',
+  'gallery.chooseArea': '选择领域',
 
   // Phase 4 — Observations
   'observations.title': '观察记录',
