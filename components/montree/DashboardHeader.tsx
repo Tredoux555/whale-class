@@ -150,7 +150,9 @@ export default function DashboardHeader() {
   if (!session?.teacher?.id) return null;
 
   const isHome = isHomeschoolParent(session);
-  const showStudentSearch = !isHome && students.length > 0;
+  // Hide header search on main dashboard (has its own inline search now)
+  const isDashboardHome = pathname === '/montree/dashboard';
+  const showStudentSearch = !isHome && !isDashboardHome && students.length > 0;
 
   return (
     <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
