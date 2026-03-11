@@ -1569,6 +1569,8 @@ export const en = {
   'tools.spy_how_to_use': 'How to Use in the Classroom',
   'tools.command_cards': 'Command Cards',
   'tools.command_cards_desc': 'AMI Montessori command cards — reading comprehension through action',
+  'tools.phonics_fast': 'Phonics Fast',
+  'tools.phonics_fast_desc': 'Complete phonics progression — word lists, generators, and printable tools',
   'tools.command_cards_subtitle': 'AMI Montessori reading through action',
   'tools.cmd_select_level': 'Select Level',
   'tools.cmd_settings': 'Print Settings',
