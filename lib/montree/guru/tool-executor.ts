@@ -668,6 +668,14 @@ export async function executeTool(
       const quickGuide = ((input.quick_guide as string) || '').slice(0, 500);
       const whyItMatters = ((input.why_it_matters as string) || '').slice(0, 500);
       const ageRange = ((input.age_range as string) || '3-6').slice(0, 20);
+      const photoUrl = ((input.photo_url as string) || '').slice(0, 500) || null;
+      const parentDescription = ((input.parent_description as string) || '').slice(0, 1000) || null;
+      const controlOfError = ((input.control_of_error as string) || '').slice(0, 500) || null;
+
+      // Validate photo_url if provided (must be HTTPS)
+      if (photoUrl && !photoUrl.startsWith('https://')) {
+        return { success: false, message: 'photo_url must be an HTTPS URL' };
+      }
 
       const { error: insertError } = await supabase
         .from('montree_classroom_curriculum_works')
@@ -684,6 +692,9 @@ export async function executeTool(
           quick_guide: quickGuide || null,
           presentation_steps: presentationSteps,
           age_range: ageRange,
+          photo_url: photoUrl,
+          parent_description: parentDescription,
+          control_of_error: controlOfError,
           is_custom: true,
           is_active: true,
           sequence: nextSequence,
@@ -931,6 +942,216 @@ export async function executeTool(
       return {
         success: true,
         message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups})${customInstructions ? `\nInstructions: ${customInstructions}` : ''}\n\nStudent data:\n${JSON.stringify(studentData, null, 1)}\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students and explain your reasoning.`
+      };
+    }
+
+    // --- Area Analytics Tool (read-only) ---
+
+    case 'get_weekly_area_summary': {
+      // Validate days parameter
+      const summaryDays = Math.min(Math.max((input.days as number) || 7, 1), 30);
+      const summaryArea = (input.area as string) || 'all';
+      const validSummaryAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'all'];
+      if (!validSummaryAreas.includes(summaryArea)) {
+        return { success: false, message: `Invalid area: "${summaryArea}". Must be one of: ${validSummaryAreas.join(', ')}` };
+      }
+
+      // Get classroom_id — use override (whole-class mode) or look up from child
+      let classroomIdSummary = classroomIdOverride;
+      if (!classroomIdSummary) {
+        const { data: childData } = await supabase
+          .from('montree_children')
+          .select('classroom_id')
+          .eq('id', childId)
+          .single();
+        classroomIdSummary = childData?.classroom_id;
+      }
+      if (!classroomIdSummary) {
+        return { success: false, message: 'Could not determine classroom.' };
+      }
+
+      // Get all children in classroom
+      const { data: summaryChildren } = await supabase
+        .from('montree_children')
+        .select('id, name')
+        .eq('classroom_id', classroomIdSummary)
+        .order('name');
+
+      if (!summaryChildren || summaryChildren.length === 0) {
+        return { success: true, message: 'No students in this classroom.' };
+      }
+
+      const summaryChildIds = summaryChildren.map(c => c.id);
+      const summaryChildNameMap = new Map(summaryChildren.map(c => [c.id, c.name]));
+
+      // Calculate date range
+      const summaryEndDate = new Date();
+      const summaryStartDate = new Date();
+      summaryStartDate.setDate(summaryStartDate.getDate() - summaryDays);
+      const startDateStr = summaryStartDate.toISOString().split('T')[0] + 'T00:00:00';
+
+      // 3 parallel queries: progress changes, media (photos), sessions
+      // Each wrapped independently so one failing table doesn't kill the whole tool
+      const areaFilter = summaryArea !== 'all' ? summaryArea : undefined;
+
+      // Query 1: Progress changes (primary data source)
+      let progressData: Array<{ child_id: string; work_name: string; area: string; status: string; updated_at: string }> = [];
+      try {
+        const progressQuery = supabase
+          .from('montree_child_progress')
+          .select('child_id, work_name, area, status, updated_at')
+          .in('child_id', summaryChildIds)
+          .gte('updated_at', startDateStr)
+          .limit(500);
+        if (areaFilter) progressQuery.eq('area', areaFilter);
+        const { data } = await progressQuery;
+        progressData = data || [];
+      } catch (err) {
+        console.error('[Tool] get_weekly_area_summary progress query error:', err);
+      }
+
+      // Query 2: Media/photos (secondary — infer area from work_id or caption)
+      let mediaData: Array<{ child_id: string; work_id: string | null; caption: string | null }> = [];
+      try {
+        const { data } = await supabase
+          .from('montree_media')
+          .select('child_id, work_id, caption')
+          .eq('classroom_id', classroomIdSummary)
+          .gte('captured_at', startDateStr)
+          .limit(500);
+        mediaData = data || [];
+      } catch (err) {
+        console.error('[Tool] get_weekly_area_summary media query error:', err);
+      }
+
+      // Query 3: Sessions (may not exist — table is optional)
+      let sessionsData: Array<{ child_id: string; area: string | null; work_name: string | null }> = [];
+      try {
+        const sessionsQuery = supabase
+          .from('montree_sessions')
+          .select('child_id, area, work_name')
+          .eq('classroom_id', classroomIdSummary)
+          .gte('created_at', startDateStr)
+          .limit(500);
+        if (areaFilter) sessionsQuery.eq('area', areaFilter);
+        const { data } = await sessionsQuery;
+        sessionsData = data || [];
+      } catch {
+        // Table may not exist — silently continue with empty data
+      }
+
+      // Build area → Set<childId> mapping from all data sources
+      const areasToAnalyze = summaryArea === 'all'
+        ? ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
+        : [summaryArea];
+
+      const areaVisitors = new Map<string, Set<string>>();
+      const areaActivityCounts = new Map<string, Map<string, number>>(); // area → childId → count
+      for (const a of areasToAnalyze) {
+        areaVisitors.set(a, new Set());
+        areaActivityCounts.set(a, new Map());
+      }
+
+      // Count from progress changes
+      for (const p of progressData) {
+        if (!areasToAnalyze.includes(p.area)) continue;
+        areaVisitors.get(p.area)!.add(p.child_id);
+        const counts = areaActivityCounts.get(p.area)!;
+        counts.set(p.child_id, (counts.get(p.child_id) || 0) + 1);
+      }
+
+      // Count from sessions (if available)
+      for (const s of (sessionsData || [])) {
+        if (!s.area || !areasToAnalyze.includes(s.area)) continue;
+        areaVisitors.get(s.area)!.add(s.child_id);
+        const counts = areaActivityCounts.get(s.area)!;
+        counts.set(s.child_id, (counts.get(s.child_id) || 0) + 1);
+      }
+
+      // Build work_id → area map from curriculum for media area inference
+      const workIdAreaMap = new Map<string, string>();
+      try {
+        const { data: classroomWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id, area_id')
+          .eq('classroom_id', classroomIdSummary);
+        if (classroomWorks) {
+          const { data: areas } = await supabase
+            .from('montree_classroom_curriculum_areas')
+            .select('id, area_key')
+            .eq('classroom_id', classroomIdSummary);
+          const areaIdToKey = new Map((areas || []).map(a => [a.id, a.area_key]));
+          for (const w of classroomWorks) {
+            const areaKey = areaIdToKey.get(w.area_id);
+            if (areaKey) workIdAreaMap.set(w.id, areaKey);
+          }
+        }
+      } catch { /* curriculum lookup failed — fall back to keyword matching */ }
+
+      // Count media — first try work_id lookup, then fall back to caption keywords
+      const areaKeywords: Record<string, string[]> = {
+        practical_life: ['practical', 'pouring', 'spooning', 'transfer', 'care', 'dressing', 'cleaning', 'washing', 'folding', 'polishing', 'buttoning', 'zipping'],
+        sensorial: ['sensorial', 'pink tower', 'brown stair', 'knobbed', 'color', 'sound', 'texture', 'geometric', 'binomial', 'trinomial'],
+        mathematics: ['math', 'number', 'counting', 'addition', 'bead', 'spindle', 'hundred', 'thousand', 'decimal', 'fraction'],
+        language: ['language', 'sandpaper letter', 'moveable alphabet', 'reading', 'writing', 'phonetic', 'grammar', 'nomenclature'],
+        cultural: ['cultural', 'geography', 'science', 'botany', 'zoology', 'history', 'art', 'music', 'globe', 'map', 'flag'],
+      };
+      for (const m of mediaData) {
+        if (!m.child_id) continue;
+
+        // Try work_id → area lookup first (most accurate)
+        let mediaArea: string | null = null;
+        if (m.work_id) {
+          mediaArea = workIdAreaMap.get(m.work_id) || null;
+        }
+
+        // Fall back to caption keyword matching
+        if (!mediaArea) {
+          const captionLower = (m.caption || '').toLowerCase();
+          for (const a of areasToAnalyze) {
+            const keywords = areaKeywords[a] || [];
+            if (keywords.some(kw => captionLower.includes(kw))) {
+              mediaArea = a;
+              break;
+            }
+          }
+        }
+
+        if (mediaArea && areasToAnalyze.includes(mediaArea)) {
+          areaVisitors.get(mediaArea)!.add(m.child_id);
+          const counts = areaActivityCounts.get(mediaArea)!;
+          counts.set(m.child_id, (counts.get(m.child_id) || 0) + 1);
+        }
+      }
+
+      // Build output
+      const areaSummaries = areasToAnalyze.map(area => {
+        const visitors = areaVisitors.get(area)!;
+        const counts = areaActivityCounts.get(area)!;
+        const visitorNames = Array.from(visitors)
+          .map(id => ({ name: summaryChildNameMap.get(id) || 'Unknown', count: counts.get(id) || 0 }))
+          .sort((a, b) => b.count - a.count);
+
+        const missingIds = summaryChildIds.filter(id => !visitors.has(id));
+        const missingNames = missingIds.map(id => summaryChildNameMap.get(id) || 'Unknown').sort();
+
+        return {
+          area: AREA_LABELS[area] || area,
+          area_key: area,
+          children_active: visitors.size,
+          children_missing: missingIds.length,
+          total_children: summaryChildren.length,
+          coverage_pct: Math.round((visitors.size / summaryChildren.length) * 100),
+          active_children: visitorNames.map(v => `${v.name} (${v.count} activities)`),
+          missing_children: missingNames,
+        };
+      });
+
+      const dateRange = `${summaryStartDate.toISOString().split('T')[0]} to ${summaryEndDate.toISOString().split('T')[0]}`;
+
+      return {
+        success: true,
+        message: `Area coverage summary for the past ${summaryDays} days (${dateRange}):\n${JSON.stringify(areaSummaries, null, 1)}\n\nTotal children: ${summaryChildren.length}. Use this data to identify which children need to be guided toward undervisited areas. Consider using group_students to create small groups for targeted area work.`
       };
     }
 

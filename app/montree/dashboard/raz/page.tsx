@@ -333,13 +333,16 @@ export default function RazTrackerPage() {
     }
   }
 
-  // Background upload — fire and forget
+  // Background upload — fire and forget with retry + timeout
+  // 2 retries with exponential backoff (1s, 3s), 30s timeout per attempt
   function uploadPhoto(file: File, childId: string, date: string, photoType: PhotoType, classroomId: string) {
     const photoLabels = getPhotoLabels(t);
     const uploadKey = `${childId}-${photoType}`;
-    const uploadController = new AbortController();
-    uploadAbortRefs.current.set(uploadKey, uploadController);
     if (mountedRef.current) setUploading(prev => new Set(prev).add(uploadKey));
+
+    const MAX_RETRIES = 2;
+    const UPLOAD_TIMEOUT_MS = 30_000;
+    const BACKOFF_MS = [1000, 3000]; // 1s, 3s
 
     const formData = new FormData();
     formData.append('file', file);
@@ -348,35 +351,52 @@ export default function RazTrackerPage() {
     formData.append('photoType', photoType);
     formData.append('classroomId', classroomId);
 
-    fetch('/api/montree/raz/upload', {
-      method: 'POST',
-      body: formData,
-      signal: uploadController.signal,
-    })
-      .then(async res => {
+    async function attemptUpload(attempt: number): Promise<{ success: boolean; record?: RazRecord; photoUrl?: string; error?: string }> {
+      const controller = new AbortController();
+      uploadAbortRefs.current.set(uploadKey, controller);
+      const timeout = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
+      try {
+        const res = await fetch('/api/montree/raz/upload', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+
         if (!res.ok) {
-          // Non-2xx status — try to parse error body for detail
           let errorMsg = `HTTP ${res.status}`;
           try {
             const errData = await res.json();
             if (errData?.error) errorMsg = errData.error;
-          } catch { /* response wasn't JSON, use HTTP status */ }
+          } catch { /* response wasn't JSON */ }
           throw new Error(errorMsg);
         }
-        return res.json();
-      })
+        return await res.json();
+      } catch (err) {
+        clearTimeout(timeout);
+        const isAbort = err instanceof DOMException && err.name === 'AbortError';
+        // Retry on network errors (not on intentional abort from unmount)
+        if (!isAbort && attempt < MAX_RETRIES && mountedRef.current) {
+          await new Promise(r => setTimeout(r, BACKOFF_MS[attempt] || 3000));
+          if (!mountedRef.current) throw err; // Component unmounted during backoff
+          return attemptUpload(attempt + 1);
+        }
+        throw err;
+      }
+    }
+
+    attemptUpload(0)
       .then(data => {
         if (!mountedRef.current) return;
         if (data.success && data.record) {
-          // Safely merge only the photo URL field (never overwrite other fields)
           const photoUrlValue = data.record[PHOTO_URL_KEYS[photoType]];
           setRecords(prev => {
             const existing = prev[childId];
-            if (!existing) return { ...prev, [childId]: data.record };
+            if (!existing) return { ...prev, [childId]: data.record as RazRecord };
             return { ...prev, [childId]: { ...existing, [PHOTO_URL_KEYS[photoType]]: photoUrlValue } };
           });
         } else if (data.success && data.photoUrl) {
-          // Upload succeeded but record might be null — still update with photoUrl
           setRecords(prev => {
             const existing = prev[childId];
             if (!existing) return prev;
@@ -387,8 +407,8 @@ export default function RazTrackerPage() {
         }
       })
       .catch(err => {
-        if (err?.name === 'AbortError') return;
-        if (mountedRef.current) toast.error(`${t('raz.uploadFailed')}: ${err.message || photoLabels[photoType]}`);
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        if (mountedRef.current) toast.error(`${t('raz.uploadFailed')}: ${err?.message || photoLabels[photoType]}`);
       })
       .finally(() => {
         uploadAbortRefs.current.delete(uploadKey);
