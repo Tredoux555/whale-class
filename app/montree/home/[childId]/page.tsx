@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import PortalChat from '@/components/montree/home/PortalChat';
 import ShelfView from '@/components/montree/home/ShelfView';
@@ -34,27 +34,38 @@ export default function HomePage() {
   const [portalPrefill, setPortalPrefill] = useState('');
   const { t } = useI18n();
 
-  // Auth check
+  // Auth check — tries localStorage first, then cookie-based recovery
   useEffect(() => {
-    const sess = getSession();
-    if (!sess) {
-      router.replace('/montree/login');
-      return;
-    }
-    if (!isHomeschoolParent(sess)) {
-      router.replace('/montree/dashboard');
-      return;
-    }
-    setSession(sess);
+    let cancelled = false;
 
-    // Fetch children for selector
-    if (sess.classroom?.id) {
-      fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`)
-        .then(r => {
+    async function initAuth() {
+      let sess = getSession();
+
+      // If localStorage is cleared (e.g., PWA relaunch on iOS), try recovering from httpOnly cookie
+      if (!sess) {
+        sess = await recoverSession();
+      }
+
+      if (cancelled) return;
+
+      if (!sess) {
+        router.replace('/montree/login');
+        return;
+      }
+      if (!isHomeschoolParent(sess)) {
+        router.replace('/montree/dashboard');
+        return;
+      }
+      setSession(sess);
+
+      // Fetch children for selector
+      if (sess.classroom?.id) {
+        try {
+          const r = await fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`);
           if (!r.ok) throw new Error(`Children fetch failed: ${r.status}`);
-          return r.json();
-        })
-        .then(data => {
+          const data = await r.json();
+          if (cancelled) return;
+
           const kids = data.children || [];
           setChildren(kids);
           setLoading(false);
@@ -67,14 +78,18 @@ export default function HomePage() {
           if (kids.length === 0) {
             router.replace('/montree/home/setup');
           }
-        })
-        .catch((err) => {
+        } catch (err) {
+          if (cancelled) return;
           console.error('Children fetch failed:', err);
           setLoading(false);
-        });
-    } else {
-      setLoading(false);
+        }
+      } else {
+        if (!cancelled) setLoading(false);
+      }
     }
+
+    initAuth();
+    return () => { cancelled = true; };
   }, [router, childId]);
 
   // When Guru updates shelf via tools

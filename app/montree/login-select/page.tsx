@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
+import { getSession, recoverSession } from '@/lib/montree/auth';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
 function UnifiedLoginContent() {
@@ -16,6 +17,26 @@ function UnifiedLoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const autoSubmitDone = useRef(false);
+  const recoveryDone = useRef(false);
+
+  // On mount: if already logged in (localStorage or cookie), skip login page
+  useEffect(() => {
+    if (recoveryDone.current) return;
+    recoveryDone.current = true;
+
+    const sess = getSession();
+    if (sess) {
+      router.replace(redirectTo || '/montree/dashboard');
+      return;
+    }
+
+    // Try cookie-based session recovery (e.g., PWA relaunch cleared localStorage)
+    recoverSession().then(recovered => {
+      if (recovered) {
+        router.replace(redirectTo || '/montree/dashboard');
+      }
+    });
+  }, [router, redirectTo]);
 
   // Auto-submit if code came from QR URL param
   useEffect(() => {

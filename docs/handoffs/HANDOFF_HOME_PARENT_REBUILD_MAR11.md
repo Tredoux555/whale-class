@@ -2,8 +2,8 @@
 
 **Date:** March 11, 2026
 **Status:** COMPLETE, NOT YET DEPLOYED
-**Methodology:** Full 3×3×3 (3 plan-audit cycles + 3 build-audit cycles) + 3 post-build audit-fix cycles
-**Total issues found & fixed:** 18 across all cycles
+**Methodology:** Full 3×3×3 (3 plan-audit cycles + 3 build-audit cycles) + 3 post-build audit-fix cycles + 6 additional deep audit cycles (3 consecutive CLEAN)
+**Total issues found & fixed:** 28 across all cycles
 
 ---
 
@@ -48,9 +48,11 @@ React error boundary wrapping both PortalChat and ShelfView. Accepts `title`, `f
 ### i18n (en.ts + zh.ts, 27 new keys total)
 
 27 new keys with **perfect EN/ZH parity**:
-- `home.portal.*` — 7 keys (stillThinking, timeout, rateLimited, attachPhoto, selectImageFile, imageTooLarge, imageUploadFailed, photoAttached)
+- `home.portal.*` — 8 keys (stillThinking, timeout, rateLimited, attachPhoto, selectImageFile, imageTooLarge, imageUploadFailed, photoAttached)
 - `home.shelf.*` — 15 keys (status, presented, practicing, mastered, observationLabel, observationPlaceholder, saveObservation, observationSaved, observationFailed, progressUpdated, progressFailed, viewPresentation, viewProgress, browseCurriculum, fetchError)
 - `home.error.*` — 4 keys (title, chatFailed, shelfFailed, tryAgain)
+- `home.loading` — 1 key
+- `home.header.addChild` — 1 key
 
 ---
 
@@ -68,7 +70,17 @@ React error boundary wrapping both PortalChat and ShelfView. Accepts `title`, `f
 - **Audit Cycle 2:** Verified all 7 fixes correct → CLEAN
 - **Audit Cycle 3:** 1 real issue (fetchShelf res.ok guard) → fixed. All other "CRITICALs" were false positives (already fixed code or pre-existing).
 
-**Total: 18 issues found and fixed across 6 audit cycles. Final state: CLEAN.**
+**Subtotal 3×3×3: 18 issues found and fixed across 6 audit cycles.**
+
+### Extended Deep Audit Cycles (run until 2+ consecutive CLEAN)
+- **Deep Cycle 1:** 5 issues (ShelfView res.ok on curriculum search + guide fetch, silent catch logging, page.tsx res.ok on children fetch + hardcoded "Preparing your space...") → all fixed, 1 new i18n key (`home.loading`)
+- **Deep Cycle 2:** 3 issues (ShelfView console.error on guide catch, page.tsx console.error on children catch + status code in error) → all fixed
+- **Deep Cycle 3:** 2 issues (page.tsx hardcoded 'Loading...' fallback + 'Add a child' title) → all fixed, 1 new i18n key (`home.header.addChild`)
+- **Deep Cycle 4:** CLEAN
+- **Deep Cycle 5:** CLEAN (2 consecutive)
+- **Deep Cycle 6:** CLEAN (3 consecutive — independent verification)
+
+**Total: 28 issues found and fixed across 12 audit cycles. Final state: 3 consecutive CLEAN audits.**
 
 ---
 
@@ -80,8 +92,8 @@ React error boundary wrapping both PortalChat and ShelfView. Accepts `title`, `f
 | `components/montree/home/ShelfView.tsx` | ~878 | Modified (progress updates, observations, detail panel, stale closure fixes) |
 | `components/montree/ErrorBoundary.tsx` | 64 | **NEW** (React error boundary with i18n props) |
 | `app/montree/home/[childId]/page.tsx` | ~192 | Modified (ErrorBoundary wrapping, useI18n) |
-| `lib/montree/i18n/en.ts` | +27 keys | Modified |
-| `lib/montree/i18n/zh.ts` | +27 keys | Modified |
+| `lib/montree/i18n/en.ts` | +29 keys | Modified |
+| `lib/montree/i18n/zh.ts` | +29 keys | Modified |
 
 ## Deploy
 

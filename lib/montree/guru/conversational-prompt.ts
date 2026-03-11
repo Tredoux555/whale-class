@@ -757,7 +757,7 @@ export function buildConversationalPrompt(
   if (!guruTier || guruTier === 'sonnet') {
     const deepPsychKnowledge = getRelevantPsychologyKnowledge([]);
     if (deepPsychKnowledge) {
-      systemPrompt += `\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don't ${isTeacher ? 'lecture' : 'dump all of this on the parent'}):\n` + deepPsychKnowledge;
+      systemPrompt += `\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don't lecture):\n` + deepPsychKnowledge;
     }
   }
 
