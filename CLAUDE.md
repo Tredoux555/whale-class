@@ -16,9 +16,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. Multiple features + smart capture + whole-class fix + batch reports + audit fixes. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: smart capture rewrite + batch reports + whole-class guru fix + audit fixes" && git push origin main`
+All code is local, NOT yet pushed. 4 features + fixes from Mar 8–10 sessions + fire-and-forget Smart Capture from Mar 11. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: smart capture rewrite + batch reports + whole-class guru fix + classroom overview + fire-and-forget + audit fixes" && git push origin main`
 
-**Includes:** Smart Capture rewrite (2 rewritten files + 1 wiring fix + 2 i18n keys), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new files), classroom overview print page (2 new files), guru whole-class mode (1 new file, 9 modified), 10+ audit fixes across 9 audit passes, 19 new i18n keys.
+**Includes:** Smart Capture rewrite (2 rewritten + 3 modified), fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 15+ audit cycles all clean, 19+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -2438,7 +2439,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | **CURRENT** — Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |
+| `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md` | **CURRENT** — Consolidated deploy handoff: all 4 unpushed features (Smart Capture + Batch Reports + Whole-Class Guru + Classroom Overview) |
+| `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |
 | `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |
 | `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | ESL Guru upgrade + Spy Game & Command Cards generators |
 | `docs/handoffs/HANDOFF_PERFORMANCE_OPTIMIZATION_MAR5.md` | SWR cache + skeletons + image compression + audit fixes |

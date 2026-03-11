@@ -1,14 +1,16 @@
 // /montree/dashboard/page.tsx
 // Clean, modern child picker with responsive grid
+// Redesigned: search above students, compact classroom pulse, tools drawer at bottom
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
+import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData } from '@/lib/montree/cache';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
 import WelcomeModal from '@/components/montree/WelcomeModal';
@@ -29,6 +31,118 @@ interface Child {
   photo_url?: string;
 }
 
+// Area colors for the progress pulse bar
+const AREA_COLORS: Record<string, { bg: string; label: string }> = {
+  practical_life: { bg: 'bg-rose-400', label: 'P' },
+  sensorial: { bg: 'bg-amber-400', label: 'S' },
+  mathematics: { bg: 'bg-blue-400', label: 'M' },
+  language: { bg: 'bg-emerald-400', label: 'L' },
+  cultural: { bg: 'bg-violet-400', label: 'C' },
+};
+
+interface AreaSummary {
+  area: string;
+  mastered: number;
+  practicing: number;
+  presented: number;
+  total: number;
+}
+
+// ─── Classroom Pulse: compact progress overview ───
+function ClassroomPulse({ classroomId }: { classroomId: string }) {
+  const { t } = useI18n();
+  const [areas, setAreas] = useState<AreaSummary[]>([]);
+  const [totals, setTotals] = useState({ mastered: 0, practicing: 0, presented: 0 });
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    montreeApi(`/api/montree/progress/classroom-summary?classroom_id=${classroomId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (cancelled || !data.areas) return;
+        setAreas(data.areas);
+        setTotals(data.totals || { mastered: 0, practicing: 0, presented: 0 });
+        setLoaded(true);
+      })
+      .catch(() => setLoaded(true));
+    return () => { cancelled = true; };
+  }, [classroomId]);
+
+  if (!loaded) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 animate-pulse">
+        <div className="h-4 bg-gray-100 rounded w-32 mb-3" />
+        <div className="h-8 bg-gray-50 rounded" />
+      </div>
+    );
+  }
+
+  if (areas.length === 0) return null;
+
+  // Compute max bar value once (not inside .map())
+  const maxBar = Math.max(...areas.map(a => a.mastered + a.practicing + a.presented), 1);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+      {/* Header row with totals */}
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-700">{t('dashboard.classroomProgress') || 'Classroom Progress'}</h3>
+        <div className="flex items-center gap-3 text-xs">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-gray-500">{totals.mastered} {t('status.mastered') || 'mastered'}</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-gray-500">{totals.practicing} {t('status.practicing') || 'practicing'}</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-blue-400" />
+            <span className="text-gray-500">{totals.presented} {t('status.presented') || 'presented'}</span>
+          </span>
+        </div>
+      </div>
+
+      {/* Area bars */}
+      <div className="space-y-2">
+        {areas.map(area => {
+          const config = AREA_COLORS[area.area] || AREA_COLORS.practical_life;
+          const total = area.mastered + area.practicing + area.presented;
+          return (
+            <div key={area.area} className="flex items-center gap-2">
+              <span className={`w-5 h-5 rounded-full ${config.bg} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>
+                {config.label}
+              </span>
+              <div className="flex-1 h-5 bg-gray-50 rounded-full overflow-hidden flex">
+                {area.mastered > 0 && (
+                  <div
+                    className="h-full bg-emerald-400 transition-all duration-500"
+                    style={{ width: `${(area.mastered / maxBar) * 100}%` }}
+                  />
+                )}
+                {area.practicing > 0 && (
+                  <div
+                    className="h-full bg-amber-400 transition-all duration-500"
+                    style={{ width: `${(area.practicing / maxBar) * 100}%` }}
+                  />
+                )}
+                {area.presented > 0 && (
+                  <div
+                    className="h-full bg-blue-300 transition-all duration-500"
+                    style={{ width: `${(area.presented / maxBar) * 100}%` }}
+                  />
+                )}
+              </div>
+              <span className="text-xs text-gray-400 w-6 text-right tabular-nums">{total}</span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,12 +156,29 @@ export default function DashboardPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [guruFirstView, setGuruFirstView] = useState(false);
 
+  // ─── Inline search + tools state (must be before early returns) ───
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const [toolsOpen, setToolsOpen] = useState(false);
+
   // SWR-cached children fetch — instant on revisit, background refresh if stale
   const childrenUrl = session?.classroom?.id
     ? `/api/montree/children?classroom_id=${session.classroom.id}`
     : null;
   const { data: childrenData, loading, error: childrenError } = useMontreeData<{ children: Child[] }>(childrenUrl);
   const children = childrenData?.children || [];
+
+  // Filtered children for search (MUST be after children declaration)
+  const filteredChildren = useMemo(() => {
+    if (!searchQuery.trim()) return children;
+    const q = searchQuery.toLowerCase();
+    return children.filter(c => c.name.toLowerCase().includes(q));
+  }, [searchQuery, children]);
+
+  const handleSearchClear = useCallback(() => {
+    setSearchQuery('');
+    searchInputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!session) {
@@ -150,20 +281,12 @@ export default function DashboardPage() {
     <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50'}`}>
       <Toaster position="top-center" />
 
-      {/* Student/child count subtitle — teachers only */}
-      {!isParent && (
-        <div className="bg-emerald-50 border-b border-emerald-100 text-emerald-700 px-4 py-2 text-center text-sm font-medium">
-          {children.length} {t('common.students')}
-        </div>
-      )}
-
       {/* HOME PARENT "TODAY" VIEW — concern-first dashboard */}
       {isParent && children.length > 0 && (() => {
         const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
         const childName = selectedChild.name.split(' ')[0];
         return (
           <div className="max-w-xl mx-auto px-4 pt-4 pb-4">
-            {/* Child selector — only show if multiple children */}
             {children.length > 1 && (
               <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
                 {children.map((child) => (
@@ -188,23 +311,15 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
-
-            {/* Guru Dashboard — single API call for all cards */}
             <div className="mb-4">
               <GuruDashboardCards childId={selectedChild.id} childName={childName} />
             </div>
-
-            {/* Concern Cards Grid — "I'm worried about..." */}
             <div className="mb-6">
               <ConcernCardsGrid childId={selectedChild.id} childName={childName} />
             </div>
-
-            {/* FAQ Section — instant answers, no API calls */}
             <div className="mb-6">
               <GuruFAQSection childAge={undefined} />
             </div>
-
-            {/* Guru full-screen chat button */}
             <div className="mb-4">
               <button
                 onClick={() => setGuruFirstView(true)}
@@ -219,8 +334,6 @@ export default function DashboardPage() {
                 </span>
               </button>
             </div>
-
-            {/* Quick link to child's week view */}
             <div className="mb-4">
               <a
                 href={`/montree/dashboard/${selectedChild.id}`}
@@ -231,7 +344,7 @@ export default function DashboardPage() {
                   {t('dashboard.viewFullWeek').replace('{childName}', childName)}
                 </span>
                 <span className={`text-xs ${HOME_THEME.subtleText} block mt-0.5`}>
-                  {t('dashboard.seeWorksProgressGallery')}
+                  {t('dashboard.seeWorksProgress')}
                 </span>
               </a>
             </div>
@@ -255,64 +368,127 @@ export default function DashboardPage() {
         );
       })()}
 
-      {/* Weekly Admin Card + Batch Reports — teachers only */}
-      {!isParent && session?.classroom?.id && children.length > 0 && (
-        <div className="max-w-6xl mx-auto px-4 pt-4 space-y-0">
-          <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
-          <BatchReportsCard classroomId={session.classroom.id} children={children} />
-        </div>
-      )}
+      {/* ═══════════════════════════════════════════════════
+          TEACHER DASHBOARD — Search → Students → Pulse → Tools
+          ═══════════════════════════════════════════════════ */}
+      {!isParent && (
+        <main className="max-w-6xl mx-auto px-4 pt-5 pb-8">
 
-      {/* Student Grid — teachers always see this; home parents only see empty state (add first child) */}
-      <main className={`max-w-6xl mx-auto px-4 py-8 ${isParent && children.length > 0 ? 'hidden' : ''}`}>
-        {children.length === 0 ? (
-          <Link
-            href="/montree/dashboard/students"
-            data-tutorial="student-grid"
-            className={`block ${isParent ? `${HOME_THEME.cardBg} border ${HOME_THEME.border}` : 'bg-white'} rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring`}
-          >
-            <span className="text-6xl mb-4 block">{isParent ? '🌱' : '👶'}</span>
-            <p className={`${isParent ? HOME_THEME.headingText : 'text-gray-600'} font-medium text-lg`}>
-              {isParent ? t('dashboard.tapAddFirstChild') : t('dashboard.tapAddFirstStudent')}
-            </p>
-          </Link>
-        ) : (
-          <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-4">
-            {children.map((child, index) => (
-              <Link
-                key={child.id}
-                href={`/montree/dashboard/${child.id}`}
-                data-tutorial="student-card"
-                {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                className={`${isParent ? `${HOME_THEME.cardBg} border ${HOME_THEME.border}` : 'bg-white'} rounded-2xl shadow-md hover:shadow-xl active:scale-95 transition-all p-4 flex flex-col items-center`}
-              >
-                {/* Avatar */}
-                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full ${isParent ? 'bg-gradient-to-br from-[#0D3330] to-[#164340]' : 'bg-gradient-to-br from-emerald-400 to-teal-500'} flex items-center justify-center text-white font-bold text-2xl sm:text-3xl overflow-hidden mb-3 shadow-md`}>
-                  {child.photo_url ? (
-                    <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
-                  ) : (
-                    child.name.charAt(0)
-                  )}
-                </div>
-                {/* Name */}
-                <p className="text-sm font-semibold text-gray-700 truncate w-full text-center">
-                  {child.name.split(' ')[0]}
-                </p>
-              </Link>
-            ))}
-
-            {/* Add Student Card */}
+          {children.length === 0 ? (
+            /* Empty state — add first student */
             <Link
               href="/montree/dashboard/students"
-              data-tutorial="add-student-button"
-              className={`${isParent ? 'bg-[#FFFDF8]/60 border-2 border-dashed border-[#0D3330]/20 hover:border-[#0D3330]/40 hover:bg-[#F5E6D3]/50' : 'bg-white/60 border-2 border-dashed border-gray-300 hover:border-emerald-400 hover:bg-emerald-50'} rounded-2xl transition-all p-4 flex flex-col items-center justify-center min-h-[120px]`}
+              data-tutorial="student-grid"
+              className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
             >
-              <span className={`text-3xl ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'} mb-1`}>+</span>
-              <span className={`text-xs ${isParent ? 'text-[#0D3330]/40' : 'text-gray-400'}`}>{t('common.add')}</span>
+              <span className="text-6xl mb-4 block">👶</span>
+              <p className="text-gray-600 font-medium text-lg">
+                {t('dashboard.tapAddFirstStudent')}
+              </p>
             </Link>
-          </div>
-        )}
-      </main>
+          ) : (
+            <>
+              {/* ── Search Bar ── */}
+              <div className="mb-4">
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t('nav.searchStudents') || 'Jump to student...'}
+                    className="w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-10 pr-9 py-2.5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all"
+                    autoComplete="off"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={handleSearchClear}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                {/* Student count */}
+                <p className="text-xs text-gray-400 mt-1.5 ml-1">
+                  {searchQuery
+                    ? `${filteredChildren.length} of ${children.length} ${t('common.students')}`
+                    : `${children.length} ${t('common.students')}`
+                  }
+                </p>
+              </div>
+
+              {/* ── Student Grid ── */}
+              <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-6">
+                {filteredChildren.map((child, index) => (
+                  <Link
+                    key={child.id}
+                    href={`/montree/dashboard/${child.id}`}
+                    data-tutorial="student-card"
+                    {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all p-3 flex flex-col items-center border border-gray-100"
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
+                      {child.photo_url ? (
+                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
+                      ) : (
+                        child.name.charAt(0)
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-gray-700 truncate w-full text-center">
+                      {child.name.split(' ')[0]}
+                    </p>
+                  </Link>
+                ))}
+
+                {/* Add Student Card — only show when not searching */}
+                {!searchQuery && (
+                  <Link
+                    href="/montree/dashboard/students"
+                    data-tutorial="add-student-button"
+                    className="bg-white/60 border-2 border-dashed border-gray-300 hover:border-emerald-400 hover:bg-emerald-50 rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
+                  >
+                    <span className="text-2xl text-gray-400 mb-1">+</span>
+                    <span className="text-xs text-gray-400">{t('common.add')}</span>
+                  </Link>
+                )}
+              </div>
+
+              {/* ── Classroom Pulse ── */}
+              {session?.classroom?.id && (
+                <div className="mb-6">
+                  <ClassroomPulse classroomId={session.classroom.id} />
+                </div>
+              )}
+
+              {/* ── Teacher Tools (collapsible) ── */}
+              {session?.classroom?.id && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <button
+                    onClick={() => setToolsOpen(!toolsOpen)}
+                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="text-base">🛠️</span>
+                      {t('dashboard.teacherTools') || 'Teacher Tools'}
+                    </span>
+                    <span className={`text-gray-400 transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+                  {toolsOpen && (
+                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+                      <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+                      <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      )}
 
       {/* Welcome Modal for first-time users — HIDDEN: onboarding guides disabled */}
       {false && showWelcome && session && (
