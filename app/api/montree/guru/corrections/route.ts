@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
       corrected_work_id,
       corrected_area,
       correction_type = 'work_mismatch',
+      action,
     } = body;
 
     if (!original_work_id && !original_work_name) {
@@ -41,6 +42,26 @@ export async function POST(request: NextRequest) {
 
     if (!classroomId) {
       return NextResponse.json({ error: 'No classroom found' }, { status: 400 });
+    }
+
+    // CONFIRM path: teacher says "yes, the identification was correct"
+    // Only updates accuracy EMA as correct — does NOT record a correction entry
+    if (action === 'confirm') {
+      if (original_work_name) {
+        try {
+          await supabase.rpc('update_work_accuracy', {
+            p_classroom_id: classroomId,
+            p_work_name: original_work_name,
+            p_work_id: null,
+            p_area: original_area || null,
+            p_was_correct: true,
+          });
+        } catch {
+          // Non-fatal — accuracy tracking is best-effort
+        }
+      }
+      console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
+      return NextResponse.json({ success: true, confirmed: true });
     }
 
     // 1. Record the correction

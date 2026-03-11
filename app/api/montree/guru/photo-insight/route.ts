@@ -55,14 +55,9 @@ const STATUS_RANK: Record<string, number> = {
   'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
 };
 
-// Adaptive auto-update threshold based on per-work accuracy history
-// High EMA (>0.8) → lower threshold (0.6), Low EMA (<0.5) → higher threshold (0.85)
-function getAutoUpdateThreshold(ema: number | undefined): number {
-  if (ema === undefined) return 0.7; // default for new works
-  if (ema >= 0.8) return 0.6;  // historically accurate → trust more
-  if (ema >= 0.5) return 0.7;  // average → standard threshold
-  return 0.85;                  // historically inaccurate → require high confidence
-}
+// Auto-update threshold: GREEN zone only (≥0.95 match AND ≥0.95 confidence)
+// AMBER zone (0.5–0.95) requires teacher confirmation before any progress update
+const AUTO_UPDATE_THRESHOLD = 0.95;
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,6 +111,7 @@ export async function POST(request: NextRequest) {
         area: snapshot.identified_area || null,
         mastery_evidence: snapshot.mastery_evidence || null,
         auto_updated: snapshot.auto_updated || false,
+        needs_confirmation: snapshot.needs_confirmation || false,
         confidence: snapshot.sonnet_confidence || null,
         match_score: snapshot.curriculum_match_score ?? null,
         candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
@@ -216,19 +212,29 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build curriculum context for Sonnet (top-level work names by area)
-    const curriculumHint = curriculum.length > 0
-      ? `\nStandard Montessori curriculum works include:\n${
-          ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
-            .map(area => {
-              const areaWorks = curriculum
-                .filter(w => w.area_key === area)
-                .slice(0, 15)
-                .map(w => w.name);
-              return `${area}: ${areaWorks.join(', ')}`;
-            }).join('\n')
-        }`
-      : '';
+    // Build FULL categorized curriculum context for Sonnet (ALL works, grouped by area → category)
+    // CRITICAL: Previous version showed only 15/area (77% hidden) causing misidentification
+    let curriculumHint = '';
+    if (curriculum.length > 0) {
+      const areaKeys = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      const sections: string[] = [];
+      for (const areaKey of areaKeys) {
+        const areaWorks = curriculum.filter(w => w.area_key === areaKey);
+        // Group by category
+        const byCategory = new Map<string, string[]>();
+        for (const w of areaWorks) {
+          const cat = w.category_name || 'General';
+          if (!byCategory.has(cat)) byCategory.set(cat, []);
+          byCategory.get(cat)!.push(w.name);
+        }
+        const catLines: string[] = [];
+        for (const [cat, names] of byCategory) {
+          catLines.push(`  ${cat}: ${names.join(', ')}`);
+        }
+        sections.push(`${areaKey.toUpperCase().replace('_', ' ')}:\n${catLines.join('\n')}`);
+      }
+      curriculumHint = `\n\nCOMPLETE MONTESSORI CURRICULUM (329 standard works):\n${sections.join('\n\n')}`;
+    }
 
     // ========================================================
     // SELF-LEARNING CONTEXT: corrections, focus works, duplicates
@@ -266,7 +272,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 2. Fetch child's current focus works (narrows candidate works significantly)
+    // 2. Fetch child's current focus works (context only — NOT a bias)
     let focusWorksContext = '';
     if (child_id) {
       try {
@@ -276,16 +282,16 @@ export async function POST(request: NextRequest) {
           .eq('child_id', child_id)
           .limit(10);
         if (focusWorks && focusWorks.length > 0) {
-          focusWorksContext = `\n\nPRIORITY WORKS — CHECK THESE FIRST (child's current shelf):
+          focusWorksContext = `\n\nCHILD'S CURRENT SHELF (for context only — do NOT bias your identification):
 ${focusWorks.map((w, i) => `${i + 1}. ${w.work_name} (${w.area}, status: ${w.status})`).join('\n')}
-RULE: If the photo matches ANY of these shelf works, ALWAYS prefer it over a general curriculum guess. These are the works physically on this child's shelf right now.`;
+NOTE: These are works on the child's shelf. The photo may or may not show one of these. Identify based on what you SEE in the photo, not what is on the shelf.`;
         }
       } catch {
         // Non-fatal
       }
     }
 
-    // 3. Check for duplicate photos (same child, last 5 min — use same work for consistency)
+    // 3. Check for recent photos (same child, last 5 min — informational only)
     let duplicateContext = '';
     try {
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -301,32 +307,11 @@ RULE: If the photo matches ANY of these shelf works, ALWAYS prefer it over a gen
       if (recentPhotos && recentPhotos.length > 0) {
         const snapshot = recentPhotos[0].context_snapshot as Record<string, unknown>;
         if (snapshot?.identified_work_name) {
-          duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): Previously identified as "${snapshot.identified_work_name}" (${snapshot.identified_area}). If this photo shows the same activity, use the same work name for consistency.`;
+          duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): A previous photo was identified as "${snapshot.identified_work_name}" (${snapshot.identified_area}). Make your OWN independent assessment of THIS photo — do not copy the previous identification unless you genuinely see the same activity.`;
         }
       }
     } catch {
       // Non-fatal
-    }
-
-    // 4. Check per-work accuracy — disable auto-update for unreliable works
-    const accuracyData: Map<string, { ema: number; enabled: boolean }> = new Map();
-    if (classroomId) {
-      try {
-        const { data: accuracy } = await supabase
-          .from('montree_work_accuracy')
-          .select('work_name, accuracy_ema, auto_update_enabled')
-          .eq('classroom_id', classroomId);
-        if (accuracy) {
-          for (const a of accuracy) {
-            accuracyData.set(a.work_name, {
-              ema: typeof a.accuracy_ema === 'number' ? a.accuracy_ema : 0.5,
-              enabled: a.auto_update_enabled !== false,
-            });
-          }
-        }
-      } catch {
-        // Non-fatal
-      }
     }
 
     // ========================================================
@@ -343,17 +328,68 @@ RULE: If the photo matches ANY of these shelf works, ALWAYS prefer it over a gen
 
 ${langInstruction}
 
-IMPORTANT:
-- Identify the SPECIFIC Montessori work name (e.g., "Color Box 2", "Pink Tower", "Sandpaper Letters")
-- Match to standard curriculum names when possible — use the EXACT name from the curriculum list below
-- Assess mastery based on visual evidence: correct completion = mastered, active work with some errors = practicing
-- Keep the observation to ONE warm, specific sentence about technique or concentration
-- If you cannot identify the work, describe what you see and set confidence low
+CRITICAL RULES:
+1. Identify based ONLY on what you SEE in the photo — materials, tools, setup, actions
+2. Match to the EXACT standard curriculum name from the list below
+3. Focus on the SPECIFIC TOOL/MATERIAL being used — this determines the work name
+4. If unsure, set confidence LOW (below 0.5) — it is far better to be uncertain than wrong
+5. Keep the observation to ONE warm, specific sentence
 
-EXAMPLES (for calibration):
-- Photo of child stacking graduated pink cubes → work_name: "Pink Tower", area: "sensorial", confidence: 0.95
-- Photo of child tracing letters on textured cards → work_name: "Sandpaper Letters", area: "language", confidence: 0.9
-- Photo of child transferring beans with a spoon → work_name: "Spooning", area: "practical_life", confidence: 0.85
+VISUAL IDENTIFICATION GUIDE — Identify by the PRIMARY TOOL/MATERIAL visible:
+
+PRACTICAL LIFE — Transfer Activities (look for the TRANSFER TOOL):
+- Eye Dropper/Pipette → "Eye Dropper" (NOT Sponging, NOT Basting)
+- Spoon → "Spooning"
+- Tongs → "Tonging"
+- Tweezers → "Tweezers Transfer"
+- Chopsticks → "Chopsticks Transfer"
+- Hands only (dry materials) → "Dry Transfer-Hands"
+- Sponge between bowls → "Sponging"
+- Baster/turkey baster → "Basting"
+- Pouring (dry) → "Pouring Dry Materials"
+- Pouring (water/liquid) → "Pouring Water"
+
+PRACTICAL LIFE — Preliminary Activities:
+- Folding fabric/cloth → "Folding Cloths"
+- Rolling/unrolling a mat → "Rolling & Unrolling a Mat"
+- Carrying a chair → "Carrying a Chair"
+- Opening/closing containers → "Opening & Closing Containers"
+
+PRACTICAL LIFE — Care of Environment:
+- Sweeping with broom → "Sweeping"
+- Scrubbing table → "Table Scrubbing"
+- Polishing metal → "Metal Polishing"
+- Arranging flowers → "Flower Arranging"
+
+SENSORIAL — Look for specific sensorial materials:
+- Pink graduated cubes → "Pink Tower"
+- Brown graduated prisms → "Brown Stair"
+- Red graduated rods → "Red Rods"
+- Cylinders in blocks → "Cylinder Blocks"
+- Color tablets → "Color Box 1/2/3"
+- Sound cylinders → "Sound Cylinders"
+- Geometric shapes in tray → "Geometric Solids"
+
+MATHEMATICS — Look for number materials:
+- Sandpaper numerals → "Sandpaper Numbers"
+- Red/blue rods → "Number Rods"
+- Spindle box → "Spindle Box"
+- Golden beads → "Golden Bead Material"
+- Bead chains → "Bead Chains"
+- Addition/subtraction boards → "Addition Strip Board" / "Subtraction Strip Board"
+
+LANGUAGE — Look for letter materials:
+- Sandpaper letters → "Sandpaper Letters"
+- Moveable alphabet → "Moveable Alphabet"
+- Metal insets → "Metal Insets"
+- Object + label matching → "Object Box"
+- Picture + word cards → "Classified Cards"
+
+CONFIDENCE CALIBRATION:
+- 0.95+ : Material is unmistakable (Pink Tower cubes, specific transfer tool clearly visible)
+- 0.7-0.94 : Likely match but some ambiguity (partially visible materials, angle obscures key features)
+- 0.5-0.69 : Best guess based on limited visual evidence
+- Below 0.5 : Cannot reliably identify — describe what you see
 ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
@@ -402,6 +438,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
         area: null,
         mastery_evidence: null,
         auto_updated: false,
+        needs_confirmation: false,
         confidence: null,
         match_score: null,
         candidates: [],
@@ -487,16 +524,17 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       ? input.mastery_evidence
       : null;
 
-    const workAccuracy = accuracyData.get(finalWorkName);
-    const accuracyGatePass = workAccuracy ? workAccuracy.enabled : true;
-    const autoUpdateThreshold = getAutoUpdateThreshold(workAccuracy?.ema);
-
+    // GREEN zone auto-update: BOTH match score AND Sonnet confidence must be ≥ 0.95
+    // AMBER zone (0.5–0.95): tagged but requires teacher confirmation before progress update
+    // RED zone (<0.5): scenario A (unknown work)
     const shouldAutoUpdate = (
-      matchScore >= autoUpdateThreshold &&
-      input.confidence >= autoUpdateThreshold &&
-      masteryEvidence !== null &&
-      accuracyGatePass
+      matchScore >= AUTO_UPDATE_THRESHOLD &&
+      input.confidence >= AUTO_UPDATE_THRESHOLD &&
+      masteryEvidence !== null
     );
+
+    // Whether this result needs teacher confirmation (AMBER zone)
+    const needsConfirmation = !shouldAutoUpdate && matchScore >= 0.5 && input.confidence >= 0.5;
 
     let autoUpdated = false;
 
@@ -569,34 +607,19 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       }
     }
 
-    // SELF-LEARNING: Track this identification as "assumed correct" in accuracy table
-    // Only track when we actually auto-updated progress (full confidence + gate pass)
-    // If teacher later corrects it, the correction handler will mark it incorrect
-    if (shouldAutoUpdate && autoUpdated && finalWorkName && finalArea && classroomId) {
-      try {
-        const { error: rpcError } = await supabase.rpc('update_work_accuracy', {
-          p_classroom_id: classroomId,
-          p_work_name: finalWorkName,
-          p_work_id: null,
-          p_area: finalArea,
-          p_was_correct: true, // Assumed correct — corrections will adjust
-        });
-        if (rpcError) {
-          console.error('[PhotoInsight] update_work_accuracy RPC error:', rpcError.message);
-        }
-      } catch (err) {
-        console.error('[PhotoInsight] update_work_accuracy exception:', err);
-      }
-    }
+    // SELF-LEARNING: Do NOT mark as "assumed correct" on auto-update
+    // Accuracy EMA is ONLY updated when teacher explicitly confirms (via confirm button)
+    // or corrects (via correction flow). This prevents poisoning the accuracy data.
 
     // Determine scenario for client UI:
-    // A: Unknown work (low confidence) → "Teach Guru This Work"
+    // A: Unknown work (low confidence OR low match) → "Teach Guru This Work"
     // B: Standard/custom work NOT in classroom → "Add to Classroom"
     // C: In classroom but NOT on shelf → "Add to Shelf"
     // D: Happy path (in classroom + on shelf or auto-updated)
+    // CONFIDENCE FLOOR: if Sonnet confidence < 0.5, always scenario A regardless of match
     let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
-    if (matchScore < 0.5) {
-      scenario = 'A'; // Unknown work
+    if (matchScore < 0.5 || input.confidence < 0.5) {
+      scenario = 'A'; // Unknown or too uncertain
     } else if (!inClassroom) {
       scenario = 'B'; // Known work, not in this classroom
     } else if (!inChildShelf && !autoUpdated) {
@@ -628,6 +651,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
           sonnet_confidence: input.confidence,
           curriculum_match_score: matchScore,
           auto_updated: autoUpdated,
+          needs_confirmation: needsConfirmation,
           scenario,
           in_classroom: inClassroom,
           in_child_shelf: inChildShelf,
@@ -648,8 +672,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       area: finalArea,
       mastery_evidence: masteryEvidence,
       auto_updated: autoUpdated,
-      accuracy_gate_blocked: !accuracyGatePass,
-      work_accuracy_ema: workAccuracy?.ema ?? null,
+      needs_confirmation: needsConfirmation,
       confidence: input.confidence,
       match_score: matchScore,
       // Top candidates for "Did you mean?" UI

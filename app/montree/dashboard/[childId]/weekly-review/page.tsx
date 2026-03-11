@@ -1,657 +1,456 @@
-// /app/montree/dashboard/[childId]/weekly-review/page.tsx
-// Weekly Review - AI-generated reports with tabs
-// Teacher | Parent | AI Analysis views
-
+// /montree/dashboard/[childId]/weekly-review/page.tsx
+// Weekly Review: Two-tab system for teacher review + parent report
+// Teacher tab: group discussion review with "Update Shelf" action
+// Parent tab: polished narrative with "Send Report" action
+// Both tabs support AI refinement via teacher feedback chat
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { toast, Toaster } from 'sonner';
-import AreaBadge from '@/components/montree/shared/AreaBadge';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { toast, Toaster } from 'sonner';
 
-// ============================================
-// TYPES
-// ============================================
+type Tab = 'teacher' | 'parent';
+type Status = 'idle' | 'generating' | 'ready' | 'refining' | 'applying' | 'sending';
 
-interface TeacherReport {
-  type: 'teacher';
-  child_name: string;
-  child_age: number;
-  week_range: string;
-  summary: string;
-  metrics: {
-    total_works: number;
-    concentration_score: number;
-    concentration_assessment: string;
-    avg_duration?: number;
-    expected_duration: number;
-  };
-  area_breakdown: {
-    area: string;
-    percentage: number;
-    expected_range: string;
-    status: 'healthy' | 'low' | 'high';
-  }[];
-  sensitive_periods: {
-    name: string;
-    status: string;
-    confidence: number;
-    evidence: string[];
-  }[];
-  flags: {
-    type: 'red' | 'yellow';
-    issue: string;
-    evidence: string;
-    recommendation: string;
-  }[];
-  recommendations: {
-    work_name: string;
-    area: string;
-    score: number;
-    reasons: string[];
-  }[];
+interface FocusWorkSummary {
+  area: string;
+  work_name: string;
+  status: string;
 }
-
-interface ParentReport {
-  type: 'parent';
-  child_name: string;
-  greeting: string;
-  highlights: string[];
-  areas_explored: {
-    area_name: string;
-    emoji: string;
-    works: string[];
-    description: string;
-  }[];
-  home_suggestions: string[];
-  closing: string;
-}
-
-interface AIReport {
-  type: 'ai_analysis';
-  child_name: string;
-  child_age: number;
-  profile: {
-    concentration: string;
-    emotional: string;
-    social: string;
-  };
-  sensitive_periods_analysis: string;
-  developmental_trajectory: string;
-  concerns: {
-    severity: string;
-    issue: string;
-    evidence: string;
-    recommendation: string;
-  }[];
-  two_week_plan: string[];
-  observation_questions: string[];
-  parent_communication_points: string[];
-}
-
-// ============================================
-// HELPER: Get week boundaries
-// ============================================
-
-function getWeekBoundaries(date: Date = new Date()): { start: string; end: string } {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diffToMonday = d.getDate() - day + (day === 0 ? -6 : 1);
-  
-  const monday = new Date(d.setDate(diffToMonday));
-  monday.setHours(0, 0, 0, 0);
-  
-  const friday = new Date(monday);
-  friday.setDate(monday.getDate() + 4);
-  
-  return {
-    start: monday.toISOString().split('T')[0],
-    end: friday.toISOString().split('T')[0],
-  };
-}
-
-// ============================================
-// MAIN COMPONENT
-// ============================================
 
 export default function WeeklyReviewPage() {
-  const params = useParams();
-  const childId = params.childId as string;
+  const { childId } = useParams<{ childId: string }>();
+  const router = useRouter();
   const { t, locale } = useI18n();
 
-  const [activeTab, setActiveTab] = useState<'teacher' | 'parent' | 'ai'>('teacher');
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [notifying, setNotifying] = useState(false);
-  const [reports, setReports] = useState<{
-    teacher?: TeacherReport;
-    parent?: ParentReport;
-    ai_analysis?: AIReport;
-  }>({});
-  const [childName, setChildName] = useState('');
-  const [weekRange, setWeekRange] = useState(getWeekBoundaries());
+  // Tab state
+  const [activeTab, setActiveTab] = useState<Tab>('teacher');
 
-  // Fetch or generate reports
-  const fetchReports = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/montree/reports/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          week_start: weekRange.start,
-          week_end: weekRange.end,
-          report_types: ['teacher', 'parent', 'ai_analysis'],
-        }),
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        setReports(data.reports);
-        setChildName(data.analysis_summary?.child_name || '');
-      } else {
-        toast.error(data.error || t('weeklyReview.generateFailed'));
-      }
-    } catch (err) {
-      toast.error(t('weeklyReview.fetchFailed'));
-    }
-    setLoading(false);
-  };
+  // Report state (separate for each tab)
+  const [teacherReport, setTeacherReport] = useState('');
+  const [parentReport, setParentReport] = useState('');
+  const [teacherStatus, setTeacherStatus] = useState<Status>('idle');
+  const [parentStatus, setParentStatus] = useState<Status>('idle');
+
+  // Child info
+  const [childName, setChildName] = useState('');
+  const [weekRange, setWeekRange] = useState('');
+  const [focusWorks, setFocusWorks] = useState<FocusWorkSummary[]>([]);
+
+  // Feedback chat
+  const [feedback, setFeedback] = useState('');
+  const feedbackRef = useRef<HTMLTextAreaElement>(null);
+
+  // Shelf update results
+  const [shelfResult, setShelfResult] = useState<{
+    applied: Array<{ area: string; work_name: string }>;
+    skipped: Array<{ area: string; reason: string }>;
+  } | null>(null);
+
+  // Send results
+  const [sendResult, setSendResult] = useState<{ sent: number; parent_count: number } | null>(null);
+
+  // AbortController for cleanup
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (childId) fetchReports();
-  }, [childId, weekRange]);
+    return () => { abortRef.current?.abort(); };
+  }, []);
 
-  // Regenerate reports
-  const regenerate = async () => {
-    setGenerating(true);
-    await fetchReports();
-    setGenerating(false);
-    toast.success(t('weeklyReview.regenerated'));
-  };
+  const currentReport = activeTab === 'teacher' ? teacherReport : parentReport;
+  const currentStatus = activeTab === 'teacher' ? teacherStatus : parentStatus;
+  const setCurrentReport = activeTab === 'teacher' ? setTeacherReport : setParentReport;
+  const setCurrentStatus = activeTab === 'teacher' ? setTeacherStatus : setParentStatus;
 
-  // Week navigation
-  const goToPrevWeek = () => {
-    const prevMonday = new Date(weekRange.start);
-    prevMonday.setDate(prevMonday.getDate() - 7);
-    setWeekRange(getWeekBoundaries(prevMonday));
-  };
+  // ── Generate report ──
+  const generateReport = useCallback(async (type: Tab) => {
+    const setStatus = type === 'teacher' ? setTeacherStatus : setParentStatus;
+    const setReport = type === 'teacher' ? setTeacherReport : setParentReport;
 
-  const goToNextWeek = () => {
-    const nextMonday = new Date(weekRange.start);
-    nextMonday.setDate(nextMonday.getDate() + 7);
-    setWeekRange(getWeekBoundaries(nextMonday));
-  };
+    setStatus('generating');
+    setReport('');
+    setShelfResult(null);
+    setSendResult(null);
 
-  // Notify parents
-  const notifyParents = async () => {
-    setNotifying(true);
     try {
-      const weekNum = Math.ceil((new Date(weekRange.start).getTime() - new Date(new Date().getFullYear(), 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-      const res = await fetch('/api/montree/notify', {
+      abortRef.current = new AbortController();
+      const res = await montreeApi(`/api/montree/weekly-review/${childId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          childId,
-          weekNumber: weekNum,
-          year: new Date(weekRange.start).getFullYear()
-        }),
+        body: JSON.stringify({ type, locale }),
+        signal: abortRef.current.signal,
       });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(data.message || t('weeklyReview.notified'));
-      } else {
-        toast.error(data.error || t('weeklyReview.notifyFailed'));
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to generate');
       }
-    } catch {
-      toast.error(t('weeklyReview.notificationsFailed'));
+
+      const data = await res.json();
+      setReport(data.report);
+      setChildName(data.child_name || '');
+      setWeekRange(`${data.week_start || ''} – ${data.week_end || ''}`);
+      setFocusWorks(data.focus_works || []);
+      setStatus('ready');
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error('Generate error:', err);
+      toast.error(t('weeklyReview.generateFailed' as any) || 'Failed to generate report');
+      setStatus('idle');
     }
-    setNotifying(false);
+  }, [childId, locale, t]);
+
+  // ── Refine report via feedback ──
+  const refineReport = useCallback(async () => {
+    if (!feedback.trim() || !currentReport) return;
+
+    const setStatus = activeTab === 'teacher' ? setTeacherStatus : setParentStatus;
+    const setReport = activeTab === 'teacher' ? setTeacherReport : setParentReport;
+
+    setStatus('refining');
+    try {
+      abortRef.current = new AbortController();
+      const res = await montreeApi(`/api/montree/weekly-review/${childId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: activeTab,
+          feedback: feedback.trim(),
+          current_report: currentReport,
+          locale,
+        }),
+        signal: abortRef.current.signal,
+      });
+
+      if (!res.ok) throw new Error('Refinement failed');
+
+      const data = await res.json();
+      setReport(data.report);
+      setFeedback('');
+      setStatus('ready');
+      toast.success(t('weeklyReview.refined' as any) || 'Report updated');
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error('Refine error:', err);
+      toast.error(t('weeklyReview.refineFailed' as any) || 'Failed to refine');
+      setStatus('ready');
+    }
+  }, [feedback, currentReport, activeTab, childId, locale, t]);
+
+  // ── Apply shelf updates ──
+  const applyShelf = useCallback(async () => {
+    if (!teacherReport) return;
+    setTeacherStatus('applying');
+    setShelfResult(null);
+
+    try {
+      const res = await montreeApi(`/api/montree/weekly-review/${childId}/apply-shelf`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ review_text: teacherReport }),
+      });
+
+      if (!res.ok) throw new Error('Apply failed');
+
+      const data = await res.json();
+      setShelfResult({ applied: data.applied, skipped: data.skipped });
+      setTeacherStatus('ready');
+      toast.success(
+        (t('weeklyReview.shelfUpdated' as any) || '{count} works updated on shelf')
+          .replace('{count}', String(data.total_applied))
+      );
+    } catch (err) {
+      console.error('Apply shelf error:', err);
+      toast.error(t('weeklyReview.shelfFailed' as any) || 'Failed to update shelf');
+      setTeacherStatus('ready');
+    }
+  }, [teacherReport, childId, t]);
+
+  // ── Send parent report ──
+  const sendReport = useCallback(async () => {
+    if (!parentReport) return;
+    setParentStatus('sending');
+    setSendResult(null);
+
+    try {
+      const res = await montreeApi(`/api/montree/weekly-review/${childId}/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_text: parentReport, locale }),
+      });
+
+      if (!res.ok) throw new Error('Send failed');
+
+      const data = await res.json();
+      setSendResult({ sent: data.sent, parent_count: data.parent_count });
+      setParentStatus('ready');
+
+      if (data.sent > 0) {
+        toast.success(
+          (t('weeklyReview.reportSent' as any) || 'Report sent to {count} parent(s)')
+            .replace('{count}', String(data.sent))
+        );
+      } else if (data.parent_count === 0) {
+        toast.info(t('weeklyReview.noParentsLinked' as any) || 'No parents linked — report saved');
+      } else {
+        toast.warning(t('weeklyReview.sendFailed' as any) || 'Email sending failed — report saved');
+      }
+    } catch (err) {
+      console.error('Send report error:', err);
+      toast.error(t('weeklyReview.sendError' as any) || 'Failed to send report');
+      setParentStatus('ready');
+    }
+  }, [parentReport, childId, locale, t]);
+
+  // ── Area badge color ──
+  const areaColor = (area: string) => {
+    const colors: Record<string, string> = {
+      practical_life: 'bg-rose-400',
+      sensorial: 'bg-amber-400',
+      mathematics: 'bg-blue-400',
+      language: 'bg-emerald-400',
+      cultural: 'bg-violet-400',
+    };
+    return colors[area] || 'bg-gray-400';
   };
 
+  const areaLabel = (area: string) => {
+    const labels: Record<string, string> = { practical_life: 'P', sensorial: 'S', mathematics: 'M', language: 'L', cultural: 'C' };
+    return labels[area] || '?';
+  };
+
+  // ── Render ──
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <Toaster position="top-center" richColors />
-      
-      {/* Sub-header */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📋</span>
-              <h1 className="font-bold text-slate-800">{t('weeklyReview.title')}</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={notifyParents}
-                disabled={notifying || loading}
-                className="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                title="Notify Parents"
-              >
-                {notifying ? '...' : '📧'}
-              </button>
-              <button
-                onClick={regenerate}
-                disabled={generating}
-                className="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
-                title="Regenerate"
-              >
-                {generating ? '...' : '🔄'}
-              </button>
-            </div>
-          </div>
-          
-          {/* Week Selector */}
-          <div className="flex items-center justify-center gap-4 mt-2">
-            <button onClick={goToPrevWeek} className="text-slate-400 hover:text-slate-600">
-              ◀
-            </button>
-            <span className="text-sm text-slate-600">
-              {new Date(weekRange.start).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
-              {' - '}
-              {new Date(weekRange.end).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' })}
-            </span>
-            <button onClick={goToNextWeek} className="text-slate-400 hover:text-slate-600">
-              ▶
-            </button>
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
+      <Toaster position="top-center" />
+
+      {/* Header */}
+      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
+          <Link
+            href={`/montree/dashboard/${childId}`}
+            className="text-gray-400 hover:text-gray-600 text-xl"
+          >
+            ←
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-base font-semibold text-gray-800">
+              {t('weeklyReview.title' as any) || 'Weekly Review'}
+              {childName && ` — ${childName}`}
+            </h1>
+            {weekRange && (
+              <p className="text-xs text-gray-400">{weekRange}</p>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
-        <div className="max-w-2xl mx-auto px-4">
-          <div className="flex border-b">
-            {[
-              { key: 'teacher', label: `📊 ${t('weeklyReview.teacher')}`, color: 'blue' },
-              { key: 'parent', label: `💝 ${t('weeklyReview.parent')}`, color: 'pink' },
-              { key: 'ai', label: `🧠 ${t('weeklyReview.aiAnalysis')}`, color: 'purple' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.key
-                    ? `border-${tab.color}-500 text-${tab.color}-600`
-                    : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        <div className="max-w-2xl mx-auto px-4 flex gap-1">
+          <button
+            onClick={() => setActiveTab('teacher')}
+            className={`flex-1 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'teacher'
+                ? 'bg-emerald-50 text-emerald-700 border-b-2 border-emerald-500'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {t('weeklyReview.teacherTab' as any) || 'Teacher Review'}
+          </button>
+          <button
+            onClick={() => setActiveTab('parent')}
+            className={`flex-1 py-2 text-sm font-medium rounded-t-lg transition-colors ${
+              activeTab === 'parent'
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            {t('weeklyReview.parentTab' as any) || 'Parent Report'}
+          </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {loading ? (
+      <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+
+        {/* Generate button (when idle) */}
+        {currentStatus === 'idle' && (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-2 border-emerald-500 border-t-transparent mx-auto mb-3" />
-            <p className="text-slate-500">{t('weeklyReview.generating')}</p>
+            <div className="text-4xl mb-4">{activeTab === 'teacher' ? '📋' : '💌'}</div>
+            <p className="text-gray-500 mb-6 text-sm">
+              {activeTab === 'teacher'
+                ? (t('weeklyReview.teacherDescription' as any) || 'Generate a structured review for your team discussion. The AI will analyze this week\'s progress, explain work connections, and suggest next steps.')
+                : (t('weeklyReview.parentDescription' as any) || 'Generate a warm, professional update for parents. Explains what their child did, why it matters, and what\'s coming next.')
+              }
+            </p>
+            <button
+              onClick={() => generateReport(activeTab)}
+              className={`px-6 py-3 rounded-xl text-white font-medium text-sm shadow-sm ${
+                activeTab === 'teacher'
+                  ? 'bg-emerald-500 hover:bg-emerald-600'
+                  : 'bg-blue-500 hover:bg-blue-600'
+              }`}
+            >
+              {t('weeklyReview.generate' as any) || 'Generate Review'}
+            </button>
           </div>
-        ) : (
+        )}
+
+        {/* Loading */}
+        {currentStatus === 'generating' && (
+          <div className="text-center py-12">
+            <div className="animate-spin text-3xl mb-4">🌀</div>
+            <p className="text-gray-500 text-sm">
+              {t('weeklyReview.generating' as any) || 'Analyzing this week\'s data...'}
+            </p>
+          </div>
+        )}
+
+        {/* Report content (ready, refining, applying, sending) */}
+        {(currentStatus === 'ready' || currentStatus === 'refining' || currentStatus === 'applying' || currentStatus === 'sending') && currentReport && (
           <>
-            {activeTab === 'teacher' && reports.teacher && (
-              <TeacherReportView report={reports.teacher} />
+            {/* Focus works summary badges */}
+            {focusWorks.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {focusWorks.map(fw => (
+                  <span
+                    key={fw.area}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-gray-100 text-xs"
+                  >
+                    <span className={`w-4 h-4 rounded-full ${areaColor(fw.area)} text-white text-[9px] font-bold flex items-center justify-center`}>
+                      {areaLabel(fw.area)}
+                    </span>
+                    <span className="text-gray-600 truncate max-w-[120px]">{fw.work_name}</span>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      fw.status === 'mastered' ? 'bg-emerald-400' :
+                      fw.status === 'practicing' ? 'bg-amber-400' :
+                      fw.status === 'presented' ? 'bg-blue-400' : 'bg-gray-300'
+                    }`} />
+                  </span>
+                ))}
+              </div>
             )}
-            {activeTab === 'parent' && reports.parent && (
-              <ParentReportView report={reports.parent} />
+
+            {/* Report text */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {currentReport}
+              </div>
+            </div>
+
+            {/* Shelf update results */}
+            {shelfResult && (
+              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                <p className="text-sm font-medium text-emerald-700 mb-2">
+                  {t('weeklyReview.shelfUpdatedTitle' as any) || 'Shelf Updated'}
+                </p>
+                {shelfResult.applied.map(a => (
+                  <p key={a.area} className="text-xs text-emerald-600">
+                    ✅ {a.area.replace('_', ' ')}: {a.work_name}
+                  </p>
+                ))}
+                {shelfResult.skipped.map((s, i) => (
+                  <p key={i} className="text-xs text-amber-600">
+                    ⚠️ {s.area}: {s.reason}
+                  </p>
+                ))}
+              </div>
             )}
-            {activeTab === 'ai' && reports.ai_analysis && (
-              <AIReportView report={reports.ai_analysis} />
+
+            {/* Send results */}
+            {sendResult && (
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                <p className="text-sm font-medium text-blue-700">
+                  {sendResult.sent > 0
+                    ? `✅ ${(t('weeklyReview.sentTo' as any) || 'Sent to {count} parent(s)').replace('{count}', String(sendResult.sent))}`
+                    : sendResult.parent_count === 0
+                      ? (t('weeklyReview.noParentsLinked' as any) || 'No parents linked yet — report saved to records')
+                      : (t('weeklyReview.emailFailed' as any) || 'Email failed — report saved to records')
+                  }
+                </p>
+              </div>
             )}
+
+            {/* Feedback input */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <label className="text-xs font-medium text-gray-500 mb-2 block">
+                {activeTab === 'teacher'
+                  ? (t('weeklyReview.teacherFeedbackLabel' as any) || 'Adjust the plan — tell the AI what to change:')
+                  : (t('weeklyReview.parentFeedbackLabel' as any) || 'Refine the report — tell the AI what to adjust:')
+                }
+              </label>
+              <textarea
+                ref={feedbackRef}
+                value={feedback}
+                onChange={e => setFeedback(e.target.value)}
+                placeholder={activeTab === 'teacher'
+                  ? (t('weeklyReview.teacherFeedbackPlaceholder' as any) || 'e.g. "Switch math to golden beads — she\'s ready" or "Add a note about her concentration improving"')
+                  : (t('weeklyReview.parentFeedbackPlaceholder' as any) || 'e.g. "Make the tone warmer" or "Mention the pouring activity specifically"')
+                }
+                className="w-full p-3 border border-gray-200 rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                rows={2}
+                maxLength={2000}
+                disabled={currentStatus === 'refining'}
+              />
+              <div className="flex justify-end mt-2">
+                <button
+                  onClick={refineReport}
+                  disabled={!feedback.trim() || currentStatus === 'refining'}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    feedback.trim() && currentStatus !== 'refining'
+                      ? 'bg-gray-800 text-white hover:bg-gray-700'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {currentStatus === 'refining'
+                    ? (t('weeklyReview.refining' as any) || 'Updating...')
+                    : (t('weeklyReview.refine' as any) || 'Update Report')
+                  }
+                </button>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-3">
+              {/* Regenerate */}
+              <button
+                onClick={() => generateReport(activeTab)}
+                disabled={currentStatus === 'refining' || currentStatus === 'applying' || currentStatus === 'sending'}
+                className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+              >
+                {t('weeklyReview.regenerate' as any) || 'Regenerate'}
+              </button>
+
+              {/* Primary action */}
+              {activeTab === 'teacher' ? (
+                <button
+                  onClick={applyShelf}
+                  disabled={currentStatus === 'applying' || currentStatus === 'refining'}
+                  className="flex-1 py-3 rounded-xl bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 shadow-sm"
+                >
+                  {currentStatus === 'applying'
+                    ? (t('weeklyReview.updatingShelf' as any) || 'Updating Shelf...')
+                    : (t('weeklyReview.updateShelf' as any) || 'Update Shelf')
+                  }
+                </button>
+              ) : (
+                <button
+                  onClick={sendReport}
+                  disabled={currentStatus === 'sending' || currentStatus === 'refining'}
+                  className="flex-1 py-3 rounded-xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 shadow-sm"
+                >
+                  {currentStatus === 'sending'
+                    ? (t('weeklyReview.sendingReport' as any) || 'Sending...')
+                    : (t('weeklyReview.sendReport' as any) || 'Send Report')
+                  }
+                </button>
+              )}
+            </div>
           </>
         )}
       </div>
-    </div>
-  );
-}
-
-// ============================================
-// TEACHER REPORT VIEW
-// ============================================
-
-function TeacherReportView({ report }: { report: TeacherReport }) {
-  return (
-    <div className="space-y-4">
-      {/* Summary Card */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h2 className="font-bold text-slate-800 mb-2">{report.child_name}</h2>
-        <p className="text-sm text-slate-600">{report.summary}</p>
-      </div>
-
-      {/* Metrics */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📈 {t('weeklyReview.metrics')}</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <MetricCard
-            label={t('weeklyReview.totalWorks')}
-            value={report.metrics.total_works}
-          />
-          <MetricCard
-            label={t('weeklyReview.concentration')}
-            value={`${report.metrics.concentration_score}/100`}
-            subtext={report.metrics.concentration_assessment}
-          />
-          <MetricCard
-            label={t('weeklyReview.avgDuration')}
-            value={report.metrics.avg_duration ? `${report.metrics.avg_duration.toFixed(0)} min` : 'N/A'}
-            subtext={`${t('weeklyReview.expected')}: ${report.metrics.expected_duration} min`}
-          />
-          <MetricCard
-            label={t('weeklyReview.age')}
-            value={`${report.child_age} yrs`}
-          />
-        </div>
-      </div>
-
-      {/* Area Breakdown */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📊 {t('weeklyReview.areaBalance')}</h3>
-        <div className="space-y-2">
-          {report.area_breakdown.map((area, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <span className="text-sm text-slate-600 flex items-center gap-1.5">
-                <AreaBadge area={area.area} size="xs" />
-                {area.area}
-              </span>
-              <div className="flex items-center gap-2">
-                <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div 
-                    className={`h-full rounded-full ${
-                      area.status === 'healthy' ? 'bg-emerald-400' :
-                      area.status === 'low' ? 'bg-amber-400' : 'bg-blue-400'
-                    }`}
-                    style={{ width: `${Math.min(100, area.percentage)}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-16 text-right">
-                  {area.percentage}% <span className="text-slate-400">({area.expected_range})</span>
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sensitive Periods */}
-      {report.sensitive_periods.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🌱 {t('weeklyReview.sensitivePeriods')}</h3>
-          <div className="space-y-3">
-            {report.sensitive_periods.map((sp, i) => (
-              <div key={i} className="border-l-4 border-emerald-400 pl-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-slate-700">{sp.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    sp.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
-                    sp.status === 'emerging' ? 'bg-amber-100 text-amber-700' :
-                    'bg-slate-100 text-slate-600'
-                  }`}>
-                    {sp.status} ({sp.confidence}%)
-                  </span>
-                </div>
-                {sp.evidence.length > 0 && (
-                  <p className="text-xs text-slate-500 mt-1">{sp.evidence.slice(0, 2).join(', ')}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Flags */}
-      {report.flags.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">⚠️ {t('weeklyReview.attentionNeeded')}</h3>
-          <div className="space-y-3">
-            {report.flags.map((flag, i) => (
-              <div 
-                key={i} 
-                className={`p-3 rounded-xl ${
-                  flag.type === 'red' ? 'bg-red-50 border border-red-200' : 'bg-amber-50 border border-amber-200'
-                }`}
-              >
-                <p className={`font-medium ${flag.type === 'red' ? 'text-red-700' : 'text-amber-700'}`}>
-                  {flag.issue}
-                </p>
-                <p className="text-xs text-slate-600 mt-1">{flag.evidence}</p>
-                <p className="text-xs text-slate-500 mt-1 italic">💡 {flag.recommendation}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Recommendations */}
-      {report.recommendations.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">✨ {t('weeklyReview.recommendedNext')}</h3>
-          <div className="space-y-2">
-            {report.recommendations.slice(0, 5).map((rec, i) => (
-              <div key={i} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                <div>
-                  <p className="font-medium text-slate-700">{rec.work_name}</p>
-                  <p className="text-xs text-slate-500">{rec.reasons[0]}</p>
-                </div>
-                <span className="text-sm font-bold text-emerald-600">{rec.score}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================
-// PARENT REPORT VIEW
-// ============================================
-
-function ParentReportView({ report }: { report: ParentReport }) {
-  return (
-    <div className="space-y-4">
-      {/* Greeting */}
-      <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-2xl p-6 shadow-sm border border-pink-100">
-        <h2 className="text-xl font-bold text-rose-700 mb-2">
-          {t('weeklyReview.greeting').replace('{childName}', report.child_name.split(' ')[0])}
-        </h2>
-        <p className="text-rose-600">{report.greeting}</p>
-      </div>
-
-      {/* Highlights */}
-      {report.highlights.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🌟 {t('weeklyReview.highlights')}</h3>
-          <ul className="space-y-2">
-            {report.highlights.map((h, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-amber-500">★</span>
-                <span className="text-slate-600">{h}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Areas Explored */}
-      {report.areas_explored.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">🎨 {t('weeklyReview.areasExplored')}</h3>
-          <div className="space-y-4">
-            {report.areas_explored.map((area, i) => (
-              <div key={i}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">{area.emoji}</span>
-                  <span className="font-medium text-slate-700">{area.area_name}</span>
-                </div>
-                <p className="text-xs text-slate-500 mb-2">{area.description}</p>
-                <div className="flex flex-wrap gap-1">
-                  {area.works.map((w, j) => (
-                    <span key={j} className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
-                      {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Home Suggestions */}
-      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-4 shadow-sm border border-emerald-100">
-        <h3 className="font-semibold text-emerald-700 mb-3">🏠 {t('weeklyReview.homeIdeas')}</h3>
-        <ul className="space-y-2">
-          {report.home_suggestions.map((s, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="text-emerald-500">•</span>
-              <span className="text-emerald-700 text-sm">{s}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Closing */}
-      <div className="text-center py-4">
-        <p className="text-slate-600 italic">{report.closing}</p>
-        <p className="text-2xl mt-2">🌳</p>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// AI ANALYSIS REPORT VIEW
-// ============================================
-
-function AIReportView({ report }: { report: AIReport }) {
-  return (
-    <div className="space-y-4">
-      {/* Profile */}
-      <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 shadow-sm border border-purple-100">
-        <h2 className="font-bold text-purple-800 mb-3">
-          {t('weeklyReview.developmentalProfile')}: {report.child_name}
-        </h2>
-        <div className="grid grid-cols-3 gap-2">
-          <ProfileBadge label={t('weeklyReview.concentration')} value={report.profile.concentration} />
-          <ProfileBadge label={t('weeklyReview.emotional')} value={report.profile.emotional} />
-          <ProfileBadge label={t('weeklyReview.social')} value={report.profile.social} />
-        </div>
-      </div>
-
-      {/* Sensitive Periods */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-2">🌱 {t('weeklyReview.sensitivePeriodAnalysis')}</h3>
-        <p className="text-sm text-slate-600">{report.sensitive_periods_analysis || t('weeklyReview.insufficientData')}</p>
-      </div>
-
-      {/* Trajectory */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-2">📈 {t('weeklyReview.developmentalTrajectory')}</h3>
-        <p className="text-sm text-slate-600">{report.developmental_trajectory}</p>
-      </div>
-
-      {/* Concerns */}
-      {report.concerns.length > 0 && (
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h3 className="font-semibold text-slate-700 mb-3">⚠️ {t('weeklyReview.areasOfConcern')}</h3>
-          <div className="space-y-3">
-            {report.concerns.map((c, i) => (
-              <div 
-                key={i} 
-                className={`p-3 rounded-lg ${
-                  c.severity === 'red' ? 'bg-red-50' : 'bg-amber-50'
-                }`}
-              >
-                <p className="font-medium text-slate-700">{c.issue}</p>
-                <p className="text-xs text-slate-500 mt-1">{c.evidence}</p>
-                <p className="text-xs text-slate-600 mt-1">→ {c.recommendation}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Two Week Plan */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">📋 {t('weeklyReview.twoWeekPlan')}</h3>
-        <ol className="space-y-2">
-          {report.two_week_plan.map((item, i) => (
-            <li key={i} className="flex items-start gap-2">
-              <span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 text-xs flex items-center justify-center flex-shrink-0">
-                {i + 1}
-              </span>
-              <span className="text-sm text-slate-600">{item}</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* Observation Questions */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">🔍 {t('weeklyReview.observationQuestions')}</h3>
-        <ul className="space-y-2">
-          {report.observation_questions.map((q, i) => (
-            <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
-              <span className="text-purple-400">?</span>
-              {q}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Parent Communication */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <h3 className="font-semibold text-slate-700 mb-3">💬 {t('weeklyReview.parentDiscussionPoints')}</h3>
-        <ul className="space-y-1">
-          {report.parent_communication_points.map((p, i) => (
-            <li key={i} className="text-sm text-slate-600 flex items-start gap-2">
-              <span className="text-slate-400">•</span>
-              {p}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// HELPER COMPONENTS
-// ============================================
-
-function MetricCard({ label, value, subtext }: { label: string; value: string | number; subtext?: string }) {
-  return (
-    <div className="bg-slate-50 rounded-xl p-3 text-center">
-      <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-lg font-bold text-slate-800">{value}</p>
-      {subtext && <p className="text-xs text-slate-400">{subtext}</p>}
-    </div>
-  );
-}
-
-function ProfileBadge({ label, value }: { label: string; value: string }) {
-  const colors: Record<string, string> = {
-    strong: 'bg-emerald-100 text-emerald-700',
-    moderate: 'bg-amber-100 text-amber-700',
-    weak: 'bg-red-100 text-red-700',
-    positive: 'bg-emerald-100 text-emerald-700',
-    mixed: 'bg-amber-100 text-amber-700',
-    negative: 'bg-red-100 text-red-700',
-    thriving: 'bg-emerald-100 text-emerald-700',
-    developing: 'bg-amber-100 text-amber-700',
-    struggling: 'bg-red-100 text-red-700',
-    unknown: 'bg-slate-100 text-slate-600',
-  };
-
-  return (
-    <div className="text-center">
-      <p className="text-xs text-slate-500 mb-1">{label}</p>
-      <span className={`text-xs px-2 py-1 rounded-full ${colors[value] || colors.unknown}`}>
-        {value}
-      </span>
     </div>
   );
 }

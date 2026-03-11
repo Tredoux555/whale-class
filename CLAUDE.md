@@ -18,8 +18,8 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 All code is local, NOT yet pushed. 4 features + fixes from Mar 8–10 sessions + fire-and-forget Smart Capture from Mar 11. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: smart capture rewrite + batch reports + whole-class guru fix + classroom overview + fire-and-forget + audit fixes" && git push origin main`
 
-**Includes:** Smart Capture rewrite (2 rewritten + 3 modified), fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 15+ audit cycles all clean, 19+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`
+**Includes:** Smart Capture rewrite (2 rewritten + 3 modified), fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 15+ audit cycles all clean, 23+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -61,7 +61,36 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 10, 2026)
+## CURRENT STATUS (Mar 11, 2026)
+
+### Session Work (Mar 11, 2026 — Late Session)
+
+**3-Cycle Audit Fix Loop — COMPLETE, NOT YET DEPLOYED (8 issues fixed across 9 files, 3 audit cycles):**
+
+Full audit-fix-reaudit cycle on all unpushed code from Mar 8–11 sessions. Ran until zero issues found.
+
+**Cycle 1 (7 fixes):**
+- `PhotoInsightButton.tsx` — 2 silent `catch {}` blocks → added `console.error` logging + non-ok response logging
+- `BatchReportsCard.tsx` — Hardcoded `'Network error'` → `t('common.networkError')` i18n call
+- `GuruChatThread.tsx` — 3 hardcoded English strings → i18n `t()` calls (`selectImageFile`, `imageTooLarge`, `unableLoadClassroom`)
+- `photo-insight/route.ts` — Missing rate limiting on Sonnet vision API → added `checkRateLimit()` 60/hr per IP
+- `classroom-context-builder.ts` — `.single()` → `.maybeSingle()` on classroom name fetch (prevents throw on 0 rows)
+- `batch/route.ts` — `.single()` → `.maybeSingle()` on child fetch (same fix)
+- `en.ts` + `zh.ts` — 4 new i18n keys with perfect EN/ZH parity
+
+**Cycle 2 (1 fix):**
+- `GuruChatThread.tsx` — Init `useEffect` made 3 fetch calls without cleanup → added `AbortController` with signal on all 3 fetches + cleanup `return () => abortController.abort()` + `AbortError` guard in catch
+
+**Cycle 3:** CLEAN — zero issues across all 9 modified files.
+
+**False positives identified:** `/api/montree/curriculum` POST flagged as missing (exists, handles single work additions with full auth). Focus-works "batch endpoint" flagged (doesn't exist — only single upserts).
+
+**Deploy:** ⚠️ NOT YET PUSHED. Include in consolidated push. No new migrations.
+**Handoff:** `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`
+
+---
+
+## PREVIOUS STATUS (Mar 10, 2026)
 
 ### Session Work (Mar 10, 2026 — Late Session)
 
@@ -2439,7 +2468,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md` | **CURRENT** — Consolidated deploy handoff: all 4 unpushed features (Smart Capture + Batch Reports + Whole-Class Guru + Classroom Overview) |
+| `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md` | **CURRENT** — 3-cycle audit fix loop: 8 issues fixed (rate limiting, .maybeSingle, i18n, AbortController, error logging) |
+| `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md` | Consolidated deploy handoff: all 4 unpushed features (Smart Capture + Batch Reports + Whole-Class Guru + Classroom Overview) |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |
 | `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |
 | `docs/handoffs/HANDOFF_ESL_GURU_GENERATORS_MAR7.md` | ESL Guru upgrade + Spy Game & Command Cards generators |

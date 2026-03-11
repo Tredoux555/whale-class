@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -622,6 +623,12 @@ export default function WeekPage() {
         </div>
         {!isHomeschoolParent(session) && (
           <>
+            <Link
+              href={`/montree/dashboard/${childId}/weekly-review`}
+              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
+            >
+              📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
+            </Link>
             <PrintButton childId={childId} schoolId={session?.school?.id} />
             <button
               data-tutorial="invite-parent-button"

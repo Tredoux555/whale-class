@@ -31,118 +31,6 @@ interface Child {
   photo_url?: string;
 }
 
-// Area colors for the progress pulse bar
-const AREA_COLORS: Record<string, { bg: string; label: string }> = {
-  practical_life: { bg: 'bg-rose-400', label: 'P' },
-  sensorial: { bg: 'bg-amber-400', label: 'S' },
-  mathematics: { bg: 'bg-blue-400', label: 'M' },
-  language: { bg: 'bg-emerald-400', label: 'L' },
-  cultural: { bg: 'bg-violet-400', label: 'C' },
-};
-
-interface AreaSummary {
-  area: string;
-  mastered: number;
-  practicing: number;
-  presented: number;
-  total: number;
-}
-
-// ─── Classroom Pulse: compact progress overview ───
-function ClassroomPulse({ classroomId }: { classroomId: string }) {
-  const { t } = useI18n();
-  const [areas, setAreas] = useState<AreaSummary[]>([]);
-  const [totals, setTotals] = useState({ mastered: 0, practicing: 0, presented: 0 });
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    montreeApi(`/api/montree/progress/classroom-summary?classroom_id=${classroomId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (cancelled || !data.areas) return;
-        setAreas(data.areas);
-        setTotals(data.totals || { mastered: 0, practicing: 0, presented: 0 });
-        setLoaded(true);
-      })
-      .catch(() => setLoaded(true));
-    return () => { cancelled = true; };
-  }, [classroomId]);
-
-  if (!loaded) {
-    return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 animate-pulse">
-        <div className="h-4 bg-gray-100 rounded w-32 mb-3" />
-        <div className="h-8 bg-gray-50 rounded" />
-      </div>
-    );
-  }
-
-  if (areas.length === 0) return null;
-
-  // Compute max bar value once (not inside .map())
-  const maxBar = Math.max(...areas.map(a => a.mastered + a.practicing + a.presented), 1);
-
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
-      {/* Header row with totals */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-700">{t('dashboard.classroomProgress') || 'Classroom Progress'}</h3>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-gray-500">{totals.mastered} {t('status.mastered') || 'mastered'}</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-gray-500">{totals.practicing} {t('status.practicing') || 'practicing'}</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-blue-400" />
-            <span className="text-gray-500">{totals.presented} {t('status.presented') || 'presented'}</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Area bars */}
-      <div className="space-y-2">
-        {areas.map(area => {
-          const config = AREA_COLORS[area.area] || AREA_COLORS.practical_life;
-          const total = area.mastered + area.practicing + area.presented;
-          return (
-            <div key={area.area} className="flex items-center gap-2">
-              <span className={`w-5 h-5 rounded-full ${config.bg} text-white text-[10px] font-bold flex items-center justify-center shrink-0`}>
-                {config.label}
-              </span>
-              <div className="flex-1 h-5 bg-gray-50 rounded-full overflow-hidden flex">
-                {area.mastered > 0 && (
-                  <div
-                    className="h-full bg-emerald-400 transition-all duration-500"
-                    style={{ width: `${(area.mastered / maxBar) * 100}%` }}
-                  />
-                )}
-                {area.practicing > 0 && (
-                  <div
-                    className="h-full bg-amber-400 transition-all duration-500"
-                    style={{ width: `${(area.practicing / maxBar) * 100}%` }}
-                  />
-                )}
-                {area.presented > 0 && (
-                  <div
-                    className="h-full bg-blue-300 transition-all duration-500"
-                    style={{ width: `${(area.presented / maxBar) * 100}%` }}
-                  />
-                )}
-              </div>
-              <span className="text-xs text-gray-400 w-6 text-right tabular-nums">{total}</span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -455,12 +343,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* ── Classroom Pulse ── */}
-              {session?.classroom?.id && (
-                <div className="mb-6">
-                  <ClassroomPulse classroomId={session.classroom.id} />
-                </div>
-              )}
 
               {/* ── Teacher Tools (collapsible) ── */}
               {session?.classroom?.id && (

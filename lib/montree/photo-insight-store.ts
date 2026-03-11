@@ -21,6 +21,7 @@ export interface PhotoInsightResult {
   area: string | null;
   mastery_evidence: string | null;
   auto_updated: boolean;
+  needs_confirmation?: boolean;
   confidence?: number;
   match_score?: number;
   candidates?: CandidateWork[];
@@ -30,7 +31,7 @@ export interface PhotoInsightResult {
   classroom_work_id?: string | null;
 }
 
-export type InsightStatus = 'analyzing' | 'done' | 'error';
+export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected';
 
 export interface InsightEntry {
   mediaId: string;
@@ -166,6 +167,7 @@ export function startAnalysis(
         area: data.area || null,
         mastery_evidence: data.mastery_evidence || null,
         auto_updated: data.auto_updated || false,
+        needs_confirmation: data.needs_confirmation || false,
         confidence: data.confidence,
         match_score: data.match_score ?? null,
         candidates: Array.isArray(data.candidates) ? data.candidates : [],
@@ -201,6 +203,24 @@ export function startAnalysis(
 export function resetEntry(mediaId: string): void {
   entries.delete(mediaId);
   notify();
+}
+
+/** Mark an entry as confirmed by the teacher */
+export function confirmEntry(mediaId: string): void {
+  const entry = entries.get(mediaId);
+  if (entry) {
+    entries.set(mediaId, { ...entry, status: 'confirmed' });
+    notify();
+  }
+}
+
+/** Mark an entry as rejected by the teacher */
+export function rejectEntry(mediaId: string): void {
+  const entry = entries.get(mediaId);
+  if (entry) {
+    entries.set(mediaId, { ...entry, status: 'rejected' });
+    notify();
+  }
 }
 
 /** Clear all entries (e.g., on logout) */

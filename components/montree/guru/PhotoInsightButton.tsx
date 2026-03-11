@@ -15,6 +15,8 @@ import {
   getSnapshot,
   startAnalysis,
   resetEntry,
+  confirmEntry,
+  rejectEntry,
   type PhotoInsightResult,
 } from '@/lib/montree/photo-insight-store';
 
@@ -67,6 +69,61 @@ export default function PhotoInsightButton({
     resetEntry(mediaId);
     startAnalysis(mediaId, childId, locale);
   }, [mediaId, childId, locale]);
+
+  // CTA: Confirm identification (AMBER zone — teacher says "yes, correct")
+  const handleConfirm = useCallback(async () => {
+    if (!result?.work_name || !result?.area || ctaLoading) return;
+    setCtaLoading(true);
+    try {
+      // 1. Update progress (same as auto-update but teacher-initiated)
+      if (result.mastery_evidence && ['mastered', 'practicing', 'presented'].includes(result.mastery_evidence)) {
+        await montreeApi(`/api/montree/progress/update`, {
+          method: 'POST',
+          body: JSON.stringify({
+            child_id: childId,
+            work_name: result.work_name,
+            area: result.area,
+            status: result.mastery_evidence,
+            notes: `[Smart Capture — Confirmed] ${result.insight || ''}`,
+          }),
+        });
+      }
+      // 2. Mark correct in accuracy EMA (teacher confirmed = ground truth)
+      if (classroomId) {
+        await montreeApi(`/api/montree/guru/corrections`, {
+          method: 'POST',
+          body: JSON.stringify({
+            child_id: childId,
+            media_id: mediaId,
+            original_work_name: result.work_name,
+            original_area: result.area,
+            action: 'confirm',
+          }),
+        });
+      }
+      confirmEntry(mediaId);
+      setCtaDone(true);
+      if (onProgressUpdate) onProgressUpdate();
+    } catch (err) {
+      console.error('[PhotoInsight] Confirm error:', err);
+    } finally {
+      setCtaLoading(false);
+    }
+  }, [result, childId, mediaId, classroomId, ctaLoading, onProgressUpdate]);
+
+  // CTA: Reject identification (AMBER zone — teacher says "wrong")
+  const handleReject = useCallback(() => {
+    if (!result?.work_name) return;
+    rejectEntry(mediaId);
+    // Open the "Teach Guru" modal so teacher can correct
+    if (onTeachWork) {
+      onTeachWork({
+        workName: result.work_name,
+        area: result.area,
+        mediaId,
+      });
+    }
+  }, [result, mediaId, onTeachWork]);
 
   // CTA: Add known standard work to classroom (Scenario B)
   const handleAddToClassroom = useCallback(async () => {
@@ -216,10 +273,40 @@ export default function PhotoInsightButton({
             <span className="text-emerald-600">🌿</span> {result.insight}
           </p>
 
-          {/* Auto-update indicator */}
+          {/* GREEN zone: Auto-updated with high confidence */}
           {result.auto_updated && (
             <p className="text-xs text-emerald-600 italic">
-              {t('photoInsight.progressAutoUpdated')}
+              {t('photoInsight.highConfidenceAutoUpdated')}
+            </p>
+          )}
+
+          {/* AMBER zone: Needs teacher confirmation */}
+          {!ctaDone && result.needs_confirmation && entry?.status !== 'confirmed' && entry?.status !== 'rejected' && (
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-amber-600 italic">{t('photoInsight.pendingConfirmation')}</p>
+              <button
+                onClick={handleConfirm}
+                disabled={ctaLoading}
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors disabled:opacity-50"
+              >
+                {ctaLoading ? <span className="animate-spin">⏳</span> : <span>✓</span>}
+                <span>{t('photoInsight.confirmMatch')}</span>
+              </button>
+              <button
+                onClick={handleReject}
+                disabled={ctaLoading}
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50"
+              >
+                <span>✗</span>
+                <span>{t('photoInsight.wrongMatch')}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Teacher confirmed */}
+          {entry?.status === 'confirmed' && (
+            <p className="text-xs text-emerald-600 italic">
+              ✓ {t('photoInsight.confirmed')}
             </p>
           )}
 
