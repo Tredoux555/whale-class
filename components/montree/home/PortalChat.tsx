@@ -121,28 +121,6 @@ interface PortalChatProps {
   onPrefillConsumed?: () => void;
 }
 
-// Greeting cache — avoid repeated AI calls on every app open
-const GREETING_TTL = 4 * 60 * 60 * 1000; // 4 hours
-
-function getCachedGreeting(childId: string): string | null {
-  try {
-    const raw = localStorage.getItem(`montree_greeting_${childId}`);
-    if (!raw) return null;
-    const { text, ts } = JSON.parse(raw);
-    if (Date.now() - ts > GREETING_TTL) {
-      localStorage.removeItem(`montree_greeting_${childId}`);
-      return null;
-    }
-    return text;
-  } catch { return null; }
-}
-
-function cacheGreeting(childId: string, text: string) {
-  try {
-    localStorage.setItem(`montree_greeting_${childId}`, JSON.stringify({ text, ts: Date.now() }));
-  } catch { /* localStorage full — non-critical */ }
-}
-
 export default function PortalChat({
   childId,
   childName,
@@ -230,69 +208,16 @@ export default function PortalChat({
           }
         }
 
-        // 2. Check for cached greeting
-        const cached = getCachedGreeting(childId);
-        if (cached) {
-          chatMessages.push({
-            id: 'greeting-cached',
-            content: cached,
-            isUser: false,
-            timestamp: new Date().toISOString(),
-          });
-          setMessages(chatMessages);
-          setLoading(false);
-          return;
-        }
-
-        // 3. No cache — fetch fresh greeting from AI
+        // 2. Show static greeting — no AI call on load (user sends first message)
+        const name = childName?.split(' ')[0] || '';
+        chatMessages.push({
+          id: 'greeting-static',
+          content: name ? t('home.portal.greetingWithName').replace('{name}', name) : t('home.portal.greetingDefault'),
+          isUser: false,
+          timestamp: new Date().toISOString(),
+        });
         setMessages(chatMessages);
         setLoading(false);
-
-        // Show typing indicator for greeting
-        setSending(true);
-        try {
-          const greetRes = await fetch('/api/montree/guru', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              child_id: childId,
-              question: '__greeting__',
-              classroom_id: classroomId,
-              conversational: true,
-            }),
-            signal,
-          });
-
-          if (signal.aborted) return;
-          if (!greetRes.ok) throw new Error('Greeting fetch failed');
-          const greetData = await greetRes.json();
-          if (greetData.success && greetData.insight) {
-            cacheGreeting(childId, greetData.insight);
-            setMessages(prev => [...prev, {
-              id: `greeting-${Date.now()}`,
-              content: greetData.insight,
-              isUser: false,
-              timestamp: new Date().toISOString(),
-            }]);
-
-            // If greeting triggered tool use (e.g., intake set up shelf)
-            if (greetData.actions?.length > 0) {
-              onShelfUpdated?.();
-            }
-          }
-        } catch (err) {
-          if (signal.aborted) return;
-          // Greeting failed — non-critical, show fallback
-          const name = childName?.split(' ')[0] || '';
-          setMessages(prev => [...prev, {
-            id: 'greeting-fallback',
-            content: name ? t('home.portal.greetingWithName').replace('{name}', name) : t('home.portal.greetingDefault'),
-            isUser: false,
-            timestamp: new Date().toISOString(),
-          }]);
-        } finally {
-          if (!signal.aborted) setSending(false);
-        }
 
       } catch (err) {
         if (signal.aborted) return;

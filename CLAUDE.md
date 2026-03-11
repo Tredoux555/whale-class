@@ -16,10 +16,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–11 sessions + Smart Capture accuracy overhaul + Home Parent rebuild. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: home parent rebuild + smart capture accuracy + audit fixes" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–11 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: session recovery + guru parity + home parent rebuild + smart capture" && git push origin main`
 
-**Includes:** Home Parent system rebuild (3×3×3 + 3 audit cycles, 18 issues fixed, 6 files, 27 new i18n keys), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 15+ audit cycles all clean, 55+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Includes:** Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 57+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -63,9 +63,45 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ## CURRENT STATUS (Mar 11, 2026)
 
+### Session Work (Mar 11, 2026 — Late Night Session)
+
+**Session Recovery + Guru Parity + PWA Fixes — COMPLETE, NOT YET DEPLOYED (1 new + 9 modified files, 2 audit cycles, 1 fix):**
+
+Three fixes addressing critical user-facing issues: login persistence, Guru capability parity, and PWA manifest serving.
+
+**Feature 1 — Session Recovery Pipeline (1 new + 4 modified):**
+iOS PWA users had to log in every time they reopened the app because localStorage was cleared but httpOnly auth cookie (30-day TTL) was still valid.
+
+- `app/api/montree/auth/me/route.ts` (NEW, ~50 lines) — GET endpoint validates httpOnly `montree-auth` cookie via `verifySchoolRequest()`, fetches teacher + school + classroom data, returns structured session response. Uses `.maybeSingle()`.
+- `lib/montree/auth.ts` — Added `recoverSession()` async function. Calls `/api/montree/auth/me` with `credentials: 'include'`, constructs `MontreeSession`, persists to localStorage. Returns null on failure.
+- `app/montree/home/[childId]/page.tsx` — Rewrote auth init: `getSession()` → if null → `recoverSession()` → if still null → redirect. AbortController cleanup on unmount.
+- `app/montree/dashboard/page.tsx` — Added `recoverSession()` in `!session` useEffect branch before login redirect.
+- `app/montree/login-select/page.tsx` — Auto-redirect if already authenticated. Checks getSession, then recoverSession, redirects to dashboard if either succeeds.
+
+**Feature 2 — Guru Home Parent Parity (3 modified):**
+Previous session incorrectly "optimized" the Guru by stripping capabilities from home parents (6 tools instead of 12, 3 memory instead of 5, no deep psychology, 2 tool rounds instead of 4). This was reverted — the real fix was the timeout increase from 35s→50s per call.
+
+- `app/api/montree/guru/route.ts` — Removed `HOME_PARENT_TOOLS` import, `MAX_TOOL_ROUNDS_HOME`, `memoryLimit` conditional, `effectiveTools`/`effectiveMaxRounds`. All users now get full `GURU_TOOLS` (12 tools), `MAX_TOOL_ROUNDS` (4), 5 conversation memory entries. **Kept** `API_TIMEOUT_MS = 50_000` (up from 35s).
+- `lib/montree/guru/conversational-prompt.ts` — Reverted psychology gating: deep psychology reference now injected for ALL Sonnet-tier users. Condition `if (isTeacher && (!guruTier || guruTier === 'sonnet'))` → `if (!guruTier || guruTier === 'sonnet')`.
+- `lib/montree/guru/tool-definitions.ts` — Removed dead `HOME_PARENT_TOOL_NAMES` and `HOME_PARENT_TOOLS`.
+
+**Feature 3 — PortalChat + PWA (2 modified):**
+- `components/montree/home/PortalChat.tsx` — Removed dead greeting caching functions. Greeting is static i18n only, no API call on mount.
+- `middleware.ts` — Added `.json` and `.webmanifest` to static file exclusion regex so PWA manifest can be served.
+
+**Audit:** 2 cycles. Cycle 1: 1 issue (dead caching functions in PortalChat). Cycle 2: CLEAN across all 10 files. Zero dangling references, zero import errors.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`
+
+**Still needed (not in this push):**
+- PWA icons (green square on home screen — `/public/montree-icons/` needs icon.svg + 8 PNG sizes)
+- `{count}m ago` timestamp bug (Priority #2)
+- i18n work names not translating to Chinese (Priority #1)
+
 ### Session Work (Mar 11, 2026 — Latest Session)
 
-**Home Parent System Rebuild — Feature Parity + Crash Fix — COMPLETE, NOT YET DEPLOYED (1 new + 5 modified files, 3×3×3 + 3 audit cycles, 18 issues fixed):**
+**Home Parent System Rebuild — Feature Parity + Crash Fix — COMPLETE, NOT YET DEPLOYED (1 new + 5 modified files, 3×3×3 + 6 deep audit cycles, 28 issues fixed, 3 consecutive CLEAN):**
 
 Full rebuild of the home parent system (`/montree/home/[childId]`) to achieve feature parity with the teacher system. Root cause of crashes: PortalChat's `handleSend` had zero timeout protection — Guru API hang froze UI indefinitely.
 
@@ -97,13 +133,14 @@ Full rebuild of the home parent system (`/montree/home/[childId]`) to achieve fe
 - ErrorBoundary wrapping both tabs with distinct fallback messages
 - `useI18n` imported and wired
 
-**i18n (en.ts + zh.ts — 27 new keys, perfect EN/ZH parity):**
-- `home.portal.*` — 7 keys (stillThinking, timeout, rateLimited, attachPhoto, selectImageFile, imageTooLarge, imageUploadFailed, photoAttached)
+**i18n (en.ts + zh.ts — 29 new keys, perfect EN/ZH parity):**
+- `home.portal.*` — 8 keys (stillThinking, timeout, rateLimited, attachPhoto, selectImageFile, imageTooLarge, imageUploadFailed, photoAttached)
 - `home.shelf.*` — 15 keys (status, presented, practicing, mastered, observationLabel, observationPlaceholder, saveObservation, observationSaved, observationFailed, progressUpdated, progressFailed, viewPresentation, viewProgress, browseCurriculum, fetchError)
 - `home.error.*` — 4 keys (title, chatFailed, shelfFailed, tryAgain)
-- 1 key already added earlier: `home.portal.imageUploadFailed`
+- `home.loading` — 1 key
+- `home.header.addChild` — 1 key
 
-**Build methodology:** 3×3×3 (3 plan-audit + 3 build-audit cycles) + 3 post-build audit-fix cycles. 18 total issues found and fixed. All cycles ended CLEAN.
+**Build methodology:** 3×3×3 (3 plan-audit + 3 build-audit cycles) + 3 post-build audit-fix cycles + 6 additional deep audit cycles. 28 total issues found and fixed. Final 3 cycles all CLEAN (independent verification).
 
 **Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
 **Handoff:** `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`

@@ -20,8 +20,8 @@ import { processTeacherConversation } from '@/lib/montree/guru/post-conversation
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
 const MAX_TOOL_ROUNDS = 4; // Increased from 2: classroom-wide ops need overview → search → multiple set_focus_work calls
-const API_TIMEOUT_MS = 35_000; // 35s timeout per API call (Sonnet typically 10-25s)
-const TOTAL_REQUEST_TIMEOUT_MS = 90_000; // 90s total for entire request (was 55s — too tight for batch shelf updates across 20 students)
+const API_TIMEOUT_MS = 50_000; // 50s timeout per API call (was 35s — too tight for 20K token inputs on busy Anthropic days)
+const TOTAL_REQUEST_TIMEOUT_MS = 90_000; // 90s total for entire request
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -475,12 +475,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Phase 1: Build multi-turn messages from past interactions for conversation memory
-    // The Guru remembers the last 5 conversations about this child
     const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
     if (!isWholeClassMode && childContext?.past_interactions && childContext.past_interactions.length > 0) {
       // Oldest first so conversation flows naturally
-      const chronological = [...childContext.past_interactions].reverse();
+      const recent = childContext.past_interactions.slice(0, 5);
+      const chronological = [...recent].reverse();
       for (const interaction of chronological) {
         if (interaction.question && interaction.response_insight) {
           conversationMessages.push({ role: 'user', content: interaction.question });

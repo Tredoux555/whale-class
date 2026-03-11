@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
+import { getSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { HOME_THEME } from '@/lib/montree/home-theme';
 import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
@@ -70,7 +70,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!session) {
-      router.push('/montree/login');
+      // Try recovering session from httpOnly cookie before redirecting to login
+      recoverSession().then(recovered => {
+        if (recovered) {
+          setSession(recovered);
+        } else {
+          router.push('/montree/login');
+        }
+      });
       return;
     }
 

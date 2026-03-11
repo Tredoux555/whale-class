@@ -87,6 +87,28 @@ export function getSchoolId(): string | null {
   return session?.school?.id || null;
 }
 
+// Recover session from httpOnly cookie when localStorage is cleared (e.g., PWA relaunch on iOS)
+// Returns the recovered session or null if cookie is also invalid/expired
+export async function recoverSession(): Promise<MontreeSession | null> {
+  try {
+    const res = await fetch('/api/montree/auth/me', { credentials: 'include' });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data.authenticated || !data.teacher || !data.school) return null;
+
+    const session: MontreeSession = {
+      teacher: data.teacher,
+      school: data.school,
+      classroom: data.classroom || null,
+      loginAt: new Date().toISOString(),
+    };
+    setSession(session);
+    return session;
+  } catch {
+    return null;
+  }
+}
+
 // Check if the current user is a homeschool parent
 export function isHomeschoolParent(session?: MontreeSession | null): boolean {
   const s = session ?? getSession();

@@ -329,7 +329,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     // All non-API routes (pages, etc.)
-    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|games|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html|avif|json|webmanifest)$).*)',
     // Whale admin API routes — middleware enforces admin JWT auth
     '/api/whale/:path*',
   ],
