@@ -70,6 +70,13 @@ const TOOLS = [
     descKey: 'tools.command_cards_desc',
     gradient: 'from-pink-500 to-rose-600',
   },
+  {
+    href: '/montree/library/tools/phonics-fast',
+    icon: '📚',
+    titleKey: 'tools.phonics_fast',
+    descKey: 'tools.phonics_fast_desc',
+    gradient: 'from-emerald-500 to-green-600',
+  },
 ];
 
 export default function LibraryToolsPage() {

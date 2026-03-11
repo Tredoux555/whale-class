@@ -1569,6 +1569,8 @@ export const zh = {
   'tools.spy_how_to_use': '课堂使用方法',
   'tools.command_cards': '命令卡',
   'tools.command_cards_desc': 'AMI蒙特梭利命令卡 — 通过动作理解阅读',
+  'tools.phonics_fast': '拼读快车',
+  'tools.phonics_fast_desc': '完整的拼读进阶 — 词汇表、生成器和可打印工具',
   'tools.command_cards_subtitle': 'AMI蒙特梭利 — 通过动作阅读',
   'tools.cmd_select_level': '选择等级',
   'tools.cmd_settings': '打印设置',
