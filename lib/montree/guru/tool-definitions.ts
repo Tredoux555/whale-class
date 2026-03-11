@@ -1,6 +1,6 @@
 // lib/montree/guru/tool-definitions.ts
 // Anthropic tool-use definitions for Guru-driven home system
-// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools + 3 daily activity tools = 18 total
+// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools + 1 area analytics tool + 3 daily activity tools = 19 total
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
@@ -361,6 +361,18 @@ export const GURU_TOOLS: Tool[] = [
         age_range: {
           type: "string",
           description: "Recommended age (e.g., '3-4 years', '4-5 years')"
+        },
+        photo_url: {
+          type: "string",
+          description: "URL of a reference photo for this work (if the teacher sent a photo showing the work). Store as a visual reference."
+        },
+        parent_description: {
+          type: "string",
+          description: "A parent-friendly explanation of the work for reports and parent communication (e.g., 'Your child practices pouring water carefully from one jug to another, building concentration and fine motor skills')."
+        },
+        control_of_error: {
+          type: "string",
+          description: "How the child knows they made a mistake without adult intervention (e.g., 'Water spills on the tray', 'Pieces don't fit together'). Core Montessori concept — include whenever possible."
         }
       },
       required: ["work_name", "area", "description", "direct_aims", "materials", "presentation_steps"]
@@ -407,6 +419,28 @@ export const GURU_TOOLS: Tool[] = [
         }
       },
       required: ["num_groups", "criteria"]
+    }
+  },
+
+  // --- Area Analytics Tool (read-only, classroom-wide) ---
+
+  {
+    name: "get_weekly_area_summary",
+    description: "Get a weekly summary of which children visited each Montessori area. Shows per-area activity counts, which children worked in each area, and crucially which children did NOT visit certain areas. Use when teachers ask about area coverage, balance, who needs to be guided toward an area, or want to plan small groups based on area gaps. Pairs well with group_students for planning small groups.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        area: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural", "all"],
+          description: "Which area to analyze. Use 'all' for a full overview across all 5 areas."
+        },
+        days: {
+          type: "number",
+          description: "Number of days to look back. Default 7 (one week), max 30."
+        }
+      },
+      required: []
     }
   },
 

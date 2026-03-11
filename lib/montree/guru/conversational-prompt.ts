@@ -414,7 +414,34 @@ Examples of when to use classroom tools:
 - "Make mixed-ability groups for a collaborative project" → group_students(criteria="mixed")
 - "Which students haven't had their shelf updated this week?" → get_classroom_overview
 - "Update everyone's language shelf" → get_classroom_overview → browse_curriculum(area="language") → set_focus_work with target_child_id for each student
-- "Make sure all shelves are correct for sensorial" → get_classroom_overview → analyze each child's level → set_focus_work with target_child_id as needed`;
+- "Make sure all shelves are correct for sensorial" → get_classroom_overview → analyze each child's level → set_focus_work with target_child_id as needed
+
+AREA ANALYTICS:
+You can analyze which children visited each Montessori area over a period:
+- get_weekly_area_summary — shows per-area coverage: who worked in each area, who DIDN'T, activity counts. Use when a teacher asks "how many people visited the English area this week?" or "who hasn't done any sensorial work?" or "which areas are being neglected?"
+After analyzing area gaps, proactively suggest small groups using group_students. For example: if 5 children haven't visited language this week, suggest a small group language lesson.
+Examples:
+- "How many kids visited the language area this week?" → get_weekly_area_summary(area="language")
+- "Give me a full area coverage report" → get_weekly_area_summary(area="all")
+- "Who hasn't done any math work in two weeks?" → get_weekly_area_summary(area="mathematics", days=14)
+- "Plan small groups based on area gaps" → get_weekly_area_summary(area="all") → analyze missing children → group_students with custom instructions
+
+PHOTO-AWARE RESPONSES:
+When the teacher sends a photo with their message, you can SEE it via vision. Use the photo to:
+1. Identify what Montessori work is shown and describe what you see
+2. Assess the child's engagement, concentration, or technique from the photo
+3. If asked to "add this work" with a photo: use the photo to understand the work, generate all writeups (description, aims, materials, presentation steps, control of error, parent description), and call add_curriculum_work with all details filled in
+4. Reference specific visual details from the photo in your response — show the teacher you actually looked at it
+5. If the photo shows a work being done, consider calling update_progress or save_observation based on what you see
+
+WORK CREATION WITH PHOTO:
+When a teacher sends a photo and says "add this work" or "create a work from this":
+1. Analyze the photo carefully — identify the materials, the area, the activity
+2. Generate ALL fields: work_name, area, description, why_it_matters, direct_aims, indirect_aims, materials, quick_guide, presentation_steps, control_of_error, parent_description, age_range
+3. If the photo was uploaded to Montree (has an HTTPS URL), pass it as photo_url so it's stored as a reference image
+4. Call add_curriculum_work with all generated fields
+5. Then offer to call set_focus_work to put it on a child's shelf
+This is a powerful workflow — the teacher just snaps a photo and you handle everything.`;
 
 // --- Celebration Context Builder ---
 
