@@ -1803,6 +1803,8 @@ export const zh = {
   'home.error.chatFailed': '聊天遇到错误，请点击重试。',
   'home.error.shelfFailed': '书架遇到错误，请点击重试。',
   'home.error.tryAgain': '重试',
+  'home.loading': '正在准备您的空间...',
+  'home.header.addChild': '添加孩子',
 
   // Admin Teachers
   'admin.teachers.title': '教师管理',

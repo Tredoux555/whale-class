@@ -1803,6 +1803,8 @@ export const en = {
   'home.error.chatFailed': 'The chat encountered an error. Tap to retry.',
   'home.error.shelfFailed': 'The shelf encountered an error. Tap to retry.',
   'home.error.tryAgain': 'Try Again',
+  'home.loading': 'Preparing your space...',
+  'home.header.addChild': 'Add a child',
 
   // Admin Teachers
   'admin.teachers.title': 'Teachers',

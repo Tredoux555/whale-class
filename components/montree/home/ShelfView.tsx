@@ -126,7 +126,10 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
   useEffect(() => {
     const controller = new AbortController();
     fetch('/api/montree/works/search?q=', { signal: controller.signal })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error('Curriculum search failed');
+        return r.json();
+      })
       .then(data => {
         if (controller.signal.aborted) return;
         if (data.works) {
@@ -141,7 +144,10 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
           setAllCurriculumWorks(normalized);
         }
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('Failed to load curriculum works:', err);
+      });
     return () => controller.abort();
   }, []);
 
@@ -245,10 +251,12 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
         url += `&locale=${locale}`;
       }
       const res = await fetch(url, { signal: controller.signal });
+      if (!res.ok) throw new Error('Guide fetch failed');
       const data = await res.json();
       if (!controller.signal.aborted) setGuideData(data);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('Failed to load work guide:', err);
       setGuideData(null);
     }
     if (!controller.signal.aborted) setGuideLoading(false);

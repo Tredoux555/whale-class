@@ -50,7 +50,10 @@ export default function HomePage() {
     // Fetch children for selector
     if (sess.classroom?.id) {
       fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`)
-        .then(r => r.json())
+        .then(r => {
+          if (!r.ok) throw new Error(`Children fetch failed: ${r.status}`);
+          return r.json();
+        })
         .then(data => {
           const kids = data.children || [];
           setChildren(kids);
@@ -65,7 +68,10 @@ export default function HomePage() {
             router.replace('/montree/home/setup');
           }
         })
-        .catch(() => setLoading(false));
+        .catch((err) => {
+          console.error('Children fetch failed:', err);
+          setLoading(false);
+        });
     } else {
       setLoading(false);
     }
@@ -93,7 +99,7 @@ export default function HomePage() {
         <AmbientParticles />
         <div className="relative z-10 text-center">
           <div className="animate-pulse text-5xl mb-4">🌿</div>
-          <p className={`text-sm ${BIO.text.secondary}`}>Preparing your space...</p>
+          <p className={`text-sm ${BIO.text.secondary}`}>{t('home.loading')}</p>
         </div>
       </div>
     );
@@ -118,7 +124,7 @@ export default function HomePage() {
             )}
           </div>
           <h1 className={`font-semibold ${BIO.text.primary} truncate`}>
-            {selectedChild?.name?.split(' ')[0] || 'Loading...'}
+            {selectedChild?.name?.split(' ')[0] || t('home.loading')}
           </h1>
 
           {/* Child selector for multiple children */}
@@ -145,7 +151,7 @@ export default function HomePage() {
         <button
           onClick={() => router.push('/montree/home/setup')}
           className={`p-2 rounded-full ${BIO.btn.ghost} ml-2 shrink-0`}
-          title="Add a child"
+          title={t('home.header.addChild')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
