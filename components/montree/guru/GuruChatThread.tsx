@@ -71,12 +71,13 @@ export default function GuruChatThread({
 
   // Load concerns and chat history on mount
   useEffect(() => {
+    const abortController = new AbortController();
     const init = async () => {
       try {
         // Teachers skip concern onboarding — go straight to chat
         if (isTeacher) {
           // Fetch chat history
-          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`);
+          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
           const histData = await histRes.json();
 
           if (histData.success && histData.history && histData.history.length > 0) {
@@ -106,14 +107,14 @@ export default function GuruChatThread({
         }
 
         // Parent flow — fetch concerns for onboarding check
-        const concernsRes = await fetch(`/api/montree/guru/concerns?child_id=${childId}`);
+        const concernsRes = await fetch(`/api/montree/guru/concerns?child_id=${childId}`, { signal: abortController.signal });
         const concernsData = await concernsRes.json();
 
         if (concernsData.success && concernsData.onboarded) {
           setConcerns(concernsData.concerns || []);
 
           // Fetch chat history
-          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`);
+          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
           const histData = await histRes.json();
 
           if (histData.success && histData.history) {
@@ -174,13 +175,15 @@ export default function GuruChatThread({
         } else {
           setState('onboarding');
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         toast.error(t('guru.errorLoadChat'));
         setState(isTeacher ? 'chat' : 'onboarding');
       }
     };
 
     init();
+    return () => abortController.abort();
   }, [childId, childName, isTeacher, isWholeClassMode]);
 
   // Handle onboarding complete
@@ -233,7 +236,7 @@ export default function GuruChatThread({
         console.error('[GuruChat] Whole-class mode but no classroomId available');
         const errorMsg: ChatMessage = {
           id: `guru-error-${Date.now()}`,
-          content: 'Unable to load classroom data. Please go back to the dashboard and try again, or select a specific student.',
+          content: t('guru.unableLoadClassroom') || 'Unable to load classroom data. Please go back to the dashboard and try again, or select a specific student.',
           isUser: false,
           timestamp: new Date().toISOString(),
         };
@@ -278,7 +281,7 @@ export default function GuruChatThread({
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
-        toast.error(t('guru.timeout') || 'The Guru took too long. Please try again.');
+        toast.error(t('guru.timeout'));
       } else {
         toast.error(t('guru.connectionFailed'));
       }
@@ -310,11 +313,11 @@ export default function GuruChatThread({
 
     // Validate file type and size
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error(t('guru.selectImageFile') || 'Please select an image file');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Image too large (max 10MB)');
+      toast.error(t('guru.imageTooLarge') || 'Image too large (max 10MB)');
       return;
     }
 

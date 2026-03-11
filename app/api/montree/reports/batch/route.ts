@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
         .from('montree_children')
         .select('id, name, photo_url, classroom_id')
         .eq('id', child_id)
-        .single(),
+        .maybeSingle(),
       supabase
         .from('montree_child_progress')
         .select('work_name, area, status, notes, updated_at')

@@ -106,7 +106,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           childId: child.id,
           childName: child.name,
           success: false,
-          error: 'Network error',
+          error: t('common.networkError' as any, 'Network error'),
         });
       }
 

@@ -90,7 +90,7 @@ export async function buildClassroomContext(
       .from('montree_classrooms')
       .select('name')
       .eq('id', classroomId)
-      .single()
+      .maybeSingle()
       .then(r => { if (r.error) console.error('[ClassroomContext] Classroom name query error:', r.error); return r; }),
   ]);
 
