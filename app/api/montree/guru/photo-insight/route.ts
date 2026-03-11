@@ -11,6 +11,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 // Tool definition for structured photo analysis
 const PHOTO_ANALYSIS_TOOL = {
@@ -67,6 +68,13 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+
+    const supabaseForRateLimit = getSupabase();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = await checkRateLimit(supabaseForRateLimit, ip, '/api/montree/guru/photo-insight', 60, 60);
+    if (!allowed) {
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
+    }
 
     const body = await request.json();
     const { child_id, media_id } = body;

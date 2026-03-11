@@ -93,9 +93,11 @@ export default function PhotoInsightButton({
             classroomWorkId: data.work?.id || null,
           });
         }
+      } else {
+        console.error('[PhotoInsight] Add to classroom failed:', res.status);
       }
-    } catch {
-      // Silently fail — teacher can add manually
+    } catch (err) {
+      console.error('[PhotoInsight] Add to classroom error:', err);
     } finally {
       setCtaLoading(false);
     }
@@ -125,9 +127,11 @@ export default function PhotoInsightButton({
           });
         }
         if (onProgressUpdate) onProgressUpdate();
+      } else {
+        console.error('[PhotoInsight] Add to shelf failed:', res.status);
       }
-    } catch {
-      // Silently fail
+    } catch (err) {
+      console.error('[PhotoInsight] Add to shelf error:', err);
     } finally {
       setCtaLoading(false);
     }
