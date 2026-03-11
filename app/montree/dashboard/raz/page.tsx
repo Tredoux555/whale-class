@@ -585,12 +585,20 @@ export default function RazTrackerPage() {
           position: 'fixed', inset: 0, zIndex: 100,
           background: '#000', display: 'flex', flexDirection: 'column',
         }}>
-          {/* Top bar: child name + step */}
+          {/* Top bar: child name + step — with iOS safe area padding */}
           <div style={{
-            padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            paddingTop: 'max(env(safe-area-inset-top, 0px), 48px)',
+            paddingLeft: 16, paddingRight: 16, paddingBottom: 12,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             background: 'rgba(0,0,0,0.7)', zIndex: 2,
           }}>
-            <div>
+            {/* Cancel / back button */}
+            <button onClick={endCameraFlow} style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px',
+              color: '#94a3b8', fontSize: 24, lineHeight: 1, flexShrink: 0,
+            }} aria-label={t('common.cancel')}>✕</button>
+
+            <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
               <div style={{ fontWeight: 700, fontSize: 16, color: '#fff' }}>{cameraFlow.childName}</div>
               <div style={{ fontSize: 13, color: '#94a3b8' }}>
                 {cameraFlow.oneShot
@@ -599,21 +607,24 @@ export default function RazTrackerPage() {
                 }
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
               {!cameraFlow.oneShot && (
-                <button onClick={() => showChildPicker(cameraFlow.childName)} style={{
-                  background: 'rgba(34,197,94,0.3)', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 8,
-                  padding: '8px 14px', color: '#4ade80', fontSize: 13, cursor: 'pointer', fontWeight: 600,
-                }}>
-                  Next →
-                </button>
+                <>
+                  <button onClick={() => showChildPicker(cameraFlow.childName)} style={{
+                    background: 'rgba(34,197,94,0.3)', border: '1px solid rgba(34,197,94,0.5)', borderRadius: 8,
+                    padding: '8px 14px', color: '#4ade80', fontSize: 13, cursor: 'pointer', fontWeight: 600,
+                  }}>
+                    {t('common.next')} →
+                  </button>
+                  <button onClick={endCameraFlow} style={{
+                    background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
+                    padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
+                  }}>
+                    {t('common.done')}
+                  </button>
+                </>
               )}
-              <button onClick={endCameraFlow} style={{
-                background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8,
-                padding: '8px 16px', color: '#fff', fontSize: 14, cursor: 'pointer',
-              }}>
-                {cameraFlow.oneShot ? t('common.cancel') : t('common.done')}
-              </button>
             </div>
           </div>
 
@@ -629,19 +640,12 @@ export default function RazTrackerPage() {
                 width: '100%', height: '100%', objectFit: 'cover',
               }}
             />
-            {/* Step label overlay */}
-            <div style={{
-              position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
-              background: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: '6px 16px',
-              color: '#fff', fontSize: 15, fontWeight: 600, whiteSpace: 'nowrap',
-            }}>
-              {PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}
-            </div>
           </div>
 
-          {/* Bottom controls */}
+          {/* Bottom controls — with iOS safe area */}
           <div style={{
-            padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px', paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
             gap: 20, background: 'rgba(0,0,0,0.85)',
           }}>
             {/* Previews of captured shots */}
@@ -703,7 +707,7 @@ export default function RazTrackerPage() {
           display: 'flex', flexDirection: 'column',
           overflowY: 'auto',
         }}>
-          <div style={{ padding: '16px 16px 8px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 48px)', paddingLeft: 16, paddingRight: 16, paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
             <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0, whiteSpace: 'nowrap' }}>{t('raz.nextQuestion')}</h2>
             <input
               ref={searchInputRef}
@@ -791,7 +795,7 @@ export default function RazTrackerPage() {
             })}
           </div>
 
-          <div style={{ padding: '12px 16px 24px', display: 'flex', justifyContent: 'center' }}>
+          <div style={{ padding: '12px 16px', paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 24px)', display: 'flex', justifyContent: 'center' }}>
             <button onClick={finishAll} style={{
               background: '#334155', border: 'none', borderRadius: 10,
               padding: '12px 32px', color: '#e2e8f0', fontSize: 15, fontWeight: 600, cursor: 'pointer',
