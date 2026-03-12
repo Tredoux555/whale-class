@@ -7,6 +7,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { compressImage } from '@/lib/montree/cache';
 
 // ============================================
 // TYPES
@@ -50,6 +51,57 @@ export default function CameraCapture({
   const [capturedVideo, setCapturedVideo] = useState<CapturedVideo | null>(null);
   const [currentFacing, setCurrentFacing] = useState(facingMode);
   const [recordingTime, setRecordingTime] = useState(0);
+  const albumInputRef = useRef<HTMLInputElement>(null);
+
+  // ============================================
+  // ALBUM / PHOTO LIBRARY PICKER
+  // ============================================
+
+  const handleAlbumSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Compress the image (reuse existing compressImage from cache.ts)
+      const compressed = await compressImage(file);
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(compressed);
+      });
+
+      // Create a CapturedPhoto from the album file
+      const img = new Image();
+      img.onload = () => {
+        const photo: CapturedPhoto = {
+          blob: compressed,
+          dataUrl,
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          timestamp: new Date(),
+        };
+        onCapture({ type: 'photo', data: photo });
+      };
+      img.onerror = () => {
+        // Fallback: use without dimensions
+        const photo: CapturedPhoto = {
+          blob: compressed,
+          dataUrl,
+          width: 0,
+          height: 0,
+          timestamp: new Date(),
+        };
+        onCapture({ type: 'photo', data: photo });
+      };
+      img.src = dataUrl;
+    } catch (err) {
+      console.error('Album pick error:', err);
+      setError(t('camera.error.captureFailed'));
+    }
+
+    // Reset the input so the same file can be selected again
+    if (albumInputRef.current) albumInputRef.current.value = '';
+  }, [onCapture, t]);
 
   // ============================================
   // CAMERA INITIALIZATION
@@ -342,6 +394,14 @@ export default function CameraCapture({
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
+      {/* Hidden file input for album selection — NO capture attribute = shows both camera AND album on mobile */}
+      <input
+        ref={albumInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleAlbumSelect}
+        className="hidden"
+      />
 
       {/* Mode toggle (top) */}
       {allowVideo && !isCaptured && !isRecording && (
@@ -464,14 +524,30 @@ export default function CameraCapture({
         ) : (
           // Camera controls
           <div className="flex items-center justify-between px-6 py-4">
-            {/* Cancel button */}
-            <button
-              onClick={onCancel}
-              disabled={isRecording}
-              className="w-14 h-14 flex items-center justify-center text-white text-2xl disabled:opacity-50"
-            >
-              ✕
-            </button>
+            {/* Cancel + Album buttons (left side) */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onCancel}
+                disabled={isRecording}
+                className="w-12 h-12 flex items-center justify-center text-white text-xl disabled:opacity-50"
+              >
+                ✕
+              </button>
+              {/* Album / Photo Library button */}
+              {!isRecording && captureMode === 'photo' && (
+                <button
+                  onClick={() => albumInputRef.current?.click()}
+                  className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-full text-white active:scale-90 transition-transform"
+                  title={t('camera.album')}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
             {/* Capture/Record button */}
             <button

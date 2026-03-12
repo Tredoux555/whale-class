@@ -115,10 +115,18 @@ export default function DashboardPage() {
     }
   }, [loading, children, session, justOnboarded]);
 
-  // Show error toast
+  // Handle API errors — 401 means cookie expired, force re-login
   useEffect(() => {
-    if (childrenError) toast.error(t('dashboard.failedToLoad'));
-  }, [childrenError]);
+    if (childrenError) {
+      if (childrenError === '401') {
+        // Cookie expired — clear stale localStorage session and redirect to login
+        localStorage.removeItem('montree_session');
+        router.push('/montree/login');
+      } else {
+        toast.error(t('dashboard.failedToLoad'));
+      }
+    }
+  }, [childrenError, router, t]);
 
   const isParent = session ? isHomeschoolParent(session) : false;
 

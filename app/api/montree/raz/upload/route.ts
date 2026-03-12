@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get('file') as File;
     const childId = formData.get('childId') as string;
     const date = formData.get('date') as string || new Date().toISOString().split('T')[0];
-    const photoType = formData.get('photoType') as string; // 'book', 'signature', or 'new_book'
+    const photoType = formData.get('photoType') as string; // 'book', 'signature', 'new_book', or 'new_book_signature'
     const classroomId = formData.get('classroomId') as string;
 
     if (!file || !childId || !photoType) {
@@ -42,11 +42,12 @@ export async function POST(request: NextRequest) {
       book: 'book_photo_url',
       signature: 'signature_photo_url',
       new_book: 'new_book_photo_url',
+      new_book_signature: 'new_book_signature_photo_url',
     };
     const updateField = VALID_PHOTO_TYPES[photoType];
     if (!updateField) {
       return NextResponse.json(
-        { success: false, error: 'Invalid photoType (must be book, signature, or new_book)' },
+        { success: false, error: 'Invalid photoType (must be book, signature, new_book, or new_book_signature)' },
         { status: 400 }
       );
     }

@@ -105,6 +105,12 @@ export default function HomePage() {
     setActiveTab('portal');
   }, []);
 
+  const [guruLimitReached, setGuruLimitReached] = useState(false);
+
+  const handleGuruLimitReached = useCallback(() => {
+    setGuruLimitReached(true);
+  }, []);
+
   const selectedChild = children.find(c => c.id === childId) || children[0] || null;
 
   // Loading state — also wait for selectedChild when children are loaded
@@ -183,6 +189,7 @@ export default function HomePage() {
               childName={selectedChild?.name || ''}
               classroomId={session?.classroom?.id}
               onShelfUpdated={handleShelfUpdated}
+              onGuruLimitReached={handleGuruLimitReached}
               prefillMessage={portalPrefill}
               onPrefillConsumed={() => setPortalPrefill('')}
             />

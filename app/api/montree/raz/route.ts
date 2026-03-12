@@ -1,6 +1,6 @@
 // /api/montree/raz/route.ts
 // RAZ Reading Tracker API
-// Handles daily reading records: 3 photos per kid (book, signature, new book) + read/not_read/no_folder/absent toggle
+// Handles daily reading records: 4 photos per kid (book, signature, new book, new book signature) + read/not_read/no_folder/absent toggle
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -150,7 +150,7 @@ export async function PATCH(request: NextRequest) {
 
     const supabase = getSupabase();
     const body = await request.json();
-    const { record_id, child_id, date, status, book_photo_url, signature_photo_url, new_book_photo_url, book_title, notes } = body;
+    const { record_id, child_id, date, status, book_photo_url, signature_photo_url, new_book_photo_url, new_book_signature_photo_url, book_title, notes } = body;
 
     // Validate status if provided
     const validStatuses = ['read', 'not_read', 'no_folder', 'absent'];
@@ -175,6 +175,7 @@ export async function PATCH(request: NextRequest) {
     if (book_photo_url !== undefined) updateData.book_photo_url = book_photo_url;
     if (signature_photo_url !== undefined) updateData.signature_photo_url = signature_photo_url;
     if (new_book_photo_url !== undefined) updateData.new_book_photo_url = new_book_photo_url;
+    if (new_book_signature_photo_url !== undefined) updateData.new_book_signature_photo_url = new_book_signature_photo_url;
     if (book_title !== undefined) updateData.book_title = book_title;
     if (notes !== undefined) updateData.notes = notes;
 
@@ -191,13 +192,20 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    const { data, error } = await query.select().single();
+    const { data, error } = await query.select().maybeSingle();
 
     if (error) {
       console.error('RAZ update error:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to update record' },
         { status: 500 }
+      );
+    }
+
+    if (!data) {
+      return NextResponse.json(
+        { success: false, error: 'Record not found' },
+        { status: 404 }
       );
     }
 

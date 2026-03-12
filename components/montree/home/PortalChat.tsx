@@ -327,6 +327,11 @@ export default function PortalChat({
           if (uploadRes.ok) {
             const uploadData = await uploadRes.json();
             imageUrl = uploadData.url || uploadData.publicUrl || null;
+            clearImage(); // Only clear preview on successful upload
+          } else {
+            console.error('Image upload failed with status:', uploadRes.status);
+            toast.error(t('home.portal.imageUploadFailed'));
+            clearImage(); // Clear on failure too — user can re-attach
           }
         } catch (err) {
           if (err instanceof DOMException && err.name === 'AbortError') {
@@ -339,55 +344,70 @@ export default function PortalChat({
           // Image upload failed — continue with text only
           console.error('Image upload failed:', err);
           toast.error(t('home.portal.imageUploadFailed'));
+          clearImage();
         }
-        clearImage();
+      }
+
+      const guruBody: Record<string, unknown> = {
+          child_id: childId,
+          question: text || (imageUrl ? t('home.portal.photoAttached') : ''),
+          classroom_id: classroomId,
+          conversational: true,
+      };
+      // Send image_url as separate field so the guru route can use Claude's vision API
+      if (imageUrl) {
+        guruBody.image_url = imageUrl;
       }
 
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          child_id: childId,
-          question: imageUrl ? (text ? `${text}\n\n[Photo: ${imageUrl}]` : `[Photo: ${imageUrl}]`) : text,
-          classroom_id: classroomId,
-          conversational: true,
-        }),
+        body: JSON.stringify(guruBody),
         signal: controller.signal,
       });
 
       clearTimeout(hardTimeout);
       if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
 
+      // Parse response JSON (even for non-OK responses, guru route returns JSON)
+      let data: Record<string, unknown> = {};
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response (server error, etc.)
+        toast.error(t('home.portal.failedToRespond'));
+        return;
+      }
+
       if (!res.ok) {
-        if (res.status === 429) {
+        // Check for specific guru error codes BEFORE generic handling
+        if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
+          onGuruLimitReached?.();
+          toast.error(t('home.portal.limitReached'));
+        } else if (res.status === 429) {
           toast.error(t('home.portal.rateLimited'));
         } else {
-          toast.error(t('home.portal.failedToRespond'));
+          toast.error((data.error as string) || t('home.portal.failedToRespond'));
         }
         return;
       }
 
-      const data = await res.json();
-
       if (data.success && data.insight) {
         const guruMsg: ChatMessage = {
           id: `guru-${Date.now()}`,
-          content: data.insight,
+          content: data.insight as string,
           isUser: false,
           timestamp: new Date().toISOString(),
-          actions: data.actions || undefined,
+          actions: (data.actions as Array<{ success: boolean }>) || undefined,
         };
         setMessages(prev => [...prev, guruMsg]);
 
         // Notify parent if tools were used (shelf may have changed)
-        if (data.actions?.some((a: { success: boolean }) => a.success)) {
+        if ((data.actions as Array<{ success: boolean }>)?.some(a => a.success)) {
           onShelfUpdated?.();
         }
-      } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
-        onGuruLimitReached?.();
-        toast.error(t('home.portal.limitReached'));
       } else {
-        toast.error(data.error || t('home.portal.failedToRespond'));
+        toast.error((data.error as string) || t('home.portal.failedToRespond'));
       }
     } catch (err) {
       clearTimeout(hardTimeout);

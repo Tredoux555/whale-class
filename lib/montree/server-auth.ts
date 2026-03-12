@@ -151,9 +151,7 @@ export function setMontreeAuthCookie(
   token: string,
   role?: 'teacher' | 'principal' | 'homeschool_parent'
 ): void {
-  const maxAge = role === 'homeschool_parent'
-    ? 30 * 24 * 60 * 60  // 30 days — homeschool parents log in less frequently
-    : 7 * 24 * 60 * 60;  // 7 days — teachers/principals
+  const maxAge = 30 * 24 * 60 * 60;  // 30 days for all roles — 7 days was too short, caused zombie sessions
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
