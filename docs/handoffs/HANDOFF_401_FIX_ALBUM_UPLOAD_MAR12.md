@@ -28,10 +28,13 @@ The httpOnly `montree-auth` cookie had a 7-day TTL for teachers/principals, but 
 
 ### Fix (2 files)
 
-**`lib/montree/server-auth.ts`** — Extended cookie TTL to 30 days for ALL roles:
+**`lib/montree/server-auth.ts`** — JWT token TTL and cookie maxAge both set to 365 days for ALL roles (paid subscription = effectively non-expiring):
 ```typescript
-// BEFORE: role === 'homeschool_parent' ? 30 days : 7 days
-const maxAge = 30 * 24 * 60 * 60;  // 30 days for all roles
+// JWT TTL — BEFORE: homeschool_parent ? '30d' : '7d'
+const ttl = '365d';
+
+// Cookie maxAge — BEFORE: 7 days for teachers, 30 days for parents
+const maxAge = 365 * 24 * 60 * 60;  // 365 days
 ```
 
 **`app/montree/dashboard/page.tsx`** — Added 401 detection that clears stale localStorage and redirects to login:
@@ -44,13 +47,13 @@ if (childrenError === '401') {
 
 ### Why This Works
 
-- Cookie now lasts 30 days (matches parent cookie TTL) — prevents most zombie sessions
-- If cookie DOES expire, dashboard detects 401 → clears stale localStorage → redirects to login → user gets fresh cookie on login
-- Session recovery pipeline (built Mar 11, not yet deployed) will also handle this once pushed
+- JWT token AND cookie both last 365 days — paid subscription, effectively non-expiring
+- If auth DOES expire, dashboard detects 401 → clears stale localStorage → redirects to login → user gets fresh cookie on login
+- Session recovery pipeline (built Mar 11, not yet deployed) will also handle edge cases once pushed
 
 ### User Action Required
 
-Current production users with expired cookies need to **log out and log back in** (or clear cookies) to get a new cookie. Once the session recovery code from Mar 11 is deployed, this will be automatic.
+Current production users with expired cookies need to **log out and log back in** once to get a new 365-day token. After that, no further action needed for a year.
 
 ---
 
@@ -83,7 +86,7 @@ Key implementation details:
 
 | File | Changes |
 |------|---------|
-| `lib/montree/server-auth.ts` | Cookie TTL 7d→30d for all roles |
+| `lib/montree/server-auth.ts` | JWT TTL 7d→365d + cookie maxAge 7d→365d for all roles |
 | `app/montree/dashboard/page.tsx` | 401 detection → clear localStorage → redirect to login |
 | `components/montree/media/CameraCapture.tsx` | Album file input + button + handleAlbumSelect with compression |
 | `lib/montree/i18n/en.ts` | 1 new key (`camera.album`) |
