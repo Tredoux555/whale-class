@@ -29,8 +29,8 @@ export default function PhotoBankPage() {
     };
   }, []);
 
-  // Handle file upload — chunks large batches to avoid timeouts
-  const CHUNK_SIZE = 10; // Upload 10 files at a time
+  // Handle file upload — chunks large batches to avoid body size limits
+  const CHUNK_SIZE = 25; // Upload 25 files at a time (server processes in parallel)
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
 
