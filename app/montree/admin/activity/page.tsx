@@ -60,17 +60,18 @@ function getActivityLabels(t: (key: string) => string): Record<string, string> {
   };
 }
 
-function formatTimeAgo(dateString: string | null, t: (key: string) => string): string {
+function formatTimeAgo(dateString: string | null, t: (key: string, params?: Record<string, string | number>) => string): string {
   if (!dateString) return t('time.never');
 
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
   const now = new Date();
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (seconds < 60) return t('time.justNow');
-  if (seconds < 3600) return t('time.minutesAgo').replace('{count}', Math.floor(seconds / 60).toString());
-  if (seconds < 86400) return t('time.hoursAgo').replace('{count}', Math.floor(seconds / 3600).toString());
-  if (seconds < 604800) return t('time.daysAgo').replace('{count}', Math.floor(seconds / 86400).toString());
+  if (seconds < 3600) return t('time.minutesAgo', { count: Math.floor(seconds / 60) });
+  if (seconds < 86400) return t('time.hoursAgo', { count: Math.floor(seconds / 3600) });
+  if (seconds < 604800) return t('time.daysAgo', { count: Math.floor(seconds / 86400) });
 
   return date.toLocaleDateString();
 }

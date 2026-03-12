@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       .select('id, school_id')
       .eq('id', classroomId)
       .eq('school_id', auth.schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });

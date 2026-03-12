@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { toast } from 'sonner';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
-import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 
 interface PhotoEditModalProps {
@@ -152,7 +152,7 @@ export default function PhotoEditModal({
     // Group by area
     const grouped: Record<string, AvailableWork[]> = {};
     for (const w of works) {
-      const key = w.area_name || 'Other';
+      const key = w.area_name || t('photoEdit.other');
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(w);
     }
@@ -230,7 +230,7 @@ export default function PhotoEditModal({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to save changes');
+        throw new Error(error.error || t('photoEdit.saveFailed'));
       }
 
       const result = await response.json();
@@ -247,12 +247,12 @@ export default function PhotoEditModal({
           work_name: selectedWork?.name ?? null,
         };
         onSave?.(enhancedMedia);
-        toast.success(t('photoEdit.saveSuccess' as TranslationKey));
+        toast.success(t('photoEdit.saveSuccess'));
         onClose();
       }
     } catch (err) {
       console.error('Save error:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to save changes');
+      toast.error(err instanceof Error ? err.message : t('photoEdit.saveFailed'));
     } finally {
       setIsSaving(false);
     }
@@ -271,7 +271,7 @@ export default function PhotoEditModal({
       <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-emerald-50 to-teal-50">
-          <h2 className="text-lg font-bold text-gray-800">{t('photoEdit.title' as TranslationKey)}</h2>
+          <h2 className="text-lg font-bold text-gray-800">{t('photoEdit.title')}</h2>
           <button
             onClick={onClose}
             disabled={isSaving}
@@ -292,7 +292,7 @@ export default function PhotoEditModal({
             ) : imageUrl ? (
               <img
                 src={imageUrl}
-                alt={media.caption || 'Photo'}
+                alt={media.caption || t('photoEdit.photo')}
                 className="w-full aspect-video object-cover"
               />
             ) : (
@@ -305,12 +305,12 @@ export default function PhotoEditModal({
           {/* Caption */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t('photoEdit.caption' as TranslationKey)}
+              {t('photoEdit.caption')}
             </label>
             <textarea
               value={formData.caption}
               onChange={(e) => setFormData(prev => ({ ...prev, caption: e.target.value }))}
-              placeholder={t('placeholder.photoCaption' as TranslationKey)}
+              placeholder={t('placeholder.photoCaption')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
               rows={3}
             />
@@ -319,7 +319,7 @@ export default function PhotoEditModal({
           {/* Assign Child */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t('photoEdit.childAssignment' as TranslationKey)}
+              {t('photoEdit.childAssignment')}
             </label>
             {availableChildren.length > 0 ? (
               <select
@@ -327,25 +327,25 @@ export default function PhotoEditModal({
                 onChange={(e) => setFormData(prev => ({ ...prev, child_id: e.target.value || null }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               >
-                <option value="">{t('photoEdit.noSpecificChild' as TranslationKey)}</option>
+                <option value="">{t('photoEdit.noSpecificChild')}</option>
                 {availableChildren.map(child => (
                   <option key={child.id} value={child.id}>{child.name}</option>
                 ))}
               </select>
             ) : (
               <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
-                {t('photoEdit.noChildrenAvailable' as TranslationKey)}
+                {t('photoEdit.noChildrenAvailable')}
               </div>
             )}
             {selectedChild && (
-              <p className="text-xs text-gray-600 mt-1">{t('photoEdit.selected' as TranslationKey, { name: selectedChild.name })}</p>
+              <p className="text-xs text-gray-600 mt-1">{t('photoEdit.selected', { name: selectedChild.name })}</p>
             )}
           </div>
 
           {/* Assign Work — Searchable Picker */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t('photoEdit.curriculumWork' as TranslationKey)}
+              {t('photoEdit.curriculumWork')}
             </label>
 
             {/* Currently selected work display */}
@@ -387,8 +387,8 @@ export default function PhotoEditModal({
                 }}
                 onFocus={() => setWorkPickerOpen(true)}
                 placeholder={selectedWork
-                  ? t('photoEdit.changeWork' as TranslationKey)
-                  : t('photoEdit.searchWorks' as TranslationKey)
+                  ? t('photoEdit.changeWork')
+                  : t('photoEdit.searchWorks')
                 }
                 className="w-full px-3 py-2 pl-9 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
@@ -403,7 +403,7 @@ export default function PhotoEditModal({
                   onClick={() => { handleClearWork(); setWorkPickerOpen(false); setWorkSearch(''); }}
                   className="w-full px-3 py-2 text-left text-sm text-gray-500 hover:bg-gray-50 border-b"
                 >
-                  {t('photoEdit.noWorkAssigned' as TranslationKey)}
+                  {t('photoEdit.noWorkAssigned')}
                 </button>
 
                 {Object.entries(filteredWorks).map(([areaName, works]) => (
@@ -438,7 +438,7 @@ export default function PhotoEditModal({
 
                 {Object.keys(filteredWorks).length === 0 && (
                   <div className="px-3 py-4 text-center text-sm text-gray-400">
-                    {t('photoEdit.noMatchingWorks' as TranslationKey)}
+                    {t('photoEdit.noMatchingWorks')}
                   </div>
                 )}
               </div>
@@ -446,7 +446,7 @@ export default function PhotoEditModal({
 
             {availableWorks.length === 0 && !loading && (
               <div className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-500 bg-gray-50">
-                {t('photoEdit.noWorksAvailable' as TranslationKey)}
+                {t('photoEdit.noWorksAvailable')}
               </div>
             )}
           </div>
@@ -454,7 +454,7 @@ export default function PhotoEditModal({
           {/* Tags */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {t('photoEdit.tags' as TranslationKey)}
+              {t('photoEdit.tags')}
             </label>
             <div className="flex gap-2 mb-2">
               <input
@@ -464,14 +464,14 @@ export default function PhotoEditModal({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); }
                 }}
-                placeholder={t('placeholder.addTag' as TranslationKey)}
+                placeholder={t('placeholder.addTag')}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
               <button
                 onClick={handleAddTag}
                 className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
               >
-                {t('photoEdit.addButton' as TranslationKey)}
+                {t('photoEdit.addButton')}
               </button>
             </div>
 
@@ -489,10 +489,10 @@ export default function PhotoEditModal({
 
           {/* Metadata */}
           <div className="bg-gray-50 p-3 rounded-lg text-xs text-gray-600 border border-gray-200">
-            <p className="font-semibold mb-1 text-gray-700">{t('photoEdit.metadata' as TranslationKey)}</p>
+            <p className="font-semibold mb-1 text-gray-700">{t('photoEdit.metadata')}</p>
             <p>ID: {media.id}</p>
-            <p>{t('photoEdit.captured' as TranslationKey, { timestamp: new Date(media.captured_at).toLocaleString() })}</p>
-            <p>{t('photoEdit.by' as TranslationKey, { teacher: media.captured_by || 'Unknown' })}</p>
+            <p>{t('photoEdit.captured', { timestamp: new Date(media.captured_at).toLocaleString() })}</p>
+            <p>{t('photoEdit.by', { teacher: media.captured_by || t('photoEdit.unknown') })}</p>
           </div>
         </div>
 
@@ -503,7 +503,7 @@ export default function PhotoEditModal({
             disabled={isSaving}
             className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
-            {t('photoEdit.cancel' as TranslationKey)}
+            {t('photoEdit.cancel')}
           </button>
           <button
             onClick={handleSave}
@@ -513,10 +513,10 @@ export default function PhotoEditModal({
             {isSaving ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                {t('photoEdit.saving' as TranslationKey)}
+                {t('photoEdit.saving')}
               </>
             ) : (
-              <>{t('photoEdit.saveChanges' as TranslationKey)}</>
+              <>{t('photoEdit.saveChanges')}</>
             )}
           </button>
         </div>

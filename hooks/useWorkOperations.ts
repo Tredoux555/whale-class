@@ -88,7 +88,7 @@ export function useWorkOperations({
       });
       if (!res.ok) throw new Error('Save failed');
     } catch {
-      toast.error(t('toast.failedToUpdate' as any));
+      toast.error(t('toast.failedToUpdate'));
       // Revert optimistic update
       if (isFocus) {
         setFocusWorks(prev => prev.map(w =>
@@ -107,7 +107,7 @@ export function useWorkOperations({
     // OPTIMISTIC - remove from UI immediately
     const removedWork = work;
     setExtraWorks(prev => prev.filter(w => w.work_name !== work.work_name));
-    toast.success(t('toast.removed' as any));
+    toast.success(t('toast.removed'));
 
     // Background API call — remove_extra deletes from extras table only
     try {
@@ -125,7 +125,7 @@ export function useWorkOperations({
     } catch {
       // Revert on failure
       setExtraWorks(prev => [...prev, removedWork]);
-      toast.error(t('toast.failedToRemove' as any));
+      toast.error(t('toast.failedToRemove'));
     }
   }, [childId, setExtraWorks]);
 
@@ -150,7 +150,7 @@ export function useWorkOperations({
       return w;
     }));
     setWheelPickerOpen(false);
-    toast.success(t('toast.focusSet' as any).replace('{name}', work.name));
+    toast.success(t('toast.focusSet', { name: work.name }));
 
     // Background API call
     try {
@@ -197,7 +197,7 @@ export function useWorkOperations({
           return w;
         }));
       }
-      toast.error(t('toast.failedToUpdate' as any));
+      toast.error(t('toast.failedToUpdate'));
     }
   }, [childId, wheelPickerArea, wheelPickerWorks, focusWorks, setFocusWorks, setWheelPickerOpen]);
 
@@ -208,7 +208,7 @@ export function useWorkOperations({
     // Check if already exists
     const existing = allWorks.find(w => w.work_name?.toLowerCase() === work.name?.toLowerCase());
     if (existing) {
-      toast.error(t('toast.alreadyAdded' as any));
+      toast.error(t('toast.alreadyAdded'));
       return;
     }
 
@@ -222,7 +222,7 @@ export function useWorkOperations({
     };
     setExtraWorks(prev => [...prev, newExtra]);
     setWheelPickerOpen(false);
-    toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
+    toast.success(t('toast.workAdded', { name: work.name }));
 
     // Background API call
     try {
@@ -242,7 +242,7 @@ export function useWorkOperations({
     } catch {
       // Revert on failure
       setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
-      toast.error(t('toast.failedToAdd' as any));
+      toast.error(t('toast.failedToAdd'));
     }
   }, [childId, wheelPickerArea, allWorks, setExtraWorks, setWheelPickerOpen]);
 
@@ -251,7 +251,7 @@ export function useWorkOperations({
     // Check if already exists in focus or extras
     const existing = allWorks.find(a => a.work_name?.toLowerCase() === work.name?.toLowerCase());
     if (existing) {
-      toast.error(t('toast.alreadyAdded' as any));
+      toast.error(t('toast.alreadyAdded'));
       return;
     }
 
@@ -266,7 +266,7 @@ export function useWorkOperations({
       is_extra: true,
     };
     setExtraWorks(prev => [...prev, newExtra]);
-    toast.success(t('toast.workAdded' as any).replace('{name}', work.name));
+    toast.success(t('toast.workAdded', { name: work.name }));
 
     // Background API call
     try {
@@ -286,7 +286,7 @@ export function useWorkOperations({
     } catch {
       // Revert on failure
       setExtraWorks(prev => prev.filter(w => w.work_name !== work.name));
-      toast.error(t('toast.failedToAdd' as any));
+      toast.error(t('toast.failedToAdd'));
     }
   }, [childId, allWorks, setExtraWorks]);
 
@@ -307,11 +307,11 @@ export function useWorkOperations({
         }),
       });
       if (res.ok) {
-        toast.success(t('toast.noteSaved' as any));
+        toast.success(t('toast.noteSaved'));
         return true;
       }
     } catch {
-      toast.error(t('toast.errorSaving' as any));
+      toast.error(t('toast.errorSaving'));
     }
     return false;
   }, [childId, session?.teacher?.id]);

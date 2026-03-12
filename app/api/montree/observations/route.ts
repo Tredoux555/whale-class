@@ -238,7 +238,7 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
           .eq('pattern_type', 'behavioral')
           .ilike('pattern_description', `%${func}%`)
           .eq('still_active', true)
-          .single();
+          .maybeSingle();
 
         if (!existing) {
           // Create new pattern
@@ -264,7 +264,7 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
           .eq('pattern_type', 'behavioral')
           .ilike('pattern_description', `%${time.replace('_', ' ')}%`)
           .eq('still_active', true)
-          .single();
+          .maybeSingle();
 
         if (!existing) {
           await supabase.from('montree_child_patterns').insert({

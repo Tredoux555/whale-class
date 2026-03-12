@@ -127,13 +127,13 @@ export function useCurriculumDragDrop({
       });
       const data = await res.json();
       if (data.success) {
-        toast.success(t('toast.orderSaved' as any));
+        toast.success(t('toast.orderSaved'));
       } else {
-        toast.error(t('toast.failedToSaveOrder' as any));
+        toast.error(t('toast.failedToSaveOrder'));
         fetchCurriculum();
       }
     } catch (err) {
-      toast.error(t('toast.failedToSaveOrder' as any));
+      toast.error(t('toast.failedToSaveOrder'));
       fetchCurriculum();
     }
     setReordering(false);

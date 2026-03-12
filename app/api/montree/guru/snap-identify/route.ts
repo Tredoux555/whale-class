@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const [childResult, progressResult, focusResult, observationsResult, snapHistoryResult] = await Promise.all([
-      supabase.from('montree_children').select('name, age, date_of_birth, classroom_id').eq('id', childId).single(),
+      supabase.from('montree_children').select('name, age, date_of_birth, classroom_id').eq('id', childId).maybeSingle(),
       supabase.from('montree_child_progress').select('work_name, area, status, presented_at, mastered_at, updated_at, notes').eq('child_id', childId),
       supabase.from('montree_child_focus_works').select('area, work_name').eq('child_id', childId),
       supabase.from('montree_behavioral_observations').select('behavior_description, observed_at').eq('child_id', childId).gte('observed_at', thirtyDaysAgo.toISOString()).order('observed_at', { ascending: false }).limit(10),
@@ -313,11 +313,11 @@ export async function POST(request: NextRequest) {
           .from('montree_schools')
           .select('settings')
           .eq('id', auth.schoolId)
-          .single();
+          .maybeSingle();
         const schoolSettings = (school?.settings as Record<string, unknown>) || {};
         if (schoolSettings.locale === 'zh') locale = 'zh';
       }
-    } catch { /* default en */ }
+    } catch (err) { console.error('[snap-identify] School locale fetch error:', err); }
 
     // Compute age
     let ageStr = child?.age ? `${child.age} years` : 'unknown age';
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
         const dob = new Date(child.date_of_birth);
         ageMonths = (now.getFullYear() - dob.getFullYear()) * 12 + (now.getMonth() - dob.getMonth());
         ageStr = `${Math.floor(ageMonths / 12)} years ${ageMonths % 12} months`;
-      } catch { /* use fallback */ }
+      } catch (err) { console.error('[snap-identify] DOB parse error:', err); }
     }
 
     // ── Step 3: Build analysis context (server-side pre-computation) ──
@@ -622,7 +622,7 @@ RULES:
           trajectory: result.analysis?.trajectory,
           mastered_count: Object.values(areaStats).reduce((sum, s) => sum + s.mastered, 0),
         },
-      }).catch(() => {});
+      }).catch((err) => { console.error('[snap-identify] Interaction save error:', err); });
 
     // 5e. Append weekly narrative to child settings
     if (result.weekly_narrative) {
@@ -631,7 +631,7 @@ RULES:
           .from('montree_children')
           .select('settings')
           .eq('id', childId)
-          .single();
+          .maybeSingle();
         const settings = (childData?.settings as Record<string, unknown>) || {};
         const narratives = Array.isArray(settings.guru_snap_narratives) ? settings.guru_snap_narratives : [];
         narratives.push({
@@ -646,7 +646,7 @@ RULES:
           .from('montree_children')
           .update({ settings: { ...settings, guru_snap_narratives: trimmed } })
           .eq('id', childId);
-      } catch { /* non-critical */ }
+      } catch (err) { console.error('[snap-identify] Narrative append error:', err); }
     }
 
     // ── Step 6: Return rich response ──

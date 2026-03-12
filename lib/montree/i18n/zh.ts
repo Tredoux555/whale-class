@@ -1073,7 +1073,8 @@ export const zh = {
   'installBanner.install': '安装',
 
   // Phase 7 — Guru Chat
-  'guru.welcomeBackGreeting': '欢迎回来！今天我能帮您什么？',
+  'guru.welcomeGreeting': '你好{name}！我是你的蒙特梭利导师。随时问我关于孩子发展、活动或学习旅程的任何问题。',
+  'guru.welcomeBackGreeting': '欢迎回来，{name}！今天我能帮您什么？',
   'guru.errorLoadChat': '加载聊天记录失败',
   'guru.onboardingWelcomeWithConcerns': '我看到您对{concerns}感兴趣。让我们聊聊您的想法吧！',
   'guru.onboardingWelcomeNoConcerns': '您好！我是您的蒙特梭利指导老师。随时问我关于孩子发展的问题！',
@@ -1297,18 +1298,6 @@ export const zh = {
   // Phase 9 — Card Generator
   'cardGenerator.title': '三段卡生成器',
   'cardGenerator.subtitle': '为课程创建卡片',
-
-  // Validation & Forms
-  'validation.passwordMinLength': '密码至少需要6个字符',
-  'validation.passwordsDoNotMatch': '密码不匹配',
-  'validation.passwordSetSuccess': '密码设置成功！',
-  'validation.failedToSetPassword': '密码设置失败',
-  'validation.somethingWentWrong': '出了点问题',
-  'validation.registrationFailed': '注册失败',
-
-  // Placeholders
-  'placeholder.photoCaption': '添加关于此照片的标题或笔记...',
-  'placeholder.addTag': '添加标签...',
 
   // Phase 10 — Feedback
   'feedback.title': '快速反馈',
@@ -2193,6 +2182,10 @@ export const zh = {
   'photoEdit.saving': '保存中...',
   'photoEdit.saveChanges': '✓ 保存更改',
   'photoEdit.saveSuccess': '照片已成功更新',
+  'photoEdit.saveFailed': '保存更改失败',
+  'photoEdit.other': '其他',
+  'photoEdit.photo': '照片',
+  'photoEdit.unknown': '未知',
 
   // --- Sensitive Periods (parent weekly review) ---
   'sensitivePeriod.order.name': '秩序',
@@ -2344,6 +2337,9 @@ export const zh = {
   'voiceObs.errorAnalysis': '分析失败',
   'voiceObs.errorUpload': '上传失败',
   'voiceObs.errorTimeout': '处理超时',
+  'voiceObs.failedToStart': '开始录音失败',
+  'voiceObs.failedToPause': '暂停失败',
+  'voiceObs.failedToEnd': '结束录音失败',
   'voiceObs.tabSwitchWarning': '切换应用时录音会暂停 — 请保持此标签页活跃！',
   'voiceObs.chunksUploaded': '片段已上传',
   'voiceObs.selectLanguage': '录音语言',

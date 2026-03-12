@@ -83,7 +83,9 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
           } else if (errorData.code === 'TIMEOUT') {
             errorMessage = t('voiceNotes.transcribeError');
           }
-        } catch {}
+        } catch (parseErr) {
+          console.error('[voice-note] Error parsing transcribe response:', parseErr);
+        }
         throw new Error(errorMessage);
       }
 
@@ -125,7 +127,9 @@ export default function ChildVoiceNote({ childId, onTranscript, onNoteCreated }:
           } else if (errorData.code === 'DB_ERROR') {
             errorMessage = t('voiceNotes.saveError');
           }
-        } catch {}
+        } catch (parseErr) {
+          console.error('[voice-note] Error parsing extract response:', parseErr);
+        }
         throw new Error(errorMessage);
       }
 

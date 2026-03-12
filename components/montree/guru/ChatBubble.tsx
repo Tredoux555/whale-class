@@ -12,8 +12,9 @@ interface ChatBubbleProps {
   imageUrl?: string;
 }
 
-function formatRelativeTime(dateStr: string, t: (key: string) => string): string {
+function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string): string {
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return '';
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
@@ -21,10 +22,10 @@ function formatRelativeTime(dateStr: string, t: (key: string) => string): string
   const diffDays = Math.floor(diffMs / 86400000);
 
   if (diffMins < 1) return t('time.justNow');
-  if (diffMins < 60) return t('time.minutesAgo').replace('{count}', diffMins.toString());
-  if (diffHours < 24) return t('time.hoursAgo').replace('{count}', diffHours.toString());
+  if (diffMins < 60) return t('time.minutesAgo', { count: diffMins });
+  if (diffHours < 24) return t('time.hoursAgo', { count: diffHours });
   if (diffDays === 1) return t('time.yesterday');
-  if (diffDays < 7) return t('time.daysAgo').replace('{count}', diffDays.toString());
+  if (diffDays < 7) return t('time.daysAgo', { count: diffDays });
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 

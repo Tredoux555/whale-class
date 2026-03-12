@@ -1080,7 +1080,8 @@ export const en = {
   'installBanner.install': 'Install',
 
   // Phase 7 — Guru Chat
-  'guru.welcomeBackGreeting': 'Welcome back! How can I help today?',
+  'guru.welcomeGreeting': 'Hi {name}! I\'m your Montessori guide. Ask me anything about your child\'s development, activities, or learning journey.',
+  'guru.welcomeBackGreeting': 'Welcome back, {name}! How can I help today?',
   'guru.errorLoadChat': 'Failed to load chat history',
   'guru.onboardingWelcomeWithConcerns': "I see you're interested in {concerns}. Let's talk about what's on your mind!",
   'guru.onboardingWelcomeNoConcerns': "Hi! I'm your Montessori guide. Ask me anything about your child's development!",
@@ -1297,18 +1298,6 @@ export const en = {
   // Phase 9 — Card Generator
   'cardGenerator.title': '3-Part Card Generator',
   'cardGenerator.subtitle': 'Create cards for your lessons',
-
-  // Validation & Forms
-  'validation.passwordMinLength': 'Password must be at least 6 characters',
-  'validation.passwordsDoNotMatch': 'Passwords do not match',
-  'validation.passwordSetSuccess': 'Password set successfully!',
-  'validation.failedToSetPassword': 'Failed to set password',
-  'validation.somethingWentWrong': 'Something went wrong',
-  'validation.registrationFailed': 'Registration failed',
-
-  // Placeholders
-  'placeholder.photoCaption': 'Add a caption or notes about this photo...',
-  'placeholder.addTag': 'Add a tag...',
 
   // Phase 10 — Feedback
   'feedback.title': 'Quick Feedback',
@@ -2193,6 +2182,10 @@ export const en = {
   'photoEdit.saving': 'Saving...',
   'photoEdit.saveChanges': '✓ Save Changes',
   'photoEdit.saveSuccess': 'Photo updated successfully',
+  'photoEdit.saveFailed': 'Failed to save changes',
+  'photoEdit.other': 'Other',
+  'photoEdit.photo': 'Photo',
+  'photoEdit.unknown': 'Unknown',
 
   // --- Sensitive Periods (parent weekly review) ---
   'sensitivePeriod.order.name': 'Order',
@@ -2344,6 +2337,9 @@ export const en = {
   'voiceObs.errorAnalysis': 'Analysis failed',
   'voiceObs.errorUpload': 'Upload failed',
   'voiceObs.errorTimeout': 'Processing timed out',
+  'voiceObs.failedToStart': 'Failed to start recording',
+  'voiceObs.failedToPause': 'Failed to pause',
+  'voiceObs.failedToEnd': 'Failed to end recording',
   'voiceObs.tabSwitchWarning': 'Recording pauses when you switch apps — keep this tab active!',
   'voiceObs.chunksUploaded': 'chunks uploaded',
   'voiceObs.selectLanguage': 'Recording Language',
