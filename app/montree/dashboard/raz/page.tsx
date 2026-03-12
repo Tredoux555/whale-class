@@ -114,6 +114,26 @@ export default function RazTrackerPage() {
   // Photo lightbox viewer
   const [viewingPhoto, setViewingPhoto] = useState<{ url: string; label: string; childName: string } | null>(null);
 
+  // Tab system: today (default), summary, audit
+  const [activeTab, setActiveTab] = useState<'today' | 'summary' | 'audit'>('today');
+
+  // Audit state
+  interface AuditDay { date: string; status: string | null; }
+  interface AuditWeek {
+    weekStart: string; weekEnd: string; days: AuditDay[];
+    readCount: number; notReadCount: number; noFolderCount: number; absentCount: number; totalDays: number;
+  }
+  interface AuditTotals {
+    totalRead: number; totalNotRead: number; totalNoFolder: number; totalAbsent: number;
+    totalWeeks: number; weeksWithNoRead: number; weeksWithNoFolder: number;
+  }
+  interface AuditData { weeks: AuditWeek[]; totals: AuditTotals; childId: string; from: string; to: string; }
+
+  const [auditChildId, setAuditChildId] = useState<string | null>(null);
+  const [auditWeeks, setAuditWeeks] = useState(12);
+  const [auditData, setAuditData] = useState<AuditData | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+
   // After 3rd photo: show child picker instead of auto-advancing
   const [pickingNextChild, setPickingNextChild] = useState(false);
   const [childSearch, setChildSearch] = useState('');
@@ -178,6 +198,31 @@ export default function RazTrackerPage() {
       toast.error(t('raz.failedToLoad'));
     }
     setLoading(false);
+  }
+
+  // --- Audit data loader ---
+  async function loadAudit(childId: string, weeks: number) {
+    if (!session?.classroom?.id) return;
+    setAuditLoading(true);
+    setAuditData(null);
+    try {
+      const res = await fetch(
+        `/api/montree/raz/summary?type=audit&classroom_id=${session.classroom.id}&child_id=${childId}&weeks=${weeks}`
+      );
+      if (!mountedRef.current) return;
+      if (!res.ok) {
+        toast.error(t('raz.failedToLoad'));
+        setAuditLoading(false);
+        return;
+      }
+      const data = await res.json();
+      if (!mountedRef.current) return;
+      setAuditData(data);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (mountedRef.current) toast.error(t('raz.failedToLoad'));
+    }
+    if (mountedRef.current) setAuditLoading(false);
   }
 
   // --- Child picker: teacher selects next child manually ---
@@ -873,7 +918,27 @@ export default function RazTrackerPage() {
           style={{ background: '#334155', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#e2e8f0', cursor: 'pointer', fontSize: 13 }}>{t('raz.today')}</button>
       </div>
 
-      {/* Stats Bar */}
+      {/* Tab Bar */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: '#1e293b', borderRadius: 10, padding: 4 }}>
+        {([
+          { key: 'today' as const, label: t('raz.tabToday'), emoji: '📋' },
+          { key: 'summary' as const, label: t('raz.tabSummary'), emoji: '📊' },
+          { key: 'audit' as const, label: t('raz.tabAudit'), emoji: '🔍' },
+        ]).map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+            flex: 1, padding: '10px 8px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: activeTab === tab.key ? '#334155' : 'transparent',
+            color: activeTab === tab.key ? '#fff' : '#64748b',
+            fontWeight: activeTab === tab.key ? 700 : 500, fontSize: 13,
+            transition: 'all 0.15s ease',
+          }}>
+            {tab.emoji} {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Stats Bar — only on Today tab */}
+      {activeTab === 'today' && (
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 20 }}>
         {[
           { count: readCount, bg: '#dcfce7', fg: '#166534', label: `📖 ${t('raz.statusRead')}` },
@@ -888,8 +953,278 @@ export default function RazTrackerPage() {
           </div>
         ))}
       </div>
+      )}
 
-      {/* Children List */}
+      {/* ========= SUMMARY TAB ========= */}
+      {activeTab === 'summary' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Summary header */}
+          <div style={{ textAlign: 'center', padding: '8px 0' }}>
+            <div style={{ fontSize: 13, color: '#94a3b8' }}>
+              {(() => {
+                const recorded = children.filter(c => records[c.id]?.status).length;
+                return recorded === children.length
+                  ? t('raz.allStudentsRecorded')
+                  : t('raz.studentsRecorded').replace('{count}', String(recorded)).replace('{total}', String(children.length));
+              })()}
+            </div>
+          </div>
+
+          {/* Read & Returned */}
+          {(() => {
+            const readKids = children.filter(c => records[c.id]?.status === 'read');
+            return readKids.length > 0 && (
+              <div style={{ background: '#0f2918', border: '1px solid #166534', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#22c55e', marginBottom: 10 }}>
+                  📖 {t('raz.readAndReturned')} ({readKids.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {readKids.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#1a3a24', borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: c.color || '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, overflow: 'hidden' }}>
+                        {c.photo_url ? <img src={c.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (c.avatar_emoji || c.name.charAt(0))}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#86efac', fontWeight: 500 }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Didn't Read */}
+          {(() => {
+            const kids = children.filter(c => records[c.id]?.status === 'not_read');
+            return kids.length > 0 && (
+              <div style={{ background: '#2a1215', border: '1px solid #991b1b', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#ef4444', marginBottom: 10 }}>
+                  ❌ {t('raz.didNotRead')} ({kids.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {kids.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#3a1a1e', borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: c.color || '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, overflow: 'hidden' }}>
+                        {c.photo_url ? <img src={c.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (c.avatar_emoji || c.name.charAt(0))}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#fca5a5', fontWeight: 500 }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* No Folder */}
+          {(() => {
+            const kids = children.filter(c => records[c.id]?.status === 'no_folder');
+            return kids.length > 0 && (
+              <div style={{ background: '#2a2210', border: '1px solid #92400e', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#f59e0b', marginBottom: 10 }}>
+                  📁 {t('raz.noFolderBrought')} ({kids.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {kids.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#3a3018', borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: c.color || '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, overflow: 'hidden' }}>
+                        {c.photo_url ? <img src={c.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (c.avatar_emoji || c.name.charAt(0))}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#fcd34d', fontWeight: 500 }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Absent */}
+          {(() => {
+            const kids = children.filter(c => records[c.id]?.status === 'absent');
+            return kids.length > 0 && (
+              <div style={{ background: '#1a1a2e', border: '1px solid #4b5563', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#6b7280', marginBottom: 10 }}>
+                  🚫 {t('raz.absentToday')} ({kids.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {kids.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#252538', borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: c.color || '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, overflow: 'hidden' }}>
+                        {c.photo_url ? <img src={c.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (c.avatar_emoji || c.name.charAt(0))}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#9ca3af', fontWeight: 500 }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Not Recorded */}
+          {(() => {
+            const kids = children.filter(c => !records[c.id]?.status);
+            return kids.length > 0 && (
+              <div style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: '#94a3b8', marginBottom: 10 }}>
+                  ⏳ {t('raz.notRecorded')} ({kids.length})
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {kids.map(c => (
+                    <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#0f172a', borderRadius: 8, padding: '6px 10px' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: c.color || '#334155', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, overflow: 'hidden' }}>
+                        {c.photo_url ? <img src={c.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (c.avatar_emoji || c.name.charAt(0))}
+                      </div>
+                      <span style={{ fontSize: 13, color: '#64748b', fontWeight: 500 }}>{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ========= AUDIT TAB ========= */}
+      {activeTab === 'audit' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Child selector */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={auditChildId || ''}
+              onChange={e => {
+                const cid = e.target.value;
+                setAuditChildId(cid || null);
+                if (cid) loadAudit(cid, auditWeeks);
+                else setAuditData(null);
+              }}
+              style={{ flex: 1, background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '10px 12px', color: '#e2e8f0', fontSize: 14 }}
+            >
+              <option value="">{t('raz.selectChild')}</option>
+              {children.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            <select
+              value={auditWeeks}
+              onChange={e => {
+                const w = parseInt(e.target.value, 10);
+                setAuditWeeks(w);
+                if (auditChildId) loadAudit(auditChildId, w);
+              }}
+              style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '10px 12px', color: '#e2e8f0', fontSize: 14 }}
+            >
+              {[4, 8, 12, 24, 52].map(w => (
+                <option key={w} value={w}>{w} {t('raz.weeksToAudit')}</option>
+              ))}
+            </select>
+          </div>
+
+          {auditLoading && (
+            <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+              <div style={{ width: 24, height: 24, border: '3px solid #334155', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 0.6s linear infinite', margin: '0 auto 8px' }} />
+            </div>
+          )}
+
+          {!auditLoading && auditData && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {/* Totals summary card */}
+              <div style={{ background: '#1e293b', borderRadius: 12, padding: 16, border: '1px solid #334155' }}>
+                <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700, color: '#e2e8f0' }}>
+                  {t('raz.auditSummary')
+                    .replace('{name}', children.find(c => c.id === auditChildId)?.name || '')
+                    .replace('{weeks}', String(auditWeeks))
+                  }
+                </h3>
+
+                {/* Read rate badge */}
+                {(() => {
+                  const tot = auditData.totals;
+                  const totalTracked = tot.totalRead + tot.totalNotRead + tot.totalNoFolder;
+                  const rate = totalTracked > 0 ? Math.round((tot.totalRead / totalTracked) * 100) : 0;
+                  const rateColor = rate >= 80 ? '#22c55e' : rate >= 60 ? '#f59e0b' : rate >= 40 ? '#f97316' : '#ef4444';
+                  const rateLabel = rate >= 80 ? t('raz.excellent') : rate >= 60 ? t('raz.good') : rate >= 40 ? t('raz.needsAttention') : t('raz.critical');
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                      <div style={{ width: 56, height: 56, borderRadius: '50%', border: `3px solid ${rateColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontSize: 18, fontWeight: 700, color: rateColor }}>{rate}%</span>
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: rateColor }}>{rateLabel}</div>
+                        <div style={{ fontSize: 12, color: '#94a3b8' }}>{t('raz.readRate')}</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Stat grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                  {[
+                    { label: t('raz.totalDaysRead'), value: auditData.totals.totalRead, color: '#22c55e', bg: '#0f2918' },
+                    { label: t('raz.totalDaysNotRead'), value: auditData.totals.totalNotRead, color: '#ef4444', bg: '#2a1215' },
+                    { label: t('raz.totalDaysNoFolder'), value: auditData.totals.totalNoFolder, color: '#f59e0b', bg: '#2a2210' },
+                    { label: t('raz.totalDaysAbsent'), value: auditData.totals.totalAbsent, color: '#6b7280', bg: '#1a1a2e' },
+                    { label: t('raz.weeksNoReading'), value: auditData.totals.weeksWithNoRead, color: '#ef4444', bg: '#2a1215' },
+                    { label: t('raz.weeksNoFolder'), value: auditData.totals.weeksWithNoFolder, color: '#f59e0b', bg: '#2a2210' },
+                  ].map(s => (
+                    <div key={s.label} style={{ background: s.bg, borderRadius: 8, padding: '10px 12px', border: `1px solid ${s.color}33` }}>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: s.color }}>{s.value}</div>
+                      <div style={{ fontSize: 11, color: s.color, opacity: 0.8 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Weekly breakdown */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(auditData.weeks || []).slice().reverse().map((week: AuditWeek) => (
+                  <div key={week.weekStart} style={{
+                    background: '#1e293b', borderRadius: 10, padding: '10px 12px',
+                    border: week.readCount === 0 && week.totalDays > 0 ? '2px solid #ef4444' : '1px solid #334155',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>
+                        {t('raz.weekOf').replace('{date}', new Date(week.weekStart + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, fontSize: 12 }}>
+                        {week.readCount > 0 && <span style={{ color: '#22c55e' }}>📖{week.readCount}</span>}
+                        {week.notReadCount > 0 && <span style={{ color: '#ef4444' }}>❌{week.notReadCount}</span>}
+                        {week.noFolderCount > 0 && <span style={{ color: '#f59e0b' }}>📁{week.noFolderCount}</span>}
+                        {week.absentCount > 0 && <span style={{ color: '#6b7280' }}>🚫{week.absentCount}</span>}
+                      </div>
+                    </div>
+                    {/* Day-by-day dots */}
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      {week.days.map((day: AuditDay) => {
+                        const dotColor = day.status === 'read' ? '#22c55e' : day.status === 'not_read' ? '#ef4444' : day.status === 'no_folder' ? '#f59e0b' : day.status === 'absent' ? '#6b7280' : '#334155';
+                        const dayLabel = new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'narrow' });
+                        return (
+                          <div key={day.date} style={{ flex: 1, textAlign: 'center' }}>
+                            <div style={{ fontSize: 9, color: '#64748b', marginBottom: 2 }}>{dayLabel}</div>
+                            <div style={{ width: '100%', height: 6, borderRadius: 3, background: dotColor }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+
+                {(auditData.weeks || []).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>📚</div>
+                    <div>{t('raz.noRecords')}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!auditLoading && !auditData && !auditChildId && (
+            <div style={{ textAlign: 'center', padding: 40, color: '#64748b' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
+              <p>{t('raz.selectChild')}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Children List — only on Today tab */}
+      {activeTab === 'today' && (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {children.map(child => {
           const record = records[child.id];
@@ -989,8 +1324,9 @@ export default function RazTrackerPage() {
           );
         })}
       </div>
+      )}
 
-      {children.length === 0 && (
+      {children.length === 0 && activeTab === 'today' && (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: '#64748b' }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
           <p>{t('raz.noStudents')}</p>

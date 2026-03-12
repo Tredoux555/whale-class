@@ -19,9 +19,10 @@ interface HeaderConfig {
 
 interface CardGeneratorProps {
   headerConfig?: HeaderConfig;
+  initialCards?: Card[];
 }
 
-const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
+const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initialCards }) => {
   const {
     showBackButton = false,
     backButtonLabel = '←',
@@ -46,6 +47,13 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {} }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropCanvasRef = useRef<HTMLDivElement>(null);
   const cropImageRef = useRef<HTMLImageElement>(null);
+
+  // Pre-load cards from prop (e.g., phonics word data)
+  React.useEffect(() => {
+    if (initialCards && initialCards.length > 0 && cards.length === 0) {
+      setCards(initialCards);
+    }
+  }, [initialCards]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Card dimensions in pixels (assuming 96 DPI for screen)
   // 10cm image + 0.5cm border on each side = 11cm total width
