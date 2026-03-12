@@ -86,85 +86,96 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 });
     }
 
-    const results: Array<{ success: boolean; filename: string; error?: string; photo?: Record<string, unknown> }> = [];
+    // Fetch categories ONCE upfront (not per file)
+    let categoryList: Array<{ name: string; keywords: string[] | null }> = [];
+    try {
+      const { data: cats } = await supabase
+        .from('montree_photo_categories')
+        .select('name, keywords');
+      categoryList = cats || [];
+    } catch { /* use empty list */ }
 
-    for (const file of files) {
-      // Validate file type
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        results.push({ success: false, filename: file.name, error: 'Unsupported file type' });
-        continue;
-      }
+    // Process all files in parallel (each file is independent)
+    const results = await Promise.all(
+      files.map(async (file, idx): Promise<{ success: boolean; filename: string; error?: string; photo?: Record<string, unknown> }> => {
+        // Validate file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          return { success: false, filename: file.name, error: 'Unsupported file type' };
+        }
 
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        results.push({ success: false, filename: file.name, error: 'File too large (max 10MB)' });
-        continue;
-      }
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+          return { success: false, filename: file.name, error: 'File too large (max 10MB)' };
+        }
 
-      // Clean label from filename
-      const label = file.name
-        .replace(/\.[^/.]+$/, '')     // remove extension
-        .replace(/[-_]/g, ' ')         // replace dashes/underscores with spaces
-        .replace(/\s+/g, ' ')          // normalize spaces
-        .trim();
+        // Clean label from filename
+        const label = file.name
+          .replace(/\.[^/.]+$/, '')     // remove extension
+          .replace(/[-_]/g, ' ')         // replace dashes/underscores with spaces
+          .replace(/\s+/g, ' ')          // normalize spaces
+          .trim();
 
-      // Auto-categorize based on filename
-      const category = await autoCategorizePOST(supabase, label.toLowerCase());
+        // Auto-categorize using pre-fetched categories
+        const category = categorizeFast(categoryList, label.toLowerCase());
 
-      // Generate tags from label
-      const tags = generateTags(label);
+        // Generate tags from label
+        const tags = generateTags(label);
 
-      // Upload to Supabase storage
-      const timestamp = Date.now();
-      const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const storagePath = `photos/${timestamp}_${sanitizedName}`;
+        // Upload to Supabase storage
+        const timestamp = Date.now() + idx; // unique per file
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const storagePath = `photos/${timestamp}_${sanitizedName}`;
 
-      const buffer = Buffer.from(await file.arrayBuffer());
+        try {
+          const buffer = Buffer.from(await file.arrayBuffer());
 
-      const { error: uploadError } = await supabase.storage
-        .from(BUCKET)
-        .upload(storagePath, buffer, {
-          contentType: file.type,
-          upsert: false,
-        });
+          const { error: uploadError } = await supabase.storage
+            .from(BUCKET)
+            .upload(storagePath, buffer, {
+              contentType: file.type,
+              upsert: false,
+            });
 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        results.push({ success: false, filename: file.name, error: 'Upload failed' });
-        continue;
-      }
+          if (uploadError) {
+            console.error('Storage upload error:', uploadError);
+            return { success: false, filename: file.name, error: 'Upload failed' };
+          }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
-      const publicUrl = urlData.publicUrl;
+          // Get public URL
+          const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
+          const publicUrl = urlData.publicUrl;
 
-      // Insert into database
-      const { data: photo, error: dbError } = await supabase
-        .from('montree_photo_bank')
-        .insert({
-          filename: file.name,
-          label: label.toLowerCase(),
-          tags,
-          category,
-          storage_path: storagePath,
-          public_url: publicUrl,
-          file_size: file.size,
-          mime_type: file.type,
-          uploaded_by: uploadedBy,
-          is_public: true,
-          is_approved: true, // auto-approve all uploads (moderation can be added later)
-        })
-        .select()
-        .single();
+          // Insert into database
+          const { data: photo, error: dbError } = await supabase
+            .from('montree_photo_bank')
+            .insert({
+              filename: file.name,
+              label: label.toLowerCase(),
+              tags,
+              category,
+              storage_path: storagePath,
+              public_url: publicUrl,
+              file_size: file.size,
+              mime_type: file.type,
+              uploaded_by: uploadedBy,
+              is_public: true,
+              is_approved: true,
+            })
+            .select()
+            .single();
 
-      if (dbError) {
-        console.error('DB insert error:', dbError);
-        results.push({ success: false, filename: file.name, error: 'Database error' });
-        continue;
-      }
+          if (dbError) {
+            console.error('DB insert error:', dbError);
+            return { success: false, filename: file.name, error: 'Database error' };
+          }
 
-      results.push({ success: true, filename: file.name, photo });
-    }
+          return { success: true, filename: file.name, photo };
+        } catch (err) {
+          console.error('File processing error:', err);
+          return { success: false, filename: file.name, error: 'Processing error' };
+        }
+      })
+    );
 
     const successCount = results.filter(r => r.success).length;
     return NextResponse.json({
@@ -178,30 +189,19 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Auto-categorize a photo based on its label by checking category keywords
+ * Categorize a photo synchronously using pre-fetched category keywords
  */
-async function autoCategorizePOST(supabase: ReturnType<typeof getSupabase>, labelLower: string): Promise<string> {
-  try {
-    const { data: categories } = await supabase
-      .from('montree_photo_categories')
-      .select('name, keywords');
-
-    if (!categories) return 'general';
-
-    for (const cat of categories) {
-      if (cat.keywords && Array.isArray(cat.keywords)) {
-        for (const keyword of cat.keywords) {
-          if (labelLower.includes(keyword)) {
-            return cat.name;
-          }
+function categorizeFast(categories: Array<{ name: string; keywords: string[] | null }>, labelLower: string): string {
+  for (const cat of categories) {
+    if (cat.keywords && Array.isArray(cat.keywords)) {
+      for (const keyword of cat.keywords) {
+        if (labelLower.includes(keyword)) {
+          return cat.name;
         }
       }
     }
-
-    return 'general';
-  } catch {
-    return 'general';
   }
+  return 'general';
 }
 
 /**
