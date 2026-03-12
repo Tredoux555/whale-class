@@ -311,9 +311,9 @@ const VocabularyFlashcardGenerator = () => {
           )}
         </div>
 
-        {/* Photo Bank Section */}
+        {/* Picture Bank Section */}
         <div className="bg-white rounded-2xl border border-cyan-200 shadow-sm p-5 mt-4">
-          <h3 className="text-lg font-bold text-gray-800 mb-1">📸 Or pick from the Photo Bank</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-1">📸 Or pick from the Picture Bank</h3>
           <p className="text-sm text-gray-500 mb-3">Search and click photos to add them as flashcards</p>
           <PhotoBankPicker
             onSelectPhoto={(dataUrl, label) => {
@@ -329,7 +329,7 @@ const VocabularyFlashcardGenerator = () => {
             }}
             maxHeight={300}
             showCategories={true}
-            searchPlaceholder="Search photo bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
+            searchPlaceholder="Search picture bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
           />
         </div>
 

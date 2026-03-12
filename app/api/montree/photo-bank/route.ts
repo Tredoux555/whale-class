@@ -1,5 +1,5 @@
 // /api/montree/photo-bank/route.ts
-// Photo Bank API — Search, browse, and upload photos for the Montree photo library
+// Picture Bank API — Search, browse, and upload pictures for the Montree picture library
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 

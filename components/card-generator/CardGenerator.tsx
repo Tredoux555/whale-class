@@ -108,12 +108,12 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
     }
   };
 
-  // Handle drag and drop (files from desktop OR photos from Photo Bank)
+  // Handle drag and drop (files from desktop OR photos from Picture Bank)
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check for Photo Bank drag data first
+    // Check for Picture Bank drag data first
     const jsonData = e.dataTransfer.getData('application/json');
     if (jsonData) {
       try {
@@ -772,7 +772,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             fontSize: '14px'
           }}
         >
-          📸 Photo Bank
+          📸 Picture Bank
         </button>
       </div>
 
@@ -867,7 +867,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         {activeTab === 'photo-bank' && (
           <div>
             <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
-              Search and select photos from the Montree Photo Bank. Click a photo to add it as a card.
+              Search and select pictures from the Montree Picture Bank. Click a picture to add it as a card.
             </p>
             <PhotoBankPicker
               onSelectPhoto={(dataUrl, label, filename) => {
@@ -887,7 +887,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
               }}
               maxHeight={350}
               showCategories={true}
-              searchPlaceholder="Search photo bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
+              searchPlaceholder="Search picture bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
             />
           </div>
         )}
