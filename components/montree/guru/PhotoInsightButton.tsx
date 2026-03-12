@@ -42,6 +42,7 @@ export default function PhotoInsightButton({
   const { locale, t } = useI18n();
   const [ctaLoading, setCtaLoading] = useState(false);
   const [ctaDone, setCtaDone] = useState(false);
+  const [ctaError, setCtaError] = useState<string | null>(null);
 
   // Subscribe to the global store — re-renders when any entry changes
   const storeSnapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
@@ -109,10 +110,12 @@ export default function PhotoInsightButton({
       if (onProgressUpdate) onProgressUpdate();
     } catch (err) {
       console.error('[PhotoInsight] Confirm error:', err);
+      setCtaError(t('photoInsight.actionFailed'));
+      setTimeout(() => setCtaError(null), 4000);
     } finally {
       setCtaLoading(false);
     }
-  }, [result, childId, mediaId, classroomId, ctaLoading, onProgressUpdate]);
+  }, [result, childId, mediaId, classroomId, ctaLoading, onProgressUpdate, t]);
 
   // CTA: Reject identification (AMBER zone — teacher says "wrong")
   const handleReject = useCallback(() => {
@@ -155,13 +158,17 @@ export default function PhotoInsightButton({
         }
       } else {
         console.error('[PhotoInsight] Add to classroom failed:', res.status);
+        setCtaError(t('photoInsight.actionFailed'));
+        setTimeout(() => setCtaError(null), 4000);
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to classroom error:', err);
+      setCtaError(t('photoInsight.actionFailed'));
+      setTimeout(() => setCtaError(null), 4000);
     } finally {
       setCtaLoading(false);
     }
-  }, [result, classroomId, ctaLoading, onAddToClassroom]);
+  }, [result, classroomId, ctaLoading, onAddToClassroom, t]);
 
   // CTA: Add to child's shelf (Scenario C)
   const handleAddToShelf = useCallback(async () => {
@@ -189,13 +196,17 @@ export default function PhotoInsightButton({
         if (onProgressUpdate) onProgressUpdate();
       } else {
         console.error('[PhotoInsight] Add to shelf failed:', res.status);
+        setCtaError(t('photoInsight.actionFailed'));
+        setTimeout(() => setCtaError(null), 4000);
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to shelf error:', err);
+      setCtaError(t('photoInsight.actionFailed'));
+      setTimeout(() => setCtaError(null), 4000);
     } finally {
       setCtaLoading(false);
     }
-  }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate]);
+  }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate, t]);
 
   // CTA: Teach Guru this unknown work (Scenario A) — opens modal
   const handleTeachWork = useCallback(() => {
@@ -395,6 +406,12 @@ export default function PhotoInsightButton({
                 ))}
               </div>
             </div>
+          )}
+
+          {ctaError && (
+            <p className="text-xs text-red-600 italic">
+              ⚠ {ctaError}
+            </p>
           )}
 
           {ctaDone && (

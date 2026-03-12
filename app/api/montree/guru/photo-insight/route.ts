@@ -103,6 +103,9 @@ export async function POST(request: NextRequest) {
 
     if (cached?.response_insight) {
       // Return cached structured response (including work ingestion scenario data + V2 candidates)
+      // IMPORTANT: auto_updated is ALWAYS false on cache hits — the progress update already
+      // happened on the original analysis. Returning true would cause the client to fire
+      // onProgressUpdate again on every remount (duplicate refetches, potential UI flicker).
       const snapshot = (cached.context_snapshot as Record<string, unknown>) || {};
       return NextResponse.json({
         success: true,
@@ -110,7 +113,7 @@ export async function POST(request: NextRequest) {
         work_name: snapshot.identified_work_name || null,
         area: snapshot.identified_area || null,
         mastery_evidence: snapshot.mastery_evidence || null,
-        auto_updated: snapshot.auto_updated || false,
+        auto_updated: false,
         needs_confirmation: snapshot.needs_confirmation || false,
         confidence: snapshot.sonnet_confidence || null,
         match_score: snapshot.curriculum_match_score ?? null,
