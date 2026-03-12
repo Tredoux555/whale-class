@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
           mime_type: file.type,
           uploaded_by: uploadedBy,
           is_public: true,
-          is_approved: uploadedBy === 'system', // auto-approve system uploads
+          is_approved: true, // auto-approve all uploads (moderation can be added later)
         })
         .select()
         .single();

@@ -47,27 +47,6 @@ export default function OnboardingPage() {
       const parsed = JSON.parse(stored);
       setSession(parsed);
 
-      // Home parents skip form-based onboarding — use conversational setup
-      if (parsed.teacher?.role === 'homeschool_parent') {
-        if (parsed.classroom?.id) {
-          fetch(`/api/montree/children?classroom_id=${parsed.classroom.id}`)
-            .then(r => r.json())
-            .then(data => {
-              if (data.children && data.children.length > 0) {
-                router.replace(`/montree/home/${data.children[0].id}`);
-              } else {
-                router.replace('/montree/home/setup');
-              }
-            })
-            .catch(() => {
-              router.replace('/montree/home/setup');
-            });
-        } else {
-          router.replace('/montree/home/setup');
-        }
-        return;
-      }
-
       // Check if teacher already has students - if so, go to dashboard
       if (parsed.classroom?.id) {
         fetch(`/api/montree/children?classroom_id=${parsed.classroom.id}`)
