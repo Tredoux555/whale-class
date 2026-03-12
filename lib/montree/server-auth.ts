@@ -42,10 +42,10 @@ export interface ParentTokenPayload {
 
 /**
  * Create a signed JWT for a Montree teacher, principal, or homeschool parent session.
- * Teachers/principals: 7 days. Homeschool parents: 30 days (log in less frequently).
+ * 365 days for all roles — paid subscriptions should not require frequent re-login.
  */
 export async function createMontreeToken(payload: MontreeTokenPayload): Promise<string> {
-  const ttl = payload.role === 'homeschool_parent' ? '30d' : '7d';
+  const ttl = '365d';
   const token = await new SignJWT({
     schoolId: payload.schoolId,
     classroomId: payload.classroomId || null,
@@ -144,14 +144,14 @@ export async function verifyParentToken(token: string): Promise<ParentTokenPaylo
 /**
  * Set the montree-auth httpOnly cookie on a NextResponse.
  * Call this in login routes after creating the JWT token.
- * Pass role to set correct maxAge (30 days for homeschool parents, 7 days otherwise).
+ * 365-day maxAge for all roles — paid subscription, effectively non-expiring.
  */
 export function setMontreeAuthCookie(
   response: NextResponse,
   token: string,
   role?: 'teacher' | 'principal' | 'homeschool_parent'
 ): void {
-  const maxAge = 30 * 24 * 60 * 60;  // 30 days for all roles — 7 days was too short, caused zombie sessions
+  const maxAge = 365 * 24 * 60 * 60;  // 365 days — paid subscription, cookie should effectively not expire
   response.cookies.set(MONTREE_AUTH_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
