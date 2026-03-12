@@ -1,6 +1,6 @@
 // /montree/dashboard/raz/page.tsx
 // RAZ Reading Tracker - Custom camera via getUserMedia for instant captures
-// Flow: Tap Read → live camera preview → tap tap tap (3 photos) → done, next kid
+// Flow: Tap Read → live camera preview → tap tap tap tap (4 photos) → done, next kid
 // No iOS "Use Photo" confirmation, no file picker, no delay between shots
 'use client';
 
@@ -27,12 +27,13 @@ interface RazRecord {
   book_photo_url?: string;
   signature_photo_url?: string;
   new_book_photo_url?: string;
+  new_book_signature_photo_url?: string;
   book_title?: string;
   notes?: string;
 }
 
 type StatusType = 'read' | 'not_read' | 'no_folder' | 'absent';
-type PhotoType = 'book' | 'signature' | 'new_book';
+type PhotoType = 'book' | 'signature' | 'new_book' | 'new_book_signature';
 
 const STATUS_CONFIG_BASE: Record<StatusType, { emoji: string; color: string; bg: string }> = {
   read: { emoji: '📖', color: '#22c55e', bg: '#dcfce7' },
@@ -59,16 +60,18 @@ function sortChildrenForRaz(children: Child[]): Child[] {
   });
 }
 
-const PHOTO_SEQUENCE: PhotoType[] = ['book', 'signature', 'new_book'];
+const PHOTO_SEQUENCE: PhotoType[] = ['book', 'signature', 'new_book', 'new_book_signature'];
 const getPhotoLabels = (t: ReturnType<typeof useI18n>['t']) => ({
   book: t('raz.photoBook'),
   signature: t('raz.photoSignature'),
   new_book: t('raz.photoNewBook'),
+  new_book_signature: t('raz.photoNewBookSignature'),
 });
 const PHOTO_URL_KEYS: Record<PhotoType, keyof RazRecord> = {
   book: 'book_photo_url',
   signature: 'signature_photo_url',
   new_book: 'new_book_photo_url',
+  new_book_signature: 'new_book_signature_photo_url',
 };
 
 const getStatusConfig = (t: ReturnType<typeof useI18n>['t']) => ({
@@ -138,7 +141,7 @@ export default function RazTrackerPage() {
   const [pickingNextChild, setPickingNextChild] = useState(false);
   const [childSearch, setChildSearch] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  // Track children whose 3-photo flow just finished (uploads still in-flight)
+  // Track children whose 4-photo flow just finished (uploads still in-flight)
   const [justFinished, setJustFinished] = useState<Set<string>>(new Set());
 
   // Track in-flight uploads
@@ -242,7 +245,7 @@ export default function RazTrackerPage() {
   }
 
   function pickChild(child: Child) {
-    // Teacher selected next child from picker — start their 3-photo flow
+    // Teacher selected next child from picker — start their 4-photo flow
     setPickingNextChild(false);
 
     // Set "read" status optimistically + background save
@@ -253,7 +256,7 @@ export default function RazTrackerPage() {
     setStatus(child.id, 'read');
 
     // Camera stream stays open — just switch to new child's flow
-    const nextFlow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null] };
+    const nextFlow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null, null] };
     flowRef.current = nextFlow;
     setCameraFlow(nextFlow);
   }
@@ -279,7 +282,7 @@ export default function RazTrackerPage() {
   // --- Camera functions ---
 
   async function startCamera(childId: string, childName: string, step: number, oneShot: boolean) {
-    const flow: CameraFlowState = { childId, childName, step, oneShot, previews: [null, null, null] };
+    const flow: CameraFlowState = { childId, childName, step, oneShot, previews: [null, null, null, null] };
     flowRef.current = flow;
     setCameraFlow(flow);
 
@@ -372,7 +375,7 @@ export default function RazTrackerPage() {
         setCameraFlow(nextFlow);
         // Camera stays open — no delay, just tap again
       } else {
-        // All 3 photos done → show child picker (camera stays open, uploads continue in background)
+        // All 4 photos done → show child picker (camera stays open, uploads continue in background)
         showChildPicker(childName);
       }
     }
@@ -503,7 +506,7 @@ export default function RazTrackerPage() {
           // Some browsers throw on programmatic click — banner provides manual trigger
         }
       } else {
-        // All 3 photos done → show child picker
+        // All 4 photos done → show child picker
         showChildPicker(childName);
       }
     }
@@ -561,7 +564,7 @@ export default function RazTrackerPage() {
       setStatus(child.id, 'read');
       if (useFallback) {
         // File input fallback
-        const flow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null] };
+        const flow: CameraFlowState = { childId: child.id, childName: child.name, step: 0, oneShot: false, previews: [null, null, null, null] };
         flowRef.current = flow;
         setCameraFlow(flow);
         triggerFileInput();
@@ -582,7 +585,7 @@ export default function RazTrackerPage() {
     if (cameraFlow) return;
     const step = PHOTO_SEQUENCE.indexOf(photoType);
     if (useFallback) {
-      const flow: CameraFlowState = { childId: child.id, childName: child.name, step, oneShot: true, previews: [null, null, null] };
+      const flow: CameraFlowState = { childId: child.id, childName: child.name, step, oneShot: true, previews: [null, null, null, null] };
       flowRef.current = flow;
       setCameraFlow(flow);
       triggerFileInput();
@@ -625,7 +628,7 @@ export default function RazTrackerPage() {
           <div>
             <div style={{ fontWeight: 600, fontSize: 14, color: '#fff' }}>
               📷 {cameraFlow.childName} — {PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}
-              {!cameraFlow.oneShot && ` (${cameraFlow.step + 1}/3)`}
+              {!cameraFlow.oneShot && ` (${cameraFlow.step + 1}/${PHOTO_SEQUENCE.length})`}
             </div>
             <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
               {cameraFlow.oneShot ? t('raz.takeRetakePhoto') : t('raz.takePhoto')}
@@ -668,7 +671,7 @@ export default function RazTrackerPage() {
               <div style={{ fontSize: 13, color: '#94a3b8' }}>
                 {cameraFlow.oneShot
                   ? t('raz.retake').replace('{label}', PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]])
-                  : `${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}  •  ${cameraFlow.step + 1}/3`
+                  : `${PHOTO_LABELS[PHOTO_SEQUENCE[cameraFlow.step]]}  •  ${cameraFlow.step + 1}/${PHOTO_SEQUENCE.length}`
                 }
               </div>
             </div>
@@ -793,9 +796,9 @@ export default function RazTrackerPage() {
           <div style={{ flex: 1, padding: '8px 16px', display: 'flex', flexDirection: 'column', gap: 6, overflowY: 'auto' }}>
             {children.filter(c => !childSearch || c.name.toLowerCase().includes(childSearch.toLowerCase())).map(child => {
               const rec = records[child.id];
-              const isDone = justFinished.has(child.id) || (rec?.status === 'read' && rec.book_photo_url && rec.signature_photo_url && rec.new_book_photo_url);
+              const isDone = justFinished.has(child.id) || (rec?.status === 'read' && rec.book_photo_url && rec.signature_photo_url && rec.new_book_photo_url && rec.new_book_signature_photo_url);
               const isMarkedOther = rec?.status && rec.status !== 'read' && rec.status !== 'not_read';
-              const photoCount = [rec?.book_photo_url, rec?.signature_photo_url, rec?.new_book_photo_url].filter(Boolean).length;
+              const photoCount = [rec?.book_photo_url, rec?.signature_photo_url, rec?.new_book_photo_url, rec?.new_book_signature_photo_url].filter(Boolean).length;
 
               return (
                 <div
@@ -832,7 +835,7 @@ export default function RazTrackerPage() {
                     {isDone ? (
                       <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 600, flexShrink: 0 }}>✅</span>
                     ) : photoCount > 0 ? (
-                      <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>📷{photoCount}/3</span>
+                      <span style={{ fontSize: 11, color: '#94a3b8', flexShrink: 0 }}>📷{photoCount}/{PHOTO_SEQUENCE.length}</span>
                     ) : null}
                   </button>
                   {/* Status buttons: Not Read / No Folder / Absent */}
@@ -1230,9 +1233,9 @@ export default function RazTrackerPage() {
           const record = records[child.id];
           const status = record?.status as StatusType | undefined;
           const config = status ? STATUS_CONFIG[status] : null;
-          const photoCount = [record?.book_photo_url, record?.signature_photo_url, record?.new_book_photo_url].filter(Boolean).length;
+          const photoCount = [record?.book_photo_url, record?.signature_photo_url, record?.new_book_photo_url, record?.new_book_signature_photo_url].filter(Boolean).length;
           const hasPhotos = photoCount > 0;
-          const isUploading = uploading.has(`${child.id}-book`) || uploading.has(`${child.id}-signature`) || uploading.has(`${child.id}-new_book`);
+          const isUploading = uploading.has(`${child.id}-book`) || uploading.has(`${child.id}-signature`) || uploading.has(`${child.id}-new_book`) || uploading.has(`${child.id}-new_book_signature`);
 
           return (
             <div key={child.id} style={{
@@ -1265,7 +1268,7 @@ export default function RazTrackerPage() {
                   <div style={{ fontWeight: 600, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{child.name}</span>
                     {photoCount > 0 && (
-                      <span style={{ fontSize: 10, color: '#94a3b8', flexShrink: 0 }}>📷{photoCount}/3</span>
+                      <span style={{ fontSize: 10, color: '#94a3b8', flexShrink: 0 }}>📷{photoCount}/{PHOTO_SEQUENCE.length}</span>
                     )}
                   </div>
                 </div>

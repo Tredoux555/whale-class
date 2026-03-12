@@ -16,10 +16,11 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–11 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: session recovery + guru parity + home parent rebuild + smart capture" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 401 fix + album upload + raz 4th photo + home guru fixes + session recovery + guru parity + home parent rebuild + smart capture" && git push origin main`
 
-**Includes:** Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 57+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Includes:** 401 zombie session fix (cookie TTL 7d→30d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
 
@@ -61,7 +62,71 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 11, 2026)
+## CURRENT STATUS (Mar 12, 2026)
+
+### Session Work (Mar 12, 2026)
+
+**RAZ 4th Photo Slot + Home Guru Critical Fixes — COMPLETE, NOT YET DEPLOYED (1 migration, 5 modified files, 3×3 audit):**
+
+Two features: RAZ camera flow extended to 4 photos, and 4 critical bugs fixed in the home parent Guru chat.
+
+**Feature 1 — RAZ 4th Photo Slot (Book → Signature → New Book → New Book Signature):**
+- `migrations/137_raz_4th_photo.sql` (NEW) — `ALTER TABLE raz_reading_records ADD COLUMN IF NOT EXISTS new_book_signature_photo_url TEXT;`
+- `app/montree/dashboard/raz/page.tsx` — `PhotoType` union extended, `PHOTO_SEQUENCE` now 4-element array, preview arrays `[null, null, null, null]`, step counters updated (3→4), `isDone` checks updated, i18n label wired
+- `app/api/montree/raz/route.ts` — PATCH: `.single()` → `.maybeSingle()` + explicit 404 response when record not found
+- `app/api/montree/raz/upload/route.ts` — Comment updated to document 4th photo type
+- `lib/montree/i18n/en.ts` + `zh.ts` — `'raz.photoNewBookSignature': '✍️ New Signature'` / `'✍️ 新签名'`
+
+**Feature 2 — Home Guru 4 Critical Fixes (PortalChat + parent page):**
+
+Deep audit of the home parent Guru revealed 4 bugs preventing proper functionality:
+
+- **CRITICAL: Image vision not working** — `PortalChat.tsx` was embedding image URLs in question text as `[Photo: URL]` instead of sending `image_url` as a separate body field. Claude's vision API never actually SAW the images. Fixed: `guruBody.image_url = imageUrl` sent as separate field so the guru route creates proper `{ type: 'image', source: { type: 'url', url } }` content blocks.
+
+- **HIGH: 429 handler blocking limit callback** — `!res.ok` block returned early before parsing JSON, so `data.error === 'guru_daily_limit_reached'` check was NEVER reached, and `onGuruLimitReached?.()` was never called. Fixed: parse JSON first (even for non-OK), then check specific error codes BEFORE generic status handling.
+
+- **HIGH: Missing onGuruLimitReached prop** — `[childId]/page.tsx` didn't pass `onGuruLimitReached` to PortalChat. Added `guruLimitReached` state + `handleGuruLimitReached` callback + wired as prop. (State set but not yet used in JSX — wire to paywall banner in future session.)
+
+- **HIGH: Image upload error silently swallowed** — `clearImage()` was called outside try/catch regardless of success/failure, no error toast on `!uploadRes.ok`. Fixed: explicit error handling with toast, `clearImage()` moved into both success and failure branches.
+
+**Files modified (5):**
+- `components/montree/home/PortalChat.tsx` — 3 edits (image_url field, 429 handler rewrite, clearImage placement)
+- `app/montree/home/[childId]/page.tsx` — 2 edits (guruLimitReached state + prop wiring)
+- `app/api/montree/raz/route.ts` — `.maybeSingle()` + 404 check
+- `app/api/montree/raz/upload/route.ts` — comment update
+- `app/montree/dashboard/raz/page.tsx` — 4th photo throughout
+
+**3×3 Audit:** 3 cycles. Cycle 1: agent identified 22 potential issues, manual verification narrowed to 4 real bugs (all fixed above). Many false positives (role detection, concerns wiring, freemium gate — all verified working correctly). Cycle 2: verified all fixes applied correctly. Cycle 3: confirmed no remaining 3-photo references, all preview arrays are 4-element, all i18n keys in EN/ZH parity.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Run migration 137 before testing. Include in consolidated push.
+
+### Session Work (Mar 12, 2026 — Late Session)
+
+**401 Fix (Students Disappeared) + Smart Capture Album Upload — COMPLETE, NOT YET DEPLOYED (5 modified files, 1 audit cycle):**
+
+Two critical fixes: all students disappeared from dashboard due to expired auth cookie, and Smart Capture had no album/photo library upload option.
+
+**Fix 1 — Zombie Session / 401 on Children API (2 files):**
+Dashboard showed "Tap to add your first student" with 401 console errors. Root cause: httpOnly `montree-auth` cookie had 7-day TTL for teachers, but localStorage session persists forever. After 7 days, UI renders from localStorage but all API calls fail with 401.
+
+- `lib/montree/server-auth.ts` — Cookie TTL extended to 30 days for ALL roles (was 7 days for teachers/principals, 30 days only for homeschool parents). Comment: "7 days was too short, caused zombie sessions"
+- `app/montree/dashboard/page.tsx` — Added 401 detection in `childrenError` useEffect: clears stale `montree_session` from localStorage + redirects to `/montree/login`. Non-401 errors still show toast.
+
+**Fix 2 — Smart Capture Album Upload (3 files):**
+`CameraCapture.tsx` only used `navigator.mediaDevices.getUserMedia()` — camera only, no album access.
+
+- `components/montree/media/CameraCapture.tsx` — Added `albumInputRef` + `handleAlbumSelect` callback with `compressImage()` preprocessing. Hidden `<input type="file" accept="image/*">` (no `capture` attribute = allows album on mobile). Gallery icon button in camera controls (photo mode only, left side next to cancel). Creates proper `CapturedPhoto` with dimensions from `Image()` load. Error handling with console.error + user toast.
+- `lib/montree/i18n/en.ts` — 1 new key: `'camera.album': 'Choose from Album'`
+- `lib/montree/i18n/zh.ts` — 1 new key: `'camera.album': '从相册选择'` (perfect EN/ZH parity)
+
+**Audit:** 1 cycle, 0 issues across all 5 files.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`
+
+---
+
+## PREVIOUS STATUS (Mar 11, 2026)
 
 ### Session Work (Mar 11, 2026 — Late Night Session)
 
