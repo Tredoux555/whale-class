@@ -1,5 +1,5 @@
 // /montree/library/photo-bank/page.tsx
-// Montree Picture Bank — Full page for browsing, searching, uploading, and managing photos
+// Montree Picture Bank — Full page for browsing, searching, uploading, and managing pictures
 'use client';
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -9,6 +9,7 @@ import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 export default function PhotoBankPage() {
   const [uploadMode, setUploadMode] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
   const [uploadResults, setUploadResults] = useState<Array<{ success: boolean; filename: string; error?: string }>>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,7 +29,8 @@ export default function PhotoBankPage() {
     };
   }, []);
 
-  // Handle file upload
+  // Handle file upload — chunks large batches to avoid timeouts
+  const CHUNK_SIZE = 10; // Upload 10 files at a time
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
 
@@ -36,30 +38,47 @@ export default function PhotoBankPage() {
     setUploadMode(true);
     setUploadResults([]);
 
-    const formData = new FormData();
-    files.forEach((file) => formData.append('files', file));
-    formData.append('uploaded_by', 'public');
+    const allResults: Array<{ success: boolean; filename: string; error?: string }> = [];
 
-    try {
-      const res = await fetch('/api/montree/photo-bank', {
-        method: 'POST',
-        body: formData,
-      });
+    // Split files into chunks to avoid request timeout / body size limits
+    for (let i = 0; i < files.length; i += CHUNK_SIZE) {
+      const chunk = files.slice(i, i + CHUNK_SIZE);
+      setUploadProgress(`Uploading ${Math.min(i + CHUNK_SIZE, files.length)} of ${files.length}...`);
 
-      const data = await res.json();
-      setUploadResults(data.results || []);
+      const formData = new FormData();
+      chunk.forEach((file) => formData.append('files', file));
+      formData.append('uploaded_by', 'public');
 
-      // Refresh the page to show new photos
-      if (data.results?.some((r: { success: boolean }) => r.success)) {
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+      try {
+        const res = await fetch('/api/montree/photo-bank', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (data.results) {
+          allResults.push(...data.results);
+        } else {
+          // Entire chunk failed
+          chunk.forEach(f => allResults.push({ success: false, filename: f.name, error: data.error || 'Upload failed' }));
+        }
+      } catch (err) {
+        console.error('Upload chunk error:', err);
+        chunk.forEach(f => allResults.push({ success: false, filename: f.name, error: 'Network error' }));
       }
-    } catch (err) {
-      console.error('Upload error:', err);
-      setUploadResults([{ success: false, filename: 'Upload', error: 'Network error' }]);
-    } finally {
-      setUploading(false);
+
+      // Update results progressively so user sees progress
+      setUploadResults([...allResults]);
+    }
+
+    setUploading(false);
+    setUploadProgress('');
+
+    // Refresh the page to show new photos
+    if (allResults.some(r => r.success)) {
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     }
   };
 
@@ -161,6 +180,7 @@ export default function PhotoBankPage() {
               <div>
                 <div className="text-3xl mb-3">⏳</div>
                 <p className="text-white/70 text-lg font-semibold">Uploading pictures...</p>
+                {uploadProgress && <p className="text-emerald-400/60 text-sm mt-1">{uploadProgress}</p>}
               </div>
             ) : (
               <div>

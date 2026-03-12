@@ -90,15 +90,9 @@ export default function DashboardPage() {
   // Extract searchParams value once (avoids object reference in deps)
   const justOnboarded = searchParams.get('onboarded') === '1';
 
-  // Handle homeschool redirect + guide triggers
+  // Handle guide triggers + auto-select first child
   useEffect(() => {
     if (loading || children.length === 0) return;
-
-    // Redirect home parents to the new Portal + Shelf experience
-    if (session && isHomeschoolParent(session)) {
-      router.replace(`/montree/home/${children[0].id}`);
-      return;
-    }
 
     // Auto-select first child for teachers
     if (!selectedChildId) {
