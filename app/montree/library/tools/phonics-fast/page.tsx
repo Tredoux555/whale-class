@@ -2,9 +2,10 @@
 // Phonics Fast — Master Hub for all phonics word lists + generators
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { ALL_PHASES, SIGHT_WORDS, getWordCounts, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup, type CommandSentence } from '@/lib/montree/phonics/phonics-data';
+import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 
 type TabId = 'initial' | 'phase2' | 'blue1' | 'blue2' | 'tools';
@@ -117,7 +118,7 @@ function emojiToDataUrl(emoji: string, size = 400): string {
 // PRINT ALL MATERIALS — Combined print document for a phase
 // =====================================================================
 
-function generateAllMaterialsHTML(phase: PhonicsPhase): string {
+function generateAllMaterialsHTML(phase: PhonicsPhase, photoMap: Map<string, string>): string {
   const allWords = phase.groups.flatMap(g => g.words);
   const nounWords = allWords.filter(w => w.isNoun);
   const commands = getCommands(phase.id);
@@ -131,11 +132,14 @@ function generateAllMaterialsHTML(phase: PhonicsPhase): string {
   const borderColor = '#0D3330';
   const fontFamily = 'Comic Sans MS';
 
-  // Convert words to card image data
-  const cardData = nounWords.map(w => ({
-    label: w.word,
-    imageUrl: w.customImageUrl || emojiToDataUrl(w.image),
-  }));
+  // Convert words to card image data — Photo Bank > customImageUrl > emoji
+  const cardData = nounWords.map(w => {
+    const photoUrl = photoMap.get(w.word.toLowerCase());
+    return {
+      label: w.word,
+      imageUrl: photoUrl || w.customImageUrl || emojiToDataUrl(w.image),
+    };
+  });
 
   let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Phonics Materials — ${escapeHtml(phase.name)}</title>
 <style>
@@ -241,12 +245,23 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
 
+  // Photo Bank: resolved on mount
+  const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const controller = new AbortController();
+    resolvePhotoBankImages(controller.signal).then((map) => {
+      if (!controller.signal.aborted) setPhotoMap(map);
+    });
+    return () => { controller.abort(); };
+  }, []);
+
   const handlePrintAll = useCallback(() => {
     setPrinting(true);
     // Small delay so the button shows loading state
     setTimeout(() => {
       try {
-        const html = generateAllMaterialsHTML(phase);
+        const html = generateAllMaterialsHTML(phase, photoMap);
         const printWindow = window.open('', '', 'width=800,height=1000');
         if (printWindow) {
           printWindow.document.write(html);
@@ -257,7 +272,7 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
       }
       setPrinting(false);
     }, 100);
-  }, [phase]);
+  }, [phase, photoMap]);
 
   return (
     <div>
@@ -296,6 +311,7 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
             phaseColor={phase.color}
             isExpanded={expandedGroup === group.id}
             onToggle={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
+            photoMap={photoMap}
           />
         ))}
       </div>
@@ -350,11 +366,12 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
 // WORD GROUP CARD
 // =====================================================================
 
-function WordGroupCard({ group, phaseColor, isExpanded, onToggle }: {
+function WordGroupCard({ group, phaseColor, isExpanded, onToggle, photoMap }: {
   group: PhonicsWordGroup;
   phaseColor: string;
   isExpanded: boolean;
   onToggle: () => void;
+  photoMap: Map<string, string>;
 }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -381,11 +398,19 @@ function WordGroupCard({ group, phaseColor, isExpanded, onToggle }: {
 
       {/* Word preview — always show */}
       <div className="px-5 pb-3 flex flex-wrap gap-2">
-        {group.words.map(w => (
-          <span key={w.word} className="text-sm bg-gray-100 px-3 py-1 rounded-full">
-            {w.image} {w.word}
-          </span>
-        ))}
+        {group.words.map(w => {
+          const photoUrl = photoMap.get(w.word.toLowerCase());
+          return (
+            <span key={w.word} className="text-sm bg-gray-100 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
+              {photoUrl ? (
+                <img src={photoUrl} alt={w.word} style={{ width: '18px', height: '18px', objectFit: 'cover', borderRadius: '3px' }} />
+              ) : (
+                <span>{w.image}</span>
+              )}
+              {w.word}
+            </span>
+          );
+        })}
       </div>
 
       {/* Expanded detail */}
@@ -393,7 +418,7 @@ function WordGroupCard({ group, phaseColor, isExpanded, onToggle }: {
         <div className="px-5 pb-5 border-t border-gray-100 pt-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {group.words.map(w => (
-              <WordCard key={w.word} word={w} />
+              <WordCard key={w.word} word={w} photoMap={photoMap} />
             ))}
           </div>
         </div>
@@ -406,10 +431,15 @@ function WordGroupCard({ group, phaseColor, isExpanded, onToggle }: {
 // INDIVIDUAL WORD CARD
 // =====================================================================
 
-function WordCard({ word }: { word: PhonicsWord }) {
+function WordCard({ word, photoMap }: { word: PhonicsWord; photoMap: Map<string, string> }) {
+  const photoUrl = photoMap.get(word.word.toLowerCase());
   return (
     <div className="bg-gray-50 rounded-lg p-3 text-center border border-gray-200">
-      <div className="text-3xl mb-1">{word.image}</div>
+      {photoUrl ? (
+        <img src={photoUrl} alt={word.word} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', margin: '0 auto 4px' }} />
+      ) : (
+        <div className="text-3xl mb-1">{word.image}</div>
+      )}
       <div className="font-bold text-lg" style={{ fontFamily: "'Comic Sans MS', cursive" }}>
         {word.word}
       </div>

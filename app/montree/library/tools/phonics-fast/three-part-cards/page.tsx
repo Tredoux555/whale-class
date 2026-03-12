@@ -1,12 +1,14 @@
 // /montree/library/tools/phonics-fast/three-part-cards/page.tsx
 // Phonics 3-Part Cards — wraps the ORIGINAL CardGenerator with phonics word data
+// Auto-resolves Photo Bank images where available; falls back to emoji
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ALL_PHASES, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
 import CardGenerator from '@/components/card-generator/CardGenerator';
 import type { Card } from '@/components/card-generator/types';
+import { resolvePhotoBankImages, urlToDataUrl } from '@/lib/montree/phonics/photo-bank-resolver';
 
 // Render an emoji (or text) onto a canvas and return a data URL
 function emojiToDataUrl(emoji: string, size = 400): string {
@@ -35,7 +37,23 @@ export default function ThreePartCardsPage() {
   const [generatedCards, setGeneratedCards] = useState<Card[] | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
 
+  // Photo Bank: resolved on mount, used during card generation
+  const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
+  const [photosReady, setPhotosReady] = useState(false);
+
   const currentPhase = ALL_PHASES.find(p => p.id === selectedPhase);
+
+  // Resolve Photo Bank images once on mount (background, non-blocking)
+  useEffect(() => {
+    const controller = new AbortController();
+    resolvePhotoBankImages(controller.signal).then((map) => {
+      if (!controller.signal.aborted) {
+        setPhotoMap(map);
+        setPhotosReady(true);
+      }
+    });
+    return () => { controller.abort(); };
+  }, []);
 
   // Select all groups by default when phase changes
   useEffect(() => {
@@ -51,28 +69,44 @@ export default function ThreePartCardsPage() {
     : [];
 
   // Convert phonics words to Card[] format for the original CardGenerator
-  const generateCards = useCallback(() => {
+  // Uses Photo Bank images where available, emoji fallback otherwise
+  const generateCards = useCallback(async () => {
     if (selectedWords.length === 0) return;
     setGenerating(true);
 
-    // Use requestAnimationFrame to let the UI update before heavy canvas work
-    requestAnimationFrame(() => {
-      const cards: Card[] = selectedWords.map((word, idx) => {
-        // Use custom image URL if available, otherwise render emoji to canvas
-        const imageUrl = word.customImageUrl || emojiToDataUrl(word.image);
-        return {
-          id: Date.now() + idx + Math.random(),
-          originalImage: imageUrl,
-          croppedImage: imageUrl,
-          label: word.word,
-          width: 400,
-          height: 400,
-        };
-      });
+    try {
+      const cards: Card[] = await Promise.all(
+        selectedWords.map(async (word, idx) => {
+          let imageUrl: string;
+
+          // Priority: Photo Bank > customImageUrl > emoji
+          const photoBankUrl = photoMap.get(word.word.toLowerCase());
+          if (photoBankUrl) {
+            const dataUrl = await urlToDataUrl(photoBankUrl);
+            imageUrl = dataUrl || emojiToDataUrl(word.image);
+          } else if (word.customImageUrl) {
+            imageUrl = word.customImageUrl;
+          } else {
+            imageUrl = emojiToDataUrl(word.image);
+          }
+
+          return {
+            id: Date.now() + idx + Math.random(),
+            originalImage: imageUrl,
+            croppedImage: imageUrl,
+            label: word.word,
+            width: 400,
+            height: 400,
+          };
+        })
+      );
       setGeneratedCards(cards);
+    } catch (err) {
+      console.error('Card generation error:', err);
+    } finally {
       setGenerating(false);
-    });
-  }, [selectedWords]);
+    }
+  }, [selectedWords, photoMap]);
 
   // If cards haven't been generated yet, show the phase/group selector
   if (generatedCards) {
@@ -84,7 +118,7 @@ export default function ThreePartCardsPage() {
           backButtonLabel: '←',
           onBackClick: () => setGeneratedCards(undefined),
           title: `🃏 Phonics 3-Part Cards`,
-          subtitle: `${currentPhase?.name || 'Phonics'} — ${generatedCards.length} words loaded. Upload photos to replace emojis!`,
+          subtitle: `${currentPhase?.name || 'Phonics'} — ${generatedCards.length} words loaded. Replace any image via Photo Bank or upload!`,
           gradientStart: currentPhase?.color || '#10b981',
           gradientEnd: '#0D3330',
           centered: false,
@@ -240,24 +274,31 @@ export default function ThreePartCardsPage() {
             Preview — {selectedWords.length} words
           </h2>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {selectedWords.map((word, idx) => (
-              <span
-                key={`${word.word}-${idx}`}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  backgroundColor: '#f0fdf4',
-                  border: '1px solid #bbf7d0',
-                  fontSize: '14px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <span style={{ fontSize: '18px' }}>{word.image}</span>
-                <span style={{ fontWeight: '500' }}>{word.word}</span>
-              </span>
-            ))}
+            {selectedWords.map((word, idx) => {
+              const photoUrl = photoMap.get(word.word.toLowerCase());
+              return (
+                <span
+                  key={`${word.word}-${idx}`}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    backgroundColor: photoUrl ? '#ecfdf5' : '#f0fdf4',
+                    border: `1px solid ${photoUrl ? '#6ee7b7' : '#bbf7d0'}`,
+                    fontSize: '14px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {photoUrl ? (
+                    <img src={photoUrl} alt={word.word} style={{ width: '20px', height: '20px', objectFit: 'cover', borderRadius: '3px' }} />
+                  ) : (
+                    <span style={{ fontSize: '18px' }}>{word.image}</span>
+                  )}
+                  <span style={{ fontWeight: '500' }}>{word.word}</span>
+                </span>
+              );
+            })}
           </div>
         </div>
       )}
@@ -281,13 +322,14 @@ export default function ThreePartCardsPage() {
         }}
       >
         {generating
-          ? '⏳ Generating cards...'
+          ? '⏳ Loading images & generating cards...'
           : `🃏 Generate ${selectedWords.length} Cards → Open Card Generator`
         }
       </button>
 
       <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: '13px', marginTop: '12px' }}>
         Cards will open in the full Card Generator where you can upload photos, crop images, adjust borders, and print.
+        {photosReady && photoMap.size > 0 && ' Photo Bank images auto-matched where available.'}
       </p>
     </div>
   );
