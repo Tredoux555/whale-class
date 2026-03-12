@@ -9,7 +9,7 @@ interface TrialResponse {
   success: boolean;
   code: string;
   token?: string;
-  role: 'teacher' | 'principal' | 'homeschool_parent';
+  role: 'teacher' | 'principal';
   error?: string;
   teacher?: {
     id: string;
@@ -45,7 +45,7 @@ export default function TryMontreePage() {
   const router = useRouter();
   const { t } = useI18n();
   const [step, setStep] = useState<'role' | 'details' | 'creating' | 'code'>('role');
-  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | 'homeschool_parent' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'teacher' | 'principal' | null>(null);
   const [userName, setUserName] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [userEmail, setUserEmail] = useState('');
@@ -54,7 +54,7 @@ export default function TryMontreePage() {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const handleRoleSelect = (role: 'teacher' | 'principal' | 'homeschool_parent') => {
+  const handleRoleSelect = (role: 'teacher' | 'principal') => {
     setSelectedRole(role);
     setStep('details');
     setError('');
@@ -137,25 +137,6 @@ export default function TryMontreePage() {
       localStorage.setItem('montree_principal', JSON.stringify(responseData.principal));
       localStorage.setItem('montree_school', JSON.stringify(responseData.school));
       router.push('/montree/principal/setup');
-    } else if (responseData.role === 'homeschool_parent' && responseData.teacher) {
-      localStorage.setItem(
-        'montree_session',
-        JSON.stringify({
-          teacher: {
-            id: responseData.teacher.id,
-            name: responseData.teacher.name,
-            role: 'homeschool_parent',
-            email: responseData.teacher.email,
-            password_set: !!responseData.teacher.password_set_at,
-          },
-          school: responseData.school,
-          classroom: responseData.classroom || null,
-          loginAt: new Date().toISOString(),
-          onboarded: responseData.onboarded || false,
-        })
-      );
-      // Home parents go to conversational setup (Portal + Shelf experience)
-      router.push('/montree/home/setup');
     }
   };
 
@@ -219,13 +200,6 @@ export default function TryMontreePage() {
                 <span className="text-sm text-purple-100/70 font-normal mt-1 block">{t('signup.principalDesc')}</span>
               </button>
 
-              <button
-                onClick={() => handleRoleSelect('homeschool_parent')}
-                className="w-full px-6 py-5 bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-semibold rounded-2xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-left"
-              >
-                <span className="text-lg block">🌿 {t('signup.homeParent')}</span>
-                <span className="text-sm text-emerald-100/70 font-normal mt-1 block">{t('signup.homeParentDesc')}</span>
-              </button>
             </div>
           </div>
         )}
@@ -247,7 +221,7 @@ export default function TryMontreePage() {
                   type="text"
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.namePlaceholder.parent') : t('signup.namePlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.namePlaceholder.principal') : t('signup.namePlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   autoFocus
                 />
@@ -255,13 +229,13 @@ export default function TryMontreePage() {
 
               <div>
                 <label className="block text-sm mb-2 text-emerald-300/70">
-                  {selectedRole === 'principal' ? t('signup.schoolName') : selectedRole === 'homeschool_parent' ? t('signup.homeName') : t('signup.schoolClassroomName')}
+                  {selectedRole === 'principal' ? t('signup.schoolName') : t('signup.schoolClassroomName')}
                 </label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : selectedRole === 'homeschool_parent' ? t('signup.schoolPlaceholder.parent') : t('signup.schoolPlaceholder.teacher')}
+                  placeholder={selectedRole === 'principal' ? t('signup.schoolPlaceholder.principal') : t('signup.schoolPlaceholder.teacher')}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                   onKeyDown={(e) => e.key === 'Enter' && handleDetailsSubmit()}
                 />

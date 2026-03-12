@@ -107,7 +107,7 @@ export default function LibraryWelcomePage() {
               </svg>
             </Link>
 
-            {/* Path 3: Photo Bank — blue accent */}
+            {/* Path 3: Picture Bank — blue accent */}
             <Link
               href="/montree/library/photo-bank"
               className="group relative flex items-center gap-5 w-full p-6 rounded-2xl border transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
@@ -127,9 +127,9 @@ export default function LibraryWelcomePage() {
                 </svg>
               </div>
               <div className="relative z-10 flex-1 text-left">
-                <div className="text-white font-semibold text-lg">Photo Bank</div>
+                <div className="text-white font-semibold text-lg">Picture Bank</div>
                 <div className="text-blue-200/40 text-sm mt-0.5">
-                  Search, browse &amp; contribute English teaching photos
+                  Search, browse &amp; contribute English teaching pictures
                 </div>
               </div>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="relative z-10 text-blue-400/30 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0">

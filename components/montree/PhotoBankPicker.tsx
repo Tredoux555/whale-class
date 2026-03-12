@@ -1,5 +1,5 @@
 // components/montree/PhotoBankPicker.tsx
-// Reusable photo bank picker component for embedding in content creation tools
+// Reusable picture bank picker component for embedding in content creation tools
 // Provides search, category filter, scrollable gallery grid, and selection/drag support
 'use client';
 

@@ -1,8 +1,8 @@
 // /montree/library/photo-bank/page.tsx
-// Montree Photo Bank — Full page for browsing, searching, uploading, and managing photos
+// Montree Picture Bank — Full page for browsing, searching, uploading, and managing photos
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 
@@ -13,11 +13,27 @@ export default function PhotoBankPage() {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // CRITICAL: Prevent browser from opening dropped files as new tabs
+  // This must be on the window level to catch ALL drag events on the page
+  useEffect(() => {
+    const preventDefaults = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    window.addEventListener('dragover', preventDefaults);
+    window.addEventListener('drop', preventDefaults);
+    return () => {
+      window.removeEventListener('dragover', preventDefaults);
+      window.removeEventListener('drop', preventDefaults);
+    };
+  }, []);
+
   // Handle file upload
   const uploadFiles = async (files: File[]) => {
     if (!files.length) return;
 
     setUploading(true);
+    setUploadMode(true);
     setUploadResults([]);
 
     const formData = new FormData();
@@ -37,7 +53,7 @@ export default function PhotoBankPage() {
       if (data.results?.some((r: { success: boolean }) => r.success)) {
         setTimeout(() => {
           window.location.reload();
-        }, 2000);
+        }, 3000);
       }
     } catch (err) {
       console.error('Upload error:', err);
@@ -53,15 +69,36 @@ export default function PhotoBankPage() {
     if (e.target) e.target.value = '';
   };
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  // Page-level drop handler — works even when upload mode is off
+  const handlePageDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOver(false);
     const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
-    uploadFiles(files);
+    if (files.length > 0) {
+      uploadFiles(files);
+    }
+  }, []);
+
+  const handlePageDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  }, []);
+
+  const handlePageDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
   }, []);
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #0A2725 0%, #0D3330 40%, #122C2A 70%, #0F1F1E 100%)' }}>
+    <div
+      className="min-h-screen relative overflow-hidden"
+      style={{ background: 'linear-gradient(160deg, #0A2725 0%, #0D3330 40%, #122C2A 70%, #0F1F1E 100%)' }}
+      onDrop={handlePageDrop}
+      onDragOver={handlePageDragOver}
+      onDragLeave={handlePageDragLeave}
+    >
 
       {/* Ambient glow effects */}
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.07]" style={{ background: 'radial-gradient(circle, #60a5fa, transparent 70%)' }} />
@@ -84,7 +121,7 @@ export default function PhotoBankPage() {
             border: `1px solid ${uploadMode ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
           }}
         >
-          {uploadMode ? '✕ Close Upload' : '📤 Upload Photos'}
+          {uploadMode ? '✕ Close Upload' : '📤 Upload Pictures'}
         </button>
       </nav>
 
@@ -92,17 +129,17 @@ export default function PhotoBankPage() {
       <div className="relative z-10 px-6 pb-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-white/50 text-xs tracking-wide uppercase">Montree Photo Bank</span>
+          <span className="text-white/50 text-xs tracking-wide uppercase">Montree Picture Bank</span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
-          <span className="text-white/90">Photo </span>
+          <span className="text-white/90">Picture </span>
           <span style={{ background: 'linear-gradient(135deg, #93c5fd, #60a5fa, #bfdbfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Library
           </span>
         </h1>
         <p className="text-white/40 text-base max-w-md mx-auto">
-          Search, browse, and contribute English teaching photos. Use them directly in any content creation tool.
+          Search, browse, and contribute English teaching pictures. Use them directly in any content creation tool.
         </p>
       </div>
 
@@ -110,7 +147,7 @@ export default function PhotoBankPage() {
       {uploadMode && (
         <div className="relative z-10 px-6 mb-6">
           <div
-            onDrop={handleDrop}
+            onDrop={handlePageDrop}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onClick={() => fileInputRef.current?.click()}
@@ -123,19 +160,19 @@ export default function PhotoBankPage() {
             {uploading ? (
               <div>
                 <div className="text-3xl mb-3">⏳</div>
-                <p className="text-white/70 text-lg font-semibold">Uploading photos...</p>
+                <p className="text-white/70 text-lg font-semibold">Uploading pictures...</p>
               </div>
             ) : (
               <div>
                 <div className="text-4xl mb-3">📤</div>
                 <p className="text-white/70 text-lg font-semibold mb-1">
-                  Drop photos here or click to upload
+                  Drop pictures here or click to upload
                 </p>
                 <p className="text-white/30 text-sm">
                   Supports PNG, JPG, WebP, GIF, AVIF — Max 10MB each
                 </p>
                 <p className="text-emerald-400/50 text-xs mt-3">
-                  Photos are automatically categorized by filename
+                  Pictures are automatically categorized by filename
                 </p>
               </div>
             )}
@@ -171,7 +208,7 @@ export default function PhotoBankPage() {
         </div>
       )}
 
-      {/* Main Photo Bank Browser */}
+      {/* Main Picture Bank Browser */}
       <div className="relative z-10 px-6 pb-12">
         <div className="max-w-5xl mx-auto">
           <div
@@ -191,7 +228,7 @@ export default function PhotoBankPage() {
               }}
               maxHeight={600}
               showCategories={true}
-              searchPlaceholder="Search photos... (e.g. &quot;cat&quot;, &quot;apple&quot;, &quot;short a&quot;)"
+              searchPlaceholder="Search pictures... (e.g. &quot;cat&quot;, &quot;apple&quot;, &quot;short a&quot;)"
             />
           </div>
         </div>
@@ -200,7 +237,7 @@ export default function PhotoBankPage() {
       {/* Footer info */}
       <div className="relative z-10 px-6 py-8 text-center">
         <p className="text-white/20 text-xs tracking-wider uppercase">
-          Contribute photos to help teachers worldwide
+          Contribute pictures to help teachers worldwide
         </p>
       </div>
     </div>
