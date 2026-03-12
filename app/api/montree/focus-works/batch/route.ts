@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .from('montree_classrooms')
       .select('school_id')
       .eq('id', classroomId)
-      .single();
+      .maybeSingle();
 
     if (!classroom || classroom.school_id !== auth.schoolId) {
       return NextResponse.json(

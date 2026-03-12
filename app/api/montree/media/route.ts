@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
         { data: directMedia, error: mediaError },
         { data: groupLinks, error: linkError },
       ] = await Promise.all([
-        supabase.from('montree_children').select('classroom_id').eq('id', childId).single(),
+        supabase.from('montree_children').select('classroom_id').eq('id', childId).maybeSingle(),
         supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at').eq('child_id', childId).order('captured_at', { ascending: false }),
         supabase.from('montree_media_children').select('media_id').eq('child_id', childId),
       ]);
@@ -218,11 +218,15 @@ export async function PATCH(request: NextRequest) {
     }
     const { data: media, error } = await updateQuery
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Media update error:', error.message, error.code);
       return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    }
+
+    if (!media) {
+      return NextResponse.json({ error: 'Media not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, media });

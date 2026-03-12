@@ -186,8 +186,9 @@ export function startAnalysis(
       });
       notify();
     })
-    .catch(() => {
+    .catch((err) => {
       clearTimeout(timeoutId);
+      console.error('[PhotoInsight] Analysis fetch error:', err);
       entries.set(mediaId, {
         mediaId,
         childId,

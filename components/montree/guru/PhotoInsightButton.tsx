@@ -90,6 +90,10 @@ export default function PhotoInsightButton({
         });
         if (!progressRes.ok) {
           console.error('[PhotoInsight] Progress update failed:', progressRes.status);
+          setCtaError(t('photoInsight.actionFailed'));
+          setTimeout(() => setCtaError(null), 4000);
+          setCtaLoading(false);
+          return; // Don't mark as confirmed if progress update failed
         }
       }
       // 2. Mark correct in accuracy EMA (teacher confirmed = ground truth)

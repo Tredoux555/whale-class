@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       .from('montree_classrooms')
       .select('id')
       .eq('id', classroomId)
-      .single();
+      .maybeSingle();
 
     if (classroomError || !classroom) {
       console.error('Classroom not found:', { classroomId, classroomError });
@@ -167,7 +167,7 @@ export async function GET(request: NextRequest) {
         .select('id')
         .eq('id', classroomId)
         .eq('school_id', auth.schoolId)
-        .single();
+        .maybeSingle();
 
       if (!classroom) {
         return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });

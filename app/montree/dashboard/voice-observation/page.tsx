@@ -56,7 +56,7 @@ export default function VoiceObservationPage() {
         const voiceFeature = data.features?.find((f: any) => f.feature_key === 'voice_observations');
         setFeatureEnabled(voiceFeature?.enabled || false);
       })
-      .catch(() => setFeatureEnabled(false));
+      .catch((err) => { console.error('[voice-obs] Feature check error:', err); setFeatureEnabled(false); });
 
     // Load history
     montreeApi('/api/montree/voice-observation/history?limit=10')
@@ -64,7 +64,7 @@ export default function VoiceObservationPage() {
       .then(data => {
         setHistory(data.sessions || []);
       })
-      .catch(() => {});
+      .catch((err) => { console.error('[voice-obs] History fetch error:', err); });
 
     setLoading(false);
   }, [router]);
@@ -81,10 +81,10 @@ export default function VoiceObservationPage() {
         setActiveSession({ id: data.sessionId, sessionDate: data.sessionDate });
         setPageState('recording');
       } else {
-        toast.error(data.error || 'Failed to start');
+        toast.error(data.error || t('voiceObs.failedToStart'));
       }
     } catch {
-      toast.error('Failed to start recording');
+      toast.error(t('voiceObs.failedToStart'));
     }
   }, []);
 
@@ -100,7 +100,7 @@ export default function VoiceObservationPage() {
         setPageState(data.status === 'paused' ? 'paused' : 'recording');
       }
     } catch {
-      toast.error('Failed to pause');
+      toast.error(t('voiceObs.failedToPause'));
     }
   }, [activeSession]);
 
@@ -116,10 +116,10 @@ export default function VoiceObservationPage() {
       if (data.success) {
         setPageState('processing');
       } else {
-        toast.error(data.error || 'Failed to end recording');
+        toast.error(data.error || t('voiceObs.failedToEnd'));
       }
     } catch {
-      toast.error('Failed to end recording');
+      toast.error(t('voiceObs.failedToEnd'));
     }
   }, [activeSession]);
 
@@ -131,12 +131,12 @@ export default function VoiceObservationPage() {
   // Commit complete
   const handleCommitted = useCallback((committedCount: number) => {
     setPageState('committed');
-    toast.success(`${committedCount} observations committed to student records!`);
+    toast.success(t('voiceObs.commitSuccess'));
     // Refresh history
     montreeApi('/api/montree/voice-observation/history?limit=10')
       .then(res => res.json())
       .then(data => setHistory(data.sessions || []))
-      .catch(() => {});
+      .catch((err) => { console.error('[voice-obs] History refresh error:', err); });
   }, []);
 
   // Return to idle
