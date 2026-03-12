@@ -1,230 +1,294 @@
 // /montree/library/tools/phonics-fast/three-part-cards/page.tsx
-// Auto 3-Part Card Generator — Generates Montessori nomenclature cards from phonics word lists
+// Phonics 3-Part Cards — wraps the ORIGINAL CardGenerator with phonics word data
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { ALL_PHASES, getPhaseWords, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { ALL_PHASES, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
+import CardGenerator from '@/components/card-generator/CardGenerator';
+import type { Card } from '@/components/card-generator/types';
 
-type PrintMode = 'full' | 'picture-only' | 'label-only';
+// Render an emoji (or text) onto a canvas and return a data URL
+function emojiToDataUrl(emoji: string, size = 400): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Use a large font size relative to canvas
+  ctx.font = `${Math.round(size * 0.6)}px serif`;
+  ctx.fillText(emoji, size / 2, size / 2);
+  return canvas.toDataURL('image/png');
+}
 
 export default function ThreePartCardsPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const initialPhase = searchParams.get('phase') || 'initial';
+
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-  const [printMode, setPrintMode] = useState<PrintMode>('full');
-  const [borderColor, setBorderColor] = useState('#10b981');
-  const [borderWidth, setBorderWidth] = useState(2);
-  const [fontSize, setFontSize] = useState(24);
-  const [showMiniature, setShowMiniature] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
+  const [generatedCards, setGeneratedCards] = useState<Card[] | undefined>(undefined);
+  const [generating, setGenerating] = useState(false);
 
   const currentPhase = ALL_PHASES.find(p => p.id === selectedPhase);
 
-  // Select all groups by default
+  // Select all groups by default when phase changes
   useEffect(() => {
     if (currentPhase) {
       setSelectedGroups(currentPhase.groups.map(g => g.id));
     }
-  }, [selectedPhase]);
+  }, [selectedPhase]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const selectedWords = currentPhase
+  const selectedWords: PhonicsWord[] = currentPhase
     ? currentPhase.groups
         .filter(g => selectedGroups.includes(g.id))
         .flatMap(g => g.words)
     : [];
 
-  const handlePrint = () => {
-    const printContent = printRef.current;
-    if (!printContent) return;
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-    printWindow.document.write(`<!DOCTYPE html><html><head>
-      <title>3-Part Cards — ${currentPhase?.name || 'Phonics'}</title>
-      <style>
-        @page { margin: 10mm; size: A4 portrait; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Comic Sans MS', 'Chalkboard SE', cursive; }
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
-        .card {
-          width: 90mm; height: 90mm;
-          border: ${borderWidth}px solid ${borderColor};
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          page-break-inside: avoid;
-          padding: 8mm;
-        }
-        .card-emoji { font-size: 48px; margin-bottom: 8px; }
-        .card-word {
-          font-size: ${fontSize}px; font-weight: bold;
-          font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
-          letter-spacing: 2px;
-        }
-        .card-miniature { font-size: 10px; color: #999; margin-top: 4px; }
-        .label-card { height: 30mm; }
-        .picture-card .card-emoji { font-size: 64px; }
-        @media print { .no-print { display: none; } }
-      </style>
-    </head><body>`);
-    printWindow.document.write(printContent.innerHTML);
-    printWindow.document.write('</body></html>');
-    printWindow.document.close();
-    printWindow.print();
-  };
+  // Convert phonics words to Card[] format for the original CardGenerator
+  const generateCards = useCallback(() => {
+    if (selectedWords.length === 0) return;
+    setGenerating(true);
+
+    // Use requestAnimationFrame to let the UI update before heavy canvas work
+    requestAnimationFrame(() => {
+      const cards: Card[] = selectedWords.map((word, idx) => {
+        // Use custom image URL if available, otherwise render emoji to canvas
+        const imageUrl = word.customImageUrl || emojiToDataUrl(word.image);
+        return {
+          id: Date.now() + idx + Math.random(),
+          originalImage: imageUrl,
+          croppedImage: imageUrl,
+          label: word.word,
+          width: 400,
+          height: 400,
+        };
+      });
+      setGeneratedCards(cards);
+      setGenerating(false);
+    });
+  }, [selectedWords]);
+
+  // If cards haven't been generated yet, show the phase/group selector
+  if (generatedCards) {
+    return (
+      <CardGenerator
+        initialCards={generatedCards}
+        headerConfig={{
+          showBackButton: true,
+          backButtonLabel: '←',
+          onBackClick: () => setGeneratedCards(undefined),
+          title: `🃏 Phonics 3-Part Cards`,
+          subtitle: `${currentPhase?.name || 'Phonics'} — ${generatedCards.length} words loaded. Upload photos to replace emojis!`,
+          gradientStart: currentPhase?.color || '#10b981',
+          gradientEnd: '#0D3330',
+          centered: false,
+        }}
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white">
+    <div style={{
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      maxWidth: '900px',
+      margin: '0 auto',
+      padding: '20px',
+      backgroundColor: '#f8f9fa',
+      minHeight: '100vh'
+    }}>
       {/* Header */}
-      <header className="bg-[#0D3330] text-white">
-        <div className="max-w-5xl mx-auto px-4 py-5">
-          <Link href="/montree/library/tools/phonics-fast" className="text-emerald-300 text-sm hover:underline">
-            ← Phonics Fast
-          </Link>
-          <h1 className="text-2xl font-bold mt-2">🃏 Auto 3-Part Cards</h1>
-          <p className="text-emerald-200 mt-1">Generate Montessori nomenclature cards from phonics word lists</p>
-        </div>
-      </header>
+      <div style={{
+        marginBottom: '24px',
+        padding: '24px',
+        background: `linear-gradient(135deg, ${currentPhase?.color || '#10b981'} 0%, #0D3330 100%)`,
+        borderRadius: '16px',
+        color: '#fff'
+      }}>
+        <button
+          onClick={() => router.push('/montree/library/tools/phonics-fast')}
+          style={{
+            background: 'rgba(255,255,255,0.2)',
+            border: 'none',
+            color: '#fff',
+            padding: '6px 14px',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            marginBottom: '12px',
+          }}
+        >
+          ← Phonics Fast
+        </button>
+        <h1 style={{ margin: '0 0 8px 0', fontSize: '2rem', fontWeight: '800' }}>
+          🃏 Phonics 3-Part Cards
+        </h1>
+        <p style={{ margin: 0, opacity: 0.9, fontSize: '1rem' }}>
+          Select a phase and word groups, then generate cards using the full Card Generator
+        </p>
+      </div>
 
-      {/* Controls */}
-      <div className="max-w-5xl mx-auto px-4 py-4 space-y-4">
-        {/* Phase selector */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <label className="font-bold text-gray-700 text-sm block mb-2">Phase</label>
-          <div className="flex flex-wrap gap-2">
-            {ALL_PHASES.map(phase => (
-              <button
-                key={phase.id}
-                onClick={() => setSelectedPhase(phase.id)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  selectedPhase === phase.id
-                    ? 'text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-                style={selectedPhase === phase.id ? { backgroundColor: phase.color } : undefined}
-              >
-                {phase.name} ({phase.groups.flatMap(g => g.words).length})
-              </button>
-            ))}
+      {/* Phase Selector */}
+      <div style={{
+        backgroundColor: '#fff',
+        borderRadius: '12px',
+        padding: '20px',
+        marginBottom: '16px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+      }}>
+        <h2 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#333' }}>Phase</h2>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {ALL_PHASES.map(phase => (
+            <button
+              key={phase.id}
+              onClick={() => setSelectedPhase(phase.id)}
+              style={{
+                padding: '10px 18px',
+                borderRadius: '10px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px',
+                backgroundColor: selectedPhase === phase.id ? phase.color : '#e5e7eb',
+                color: selectedPhase === phase.id ? '#fff' : '#4b5563',
+                transition: 'all 0.15s',
+              }}
+            >
+              {phase.name} ({phase.groups.flatMap(g => g.words).length})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Group Selector */}
+      {currentPhase && (
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '16px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <h2 style={{ margin: 0, fontSize: '1rem', color: '#333' }}>Word Groups</h2>
+            <button
+              onClick={() => {
+                const allIds = currentPhase.groups.map(g => g.id);
+                setSelectedGroups(prev => prev.length === allIds.length ? [] : allIds);
+              }}
+              style={{
+                padding: '4px 12px',
+                borderRadius: '6px',
+                border: '1px solid #d1d5db',
+                background: '#fff',
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#6b7280',
+              }}
+            >
+              {selectedGroups.length === currentPhase.groups.length ? 'Deselect All' : 'Select All'}
+            </button>
           </div>
-        </div>
-
-        {/* Group selector */}
-        {currentPhase && (
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-            <label className="font-bold text-gray-700 text-sm block mb-2">Word Groups</label>
-            <div className="flex flex-wrap gap-2">
-              {currentPhase.groups.map(group => (
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {currentPhase.groups.map(group => {
+              const isSelected = selectedGroups.includes(group.id);
+              return (
                 <button
                   key={group.id}
                   onClick={() => {
                     setSelectedGroups(prev =>
-                      prev.includes(group.id)
+                      isSelected
                         ? prev.filter(id => id !== group.id)
                         : [...prev, group.id]
                     );
                   }}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                    selectedGroups.includes(group.id)
-                      ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400'
-                      : 'bg-gray-100 text-gray-600 border-2 border-transparent'
-                  }`}
+                  style={{
+                    padding: '8px 14px',
+                    borderRadius: '8px',
+                    border: `2px solid ${isSelected ? currentPhase.color : 'transparent'}`,
+                    cursor: 'pointer',
+                    fontWeight: '500',
+                    fontSize: '13px',
+                    backgroundColor: isSelected ? `${currentPhase.color}15` : '#f3f4f6',
+                    color: isSelected ? currentPhase.color : '#6b7280',
+                    transition: 'all 0.15s',
+                  }}
                 >
                   {group.label} ({group.words.length})
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        )}
-
-        {/* Print options */}
-        <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
-          <div>
-            <label className="font-bold text-gray-700 text-sm block mb-1">Print Mode</label>
-            <select
-              value={printMode}
-              onChange={e => setPrintMode(e.target.value as PrintMode)}
-              className="px-3 py-2 border rounded-lg text-sm"
-            >
-              <option value="full">Full Cards (Picture + Word)</option>
-              <option value="picture-only">Picture Only</option>
-              <option value="label-only">Label Only</option>
-            </select>
-          </div>
-          <div>
-            <label className="font-bold text-gray-700 text-sm block mb-1">Border</label>
-            <input type="color" value={borderColor} onChange={e => setBorderColor(e.target.value)} className="w-10 h-10 rounded cursor-pointer" />
-          </div>
-          <div>
-            <label className="font-bold text-gray-700 text-sm block mb-1">Border Width</label>
-            <select value={borderWidth} onChange={e => setBorderWidth(Number(e.target.value))} className="px-3 py-2 border rounded-lg text-sm">
-              <option value={1}>Thin</option>
-              <option value={2}>Medium</option>
-              <option value={3}>Thick</option>
-            </select>
-          </div>
-          <div>
-            <label className="font-bold text-gray-700 text-sm block mb-1">Font Size</label>
-            <select value={fontSize} onChange={e => setFontSize(Number(e.target.value))} className="px-3 py-2 border rounded-lg text-sm">
-              <option value={18}>Small</option>
-              <option value={24}>Medium</option>
-              <option value={32}>Large</option>
-            </select>
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={showMiniature} onChange={e => setShowMiniature(e.target.checked)} />
-            Show miniature note
-          </label>
-          <button
-            onClick={handlePrint}
-            className="px-6 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700 ml-auto"
-          >
-            🖨️ Print ({selectedWords.length} cards)
-          </button>
         </div>
-      </div>
+      )}
 
-      {/* Preview */}
-      <div className="max-w-5xl mx-auto px-4 py-4">
-        <div ref={printRef}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 0 }}>
+      {/* Word Preview */}
+      {selectedWords.length > 0 && (
+        <div style={{
+          backgroundColor: '#fff',
+          borderRadius: '12px',
+          padding: '20px',
+          marginBottom: '16px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+        }}>
+          <h2 style={{ margin: '0 0 12px 0', fontSize: '1rem', color: '#333' }}>
+            Preview — {selectedWords.length} words
+          </h2>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {selectedWords.map((word, idx) => (
-              <div
+              <span
                 key={`${word.word}-${idx}`}
                 style={{
-                  width: '100%',
-                  aspectRatio: printMode === 'label-only' ? '3/1' : '1/1',
-                  border: `${borderWidth}px solid ${borderColor}`,
-                  display: 'flex',
-                  flexDirection: 'column',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  backgroundColor: '#f0fdf4',
+                  border: '1px solid #bbf7d0',
+                  fontSize: '14px',
+                  display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '16px',
-                  fontFamily: "'Comic Sans MS', cursive",
-                  pageBreakInside: 'avoid',
+                  gap: '6px',
                 }}
               >
-                {printMode !== 'label-only' && (
-                  <div style={{ fontSize: printMode === 'picture-only' ? '64px' : '48px', marginBottom: '8px' }}>
-                    {word.image}
-                  </div>
-                )}
-                {printMode !== 'picture-only' && (
-                  <div style={{ fontSize: `${fontSize}px`, fontWeight: 'bold', letterSpacing: '2px' }}>
-                    {word.word}
-                  </div>
-                )}
-                {showMiniature && word.isNoun && (
-                  <div style={{ fontSize: '10px', color: '#999', marginTop: '4px' }}>
-                    {word.miniature}
-                  </div>
-                )}
-              </div>
+                <span style={{ fontSize: '18px' }}>{word.image}</span>
+                <span style={{ fontWeight: '500' }}>{word.word}</span>
+              </span>
             ))}
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Generate Button */}
+      <button
+        onClick={generateCards}
+        disabled={selectedWords.length === 0 || generating}
+        style={{
+          width: '100%',
+          padding: '16px',
+          borderRadius: '12px',
+          border: 'none',
+          backgroundColor: selectedWords.length === 0 ? '#d1d5db' : (currentPhase?.color || '#10b981'),
+          color: '#fff',
+          cursor: selectedWords.length === 0 ? 'not-allowed' : 'pointer',
+          fontWeight: '700',
+          fontSize: '16px',
+          transition: 'all 0.15s',
+          opacity: generating ? 0.7 : 1,
+        }}
+      >
+        {generating
+          ? '⏳ Generating cards...'
+          : `🃏 Generate ${selectedWords.length} Cards → Open Card Generator`
+        }
+      </button>
+
+      <p style={{ textAlign: 'center', color: '#9ca3af', fontSize: '13px', marginTop: '12px' }}>
+        Cards will open in the full Card Generator where you can upload photos, crop images, adjust borders, and print.
+      </p>
     </div>
   );
 }

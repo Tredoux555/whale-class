@@ -237,7 +237,9 @@ export async function POST(request: NextRequest) {
     //   Sonnet ($20/mo): 5 messages/day → max 150/mo, cost ~$6.75/mo = great margin
     const freemiumEnabled = process.env.GURU_FREEMIUM_ENABLED === 'true';
     const teacherId = teacher_id || auth.userId;
-    let isParentRole = false;
+    // Use auth.role from JWT as the primary source of truth for role detection
+    // This is more reliable than the DB lookup which can silently fail
+    let isParentRole = auth.role === 'homeschool_parent';
     let shouldIncrementPrompt = false;
     let guruTier: 'haiku' | 'sonnet' = 'sonnet'; // Default to sonnet
     if (isPrincipal) {
@@ -253,7 +255,7 @@ export async function POST(request: NextRequest) {
           .from('montree_teachers')
           .select('role, guru_plan, guru_subscription_status, guru_current_period_end, guru_tier, created_at')
           .eq('id', teacherId)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('montree_guru_interactions')
           .select('id', { count: 'exact', head: true })
@@ -395,7 +397,7 @@ export async function POST(request: NextRequest) {
         .from('montree_children')
         .select('settings')
         .eq('id', child_id)
-        .single();
+        .maybeSingle();
       const childSettings = (childSettingsRecord?.settings as Record<string, unknown>) || {};
       const savedConcerns = (childSettings.guru_concerns as string[]) || [];
 
