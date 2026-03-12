@@ -44,22 +44,43 @@ export default function PhotoInsightButton({
   const [ctaDone, setCtaDone] = useState(false);
   const [ctaError, setCtaError] = useState<string | null>(null);
 
-  // Subscribe to the global store — re-renders when any entry changes
-  const storeSnapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-  const entry = storeSnapshot.get(mediaId);
+  // Mounted guard — prevents state updates on unmounted component
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
-  const analyzing = entry?.status === 'analyzing';
+  // Subscribe to the global store — re-renders when any entry changes
+  // Composite key (mediaId:childId) ensures group photos show the correct child's analysis
+  const storeSnapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const storeKey = `${mediaId}:${childId}`;
+  const entry = storeSnapshot.get(storeKey);
+
+  const analyzing = entry?.status === 'analyzing' || entry?.status === 'retrying';
   const error = entry?.status === 'error';
-  const result: PhotoInsightResult | null = entry?.result || null;
+  const retrying = entry?.status === 'retrying';
+  const result: PhotoInsightResult | null = entry?.result ?? null;
+  const errorType = entry?.errorType;
+
+  // Reset CTA state when mediaId changes (e.g., navigating between photos)
+  const prevMediaIdRef = useRef(mediaId);
+  useEffect(() => {
+    if (prevMediaIdRef.current !== mediaId) {
+      prevMediaIdRef.current = mediaId;
+      setCtaDone(false);
+      setCtaError(null);
+      setCtaLoading(false);
+    }
+  }, [mediaId]);
 
   // Fire onProgressUpdate exactly once when auto_updated result arrives
   const firedAutoUpdateRef = useRef<string | null>(null);
   useEffect(() => {
-    if (result?.auto_updated && onProgressUpdate && firedAutoUpdateRef.current !== mediaId) {
-      firedAutoUpdateRef.current = mediaId;
+    if (result?.auto_updated && onProgressUpdate && firedAutoUpdateRef.current !== storeKey) {
+      firedAutoUpdateRef.current = storeKey;
       onProgressUpdate();
     }
-  }, [result, mediaId, onProgressUpdate]);
+  }, [result, storeKey, onProgressUpdate]);
 
   const handleClick = useCallback(() => {
     if (result || analyzing) return;
@@ -67,7 +88,7 @@ export default function PhotoInsightButton({
   }, [result, analyzing, mediaId, childId, locale]);
 
   const handleRetry = useCallback(() => {
-    resetEntry(mediaId);
+    resetEntry(mediaId, childId);
     startAnalysis(mediaId, childId, locale);
   }, [mediaId, childId, locale]);
 
@@ -88,6 +109,7 @@ export default function PhotoInsightButton({
             notes: `[Smart Capture — Confirmed] ${result.insight || ''}`,
           }),
         });
+        if (!mountedRef.current) return;
         if (!progressRes.ok) {
           console.error('[PhotoInsight] Progress update failed:', progressRes.status);
           setCtaError(t('photoInsight.actionFailed'));
@@ -98,33 +120,44 @@ export default function PhotoInsightButton({
       }
       // 2. Mark correct in accuracy EMA (teacher confirmed = ground truth)
       if (classroomId) {
-        await montreeApi(`/api/montree/guru/corrections`, {
-          method: 'POST',
-          body: JSON.stringify({
-            child_id: childId,
-            media_id: mediaId,
-            original_work_name: result.work_name,
-            original_area: result.area,
-            action: 'confirm',
-          }),
-        });
+        try {
+          const corrRes = await montreeApi(`/api/montree/guru/corrections`, {
+            method: 'POST',
+            body: JSON.stringify({
+              child_id: childId,
+              media_id: mediaId,
+              original_work_name: result.work_name,
+              original_area: result.area,
+              action: 'confirm',
+            }),
+          });
+          if (!corrRes.ok) {
+            console.error('[PhotoInsight] Confirm accuracy EMA failed:', corrRes.status);
+            // Non-fatal — proceed with local confirmation even if EMA fails
+          }
+        } catch (corrErr) {
+          console.error('[PhotoInsight] Confirm accuracy EMA error (non-fatal):', corrErr);
+        }
       }
-      confirmEntry(mediaId);
+      if (!mountedRef.current) return;
+      confirmEntry(mediaId, childId);
       setCtaDone(true);
       if (onProgressUpdate) onProgressUpdate();
     } catch (err) {
       console.error('[PhotoInsight] Confirm error:', err);
-      setCtaError(t('photoInsight.actionFailed'));
-      setTimeout(() => setCtaError(null), 4000);
+      if (mountedRef.current) {
+        setCtaError(t('photoInsight.actionFailed'));
+        setTimeout(() => setCtaError(null), 4000);
+      }
     } finally {
-      setCtaLoading(false);
+      if (mountedRef.current) setCtaLoading(false);
     }
   }, [result, childId, mediaId, classroomId, ctaLoading, onProgressUpdate, t]);
 
   // CTA: Reject identification (AMBER zone — teacher says "wrong")
   const handleReject = useCallback(() => {
     if (!result?.work_name) return;
-    rejectEntry(mediaId);
+    rejectEntry(mediaId, childId);
     // Open the "Teach Guru" modal so teacher can correct
     if (onTeachWork) {
       onTeachWork({
@@ -133,7 +166,7 @@ export default function PhotoInsightButton({
         mediaId,
       });
     }
-  }, [result, mediaId, onTeachWork]);
+  }, [result, mediaId, childId, onTeachWork]);
 
   // CTA: Add known standard work to classroom (Scenario B)
   const handleAddToClassroom = useCallback(async () => {
@@ -150,8 +183,10 @@ export default function PhotoInsightButton({
           source: 'smart_capture',
         }),
       });
+      if (!mountedRef.current) return;
       if (res.ok) {
         const data = await res.json();
+        if (!mountedRef.current) return;
         setCtaDone(true);
         if (onAddToClassroom) {
           onAddToClassroom({
@@ -167,10 +202,12 @@ export default function PhotoInsightButton({
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to classroom error:', err);
-      setCtaError(t('photoInsight.actionFailed'));
-      setTimeout(() => setCtaError(null), 4000);
+      if (mountedRef.current) {
+        setCtaError(t('photoInsight.actionFailed'));
+        setTimeout(() => setCtaError(null), 4000);
+      }
     } finally {
-      setCtaLoading(false);
+      if (mountedRef.current) setCtaLoading(false);
     }
   }, [result, classroomId, ctaLoading, onAddToClassroom, t]);
 
@@ -188,6 +225,7 @@ export default function PhotoInsightButton({
           work_id: result.classroom_work_id || undefined,
         }),
       });
+      if (!mountedRef.current) return;
       if (res.ok) {
         setCtaDone(true);
         if (onAddToShelf) {
@@ -205,10 +243,12 @@ export default function PhotoInsightButton({
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to shelf error:', err);
-      setCtaError(t('photoInsight.actionFailed'));
-      setTimeout(() => setCtaError(null), 4000);
+      if (mountedRef.current) {
+        setCtaError(t('photoInsight.actionFailed'));
+        setTimeout(() => setCtaError(null), 4000);
+      }
     } finally {
-      setCtaLoading(false);
+      if (mountedRef.current) setCtaLoading(false);
     }
   }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate, t]);
 
@@ -239,7 +279,15 @@ export default function PhotoInsightButton({
               title={t('common.tryAgain')}
             >
               <span>🔄</span>
-              <span>{t('common.tryAgain')}</span>
+              <span>
+                {errorType === 'rate_limit'
+                  ? t('photoInsight.rateLimited')
+                  : errorType === 'timeout'
+                  ? t('photoInsight.timeout')
+                  : errorType === 'network'
+                  ? t('photoInsight.networkError')
+                  : t('common.tryAgain')}
+              </span>
             </button>
           ) : (
             <button
@@ -250,7 +298,7 @@ export default function PhotoInsightButton({
               {analyzing ? (
                 <>
                   <span className="animate-spin text-xs">⏳</span>
-                  <span>{t('photoInsight.analyzing')}</span>
+                  <span>{retrying ? t('photoInsight.retrying') : t('photoInsight.analyzing')}</span>
                 </>
               ) : (
                 <>
@@ -338,7 +386,28 @@ export default function PhotoInsightButton({
                     {result.candidates.map((c) => (
                       <button
                         key={`${c.name}-${c.area}`}
-                        onClick={() => {
+                        onClick={async () => {
+                          // Record soft correction: original was wrong, this candidate was right
+                          if (classroomId && result.work_name) {
+                            try {
+                              await montreeApi(`/api/montree/guru/corrections`, {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                  child_id: childId,
+                                  media_id: mediaId,
+                                  original_work_name: result.work_name,
+                                  original_area: result.area,
+                                  corrected_work_name: c.name,
+                                  corrected_area: c.area,
+                                  correction_type: 'candidate_selection',
+                                }),
+                              });
+                            } catch (err) {
+                              console.error('[PhotoInsight] Soft correction error (non-fatal):', err);
+                            }
+                          }
+                          // Guard: only fire callback if still mounted
+                          if (!mountedRef.current) return;
                           if (onTeachWork) {
                             onTeachWork({ workName: c.name, area: c.area, mediaId });
                           }

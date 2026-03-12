@@ -16,9 +16,9 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 401 fix + album upload + raz 4th photo + home guru fixes + session recovery + guru parity + home parent rebuild + smart capture" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 3x3x3x3 smart capture hardening + 401 fix + album upload + raz 4th photo + home guru fixes + session recovery + guru parity + home parent rebuild" && git push origin main`
 
-**Includes:** 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
+**Includes:** 3x3x3x3 Smart Capture hardening (montreeApi timeout chain, composite keys for group photos, scenario D staleness fix, Promise.allSettled query parallelization — 4 files, 9 build audits CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
 **Full deploy handoff:** `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
@@ -62,7 +62,42 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 12, 2026)
+## CURRENT STATUS (Mar 13, 2026)
+
+### Session Work (Mar 13, 2026)
+
+**3x3x3x3 Smart Capture Hardening — COMPLETE, NOT YET DEPLOYED (4 files modified, 9 build audits all CLEAN):**
+
+Full 3x3x3x3 methodology (3 complete Research→Plan→Build cycles, each with 3× plan audits and 3× build audits) applied to Smart Capture / Fire-and-Forget system.
+
+**Re-run #1 — montreeApi Timeout Fix (CRITICAL):**
+- `lib/montree/api.ts` — Added optional `timeout` parameter. Store passes `CLIENT_TIMEOUT_MS + 5000` (55s). Was hardcoded 30s killing 45s server calls.
+- Timeout chain: Server 45s → Store 50s → montreeApi 55s (each fires 5s after previous)
+
+**Re-run #2 — Group Photo Composite Key (MEDIUM):**
+- `lib/montree/photo-insight-store.ts` — `makeKey(mediaId, childId)` composite key. All `entries.get/set/delete` + all public API functions require both params. Fixes group photo cross-contamination (Child B seeing Child A's result).
+- `components/montree/guru/PhotoInsightButton.tsx` — All store calls pass `childId`, `storeKey = \`${mediaId}:${childId}\``
+
+**Re-run #3 — Scenario D Staleness + Query Parallelization (MEDIUM):**
+- `app/api/montree/guru/photo-insight/route.ts` — 3 changes:
+  1. Added `created_at` to cache query, extended `shouldRefreshScenario` to include D when cache >5min old (was B/C only)
+  2. Parallelized 3 sequential context queries (corrections, focus works, duplicate check) with `Promise.allSettled`
+  3. Each result guarded with `status === 'fulfilled'` for graceful degradation
+- `components/montree/guru/PhotoInsightButton.tsx` — `|| null` → `?? null` consistency
+
+**Methodology learned — 3x3x3x3:**
+- **3x3x3**: (1) Research/Analyze/Audit → (2) Plan + audit plan 3× → (3) Build + audit build 3×
+- **3x3x3x3**: Run entire 3x3x3 cycle 3 additional times from start to finish
+- Reserved for most critical features only
+
+**Audit results:** 9 build audits (correctness, edge cases, race conditions, regression) + final cross-cycle verification. All CLEAN.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in push.
+**Handoff:** `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`
+
+---
+
+## PREVIOUS STATUS (Mar 12, 2026)
 
 ### Session Work (Mar 12, 2026)
 
@@ -2640,7 +2675,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md` | **CURRENT** — 3-cycle audit fix loop: 8 issues fixed (rate limiting, .maybeSingle, i18n, AbortController, error logging) |
+| `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md` | **CURRENT** — 3x3x3x3 hardening: timeout chain, composite keys, scenario D staleness, query parallelization (4 files, 9 audits CLEAN) |
+| `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md` | 3-cycle audit fix loop: 8 issues fixed (rate limiting, .maybeSingle, i18n, AbortController, error logging) |
 | `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md` | Consolidated deploy handoff: all 4 unpushed features (Smart Capture + Batch Reports + Whole-Class Guru + Classroom Overview) |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |
 | `docs/handoffs/HANDOFF_BATCH_REPORTS_MAR10.md` | Batch parent reports "Generate All" + 5 audit fixes + 6 audit cycles |

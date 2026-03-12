@@ -2491,6 +2491,10 @@ export const en = {
   'photoInsight.fieldQuickGuide': 'Quick Presentation Guide',
   'photoInsight.fieldMaterials': 'Materials (one per line)',
   'photoInsight.fieldAims': 'Learning Aims (one per line)',
+  'photoInsight.retrying': 'Retrying...',
+  'photoInsight.rateLimited': 'Too many requests — tap to retry',
+  'photoInsight.timeout': 'Took too long — tap to retry',
+  'photoInsight.networkError': 'Connection failed — tap to retry',
 
   // Snap & Identify
   'snap.title': '📸 Snap & Identify',

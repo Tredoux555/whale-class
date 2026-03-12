@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     // Check for cached insight (use maybeSingle to handle 0 or 2+ rows gracefully)
     const { data: cached } = await supabase
       .from('montree_guru_interactions')
-      .select('response_insight, context_snapshot')
+      .select('response_insight, context_snapshot, created_at')
       .eq('child_id', child_id)
       .eq('question_type', 'photo_insight')
       .eq('question', `photo:${media_id}`)
@@ -102,26 +102,90 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     if (cached?.response_insight) {
-      // Return cached structured response (including work ingestion scenario data + V2 candidates)
+      // Return cached structured response with FRESH scenario data
       // IMPORTANT: auto_updated is ALWAYS false on cache hits — the progress update already
       // happened on the original analysis. Returning true would cause the client to fire
       // onProgressUpdate again on every remount (duplicate refetches, potential UI flicker).
       const snapshot = (cached.context_snapshot as Record<string, unknown>) || {};
+      const cachedWorkName = (snapshot.identified_work_name as string) || null;
+      const cachedArea = (snapshot.identified_area as string) || null;
+      const cachedMatchScore = (snapshot.curriculum_match_score as number) ?? 0;
+      const cachedConfidence = (snapshot.sonnet_confidence as number) ?? 0;
+
+      // Re-check scenario freshness: classroom/shelf status may have changed since original analysis
+      // Only re-check if original scenario was B (not in classroom) or C (not on shelf)
+      const VALID_SCENARIOS = ['A', 'B', 'C', 'D'] as const;
+      let freshScenario: 'A' | 'B' | 'C' | 'D' = VALID_SCENARIOS.includes(snapshot.scenario as typeof VALID_SCENARIOS[number])
+        ? (snapshot.scenario as 'A' | 'B' | 'C' | 'D')
+        : 'D';
+      let freshInClassroom = (snapshot.in_classroom as boolean) ?? false;
+      let freshInChildShelf = (snapshot.in_child_shelf as boolean) ?? false;
+      let freshClassroomWorkId = (snapshot.classroom_work_id as string) ?? null;
+
+      // Re-check scenario freshness when:
+      // - Scenario B/C: classroom/shelf status may have changed (always re-check)
+      // - Scenario D: work may have been REMOVED from classroom/shelf (re-check if cache > 5 min old)
+      const cacheAgeMs = cached.created_at ? Date.now() - new Date(cached.created_at).getTime() : Infinity;
+      const shouldRefreshScenario = freshScenario === 'B' || freshScenario === 'C'
+        || (freshScenario === 'D' && cacheAgeMs > 5 * 60 * 1000);
+      if (cachedWorkName && shouldRefreshScenario) {
+        try {
+          const childResult2 = await supabase.from('montree_children').select('classroom_id').eq('id', child_id).maybeSingle();
+          const freshClassroomId = childResult2.data?.classroom_id;
+          if (freshClassroomId) {
+            const { data: freshWork } = await supabase
+              .from('montree_classroom_curriculum_works')
+              .select('id')
+              .eq('classroom_id', freshClassroomId)
+              .eq('name', cachedWorkName)
+              .eq('is_active', true)
+              .limit(1)
+              .maybeSingle();
+            freshInClassroom = !!freshWork?.id;
+            freshClassroomWorkId = freshWork?.id || null;
+
+            if (freshInClassroom) {
+              const { data: freshShelf } = await supabase
+                .from('montree_child_focus_works')
+                .select('id')
+                .eq('child_id', child_id)
+                .eq('work_name', cachedWorkName)
+                .limit(1)
+                .maybeSingle();
+              freshInChildShelf = !!freshShelf?.id;
+            }
+
+            // Recalculate scenario with fresh data
+            if (cachedMatchScore < 0.5 || cachedConfidence < 0.5) {
+              freshScenario = 'A';
+            } else if (!freshInClassroom) {
+              freshScenario = 'B';
+            } else if (!freshInChildShelf) {
+              freshScenario = 'C';
+            } else {
+              freshScenario = 'D';
+            }
+          }
+        } catch {
+          // Non-fatal — use cached scenario data
+        }
+      }
+
       return NextResponse.json({
         success: true,
         insight: cached.response_insight,
-        work_name: snapshot.identified_work_name || null,
-        area: snapshot.identified_area || null,
-        mastery_evidence: snapshot.mastery_evidence || null,
+        work_name: cachedWorkName,
+        area: cachedArea,
+        mastery_evidence: snapshot.mastery_evidence ?? null,
         auto_updated: false,
-        needs_confirmation: snapshot.needs_confirmation || false,
-        confidence: snapshot.sonnet_confidence || null,
+        needs_confirmation: snapshot.needs_confirmation ?? false,
+        confidence: snapshot.sonnet_confidence ?? null,
         match_score: snapshot.curriculum_match_score ?? null,
         candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
-        scenario: snapshot.scenario || 'D',
-        in_classroom: snapshot.in_classroom || false,
-        in_child_shelf: snapshot.in_child_shelf || false,
-        classroom_work_id: snapshot.classroom_work_id || null,
+        scenario: freshScenario,
+        in_classroom: freshInClassroom,
+        in_child_shelf: freshInChildShelf,
+        classroom_work_id: freshClassroomWorkId,
       });
     }
 
@@ -141,6 +205,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify media belongs to this child (cross-pollination protection)
+    // media.child_id is NULL for group photos (shared across children) — that's intentionally allowed
     if (media.child_id && media.child_id !== child_id) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
@@ -166,7 +231,7 @@ export async function POST(request: NextRequest) {
     const currentWorks = worksResult.data;
     const classroomId = child?.classroom_id;
     const childName = child?.name?.split(' ')[0] || 'This child';
-    const childAge = child?.age || 4;
+    const childAge = child?.age ?? 4;
 
     // Build works context for Sonnet
     const worksContext = currentWorks && currentWorks.length > 0
@@ -241,64 +306,36 @@ export async function POST(request: NextRequest) {
 
     // ========================================================
     // SELF-LEARNING CONTEXT: corrections, focus works, duplicates
+    // Run all 3 in parallel — they're independent queries sharing only classroomId/child_id
     // ========================================================
 
-    // 1. Fetch corrections for this classroom (used for BOTH prompt context AND V2 matching)
     let correctionsContext = '';
     const correctionsMap = new Map<string, string>(); // lowercase original → corrected (for matchToCurriculumV2)
-    if (classroomId) {
-      try {
-        const { data: corrections } = await supabase
-          .from('montree_guru_corrections')
-          .select('original_work_name, corrected_work_name')
-          .eq('classroom_id', classroomId)
-          .order('created_at', { ascending: false })
-          .limit(50);
-        if (corrections && corrections.length > 0) {
-          const promptEntries: string[] = [];
-          for (const c of corrections) {
-            if (c.original_work_name && c.corrected_work_name) {
-              // For V2 matching (lowercase key)
-              correctionsMap.set(c.original_work_name.toLowerCase().trim(), c.corrected_work_name);
-              // For prompt context (show last 10 unique)
-              if (promptEntries.length < 10) {
-                promptEntries.push(`- You said "${c.original_work_name}" but teacher corrected to "${c.corrected_work_name}"`);
-              }
-            }
-          }
-          if (promptEntries.length > 0) {
-            correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):\n${promptEntries.join('\n')}`;
-          }
-        }
-      } catch {
-        // Non-fatal — continue without corrections
-      }
-    }
-
-    // 2. Fetch child's current focus works (context only — NOT a bias)
     let focusWorksContext = '';
-    if (child_id) {
-      try {
-        const { data: focusWorks } = await supabase
-          .from('montree_child_focus_works')
-          .select('work_name, area, status')
-          .eq('child_id', child_id)
-          .limit(10);
-        if (focusWorks && focusWorks.length > 0) {
-          focusWorksContext = `\n\nCHILD'S CURRENT SHELF (for context only — do NOT bias your identification):
-${focusWorks.map((w, i) => `${i + 1}. ${w.work_name} (${w.area}, status: ${w.status})`).join('\n')}
-NOTE: These are works on the child's shelf. The photo may or may not show one of these. Identify based on what you SEE in the photo, not what is on the shelf.`;
-        }
-      } catch {
-        // Non-fatal
-      }
-    }
-
-    // 3. Check for recent photos (same child, last 5 min — informational only)
     let duplicateContext = '';
-    try {
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const { data: recentPhotos } = await supabase
+
+    const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    const [correctionsResult, focusWorksResult, duplicateResult] = await Promise.allSettled([
+      // 1. Corrections for this classroom (used for BOTH prompt context AND V2 matching)
+      classroomId
+        ? supabase
+            .from('montree_guru_corrections')
+            .select('original_work_name, corrected_work_name')
+            .eq('classroom_id', classroomId)
+            .order('created_at', { ascending: false })
+            .limit(50)
+        : Promise.resolve({ data: null }),
+
+      // 2. Child's current focus works (context only — NOT a bias)
+      supabase
+        .from('montree_child_focus_works')
+        .select('work_name, area, status')
+        .eq('child_id', child_id)
+        .limit(10),
+
+      // 3. Recent photos (same child, last 5 min — informational only)
+      supabase
         .from('montree_guru_interactions')
         .select('context_snapshot')
         .eq('child_id', child_id)
@@ -306,15 +343,47 @@ NOTE: These are works on the child's shelf. The photo may or may not show one of
         .gte('created_at', fiveMinAgo)
         .neq('question', `photo:${media_id}`)
         .order('created_at', { ascending: false })
-        .limit(1);
+        .limit(1),
+    ]);
+
+    // Process corrections result
+    if (correctionsResult.status === 'fulfilled') {
+      const corrections = correctionsResult.value?.data;
+      if (corrections && corrections.length > 0) {
+        const promptEntries: string[] = [];
+        for (const c of corrections) {
+          if (c.original_work_name && c.corrected_work_name) {
+            correctionsMap.set(c.original_work_name.toLowerCase().trim(), c.corrected_work_name);
+            if (promptEntries.length < 10) {
+              promptEntries.push(`- You said "${c.original_work_name}" but teacher corrected to "${c.corrected_work_name}"`);
+            }
+          }
+        }
+        if (promptEntries.length > 0) {
+          correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):\n${promptEntries.join('\n')}`;
+        }
+      }
+    }
+
+    // Process focus works result
+    if (focusWorksResult.status === 'fulfilled') {
+      const focusWorks = focusWorksResult.value?.data;
+      if (focusWorks && focusWorks.length > 0) {
+        focusWorksContext = `\n\nCHILD'S CURRENT SHELF (for context only — do NOT bias your identification):
+${focusWorks.map((w: { work_name: string; area: string; status: string }, i: number) => `${i + 1}. ${w.work_name} (${w.area}, status: ${w.status})`).join('\n')}
+NOTE: These are works on the child's shelf. The photo may or may not show one of these. Identify based on what you SEE in the photo, not what is on the shelf.`;
+      }
+    }
+
+    // Process duplicate check result
+    if (duplicateResult.status === 'fulfilled') {
+      const recentPhotos = duplicateResult.value?.data;
       if (recentPhotos && recentPhotos.length > 0) {
         const snapshot = recentPhotos[0].context_snapshot as Record<string, unknown>;
         if (snapshot?.identified_work_name) {
           duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): A previous photo was identified as "${snapshot.identified_work_name}" (${snapshot.identified_area}). Make your OWN independent assessment of THIS photo — do not copy the previous identification unless you genuinely see the same activity.`;
         }
       }
-    } catch {
-      // Non-fatal
     }
 
     // ========================================================
@@ -607,6 +676,33 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
         }
       } catch (err) {
         console.error('[PhotoInsight] Progress update exception:', err);
+      }
+    }
+
+    // GREEN zone: Auto-add to child's shelf if work is in classroom but NOT on shelf
+    // This completes the "self-driving car" model: photo → identify → update progress → add to shelf
+    // Only fires when confidence is GREEN (≥0.95) to avoid polluting the shelf with misidentifications
+    if (shouldAutoUpdate && inClassroom && !inChildShelf && finalWorkName && finalArea && classroomWorkId) {
+      try {
+        const { error: shelfError } = await supabase
+          .from('montree_child_focus_works')
+          .upsert({
+            child_id,
+            work_name: finalWorkName,
+            area: finalArea,
+            work_id: classroomWorkId,
+            status: masteryEvidence || 'presented',
+            source: 'smart_capture',
+          }, { onConflict: 'child_id,work_name' });
+
+        if (shelfError) {
+          console.error('[PhotoInsight] Auto-add to shelf failed:', shelfError);
+        } else {
+          inChildShelf = true; // Update for scenario calculation below
+          console.log(`[PhotoInsight] Auto-added ${finalWorkName} to shelf for child ${child_id}`);
+        }
+      } catch (err) {
+        console.error('[PhotoInsight] Auto-add to shelf exception:', err);
       }
     }
 

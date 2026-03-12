@@ -2492,6 +2492,10 @@ export const zh = {
   'photoInsight.fieldQuickGuide': '快速展示指南',
   'photoInsight.fieldMaterials': '材料（每行一个）',
   'photoInsight.fieldAims': '学习目标（每行一个）',
+  'photoInsight.retrying': '重试中...',
+  'photoInsight.rateLimited': '请求过多 — 点击重试',
+  'photoInsight.timeout': '时间过长 — 点击重试',
+  'photoInsight.networkError': '连接失败 — 点击重试',
 
   // Snap & Identify
   'snap.title': '📸 拍照识别',
