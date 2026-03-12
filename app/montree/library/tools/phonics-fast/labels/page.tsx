@@ -6,6 +6,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getPhaseWords, type PhonicsWord, type PhonicsPhase } from '@/lib/montree/phonics/phonics-data';
+import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 
 type LabelSize = 'small' | 'medium' | 'large';
 
@@ -35,6 +36,17 @@ export default function LabelsPage() {
   const [fontSize, setFontSize] = useState(18);
 
   const printRef = useRef<HTMLDivElement>(null);
+
+  // Photo Bank: resolved on mount
+  const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const controller = new AbortController();
+    resolvePhotoBankImages(controller.signal).then((map) => {
+      if (!controller.signal.aborted) setPhotoMap(map);
+    });
+    return () => { controller.abort(); };
+  }, []);
 
   const currentPhase = ALL_PHASES.find(p => p.id === selectedPhase);
 
@@ -95,6 +107,13 @@ export default function LabelsPage() {
         .label-emoji {
           font-size: ${sizeConfig === LABEL_SIZES.small ? '20px' : sizeConfig === LABEL_SIZES.medium ? '32px' : '48px'};
           line-height: 1;
+          margin-bottom: 2mm;
+        }
+        .label-photo {
+          width: ${sizeConfig === LABEL_SIZES.small ? '20px' : sizeConfig === LABEL_SIZES.medium ? '36px' : '52px'};
+          height: ${sizeConfig === LABEL_SIZES.small ? '20px' : sizeConfig === LABEL_SIZES.medium ? '36px' : '52px'};
+          object-fit: cover;
+          border-radius: 4px;
           margin-bottom: 2mm;
         }
         .label-word {
@@ -267,45 +286,67 @@ export default function LabelsPage() {
             borderCollapse: 'collapse',
           }}
         >
-          {selectedWords.map((word, idx) => (
-            <div
-              key={`${word.word}-${idx}`}
-              style={{
-                width: '100%',
-                aspectRatio: `${sizeConfig.width} / ${sizeConfig.height}`,
-                border: `${BORDER_WIDTHS[borderWidth]}px solid ${borderColor}`,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '12px',
-                fontFamily: "'Comic Sans MS', cursive",
-                pageBreakInside: 'avoid',
-              }}
-            >
+          {selectedWords.map((word, idx) => {
+            const photoUrl = photoMap.get(word.word.toLowerCase());
+            const imgSize = labelSize === 'small' ? '20px' : labelSize === 'medium' ? '36px' : '52px';
+            return (
               <div
+                key={`${word.word}-${idx}`}
+                className="label"
                 style={{
-                  fontSize: labelSize === 'small' ? '20px' : labelSize === 'medium' ? '32px' : '48px',
-                  lineHeight: '1',
-                  marginBottom: '6px',
+                  width: '100%',
+                  aspectRatio: `${sizeConfig.width} / ${sizeConfig.height}`,
+                  border: `${BORDER_WIDTHS[borderWidth]}px solid ${borderColor}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '12px',
+                  fontFamily: "'Comic Sans MS', cursive",
+                  pageBreakInside: 'avoid',
                 }}
               >
-                {word.image}
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={word.word}
+                    className="label-photo"
+                    style={{
+                      width: imgSize,
+                      height: imgSize,
+                      objectFit: 'cover',
+                      borderRadius: '4px',
+                      marginBottom: '6px',
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="label-emoji"
+                    style={{
+                      fontSize: labelSize === 'small' ? '20px' : labelSize === 'medium' ? '32px' : '48px',
+                      lineHeight: '1',
+                      marginBottom: '6px',
+                    }}
+                  >
+                    {word.image}
+                  </div>
+                )}
+                <div
+                  className="label-word"
+                  style={{
+                    fontSize: `${fontSize}px`,
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                    textAlign: 'center',
+                    lineHeight: '1.1',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {word.word}
+                </div>
               </div>
-              <div
-                style={{
-                  fontSize: `${fontSize}px`,
-                  fontWeight: 'bold',
-                  letterSpacing: '1px',
-                  textAlign: 'center',
-                  lineHeight: '1.1',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {word.word}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {selectedWords.length === 0 && (

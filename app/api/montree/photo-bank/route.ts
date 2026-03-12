@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         .from('montree_photo_bank')
         .insert({
           filename: file.name,
-          label: label.charAt(0).toUpperCase() + label.slice(1), // Capitalize first letter
+          label: label.toLowerCase(),
           tags,
           category,
           storage_path: storagePath,

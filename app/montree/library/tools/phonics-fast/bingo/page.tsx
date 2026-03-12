@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { ALL_PHASES, getPhaseWords, type PhonicsWord } from '@/lib/montree/phonics/phonics-data';
+import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 
 // =====================================================================
 // TYPES
@@ -96,6 +97,17 @@ export default function PhonicsBingoPage() {
   const [boards, setBoards] = useState<BingoBoard[]>([]);
   const callingCardsRef = useRef<HTMLDivElement>(null);
   const boardsRef = useRef<HTMLDivElement>(null);
+
+  // Photo Bank: resolved on mount
+  const [photoMap, setPhotoMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    const controller = new AbortController();
+    resolvePhotoBankImages(controller.signal).then((map) => {
+      if (!controller.signal.aborted) setPhotoMap(map);
+    });
+    return () => { controller.abort(); };
+  }, []);
 
   const phase = ALL_PHASES.find(p => p.id === selectedPhaseId);
 
@@ -195,7 +207,11 @@ export default function PhonicsBingoPage() {
           } else {
             const w = board.cells[cellIdx];
             if (w) {
-              html += `<div class="cell" style="border:${borderWidth}px solid ${borderColor}"><div class="emoji">${w.image}</div><div class="word">${w.word}</div></div>`;
+              const wPhotoUrl = photoMap.get(w.word.toLowerCase());
+              const imgHtml = wPhotoUrl
+                ? `<img src="${wPhotoUrl}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;margin-bottom:4px;" />`
+                : `<div class="emoji">${w.image}</div>`;
+              html += `<div class="cell" style="border:${borderWidth}px solid ${borderColor}">${imgHtml}<div class="word">${w.word}</div></div>`;
               cellIdx++;
             } else {
               html += `<div class="cell" style="border:${borderWidth}px solid ${borderColor}"></div>`;
@@ -210,7 +226,11 @@ export default function PhonicsBingoPage() {
       // Print calling cards
       printWindow.document.write('<div class="calling-grid">');
       callingWords.forEach(w => {
-        printWindow.document.write(`<div class="calling-card"><div class="emoji">${w.image}</div><div class="word">${w.word}</div></div>`);
+        const cPhotoUrl = photoMap.get(w.word.toLowerCase());
+        const cImgHtml = cPhotoUrl
+          ? `<img src="${cPhotoUrl}" style="width:64px;height:64px;object-fit:cover;border-radius:6px;margin-bottom:8px;" />`
+          : `<div class="emoji">${w.image}</div>`;
+        printWindow.document.write(`<div class="calling-card">${cImgHtml}<div class="word">${w.word}</div></div>`);
       });
       printWindow.document.write('</div>');
     }
@@ -218,7 +238,7 @@ export default function PhonicsBingoPage() {
     printWindow.document.write('</body></html>');
     printWindow.document.close();
     setTimeout(() => printWindow.print(), 250);
-  }, [boards, boardSize, borderColor, borderWidth, callingWords]);
+  }, [boards, boardSize, borderColor, borderWidth, callingWords, photoMap]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -480,6 +500,7 @@ export default function PhonicsBingoPage() {
                   boardSize={boardSize}
                   borderColor={borderColor}
                   borderWidth={borderWidth}
+                  photoMap={photoMap}
                 />
               ))}
             </div>
@@ -506,7 +527,7 @@ export default function PhonicsBingoPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 print:grid-cols-2">
               {callingWords.map((word, idx) => (
-                <CallingCard key={`${word.word}-${idx}`} word={word} />
+                <CallingCard key={`${word.word}-${idx}`} word={word} photoMap={photoMap} />
               ))}
             </div>
           </div>
@@ -525,6 +546,7 @@ interface BingoBoardDisplayProps {
   boardSize: number;
   borderColor: string;
   borderWidth: number;
+  photoMap: Map<string, string>;
 }
 
 function BingoBoardDisplay({
@@ -532,6 +554,7 @@ function BingoBoardDisplay({
   boardSize,
   borderColor,
   borderWidth,
+  photoMap,
 }: BingoBoardDisplayProps) {
   const cellCount = boardSize * boardSize;
   const gridClass =
@@ -588,11 +611,20 @@ function BingoBoardDisplay({
                 </div>
               </div>
             ) : (
-              // Regular cell
+              // Regular cell — Photo Bank image if available, emoji fallback
               <>
-                <div className="text-3xl mb-2 print:text-2xl print:mb-1">
-                  {word.image}
-                </div>
+                {photoMap.get(word.word.toLowerCase()) ? (
+                  <img
+                    src={photoMap.get(word.word.toLowerCase())}
+                    alt={word.word}
+                    className="mb-2 print:mb-1"
+                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px' }}
+                  />
+                ) : (
+                  <div className="text-3xl mb-2 print:text-2xl print:mb-1">
+                    {word.image}
+                  </div>
+                )}
                 <div
                   className="text-sm font-bold text-gray-800 text-center break-words print:text-xs"
                   style={{ fontFamily: 'Comic Sans MS, sans-serif' }}
@@ -614,12 +646,18 @@ function BingoBoardDisplay({
 
 interface CallingCardProps {
   word: PhonicsWord;
+  photoMap: Map<string, string>;
 }
 
-function CallingCard({ word }: CallingCardProps) {
+function CallingCard({ word, photoMap }: CallingCardProps) {
+  const photoUrl = photoMap.get(word.word.toLowerCase());
   return (
     <div className="bg-white rounded-lg shadow-md p-8 print:shadow-none print:rounded-none print:p-6 border-4 border-teal-600 flex flex-col items-center justify-center min-h-64 print:min-h-48">
-      <div className="text-6xl mb-4 print:text-5xl">{word.image}</div>
+      {photoUrl ? (
+        <img src={photoUrl} alt={word.word} className="mb-4" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+      ) : (
+        <div className="text-6xl mb-4 print:text-5xl">{word.image}</div>
+      )}
       <div
         className="text-4xl font-bold text-teal-700 text-center print:text-3xl"
         style={{ fontFamily: 'Comic Sans MS, sans-serif' }}
