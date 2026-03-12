@@ -5,6 +5,7 @@ import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import JSZip from 'jszip';
+import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 
 interface FlashCard {
   id: number;
@@ -308,6 +309,28 @@ const VocabularyFlashcardGenerator = () => {
               <p className="text-xs text-gray-400 mt-3">Also accepts ZIP files</p>
             </>
           )}
+        </div>
+
+        {/* Photo Bank Section */}
+        <div className="bg-white rounded-2xl border border-cyan-200 shadow-sm p-5 mt-4">
+          <h3 className="text-lg font-bold text-gray-800 mb-1">📸 Or pick from the Photo Bank</h3>
+          <p className="text-sm text-gray-500 mb-3">Search and click photos to add them as flashcards</p>
+          <PhotoBankPicker
+            onSelectPhoto={(dataUrl, label) => {
+              setCards(prev => {
+                const existing = prev.find(c => c.word === label.toLowerCase());
+                if (existing) return prev;
+                return [...prev, {
+                  id: Date.now() + Math.random(),
+                  image: dataUrl,
+                  word: label.toLowerCase(),
+                }];
+              });
+            }}
+            maxHeight={300}
+            showCategories={true}
+            searchPlaceholder="Search photo bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
+          />
         </div>
 
         {/* Cards */}

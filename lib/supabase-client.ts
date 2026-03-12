@@ -115,4 +115,5 @@ export const STORAGE_BUCKETS = {
   PHOTOS: 'child-photos',
   REPORTS: 'parent-reports',
   MATERIALS: 'activity-materials',
+  PHOTO_BANK: 'photo-bank',
 } as const;

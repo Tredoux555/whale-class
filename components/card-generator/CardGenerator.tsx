@@ -5,6 +5,7 @@ import { Card, CropData } from './types';
 import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
 import { generateCards, generateLargeCards, generateLabelsOnly } from './print-utils';
+import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 
 interface HeaderConfig {
   showBackButton?: boolean;
@@ -107,11 +108,45 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
     }
   };
 
-  // Handle drag and drop
+  // Handle drag and drop (files from desktop OR photos from Photo Bank)
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
+    // Check for Photo Bank drag data first
+    const jsonData = e.dataTransfer.getData('application/json');
+    if (jsonData) {
+      try {
+        const data = JSON.parse(jsonData);
+        if (data.type === 'photo-bank' && data.url) {
+          // Fetch the image and convert to dataURL
+          fetch(data.url)
+            .then(res => res.blob())
+            .then(blob => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const dataUrl = reader.result as string;
+                const img = new Image();
+                img.onload = () => {
+                  setCards(prev => [...prev, {
+                    id: Date.now() + Math.random(),
+                    originalImage: dataUrl,
+                    croppedImage: dataUrl,
+                    label: data.label || data.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Photo',
+                    width: img.width,
+                    height: img.height,
+                  }]);
+                };
+                img.src = dataUrl;
+              };
+              reader.readAsDataURL(blob);
+            })
+            .catch(err => console.error('Failed to load photo bank image:', err));
+          return;
+        }
+      } catch { /* not JSON, proceed to file drop */ }
+    }
+
     const files = Array.from(e.dataTransfer.files);
     files.forEach((file) => {
       if (file.type.startsWith('image/')) {
@@ -725,6 +760,20 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         >
           📝 Bulk Labels
         </button>
+        <button
+          onClick={() => setActiveTab('photo-bank')}
+          style={{
+            padding: '12px 24px',
+            borderRadius: '8px 8px 0 0',
+            border: 'none',
+            backgroundColor: activeTab === 'photo-bank' ? '#fff' : '#e0e0e0',
+            cursor: 'pointer',
+            fontWeight: activeTab === 'photo-bank' ? '600' : '400',
+            fontSize: '14px'
+          }}
+        >
+          📸 Photo Bank
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -812,6 +861,34 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             >
               Apply Labels to Cards
             </button>
+          </div>
+        )}
+
+        {activeTab === 'photo-bank' && (
+          <div>
+            <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
+              Search and select photos from the Montree Photo Bank. Click a photo to add it as a card.
+            </p>
+            <PhotoBankPicker
+              onSelectPhoto={(dataUrl, label, filename) => {
+                // Create a new card from the selected photo
+                const img = new Image();
+                img.onload = () => {
+                  setCards(prev => [...prev, {
+                    id: Date.now() + Math.random(),
+                    originalImage: dataUrl,
+                    croppedImage: dataUrl,
+                    label: label,
+                    width: img.width,
+                    height: img.height,
+                  }]);
+                };
+                img.src = dataUrl;
+              }}
+              maxHeight={350}
+              showCategories={true}
+              searchPlaceholder="Search photo bank... (e.g. &quot;cat&quot;, &quot;apple&quot;)"
+            />
           </div>
         )}
       </div>

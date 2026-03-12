@@ -1539,6 +1539,8 @@ export const zh = {
   'progress.notStarted': '未开始',
 
   // Audit — Library Tools Page
+  'tools.photo_bank': '图片库',
+  'tools.photo_bank_desc': '搜索、浏览和贡献英语教学图片，适用于所有工具',
   'tools.card_generator': '三段卡生成器',
   'tools.card_generator_desc': '创建精美的蒙特梭利命名卡片，包含图片和标签',
   'tools.video_flashcard': '视频闪卡生成器',
