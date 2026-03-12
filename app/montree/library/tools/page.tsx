@@ -7,6 +7,13 @@ import { useI18n } from '@/lib/montree/i18n';
 
 const TOOLS = [
   {
+    href: '/montree/library/photo-bank',
+    icon: '📷',
+    titleKey: 'tools.photo_bank',
+    descKey: 'tools.photo_bank_desc',
+    gradient: 'from-blue-500 to-indigo-600',
+  },
+  {
     href: '/montree/library/tools/card-generator',
     icon: '🃏',
     titleKey: 'tools.card_generator',

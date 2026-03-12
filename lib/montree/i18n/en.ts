@@ -1539,6 +1539,8 @@ export const en = {
   'progress.notStarted': 'Not Started',
 
   // Audit — Library Tools Page
+  'tools.photo_bank': 'Photo Bank',
+  'tools.photo_bank_desc': 'Search, browse & contribute English teaching photos for all tools',
   'tools.card_generator': '3-Part Card Generator',
   'tools.card_generator_desc': 'Create beautiful Montessori nomenclature cards with images and labels',
   'tools.video_flashcard': 'Video Flashcard Generator',
