@@ -140,6 +140,65 @@ export const mergeWorksWithCurriculum = (
 };
 
 // ================================================================
+// JARO-WINKLER SIMILARITY — For disambiguating near-identical names
+// Used as tiebreaker when fuzzyScore gives equal scores (e.g., "Color Box 1" vs "Color Box 2")
+// ================================================================
+
+/** Jaro similarity score between two strings (0.0 to 1.0) */
+function jaroSimilarity(s1: string, s2: string): number {
+  if (s1 === s2) return 1.0;
+  const len1 = s1.length;
+  const len2 = s2.length;
+  if (len1 === 0 || len2 === 0) return 0.0;
+
+  const matchWindow = Math.max(0, Math.floor(Math.max(len1, len2) / 2) - 1);
+  const s1Matches = new Array(len1).fill(false);
+  const s2Matches = new Array(len2).fill(false);
+
+  let matches = 0;
+  let transpositions = 0;
+
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchWindow);
+    const end = Math.min(i + matchWindow + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (s2Matches[j] || s1[i] !== s2[j]) continue;
+      s1Matches[i] = true;
+      s2Matches[j] = true;
+      matches++;
+      break;
+    }
+  }
+
+  if (matches === 0) return 0.0;
+
+  let k = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!s1Matches[i]) continue;
+    while (!s2Matches[k]) k++;
+    if (s1[i] !== s2[k]) transpositions++;
+    k++;
+  }
+
+  return (matches / len1 + matches / len2 + (matches - transpositions / 2) / matches) / 3;
+}
+
+/** Jaro-Winkler similarity: boosts Jaro score for common prefixes (up to 4 chars) */
+export function jaroWinkler(s1: string, s2: string): number {
+  const a = s1.toLowerCase().trim();
+  const b = s2.toLowerCase().trim();
+  const jaro = jaroSimilarity(a, b);
+  // Common prefix length (max 4)
+  let prefix = 0;
+  for (let i = 0; i < Math.min(4, a.length, b.length); i++) {
+    if (a[i] === b[i]) prefix++;
+    else break;
+  }
+  // Winkler modification: p = 0.1 (standard)
+  return jaro + prefix * 0.1 * (1 - jaro);
+}
+
+// ================================================================
 // V2 MATCHING — Enhanced curriculum matching for Smart Capture
 // Area-constrained, alias-aware, materials-boosted, top-3 candidates
 // ================================================================
@@ -263,8 +322,21 @@ export function matchToCurriculumV2(
     score: scoreWork(identifiedName, w, observationText),
   }));
 
-  // 3. Sort by score descending (stable: tiebreak by sequence for determinism)
-  scored.sort((a, b) => b.score - a.score || a.work.sequence - b.work.sequence);
+  // 3. Sort by score descending
+  // Tiebreaker: Jaro-Winkler similarity for disambiguating near-identical names
+  // (e.g., "Color Box 2" vs "Color Box 3" when both fuzzyScore the same)
+  // Final fallback: curriculum sequence for determinism
+  const inputLower = identifiedName.toLowerCase().trim();
+  scored.sort((a, b) => {
+    const scoreDiff = b.score - a.score;
+    if (Math.abs(scoreDiff) > 0.001) return scoreDiff;
+    // Tiebreak: Jaro-Winkler (higher = more similar to input = ranked first)
+    const jwA = jaroWinkler(inputLower, a.work.name);
+    const jwB = jaroWinkler(inputLower, b.work.name);
+    if (Math.abs(jwB - jwA) > 0.001) return jwB - jwA;
+    // Final fallback: curriculum sequence
+    return a.work.sequence - b.work.sequence;
+  });
   const candidates = scored.slice(0, 3).filter(c => c.score > 0.2);
 
   // 4. If area-constrained best is weak, retry with full curriculum (one retry only)

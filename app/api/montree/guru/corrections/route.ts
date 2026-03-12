@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
     // CONFIRM path: teacher says "yes, the identification was correct"
     // Only updates accuracy EMA as correct — does NOT record a correction entry
     if (action === 'confirm') {
+      if (!original_work_name) {
+        console.warn('[Corrections] Confirm action missing original_work_name — EMA not updated');
+      }
       if (original_work_name) {
         try {
           await supabase.rpc('update_work_accuracy', {
@@ -121,39 +124,45 @@ export async function POST(request: NextRequest) {
 
     // 4. Feed into brain learning system — vision_learnings category
     // This teaches the brain what works LOOK like so future identifications improve
+    // IMPORTANT: Uses atomic JSONB append to prevent lost updates from concurrent corrections
     try {
-      const learningText = `Smart Capture misidentified "${original_work_name}" as the work in a photo — teacher corrected it to "${corrected_work_name || 'untagged'}". These works may look visually similar. Original area: ${original_area || 'unknown'}, corrected area: ${corrected_area || 'unknown'}.`;
-
-      // Fetch existing brain, create if doesn't exist
-      const { data: brain } = await supabase
-        .from('montree_guru_brain')
-        .select('raw_learnings')
-        .eq('id', 'global')
-        .maybeSingle();
-
-      const rawLearnings = (brain && Array.isArray(brain.raw_learnings))
-        ? brain.raw_learnings
-        : [];
-
-      rawLearnings.push({
-        text: learningText,
+      const newLearning = {
+        text: `Smart Capture misidentified "${original_work_name}" as the work in a photo — teacher corrected it to "${corrected_work_name || 'untagged'}". These works may look visually similar. Original area: ${original_area || 'unknown'}, corrected area: ${corrected_area || 'unknown'}.`,
         category: 'vision_learnings',
         areas: [original_area, corrected_area].filter(Boolean),
         learning_type: 'failure',
         timestamp: new Date().toISOString(),
+      };
+
+      // Atomic append: use raw SQL via RPC to avoid read-modify-write race condition
+      // jsonb_set concatenates the new learning to the existing array in a single atomic operation
+      const { error: brainError } = await supabase.rpc('append_brain_learning', {
+        p_learning: newLearning,
       });
 
-      if (brain) {
-        // Update existing
-        await supabase
+      if (brainError) {
+        // Fallback: try upsert approach (less atomic but still works)
+        console.error('[Corrections] RPC append failed, using fallback:', brainError);
+        const { data: brain } = await supabase
           .from('montree_guru_brain')
-          .update({ raw_learnings: rawLearnings, updated_at: new Date().toISOString() })
-          .eq('id', 'global');
-      } else {
-        // Bootstrap — create global brain row
-        await supabase
-          .from('montree_guru_brain')
-          .insert({ id: 'global', raw_learnings: rawLearnings });
+          .select('raw_learnings')
+          .eq('id', 'global')
+          .maybeSingle();
+
+        const rawLearnings = (brain && Array.isArray(brain.raw_learnings))
+          ? [...brain.raw_learnings, newLearning]
+          : [newLearning];
+
+        if (brain) {
+          await supabase
+            .from('montree_guru_brain')
+            .update({ raw_learnings: rawLearnings, updated_at: new Date().toISOString() })
+            .eq('id', 'global');
+        } else {
+          await supabase
+            .from('montree_guru_brain')
+            .insert({ id: 'global', raw_learnings: rawLearnings });
+        }
       }
     } catch {
       // Non-fatal — brain learning is best-effort

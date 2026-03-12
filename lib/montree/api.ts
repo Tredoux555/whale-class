@@ -54,31 +54,32 @@ export function clearToken(): void {
  */
 export async function montreeApi(
   url: string,
-  options: RequestInit = {}
+  options: RequestInit & { timeout?: number } = {}
 ): Promise<Response> {
-  const headers = new Headers(options.headers);
+  const { timeout: customTimeout, ...fetchOptions } = options;
+  const headers = new Headers(fetchOptions.headers);
 
   // Add Content-Type for JSON bodies (skip for FormData — browser sets it with boundary)
-  if (options.body && !(options.body instanceof FormData)) {
+  if (fetchOptions.body && !(fetchOptions.body instanceof FormData)) {
     if (!headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
   }
 
-  // Add request timeout (30s default) to prevent hanging requests
-  const timeoutMs = 30000;
+  // Add request timeout (30s default, caller can override for long-running operations)
+  const timeoutMs = customTimeout ?? 30000;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   // If caller provided a signal, listen for their abort too
-  if (options.signal) {
-    options.signal.addEventListener('abort', () => controller.abort(), { once: true });
+  if (fetchOptions.signal) {
+    fetchOptions.signal.addEventListener('abort', () => controller.abort(), { once: true });
   }
 
   let response: Response;
   try {
     response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
       signal: controller.signal,
     });

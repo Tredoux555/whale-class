@@ -31,7 +31,9 @@ export interface PhotoInsightResult {
   classroom_work_id?: string | null;
 }
 
-export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected';
+export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected' | 'retrying';
+
+export type InsightErrorType = 'timeout' | 'rate_limit' | 'server_error' | 'network' | 'unknown';
 
 export interface InsightEntry {
   mediaId: string;
@@ -39,9 +41,19 @@ export interface InsightEntry {
   status: InsightStatus;
   result: PhotoInsightResult | null;
   startTime: number;
+  errorType?: InsightErrorType;
+  retryCount?: number;
 }
 
 type Listener = () => void;
+
+// Composite key for store entries: mediaId:childId
+// Group photos have the same mediaId for multiple children — keying by mediaId alone
+// would cause Child B to see Child A's analysis result. The server cache already keys
+// by (child_id, media_id), so the client-side store must match.
+function makeKey(mediaId: string, childId: string): string {
+  return `${mediaId}:${childId}`;
+}
 
 // ============================================================
 // STORE (module-level singleton — survives React re-renders + navigation)
@@ -81,14 +93,14 @@ export function getSnapshot(): Map<string, InsightEntry> {
   return cachedSnapshot.map;
 }
 
-/** Get a single entry by mediaId */
-export function getEntry(mediaId: string): InsightEntry | undefined {
-  return entries.get(mediaId);
+/** Get a single entry by mediaId + childId (composite key for group photo correctness) */
+export function getEntry(mediaId: string, childId: string): InsightEntry | undefined {
+  return entries.get(makeKey(mediaId, childId));
 }
 
-/** Check if a mediaId is currently being analyzed */
-export function isAnalyzing(mediaId: string): boolean {
-  return entries.get(mediaId)?.status === 'analyzing';
+/** Check if a mediaId+childId is currently being analyzed */
+export function isAnalyzing(mediaId: string, childId: string): boolean {
+  return entries.get(makeKey(mediaId, childId))?.status === 'analyzing';
 }
 
 /** Get all entries for a specific child (for showing results after navigation) */
@@ -102,124 +114,246 @@ export function getEntriesForChild(childId: string): InsightEntry[] {
   return result;
 }
 
+// Max auto-retries for transient errors (network, server 5xx)
+const MAX_AUTO_RETRIES = 1;
+const RETRY_DELAY_MS = 2000;
+// Client timeout: slightly longer than server's 45s to allow server response
+const CLIENT_TIMEOUT_MS = 50000;
+// Re-analysis TTL: allow re-analysis of "done" entries after 10 minutes
+const REANALYSIS_TTL_MS = 10 * 60 * 1000;
+
+/** Classify error type from fetch response or exception */
+function classifyError(res?: Response, err?: unknown): InsightErrorType {
+  if (err) {
+    if (err instanceof Error && err.name === 'AbortError') return 'timeout';
+    if (err instanceof TypeError) return 'network'; // fetch() network failure
+    return 'unknown';
+  }
+  if (res) {
+    if (res.status === 429) return 'rate_limit';
+    if (res.status >= 500) return 'server_error';
+    if (res.status === 408) return 'timeout';
+  }
+  return 'unknown';
+}
+
+/** Whether an error type is retryable */
+function isRetryable(errorType: InsightErrorType): boolean {
+  return errorType === 'network' || errorType === 'server_error' || errorType === 'timeout';
+}
+
 /**
  * Start a photo insight analysis in the background.
  * Returns immediately — the fetch runs detached from any component.
  * Results are stored in the global map and subscribers are notified.
+ * Automatically retries once on transient errors (network, server, timeout).
  */
 export function startAnalysis(
   mediaId: string,
   childId: string,
   locale: string,
 ): void {
-  // Don't duplicate if already in progress or done
-  const existing = entries.get(mediaId);
-  if (existing && (existing.status === 'analyzing' || existing.status === 'done')) {
+  const key = makeKey(mediaId, childId);
+
+  // Don't duplicate if already in progress
+  const existing = entries.get(key);
+  if (existing && (existing.status === 'analyzing' || existing.status === 'retrying')) {
     return;
+  }
+  // Allow re-analysis of "done" entries after REANALYSIS_TTL_MS
+  if (existing && existing.status === 'done') {
+    if (Date.now() - existing.startTime < REANALYSIS_TTL_MS) {
+      return; // Still fresh — don't re-analyze
+    }
+    // Stale — allow re-analysis
   }
 
   // Evict stale entries before adding new one (prevents unbounded memory growth)
   evictStale();
 
-  // Set status to analyzing
-  entries.set(mediaId, {
+  // Internal: run the actual fetch with retry support
+  runAnalysisFetch(mediaId, childId, locale, 0);
+}
+
+/** Internal fetch runner with retry count tracking */
+function runAnalysisFetch(
+  mediaId: string,
+  childId: string,
+  locale: string,
+  retryCount: number,
+): void {
+  const key = makeKey(mediaId, childId);
+  const isRetry = retryCount > 0;
+
+  entries.set(key, {
     mediaId,
     childId,
-    status: 'analyzing',
+    status: isRetry ? 'retrying' : 'analyzing',
     result: null,
-    startTime: Date.now(),
+    startTime: isRetry ? (entries.get(key)?.startTime ?? Date.now()) : Date.now(),
+    retryCount,
   });
   notify();
 
-  // Client-side timeout: 60s to prevent stuck "analyzing..." forever
+  // Client-side timeout: 50s (server is 45s — gives 5s buffer for network latency)
+  // `timedOut` flag prevents fetch handler from overwriting timeout's error state
+  let timedOut = false;
   const timeoutId = setTimeout(() => {
-    const current = entries.get(mediaId);
-    if (current?.status === 'analyzing') {
-      entries.set(mediaId, { ...current, status: 'error' });
-      notify();
+    const current = entries.get(key);
+    if (current?.status === 'analyzing' || current?.status === 'retrying') {
+      timedOut = true;
+      handleAnalysisError(mediaId, childId, locale, retryCount, 'timeout');
     }
-  }, 60000);
+  }, CLIENT_TIMEOUT_MS);
 
   // Fire the fetch — NOT tied to any AbortController or component lifecycle
+  // Timeout: CLIENT_TIMEOUT_MS + 5s buffer so store's own timeout fires first for clean handling
+  // (montreeApi default is 30s — too short for Sonnet vision which has a 45s server timeout)
   montreeApi('/api/montree/guru/photo-insight', {
     method: 'POST',
     body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
+    timeout: CLIENT_TIMEOUT_MS + 5000,
   })
     .then(async (res) => {
       clearTimeout(timeoutId);
-      const data = await res.json();
+      // If timeout already fired, don't overwrite its error state
+      if (timedOut) return;
+
+      // Guard: check res.ok before parsing JSON
+      if (!res.ok) {
+        const errorType = classifyError(res);
+        // Try to parse error body for rate limit info
+        try {
+          const errData = await res.json();
+          if (errData?.error === 'Rate limit exceeded') {
+            handleAnalysisError(mediaId, childId, locale, retryCount, 'rate_limit');
+            return;
+          }
+        } catch {
+          // Body not JSON — that's fine, classify by status code
+        }
+        handleAnalysisError(mediaId, childId, locale, retryCount, errorType);
+        return;
+      }
+
+      let data: Record<string, unknown>;
+      try {
+        data = await res.json();
+      } catch {
+        // Non-JSON response from a 200 — treat as server error
+        handleAnalysisError(mediaId, childId, locale, retryCount, 'server_error');
+        return;
+      }
 
       if (!data.success) {
-        entries.set(mediaId, {
-          mediaId,
-          childId,
-          status: 'error',
-          result: null,
-          startTime: entries.get(mediaId)?.startTime || Date.now(),
-        });
-        notify();
+        handleAnalysisError(mediaId, childId, locale, retryCount, 'server_error');
         return;
       }
 
       const result: PhotoInsightResult = {
-        insight: data.insight,
-        work_name: data.work_name || null,
-        area: data.area || null,
-        mastery_evidence: data.mastery_evidence || null,
-        auto_updated: data.auto_updated || false,
-        needs_confirmation: data.needs_confirmation || false,
-        confidence: data.confidence,
-        match_score: data.match_score ?? null,
-        candidates: Array.isArray(data.candidates) ? data.candidates : [],
-        scenario: data.scenario || 'D',
-        in_classroom: data.in_classroom || false,
-        in_child_shelf: data.in_child_shelf || false,
-        classroom_work_id: data.classroom_work_id || null,
+        insight: (typeof data.insight === 'string' ? data.insight : 'Photo analyzed'),
+        work_name: (data.work_name as string) ?? null,
+        area: (data.area as string) ?? null,
+        mastery_evidence: (data.mastery_evidence as string) ?? null,
+        auto_updated: (data.auto_updated as boolean) ?? false,
+        needs_confirmation: (data.needs_confirmation as boolean) ?? false,
+        confidence: data.confidence as number | undefined,
+        match_score: (data.match_score as number) ?? null,
+        candidates: Array.isArray(data.candidates) ? data.candidates as CandidateWork[] : [],
+        scenario: (['A', 'B', 'C', 'D'].includes(data.scenario as string) ? data.scenario as 'A' | 'B' | 'C' | 'D' : 'D'),
+        in_classroom: (data.in_classroom as boolean) ?? false,
+        in_child_shelf: (data.in_child_shelf as boolean) ?? false,
+        classroom_work_id: (data.classroom_work_id as string) ?? null,
       };
 
-      entries.set(mediaId, {
+      entries.set(key, {
         mediaId,
         childId,
         status: 'done',
         result,
-        startTime: entries.get(mediaId)?.startTime || Date.now(),
+        startTime: entries.get(key)?.startTime ?? Date.now(),
+        retryCount,
       });
       notify();
     })
     .catch((err) => {
       clearTimeout(timeoutId);
-      console.error('[PhotoInsight] Analysis fetch error:', err);
-      entries.set(mediaId, {
-        mediaId,
-        childId,
-        status: 'error',
-        result: null,
-        startTime: entries.get(mediaId)?.startTime || Date.now(),
-      });
-      notify();
+      // If timeout already fired and set error state, don't overwrite it
+      if (timedOut) return;
+      const errorType = classifyError(undefined, err);
+      console.error(`[PhotoInsight] Fetch error (attempt ${retryCount + 1}):`, err);
+      handleAnalysisError(mediaId, childId, locale, retryCount, errorType);
     });
 }
 
+/** Handle analysis error with auto-retry for transient failures */
+function handleAnalysisError(
+  mediaId: string,
+  childId: string,
+  locale: string,
+  retryCount: number,
+  errorType: InsightErrorType,
+): void {
+  const key = makeKey(mediaId, childId);
+
+  // Auto-retry once for transient errors (not rate limits)
+  if (retryCount < MAX_AUTO_RETRIES && isRetryable(errorType)) {
+    console.log(`[PhotoInsight] Retrying in ${RETRY_DELAY_MS}ms (attempt ${retryCount + 2}, error: ${errorType})`);
+    entries.set(key, {
+      mediaId,
+      childId,
+      status: 'retrying',
+      result: null,
+      startTime: entries.get(key)?.startTime ?? Date.now(),
+      errorType,
+      retryCount,
+    });
+    notify();
+    setTimeout(() => {
+      // Only retry if still in retrying state (user might have manually reset)
+      const current = entries.get(key);
+      if (current?.status === 'retrying') {
+        runAnalysisFetch(mediaId, childId, locale, retryCount + 1);
+      }
+    }, RETRY_DELAY_MS);
+    return;
+  }
+
+  // Final failure — set error state with type
+  entries.set(key, {
+    mediaId,
+    childId,
+    status: 'error',
+    result: null,
+    startTime: entries.get(key)?.startTime ?? Date.now(),
+    errorType,
+    retryCount,
+  });
+  notify();
+}
+
 /** Reset a specific entry (e.g., to retry after error) */
-export function resetEntry(mediaId: string): void {
-  entries.delete(mediaId);
+export function resetEntry(mediaId: string, childId: string): void {
+  entries.delete(makeKey(mediaId, childId));
   notify();
 }
 
 /** Mark an entry as confirmed by the teacher */
-export function confirmEntry(mediaId: string): void {
-  const entry = entries.get(mediaId);
+export function confirmEntry(mediaId: string, childId: string): void {
+  const key = makeKey(mediaId, childId);
+  const entry = entries.get(key);
   if (entry) {
-    entries.set(mediaId, { ...entry, status: 'confirmed' });
+    entries.set(key, { ...entry, status: 'confirmed' });
     notify();
   }
 }
 
 /** Mark an entry as rejected by the teacher */
-export function rejectEntry(mediaId: string): void {
-  const entry = entries.get(mediaId);
+export function rejectEntry(mediaId: string, childId: string): void {
+  const key = makeKey(mediaId, childId);
+  const entry = entries.get(key);
   if (entry) {
-    entries.set(mediaId, { ...entry, status: 'rejected' });
+    entries.set(key, { ...entry, status: 'rejected' });
     notify();
   }
 }
@@ -238,12 +372,16 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
   const now = Date.now();
   let changed = false;
 
-  // 1. Time-based eviction
+  // 1. Time-based eviction — collect keys first to avoid mutating Map during iteration
+  const keysToEvict: string[] = [];
   for (const [key, entry] of entries) {
     if (now - entry.startTime > maxAgeMs) {
-      entries.delete(key);
-      changed = true;
+      keysToEvict.push(key);
     }
+  }
+  for (const key of keysToEvict) {
+    entries.delete(key);
+    changed = true;
   }
 
   // 2. Size-based eviction: if still over cap, remove oldest entries first
