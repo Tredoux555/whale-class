@@ -2478,6 +2478,7 @@ export const zh = {
   'photoInsight.addToClassroom': '添加到教室',
   'photoInsight.addToShelf': '添加到书架',
   'photoInsight.actionComplete': '完成！',
+  'photoInsight.actionFailed': '操作失败，请重试',
   'photoInsight.didYouMean': '您是否指的是？',
   'photoInsight.teachGuruTitle': '教 Smart Capture 认识新工作',
   'photoInsight.workNameLabel': '工作名称',

@@ -229,15 +229,31 @@ export function clearAll(): void {
   notify();
 }
 
-/** Evict stale entries older than maxAge (default: 30 minutes) */
+/** Max entries to keep in the store (prevents unbounded memory growth in long sessions) */
+const MAX_ENTRIES = 50;
+
+/** Evict stale entries older than maxAge (default: 30 minutes) AND enforce max entry cap */
 export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
   const now = Date.now();
   let changed = false;
+
+  // 1. Time-based eviction
   for (const [key, entry] of entries) {
     if (now - entry.startTime > maxAgeMs) {
       entries.delete(key);
       changed = true;
     }
   }
+
+  // 2. Size-based eviction: if still over cap, remove oldest entries first
+  if (entries.size > MAX_ENTRIES) {
+    const sorted = [...entries.entries()].sort((a, b) => a[1].startTime - b[1].startTime);
+    const toRemove = sorted.slice(0, entries.size - MAX_ENTRIES);
+    for (const [key] of toRemove) {
+      entries.delete(key);
+      changed = true;
+    }
+  }
+
   if (changed) notify();
 }
