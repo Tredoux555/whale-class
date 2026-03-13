@@ -1,8 +1,8 @@
 // lib/montree/phonics/phonics-data.ts
 // =====================================================================
 // MASTER PHONICS DATA — Single source of truth for ALL phonics tools
-// Montessori AMI-aligned progression:
-//   Pink Series (CVC) → Blue Series (blends + digraphs) → Green Series (phonograms)
+// AMI Montessori-aligned progression:
+//   Pink Series (CVC) → Blue Series (blends + doubles) → Green Series (phonograms)
 // =====================================================================
 
 export interface PhonicsWord {
@@ -31,7 +31,6 @@ export interface PhonicsPhase {
 // =====================================================================
 // SIGHT WORDS — High-frequency words for sentences & stories
 // =====================================================================
-
 export const SIGHT_WORDS = [
   'the', 'a', 'is', 'on', 'in', 'at', 'it', 'and', 'I', 'can',
   'see', 'my', 'to', 'go', 'up', 'we', 'he', 'she', 'big', 'little',
@@ -43,12 +42,13 @@ export const SIGHT_WORDS = [
 // =====================================================================
 // PHASE: PINK 1 (CMAT Tray System)
 // Progressive letter introduction: c,m,a,t → d,n,e,k → s,r,i,p → h,u,j,l → b,f,o,g → v,w,x,y,z,q
+// ALL CVC (3-letter consonant-vowel-consonant) only
 // =====================================================================
 
 export const PINK_1: PhonicsPhase = {
   id: 'pink1',
   name: 'Pink 1 — CMAT Trays',
-  color: '#ec4899', // pink
+  color: '#ec4899',
   description: 'First words — CMAT tray progression. Each tray adds new letter sounds.',
   groups: [
     {
@@ -90,7 +90,7 @@ export const PINK_1: PhonicsPhase = {
         { word: 'hut', image: '🛖', miniature: 'small hut figurine or picture', isNoun: true },
         { word: 'lip', image: '👄', miniature: 'lip picture card', isNoun: true },
         { word: 'run', image: '🏃', miniature: 'running figure', isNoun: false },
-        { word: 'hill', image: '⛰️', miniature: 'small mound or picture', isNoun: true },
+        { word: 'jug', image: '🫗', miniature: 'small ceramic jug', isNoun: true },
       ],
     },
     {
@@ -127,7 +127,7 @@ export const PINK_1: PhonicsPhase = {
 export const PINK_2: PhonicsPhase = {
   id: 'pink2',
   name: 'Pink 2 — CVC Words',
-  color: '#f472b6', // pink-400
+  color: '#f472b6',
   description: 'More CVC words using the full alphabet. Organized by short vowel sound.',
   groups: [
     {
@@ -206,8 +206,7 @@ export const PINK_2: PhonicsPhase = {
         { word: 'six', image: '6️⃣', miniature: 'number 6 card', isNoun: true },
         { word: 'mix', image: '🔀', miniature: 'small mixing spoon', isNoun: false },
       ],
-    },
-    {
+    },    {
       id: 'short-o',
       label: 'Short O',
       description: 'Words with short /o/ sound (as in "dog")',
@@ -249,7 +248,6 @@ export const PINK_2: PhonicsPhase = {
         { word: 'mug', image: '☕', miniature: 'miniature mug', isNoun: true },
         { word: 'pug', image: '🐶', miniature: 'pug dog figurine', isNoun: true },
         { word: 'tug', image: '🛥️', miniature: 'small tugboat', isNoun: true },
-        { word: 'jug', image: '🫗', miniature: 'small ceramic jug', isNoun: true },
         { word: 'dug', image: '🪏', miniature: 'shovel picture card', isNoun: false },
         { word: 'hug', image: '🤗', miniature: 'hugging figures', isNoun: false },
         { word: 'bun', image: '🍞', miniature: 'toy bun or picture', isNoun: true },
@@ -268,712 +266,986 @@ export const PINK_2: PhonicsPhase = {
   ],
 };
 
-// =====================================================================
-// BLUE SERIES 1: CONSONANT DIGRAPHS (sh, ch, th, wh)
-// =====================================================================
+// ============================================================
+// BLUE SERIES — 4+ letter words, phonetically regular
+// Each letter still makes its own sound. SHORT vowels only.
+// NO digraphs, NO phonograms, NO silent-e.
+// ============================================================
 
 export const BLUE_1: PhonicsPhase = {
   id: 'blue1',
-  name: 'Blue 1 — Consonant Digraphs',
-  color: '#6366f1', // indigo
-  description: 'Two letters making one new sound: sh, ch, th, wh.',
+  name: 'Blue 1 — Initial Consonant Blends',
+  description: 'CCVC and CCCVC words with initial consonant blends. Each consonant in the blend makes its own sound.',
+  color: '#3B82F6',
   groups: [
     {
-      id: 'sh-words',
-      label: 'SH Words',
-      description: '/sh/ — lips pushed forward, air flows out',
+      label: 'bl- blends',
+      description: 'Words starting with bl-',
       words: [
-        { word: 'ship', image: '🚢', miniature: 'toy ship', isNoun: true },
-        { word: 'shop', image: '🏪', miniature: 'miniature shop or picture', isNoun: true },
-        { word: 'shed', image: '🏚️', miniature: 'small shed picture or model', isNoun: true },
-        { word: 'shell', image: '🐚', miniature: 'real seashell', isNoun: true },
-        { word: 'shin', image: '🩹', miniature: 'body part picture card', isNoun: true },
-        { word: 'fish', image: '🐟', miniature: 'plastic fish', isNoun: true },
-        { word: 'dish', image: '🍽️', miniature: 'dollhouse dish', isNoun: true },
-        { word: 'wish', image: '⭐', miniature: 'wishing star picture', isNoun: true },
+        { word: 'blob', image: '🫧', miniature: 'blob of clay', isNoun: true },
+        { word: 'blot', image: '🖊️', miniature: 'ink blot card', isNoun: true },
+        { word: 'blab', image: '🗣️', miniature: 'talking mouth card', isNoun: false },
       ],
     },
     {
-      id: 'ch-words',
-      label: 'CH Words',
-      description: '/ch/ — tongue touches roof, quick puff of air',
+      label: 'br- blends',
+      description: 'Words starting with br-',
       words: [
-        { word: 'chin', image: '🧔', miniature: 'face picture card', isNoun: true },
-        { word: 'chip', image: '🍟', miniature: 'food figurine', isNoun: true },
-        { word: 'chop', image: '🪓', miniature: 'axe picture card', isNoun: false },
-        { word: 'chat', image: '💬', miniature: 'speech bubble picture', isNoun: false },
-        { word: 'check', image: '✓', miniature: 'checkmark card', isNoun: true },
+        { word: 'brim', image: '🎩', miniature: 'hat with brim', isNoun: true },
+        { word: 'brat', image: '😤', miniature: 'child figurine', isNoun: true },
+        { word: 'bred', image: '🐕', miniature: 'dog pair figurines', isNoun: false },
+        { word: 'brig', image: '⛵', miniature: 'small ship model', isNoun: true },
+      ],
+    },    {
+      label: 'cl- blends',
+      description: 'Words starting with cl-',
+      words: [
+        { word: 'clap', image: '👏', miniature: 'clapping hands card', isNoun: false },
+        { word: 'clam', image: '🐚', miniature: 'clam shell', isNoun: true },
+        { word: 'clan', image: '👨‍👩‍👧‍👦', miniature: 'family figurines', isNoun: true },
+        { word: 'clip', image: '📎', miniature: 'paper clip', isNoun: true },
+        { word: 'clod', image: '🪨', miniature: 'dirt clod', isNoun: true },
+        { word: 'clog', image: '👞', miniature: 'wooden clog shoe', isNoun: true },
+        { word: 'clot', image: '🩸', miniature: 'bandage', isNoun: true },
+        { word: 'club', image: '♣️', miniature: 'club card', isNoun: true },
+        { word: 'clad', image: '🧥', miniature: 'coat picture card', isNoun: false },
       ],
     },
     {
-      id: 'th-words',
-      label: 'TH Words',
-      description: '/th/ — tongue between teeth',
+      label: 'cr- blends',
+      description: 'Words starting with cr-',
       words: [
-        { word: 'this', image: '👉', miniature: 'pointing picture card', isNoun: false },
-        { word: 'that', image: '☝️', miniature: 'pointing picture card', isNoun: false },
-        { word: 'them', image: '👥', miniature: 'people figurines', isNoun: false },
-        { word: 'thin', image: '📏', miniature: 'thin line card', isNoun: false },
-        { word: 'thick', image: '📖', miniature: 'thick book picture', isNoun: false },
+        { word: 'crab', image: '🦀', miniature: 'plastic crab', isNoun: true },
+        { word: 'cram', image: '📦', miniature: 'stuffed box picture', isNoun: false },
+        { word: 'crib', image: '🛏️', miniature: 'dollhouse crib', isNoun: true },
+        { word: 'crop', image: '🌾', miniature: 'wheat bundle', isNoun: true },
+        { word: 'crud', image: '🟤', miniature: 'dirt picture card', isNoun: true },
       ],
     },
     {
-      id: 'wh-words',
-      label: 'WH Words',
-      description: '/wh/ — air expelled through rounded lips',
+      label: 'dr- blends',
+      description: 'Words starting with dr-',
       words: [
-        { word: 'whip', image: '🪇', miniature: 'toy whip', isNoun: true },
-        { word: 'when', image: '🕰️', miniature: 'clock picture card', isNoun: false },
-        { word: 'what', image: '❓', miniature: 'question mark card', isNoun: false },
-        { word: 'wheel', image: '🎡', miniature: 'toy wheel', isNoun: true },
+        { word: 'drag', image: '🧳', miniature: 'small suitcase', isNoun: false },
+        { word: 'drip', image: '💧', miniature: 'water dropper', isNoun: true },
+        { word: 'drop', image: '💦', miniature: 'droplet figurine', isNoun: true },
+        { word: 'drum', image: '🥁', miniature: 'miniature drum', isNoun: true },
+        { word: 'drab', image: '🟫', miniature: 'brown fabric swatch', isNoun: false },
+      ],
+    },    {
+      label: 'fl- blends',
+      description: 'Words starting with fl-',
+      words: [
+        { word: 'flag', image: '🚩', miniature: 'small flag', isNoun: true },
+        { word: 'flat', image: '🫓', miniature: 'flat object card', isNoun: false },
+        { word: 'flip', image: '🔄', miniature: 'flip card', isNoun: false },
+        { word: 'flab', image: '🫠', miniature: 'squishy ball', isNoun: true },
+        { word: 'flan', image: '🍮', miniature: 'flan dessert toy', isNoun: true },
+        { word: 'fled', image: '🏃', miniature: 'running figure', isNoun: false },
+        { word: 'flit', image: '🦋', miniature: 'butterfly figurine', isNoun: false },
+        { word: 'flog', image: '🪵', miniature: 'log picture card', isNoun: false },
+        { word: 'flop', image: '🐟', miniature: 'flopping fish', isNoun: false },
+        { word: 'flux', image: '🔀', miniature: 'arrows card', isNoun: true },
+      ],
+    },
+    {
+      label: 'fr- blends',
+      description: 'Words starting with fr-',
+      words: [
+        { word: 'frog', image: '🐸', miniature: 'plastic frog', isNoun: true },
+        { word: 'from', image: '📨', miniature: 'envelope', isNoun: false },
+        { word: 'fret', image: '😟', miniature: 'worried face card', isNoun: false },
+      ],
+    },
+    {
+      label: 'gl- blends',
+      description: 'Words starting with gl-',
+      words: [
+        { word: 'glad', image: '😊', miniature: 'happy face card', isNoun: false },
+        { word: 'glen', image: '🏞️', miniature: 'valley picture card', isNoun: true },
+        { word: 'glib', image: '🗣️', miniature: 'talking mouth card', isNoun: false },
+        { word: 'glob', image: '🫧', miniature: 'glob of paste', isNoun: true },
+        { word: 'glum', image: '😞', miniature: 'sad face card', isNoun: false },
+        { word: 'glut', image: '🍽️', miniature: 'overflowing plate card', isNoun: true },
+      ],
+    },    {
+      label: 'gr- blends',
+      description: 'Words starting with gr-',
+      words: [
+        { word: 'grab', image: '✊', miniature: 'grabbing hand card', isNoun: false },
+        { word: 'gram', image: '⚖️', miniature: 'small weight', isNoun: true },
+        { word: 'grid', image: '📊', miniature: 'grid paper', isNoun: true },
+        { word: 'grim', image: '😐', miniature: 'stern face card', isNoun: false },
+        { word: 'grin', image: '😁', miniature: 'grinning face card', isNoun: true },
+        { word: 'grip', image: '🤝', miniature: 'grip handle', isNoun: true },
+        { word: 'grit', image: '🪨', miniature: 'sandpaper piece', isNoun: true },
+        { word: 'grub', image: '🐛', miniature: 'grub worm figurine', isNoun: true },
+        { word: 'grog', image: '🍺', miniature: 'mug picture card', isNoun: true },
+      ],
+    },
+    {
+      label: 'pl- blends',
+      description: 'Words starting with pl-',
+      words: [
+        { word: 'plan', image: '📋', miniature: 'clipboard', isNoun: true },
+        { word: 'plod', image: '🚶', miniature: 'walking figure', isNoun: false },
+        { word: 'plot', image: '🗺️', miniature: 'map card', isNoun: true },
+        { word: 'plop', image: '💦', miniature: 'splash card', isNoun: false },
+        { word: 'plug', image: '🔌', miniature: 'small plug', isNoun: true },
+        { word: 'plum', image: '🟣', miniature: 'plastic plum', isNoun: true },
+        { word: 'plus', image: '➕', miniature: 'plus sign card', isNoun: false },
+      ],
+    },
+    {
+      label: 'pr- blends',
+      description: 'Words starting with pr-',
+      words: [
+        { word: 'pram', image: '👶', miniature: 'toy pram', isNoun: true },
+        { word: 'prep', image: '📝', miniature: 'preparation card', isNoun: false },
+        { word: 'prim', image: '💅', miniature: 'proper person card', isNoun: false },
+        { word: 'prod', image: '👉', miniature: 'poking finger card', isNoun: false },
+        { word: 'prop', image: '🎭', miniature: 'theater prop', isNoun: true },
+      ],
+    },    {
+      label: 'sc/sk- blends',
+      description: 'Words starting with sc- or sk-',
+      words: [
+        { word: 'scab', image: '🩹', miniature: 'bandage', isNoun: true },
+        { word: 'scam', image: '🎭', miniature: 'mask card', isNoun: true },
+        { word: 'scan', image: '👀', miniature: 'magnifying glass', isNoun: false },
+        { word: 'scat', image: '🐱', miniature: 'running cat card', isNoun: false },
+        { word: 'skid', image: '🛷', miniature: 'skid mark card', isNoun: true },
+        { word: 'skim', image: '🥛', miniature: 'milk picture', isNoun: false },
+        { word: 'skin', image: '✋', miniature: 'hand picture card', isNoun: true },
+        { word: 'skip', image: '🤸', miniature: 'skipping figure', isNoun: false },
+        { word: 'skit', image: '🎬', miniature: 'stage card', isNoun: true },
+        { word: 'slab', image: '🧱', miniature: 'stone slab', isNoun: true },
+      ],
+    },
+    {
+      label: 'sl- blends',
+      description: 'Words starting with sl-',
+      words: [
+        { word: 'slam', image: '🚪', miniature: 'door card', isNoun: false },
+        { word: 'slap', image: '✋', miniature: 'hand card', isNoun: false },
+        { word: 'sled', image: '🛷', miniature: 'toy sled', isNoun: true },
+        { word: 'slim', image: '🧍', miniature: 'thin person card', isNoun: false },
+        { word: 'slip', image: '🍌', miniature: 'banana peel card', isNoun: false },
+        { word: 'slit', image: '✂️', miniature: 'scissors', isNoun: true },
+        { word: 'slob', image: '🙁', miniature: 'messy person card', isNoun: true },
+        { word: 'slop', image: '🥣', miniature: 'spilling bowl card', isNoun: true },
+        { word: 'slot', image: '🎰', miniature: 'coin slot card', isNoun: true },
+        { word: 'slug', image: '🐌', miniature: 'slug figurine', isNoun: true },
+        { word: 'slum', image: '🏚️', miniature: 'old house card', isNoun: true },
+      ],
+    },    {
+      label: 'sm/sn- blends',
+      description: 'Words starting with sm- or sn-',
+      words: [
+        { word: 'smog', image: '🌫️', miniature: 'fog picture card', isNoun: true },
+        { word: 'smug', image: '😏', miniature: 'smirking face card', isNoun: false },
+        { word: 'snag', image: '🪝', miniature: 'hook', isNoun: true },
+        { word: 'snap', image: '🫰', miniature: 'snapping fingers card', isNoun: false },
+        { word: 'snip', image: '✂️', miniature: 'small scissors', isNoun: false },
+        { word: 'snob', image: '🧐', miniature: 'monocle card', isNoun: true },
+        { word: 'snub', image: '😤', miniature: 'turning away card', isNoun: false },
+        { word: 'snug', image: '🧣', miniature: 'scarf', isNoun: false },
+      ],
+    },
+    {
+      label: 'sp- blends',
+      description: 'Words starting with sp-',
+      words: [
+        { word: 'span', image: '📏', miniature: 'ruler', isNoun: true },
+        { word: 'spit', image: '💦', miniature: 'water drop card', isNoun: false },
+        { word: 'spin', image: '🌀', miniature: 'spinning top', isNoun: false },
+        { word: 'spot', image: '⭕', miniature: 'dot sticker', isNoun: true },
+        { word: 'spud', image: '🥔', miniature: 'plastic potato', isNoun: true },
+        { word: 'spun', image: '🧶', miniature: 'yarn ball', isNoun: false },
+      ],
+    },
+    {
+      label: 'st- blends',
+      description: 'Words starting with st-',
+      words: [
+        { word: 'stop', image: '🛑', miniature: 'stop sign', isNoun: false },
+        { word: 'stem', image: '🌱', miniature: 'plant stem', isNoun: true },
+        { word: 'step', image: '👣', miniature: 'footprint card', isNoun: true },
+        { word: 'stab', image: '🗡️', miniature: 'sword card', isNoun: false },
+        { word: 'stag', image: '🦌', miniature: 'deer figurine', isNoun: true },
+        { word: 'stud', image: '📌', miniature: 'metal stud', isNoun: true },
+        { word: 'stub', image: '🎫', miniature: 'ticket stub', isNoun: true },
+        { word: 'stun', image: '⚡', miniature: 'lightning card', isNoun: false },
+      ],
+    },    {
+      label: 'sw- blends',
+      description: 'Words starting with sw-',
+      words: [
+        { word: 'swim', image: '🏊', miniature: 'swimmer figurine', isNoun: false },
+        { word: 'swan', image: '🦢', miniature: 'swan figurine', isNoun: true },
+        { word: 'swam', image: '🏊', miniature: 'swimming card', isNoun: false },
+        { word: 'swig', image: '🥤', miniature: 'drinking cup', isNoun: true },
+        { word: 'swab', image: '🧹', miniature: 'cotton swab', isNoun: true },
+        { word: 'swop', image: '🔄', miniature: 'exchange arrows card', isNoun: false },
+      ],
+    },
+    {
+      label: 'tr- blends',
+      description: 'Words starting with tr-',
+      words: [
+        { word: 'trap', image: '🪤', miniature: 'mouse trap', isNoun: true },
+        { word: 'tram', image: '🚋', miniature: 'toy tram', isNoun: true },
+        { word: 'trot', image: '🐴', miniature: 'horse figurine', isNoun: false },
+        { word: 'trim', image: '✂️', miniature: 'scissors', isNoun: false },
+        { word: 'trip', image: '🧳', miniature: 'suitcase', isNoun: true },
+        { word: 'trod', image: '👞', miniature: 'boot print card', isNoun: false },
+        { word: 'trig', image: '📐', miniature: 'triangle ruler', isNoun: true },
       ],
     },
   ],
 };
-
-// =====================================================================
-// BLUE SERIES 2: INITIAL CONSONANT BLENDS
-// =====================================================================
 
 export const BLUE_2: PhonicsPhase = {
   id: 'blue2',
-  name: 'Blue 2 — Initial Blends',
-  color: '#4f46e5', // indigo-600
-  description: 'Two consonants blend together: bl, br, cl, cr, dr, fl, fr, gl, gr, pl, pr, sk, sl, sm, sn, sp, st, sw, tr.',
+  name: 'Blue 2 — Final Consonant Blends',
+  description: 'CVCC words ending in consonant blends. Each consonant still makes its own sound. Short vowels only.',
+  color: '#2563EB',
   groups: [
     {
-      id: 'bl-words',
-      label: 'BL Words',
-      description: '/bl/ blend at start',
+      label: '-nd endings',
+      description: 'Words ending in -nd',
       words: [
-        { word: 'black', image: '⬛', miniature: 'black square card', isNoun: false },
-        { word: 'block', image: '🧱', miniature: 'toy block', isNoun: true },
-        { word: 'blob', image: '🫧', miniature: 'bubble picture', isNoun: true },
-        { word: 'blot', image: '♣️', miniature: 'ink blot picture', isNoun: true },
-        { word: 'blab', image: '🗣️', miniature: 'talking picture card', isNoun: false },
+        { word: 'band', image: '🎵', miniature: 'rubber band', isNoun: true },
+        { word: 'bend', image: '↩️', miniature: 'bent wire', isNoun: false },
+        { word: 'bond', image: '🤝', miniature: 'handshake card', isNoun: true },
+        { word: 'fond', image: '❤️', miniature: 'heart card', isNoun: false },
+        { word: 'hand', image: '✋', miniature: 'hand model', isNoun: true },
+        { word: 'land', image: '🏞️', miniature: 'land picture card', isNoun: true },
+        { word: 'lend', image: '🤲', miniature: 'giving hands card', isNoun: false },
+        { word: 'mend', image: '🧵', miniature: 'needle and thread', isNoun: false },
+        { word: 'pond', image: '🦆', miniature: 'toy duck in water', isNoun: true },
+        { word: 'sand', image: '🏖️', miniature: 'sand in jar', isNoun: true },
+        { word: 'send', image: '📮', miniature: 'mailbox', isNoun: false },
+        { word: 'wand', image: '🪄', miniature: 'magic wand', isNoun: true },
+        { word: 'wind', image: '💨', miniature: 'pinwheel', isNoun: true },
       ],
     },
     {
-      id: 'br-words',
-      label: 'BR Words',
-      description: '/br/ blend at start',
+      label: '-nk endings',
+      description: 'Words ending in -nk',
       words: [
-        { word: 'branch', image: '🪴', miniature: 'tree branch', isNoun: true },
-        { word: 'brick', image: '🟫', miniature: 'toy brick', isNoun: true },
-        { word: 'bridge', image: '🌉', miniature: 'bridge picture card', isNoun: true },
-        { word: 'brush', image: '🖌️', miniature: 'small paintbrush', isNoun: true },
-        { word: 'brim', image: '👒', miniature: 'hat brim picture', isNoun: true },
+        { word: 'bank', image: '🏦', miniature: 'piggy bank', isNoun: true },
+        { word: 'bunk', image: '🛏️', miniature: 'bunk bed card', isNoun: true },
+        { word: 'dunk', image: '🏀', miniature: 'basketball', isNoun: false },
+        { word: 'honk', image: '📯', miniature: 'horn', isNoun: false },
+        { word: 'hunk', image: '🧱', miniature: 'chunk of wood', isNoun: true },
+        { word: 'junk', image: '🗑️', miniature: 'junk pile card', isNoun: true },
+        { word: 'link', image: '🔗', miniature: 'chain link', isNoun: true },
+        { word: 'mink', image: '🦫', miniature: 'mink figurine', isNoun: true },
+        { word: 'pink', image: '💗', miniature: 'pink card', isNoun: false },
+        { word: 'rank', image: '🏅', miniature: 'medal', isNoun: true },
+        { word: 'rink', image: '⛸️', miniature: 'ice rink card', isNoun: true },
+        { word: 'sank', image: '🚢', miniature: 'sinking ship card', isNoun: false },
+        { word: 'sink', image: '🚰', miniature: 'dollhouse sink', isNoun: true },
+        { word: 'tank', image: '🐠', miniature: 'fish tank card', isNoun: true },
+        { word: 'wink', image: '😉', miniature: 'winking face card', isNoun: false },
+      ],
+    },    {
+      label: '-nt endings',
+      description: 'Words ending in -nt',
+      words: [
+        { word: 'bent', image: '↩️', miniature: 'bent nail', isNoun: false },
+        { word: 'dent', image: '🔨', miniature: 'dented can', isNoun: true },
+        { word: 'hint', image: '💡', miniature: 'lightbulb', isNoun: true },
+        { word: 'hunt', image: '🔍', miniature: 'magnifying glass', isNoun: false },
+        { word: 'lint', image: '🧹', miniature: 'lint roller', isNoun: true },
+        { word: 'mint', image: '🌿', miniature: 'mint leaf', isNoun: true },
+        { word: 'pant', image: '🐕', miniature: 'panting dog card', isNoun: false },
+        { word: 'punt', image: '🏈', miniature: 'football', isNoun: false },
+        { word: 'rent', image: '🏠', miniature: 'house card', isNoun: true },
+        { word: 'vent', image: '🌬️', miniature: 'air vent card', isNoun: true },
+        { word: 'went', image: '🚶', miniature: 'walking figure', isNoun: false },
       ],
     },
     {
-      id: 'cl-words',
-      label: 'CL Words',
-      description: '/cl/ blend at start',
+      label: '-mp endings',
+      description: 'Words ending in -mp',
       words: [
-        { word: 'clap', image: '👏', miniature: 'hands picture card', isNoun: false },
-        { word: 'clean', image: '🚿', miniature: 'mini broom', isNoun: false },
-        { word: 'clock', image: '🕐', miniature: 'toy clock', isNoun: true },
-        { word: 'close', image: '🔐', miniature: 'door picture card', isNoun: false },
-        { word: 'cloud', image: '☁️', miniature: 'cloud picture card', isNoun: true },
+        { word: 'bump', image: '🤕', miniature: 'bump picture card', isNoun: true },
+        { word: 'camp', image: '⛺', miniature: 'tent figurine', isNoun: true },
+        { word: 'damp', image: '💧', miniature: 'wet sponge', isNoun: false },
+        { word: 'dump', image: '🚚', miniature: 'dump truck', isNoun: true },
+        { word: 'hump', image: '🐪', miniature: 'camel figurine', isNoun: true },
+        { word: 'jump', image: '🦘', miniature: 'jumping figure', isNoun: false },
+        { word: 'lamp', image: '💡', miniature: 'dollhouse lamp', isNoun: true },
+        { word: 'limp', image: '🦿', miniature: 'limping figure card', isNoun: false },
+        { word: 'lump', image: '🪨', miniature: 'lump of clay', isNoun: true },
+        { word: 'pump', image: '⛽', miniature: 'toy pump', isNoun: true },
+        { word: 'ramp', image: '📐', miniature: 'small ramp', isNoun: true },
+        { word: 'romp', image: '🤸', miniature: 'tumbling figure', isNoun: false },
+      ],
+    },    {
+      label: '-ft/-ct/-pt endings',
+      description: 'Words ending in -ft, -ct, or -pt',
+      words: [
+        { word: 'raft', image: '🛶', miniature: 'toy raft', isNoun: true },
+        { word: 'left', image: '⬅️', miniature: 'left arrow card', isNoun: false },
+        { word: 'lift', image: '⬆️', miniature: 'up arrow card', isNoun: false },
+        { word: 'loft', image: '🏠', miniature: 'attic picture card', isNoun: true },
+        { word: 'soft', image: '🧸', miniature: 'soft teddy bear', isNoun: false },
+        { word: 'tuft', image: '🌿', miniature: 'tuft of grass', isNoun: true },
+        { word: 'fact', image: '📖', miniature: 'book card', isNoun: true },
+        { word: 'pact', image: '🤝', miniature: 'handshake card', isNoun: true },
+        { word: 'kept', image: '📦', miniature: 'box card', isNoun: false },
+        { word: 'wept', image: '😢', miniature: 'crying face card', isNoun: false },
       ],
     },
     {
-      id: 'cr-words',
-      label: 'CR Words',
-      description: '/cr/ blend at start',
+      label: '-st/-sk endings',
+      description: 'Words ending in -st or -sk',
       words: [
-        { word: 'crab', image: '🦀', miniature: 'plastic crab figurine', isNoun: true },
-        { word: 'crack', image: '🔨', miniature: 'cracking picture', isNoun: true },
-        { word: 'craft', image: '🎨', miniature: 'art supplies', isNoun: true },
-        { word: 'crash', image: '💥', miniature: 'crash picture card', isNoun: true },
-        { word: 'cream', image: '🥛', miniature: 'cream container', isNoun: true },
+        { word: 'best', image: '🏆', miniature: 'trophy', isNoun: false },
+        { word: 'bust', image: '🗿', miniature: 'bust statue', isNoun: true },
+        { word: 'cost', image: '💰', miniature: 'coin', isNoun: true },
+        { word: 'dust', image: '🌫️', miniature: 'dust cloth', isNoun: true },
+        { word: 'fast', image: '💨', miniature: 'speed card', isNoun: false },
+        { word: 'fist', image: '✊', miniature: 'fist card', isNoun: true },
+        { word: 'gust', image: '🌬️', miniature: 'wind card', isNoun: true },
+        { word: 'just', image: '⚖️', miniature: 'balance scale', isNoun: false },
+        { word: 'last', image: '🏁', miniature: 'finish flag', isNoun: false },
+        { word: 'list', image: '📝', miniature: 'list paper', isNoun: true },
+        { word: 'lost', image: '❓', miniature: 'question mark card', isNoun: false },
+        { word: 'mast', image: '⛵', miniature: 'boat mast card', isNoun: true },
+        { word: 'must', image: '❗', miniature: 'exclamation card', isNoun: false },
+        { word: 'nest', image: '🪺', miniature: 'bird nest', isNoun: true },
+        { word: 'past', image: '⏪', miniature: 'rewind card', isNoun: false },
+        { word: 'pest', image: '🐛', miniature: 'bug figurine', isNoun: true },
+        { word: 'rest', image: '😴', miniature: 'sleeping figure', isNoun: false },
+        { word: 'rust', image: '🟤', miniature: 'rusty nail', isNoun: true },
+        { word: 'test', image: '📋', miniature: 'test paper', isNoun: true },
+        { word: 'vest', image: '🦺', miniature: 'vest', isNoun: true },
+        { word: 'west', image: '🌅', miniature: 'sunset card', isNoun: true },
+        { word: 'disk', image: '💾', miniature: 'floppy disk', isNoun: true },
+        { word: 'dusk', image: '🌆', miniature: 'dusk picture card', isNoun: true },
+        { word: 'husk', image: '🌽', miniature: 'corn husk', isNoun: true },
+        { word: 'mask', image: '🎭', miniature: 'small mask', isNoun: true },
+        { word: 'musk', image: '🦌', miniature: 'musk deer card', isNoun: true },
+        { word: 'risk', image: '⚠️', miniature: 'warning sign card', isNoun: true },
+        { word: 'task', image: '📋', miniature: 'task list card', isNoun: true },
+        { word: 'tusk', image: '🐘', miniature: 'elephant figurine', isNoun: true },
+      ],
+    },    {
+      label: '-ld/-lf/-lt endings',
+      description: 'Words ending in -ld, -lf, or -lt',
+      words: [
+        { word: 'held', image: '🤲', miniature: 'cupped hands card', isNoun: false },
+        { word: 'meld', image: '🔀', miniature: 'merging arrows card', isNoun: false },
+        { word: 'weld', image: '🔥', miniature: 'welding spark card', isNoun: false },
+        { word: 'golf', image: '⛳', miniature: 'golf ball', isNoun: true },
+        { word: 'self', image: '🪞', miniature: 'small mirror', isNoun: true },
+        { word: 'belt', image: '👖', miniature: 'small belt', isNoun: true },
+        { word: 'bolt', image: '🔩', miniature: 'bolt and nut', isNoun: true },
+        { word: 'felt', image: '🧶', miniature: 'felt fabric square', isNoun: true },
+        { word: 'jolt', image: '⚡', miniature: 'lightning bolt card', isNoun: true },
+        { word: 'malt', image: '🍺', miniature: 'malt grain', isNoun: true },
+        { word: 'melt', image: '🫠', miniature: 'melting ice card', isNoun: false },
+        { word: 'jilt', image: '💔', miniature: 'broken heart card', isNoun: false },
+        { word: 'tilt', image: '↗️', miniature: 'tilted card', isNoun: false },
+        { word: 'wilt', image: '🥀', miniature: 'wilting flower', isNoun: false },
       ],
     },
     {
-      id: 'dr-words',
-      label: 'DR Words',
-      description: '/dr/ blend at start',
+      label: '-ng endings',
+      description: 'Words ending in -ng',
       words: [
-        { word: 'drag', image: '🏋️', miniature: 'pulling picture card', isNoun: false },
-        { word: 'drip', image: '🩸', miniature: 'water drip picture', isNoun: true },
-        { word: 'drop', image: '⬇️', miniature: 'drop picture card', isNoun: true },
-        { word: 'drum', image: '🥁', miniature: 'toy drum', isNoun: true },
-        { word: 'dress', image: '👗', miniature: 'doll dress', isNoun: true },
-      ],
-    },
-    {
-      id: 'fl-words',
-      label: 'FL Words',
-      description: '/fl/ blend at start',
-      words: [
-        { word: 'flag', image: '🚩', miniature: 'small flag', isNoun: true },
-        { word: 'flash', image: '⚡', miniature: 'lightning card', isNoun: true },
-        { word: 'flat', image: '🪲', miniature: 'flat object picture', isNoun: false },
-        { word: 'flip', image: '🔄', miniature: 'turning picture card', isNoun: false },
-        { word: 'flow', image: '〰️', miniature: 'water flow picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'fr-words',
-      label: 'FR Words',
-      description: '/fr/ blend at start',
-      words: [
-        { word: 'fresh', image: '🍎', miniature: 'fresh fruit picture', isNoun: false },
-        { word: 'frog', image: '🐸', miniature: 'plastic frog figurine', isNoun: true },
-        { word: 'frost', image: '🥶', miniature: 'frost picture card', isNoun: true },
-        { word: 'fruit', image: '🍊', miniature: 'plastic fruit', isNoun: true },
-        { word: 'friend', image: '🤝', miniature: 'hands together picture', isNoun: true },
-      ],
-    },
-    {
-      id: 'gl-words',
-      label: 'GL Words',
-      description: '/gl/ blend at start',
-      words: [
-        { word: 'glad', image: '😃', miniature: 'happy face picture', isNoun: false },
-        { word: 'glass', image: '🥃', miniature: 'small glass cup', isNoun: true },
-        { word: 'glove', image: '🧤', miniature: 'small glove', isNoun: true },
-        { word: 'glob', image: '🟢', miniature: 'glob/lump picture', isNoun: true },
-        { word: 'glue', image: '🧴', miniature: 'small glue bottle', isNoun: true },
-      ],
-    },
-    {
-      id: 'gr-words',
-      label: 'GR Words',
-      description: '/gr/ blend at start',
-      words: [
-        { word: 'grab', image: '🤲', miniature: 'grabbing hands picture', isNoun: false },
-        { word: 'grape', image: '🍇', miniature: 'plastic grape', isNoun: true },
-        { word: 'grass', image: '🟩', miniature: 'grass picture card', isNoun: true },
-        { word: 'green', image: '💚', miniature: 'green color card', isNoun: false },
-        { word: 'grin', image: '😁', miniature: 'smiling face picture', isNoun: false },
-        { word: 'grip', image: '🤜', miniature: 'hand grip picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'pl-words',
-      label: 'PL Words',
-      description: '/pl/ blend at start',
-      words: [
-        { word: 'plan', image: '📋', miniature: 'plan/checklist picture', isNoun: true },
-        { word: 'plant', image: '🌻', miniature: 'small potted plant', isNoun: true },
-        { word: 'plate', image: '🥘', miniature: 'dollhouse plate', isNoun: true },
-        { word: 'plum', image: '🍑', miniature: 'plastic plum', isNoun: true },
-        { word: 'plug', image: '🔌', miniature: 'electric plug', isNoun: true },
-      ],
-    },
-    {
-      id: 'pr-words',
-      label: 'PR Words',
-      description: '/pr/ blend at start',
-      words: [
-        { word: 'press', image: '👇', miniature: 'pressing motion picture', isNoun: false },
-        { word: 'price', image: '💰', miniature: 'money picture card', isNoun: true },
-        { word: 'prince', image: '👑', miniature: 'crown toy', isNoun: true },
-        { word: 'print', image: '🖨️', miniature: 'printing picture', isNoun: true },
-        { word: 'proud', image: '🦁', miniature: 'proud pose picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'sc-words',
-      label: 'SC Words',
-      description: '/sk/ sound at start (soft c)',
-      words: [
-        { word: 'scarf', image: '🧣', miniature: 'doll scarf', isNoun: true },
-        { word: 'scale', image: '⚖️', miniature: 'small scale toy', isNoun: true },
-        { word: 'scare', image: '👻', miniature: 'ghost picture card', isNoun: false },
-        { word: 'scone', image: '🥐', miniature: 'scone picture card', isNoun: true },
-      ],
-    },
-    {
-      id: 'sk-words',
-      label: 'SK Words',
-      description: '/sk/ blend at start',
-      words: [
-        { word: 'skip', image: '🦘', miniature: 'skipping figure', isNoun: false },
-        { word: 'skull', image: '💀', miniature: 'plastic skull', isNoun: true },
-        { word: 'skin', image: '🖐️', miniature: 'hand skin picture', isNoun: true },
-        { word: 'skirt', image: '🩱', miniature: 'doll skirt', isNoun: true },
-        { word: 'sketch', image: '✏️', miniature: 'sketch paper', isNoun: true },
-      ],
-    },
-    {
-      id: 'sm-words',
-      label: 'SM Words',
-      description: '/sm/ blend at start',
-      words: [
-        { word: 'smell', image: '🌺', miniature: 'nose picture card', isNoun: false },
-        { word: 'smile', image: '😊', miniature: 'smiley face figurine', isNoun: true },
-        { word: 'smoke', image: '🌋', miniature: 'smoke picture card', isNoun: true },
-        { word: 'smooth', image: '🧈', miniature: 'smooth object picture', isNoun: false },
-        { word: 'smash', image: '💢', miniature: 'smashing picture card', isNoun: false },
-      ],
-    },
-    {
-      id: 'sn-words',
-      label: 'SN Words',
-      description: '/sn/ blend at start',
-      words: [
-        { word: 'snag', image: '🪝', miniature: 'small hook', isNoun: true },
-        { word: 'snake', image: '🐍', miniature: 'plastic snake figurine', isNoun: true },
-        { word: 'snap', image: '🫰', miniature: 'snapping fingers picture', isNoun: false },
-        { word: 'snack', image: '🍿', miniature: 'snack picture card', isNoun: true },
-        { word: 'snip', image: '🪡', miniature: 'snipping picture card', isNoun: false },
-      ],
-    },
-    {
-      id: 'sp-words',
-      label: 'SP Words',
-      description: '/sp/ blend at start',
-      words: [
-        { word: 'spin', image: '🌀', miniature: 'spinning top', isNoun: false },
-        { word: 'spot', image: '🟣', miniature: 'dot sticker or card', isNoun: true },
-        { word: 'spell', image: '🔤', miniature: 'spelling letters picture', isNoun: false },
-        { word: 'sponge', image: '🧽', miniature: 'small sponge', isNoun: true },
-        { word: 'splash', image: '💦', miniature: 'water splash picture', isNoun: true },
-      ],
-    },
-    {
-      id: 'st-words',
-      label: 'ST Words',
-      description: '/st/ blend at start',
-      words: [
-        { word: 'stick', image: '🏑', miniature: 'small twig or stick', isNoun: true },
-        { word: 'stop', image: '🛑', miniature: 'stop sign toy', isNoun: true },
-        { word: 'stamp', image: '📫', miniature: 'stamp or ink pad', isNoun: true },
-        { word: 'stone', image: '🪨', miniature: 'small river stone', isNoun: true },
-        { word: 'stump', image: '🍄', miniature: 'tree stump picture', isNoun: true },
-        { word: 'storm', image: '⛈️', miniature: 'storm picture card', isNoun: true },
-      ],
-    },
-    {
-      id: 'sw-words',
-      label: 'SW Words',
-      description: '/sw/ blend at start',
-      words: [
-        { word: 'swim', image: '🏊', miniature: 'swimming figure', isNoun: false },
-        { word: 'swing', image: '🎪', miniature: 'swing toy', isNoun: true },
-        { word: 'swan', image: '🦢', miniature: 'plastic swan figurine', isNoun: true },
-        { word: 'sweet', image: '🍬', miniature: 'candy picture card', isNoun: true },
-        { word: 'sweep', image: '🪥', miniature: 'sweeping motion picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'tr-words',
-      label: 'TR Words',
-      description: '/tr/ blend at start',
-      words: [
-        { word: 'truck', image: '🚚', miniature: 'toy truck', isNoun: true },
-        { word: 'trap', image: '🪤', miniature: 'small trap picture', isNoun: true },
-        { word: 'tram', image: '🚊', miniature: 'toy tram/trolley', isNoun: true },
-        { word: 'trot', image: '🐴', miniature: 'horse figurine', isNoun: false },
-        { word: 'trim', image: '✂️', miniature: 'small scissors', isNoun: false },
+        { word: 'bang', image: '💥', miniature: 'explosion card', isNoun: true },
+        { word: 'bung', image: '🪵', miniature: 'cork bung', isNoun: true },
+        { word: 'fang', image: '🦷', miniature: 'fang picture card', isNoun: true },
+        { word: 'gang', image: '👥', miniature: 'group figurines', isNoun: true },
+        { word: 'gong', image: '🔔', miniature: 'small gong', isNoun: true },
+        { word: 'hang', image: '🪝', miniature: 'hook', isNoun: false },
+        { word: 'hung', image: '🖼️', miniature: 'hanging picture', isNoun: false },
+        { word: 'king', image: '👑', miniature: 'crown', isNoun: true },
+        { word: 'long', image: '📏', miniature: 'long ruler', isNoun: false },
+        { word: 'lung', image: '🫁', miniature: 'lung picture card', isNoun: true },
+        { word: 'ping', image: '🏓', miniature: 'ping pong ball', isNoun: true },
+        { word: 'rang', image: '🔔', miniature: 'bell', isNoun: false },
+        { word: 'ring', image: '💍', miniature: 'small ring', isNoun: true },
+        { word: 'sang', image: '🎤', miniature: 'microphone', isNoun: false },
+        { word: 'sing', image: '🎵', miniature: 'music note card', isNoun: false },
+        { word: 'song', image: '🎶', miniature: 'song book card', isNoun: true },
+        { word: 'wing', image: '🪽', miniature: 'feather', isNoun: true },
       ],
     },
   ],
 };
-
-// =====================================================================
-// BLUE SERIES 3: FINAL CONSONANT BLENDS
-// =====================================================================
 
 export const BLUE_3: PhonicsPhase = {
   id: 'blue3',
-  name: 'Blue 3 — Final Blends',
-  color: '#4338ca', // indigo-700
-  description: 'Two consonants blend together at the end: consonant clusters in final position.',
+  name: 'Blue 3 — Double Consonants & CK',
+  description: 'Words with double consonant endings (ll, ss, ff, zz) and -ck. The doubled letters make one sound but follow the FLOSS/CK spelling rule.',
+  color: '#1D4ED8',
   groups: [
     {
-      id: 'nd-words',
-      label: 'ND Words (Final)',
-      description: '/nd/ blend at end',
+      label: '-ll endings',
+      description: 'Words ending in double l',
       words: [
-        { word: 'band', image: '🎵', miniature: 'music band picture', isNoun: true },
-        { word: 'hand', image: '✋', miniature: 'hand picture card', isNoun: true },
-        { word: 'land', image: '🏜️', miniature: 'landscape picture', isNoun: true },
-        { word: 'sand', image: '🏖️', miniature: 'sand scoop', isNoun: true },
-        { word: 'wind', image: '💨', miniature: 'wind picture card', isNoun: true },
+        { word: 'bell', image: '🔔', miniature: 'small bell', isNoun: true },
+        { word: 'bill', image: '💵', miniature: 'dollar bill', isNoun: true },
+        { word: 'bull', image: '🐂', miniature: 'bull figurine', isNoun: true },
+        { word: 'doll', image: '🧸', miniature: 'small doll', isNoun: true },
+        { word: 'dull', image: '🔘', miniature: 'grey circle card', isNoun: false },
+        { word: 'fall', image: '🍂', miniature: 'falling leaf', isNoun: false },
+        { word: 'fell', image: '🪓', miniature: 'axe card', isNoun: false },
+        { word: 'fill', image: '🥛', miniature: 'full glass', isNoun: false },
+        { word: 'full', image: '🫙', miniature: 'full jar', isNoun: false },
+        { word: 'gull', image: '🐦', miniature: 'seagull figurine', isNoun: true },
+        { word: 'hall', image: '🏛️', miniature: 'hallway card', isNoun: true },
+        { word: 'hill', image: '⛰️', miniature: 'hill picture card', isNoun: true },
+        { word: 'hull', image: '🚢', miniature: 'boat hull card', isNoun: true },
+        { word: 'kill', image: '❌', miniature: 'X mark card', isNoun: false },
+        { word: 'mall', image: '🏬', miniature: 'mall picture card', isNoun: true },
+        { word: 'mill', image: '🏭', miniature: 'windmill figurine', isNoun: true },
+        { word: 'mull', image: '🤔', miniature: 'thinking face card', isNoun: false },
+        { word: 'null', image: '⭕', miniature: 'zero card', isNoun: false },
+        { word: 'pull', image: '🪢', miniature: 'rope', isNoun: false },
+        { word: 'sell', image: '🏷️', miniature: 'price tag', isNoun: false },
+        { word: 'tall', image: '📏', miniature: 'tall block', isNoun: false },
+        { word: 'tell', image: '🗣️', miniature: 'speaking mouth card', isNoun: false },
+        { word: 'till', image: '🕐', miniature: 'clock card', isNoun: false },
+        { word: 'wall', image: '🧱', miniature: 'brick', isNoun: true },
+        { word: 'well', image: '🪣', miniature: 'well bucket', isNoun: true },
+        { word: 'will', image: '📜', miniature: 'scroll card', isNoun: true },
+        { word: 'yell', image: '📢', miniature: 'megaphone', isNoun: false },
+      ],
+    },    {
+      label: '-ss endings',
+      description: 'Words ending in double s',
+      words: [
+        { word: 'bass', image: '🐟', miniature: 'fish figurine', isNoun: true },
+        { word: 'boss', image: '👔', miniature: 'tie card', isNoun: true },
+        { word: 'fuss', image: '😤', miniature: 'fussy face card', isNoun: true },
+        { word: 'hiss', image: '🐍', miniature: 'snake figurine', isNoun: false },
+        { word: 'kiss', image: '💋', miniature: 'lips card', isNoun: true },
+        { word: 'lass', image: '👧', miniature: 'girl figurine', isNoun: true },
+        { word: 'less', image: '➖', miniature: 'minus card', isNoun: false },
+        { word: 'loss', image: '📉', miniature: 'down arrow card', isNoun: true },
+        { word: 'mass', image: '⚖️', miniature: 'scale', isNoun: true },
+        { word: 'mess', image: '🗑️', miniature: 'messy desk card', isNoun: true },
+        { word: 'miss', image: '🎯', miniature: 'target card', isNoun: false },
+        { word: 'moss', image: '🌿', miniature: 'moss picture', isNoun: true },
+        { word: 'pass', image: '🎫', miniature: 'bus pass', isNoun: true },
+        { word: 'toss', image: '🪃', miniature: 'ball', isNoun: false },
       ],
     },
     {
-      id: 'ng-words',
-      label: 'NG Words (Final)',
-      description: '/ng/ blend at end',
+      label: '-ff/-zz endings',
+      description: 'Words ending in double f or double z',
       words: [
-        { word: 'bang', image: '🔊', miniature: 'loud sound picture card', isNoun: true },
-        { word: 'hang', image: '📍', miniature: 'hanging picture', isNoun: false },
-        { word: 'ring', image: '💍', miniature: 'toy ring', isNoun: true },
-        { word: 'sing', image: '🎤', miniature: 'microphone toy', isNoun: false },
-        { word: 'wing', image: '🪶', miniature: 'feather or wing picture', isNoun: true },
+        { word: 'buff', image: '💪', miniature: 'muscle card', isNoun: false },
+        { word: 'cuff', image: '👔', miniature: 'shirt cuff card', isNoun: true },
+        { word: 'huff', image: '💨', miniature: 'blowing face card', isNoun: false },
+        { word: 'miff', image: '😠', miniature: 'angry face card', isNoun: false },
+        { word: 'off', image: '⭕', miniature: 'off switch card', isNoun: false },
+        { word: 'puff', image: '☁️', miniature: 'cotton puff', isNoun: true },
+        { word: 'riff', image: '🎸', miniature: 'guitar card', isNoun: true },
+        { word: 'stiff', image: '🪵', miniature: 'stiff board', isNoun: false },
+        { word: 'stuff', image: '📦', miniature: 'stuffed box', isNoun: true },
+        { word: 'buzz', image: '🐝', miniature: 'bee figurine', isNoun: true },
+        { word: 'fizz', image: '🥤', miniature: 'fizzy drink card', isNoun: true },
+        { word: 'fuzz', image: '🧶', miniature: 'fuzzy ball', isNoun: true },
+        { word: 'jazz', image: '🎷', miniature: 'saxophone card', isNoun: true },
       ],
-    },
-    {
-      id: 'nk-words',
-      label: 'NK Words (Final)',
-      description: '/nk/ blend at end',
+    },    {
+      label: '-ck endings',
+      description: 'Words ending in -ck (makes /k/ sound)',
       words: [
-        { word: 'bank', image: '🏦', miniature: 'toy bank', isNoun: true },
-        { word: 'dank', image: '🌑', miniature: 'damp dark picture card', isNoun: false },
-        { word: 'pink', image: '💗', miniature: 'pink color card', isNoun: false },
-        { word: 'sink', image: '🪠', miniature: 'miniature sink', isNoun: true },
-        { word: 'tank', image: '🏺', miniature: 'toy tank', isNoun: true },
-      ],
-    },
-    {
-      id: 'ld-words',
-      label: 'LD Words (Final)',
-      description: '/ld/ blend at end',
-      words: [
-        { word: 'cold', image: '🌬️', miniature: 'cold wind picture', isNoun: false },
-        { word: 'fold', image: '📄', miniature: 'paper folding picture', isNoun: false },
-        { word: 'gold', image: '💛', miniature: 'gold-colored object', isNoun: true },
-        { word: 'hold', image: '👐', miniature: 'holding hands picture', isNoun: false },
-        { word: 'sold', image: '💲', miniature: 'sold tag picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'lf-words',
-      label: 'LF Words (Final)',
-      description: '/lf/ blend at end',
-      words: [
-        { word: 'self', image: '🪞', miniature: 'mirror picture', isNoun: true },
-        { word: 'half', image: '🥧', miniature: 'divided object picture', isNoun: true },
-        { word: 'calf', image: '🐄', miniature: 'cow calf figurine', isNoun: true },
-        { word: 'shelf', image: '📚', miniature: 'small shelf', isNoun: true },
-      ],
-    },
-    {
-      id: 'lt-words',
-      label: 'LT Words (Final)',
-      description: '/lt/ blend at end',
-      words: [
-        { word: 'belt', image: '⛓️', miniature: 'toy belt', isNoun: true },
-        { word: 'felt', image: '🧵', miniature: 'felt material sample', isNoun: true },
-        { word: 'melt', image: '🫠', miniature: 'melting picture card', isNoun: false },
-        { word: 'salt', image: '🧂', miniature: 'salt container', isNoun: true },
-      ],
-    },
-    {
-      id: 'mp-words',
-      label: 'MP Words (Final)',
-      description: '/mp/ blend at end',
-      words: [
-        { word: 'camp', image: '⛺', miniature: 'toy tent', isNoun: true },
-        { word: 'bump', image: '🤕', miniature: 'bump picture card', isNoun: true },
-        { word: 'dump', image: '🏗️', miniature: 'dump truck toy', isNoun: true },
-        { word: 'hump', image: '🐪', miniature: 'camel figurine', isNoun: true },
-        { word: 'jump', image: '⛹️', miniature: 'jumping figure', isNoun: false },
-        { word: 'lamp', image: '💡', miniature: 'small toy lamp', isNoun: true },
-        { word: 'lump', image: '⭕', miniature: 'lump shape picture', isNoun: true },
-        { word: 'pump', image: '⛽', miniature: 'pump picture card', isNoun: true },
-      ],
-    },
-    {
-      id: 'ft-words',
-      label: 'FT Words (Final)',
-      description: '/ft/ blend at end',
-      words: [
-        { word: 'daft', image: '😄', miniature: 'silly face picture', isNoun: false },
-        { word: 'left', image: '👈', miniature: 'left direction arrow', isNoun: false },
-        { word: 'lift', image: '⬆️', miniature: 'lifting motion picture', isNoun: false },
-        { word: 'raft', image: '🛶', miniature: 'toy raft', isNoun: true },
-        { word: 'soft', image: '🧸', miniature: 'soft plush toy', isNoun: false },
-      ],
-    },
-    {
-      id: 'ct-words',
-      label: 'CT Words (Final)',
-      description: '/kt/ blend at end',
-      words: [
-        { word: 'act', image: '🎭', miniature: 'theater mask toy', isNoun: true },
-        { word: 'fact', image: 'ℹ️', miniature: 'fact card picture', isNoun: true },
-        { word: 'pact', image: '📜', miniature: 'agreement picture', isNoun: true },
-        { word: 'duct', image: '🔧', miniature: 'pipe picture card', isNoun: true },
-      ],
-    },
-    {
-      id: 'pt-words',
-      label: 'PT Words (Final)',
-      description: '/pt/ blend at end',
-      words: [
-        { word: 'kept', image: '🔒', miniature: 'holding/keeping picture', isNoun: false },
-        { word: 'sept', image: '📅', miniature: 'September calendar card', isNoun: true },
-        { word: 'swept', image: '🌪️', miniature: 'sweeping motion picture', isNoun: false },
-        { word: 'wept', image: '😭', miniature: 'crying face picture', isNoun: false },
-      ],
-    },
-    {
-      id: 'st-final-words',
-      label: 'ST Words (Final)',
-      description: '/st/ blend at end',
-      words: [
-        { word: 'best', image: '🏆', miniature: 'trophy picture', isNoun: true },
-        { word: 'cast', image: '🪃', miniature: 'fishing cast picture', isNoun: false },
-        { word: 'fast', image: '🏎️', miniature: 'speed picture card', isNoun: false },
-        { word: 'feast', image: '🥗', miniature: 'food picture card', isNoun: true },
-        { word: 'first', image: '🥇', miniature: 'first place medal', isNoun: false },
-        { word: 'last', image: '⏱️', miniature: 'end picture card', isNoun: false },
-        { word: 'mast', image: '🏴‍☠️', miniature: 'boat mast picture', isNoun: true },
-        { word: 'most', image: '📈', miniature: 'amount picture card', isNoun: false },
-        { word: 'nest', image: '🪹', miniature: 'bird nest picture', isNoun: true },
-        { word: 'rest', image: '🛌', miniature: 'sleeping figure', isNoun: false },
-        { word: 'test', image: '🖍️', miniature: 'test paper card', isNoun: true },
-        { word: 'west', image: '🌅', miniature: 'sunset picture', isNoun: true },
-        { word: 'zest', image: '🍋', miniature: 'lemon zest picture card', isNoun: true },
+        { word: 'back', image: '⬅️', miniature: 'back arrow card', isNoun: true },
+        { word: 'beck', image: '🏞️', miniature: 'stream card', isNoun: true },
+        { word: 'buck', image: '🦌', miniature: 'deer figurine', isNoun: true },
+        { word: 'deck', image: '🃏', miniature: 'card deck', isNoun: true },
+        { word: 'dock', image: '⚓', miniature: 'boat dock card', isNoun: true },
+        { word: 'duck', image: '🦆', miniature: 'rubber duck', isNoun: true },
+        { word: 'hack', image: '🪓', miniature: 'axe card', isNoun: false },
+        { word: 'kick', image: '🦶', miniature: 'foot card', isNoun: false },
+        { word: 'lack', image: '🚫', miniature: 'empty box card', isNoun: true },
+        { word: 'lick', image: '👅', miniature: 'tongue card', isNoun: false },
+        { word: 'lock', image: '🔒', miniature: 'padlock', isNoun: true },
+        { word: 'luck', image: '🍀', miniature: 'four-leaf clover', isNoun: true },
+        { word: 'muck', image: '🟤', miniature: 'mud picture card', isNoun: true },
+        { word: 'neck', image: '🦒', miniature: 'giraffe figurine', isNoun: true },
+        { word: 'nick', image: '✂️', miniature: 'small cut card', isNoun: true },
+        { word: 'pack', image: '🎒', miniature: 'backpack', isNoun: true },
+        { word: 'peck', image: '🐔', miniature: 'pecking hen', isNoun: false },
+        { word: 'pick', image: '⛏️', miniature: 'pick tool', isNoun: false },
+        { word: 'puck', image: '🏒', miniature: 'hockey puck', isNoun: true },
+        { word: 'rack', image: '🗂️', miniature: 'small rack', isNoun: true },
+        { word: 'rock', image: '🪨', miniature: 'small rock', isNoun: true },
+        { word: 'sack', image: '🛍️', miniature: 'cloth sack', isNoun: true },
+        { word: 'sick', image: '🤒', miniature: 'sick face card', isNoun: false },
+        { word: 'sock', image: '🧦', miniature: 'small sock', isNoun: true },
+        { word: 'suck', image: '🍭', miniature: 'lollipop', isNoun: false },
+        { word: 'tack', image: '📌', miniature: 'thumbtack', isNoun: true },
+        { word: 'tick', image: '✅', miniature: 'checkmark card', isNoun: true },
+        { word: 'tuck', image: '🛏️', miniature: 'bedding card', isNoun: false },
+        { word: 'wick', image: '🕯️', miniature: 'candle wick', isNoun: true },
       ],
     },
   ],
 };
 
-// =====================================================================
-// GREEN SERIES 1: VOWEL TEAMS (Long Vowel Digraphs)
-// =====================================================================
+// ============================================================
+// GREEN SERIES — Phonograms
+// Two or more letters combining to make a new/different sound.
+// ============================================================
 
 export const GREEN_1: PhonicsPhase = {
   id: 'green1',
-  name: 'Green 1 — Vowel Teams',
-  color: '#16a34a', // green-600
-  description: 'Two vowels working together to make one long sound: ai, ay, ee, oa, oo, ow (long O).',
+  name: 'Green 1 — Consonant Digraphs',
+  description: 'Two consonant letters that combine to make one NEW sound: sh, ch, th, wh. These are NOT blends — the letters lose their individual sounds.',
+  color: '#22C55E',
   groups: [
     {
-      id: 'ai-words',
-      label: 'AI Words',
-      description: '/ai/ — long A sound',
+      label: 'sh words',
+      description: 'The /sh/ sound — "sh" makes a single hushing sound',
       words: [
-        { word: 'rain', image: '🌧️', miniature: 'rain drop picture', isNoun: true },
-        { word: 'nail', image: '🪛', miniature: 'small nail', isNoun: true },
-        { word: 'tail', image: '🐎', miniature: 'fox tail picture', isNoun: true },
-        { word: 'pail', image: '🪣', miniature: 'small bucket', isNoun: true },
-        { word: 'snail', image: '🐌', miniature: 'plastic snail figurine', isNoun: true },
-        { word: 'train', image: '🚂', miniature: 'toy train', isNoun: true },
-        { word: 'maid', image: '👩', miniature: 'servant figure', isNoun: true },
-        { word: 'braid', image: '👱', miniature: 'braided hair picture', isNoun: true },
-        { word: 'mail', image: '📮', miniature: 'mailbox toy', isNoun: true },
+        { word: 'ship', image: '🚢', miniature: 'toy ship', isNoun: true },
+        { word: 'shop', image: '🏪', miniature: 'toy shop front', isNoun: true },
+        { word: 'shed', image: '🏚️', miniature: 'small shed model', isNoun: true },
+        { word: 'shin', image: '🦵', miniature: 'leg picture card', isNoun: true },
+        { word: 'shot', image: '🏀', miniature: 'basketball', isNoun: true },
+        { word: 'shag', image: '🧶', miniature: 'shag carpet swatch', isNoun: true },
+        { word: 'sham', image: '🎭', miniature: 'mask card', isNoun: true },
+        { word: 'shim', image: '📏', miniature: 'thin wedge', isNoun: true },
+        { word: 'shut', image: '🚪', miniature: 'closed door card', isNoun: false },
+        { word: 'shun', image: '🚫', miniature: 'no entry card', isNoun: false },
+        { word: 'fish', image: '🐟', miniature: 'plastic fish', isNoun: true },
+        { word: 'dish', image: '🍽️', miniature: 'small dish', isNoun: true },
+        { word: 'wish', image: '⭐', miniature: 'star wand', isNoun: true },
+        { word: 'gush', image: '💦', miniature: 'water spray card', isNoun: false },
+        { word: 'hush', image: '🤫', miniature: 'quiet finger card', isNoun: false },
+        { word: 'lush', image: '🌿', miniature: 'green leaf', isNoun: false },
+        { word: 'mash', image: '🥔', miniature: 'mashed potato card', isNoun: false },
+        { word: 'mesh', image: '🕸️', miniature: 'mesh fabric', isNoun: true },
+        { word: 'rash', image: '🔴', miniature: 'red dot card', isNoun: true },
+        { word: 'rush', image: '🏃', miniature: 'running figure', isNoun: false },
+        { word: 'gash', image: '🩹', miniature: 'bandage', isNoun: true },
+        { word: 'bash', image: '💥', miniature: 'smash card', isNoun: false },
+        { word: 'cash', image: '💵', miniature: 'paper money', isNoun: true },
+        { word: 'lash', image: '👁️', miniature: 'eyelash card', isNoun: true },
+        { word: 'mush', image: '🥣', miniature: 'porridge bowl', isNoun: true },
+      ],
+    },    {
+      label: 'ch words',
+      description: 'The /ch/ sound — "ch" makes one sound (as in "chop")',
+      words: [
+        { word: 'chip', image: '🍟', miniature: 'potato chip', isNoun: true },
+        { word: 'chop', image: '🪓', miniature: 'chopping block', isNoun: false },
+        { word: 'chin', image: '🧔', miniature: 'chin picture card', isNoun: true },
+        { word: 'chat', image: '💬', miniature: 'speech bubble card', isNoun: true },
+        { word: 'chap', image: '🧑', miniature: 'man figurine', isNoun: true },
+        { word: 'chug', image: '🚂', miniature: 'toy train', isNoun: false },
+        { word: 'chum', image: '🤝', miniature: 'friends figurines', isNoun: true },
+        { word: 'rich', image: '💎', miniature: 'gem', isNoun: false },
+        { word: 'much', image: '📦', miniature: 'full box card', isNoun: false },
+        { word: 'such', image: '👆', miniature: 'pointing card', isNoun: false },
+        { word: 'inch', image: '📏', miniature: 'ruler', isNoun: true },
       ],
     },
     {
-      id: 'ee-words',
-      label: 'EE Words',
-      description: '/ee/ — long E sound',
+      label: 'th words',
+      description: 'The /th/ sound — "th" makes one sound (voiced or unvoiced)',
       words: [
-        { word: 'bee', image: '🐝', miniature: 'plastic bee figurine', isNoun: true },
-        { word: 'seed', image: '🌱', miniature: 'real seed in packet', isNoun: true },
-        { word: 'feet', image: '🦶', miniature: 'feet picture card', isNoun: true },
-        { word: 'sheep', image: '🐑', miniature: 'plastic sheep figurine', isNoun: true },
-        { word: 'jeep', image: '🚙', miniature: 'toy jeep', isNoun: true },
-        { word: 'tree', image: '🌳', miniature: 'toy tree', isNoun: true },
-        { word: 'weed', image: '🪻', miniature: 'weed plant picture', isNoun: true },
-        { word: 'reed', image: '🎋', miniature: 'reed plant picture', isNoun: true },
+        { word: 'thin', image: '🧍', miniature: 'thin stick', isNoun: false },
+        { word: 'than', image: '⚖️', miniature: 'comparison card', isNoun: false },
+        { word: 'them', image: '👥', miniature: 'group figurines', isNoun: false },
+        { word: 'then', image: '➡️', miniature: 'arrow card', isNoun: false },
+        { word: 'this', image: '👆', miniature: 'pointing hand card', isNoun: false },
+        { word: 'that', image: '👉', miniature: 'pointing card', isNoun: false },
+        { word: 'thud', image: '💥', miniature: 'heavy drop card', isNoun: true },
+        { word: 'thus', image: '📌', miniature: 'pin card', isNoun: false },
+        { word: 'bath', image: '🛁', miniature: 'bathtub', isNoun: true },
+        { word: 'math', image: '🔢', miniature: 'number card', isNoun: true },
+        { word: 'moth', image: '🦋', miniature: 'moth figurine', isNoun: true },
+        { word: 'path', image: '🛤️', miniature: 'path picture card', isNoun: true },
+        { word: 'with', image: '🤝', miniature: 'together card', isNoun: false },
       ],
     },
     {
-      id: 'oa-words',
-      label: 'OA Words',
-      description: '/oa/ — long O sound',
+      label: 'wh words',
+      description: 'The /wh/ sound — "wh" (in many dialects sounds like /w/)',
       words: [
-        { word: 'boat', image: '⛵', miniature: 'toy boat', isNoun: true },
-        { word: 'coat', image: '🧥', miniature: 'doll coat', isNoun: true },
-        { word: 'goat', image: '🐐', miniature: 'plastic goat figurine', isNoun: true },
-        { word: 'soap', image: '🧼', miniature: 'small soap bar', isNoun: true },
-        { word: 'toad', image: '🐢', miniature: 'plastic toad figurine', isNoun: true },
-        { word: 'road', image: '🛣️', miniature: 'road picture card', isNoun: true },
-        { word: 'toast', image: '🫓', miniature: 'toast picture card', isNoun: true },
-        { word: 'coal', image: '⚫', miniature: 'coal piece or picture', isNoun: true },
-      ],
-    },
-    {
-      id: 'oo-words',
-      label: 'OO Words',
-      description: '/oo/ — long OO sound',
-      words: [
-        { word: 'moon', image: '🌙', miniature: 'moon picture card', isNoun: true },
-        { word: 'boot', image: '👢', miniature: 'doll boot', isNoun: true },
-        { word: 'pool', image: '🎱', miniature: 'toy pool', isNoun: true },
-        { word: 'food', image: '🍌', miniature: 'plastic food', isNoun: true },
-        { word: 'spoon', image: '🥄', miniature: 'small spoon', isNoun: true },
-        { word: 'hoop', image: '🪀', miniature: 'hula hoop toy', isNoun: true },
-        { word: 'room', image: '🏨', miniature: 'room picture card', isNoun: true },
-        { word: 'broom', image: '🧹', miniature: 'small broom', isNoun: true },
-        { word: 'tooth', image: '🦷', miniature: 'tooth picture card', isNoun: true },
-      ],
-    },
-    {
-      id: 'ay-words',
-      label: 'AY Words',
-      description: '/ay/ — long A sound',
-      words: [
-        { word: 'hay', image: '🌾', miniature: 'hay picture card', isNoun: true },
-        { word: 'play', image: '🎮', miniature: 'toy game', isNoun: false },
-        { word: 'day', image: '🌤️', miniature: 'sun picture card', isNoun: true },
-        { word: 'tray', image: '🍱', miniature: 'small tray', isNoun: true },
-        { word: 'clay', image: '🍶', miniature: 'modeling clay', isNoun: true },
-        { word: 'ray', image: '🔆', miniature: 'light ray picture', isNoun: true },
-      ],
-    },
-    {
-      id: 'ow-long-words',
-      label: 'OW Words (Long O)',
-      description: '/ow/ — long O sound',
-      words: [
-        { word: 'bow', image: '🎀', miniature: 'ribbon bow', isNoun: true },
-        { word: 'low', image: '📉', miniature: 'down arrow picture', isNoun: false },
-        { word: 'row', image: '⚪⚪⚪', miniature: 'row arrangement picture', isNoun: true },
-        { word: 'flow', image: '🔵', miniature: 'river flow picture', isNoun: false },
-        { word: 'snow', image: '☃️', miniature: 'snowman picture', isNoun: true },
-        { word: 'glow', image: '✨', miniature: 'glowing picture card', isNoun: false },
+        { word: 'whip', image: '🏇', miniature: 'small whip', isNoun: true },
+        { word: 'whim', image: '💭', miniature: 'thought bubble card', isNoun: true },
+        { word: 'when', image: '🕐', miniature: 'clock', isNoun: false },
+        { word: 'whet', image: '🔪', miniature: 'sharpening stone', isNoun: false },
+        { word: 'whig', image: '🎩', miniature: 'wig on stand', isNoun: true },
+        { word: 'whiz', image: '💨', miniature: 'speed card', isNoun: false },
       ],
     },
   ],
 };
-
-// =====================================================================
-// GREEN SERIES 2: MAGIC E (Silent E)
-// =====================================================================
 
 export const GREEN_2: PhonicsPhase = {
   id: 'green2',
-  name: 'Green 2 — Magic E',
-  color: '#15803d', // green-700
-  description: 'Silent E at the end changes the vowel to say its long sound.',
+  name: 'Green 2 — Vowel Teams & Silent E',
+  description: 'Vowel phonograms (ai, ay, ee, ea, oa, oo, ou, ow, oi, oy, ue, ew, au, aw) and magic/silent E patterns (a_e, i_e, o_e, u_e).',
+  color: '#16A34A',
   groups: [
     {
-      id: 'a_e-words',
-      label: 'A_E Words',
-      description: 'a + silent e = long A',
+      label: 'Silent E (a_e, i_e, o_e, u_e)',
+      description: 'The silent E makes the vowel say its name',
       words: [
-        { word: 'cake', image: '🎂', miniature: 'toy cake or picture', isNoun: true },
+        { word: 'cake', image: '🎂', miniature: 'toy cake', isNoun: true },
+        { word: 'gate', image: '🚪', miniature: 'small gate', isNoun: true },
         { word: 'lake', image: '🏞️', miniature: 'lake picture card', isNoun: true },
-        { word: 'gate', image: '🚪', miniature: 'gate picture card', isNoun: true },
-        { word: 'name', image: '✍️', miniature: 'nameplate picture', isNoun: true },
-        { word: 'game', image: '🎲', miniature: 'toy game', isNoun: true },
-        { word: 'made', image: '🛠️', miniature: 'making picture card', isNoun: false },
-        { word: 'tape', image: '📼', miniature: 'tape roll', isNoun: true },
-        { word: 'cave', image: '🗻', miniature: 'cave picture card', isNoun: true },
+        { word: 'make', image: '🔨', miniature: 'hammer', isNoun: false },
+        { word: 'name', image: '📛', miniature: 'name tag', isNoun: true },
+        { word: 'tape', image: '📼', miniature: 'roll of tape', isNoun: true },
         { word: 'wave', image: '🌊', miniature: 'wave picture card', isNoun: true },
-        { word: 'cage', image: '🦜', miniature: 'small toy cage', isNoun: true },
-      ],
-    },
-    {
-      id: 'i_e-words',
-      label: 'I_E Words',
-      description: 'i + silent e = long I',
-      words: [
-        { word: 'bike', image: '🚲', miniature: 'toy bicycle', isNoun: true },
-        { word: 'kite', image: '🪁', miniature: 'toy kite', isNoun: true },
-        { word: 'pine', image: '🌲', miniature: 'pine tree picture', isNoun: true },
-        { word: 'line', image: '➖', miniature: 'line drawing picture', isNoun: true },
-        { word: 'ride', image: '🚴', miniature: 'riding figure', isNoun: false },
-        { word: 'hide', image: '🫣', miniature: 'hiding picture', isNoun: false },
-        { word: 'time', image: '⏰', miniature: 'toy clock', isNoun: true },
-        { word: 'mine', image: '🏔️', miniature: 'mining picture card', isNoun: true },
+        { word: 'bite', image: '🍎', miniature: 'bitten apple', isNoun: true },
         { word: 'five', image: '5️⃣', miniature: 'number 5 card', isNoun: true },
-        { word: 'hive', image: '🧺', miniature: 'bee hive picture', isNoun: true },
-      ],
-    },
-    {
-      id: 'o_e-words',
-      label: 'O_E Words',
-      description: 'o + silent e = long O',
-      words: [
-        { word: 'bone', image: '🦴', miniature: 'toy bone', isNoun: true },
-        { word: 'home', image: '🏡', miniature: 'toy house', isNoun: true },
-        { word: 'cone', image: '🍦', miniature: 'ice cream cone picture', isNoun: true },
+        { word: 'hide', image: '🙈', miniature: 'hiding monkey card', isNoun: false },
+        { word: 'kite', image: '🪁', miniature: 'toy kite', isNoun: true },
+        { word: 'line', image: '📏', miniature: 'straight line card', isNoun: true },
+        { word: 'mine', image: '⛏️', miniature: 'mine cart card', isNoun: true },
+        { word: 'pine', image: '🌲', miniature: 'pine cone', isNoun: true },
+        { word: 'ride', image: '🚲', miniature: 'toy bicycle', isNoun: false },
+        { word: 'time', image: '⏰', miniature: 'small clock', isNoun: true },
+        { word: 'bone', image: '🦴', miniature: 'dog bone', isNoun: true },
+        { word: 'cone', image: '🍦', miniature: 'ice cream cone', isNoun: true },
+        { word: 'home', image: '🏠', miniature: 'dollhouse', isNoun: true },
+        { word: 'hope', image: '🌈', miniature: 'rainbow card', isNoun: true },
+        { word: 'nose', image: '👃', miniature: 'nose card', isNoun: true },
+        { word: 'note', image: '📝', miniature: 'sticky note', isNoun: true },
         { word: 'rope', image: '🪢', miniature: 'small rope', isNoun: true },
-        { word: 'nose', image: '👃', miniature: 'nose picture card', isNoun: true },
-        { word: 'hole', image: '🕳️', miniature: 'hole picture card', isNoun: true },
-        { word: 'mole', image: '🦡', miniature: 'mole animal picture', isNoun: true },
-        { word: 'rose', image: '🌹', miniature: 'plastic rose flower', isNoun: true },
-        { word: 'note', image: '🎼', miniature: 'musical note card', isNoun: true },
-        { word: 'tone', image: '🔔', miniature: 'tone/sound picture', isNoun: true },
+        { word: 'rose', image: '🌹', miniature: 'plastic rose', isNoun: true },
+        { word: 'cube', image: '🧊', miniature: 'wooden cube', isNoun: true },
+        { word: 'cute', image: '🥰', miniature: 'cute face card', isNoun: false },
+        { word: 'huge', image: '🐘', miniature: 'elephant figurine', isNoun: false },
+        { word: 'mule', image: '🫏', miniature: 'mule figurine', isNoun: true },
+        { word: 'tune', image: '🎵', miniature: 'music note card', isNoun: true },
+        { word: 'tube', image: '🧪', miniature: 'test tube', isNoun: true },
+      ],
+    },    {
+      label: 'ai / ay vowel teams',
+      description: 'The long /ā/ sound spelled "ai" (middle) or "ay" (end)',
+      words: [
+        { word: 'rain', image: '🌧️', miniature: 'rain cloud card', isNoun: true },
+        { word: 'tail', image: '🐕', miniature: 'dog tail card', isNoun: true },
+        { word: 'mail', image: '📬', miniature: 'letter', isNoun: true },
+        { word: 'nail', image: '🔨', miniature: 'small nail', isNoun: true },
+        { word: 'pail', image: '🪣', miniature: 'small pail', isNoun: true },
+        { word: 'sail', image: '⛵', miniature: 'toy sailboat', isNoun: true },
+        { word: 'wait', image: '⏳', miniature: 'hourglass', isNoun: false },
+        { word: 'pain', image: '🤕', miniature: 'bandage card', isNoun: true },
+        { word: 'bait', image: '🪱', miniature: 'worm card', isNoun: true },
+        { word: 'day', image: '☀️', miniature: 'sun card', isNoun: true },
+        { word: 'bay', image: '🏖️', miniature: 'bay picture card', isNoun: true },
+        { word: 'hay', image: '🌾', miniature: 'hay bundle', isNoun: true },
+        { word: 'jay', image: '🐦', miniature: 'blue jay figurine', isNoun: true },
+        { word: 'lay', image: '🪹', miniature: 'laying hen card', isNoun: false },
+        { word: 'pay', image: '💰', miniature: 'coin', isNoun: false },
+        { word: 'play', image: '🎮', miniature: 'toy block', isNoun: false },
+        { word: 'ray', image: '☀️', miniature: 'sun ray card', isNoun: true },
+        { word: 'say', image: '🗣️', miniature: 'talking card', isNoun: false },
+        { word: 'stay', image: '🛑', miniature: 'stop sign', isNoun: false },
+        { word: 'way', image: '🛤️', miniature: 'path card', isNoun: true },
       ],
     },
     {
-      id: 'u_e-words',
-      label: 'U_E Words',
-      description: 'u + silent e = long U',
+      label: 'ee / ea vowel teams',
+      description: 'The long /ē/ sound spelled "ee" or "ea"',
       words: [
-        { word: 'cube', image: '🧊', miniature: 'ice cube or plastic cube', isNoun: true },
-        { word: 'tube', image: '🔬', miniature: 'test tube picture', isNoun: true },
-        { word: 'flute', image: '🎺', miniature: 'toy flute', isNoun: true },
-        { word: 'mule', image: '🫏', miniature: 'mule animal figurine', isNoun: true },
-        { word: 'cute', image: '🥰', miniature: 'cute animal picture', isNoun: false },
-        { word: 'rule', image: '📐', miniature: 'rule card picture', isNoun: true },
-        { word: 'tune', image: '📻', miniature: 'musical note card', isNoun: true },
-        { word: 'dune', image: '🐫', miniature: 'sand dune picture', isNoun: true },
-        { word: 'prune', image: '🫒', miniature: 'prune picture or toy', isNoun: true },
-        { word: 'fuse', image: '🔋', miniature: 'electrical fuse picture', isNoun: true },
+        { word: 'bee', image: '🐝', miniature: 'bee figurine', isNoun: true },
+        { word: 'fee', image: '💲', miniature: 'price tag', isNoun: true },
+        { word: 'free', image: '🕊️', miniature: 'dove figurine', isNoun: false },
+        { word: 'seed', image: '🌱', miniature: 'seed packet', isNoun: true },
+        { word: 'feed', image: '🍼', miniature: 'feeding bottle', isNoun: false },
+        { word: 'feet', image: '🦶', miniature: 'foot prints card', isNoun: true },
+        { word: 'keep', image: '🏰', miniature: 'castle keep card', isNoun: false },
+        { word: 'peel', image: '🍌', miniature: 'banana peel', isNoun: true },
+        { word: 'seen', image: '👁️', miniature: 'eye card', isNoun: false },
+        { word: 'tree', image: '🌳', miniature: 'tree figurine', isNoun: true },
+        { word: 'week', image: '📅', miniature: 'calendar card', isNoun: true },
+        { word: 'bead', image: '📿', miniature: 'bead', isNoun: true },
+        { word: 'bean', image: '🫘', miniature: 'dried bean', isNoun: true },
+        { word: 'beat', image: '🥁', miniature: 'drum', isNoun: false },
+        { word: 'heat', image: '🔥', miniature: 'fire card', isNoun: true },
+        { word: 'leaf', image: '🍃', miniature: 'real leaf', isNoun: true },
+        { word: 'meal', image: '🍽️', miniature: 'plate and cutlery', isNoun: true },
+        { word: 'meat', image: '🥩', miniature: 'meat picture card', isNoun: true },
+        { word: 'read', image: '📖', miniature: 'small book', isNoun: false },
+        { word: 'seal', image: '🦭', miniature: 'seal figurine', isNoun: true },
+        { word: 'team', image: '👥', miniature: 'team picture card', isNoun: true },
+        { word: 'peak', image: '⛰️', miniature: 'mountain card', isNoun: true },
+      ],
+    },    {
+      label: 'oa / ow (long o) vowel teams',
+      description: 'The long /ō/ sound spelled "oa" or "ow"',
+      words: [
+        { word: 'boat', image: '⛵', miniature: 'toy boat', isNoun: true },
+        { word: 'coat', image: '🧥', miniature: 'doll coat', isNoun: true },
+        { word: 'goat', image: '🐐', miniature: 'goat figurine', isNoun: true },
+        { word: 'load', image: '📦', miniature: 'loaded box', isNoun: true },
+        { word: 'road', image: '🛣️', miniature: 'road picture card', isNoun: true },
+        { word: 'soap', image: '🧼', miniature: 'bar of soap', isNoun: true },
+        { word: 'toad', image: '🐸', miniature: 'toad figurine', isNoun: true },
+        { word: 'oak', image: '🌳', miniature: 'oak leaf', isNoun: true },
+        { word: 'bow', image: '🎀', miniature: 'ribbon bow', isNoun: true },
+        { word: 'flow', image: '🌊', miniature: 'water flow card', isNoun: true },
+        { word: 'grow', image: '🌱', miniature: 'growing plant card', isNoun: false },
+        { word: 'low', image: '⬇️', miniature: 'down arrow card', isNoun: false },
+        { word: 'mow', image: '🌿', miniature: 'grass card', isNoun: false },
+        { word: 'row', image: '🚣', miniature: 'rowing boat card', isNoun: true },
+        { word: 'show', image: '🎭', miniature: 'theater mask', isNoun: true },
+        { word: 'slow', image: '🐢', miniature: 'turtle figurine', isNoun: false },
+        { word: 'snow', image: '❄️', miniature: 'snowflake card', isNoun: true },
+      ],
+    },
+    {
+      label: 'oo vowel team',
+      description: 'The /oo/ sounds — long (as in "moon") and short (as in "book")',
+      words: [
+        { word: 'moon', image: '🌙', miniature: 'moon figure', isNoun: true },
+        { word: 'food', image: '🍕', miniature: 'food picture card', isNoun: true },
+        { word: 'cool', image: '😎', miniature: 'sunglasses', isNoun: false },
+        { word: 'pool', image: '🏊', miniature: 'pool picture card', isNoun: true },
+        { word: 'room', image: '🚪', miniature: 'room picture card', isNoun: true },
+        { word: 'roof', image: '🏠', miniature: 'house roof card', isNoun: true },
+        { word: 'soon', image: '⏰', miniature: 'clock card', isNoun: false },
+        { word: 'tool', image: '🔧', miniature: 'small wrench', isNoun: true },
+        { word: 'zoo', image: '🦁', miniature: 'zoo animal figurine', isNoun: true },
+        { word: 'book', image: '📚', miniature: 'small book', isNoun: true },
+        { word: 'cook', image: '👨‍🍳', miniature: 'chef hat', isNoun: true },
+        { word: 'foot', image: '🦶', miniature: 'foot card', isNoun: true },
+        { word: 'good', image: '👍', miniature: 'thumbs up card', isNoun: false },
+        { word: 'hook', image: '🪝', miniature: 'small hook', isNoun: true },
+        { word: 'look', image: '👀', miniature: 'eyes card', isNoun: false },
+        { word: 'wood', image: '🪵', miniature: 'wood block', isNoun: true },
+        { word: 'wool', image: '🐑', miniature: 'wool ball', isNoun: true },
+      ],
+    },    {
+      label: 'ou / ow (diphthong) vowel teams',
+      description: 'The /ou/ diphthong sound (as in "out" and "cow")',
+      words: [
+        { word: 'out', image: '🚪', miniature: 'exit sign card', isNoun: false },
+        { word: 'loud', image: '📢', miniature: 'megaphone', isNoun: false },
+        { word: 'cloud', image: '☁️', miniature: 'cloud card', isNoun: true },
+        { word: 'found', image: '🔍', miniature: 'magnifying glass', isNoun: false },
+        { word: 'house', image: '🏠', miniature: 'dollhouse', isNoun: true },
+        { word: 'mouse', image: '🐭', miniature: 'mouse figurine', isNoun: true },
+        { word: 'mouth', image: '👄', miniature: 'mouth card', isNoun: true },
+        { word: 'round', image: '⭕', miniature: 'round disc', isNoun: false },
+        { word: 'shout', image: '📣', miniature: 'horn', isNoun: false },
+        { word: 'sound', image: '🔊', miniature: 'speaker card', isNoun: true },
+        { word: 'cow', image: '🐄', miniature: 'cow figurine', isNoun: true },
+        { word: 'howl', image: '🐺', miniature: 'wolf figurine', isNoun: false },
+        { word: 'brown', image: '🟤', miniature: 'brown card', isNoun: false },
+        { word: 'clown', image: '🤡', miniature: 'clown figurine', isNoun: true },
+        { word: 'crown', image: '👑', miniature: 'small crown', isNoun: true },
+        { word: 'down', image: '⬇️', miniature: 'down arrow card', isNoun: false },
+        { word: 'frown', image: '😞', miniature: 'frowning face card', isNoun: true },
+        { word: 'gown', image: '👗', miniature: 'doll gown', isNoun: true },
+        { word: 'how', image: '❓', miniature: 'question card', isNoun: false },
+        { word: 'now', image: '⏰', miniature: 'clock card', isNoun: false },
+        { word: 'owl', image: '🦉', miniature: 'owl figurine', isNoun: true },
+        { word: 'town', image: '🏘️', miniature: 'town picture card', isNoun: true },
+        { word: 'wow', image: '😲', miniature: 'amazed face card', isNoun: false },
+      ],
+    },
+    {
+      label: 'oi / oy vowel teams',
+      description: 'The /oi/ diphthong sound (as in "oil" and "boy")',
+      words: [
+        { word: 'boil', image: '🫕', miniature: 'pot card', isNoun: false },
+        { word: 'coin', image: '🪙', miniature: 'coin', isNoun: true },
+        { word: 'foil', image: '🫙', miniature: 'foil sheet', isNoun: true },
+        { word: 'join', image: '🤝', miniature: 'handshake card', isNoun: false },
+        { word: 'oil', image: '🛢️', miniature: 'oil bottle', isNoun: true },
+        { word: 'soil', image: '🌱', miniature: 'pot of soil', isNoun: true },
+        { word: 'coil', image: '🔄', miniature: 'coiled wire', isNoun: true },
+        { word: 'point', image: '👆', miniature: 'pointing finger card', isNoun: true },
+        { word: 'boy', image: '👦', miniature: 'boy figurine', isNoun: true },
+        { word: 'joy', image: '😊', miniature: 'happy face card', isNoun: true },
+        { word: 'toy', image: '🧸', miniature: 'small toy', isNoun: true },
+        { word: 'enjoy', image: '🎉', miniature: 'party hat', isNoun: false },
+        { word: 'royal', image: '👑', miniature: 'crown card', isNoun: false },
+      ],
+    },    {
+      label: 'ue / ew / au / aw vowel teams',
+      description: 'Less common vowel teams: /ue/ and /ew/ (long u), /au/ and /aw/ (as in "paw")',
+      words: [
+        { word: 'blue', image: '🔵', miniature: 'blue card', isNoun: false },
+        { word: 'clue', image: '🔍', miniature: 'magnifying glass', isNoun: true },
+        { word: 'glue', image: '🧴', miniature: 'glue stick', isNoun: true },
+        { word: 'true', image: '✅', miniature: 'check mark card', isNoun: false },
+        { word: 'blew', image: '🌬️', miniature: 'wind card', isNoun: false },
+        { word: 'chew', image: '🦷', miniature: 'teeth card', isNoun: false },
+        { word: 'flew', image: '🦅', miniature: 'bird figurine', isNoun: false },
+        { word: 'grew', image: '🌱', miniature: 'plant card', isNoun: false },
+        { word: 'knew', image: '💡', miniature: 'lightbulb card', isNoun: false },
+        { word: 'new', image: '🆕', miniature: 'new tag', isNoun: false },
+        { word: 'drew', image: '✏️', miniature: 'pencil', isNoun: false },
+        { word: 'stew', image: '🍲', miniature: 'pot of stew card', isNoun: true },
+        { word: 'claw', image: '🦀', miniature: 'crab claw', isNoun: true },
+        { word: 'draw', image: '✏️', miniature: 'pencil and paper', isNoun: false },
+        { word: 'jaw', image: '🦴', miniature: 'jaw bone card', isNoun: true },
+        { word: 'law', image: '⚖️', miniature: 'scales of justice', isNoun: true },
+        { word: 'paw', image: '🐾', miniature: 'paw print card', isNoun: true },
+        { word: 'raw', image: '🥩', miniature: 'raw meat card', isNoun: false },
+        { word: 'saw', image: '🪚', miniature: 'small saw', isNoun: true },
+        { word: 'straw', image: '🥤', miniature: 'drinking straw', isNoun: true },
+        { word: 'yawn', image: '🥱', miniature: 'yawning face card', isNoun: true },
+        { word: 'lawn', image: '🌿', miniature: 'grass patch', isNoun: true },
+        { word: 'dawn', image: '🌅', miniature: 'sunrise card', isNoun: true },
+        { word: 'fawn', image: '🦌', miniature: 'baby deer figurine', isNoun: true },
       ],
     },
   ],
 };
-
-// =====================================================================
-// GREEN SERIES 3: R-CONTROLLED VOWELS (AR, OR, ER, IR, UR)
-// =====================================================================
 
 export const GREEN_3: PhonicsPhase = {
   id: 'green3',
-  name: 'Green 3 — R-Controlled Vowels',
-  color: '#166534', // green-800
-  description: 'R after a vowel changes its sound: ar, or, er, ir, ur.',
+  name: 'Green 3 — R-Controlled & Advanced Phonograms',
+  description: 'R-controlled vowels (ar, or, er, ir, ur), "igh" phonogram, silent letter pairs (kn, wr), soft c and soft g.',
+  color: '#15803D',
   groups: [
     {
-      id: 'ar-words',
-      label: 'AR Words',
-      description: '/ar/ sound — "ah" modified by R',
+      label: 'ar words (bossy r)',
+      description: 'The /ar/ sound — "ar" as in "car"',
       words: [
         { word: 'car', image: '🚗', miniature: 'toy car', isNoun: true },
-        { word: 'cart', image: '🛒', miniature: 'toy cart', isNoun: true },
+        { word: 'bar', image: '🍫', miniature: 'chocolate bar', isNoun: true },
+        { word: 'far', image: '🔭', miniature: 'telescope card', isNoun: false },
         { word: 'jar', image: '🫙', miniature: 'small jar', isNoun: true },
-        { word: 'bar', image: '🍫', miniature: 'chocolate bar picture', isNoun: true },
-        { word: 'farm', image: '🚜', miniature: 'farm picture card', isNoun: true },
-        { word: 'barn', image: '🐮', miniature: 'barn picture card', isNoun: true },
-        { word: 'card', image: '🎴', miniature: 'playing card', isNoun: true },
-        { word: 'park', image: '🛝', miniature: 'park picture card', isNoun: true },
+        { word: 'star', image: '⭐', miniature: 'star card', isNoun: true },
         { word: 'arm', image: '💪', miniature: 'arm picture card', isNoun: true },
-        { word: 'art', image: '🖼️', miniature: 'art picture card', isNoun: true },
+        { word: 'barn', image: '🏚️', miniature: 'barn figurine', isNoun: true },
+        { word: 'cart', image: '🛒', miniature: 'shopping cart', isNoun: true },
+        { word: 'card', image: '🃏', miniature: 'playing card', isNoun: true },
+        { word: 'dark', image: '🌑', miniature: 'dark circle card', isNoun: false },
+        { word: 'farm', image: '🌾', miniature: 'farm picture card', isNoun: true },
+        { word: 'hard', image: '🪨', miniature: 'hard rock', isNoun: false },
+        { word: 'harp', image: '🎵', miniature: 'harp card', isNoun: true },
+        { word: 'mark', image: '✏️', miniature: 'pencil mark card', isNoun: true },
+        { word: 'park', image: '🌳', miniature: 'park picture card', isNoun: true },
+        { word: 'part', image: '🧩', miniature: 'puzzle piece', isNoun: true },
+        { word: 'yard', image: '🏡', miniature: 'house yard card', isNoun: true },
+        { word: 'shark', image: '🦈', miniature: 'shark figurine', isNoun: true },
+      ],
+    },    {
+      label: 'or words (bossy r)',
+      description: 'The /or/ sound — "or" as in "fork"',
+      words: [
+        { word: 'for', image: '🎁', miniature: 'gift card', isNoun: false },
+        { word: 'or', image: '🔀', miniature: 'choice card', isNoun: false },
+        { word: 'born', image: '👶', miniature: 'baby figurine', isNoun: false },
+        { word: 'corn', image: '🌽', miniature: 'corn cob', isNoun: true },
+        { word: 'cork', image: '🍾', miniature: 'cork', isNoun: true },
+        { word: 'fork', image: '🍴', miniature: 'small fork', isNoun: true },
+        { word: 'form', image: '📋', miniature: 'form paper', isNoun: true },
+        { word: 'horn', image: '📯', miniature: 'small horn', isNoun: true },
+        { word: 'lord', image: '👑', miniature: 'crown card', isNoun: true },
+        { word: 'port', image: '⚓', miniature: 'anchor', isNoun: true },
+        { word: 'sort', image: '📊', miniature: 'sorting card', isNoun: false },
+        { word: 'torn', image: '📄', miniature: 'torn paper', isNoun: false },
+        { word: 'worn', image: '👟', miniature: 'old shoe', isNoun: false },
+        { word: 'storm', image: '⛈️', miniature: 'storm cloud card', isNoun: true },
+        { word: 'sport', image: '⚽', miniature: 'ball', isNoun: true },
+        { word: 'short', image: '📏', miniature: 'short ruler', isNoun: false },
       ],
     },
     {
-      id: 'or-words',
-      label: 'OR Words',
-      description: '/or/ sound — "oh" modified by R',
+      label: 'er / ir / ur words (bossy r)',
+      description: 'The /er/ sound — spelled "er", "ir", or "ur" (all sound the same)',
       words: [
-        { word: 'fork', image: '🍴', miniature: 'toy fork or utensil', isNoun: true },
-        { word: 'corn', image: '🌽', miniature: 'corn cob or picture', isNoun: true },
-        { word: 'horn', image: '📯', miniature: 'toy horn', isNoun: true },
-        { word: 'cord', image: '🔗', miniature: 'small cord or string', isNoun: true },
-        { word: 'port', image: '⚓', miniature: 'port/harbor picture', isNoun: true },
-        { word: 'sort', image: '📊', miniature: 'sorting picture card', isNoun: false },
-        { word: 'fort', image: '🏰', miniature: 'toy fort', isNoun: true },
-        { word: 'born', image: '👶', miniature: 'baby picture card', isNoun: false },
-        { word: 'torn', image: '🗞️', miniature: 'torn paper picture', isNoun: false },
-        { word: 'cork', image: '🍾', miniature: 'bottle cork', isNoun: true },
-      ],
-    },
-    {
-      id: 'er-ir-ur-words',
-      label: 'ER, IR, UR Words',
-      description: '/er/ sound — three spellings',
-      words: [
-        { word: 'fern', image: '🍃', miniature: 'fern plant picture', isNoun: true },
-        { word: 'herd', image: '🐃', miniature: 'herd of animals picture', isNoun: true },
-        { word: 'bird', image: '🐦', miniature: 'plastic bird figurine', isNoun: true },
+        { word: 'her', image: '👩', miniature: 'woman figurine', isNoun: false },
+        { word: 'fern', image: '🌿', miniature: 'fern leaf', isNoun: true },
+        { word: 'herd', image: '🐄', miniature: 'cow group card', isNoun: true },
+        { word: 'term', image: '📅', miniature: 'calendar card', isNoun: true },
+        { word: 'verb', image: '📝', miniature: 'action word card', isNoun: true },
+        { word: 'bird', image: '🐦', miniature: 'bird figurine', isNoun: true },
+        { word: 'dirt', image: '🟤', miniature: 'pot of dirt', isNoun: true },
+        { word: 'firm', image: '🏢', miniature: 'building card', isNoun: true },
         { word: 'girl', image: '👧', miniature: 'girl figurine', isNoun: true },
-        { word: 'stir', image: '🍵', miniature: 'stirring picture card', isNoun: false },
-        { word: 'fur', image: '🐈', miniature: 'fur material sample', isNoun: true },
-        { word: 'burn', image: '🧯', miniature: 'fire/flame picture', isNoun: false },
-        { word: 'curl', image: '➰', miniature: 'curly hair picture', isNoun: true },
-        { word: 'turn', image: '↩️', miniature: 'turning arrow picture', isNoun: false },
-        { word: 'surf', image: '🏄', miniature: 'surfing picture card', isNoun: false },
+        { word: 'sir', image: '🎩', miniature: 'top hat', isNoun: true },
+        { word: 'stir', image: '🥄', miniature: 'stirring spoon', isNoun: false },
+        { word: 'burn', image: '🔥', miniature: 'fire card', isNoun: false },
+        { word: 'curl', image: '🌀', miniature: 'curl card', isNoun: true },
+        { word: 'fur', image: '🐻', miniature: 'fur fabric swatch', isNoun: true },
+        { word: 'hurt', image: '🤕', miniature: 'bandage card', isNoun: false },
+        { word: 'surf', image: '🏄', miniature: 'surfer card', isNoun: false },
+        { word: 'turn', image: '↩️', miniature: 'turn arrow card', isNoun: false },
+        { word: 'purse', image: '👛', miniature: 'small purse', isNoun: true },
+        { word: 'nurse', image: '👩‍⚕️', miniature: 'nurse figurine', isNoun: true },
+      ],
+    },    {
+      label: 'igh phonogram',
+      description: 'The /ī/ sound spelled "igh" (the "gh" is silent)',
+      words: [
+        { word: 'high', image: '⬆️', miniature: 'tall tower card', isNoun: false },
+        { word: 'light', image: '💡', miniature: 'lightbulb', isNoun: true },
+        { word: 'might', image: '💪', miniature: 'muscle card', isNoun: true },
+        { word: 'night', image: '🌙', miniature: 'moon card', isNoun: true },
+        { word: 'right', image: '➡️', miniature: 'right arrow card', isNoun: false },
+        { word: 'sight', image: '👁️', miniature: 'eye card', isNoun: true },
+        { word: 'tight', image: '🤝', miniature: 'tight grip card', isNoun: false },
+        { word: 'bright', image: '☀️', miniature: 'sun card', isNoun: false },
+        { word: 'flight', image: '✈️', miniature: 'toy airplane', isNoun: true },
+        { word: 'fright', image: '😱', miniature: 'scared face card', isNoun: true },
+        { word: 'knight', image: '🗡️', miniature: 'knight figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'Silent letter pairs (kn, wr)',
+      description: 'Words where the first letter is silent: kn- and wr-',
+      words: [
+        { word: 'knit', image: '🧶', miniature: 'knitting needles', isNoun: false },
+        { word: 'knob', image: '🚪', miniature: 'door knob', isNoun: true },
+        { word: 'knock', image: '👊', miniature: 'knocking fist card', isNoun: false },
+        { word: 'knot', image: '🪢', miniature: 'knotted rope', isNoun: true },
+        { word: 'know', image: '💡', miniature: 'lightbulb card', isNoun: false },
+        { word: 'knee', image: '🦵', miniature: 'knee card', isNoun: true },
+        { word: 'knife', image: '🔪', miniature: 'butter knife', isNoun: true },
+        { word: 'wrap', image: '🎁', miniature: 'gift wrap', isNoun: false },
+        { word: 'wren', image: '🐦', miniature: 'wren bird card', isNoun: true },
+        { word: 'wrist', image: '⌚', miniature: 'wristwatch', isNoun: true },
+        { word: 'write', image: '✏️', miniature: 'pencil', isNoun: false },
+        { word: 'wrong', image: '❌', miniature: 'X mark card', isNoun: false },
+      ],
+    },
+    {
+      label: 'Soft c and soft g',
+      description: 'C says /s/ before e, i, y. G says /j/ before e, i, y.',
+      words: [
+        { word: 'cell', image: '🔬', miniature: 'cell picture card', isNoun: true },
+        { word: 'cent', image: '🪙', miniature: 'penny', isNoun: true },
+        { word: 'city', image: '🏙️', miniature: 'city picture card', isNoun: true },
+        { word: 'face', image: '😊', miniature: 'face card', isNoun: true },
+        { word: 'ice', image: '🧊', miniature: 'ice cube', isNoun: true },
+        { word: 'lace', image: '🧵', miniature: 'lace ribbon', isNoun: true },
+        { word: 'mice', image: '🐭', miniature: 'mouse figurines', isNoun: true },
+        { word: 'nice', image: '😊', miniature: 'smiley card', isNoun: false },
+        { word: 'pace', image: '🚶', miniature: 'walking figure', isNoun: true },
+        { word: 'race', image: '🏁', miniature: 'finish flag', isNoun: true },
+        { word: 'rice', image: '🍚', miniature: 'rice grains', isNoun: true },
+        { word: 'age', image: '🎂', miniature: 'birthday cake card', isNoun: true },
+        { word: 'cage', image: '🐦', miniature: 'bird cage card', isNoun: true },
+        { word: 'gem', image: '💎', miniature: 'gem stone', isNoun: true },
+        { word: 'germ', image: '🦠', miniature: 'germ card', isNoun: true },
+        { word: 'giant', image: '🧌', miniature: 'giant figurine', isNoun: true },
+        { word: 'giraffe', image: '🦒', miniature: 'giraffe figurine', isNoun: true },
+        { word: 'page', image: '📄', miniature: 'book page card', isNoun: true },
+        { word: 'stage', image: '🎭', miniature: 'stage card', isNoun: true },
       ],
     },
   ],
 };
 
-// =====================================================================
-// ALL PHASES IN ORDER
-// =====================================================================
+// ============================================================
+// ALL_PHASES — master array in progression order
+// ============================================================
 
 export const ALL_PHASES: PhonicsPhase[] = [
   PINK_1,
@@ -986,369 +1258,210 @@ export const ALL_PHASES: PhonicsPhase[] = [
   GREEN_3,
 ];
 
-// =====================================================================
-// COMMAND SENTENCES & STORIES
-// =====================================================================
-
-export interface CommandSentence {
-  text: string;
-  phase: string;
-  level: number;
-}
+// ============================================================
+// COMMAND SENTENCES — Action sentences using phonics words
+// ============================================================
 
 export const COMMAND_SENTENCES: CommandSentence[] = [
-  // PINK 1
-  { text: 'Get the cat.', phase: 'pink1', level: 1 },
-  { text: 'Get the mat.', phase: 'pink1', level: 1 },
-  { text: 'Get the can.', phase: 'pink1', level: 1 },
-  { text: 'Get the net.', phase: 'pink1', level: 1 },
-  { text: 'Put the cat on the mat.', phase: 'pink1', level: 2 },
-  { text: 'Put the net in the can.', phase: 'pink1', level: 2 },
-
-  // PINK 2
-  { text: 'Get the bat.', phase: 'pink2', level: 1 },
-  { text: 'Get the hat.', phase: 'pink2', level: 1 },
-  { text: 'Get the pig.', phase: 'pink2', level: 1 },
-  { text: 'Get the pen.', phase: 'pink2', level: 1 },
-  { text: 'Get the dog.', phase: 'pink2', level: 1 },
-  { text: 'Get the sun.', phase: 'pink2', level: 1 },
-  { text: 'Put the bat on the mat.', phase: 'pink2', level: 2 },
-  { text: 'Put the pig in the pen.', phase: 'pink2', level: 2 },
-  { text: 'Put the dog on the rug.', phase: 'pink2', level: 2 },
-  { text: 'Put the hat in the box.', phase: 'pink2', level: 2 },
-  { text: 'Get the hat, the bat, and the cat.', phase: 'pink2', level: 3 },
-  { text: 'Put the hat on the cat and the bat on the dog.', phase: 'pink2', level: 3 },
-
-  // BLUE 1
-  { text: 'Get the ship.', phase: 'blue1', level: 1 },
-  { text: 'Get the fish.', phase: 'blue1', level: 1 },
-  { text: 'Get the chin.', phase: 'blue1', level: 1 },
-  { text: 'Get the dish.', phase: 'blue1', level: 1 },
-  { text: 'Put the fish in the dish.', phase: 'blue1', level: 2 },
-  { text: 'Put the ship on the water.', phase: 'blue1', level: 2 },
-  { text: 'Get the ship and the fish.', phase: 'blue1', level: 3 },
-
-  // BLUE 2
-  { text: 'Get the block.', phase: 'blue2', level: 1 },
-  { text: 'Get the flag.', phase: 'blue2', level: 1 },
-  { text: 'Get the crab.', phase: 'blue2', level: 1 },
-  { text: 'Get the drum.', phase: 'blue2', level: 1 },
-  { text: 'Put the block on the table.', phase: 'blue2', level: 2 },
-  { text: 'Put the crab on the sand.', phase: 'blue2', level: 2 },
-  { text: 'Put the flag by the clock.', phase: 'blue2', level: 2 },
-  { text: 'Get the block, the crab, and the flag.', phase: 'blue2', level: 3 },
-  { text: 'Get the frog and put it by the drum.', phase: 'blue2', level: 3 },
-
-  // BLUE 3
-  { text: 'Get the sand.', phase: 'blue3', level: 1 },
-  { text: 'Get the ring.', phase: 'blue3', level: 1 },
-  { text: 'Get the nest.', phase: 'blue3', level: 1 },
-  { text: 'Put the sand in the bucket.', phase: 'blue3', level: 2 },
-  { text: 'Put the ring on the shelf.', phase: 'blue3', level: 2 },
-  { text: 'Put the ring on the nest.', phase: 'blue3', level: 2 },
-  { text: 'Get the sand, the ring, and the nest.', phase: 'blue3', level: 3 },
-
-  // GREEN 1
-  { text: 'Get the boat.', phase: 'green1', level: 1 },
-  { text: 'Get the rain.', phase: 'green1', level: 1 },
-  { text: 'Get the bee.', phase: 'green1', level: 1 },
-  { text: 'Get the moon.', phase: 'green1', level: 1 },
-  { text: 'Put the boat on the water.', phase: 'green1', level: 2 },
-  { text: 'Put the bee in the tree.', phase: 'green1', level: 2 },
-  { text: 'Put the goat by the road.', phase: 'green1', level: 2 },
-  { text: 'Get the rain and the snow.', phase: 'green1', level: 3 },
-  { text: 'The goat is in the boat by the road.', phase: 'green1', level: 3 },
-
-  // GREEN 2
-  { text: 'Get the cake.', phase: 'green2', level: 1 },
-  { text: 'Get the bike.', phase: 'green2', level: 1 },
-  { text: 'Get the bone.', phase: 'green2', level: 1 },
-  { text: 'Get the cube.', phase: 'green2', level: 1 },
-  { text: 'Get the kite.', phase: 'green2', level: 1 },
-  { text: 'Get the rose.', phase: 'green2', level: 1 },
-  { text: 'Put the cake on the plate.', phase: 'green2', level: 2 },
-  { text: 'Put the kite on the line.', phase: 'green2', level: 2 },
-  { text: 'Put the cone on the bone.', phase: 'green2', level: 2 },
-  { text: 'Put the cube in the tube.', phase: 'green2', level: 2 },
-  { text: 'Put the rose in the vase.', phase: 'green2', level: 2 },
-  { text: 'Ride the bike to the gate.', phase: 'green2', level: 2 },
-  { text: 'Get the cake, hide it in the cave, and ride the bike home.', phase: 'green2', level: 3 },
-  { text: 'Get the rope and the bone, and put them in the hole.', phase: 'green2', level: 3 },
-
-  // GREEN 3
-  { text: 'Get the car.', phase: 'green3', level: 1 },
-  { text: 'Get the fork.', phase: 'green3', level: 1 },
-  { text: 'Get the fern.', phase: 'green3', level: 1 },
-  { text: 'Get the jar.', phase: 'green3', level: 1 },
-  { text: 'Get the cork.', phase: 'green3', level: 1 },
-  { text: 'Get the card.', phase: 'green3', level: 1 },
-  { text: 'Put the car in the park.', phase: 'green3', level: 2 },
-  { text: 'Put the fork on the cord.', phase: 'green3', level: 2 },
-  { text: 'Put the jar in the barn.', phase: 'green3', level: 2 },
-  { text: 'Put the bird on the fern.', phase: 'green3', level: 2 },
-  { text: 'Put the card on the art.', phase: 'green3', level: 2 },
-  { text: 'Turn the curl with the fur.', phase: 'green3', level: 2 },
-  { text: 'Get the fork and the corn, and put them on the cart.', phase: 'green3', level: 3 },
-  { text: 'Get the car, park it by the barn, and sort the cards.', phase: 'green3', level: 3 },
+  // Pink level commands
+  { sentence: 'Sit on the mat.', phonicsWords: ['sit', 'mat'], phase: 'pink1' },
+  { sentence: 'Get the red cup.', phonicsWords: ['get', 'red', 'cup'], phase: 'pink2' },
+  { sentence: 'Put the pen in the box.', phonicsWords: ['put', 'pen', 'box'], phase: 'pink2' },
+  { sentence: 'Run to the big rug.', phonicsWords: ['run', 'big', 'rug'], phase: 'pink2' },
+  { sentence: 'Pat the cat on the bed.', phonicsWords: ['pat', 'cat', 'bed'], phase: 'pink1' },
+  { sentence: 'Dip the mop in the tub.', phonicsWords: ['dip', 'mop', 'tub'], phase: 'pink2' },
+  { sentence: 'Set the cup on the lid.', phonicsWords: ['set', 'cup', 'lid'], phase: 'pink2' },
+  { sentence: 'Hop to the top of the mat.', phonicsWords: ['hop', 'top', 'mat'], phase: 'pink2' },
+  { sentence: 'Tap the tin with a pen.', phonicsWords: ['tap', 'tin', 'pen'], phase: 'pink1' },
+  // Blue level commands
+  { sentence: 'Clap and then stop.', phonicsWords: ['clap', 'stop'], phase: 'blue1' },
+  { sentence: 'Grab the drum and tap it.', phonicsWords: ['grab', 'drum', 'tap'], phase: 'blue1' },
+  { sentence: 'Skip to the flag and stand.', phonicsWords: ['skip', 'flag', 'stand'], phase: 'blue1' },
+  { sentence: 'Step on the rug and jump.', phonicsWords: ['step', 'rug', 'jump'], phase: 'blue2' },
+  { sentence: 'Put the plug in the sink.', phonicsWords: ['plug', 'sink'], phase: 'blue3' },
+  { sentence: 'Pick the lock with the stick.', phonicsWords: ['pick', 'lock', 'stick'], phase: 'blue3' },
+  { sentence: 'Toss the ball and kick it back.', phonicsWords: ['toss', 'ball', 'kick', 'back'], phase: 'blue3' },
+  // Green level commands
+  { sentence: 'Push the ship to the dish.', phonicsWords: ['push', 'ship', 'dish'], phase: 'green1' },
+  { sentence: 'Chop the thin stick in half.', phonicsWords: ['chop', 'thin'], phase: 'green1' },
+  { sentence: 'Take the cake to the gate.', phonicsWords: ['take', 'cake', 'gate'], phase: 'green2' },
+  { sentence: 'Ride the bike down the line.', phonicsWords: ['ride', 'bike', 'line'], phase: 'green2' },
+  { sentence: 'Read the book by the tree.', phonicsWords: ['read', 'book', 'tree'], phase: 'green2' },
+  { sentence: 'Turn right at the bright light.', phonicsWords: ['turn', 'right', 'bright', 'light'], phase: 'green3' },
+  { sentence: 'Park the car near the barn.', phonicsWords: ['park', 'car', 'barn'], phase: 'green3' },
+  { sentence: 'Write your name on the page.', phonicsWords: ['write', 'name', 'page'], phase: 'green3' },
 ];
 
-export interface CommandSentenceTemplate {
-  pattern: string;
-  phase: string;
-  requiredWords: string[];
-}
+// ============================================================
+// COMMAND SENTENCE TEMPLATES — Templates for generating commands
+// ============================================================
 
 export const COMMAND_SENTENCE_TEMPLATES: CommandSentenceTemplate[] = [
-  { pattern: 'Get the {word}.', phase: 'pink2', requiredWords: [] },
-  { pattern: 'Put the {word} on the table.', phase: 'pink2', requiredWords: [] },
-  { pattern: 'Put the {word} in the box.', phase: 'pink2', requiredWords: [] },
-  { pattern: 'The {word} is big.', phase: 'pink2', requiredWords: [] },
-  { pattern: 'The {word} is in the box.', phase: 'blue1', requiredWords: [] },
-  { pattern: 'Get the {word} and put it on the shelf.', phase: 'blue2', requiredWords: [] },
-  { pattern: 'The {word} is on the table.', phase: 'green1', requiredWords: [] },
-  { pattern: 'The {word} is nice.', phase: 'green2', requiredWords: [] },
-  { pattern: 'I like the {word}.', phase: 'green2', requiredWords: [] },
-  { pattern: 'Can you see the {word}?', phase: 'green2', requiredWords: [] },
-  { pattern: 'The {word} is mine.', phase: 'green2', requiredWords: [] },
-  { pattern: 'The {word} is far.', phase: 'green3', requiredWords: [] },
-  { pattern: 'I see a {word}.', phase: 'green3', requiredWords: [] },
-  { pattern: 'The {word} is dark.', phase: 'green3', requiredWords: [] },
-  { pattern: 'Get the {word} for me.', phase: 'green3', requiredWords: [] },
+  // Pink templates
+  { pattern: 'Get the {word}.', requiredWords: ['get'], phase: 'pink1' },
+  { pattern: 'Put the {word} on the {word}.', requiredWords: ['put'], phase: 'pink1' },
+  { pattern: 'Sit on the {word}.', requiredWords: ['sit'], phase: 'pink1' },
+  { pattern: 'Tap the {word}.', requiredWords: ['tap'], phase: 'pink1' },
+  { pattern: 'Run to the {word}.', requiredWords: ['run'], phase: 'pink2' },
+  { pattern: 'Hop to the {word}.', requiredWords: ['hop'], phase: 'pink2' },
+  { pattern: 'Dip the {word} in the {word}.', requiredWords: ['dip'], phase: 'pink2' },
+  { pattern: 'Set the {word} on the {word}.', requiredWords: ['set'], phase: 'pink2' },
+  // Blue templates
+  { pattern: 'Grab the {word} and {word}.', requiredWords: ['grab'], phase: 'blue1' },
+  { pattern: 'Clap and then {word}.', requiredWords: ['clap'], phase: 'blue1' },
+  { pattern: 'Step on the {word} and {word}.', requiredWords: ['step'], phase: 'blue1' },
+  { pattern: 'Skip to the {word}.', requiredWords: ['skip'], phase: 'blue1' },
+  { pattern: 'Jump to the {word} and {word}.', requiredWords: ['jump'], phase: 'blue2' },
+  { pattern: 'Stomp on the {word}.', requiredWords: ['stomp'], phase: 'blue2' },
+  { pattern: 'Pick the {word} and toss it.', requiredWords: ['pick', 'toss'], phase: 'blue3' },
+  { pattern: 'Kick the {word} to the {word}.', requiredWords: ['kick'], phase: 'blue3' },
+  // Green templates
+  { pattern: 'Push the {word} to the {word}.', requiredWords: ['push'], phase: 'green1' },
+  { pattern: 'Chop the {word} with care.', requiredWords: ['chop'], phase: 'green1' },
+  { pattern: 'Take the {word} and {word} it.', requiredWords: ['take'], phase: 'green2' },
+  { pattern: 'Ride the {word} to the {word}.', requiredWords: ['ride'], phase: 'green2' },
+  { pattern: 'Read the {word} by the {word}.', requiredWords: ['read'], phase: 'green2' },
+  { pattern: 'Write the {word} on the {word}.', requiredWords: ['write'], phase: 'green3' },
+  { pattern: 'Turn the {word} to the right.', requiredWords: ['turn', 'right'], phase: 'green3' },
 ];
 
-// =====================================================================
-// SHORT STORIES
-// =====================================================================
-
-export interface StoryPage {
-  text: string;
-  sceneEmoji: string;
-  sceneDescription: string;
-}
-
-export interface PhonicsStory {
-  id: string;
-  title: string;
-  phase: string;
-  words: string[];
-  sightWords: string[];
-  pages: StoryPage[];
-}
+// ============================================================
+// PHONICS STORIES — Short decodable stories per phase
+// ============================================================
 
 export const PHONICS_STORIES: PhonicsStory[] = [
   {
-    id: 'cat-on-mat',
-    title: 'The Cat on the Mat',
+    title: 'The Cat and the Mat',
     phase: 'pink1',
-    words: ['cat', 'mat', 'can', 'net'],
-    sightWords: ['the', 'is', 'on', 'a'],
     pages: [
-      { text: 'The cat is on the mat.', sceneEmoji: '🐱', sceneDescription: 'Cat sitting on a mat' },
-      { text: 'The cat can sit.', sceneEmoji: '🪑', sceneDescription: 'Cat in sitting position' },
-      { text: 'The net is on the mat.', sceneEmoji: '🥅', sceneDescription: 'Net on a mat' },
-      { text: 'The cat is in the net.', sceneEmoji: '🐱', sceneDescription: 'Cat in a net' },
+      { text: 'The cat sat on the mat.', keywords: ['cat', 'sat', 'mat'] },
+      { text: 'A man ran to the cat.', keywords: ['man', 'ran', 'cat'] },
+      { text: 'The cat got a nap on the mat.', keywords: ['cat', 'got', 'nap', 'mat'] },
     ],
   },
   {
-    id: 'big-red-bus',
-    title: 'The Big Red Bus',
-    phase: 'pink1',
-    words: ['bus', 'red', 'dog', 'cat'],
-    sightWords: ['the', 'is', 'in', 'a'],
-    pages: [
-      { text: 'The bus is big and red.', sceneEmoji: '🚌', sceneDescription: 'Large red bus' },
-      { text: 'The cat is in the bus.', sceneEmoji: '🐱', sceneDescription: 'Cat on the bus' },
-      { text: 'The dog is in the bus.', sceneEmoji: '🐕', sceneDescription: 'Dog on the bus' },
-      { text: 'The bus is full.', sceneEmoji: '🚌', sceneDescription: 'Crowded bus' },
-    ],
-  },
-  {
-    id: 'dog-and-fog',
-    title: 'The Dog and the Fog',
-    phase: 'pink1',
-    words: ['dog', 'fog', 'log', 'jog'],
-    sightWords: ['the', 'and', 'in'],
-    pages: [
-      { text: 'The dog is in the fog.', sceneEmoji: '🌫️', sceneDescription: 'Foggy weather with dog' },
-      { text: 'The dog can jog.', sceneEmoji: '🐕', sceneDescription: 'Running dog' },
-      { text: 'The dog sits on the log.', sceneEmoji: '🪵', sceneDescription: 'Dog on a log' },
-      { text: 'The fog is thick.', sceneEmoji: '🌫️', sceneDescription: 'Thick fog' },
-    ],
-  },
-  {
-    id: 'hen-and-pen',
-    title: 'The Hen and the Pen',
+    title: 'The Red Bug',
     phase: 'pink2',
-    words: ['hen', 'pen', 'den', 'ten'],
-    sightWords: ['the', 'in', 'is', 'a'],
     pages: [
-      { text: 'The hen is in the pen.', sceneEmoji: '🐔', sceneDescription: 'Hen in a pen' },
-      { text: 'The hen has ten eggs.', sceneEmoji: '🥚', sceneDescription: 'Hen with eggs' },
-      { text: 'The den is big.', sceneEmoji: '🏠', sceneDescription: 'Animal den' },
-      { text: 'The hen sits in the den.', sceneEmoji: '🐔', sceneDescription: 'Hen in den' },
+      { text: 'A big red bug sat on a rug.', keywords: ['big', 'red', 'bug', 'sat', 'rug'] },
+      { text: 'The bug got in a cup.', keywords: ['bug', 'got', 'cup'] },
+      { text: 'A kid let the bug hop out.', keywords: ['kid', 'bug', 'hop'] },
     ],
   },
   {
-    id: 'pig-and-wig',
-    title: 'The Pig and the Wig',
-    phase: 'pink2',
-    words: ['pig', 'wig', 'big', 'dig'],
-    sightWords: ['the', 'has', 'a'],
-    pages: [
-      { text: 'The pig has a big wig.', sceneEmoji: '🐷', sceneDescription: 'Pig wearing a wig' },
-      { text: 'The pig can dig.', sceneEmoji: '⛏️', sceneDescription: 'Pig digging' },
-      { text: 'The wig is big.', sceneEmoji: '💇', sceneDescription: 'Large wig' },
-      { text: 'The pig is happy.', sceneEmoji: '😊', sceneDescription: 'Happy pig' },
-    ],
-  },
-  {
-    id: 'fox-in-box',
-    title: 'The Fox in the Box',
-    phase: 'pink2',
-    words: ['fox', 'box', 'hot', 'dot'],
-    sightWords: ['the', 'in', 'is'],
-    pages: [
-      { text: 'The fox is in the box.', sceneEmoji: '🦊', sceneDescription: 'Fox in a box' },
-      { text: 'The box is hot.', sceneEmoji: '🔥', sceneDescription: 'Hot box with steam' },
-      { text: 'The fox has a dot.', sceneEmoji: '🟡', sceneDescription: 'Fox with a dot' },
-      { text: 'The box is open.', sceneEmoji: '📦', sceneDescription: 'Open box' },
-    ],
-  },
-  {
-    id: 'ship-and-fish',
-    title: 'The Ship and the Fish',
+    title: 'Frog on a Log',
     phase: 'blue1',
-    words: ['ship', 'fish', 'dish', 'shell'],
-    sightWords: ['the', 'and', 'in', 'is'],
     pages: [
-      { text: 'The ship is on the water.', sceneEmoji: '🚢', sceneDescription: 'Ship at sea' },
-      { text: 'The fish is in the water.', sceneEmoji: '🐟', sceneDescription: 'Fish swimming' },
-      { text: 'The shell is in the dish.', sceneEmoji: '🐚', sceneDescription: 'Shell in a dish' },
-      { text: 'The fish and the shell.', sceneEmoji: '🐟', sceneDescription: 'Fish and shell together' },
+      { text: 'A frog sat on a flat log.', keywords: ['frog', 'flat', 'log'] },
+      { text: 'A crab slid from a slab.', keywords: ['crab', 'slid', 'slab'] },
+      { text: 'The frog and the crab swam in the pond.', keywords: ['frog', 'crab', 'swam', 'pond'] },
     ],
   },
   {
-    id: 'goat-in-boat',
-    title: 'The Goat in the Boat',
-    phase: 'green1',
-    words: ['goat', 'boat', 'coat', 'road'],
-    sightWords: ['the', 'in', 'and', 'is'],
-    pages: [
-      { text: 'The goat is in the boat.', sceneEmoji: '🐐', sceneDescription: 'Goat in a boat' },
-      { text: 'The goat has a coat.', sceneEmoji: '🧥', sceneDescription: 'Goat wearing a coat' },
-      { text: 'The boat is on the road.', sceneEmoji: '🛣️', sceneDescription: 'Boat on road' },
-      { text: 'The goat and the boat.', sceneEmoji: '⛵', sceneDescription: 'Goat and boat' },
-    ],
-  },
-  {
-    id: 'bike-ride',
-    title: 'The Bike Ride',
-    phase: 'green2',
-    words: ['bike', 'ride', 'lake', 'gate', 'pine', 'line', 'home', 'wave'],
-    sightWords: ['the', 'a', 'to', 'and', 'is', 'my', 'I'],
-    pages: [
-      { text: 'I ride my bike to the gate.', sceneEmoji: '🚲', sceneDescription: 'Child riding bike to gate' },
-      { text: 'I ride and ride to the lake.', sceneEmoji: '🌊', sceneDescription: 'Bike ride to lake' },
-      { text: 'The pine trees wave in the line.', sceneEmoji: '🌲', sceneDescription: 'Pine trees by the lake' },
-      { text: 'I ride my bike home.', sceneEmoji: '🏠', sceneDescription: 'Riding home' },
-    ],
-  },
-  {
-    id: 'the-farm',
-    title: 'The Farm',
-    phase: 'green3',
-    words: ['car', 'farm', 'barn', 'corn', 'fork', 'bird', 'park', 'dark'],
-    sightWords: ['the', 'a', 'is', 'in', 'we', 'and', 'it'],
-    pages: [
-      { text: 'We park the car at the farm.', sceneEmoji: '🚗', sceneDescription: 'Car at a farm' },
-      { text: 'The barn is big and dark.', sceneEmoji: '🐮', sceneDescription: 'Big dark barn' },
-      { text: 'A bird sits on the corn.', sceneEmoji: '🐦', sceneDescription: 'Bird on corn stalk' },
-      { text: 'We eat corn with a fork.', sceneEmoji: '🍽️', sceneDescription: 'Eating corn with fork' },
-    ],
-  },
-  {
-    id: 'frog-and-drum',
-    title: 'The Frog and the Drum',
+    title: 'The Best Nest',
     phase: 'blue2',
-    words: ['frog', 'drum', 'clock', 'drop', 'flag', 'plum', 'swim', 'brick'],
-    sightWords: ['the', 'a', 'on', 'is', 'and', 'it'],
     pages: [
-      { text: 'A frog sits on a brick.', sceneEmoji: '🐸', sceneDescription: 'Frog on a brick' },
-      { text: 'The clock ticks and ticks.', sceneEmoji: '🕐', sceneDescription: 'Clock ticking' },
-      { text: 'The frog drops the plum.', sceneEmoji: '🫐', sceneDescription: 'Frog dropping a plum' },
-      { text: 'The frog swims and swims.', sceneEmoji: '🏊', sceneDescription: 'Frog swimming' },
+      { text: 'A bird bent a twig for its nest.', keywords: ['bent', 'nest'] },
+      { text: 'It sang a song from the best nest.', keywords: ['sang', 'song', 'best', 'nest'] },
+      { text: 'The wind and the dust did not fuss the bird.', keywords: ['wind', 'dust', 'fuss'] },
     ],
   },
   {
-    id: 'camp-in-sand',
-    title: 'The Camp in the Sand',
+    title: 'The Duck and the Bell',
     phase: 'blue3',
-    words: ['camp', 'sand', 'lamp', 'hand', 'nest', 'belt', 'ring', 'wind'],
-    sightWords: ['the', 'a', 'in', 'is', 'and', 'we'],
     pages: [
-      { text: 'We camp in the sand.', sceneEmoji: '⛺', sceneDescription: 'Camping on sand' },
-      { text: 'The lamp is in the camp.', sceneEmoji: '🪔', sceneDescription: 'Lamp in a camp' },
-      { text: 'A nest is in the sand.', sceneEmoji: '🪺', sceneDescription: 'Nest in sand' },
-      { text: 'The wind blows the sand.', sceneEmoji: '💨', sceneDescription: 'Wind blowing sand' },
+      { text: 'A duck sat on a rock by the well.', keywords: ['duck', 'rock', 'well'] },
+      { text: 'It tossed a pebble and the bell fell.', keywords: ['tossed', 'bell', 'fell'] },
+      { text: 'The duck had good luck at the hill.', keywords: ['duck', 'luck', 'hill'] },
+    ],
+  },  {
+    title: 'The Fish Shop',
+    phase: 'green1',
+    pages: [
+      { text: 'Chip went to the fish shop with cash.', keywords: ['chip', 'fish', 'shop', 'cash'] },
+      { text: 'He got a fresh dish of fish.', keywords: ['fresh', 'dish', 'fish'] },
+      { text: 'Then he sat on a bench to munch.', keywords: ['bench', 'munch'] },
+    ],
+  },
+  {
+    title: 'The Boat Ride',
+    phase: 'green2',
+    pages: [
+      { text: 'A goat in a coat got on a boat.', keywords: ['goat', 'coat', 'boat'] },
+      { text: 'He ate cake by the lake.', keywords: ['cake', 'lake'] },
+      { text: 'A bee flew by the tree and the goat waved.', keywords: ['bee', 'tree', 'goat'] },
+    ],
+  },
+  {
+    title: 'The Knight in the Dark',
+    phase: 'green3',
+    pages: [
+      { text: 'A brave knight rode through the dark park.', keywords: ['knight', 'dark', 'park'] },
+      { text: 'He saw a bright light near the barn.', keywords: ['bright', 'light', 'barn'] },
+      { text: 'He wrote a note about the girl and the bird he found.', keywords: ['wrote', 'note', 'girl', 'bird'] },
     ],
   },
 ];
 
-// =====================================================================
-// HELPER FUNCTIONS — used by generators
-// =====================================================================
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
 
-/** Alias for generators that import SHORT_STORIES */
-export const SHORT_STORIES = PHONICS_STORIES;
-
-/** Alias for generators that import PHONICS_COMMANDS */
-export const PHONICS_COMMANDS = COMMAND_SENTENCES;
-
-/** Alias for generators that import SENTENCE_TEMPLATES */
-export const SENTENCE_TEMPLATES = COMMAND_SENTENCE_TEMPLATES;
-
-/** Type alias for generators that import SentenceTemplate */
-export type SentenceTemplate = CommandSentenceTemplate;
-
-/** Type alias for generators that import ShortStory */
-export type ShortStory = PhonicsStory;
-
-/** Get all words from a phase as a flat array */
+/**
+ * Get all words for a specific phase, flattened from all groups.
+ */
 export function getPhaseWords(phaseId: string): PhonicsWord[] {
-  const phase = ALL_PHASES.find(p => p.id === phaseId);
+  const phase = ALL_PHASES.find((p) => p.id === phaseId);
   if (!phase) return [];
-  return phase.groups.flatMap(g => g.words);
+  return phase.groups.flatMap((g) => g.words);
 }
 
-/** Get command sentences filtered by phase ID, enriched with phonicsWords for highlighting */
-export function getCommands(phaseId: string): (CommandSentence & { phonicsWords: string[] })[] {
-  const phase = ALL_PHASES.find(p => p.id === phaseId);
-  if (!phase) return [];
-  const wordSet = new Set(phase.groups.flatMap(g => g.words.map(w => w.word.toLowerCase())));
-  return COMMAND_SENTENCES
-    .filter(c => c.phase === phaseId)
-    .map(c => ({
-      ...c,
-      phonicsWords: c.text
-        .split(/\b/)
-        .map(w => w.trim())
-        .filter(w => w.length > 0 && wordSet.has(w.toLowerCase())),
-    }));
-}
-
-/** Get all unique words sorted alphabetically for dictionary view */
-export function getDictionaryWords(): (PhonicsWord & { phase: string })[] {
-  const allWords: (PhonicsWord & { phase: string })[] = [];
-  const seen = new Set<string>();
-  for (const phase of ALL_PHASES) {
-    for (const group of phase.groups) {
-      for (const word of group.words) {
-        if (!seen.has(word.word)) {
-          allWords.push({ ...word, phase: phase.id });
-          seen.add(word.word);
-        }
-      }
-    }
+/**
+ * Get command sentences for a specific phase (or all phases up to and including it).
+ */
+export function getCommands(phaseId: string, cumulative = false): CommandSentence[] {
+  if (!cumulative) {
+    return COMMAND_SENTENCES.filter((c) => c.phase === phaseId);
   }
-  return allWords.sort((a, b) => a.word.localeCompare(b.word));
+  const phaseIndex = ALL_PHASES.findIndex((p) => p.id === phaseId);
+  if (phaseIndex === -1) return [];
+  const validPhases = new Set(ALL_PHASES.slice(0, phaseIndex + 1).map((p) => p.id));
+  return COMMAND_SENTENCES.filter((c) => validPhases.has(c.phase));
 }
+
+/**
+ * Get dictionary words for use in the dictionary generator.
+ * Returns words with their phase info for tracking progression.
+ */
+export function getDictionaryWords(phaseId: string, cumulative = false): Array<PhonicsWord & { phase: string; phaseColor: string }> {
+  const phases = cumulative
+    ? ALL_PHASES.slice(0, ALL_PHASES.findIndex((p) => p.id === phaseId) + 1)
+    : ALL_PHASES.filter((p) => p.id === phaseId);
+
+  return phases.flatMap((phase) =>
+    phase.groups.flatMap((group) =>
+      group.words.map((word) => ({
+        ...word,
+        phase: phase.id,
+        phaseColor: phase.color,
+      }))
+    )
+  );
+}
+
+// ============================================================
+// BACKWARD-COMPATIBLE ALIAS EXPORTS
+// These maintain compatibility with existing generator pages
+// that may reference the old flat phase names.
+// ============================================================
+
+/** @deprecated Use PINK_1 */
+export const INITIAL_SOUNDS = PINK_1;
+/** @deprecated Use PINK_2 */
+export const CVC_WORDS = PINK_2;
+/** @deprecated Use BLUE_1 */
+export const INITIAL_BLENDS = BLUE_1;
+/** @deprecated Use BLUE_2 */
+export const FINAL_BLENDS = BLUE_2;
+/** @deprecated Use GREEN_1 */
+export const DIGRAPHS = GREEN_1;
