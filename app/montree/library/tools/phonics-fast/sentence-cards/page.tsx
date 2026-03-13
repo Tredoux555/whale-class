@@ -16,7 +16,7 @@ interface GeneratedSentence {
   phonicsWords: { word: string; image: string }[];
 }
 
-type PrintMode = 'cards' | 'strips' | 'worksheet';
+type PrintMode = 'cards' | 'strips' | 'worksheet' | 'matching';
 type CardsPerPage = 4 | 6 | 8;
 
 const BORDER_COLORS = [
@@ -58,11 +58,10 @@ export default function SentenceCardsPage() {
       // Check if template has {word2} placeholder
       const hasWord2 = template.pattern.includes('{word2}');
 
-      // Generate sentences by substituting words
-      // Empty requiredWords = any noun is applicable
-      const applicableWords = template.requiredWords.length > 0
-        ? phaseWords.filter((w) => template.requiredWords.includes(w.word))
-        : phaseWords;
+      // requiredWords contains VERBS (e.g., "get", "put") — these are the
+      // action words in the template, NOT nouns to filter by.
+      // All phase nouns are valid substitutes for {word} placeholders.
+      const applicableWords = phaseWords;
 
       applicableWords.forEach((word, idx) => {
         // Find second word if needed
@@ -170,7 +169,7 @@ export default function SentenceCardsPage() {
     };
     const gridCfg = GRID_CONFIGS[cardsPerPage];
     const phaseLabel = selectedPhase.name;
-    const modeLabel = printMode === 'cards' ? 'Cards' : printMode === 'strips' ? 'Strips' : 'Worksheet';
+    const modeLabel = printMode === 'cards' ? 'Cards' : printMode === 'strips' ? 'Strips' : printMode === 'worksheet' ? 'Worksheet' : 'Matching';
 
     // --- Build full HTML document ---
     let html = `<!DOCTYPE html>
@@ -515,7 +514,7 @@ export default function SentenceCardsPage() {
         });
         html += '</div></div>';
       }
-    } else {
+    } else if (printMode === 'worksheet') {
       // Worksheet mode: 5 sentences per page
       const WS_PER_PAGE = 5;
       let pageNum = 0;
@@ -541,6 +540,72 @@ export default function SentenceCardsPage() {
         });
         html += `</div>
           <div class="ws-footer">Name: _________________________ Date: _____________</div>
+        </div>`;
+      }
+    } else if (printMode === 'matching') {
+      // Matching mode: sentences on left, shuffled pictures on right
+      // Only use sentences that have at least one phonics word (pictures needed)
+      const matchable = allSentences.filter((s) => s.phonicsWords.length > 0);
+      const MATCH_PER_PAGE = 6;
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      let pageNum = 0;
+
+      for (let i = 0; i < matchable.length; i += MATCH_PER_PAGE) {
+        pageNum++;
+        const pageSentences = matchable.slice(i, i + MATCH_PER_PAGE);
+
+        // Create shuffled picture order using Fisher-Yates
+        const pictureOrder = pageSentences.map((_, idx) => idx);
+        for (let j = pictureOrder.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [pictureOrder[j], pictureOrder[k]] = [pictureOrder[k], pictureOrder[j]];
+        }
+
+        html += `<div class="page" style="padding:12mm 15mm;">
+          <div class="ws-header">
+            <div>
+              <div class="ws-title">Sentence-Picture Matching</div>
+              <div class="ws-page-num">${phaseLabel}</div>
+            </div>
+            <div class="ws-page-num">Page ${pageNum}</div>
+          </div>
+          <p style="font-size:10pt;color:#6b7280;margin:0 0 6mm;font-family:'Comic Sans MS',cursive;">Draw a line from each sentence to its matching picture.</p>
+          <div style="display:flex;gap:10mm;">
+            <div style="flex:1;">
+              <div style="font-weight:800;font-size:11pt;color:${borderColor};margin-bottom:4mm;font-family:'Nunito',sans-serif;">Sentences</div>`;
+
+        pageSentences.forEach((sentence, idx) => {
+          html += `<div style="display:flex;align-items:center;gap:3mm;margin-bottom:5mm;padding:3mm 4mm;border:2px solid ${borderColor};border-radius:6px;background:#FFFDF8;min-height:14mm;">
+            <span style="font-weight:800;font-size:14pt;color:${borderColor};font-family:'Nunito',sans-serif;min-width:8mm;">${idx + 1}.</span>
+            <span style="font-size:11pt;font-family:'Comic Sans MS',cursive;color:#1f2937;">${esc(sentence.text)}</span>
+          </div>`;
+        });
+
+        html += `</div>
+            <div style="flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;padding:0 2mm;">`;
+
+        // Draw connection dots
+        for (let d = 0; d < pageSentences.length; d++) {
+          html += `<div style="height:19mm;display:flex;align-items:center;"><span style="font-size:20pt;color:#d1d5db;">•</span></div>`;
+        }
+
+        html += `</div>
+            <div style="flex:1;">
+              <div style="font-weight:800;font-size:11pt;color:${borderColor};margin-bottom:4mm;font-family:'Nunito',sans-serif;">Pictures</div>`;
+
+        pictureOrder.forEach((origIdx, displayIdx) => {
+          const sentence = pageSentences[origIdx];
+          const pw = sentence.phonicsWords[0];
+          html += `<div style="display:flex;align-items:center;gap:3mm;margin-bottom:5mm;padding:3mm 4mm;border:2px solid ${borderColor};border-radius:6px;background:#F5E6D3;min-height:14mm;">
+            <span style="font-weight:800;font-size:14pt;color:${borderColor};font-family:'Nunito',sans-serif;min-width:8mm;">${letters[displayIdx]}.</span>
+            <span style="font-size:28pt;line-height:1;">${pw.image}</span>
+            <span style="font-size:12pt;font-weight:700;color:#10b981;font-family:'Nunito',sans-serif;">${esc(pw.word)}</span>
+          </div>`;
+        });
+
+        html += `</div>
+          </div>
+          <div class="ws-footer" style="margin-top:8mm;">Name: _________________________ Date: _____________</div>
         </div>`;
       }
     }
@@ -610,7 +675,7 @@ export default function SentenceCardsPage() {
                 <span>📋 Print Mode</span>
               </h2>
               <div className="space-y-3">
-                {(['cards', 'strips', 'worksheet'] as const).map((mode) => (
+                {(['cards', 'strips', 'worksheet', 'matching'] as const).map((mode) => (
                   <label key={mode} className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-gray-50 transition-colors">
                     <input
                       type="radio"
@@ -625,7 +690,9 @@ export default function SentenceCardsPage() {
                         ? '🎫 Cards (grid layout)'
                         : mode === 'strips'
                           ? '📄 Strips (horizontal rows)'
-                          : '📋 Worksheet (write-in lines)'}
+                          : mode === 'worksheet'
+                            ? '📋 Worksheet (write-in lines)'
+                            : '🔗 Matching (sentence ↔ picture)'}
                     </span>
                   </label>
                 ))}
@@ -724,6 +791,9 @@ export default function SentenceCardsPage() {
           )}
           {printMode === 'worksheet' && (
             <PrintableWorksheet sentences={allSentences} borderColor={borderColor} />
+          )}
+          {printMode === 'matching' && (
+            <PrintableMatching sentences={allSentences} borderColor={borderColor} />
           )}
         </div>
       </div>
@@ -971,6 +1041,117 @@ function PrintableWorksheet({
 
             {/* Footer */}
             <div className="mt-12 print:mt-16 pt-8 print:pt-10 border-t-2 border-gray-300 text-center">
+              <div className="flex justify-between print:justify-around text-sm print:text-base font-semibold text-gray-700">
+                <div>Name: _________________________</div>
+                <div>Date: _________________________</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+// =====================================================================
+// PRINTABLE MATCHING COMPONENT
+// =====================================================================
+
+function PrintableMatching({
+  sentences,
+  borderColor,
+}: {
+  sentences: GeneratedSentence[];
+  borderColor: string;
+}) {
+  const MATCH_PER_PAGE = 6;
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  // Stable key for memoization — only re-shuffle when actual sentences change
+  const sentenceKey = sentences.map(s => s.text).join('|');
+
+  const pages = useMemo(() => {
+    const matchable = sentences.filter((s) => s.phonicsWords.length > 0);
+    const result: { sentences: GeneratedSentence[]; pictureOrder: number[] }[] = [];
+    for (let i = 0; i < matchable.length; i += MATCH_PER_PAGE) {
+      const pageSentences = matchable.slice(i, i + MATCH_PER_PAGE);
+      // Create shuffled picture order (Fisher-Yates)
+      const pictureOrder = pageSentences.map((_, idx) => idx);
+      for (let j = pictureOrder.length - 1; j > 0; j--) {
+        const k = Math.floor(Math.random() * (j + 1));
+        [pictureOrder[j], pictureOrder[k]] = [pictureOrder[k], pictureOrder[j]];
+      }
+      result.push({ sentences: pageSentences, pictureOrder });
+    }
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sentenceKey]);
+
+  return (
+    <>
+      {pages.map((page, pageIdx) => (
+        <div key={pageIdx} className="mb-10 print:mb-0 print:page-break-after-always bg-white rounded-xl shadow-lg overflow-hidden print:rounded-none print:shadow-none">
+          <div className="p-8 print:p-10">
+            <div className="flex justify-between items-start mb-4 print:mb-6">
+              <div>
+                <h2 className="text-3xl print:text-4xl font-black text-gray-900 mb-1">Sentence-Picture Matching</h2>
+                <p className="text-sm text-gray-500">Draw a line from each sentence to its matching picture.</p>
+              </div>
+              <p className="text-2xl print:text-3xl font-bold text-gray-400 print:text-gray-600">Page {pageIdx + 1}</p>
+            </div>
+
+            <div className="flex gap-6 print:gap-8">
+              {/* Sentences column */}
+              <div className="flex-1">
+                <div className="font-extrabold text-sm mb-3" style={{ color: borderColor }}>Sentences</div>
+                <div className="space-y-3 print:space-y-4">
+                  {page.sentences.map((sentence, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 p-3 rounded-lg border-2"
+                      style={{ borderColor, backgroundColor: '#FFFDF8', minHeight: '3.5rem' }}
+                    >
+                      <span className="font-extrabold text-lg" style={{ color: borderColor, minWidth: '1.5rem' }}>{idx + 1}.</span>
+                      <span style={{ fontFamily: "'Comic Sans MS', cursive", fontSize: '0.95rem' }} className="text-gray-800">{sentence.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Connection dots */}
+              <div className="flex flex-col justify-center items-center px-1">
+                {page.sentences.map((_, idx) => (
+                  <div key={idx} style={{ height: '3.75rem' }} className="flex items-center">
+                    <span className="text-2xl text-gray-300">•</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pictures column (shuffled) */}
+              <div className="flex-1">
+                <div className="font-extrabold text-sm mb-3" style={{ color: borderColor }}>Pictures</div>
+                <div className="space-y-3 print:space-y-4">
+                  {page.pictureOrder.map((origIdx, displayIdx) => {
+                    const sentence = page.sentences[origIdx];
+                    const pw = sentence.phonicsWords[0];
+                    return (
+                      <div
+                        key={displayIdx}
+                        className="flex items-center gap-2 p-3 rounded-lg border-2"
+                        style={{ borderColor, backgroundColor: '#F5E6D3', minHeight: '3.5rem' }}
+                      >
+                        <span className="font-extrabold text-lg" style={{ color: borderColor, minWidth: '1.5rem' }}>{letters[displayIdx]}.</span>
+                        <span className="text-3xl leading-none">{pw.image}</span>
+                        <span className="font-bold text-emerald-500" style={{ fontFamily: "'Nunito', sans-serif" }}>{pw.word}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="mt-8 print:mt-12 pt-6 print:pt-8 border-t-2 border-gray-300 text-center">
               <div className="flex justify-between print:justify-around text-sm print:text-base font-semibold text-gray-700">
                 <div>Name: _________________________</div>
                 <div>Date: _________________________</div>
