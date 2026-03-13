@@ -4,20 +4,15 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { getDictionaryWords, ALL_PHASES } from '@/lib/montree/phonics/phonics-data';
 
-interface DictionaryEntry {
-  word: string;
-  image: string;
-  phase: string;
-}
+type DictionaryEntry = ReturnType<typeof getDictionaryWords>[number];
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-const PHASE_CONFIG: Record<string, { name: string; color: string; bgColor: string }> = {
-  initial: { name: 'Initial', color: '#10b981', bgColor: '#ecfdf5' },
-  phase2: { name: 'Phase 2', color: '#3b82f6', bgColor: '#eff6ff' },
-  blue1: { name: 'Blue 1', color: '#6366f1', bgColor: '#eef2ff' },
-  blue2: { name: 'Blue 2', color: '#8b5cf6', bgColor: '#faf5ff' },
-};
+// Build phase config dynamically from ALL_PHASES
+const PHASE_CONFIG: Record<string, { name: string; color: string; bgColor: string }> =
+  Object.fromEntries(
+    ALL_PHASES.map(p => [p.id, { name: p.name, color: p.color, bgColor: `${p.color}15` }])
+  );
 
 export default function PhonicsDictionaryPage() {
   const [searchQuery, setSearchQuery] = useState('');

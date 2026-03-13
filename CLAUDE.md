@@ -16,10 +16,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 3x3x3x3 smart capture hardening (2 rounds) + 401 fix + album upload + raz 4th photo + home guru fixes + session recovery + guru parity + home parent rebuild" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening + Phonics Fast AMI restructure + Guru Context-Aware Routing. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: guru context routing + phonics fast AMI restructure + 3x3x3x3 smart capture hardening + 401 fix + album upload + all Mar 8-13 features" && git push origin main`
 
-**Includes:** 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Includes:** Guru Context-Aware Routing / Selective Knowledge Injection (3x3x3x3, 4 files, ~30-50% input token reduction per Guru request, regex question classifier + conditional knowledge module injection), Phonics Fast AMI-aligned 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology, pink→blue→green series), 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
@@ -63,6 +63,59 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 ---
 
 ## CURRENT STATUS (Mar 13, 2026)
+
+### Session Work (Mar 13, 2026 — Latest Session)
+
+**Guru Context-Aware Routing / Selective Knowledge Injection — COMPLETE, NOT YET DEPLOYED (1 new + 3 modified files, 3x3x3x3 methodology, 2 issues found and fixed):**
+
+In-process question classification for the Guru system to selectively inject knowledge modules based on question category. Reduces input tokens by ~30-50% per request, improving TTFT (time to first token) and response focus.
+
+**Architecture:**
+- Pure regex question classifier (zero latency, zero API calls): priority psychology > development > curriculum > general
+- 8 psychology patterns, 5 development patterns, 8 curriculum patterns, separate language keyword detector
+- Selective injection matrix controls which knowledge modules are injected per category
+- Psychology knowledge parsed into lazy-cached sections, filtered by `PsychologistKey[]` per category (curriculum→3, development→5, psychology→all 14, general→1)
+
+**Estimated token savings per category:**
+- psychology: ~1,000 tokens saved (no sensitive periods, no AMI, no ESL)
+- curriculum: ~2,200 tokens saved (3 vs 14 psychologists, no mirroring)
+- development: ~1,800-2,200 tokens saved (5 vs 14 psychologists, no mirroring)
+- general: ~3,200 tokens saved (1 vs 14 psychologists, no mirroring, no AMI/ESL unless language)
+
+**Files:**
+- `lib/montree/guru/question-classifier.ts` (NEW, 93 lines) — Exports `classifyQuestion()` and `hasLanguageKeywords()`
+- `lib/montree/guru/knowledge/psychology-foundations.ts` — Added section-based retrieval with lazy caching (~118 lines added)
+- `lib/montree/guru/conversational-prompt.ts` — 2 new imports, classifier call, 5 conditional injection gates
+- `app/api/montree/guru/route.ts` — 1 new import, classification at function scope, `question_category` in all 3 context_snapshots
+
+**Issues Found and Fixed:**
+1. R1C2 (MEDIUM): AMI Language not injected for `general` questions with language keywords → added `questionCategory === 'general'` to `shouldInjectLanguage`
+2. R1C3 (MEDIUM): ESL context not injected for `general` + language keywords for ESL children → added condition to ESL gate
+
+**Audit:** 2 full 3x3x3 rounds (6 build cycles), 36 audits (18 plan + 18 build), 2 cross-cycle verifications both CLEAN. Round 1: 2 issues. Round 2: 0 issues.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`
+
+### Session Work (Mar 13, 2026 — Late Session)
+
+**Phonics Fast AMI-Aligned 8-Phase Restructure — COMPLETE, NOT YET DEPLOYED (10 files modified, 9 bugs fixed, 3x3x3x3 methodology):**
+
+Complete restructure of the Phonics Fast tool suite from a flat 4-phase system to an 8-phase AMI Montessori-aligned phonics progression: Pink Series (CVC) → Blue Series (blends + digraphs) → Green Series (phonograms). 8 phases: pink1, pink2, blue1, blue2, blue3, green1, green2, green3.
+
+**Data layer:**
+- `lib/montree/phonics/phonics-data.ts` — Single source of truth. ALL_PHASES array with 8 phases, ~330 words. Added 2 new stories (blue2 + blue3), 3 helper functions (`getPhaseWords`, `getCommands`, `getDictionaryWords` with phase tracking), 5 alias exports for backward compat. Renamed `CommandSentenceTemplate.template` → `.pattern`, added `requiredWords` field. Enhanced `getDictionaryWords()` return type to include phase info.
+
+**Hub + 8 sub-generators:**
+- `app/montree/library/tools/phonics-fast/page.tsx` — Fully dynamic from ALL_PHASES. Print All uses `phaseWordSet` for command word highlighting.
+- 7 sub-generators: Fixed stale `'initial'` default phase → `'pink1'` (bingo, three-part-cards, stories, command-cards, sentence-cards, labels). Fixed sentence-cards `requiredWords` filter bug. Fixed dictionary stale `PHASE_CONFIG` → dynamic from ALL_PHASES.
+
+**Bugs fixed (9):** 3 CRITICAL (stale phase IDs causing crashes, missing exports), 2 HIGH (cmd.phonicsWords crash, ShortStory type missing), 3 MEDIUM (sentence template field rename, empty requiredWords filter, dictionary phase config), 1 LOW (wrong word in story).
+
+**Audit:** 4 conversation sessions, 2 full 3x3x3 rounds (6 build cycles), 3 cross-cycle verifications, 1 full re-audit. Final: CLEAN.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`
 
 ### Session Work (Mar 13, 2026)
 
@@ -2703,7 +2756,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md` | **CURRENT** — 3x3x3x3 hardening: timeout chain, composite keys, scenario D staleness, query parallelization (4 files, 9 audits CLEAN) |
+| `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md` | **CURRENT** — Guru context-aware routing / selective knowledge injection (4 files, ~30-50% token reduction, 3x3x3x3 methodology) |
+| `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md` | Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology) |
+| `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md` | 3x3x3x3 hardening: timeout chain, composite keys, scenario D staleness, query parallelization (4 files, 9 audits CLEAN) |
 | `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md` | 3-cycle audit fix loop: 8 issues fixed (rate limiting, .maybeSingle, i18n, AbortController, error logging) |
 | `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md` | Consolidated deploy handoff: all 4 unpushed features (Smart Capture + Batch Reports + Whole-Class Guru + Classroom Overview) |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_WHOLECLASS_MAR10.md` | Smart Capture rewrite (tool_use + auto-progress) + whole-class Guru fix + FeedbackButton removal |

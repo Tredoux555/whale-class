@@ -6,8 +6,9 @@ import { ChildContext, formatContextForPrompt } from './context-builder';
 import { ClassroomContext, formatClassroomContextForPrompt } from './classroom-context-builder';
 import { KnowledgeResult, formatKnowledgeForPrompt } from './knowledge-retriever';
 import { getConcernById } from './concern-mappings';
-import { getRelevantPsychologyKnowledge } from './knowledge/psychology-foundations';
+import { getRelevantPsychologyKnowledge, CATEGORY_PSYCHOLOGISTS } from './knowledge/psychology-foundations';
 import { formatSensitivePeriodsForPrompt } from './knowledge/sensitive-periods';
+import { classifyQuestion, hasLanguageKeywords } from './question-classifier';
 import { formatLanguageProgressionForPrompt } from './knowledge/ami-language-progression';
 import { getESLAwarenessForPrompt } from './knowledge/esl-chinese-learners';
 
@@ -592,6 +593,10 @@ export function buildConversationalPrompt(
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
   const childName = childContext.name?.split(' ')[0] || 'the child';
 
+  // Classify question for selective knowledge injection (~30-50% token reduction)
+  const questionCategory = classifyQuestion(question);
+  const isLanguageRelated = hasLanguageKeywords(question);
+
   // Determine mode — teachers skip SETUP/INTAKE (those are parent onboarding flows)
   let modeInstructions: string;
   let mode: GuruMode;
@@ -731,8 +736,9 @@ export function buildConversationalPrompt(
   }
 
   // Feature 4: Sensitive Period Alerts — inject active periods based on child's age
+  // Skip for psychology-only questions (behavioral/emotional focus doesn't need period data)
   const childAgeMonths = (childContext.age_years || 0) * 12 + (childContext.age_months || 0);
-  if (childAgeMonths > 0) {
+  if (childAgeMonths > 0 && questionCategory !== 'psychology') {
     const sensitivePeriodText = formatSensitivePeriodsForPrompt(childAgeMonths);
     if (sensitivePeriodText) {
       systemPrompt += '\n' + sensitivePeriodText;
@@ -744,34 +750,47 @@ export function buildConversationalPrompt(
     systemPrompt += '\n' + proactive.celebrationContext;
   }
 
-  // Feature 5: Stern's Vitality Affects — emotional mirroring (parent-only)
-  if (!isTeacher) {
+  // Feature 5: Stern's Vitality Affects — emotional mirroring (parent-only, psychology questions only)
+  // Emotional mirroring is most relevant for behavioral/emotional questions, skip for curriculum/dev
+  if (!isTeacher && questionCategory === 'psychology') {
     const mirroringInstructions = buildEmotionalMirroringInstructions(parentState);
     if (mirroringInstructions) {
       systemPrompt += '\n' + mirroringInstructions;
     }
   }
 
-  // Sonnet tier gets deep psychology knowledge for richer responses
+  // Sonnet tier gets deep psychology knowledge — filtered by question category
   // Issue HC#4: Guard against undefined guruTier — default to sonnet (gives richer responses)
+  // Category-based filtering: psychology gets all 14, curriculum gets 3, development gets 5, general gets 1
   if (!guruTier || guruTier === 'sonnet') {
-    const deepPsychKnowledge = getRelevantPsychologyKnowledge([]);
+    const psychTopics = CATEGORY_PSYCHOLOGISTS[questionCategory] || CATEGORY_PSYCHOLOGISTS['general'];
+    const deepPsychKnowledge = getRelevantPsychologyKnowledge(psychTopics);
     if (deepPsychKnowledge) {
       systemPrompt += `\n\nDEEP PSYCHOLOGICAL REFERENCE (use to enrich your responses — don't lecture):\n` + deepPsychKnowledge;
     }
   }
 
-  // AMI English Language Progression — inject for all tiers, child-specific context
-  const languageProgression = formatLanguageProgressionForPrompt(
-    childContext.focus_works?.map(fw => ({ area: fw.area, work_name: fw.work_name })),
-    childAgeMonths > 0 ? childAgeMonths : undefined,
-  );
-  if (languageProgression) {
-    systemPrompt += `\n\nAMI ENGLISH LANGUAGE CURRICULUM (use this to guide language work — you are an expert on the 43-work AMI language progression):\n` + languageProgression;
+  // AMI English Language Progression — inject conditionally:
+  // - Always for curriculum questions (might be about language works)
+  // - For development questions if language/reading/writing keywords present
+  // - For any question if child has language area focus works
+  const hasLanguageFocusWork = childContext.focus_works?.some(fw => fw.area === 'language');
+  const shouldInjectLanguage = questionCategory === 'curriculum' || hasLanguageFocusWork ||
+    ((questionCategory === 'development' || questionCategory === 'general') && isLanguageRelated);
+  if (shouldInjectLanguage) {
+    const languageProgression = formatLanguageProgressionForPrompt(
+      childContext.focus_works?.map(fw => ({ area: fw.area, work_name: fw.work_name })),
+      childAgeMonths > 0 ? childAgeMonths : undefined,
+    );
+    if (languageProgression) {
+      systemPrompt += `\n\nAMI ENGLISH LANGUAGE CURRICULUM (use this to guide language work — you are an expert on the 43-work AMI language progression):\n` + languageProgression;
+    }
   }
 
-  // ESL Chinese Learner Awareness — inject for children in China-based schools
-  if (childContext.isESL) {
+  // ESL Chinese Learner Awareness — inject for curriculum, development, or general+language questions
+  // Psychology questions don't need ESL-specific phonological/transfer context
+  if (childContext.isESL && (questionCategory === 'curriculum' || questionCategory === 'development' ||
+    (questionCategory === 'general' && isLanguageRelated))) {
     const eslContext = getESLAwarenessForPrompt(childAgeMonths > 0 ? childAgeMonths : undefined);
     if (eslContext) {
       systemPrompt += '\n\n' + eslContext;

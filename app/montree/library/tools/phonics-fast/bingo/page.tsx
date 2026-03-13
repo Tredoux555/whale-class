@@ -84,7 +84,7 @@ function getSelectedWords(
 
 export default function PhonicsBingoPage() {
   const searchParams = useSearchParams();
-  const initialPhaseId = searchParams.get('phase') || 'initial';
+  const initialPhaseId = searchParams.get('phase') || 'pink1';
 
   const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());

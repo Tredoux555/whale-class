@@ -32,7 +32,7 @@ const BORDER_COLORS = [
 
 export default function SentenceCardsPage() {
   const searchParams = useSearchParams();
-  const initialPhaseId = searchParams.get('phase') || 'initial';
+  const initialPhaseId = searchParams.get('phase') || 'pink1';
 
   const [selectedPhaseId, setSelectedPhaseId] = useState(initialPhaseId);
   const [printMode, setPrintMode] = useState<PrintMode>('cards');
@@ -61,9 +61,10 @@ export default function SentenceCardsPage() {
       const hasWord2 = template.pattern.includes('{word2}');
 
       // Generate sentences by substituting words
-      const applicableWords = phaseWords.filter((w) =>
-        template.requiredWords.includes(w.word)
-      );
+      // Empty requiredWords = any noun is applicable
+      const applicableWords = template.requiredWords.length > 0
+        ? phaseWords.filter((w) => template.requiredWords.includes(w.word))
+        : phaseWords;
 
       applicableWords.forEach((word, idx) => {
         // Find second word if needed

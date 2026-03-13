@@ -30,7 +30,7 @@ function emojiToDataUrl(emoji: string, size = 400): string {
 export default function ThreePartCardsPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialPhase = searchParams.get('phase') || 'initial';
+  const initialPhase = searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);

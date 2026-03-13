@@ -43,7 +43,7 @@ const GRID_LAYOUTS: Record<PrintOptions['cardsPerPage'], { cols: number; rows: n
 
 export default function PhonicsCommandCardsGenerator() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'initial';
+  const initialPhase = searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
   const [selectedLevel, setSelectedLevel] = useState<CardLevel>('all');
