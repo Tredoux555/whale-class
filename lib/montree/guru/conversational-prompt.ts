@@ -329,7 +329,7 @@ Your goal:
 TONE: Relaxed, reflective, no pressure. This is like a weekend coffee chat, not a progress report.
 If it's Sunday, lean into the weekend vibe: "Happy Sunday! Perfect time for a little reflection..."`;
 
-const TOOL_USE_INSTRUCTIONS = `You have access to tools that modify the child's learning plan and track important patterns.
+const TOOL_USE_INSTRUCTIONS_BASE = `You have access to tools that modify the child's learning plan and track important patterns.
 Use them naturally during conversation — don't announce "I'm calling a tool."
 After using tools, reference what you did conversationally:
   "I've updated the shelf — here's what's new this week..."
@@ -386,9 +386,10 @@ If no standard curriculum work fits this child's specific needs, you may create 
 1. First call search_curriculum to confirm nothing suitable exists
 2. Call add_curriculum_work with complete details (name, area, description, aims, materials, presentation steps)
 3. Then call set_focus_work to assign the new custom work to the shelf
-Use sparingly — prefer standard curriculum works 99% of the time. Only create custom works when the child has a specific developmental need that isn't covered by the 329 standard works.
+Use sparingly — prefer standard curriculum works 99% of the time. Only create custom works when the child has a specific developmental need that isn't covered by the 329 standard works.`;
 
-CLASSROOM-WIDE TOOLS (TEACHER ONLY — do NOT use these when advising a homeschool parent):
+const TOOL_USE_INSTRUCTIONS_CLASSROOM = `
+CLASSROOM-WIDE TOOLS:
 You can see ALL students in the classroom at once. Use these for admin tasks, grouping, and whole-class planning:
 - get_classroom_overview — get every student's name, age, progress counts, current shelf works, and optionally recent notes. Use when the teacher asks about the whole class, wants a 1-liner summary for each student, or needs an admin overview.
 - group_students — analyze all students and create groups by criteria (level, area, mixed, interest, custom). Use when the teacher asks to form small groups for collaborative work, leveled instruction, or any classroom organization.
@@ -716,7 +717,10 @@ export function buildConversationalPrompt(
   // Build the system prompt with all sections
   let systemPrompt = isTeacher ? TEACHER_CONVERSATIONAL_SYSTEM_PROMPT : CONVERSATIONAL_SYSTEM_PROMPT;
   systemPrompt += '\n\n' + modeInstructions;
-  systemPrompt += '\n\n' + TOOL_USE_INSTRUCTIONS;
+  systemPrompt += '\n\n' + TOOL_USE_INSTRUCTIONS_BASE;
+  if (isTeacher) {
+    systemPrompt += '\n' + TOOL_USE_INSTRUCTIONS_CLASSROOM;
+  }
   systemPrompt += '\n\n' + shelfContext;
   if (profileContext) {
     systemPrompt += '\n\n' + profileContext;

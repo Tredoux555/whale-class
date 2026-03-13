@@ -12,7 +12,7 @@ import { buildClassroomContext, formatClassroomContextForPrompt, type ClassroomC
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
 import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
-import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
+import { GURU_TOOLS, getToolsForMode } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
@@ -327,13 +327,21 @@ export async function POST(request: NextRequest) {
     // 1. Build child context (or classroom context for whole-class mode)
     let childContext: ChildContext | null = null;
     let classroomContext: ClassroomContext | null = null;
+    let knowledge: KnowledgeResult;
+    let childSettingsRecord: { settings: unknown } | null = null;
 
     // Classify question for selective knowledge injection + observability
     const questionCategory: QuestionCategory = classifyQuestion(question);
 
     if (isWholeClassMode) {
       console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
-      classroomContext = await buildClassroomContext(supabase, classroom_id!);
+      // Parallelize: classroom context + knowledge retrieval are independent
+      const [classCtx, knowledgeResult] = await Promise.all([
+        buildClassroomContext(supabase, classroom_id!),
+        retrieveKnowledge(question, 4),
+      ]);
+      classroomContext = classCtx;
+      knowledge = knowledgeResult;
       console.log('[Guru] Classroom context result:', classroomContext?.child_count, 'children, name:', classroomContext?.classroom_name, 'error:', classroomContext?.error);
 
       // Check for query errors first (different from empty classroom)
@@ -370,7 +378,16 @@ export async function POST(request: NextRequest) {
         classroom_id = auth.classroomId;
       }
     } else {
-      childContext = await buildChildContext(supabase, child_id);
+      // Parallelize: childContext, knowledge, and childSettings are all independent DB/IO operations.
+      // Saves ~200-400ms by running in parallel instead of sequential.
+      const [childCtxResult, knowledgeResult, childSettingsResult] = await Promise.all([
+        buildChildContext(supabase, child_id),
+        retrieveKnowledge(question, 4),
+        supabase.from('montree_children').select('settings').eq('id', child_id).maybeSingle(),
+      ]);
+      childContext = childCtxResult;
+      knowledge = knowledgeResult;
+      childSettingsRecord = childSettingsResult.data;
       if (!childContext) {
         return NextResponse.json(
           { success: false, error: 'Child not found' },
@@ -378,9 +395,6 @@ export async function POST(request: NextRequest) {
         );
       }
     }
-
-    // 2. Retrieve relevant knowledge
-    const knowledge = await retrieveKnowledge(question, 4);
 
     // 3. Build prompt — conversational mode for both teachers and parents
     let systemPrompt: string;
@@ -396,12 +410,7 @@ export async function POST(request: NextRequest) {
       systemPrompt = classroomPrompt.systemPrompt;
       userPrompt = classroomPrompt.userPrompt;
     } else if (isConversational) {
-      // Fetch saved concerns + settings for conversational context
-      const { data: childSettingsRecord } = await supabase
-        .from('montree_children')
-        .select('settings')
-        .eq('id', child_id)
-        .maybeSingle();
+      // childSettingsRecord was pre-fetched in parallel above
       const childSettings = (childSettingsRecord?.settings as Record<string, unknown>) || {};
       const savedConcerns = (childSettings.guru_concerns as string[]) || [];
 
@@ -484,8 +493,8 @@ export async function POST(request: NextRequest) {
     const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
     if (!isWholeClassMode && childContext?.past_interactions && childContext.past_interactions.length > 0) {
-      // Oldest first so conversation flows naturally
-      const recent = childContext.past_interactions.slice(0, 5);
+      // Oldest first so conversation flows naturally. 3 entries = good context with ~1,000 fewer tokens vs 5.
+      const recent = childContext.past_interactions.slice(0, 3);
       const chronological = [...recent].reverse();
       for (const interaction of chronological) {
         if (interaction.question && interaction.response_insight) {
@@ -527,21 +536,22 @@ export async function POST(request: NextRequest) {
       // REFLECTION = pure conversation, no tools
       const toolsEnabled = TOOL_ENABLED_MODES.includes(guruMode);
 
+      // Build mode-specific tool set (NORMAL drops 6 niche tools → saves ~1,200 tokens)
+      const modeTools = toolsEnabled ? getToolsForMode(guruMode, isWholeClassMode) : [];
+
       // Detect explicit shelf/progress update requests — force tool_choice: "any" so the model
       // MUST call at least one tool instead of just verbally suggesting works.
-      // Patterns are specific to avoid false positives on casual messages containing "her"/"his".
+      // Guard: only force when tools are actually available (modeTools.length > 0).
       const shelfUpdatePattern = /weekly admin|update\s+(\w+\s+)?shelf|set\s+(the\s+)?focus|change\s+(the\s+)?work|replace\s+(the\s+)?work|put\s+\w+\s+on\s+(\w+\s+)?shelf|update\s+(\w+\s+)?progress|mark\s+\w+\s+as\s+master|new works?\s+for|rotate\s+(the\s+)?shelf|recommend\s+(a\s+|some\s+)?works?|suggest\s+(a\s+|some\s+)?works?|what\s+should\s+\w+\s+work\s+on|fix\s+(\w+\s+)?shelf|match\s+(\w+\s+)?shelf|put\s+it\s+(on|in)\s/i;
-      const forceToolUse = toolsEnabled && shelfUpdatePattern.test(question);
-
-      // Build API params — tools only included when mode requires them
+      const forceToolUse = modeTools.length > 0 && shelfUpdatePattern.test(question);
       const baseApiParams = {
         model: guruModel,
         max_tokens: guruMaxTokens,
         system: systemPrompt,
         messages: currentMessages,
       };
-      const apiParams = toolsEnabled
-        ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: forceToolUse ? { type: "any" as const } : { type: "auto" as const } }
+      const apiParams = modeTools.length > 0
+        ? { ...baseApiParams, tools: modeTools, tool_choice: forceToolUse ? { type: "any" as const } : { type: "auto" as const } }
         : baseApiParams;
 
       // Master AbortController: cancels ALL in-flight Anthropic API calls when total timeout fires.
@@ -567,40 +577,36 @@ export async function POST(request: NextRequest) {
           (b): b is Extract<typeof b, { type: 'tool_use' }> => b.type === 'tool_use'
         );
 
-        const toolResults: ToolResultBlockParam[] = [];
-        for (const toolCall of toolUseBlocks) {
+        // Pre-resolve whole-class student names (sync), then execute all tools in parallel
+        const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile', 'get_child_recent_activity'];
+
+        const toolPromises = toolUseBlocks.map(async (toolCall) => {
           try {
-            // In whole-class mode, resolve student_name to child_id before executing tool
             let effectiveChildId = child_id;
             const toolInput = toolCall.input as Record<string, unknown>;
-            // Tools that operate on a specific child need student_name in whole-class mode
-            const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile', 'get_child_recent_activity'];
             if (isWholeClassMode && classroomContext && CHILD_SCOPED_TOOLS.includes(toolCall.name)) {
               const studentName = toolInput.student_name as string | undefined;
               if (studentName) {
                 const resolved = resolveStudentName(studentName, classroomContext);
                 if ('error' in resolved) {
                   actionsTaken.push({ tool: toolCall.name, success: false, message: resolved.error });
-                  toolResults.push({
+                  return {
                     type: 'tool_result' as const,
                     tool_use_id: toolCall.id,
                     is_error: true,
                     content: JSON.stringify({ success: false, message: resolved.error }),
-                  });
-                  continue;
+                  };
                 }
                 effectiveChildId = resolved.childId;
               } else {
-                // No student_name provided — error
                 const msg = `In whole-class mode, provide student_name to identify which student. Available: ${classroomContext.children.map(c => c.name).join(', ')}`;
                 actionsTaken.push({ tool: toolCall.name, success: false, message: msg });
-                toolResults.push({
+                return {
                   type: 'tool_result' as const,
                   tool_use_id: toolCall.id,
                   is_error: true,
                   content: JSON.stringify({ success: false, message: msg }),
-                });
-                continue;
+                };
               }
             }
             const result = await executeTool(
@@ -610,14 +616,14 @@ export async function POST(request: NextRequest) {
               isWholeClassMode ? classroom_id! : undefined
             );
             actionsTaken.push({ tool: toolCall.name, ...result });
-            toolResults.push({
+            return {
               type: 'tool_result' as const,
               tool_use_id: toolCall.id,
               content: JSON.stringify(result),
-            });
+            };
           } catch (err) {
             console.error(`[Guru Tool] ${toolCall.name} failed:`, err);
-            toolResults.push({
+            return {
               type: 'tool_result' as const,
               tool_use_id: toolCall.id,
               is_error: true,
@@ -625,9 +631,11 @@ export async function POST(request: NextRequest) {
                 success: false,
                 message: `Tool failed: ${err instanceof Error ? err.message : 'Unknown error'}`
               }),
-            });
+            };
           }
-        }
+        });
+
+        const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
 
         currentMessages = [
           ...currentMessages,
@@ -638,7 +646,7 @@ export async function POST(request: NextRequest) {
         response = await withTimeout(
           anthropic.messages.create({
             ...baseApiParams,
-            tools: GURU_TOOLS,
+            tools: modeTools,
             tool_choice: { type: "auto" },
             messages: currentMessages,
           }, { signal: masterAbort.signal }),
@@ -714,6 +722,7 @@ export async function POST(request: NextRequest) {
             mode: guruMode,
             question_category: questionCategory,
             tools_enabled: toolsEnabled,
+            tools_injected: modeTools.length,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
             guru_tier: guruTier,
@@ -726,6 +735,7 @@ export async function POST(request: NextRequest) {
             mode: guruMode,
             question_category: questionCategory,
             tools_enabled: toolsEnabled,
+            tools_injected: modeTools.length,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
             guru_tier: guruTier,
