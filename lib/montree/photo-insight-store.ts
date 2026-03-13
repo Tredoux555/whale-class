@@ -61,6 +61,9 @@ function makeKey(mediaId: string, childId: string): string {
 
 const entries = new Map<string, InsightEntry>();
 const listeners = new Set<Listener>();
+// AbortControllers for in-flight fetches — keyed same as entries (mediaId:childId)
+// Prevents zombie fetches from resurrecting deleted entries after resetEntry/clearAll
+const abortControllers = new Map<string, AbortController>();
 
 // Version counter — incremented on every mutation to produce new snapshot identity
 // useSyncExternalStore compares snapshots with Object.is — same reference = no re-render
@@ -185,6 +188,13 @@ function runAnalysisFetch(
   const key = makeKey(mediaId, childId);
   const isRetry = retryCount > 0;
 
+  // Abort any previous in-flight fetch for this key (e.g., on retry)
+  abortControllers.get(key)?.abort();
+
+  // Create new AbortController for this fetch — tracked so resetEntry/clearAll can cancel it
+  const controller = new AbortController();
+  abortControllers.set(key, controller);
+
   entries.set(key, {
     mediaId,
     childId,
@@ -206,18 +216,22 @@ function runAnalysisFetch(
     }
   }, CLIENT_TIMEOUT_MS);
 
-  // Fire the fetch — NOT tied to any AbortController or component lifecycle
+  // Fire the fetch with abort signal — resetEntry/clearAll can cancel via abortControllers map
   // Timeout: CLIENT_TIMEOUT_MS + 5s buffer so store's own timeout fires first for clean handling
   // (montreeApi default is 30s — too short for Sonnet vision which has a 45s server timeout)
   montreeApi('/api/montree/guru/photo-insight', {
     method: 'POST',
     body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
     timeout: CLIENT_TIMEOUT_MS + 5000,
+    signal: controller.signal,
   })
     .then(async (res) => {
       clearTimeout(timeoutId);
+      abortControllers.delete(key);
       // If timeout already fired, don't overwrite its error state
       if (timedOut) return;
+      // Guard: entry may have been deleted by resetEntry/clearAll while fetch was in-flight
+      if (!entries.has(key)) return;
 
       // Guard: check res.ok before parsing JSON
       if (!res.ok) {
@@ -266,6 +280,9 @@ function runAnalysisFetch(
         classroom_work_id: (data.classroom_work_id as string) ?? null,
       };
 
+      // Final guard: entry may have been deleted while parsing response
+      if (!entries.has(key)) return;
+
       entries.set(key, {
         mediaId,
         childId,
@@ -278,8 +295,13 @@ function runAnalysisFetch(
     })
     .catch((err) => {
       clearTimeout(timeoutId);
+      abortControllers.delete(key);
       // If timeout already fired and set error state, don't overwrite it
       if (timedOut) return;
+      // If entry was deleted (resetEntry/clearAll), don't resurrect with error state
+      if (!entries.has(key)) return;
+      // If aborted by resetEntry/clearAll, silently exit (not a real error)
+      if (err instanceof Error && err.name === 'AbortError') return;
       const errorType = classifyError(undefined, err);
       console.error(`[PhotoInsight] Fetch error (attempt ${retryCount + 1}):`, err);
       handleAnalysisError(mediaId, childId, locale, retryCount, errorType);
@@ -295,6 +317,9 @@ function handleAnalysisError(
   errorType: InsightErrorType,
 ): void {
   const key = makeKey(mediaId, childId);
+
+  // Guard: entry may have been deleted by resetEntry/clearAll — don't resurrect
+  if (!entries.has(key)) return;
 
   // Auto-retry once for transient errors (not rate limits)
   if (retryCount < MAX_AUTO_RETRIES && isRetryable(errorType)) {
@@ -334,7 +359,11 @@ function handleAnalysisError(
 
 /** Reset a specific entry (e.g., to retry after error) */
 export function resetEntry(mediaId: string, childId: string): void {
-  entries.delete(makeKey(mediaId, childId));
+  const key = makeKey(mediaId, childId);
+  // Abort any in-flight fetch for this key — prevents zombie fetch from resurrecting entry
+  abortControllers.get(key)?.abort();
+  abortControllers.delete(key);
+  entries.delete(key);
   notify();
 }
 
@@ -360,6 +389,11 @@ export function rejectEntry(mediaId: string, childId: string): void {
 
 /** Clear all entries (e.g., on logout) */
 export function clearAll(): void {
+  // Abort all in-flight fetches — prevents zombie fetches from resurrecting entries
+  for (const controller of abortControllers.values()) {
+    controller.abort();
+  }
+  abortControllers.clear();
   entries.clear();
   notify();
 }

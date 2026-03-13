@@ -12,7 +12,7 @@ import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { montreeApi } from '@/lib/montree/api';
 import {
   subscribe,
-  getSnapshot,
+  getEntry,
   startAnalysis,
   resetEntry,
   confirmEntry,
@@ -50,11 +50,12 @@ export default function PhotoInsightButton({
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Subscribe to the global store — re-renders when any entry changes
+  // Subscribe to the global store — per-entry selector limits re-renders to THIS entry only
+  // (Full-Map snapshot caused ALL PhotoInsightButtons to re-render when ANY entry changed)
   // Composite key (mediaId:childId) ensures group photos show the correct child's analysis
-  const storeSnapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
   const storeKey = `${mediaId}:${childId}`;
-  const entry = storeSnapshot.get(storeKey);
+  const entrySelector = useCallback(() => getEntry(mediaId, childId), [mediaId, childId]);
+  const entry = useSyncExternalStore(subscribe, entrySelector, entrySelector);
 
   const analyzing = entry?.status === 'analyzing' || entry?.status === 'retrying';
   const error = entry?.status === 'error';
