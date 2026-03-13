@@ -19,10 +19,32 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening + Phonics Fast AMI restructure + Guru Context-Aware Routing + Guru Speed Optimization + Guru Timeout Fix. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: guru context routing + phonics fast AMI restructure + 3x3x3x3 smart capture hardening + guru speed optimization + 401 fix + album upload + all Mar 8-13 features" && git push origin main`
 
 **Includes:** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction — mode-based tool injection, pre-API parallelization, conversation memory 5→3, role-based prompt trimming, parallel tool execution), Guru Timeout Fix (master AbortController 60s hard wall, withTimeout helper, per-call 30s cap, client 70s timeout), Guru Context-Aware Routing / Selective Knowledge Injection (3x3x3x3, 4 files, ~30-50% input token reduction per Guru request, regex question classifier + conditional knowledge module injection), Phonics Fast AMI-aligned 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology, pink→blue→green series), 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Full deploy handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
-### Fix i18n Work Names Not Translating to Chinese (Priority #1)
+### Rewrite Phonics Image Downloader with Montessori Filters (Priority #1 — FIRST CALL TO ACTION)
+
+**Status:** Script exists (`scripts/download-phonics-images.py`), ran successfully (355 images downloaded), but ~90% of images are NOT Montessori-standard. Pixabay returns artistic stock photos — wrong objects, cluttered backgrounds, zoomed-in macro shots, inappropriate content. Only ~10% usable.
+
+**Problem examples from pink1:** cat = artistic macro face close-up, bed = woman on a bed (inappropriate), van = motorcycle (wrong object), bat = fruit bat (should be baseball bat), map = phone with digital overlay, net = fishing tackle box (cluttered).
+
+**Montessori standard requires:** Single isolated object, clean/white background, realistic or clear illustration, instantly recognizable by a 3-year-old, consistent visual style.
+
+**Fix plan — Option 2: Rewrite script with Montessori-specific Pixabay filters (~1hr):**
+1. Change `image_type` from `"photo"` to `"illustration"` — clipart-style images are cleaner for phonics
+2. Append `"isolated white background"` to every search query
+3. Add `"clipart"` or `"simple"` to search terms
+4. Use `category=education` filter where applicable
+5. Fix word meanings: "bat" → "baseball bat clipart" (not animal), "bed" → "children bed furniture", etc.
+6. Consider `image_type=vector` as alternative — SVG-style results are cleaner
+7. Re-run on Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && python3 scripts/download-phonics-images.py API_KEY`
+8. Review samples again — if still <50% usable, pivot to DALL-E generation (~$17 for all 420 words)
+
+**Pixabay API key:** `54099265-43cd46dcc1f65cb5f1a7ae462` (free account: u_h98kz5r584)
+**Current images on Mac:** `phonics-images/` (355 files, 27.8MB) — delete and re-download after rewrite
+**Handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`
+
+### Fix i18n Work Names Not Translating to Chinese (Priority #2)
 
 **Problem:** When Chinese is selected, UI labels translate correctly but **work names stay English** ("Dropper Water Transfer" instead of Chinese). Affects: FocusWorksSection work names, Weekly Admin generated content, classroom overview print page.
 
@@ -34,35 +56,62 @@ All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions +
 3. `classroom-overview/page.tsx` — Already enriches via batch API's `getChineseNameMap()` — verify it works
 4. Ensure Claude's `outputLang` directive is working for narrative generation in Weekly Admin
 
-### Fix `{count}m ago` Timestamp Bug (Priority #2)
+### Fix `{count}m ago` Timestamp Bug (Priority #3)
 
 GuruChatThread welcome message shows literal `{count}m ago` instead of actual time. Check timestamp formatting in GuruChatThread — likely a missing i18n interpolation or template literal issue.
 
-### Seed Community Library (Priority #3)
+### Seed Community Library (Priority #4)
 
 Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
 
-### Per-School Guru Personality Settings (Priority #4)
+### Per-School Guru Personality Settings (Priority #5)
 
 **Status:** DESIGNED, ready to build. ~1-2 hours.
 **What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school.
 **Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
 
-### Stripe Setup (Priority #5 — Deferred)
+### Stripe Setup (Priority #6 — Deferred)
 
 **Needs:** `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`, `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM`
 
-### i18n Remaining Wiring (Priority #6)
+### i18n Remaining Wiring (Priority #7)
 
 Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
 
-### Story Vault Image Viewer (Priority #7 — Deferred)
+### Story Vault Image Viewer (Priority #8 — Deferred)
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
 ---
 
 ## CURRENT STATUS (Mar 13, 2026)
+
+### Session Work (Mar 13, 2026 — Late Night Session)
+
+**Phonics Code Fixes + Image Download Attempt — 2 fixes applied, 355 images downloaded but ~90% unusable:**
+
+**Fix 1 — Clap Template Grammar (1 file):**
+- `lib/montree/phonics/phonics-data.ts` line 1350 — `'Clap and then {word}.'` → `'Clap and then touch the {word}.'`
+- Was putting nouns in action position ("Clap and then cat" — nonsensical)
+
+**Fix 2 — PrintableMatching useMemo (1 file):**
+- `app/montree/library/tools/phonics-fast/sentence-cards/page.tsx` — Wrapped Fisher-Yates shuffle in `useMemo` with stable `sentenceKey` dependency
+- Pictures no longer re-shuffle when user changes border color or other settings
+
+**Phonics Image Download — ATTEMPTED, NOT USABLE:**
+- Created `scripts/download-phonics-images.py` — Pixabay bulk downloader with ~420 noun words, search overrides for ambiguous words, rate limiting, resume support, auto-zip
+- User ran it: 355 downloaded, 2 failed (pet, kick), 27.8 MB zip at `phonics-images.zip`
+- **Reviewed samples: ~90% fail rate.** Pixabay returns artistic stock photos, not educational materials
+- Examples: cat=macro face, bed=woman on bed (inappropriate), van=motorcycle (wrong object), bat=fruit bat (should be baseball bat)
+- **Next step:** Rewrite script with `image_type=illustration`, append "isolated white background" to queries, fix word meanings. If still <50% usable, pivot to DALL-E generation (~$17 total). See Priority #1.
+
+**Files modified (2) + 1 new:**
+1. `lib/montree/phonics/phonics-data.ts` — 1 line fix
+2. `app/montree/library/tools/phonics-fast/sentence-cards/page.tsx` — ~15 lines useMemo
+3. `scripts/download-phonics-images.py` — NEW (bulk downloader, needs rewrite)
+
+**Deploy:** ⚠️ NOT YET PUSHED. Include 2 code fixes in consolidated push. Script is a utility (can push or not).
+**Handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`
 
 ### Session Work (Mar 13, 2026 — Latest Session)
 
@@ -2807,7 +2856,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md` | **CURRENT** — Guru context-aware routing / selective knowledge injection (4 files, ~30-50% token reduction, 3x3x3x3 methodology) |
+| `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md` | **CURRENT** — Phonics image download attempt (355 images, ~90% unusable), 2 code fixes (Clap template + useMemo), script rewrite needed |
+| `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md` | Guru context-aware routing / selective knowledge injection (4 files, ~30-50% token reduction, 3x3x3x3 methodology) |
 | `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md` | Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology) |
 | `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md` | 3x3x3x3 hardening: timeout chain, composite keys, scenario D staleness, query parallelization (4 files, 9 audits CLEAN) |
 | `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md` | 3-cycle audit fix loop: 8 issues fixed (rate limiting, .maybeSingle, i18n, AbortController, error logging) |

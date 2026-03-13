@@ -807,8 +807,6 @@ function getTitle() {
 function generateBoards(wordPool, title, gridSize, boardCount, borderColor, borderW, radius, imgFn) {
   // Board borders 2x thicker than calling cards — boards will be cut and laminated
   borderW = borderW * 2;
-  // Board borders 2x thicker than calling cards — boards will be cut and laminated
-  borderW = borderW * 2;
 
   const output = document.getElementById('output');
   output.innerHTML = '';
@@ -879,8 +877,9 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
   const cols = 4;
   const pages = Math.ceil(wordPool.length / cardsPerPage);
 
-  // Per-card styles (like 3-Part Card Generator)
-  const cardStyle = `background:${borderColor}; padding:${borderW}mm; border-radius:${radius}px;`;
+  // Per-card styles (like 3-Part Card Generator) — double borderW to match board padding
+  const callCardBorderW = borderW * 2;
+  const cardStyle = `background:${borderColor}; padding:${callCardBorderW}mm; border-radius:${radius}px;`;
   const innerStyle = `border-radius:${Math.max(0, radius - 1)}px;`;
   const emptyStyle = `background:transparent;`;
 

@@ -822,7 +822,9 @@ function generateCallingCardsCore(words, title, borderColor, borderW, radius) {
   const cols = 4;
   const pages = Math.ceil(words.length / cardsPerPage);
 
-  const cardStyle = `background:${borderColor}; padding:${borderW}mm; border-radius:${radius}px;`;
+  // Double borderW for calling cards to match board padding (boards use borderW*2)
+  const callCardBorderW = borderW * 2;
+  const cardStyle = `background:${borderColor}; padding:${callCardBorderW}mm; border-radius:${radius}px;`;
   const innerStyle = `border-radius:${Math.max(0, radius - 1)}px;`;
   const emptyStyle = `background:transparent;`;
 

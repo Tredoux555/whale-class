@@ -305,7 +305,9 @@ export default function ReverseBingoPage() {
       const cardsPerPage = 16;
       const cols = 4;
       const pages = Math.ceil(callingWords.length / cardsPerPage);
-      const cardStyle = `background:${borderColor};padding:${borderWidth}mm;border-radius:${cornerRadius}px;`;
+      // Double borderWidth for calling cards to match board padding (boards use bw = borderWidth * 2)
+      const bw = borderWidth * 2;
+      const cardStyle = `background:${borderColor};padding:${bw}mm;border-radius:${cornerRadius}px;`;
       const innerR = `border-radius:${Math.max(0, cornerRadius - 1)}px;`;
 
       for (let p = 0; p < pages; p++) {
