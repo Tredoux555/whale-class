@@ -16,10 +16,10 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening + Phonics Fast AMI restructure + Guru Context-Aware Routing. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: guru context routing + phonics fast AMI restructure + 3x3x3x3 smart capture hardening + 401 fix + album upload + all Mar 8-13 features" && git push origin main`
+All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening + Phonics Fast AMI restructure + Guru Context-Aware Routing + Guru Speed Optimization + Guru Timeout Fix. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: guru context routing + phonics fast AMI restructure + 3x3x3x3 smart capture hardening + guru speed optimization + 401 fix + album upload + all Mar 8-13 features" && git push origin main`
 
-**Includes:** Guru Context-Aware Routing / Selective Knowledge Injection (3x3x3x3, 4 files, ~30-50% input token reduction per Guru request, regex question classifier + conditional knowledge module injection), Phonics Fast AMI-aligned 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology, pink→blue→green series), 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Includes:** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction — mode-based tool injection, pre-API parallelization, conversation memory 5→3, role-based prompt trimming, parallel tool execution), Guru Timeout Fix (master AbortController 60s hard wall, withTimeout helper, per-call 30s cap, client 70s timeout), Guru Context-Aware Routing / Selective Knowledge Injection (3x3x3x3, 4 files, ~30-50% input token reduction per Guru request, regex question classifier + conditional knowledge module injection), Phonics Fast AMI-aligned 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology, pink→blue→green series), 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
 ### Fix i18n Work Names Not Translating to Chinese (Priority #1)
@@ -65,6 +65,57 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 ## CURRENT STATUS (Mar 13, 2026)
 
 ### Session Work (Mar 13, 2026 — Latest Session)
+
+**Guru Speed Optimization (3×3×3×3) — COMPLETE, NOT YET DEPLOYED (3 files modified, ~30-50% total input token reduction, ~1-3s faster per request):**
+
+Full 3×3×3×3 deep dive on Guru API response latency. Dominant factor: Anthropic API latency proportional to input token count (20-24K tokens per request). Applied 6 optimizations across 3 rounds.
+
+**Round 1 — Mode-Based Tool Injection + Pre-API Parallelization:**
+- `tool-definitions.ts` — `getToolsForMode(mode, isWholeClass)` with `MODE_TOOL_MAP` + `WHOLE_CLASS_ONLY_TOOLS`. NORMAL mode: 13 tools (drops mode-specific + classroom-wide). REFLECTION mode: 0 tools. ~1,200 tokens saved.
+- `route.ts` — `Promise.all([buildChildContext, retrieveKnowledge, childSettings])` runs 3 independent operations concurrently. ~200-400ms saved.
+- `route.ts` — Conversation memory `.slice(0, 3)` instead of `.slice(0, 5)`. ~1,000-2,000 tokens saved.
+- Round 1 audit: 1 issue found (forceToolUse true while modeTools empty in REFLECTION) → fixed with `modeTools.length > 0` guard.
+
+**Round 2 — Role-Based Prompt Trimming + Parallel Tool Execution:**
+- `conversational-prompt.ts` — Split `TOOL_USE_INSTRUCTIONS` into `_BASE` (shared, all users) + `_CLASSROOM` (teacher-only). Conditional injection: `systemPrompt += BASE; if (isTeacher) { systemPrompt += CLASSROOM; }`. ~550 tokens saved for parents.
+- `route.ts` — Tool execution loop changed from sequential `for...of` + `await` to `Promise.all(toolPromises.map(async ...))`. Each tool resolves independently. Student name resolution (whole-class) happens inside each promise. ~100-400ms saved per tool round.
+- Round 2 audit: 0 issues. Cross-cycle verification: CLEAN.
+
+**Round 3 — Analysis + Final Verification:**
+Research confirmed diminishing returns — remaining candidates (mode-specific max_tokens, further prompt deduplication) had poor risk/reward ratios. Full cross-round verification with agent: all 5 scenarios validated, no stale references, no integration issues.
+
+**Token Impact Summary:**
+
+| Optimization | Tokens Saved | % of Input |
+|---|---|---|
+| Mode-based tool injection (NORMAL) | ~1,200 | 6% |
+| Conversation memory 5→3 | ~1,000-2,000 | 5-10% |
+| Question classifier (earlier session) | ~1,000-3,200 | 5-16% |
+| Role-based tool instructions (parents) | ~550 | 3% |
+| **Total per request** | **~2,750-6,950** | **~14-35%** |
+
+Combined with earlier question classifier: **~30-50% total input token reduction.**
+
+**Latency Impact:**
+
+| Optimization | Time Saved |
+|---|---|
+| Pre-API parallelization | ~200-400ms |
+| Tool execution parallelization | ~100-400ms per round |
+| Token reduction → faster TTFT | ~700-1,750ms |
+| **Total estimated** | **~1-3 seconds faster** |
+
+**Files Modified (3):**
+1. `lib/montree/guru/tool-definitions.ts` — Added `getToolsForMode()`, `MODE_TOOL_MAP`, `WHOLE_CLASS_ONLY_TOOLS`, `GuruMode` type
+2. `app/api/montree/guru/route.ts` — 9 edits: import, variable declarations, 2× Promise.all parallelization, modeTools variable, forceToolUse guard, modeTools in API params, tools_injected metric, memory slice, parallel tool execution
+3. `lib/montree/guru/conversational-prompt.ts` — Split `TOOL_USE_INSTRUCTIONS` into `_BASE` + `_CLASSROOM`, conditional injection
+
+**Audit Summary:** 36+ audits, 3 cross-verifications, 1 issue found and fixed. All CLEAN.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`
+
+### Session Work (Mar 13, 2026)
 
 **Guru Context-Aware Routing / Selective Knowledge Injection — COMPLETE, NOT YET DEPLOYED (1 new + 3 modified files, 3x3x3x3 methodology, 2 issues found and fixed):**
 

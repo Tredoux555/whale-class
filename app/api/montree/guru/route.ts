@@ -42,6 +42,7 @@ export interface GuruRequest {
   role?: string; // 'principal' skips freemium checks and uses principal prompt
   conversational?: boolean; // true = WhatsApp-style chat for homeschool parents
   image_url?: string; // optional image for vision analysis
+  stream?: boolean; // true = SSE streaming response (token by token)
 }
 
 export interface GuruResponse {
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    let { child_id, question, classroom_id, teacher_id, role, conversational, image_url } = body;
+    let { child_id, question, classroom_id, teacher_id, role, conversational, image_url, stream: streamRequested } = body;
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -560,6 +561,212 @@ export async function POST(request: NextRequest) {
       const masterTimeout = setTimeout(() => masterAbort.abort(), TOTAL_REQUEST_TIMEOUT_MS);
       const requestStart = Date.now();
 
+      // ===============================================================
+      // STREAMING PATH: Stream the final text response token-by-token
+      // Tool rounds still happen non-streaming (tools must complete).
+      // Only the final text generation streams to the client via SSE.
+      // ===============================================================
+      if (streamRequested) {
+        // Run tool rounds non-streaming first (if tools are enabled)
+        const actionsTaken: Array<{ tool: string } & ToolResult> = [];
+        let rounds = 0;
+
+        // First call — non-streaming to check if tools are needed
+        let toolResponse = await withTimeout(
+          anthropic.messages.create(apiParams, { signal: masterAbort.signal }),
+          API_TIMEOUT_MS,
+          'Guru initial call'
+        );
+
+        // Multi-turn tool loop
+        while (toolResponse.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS && (Date.now() - requestStart) < TOTAL_REQUEST_TIMEOUT_MS) {
+          rounds++;
+          const toolUseBlocks = toolResponse.content.filter(
+            (b): b is Extract<typeof b, { type: 'tool_use' }> => b.type === 'tool_use'
+          );
+
+          const CHILD_SCOPED_TOOLS = ['set_focus_work', 'clear_focus_work', 'update_progress', 'save_observation', 'save_child_profile', 'get_child_recent_activity'];
+
+          const toolPromises = toolUseBlocks.map(async (toolCall) => {
+            try {
+              let effectiveChildId = child_id;
+              const toolInput = toolCall.input as Record<string, unknown>;
+              if (isWholeClassMode && classroomContext && CHILD_SCOPED_TOOLS.includes(toolCall.name)) {
+                const studentName = toolInput.student_name as string | undefined;
+                if (studentName) {
+                  const resolved = resolveStudentName(studentName, classroomContext);
+                  if ('error' in resolved) {
+                    actionsTaken.push({ tool: toolCall.name, success: false, message: resolved.error });
+                    return { type: 'tool_result' as const, tool_use_id: toolCall.id, is_error: true, content: JSON.stringify({ success: false, message: resolved.error }) };
+                  }
+                  effectiveChildId = resolved.childId;
+                } else {
+                  const msg = `In whole-class mode, provide student_name to identify which student. Available: ${classroomContext.children.map(c => c.name).join(', ')}`;
+                  actionsTaken.push({ tool: toolCall.name, success: false, message: msg });
+                  return { type: 'tool_result' as const, tool_use_id: toolCall.id, is_error: true, content: JSON.stringify({ success: false, message: msg }) };
+                }
+              }
+              const result = await executeTool(toolCall.name, toolInput, effectiveChildId, isWholeClassMode ? classroom_id! : undefined);
+              actionsTaken.push({ tool: toolCall.name, ...result });
+              return { type: 'tool_result' as const, tool_use_id: toolCall.id, content: JSON.stringify(result) };
+            } catch (err) {
+              console.error(`[Guru Tool] ${toolCall.name} failed:`, err);
+              return { type: 'tool_result' as const, tool_use_id: toolCall.id, is_error: true, content: JSON.stringify({ success: false, message: `Tool failed: ${err instanceof Error ? err.message : 'Unknown error'}` }) };
+            }
+          });
+
+          const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
+
+          currentMessages = [
+            ...currentMessages,
+            { role: 'assistant' as const, content: toolResponse.content as unknown as ContentBlockParam[] },
+            { role: 'user' as const, content: toolResults },
+          ];
+
+          // If this is the last tool round OR we're approaching timeout, break and stream the final response
+          // Otherwise do another non-streaming round to check for more tools
+          const nextResponse = await withTimeout(
+            anthropic.messages.create({
+              ...baseApiParams,
+              tools: modeTools,
+              tool_choice: { type: "auto" },
+              messages: currentMessages,
+            }, { signal: masterAbort.signal }),
+            API_TIMEOUT_MS,
+            `Guru tool round ${rounds}`
+          );
+
+          if (nextResponse.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS && (Date.now() - requestStart) < TOTAL_REQUEST_TIMEOUT_MS) {
+            toolResponse = nextResponse;
+            continue;
+          }
+
+          // Not a tool_use response — we have final text. Extract and stream it.
+          if (nextResponse.stop_reason !== 'tool_use') {
+            const finalText = nextResponse.content
+              .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
+              .map(b => b.text)
+              .join('\n');
+
+            clearTimeout(masterTimeout);
+            const { input_tokens = 0, output_tokens = 0 } = nextResponse.usage || {};
+            const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+            const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+            console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+
+            // Stream the final text as SSE
+            const encoder = new TextEncoder();
+            const responseStream = new ReadableStream({
+              start(controller) {
+                // Send the full text as a single SSE event (tool rounds already consumed the time)
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+                controller.close();
+
+                // Fire-and-forget: save interaction + self-learning
+                saveInteractionAndLearn(supabase, {
+                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+                  guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
+                  isTeacher, isGreetingTrigger, isParentRole,
+                });
+              }
+            });
+
+            return new Response(responseStream, {
+              headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+            });
+          }
+
+          // Tool round limit hit with tool_use still pending
+          toolResponse = nextResponse;
+          break;
+        }
+
+        // If we get here, either:
+        // 1. No tools were used at all (toolResponse.stop_reason !== 'tool_use' from first call)
+        // 2. Tool rounds finished/maxed out
+
+        clearTimeout(masterTimeout);
+
+        // Check if the initial response had text (no tools used)
+        if (toolResponse.stop_reason !== 'tool_use') {
+          // No tools were used — initial response already has the final text.
+          // Send it as a single SSE chunk (no second API call needed).
+          const finalText = toolResponse.content
+            .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
+            .map(b => b.text)
+            .join('\n');
+
+          const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
+          const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+          const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+          console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: 0, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+
+          const encoder = new TextEncoder();
+          const responseStream = new ReadableStream({
+            start(controller) {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+              controller.close();
+
+              saveInteractionAndLearn(supabase, {
+                child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
+                guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
+                isTeacher, isGreetingTrigger, isParentRole,
+              });
+            }
+          });
+
+          return new Response(responseStream, {
+            headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+          });
+        }
+
+        // Tool rounds maxed out — generate summary from tool results
+        if (toolResponse.stop_reason === 'tool_use') {
+          const reason = rounds >= MAX_TOOL_ROUNDS ? `max rounds (${MAX_TOOL_ROUNDS})` : `total timeout (${Date.now() - requestStart}ms)`;
+          console.warn(`[Guru Stream] Tool loop stopped: ${reason}. Actions completed: ${actionsTaken.length}`);
+        }
+
+        let responseText = toolResponse.content
+          .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
+          .map(b => b.text)
+          .join('\n');
+
+        if (!responseText.trim() && actionsTaken.length > 0) {
+          responseText = `Done! Here's what I did:\n\n${actionsTaken.filter(a => a.success).map(a => a.message).join('\n\n')}`;
+        }
+
+        const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
+        const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+        const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+
+        const encoder = new TextEncoder();
+        const responseStream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: responseText })}\n\n`));
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+            controller.close();
+
+            saveInteractionAndLearn(supabase, {
+              child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+              question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+              guruTier, estCost, responseText, knowledge, guruModel, startTime,
+              isTeacher, isGreetingTrigger, isParentRole,
+            });
+          }
+        });
+
+        return new Response(responseStream, {
+          headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+        });
+      }
+
+      // ===============================================================
+      // NON-STREAMING PATH (original): Wait for full response
+      // ===============================================================
       let response = await withTimeout(
         anthropic.messages.create(apiParams, { signal: masterAbort.signal }),
         API_TIMEOUT_MS,
@@ -704,105 +911,13 @@ export async function POST(request: NextRequest) {
 
       const processingTime = Date.now() - startTime;
 
-      // Save interaction
-      // Issue DA#1: Use resolved teacherId (not raw body teacher_id) so daily count query matches
-      const { data: saved, error: saveError } = await supabase
-        .from('montree_guru_interactions')
-        .insert({
-          child_id: isWholeClassMode ? null : child_id,
-          teacher_id: teacherId || null,
-          classroom_id: classroom_id || (childContext ? childContext.classroom_id : null),
-          question,
-          question_type: isWholeClassMode ? 'whole_class' : 'chat',
-          context_snapshot: isWholeClassMode ? {
-            whole_class: true,
-            classroom_name: classroomContext?.classroom_name,
-            child_count: classroomContext?.child_count,
-            conversational: true,
-            mode: guruMode,
-            question_category: questionCategory,
-            tools_enabled: toolsEnabled,
-            tools_injected: modeTools.length,
-            tool_rounds: rounds,
-            actions_taken: actionsTaken.length,
-            guru_tier: guruTier,
-            est_cost: estCost,
-          } : {
-            child_name: childContext!.name,
-            age: `${childContext!.age_years}y ${childContext!.age_months}m`,
-            mastered_count: childContext!.mastered_count || 0,
-            conversational: true,
-            mode: guruMode,
-            question_category: questionCategory,
-            tools_enabled: toolsEnabled,
-            tools_injected: modeTools.length,
-            tool_rounds: rounds,
-            actions_taken: actionsTaken.length,
-            guru_tier: guruTier,
-            est_cost: estCost,
-          },
-          response_insight: responseText,
-          sources_used: knowledge.sources_used,
-          processing_time_ms: processingTime,
-          model_used: guruModel,
-        })
-        .select('id')
-        .single();
-
-      if (saveError) {
-        console.error('[Guru] Failed to save chat interaction:', saveError);
-      }
-
-      // Self-learning: feed this conversation into both pattern database AND brain
-      // Fire-and-forget — never blocks the response
-      // Skip for whole-class mode (self-learning is per-child)
-      const childAgeMonthsForLearning = isWholeClassMode ? 0 : ((childContext!.age_years || 0) * 12 + (childContext!.age_months || 0));
-      const activeAreasForLearning = isWholeClassMode ? [] : (childContext!.focus_works?.map(fw => fw.area) || []);
-
-      // Self-learning and post-conversation processing — skip for whole-class mode (per-child only)
-      if (!isWholeClassMode && childContext) {
-        if (actionsTaken.length > 0) {
-          learnFromConversation(child_id, childAgeMonthsForLearning).catch(err =>
-            console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
-          );
-        }
-
-        // Record learning for the brain (every conversation, not just tool-use ones)
-        if (!saveError) {
-          recordLearning({
-            conversation_id: saved?.id as string | undefined,
-            child_age_months: childAgeMonthsForLearning,
-            areas: activeAreasForLearning,
-            learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
-            description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
-            context: `Child ${childContext.name || 'unknown'}, ${childAgeMonthsForLearning}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
-            tags: [
-              ...activeAreasForLearning.map(a => a.replace('practical_life', 'practical')),
-              `age_${Math.round(childAgeMonthsForLearning / 12)}`,
-            ].filter(Boolean),
-          }).catch(err =>
-            console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
-          );
-        }
-
-        // Post-conversation processing for teachers: extract summary + apply work recs
-        if (isTeacher && !isGreetingTrigger && !saveError) {
-          processTeacherConversation({
-            childId: child_id,
-            childName: childContext.name || 'Unknown',
-            question,
-            response: responseText,
-            currentWorks: (childContext.focus_works || []).map(fw => ({
-              area: fw.area,
-              work_name: fw.work_name || '',
-              status: 'assigned',
-            })),
-            interactionId: saved?.id,
-          }).catch(err =>
-            console.error('[Guru] Post-conversation processing error:', err instanceof Error ? err.message : String(err))
-          );
-        }
-      }
+      // Save interaction + self-learning (non-streaming path)
+      const { data: saved } = await saveInteractionAndLearnSync(supabase, {
+        child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+        question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+        guruTier, estCost, responseText, knowledge, guruModel, startTime, processingTime,
+        isTeacher, isGreetingTrigger, isParentRole,
+      });
 
       // Actions are internal (saved in context_snapshot) — never exposed to the parent
       return NextResponse.json({
@@ -1021,6 +1136,142 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Helper: Save interaction + trigger self-learning (fire-and-forget for streaming)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function saveInteractionAndLearn(supabase: any, opts: {
+  child_id: string; isWholeClassMode: boolean; teacherId: string | undefined;
+  classroom_id: string | undefined; childContext: ChildContext | null | undefined;
+  classroomContext: ClassroomContext | undefined;
+  question: string; guruMode: GuruMode; questionCategory: QuestionCategory;
+  toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
+  actionsTaken: Array<{ tool: string } & ToolResult>;
+  guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
+  knowledge: KnowledgeResult; guruModel: string; startTime: number;
+  isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
+}) {
+  // This runs after the stream is closed — don't block anything
+  saveInteractionAndLearnSync(supabase, { ...opts, processingTime: Date.now() - opts.startTime }).catch(err =>
+    console.error('[Guru] Post-stream save failed:', err instanceof Error ? err.message : String(err))
+  );
+}
+
+// Helper: Save interaction + trigger self-learning (sync, returns saved record)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function saveInteractionAndLearnSync(supabase: any, opts: {
+  child_id: string; isWholeClassMode: boolean; teacherId: string | undefined;
+  classroom_id: string | undefined; childContext: ChildContext | null | undefined;
+  classroomContext: ClassroomContext | undefined;
+  question: string; guruMode: GuruMode; questionCategory: QuestionCategory;
+  toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
+  actionsTaken: Array<{ tool: string } & ToolResult>;
+  guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
+  knowledge: KnowledgeResult; guruModel: string; startTime: number; processingTime?: number;
+  isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
+}) {
+  const {
+    child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+    question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+    guruTier, estCost, responseText, knowledge, guruModel, startTime,
+    isTeacher, isGreetingTrigger,
+  } = opts;
+  const processingTime = opts.processingTime || (Date.now() - startTime);
+
+  const { data: saved, error: saveError } = await supabase
+    .from('montree_guru_interactions')
+    .insert({
+      child_id: isWholeClassMode ? null : child_id,
+      teacher_id: teacherId || null,
+      classroom_id: classroom_id || (childContext ? childContext.classroom_id : null),
+      question,
+      question_type: isWholeClassMode ? 'whole_class' : 'chat',
+      context_snapshot: isWholeClassMode ? {
+        whole_class: true,
+        classroom_name: classroomContext?.classroom_name,
+        child_count: classroomContext?.child_count,
+        conversational: true,
+        mode: guruMode,
+        question_category: questionCategory,
+        tools_enabled: toolsEnabled,
+        tools_injected: modeTools.length,
+        tool_rounds: rounds,
+        actions_taken: actionsTaken.length,
+        guru_tier: guruTier,
+        est_cost: estCost,
+      } : {
+        child_name: childContext?.name,
+        age: `${childContext?.age_years || 0}y ${childContext?.age_months || 0}m`,
+        mastered_count: childContext?.mastered_count || 0,
+        conversational: true,
+        mode: guruMode,
+        question_category: questionCategory,
+        tools_enabled: toolsEnabled,
+        tools_injected: modeTools.length,
+        tool_rounds: rounds,
+        actions_taken: actionsTaken.length,
+        guru_tier: guruTier,
+        est_cost: estCost,
+      },
+      response_insight: responseText,
+      sources_used: knowledge.sources_used,
+      processing_time_ms: processingTime,
+      model_used: guruModel,
+    })
+    .select('id')
+    .single();
+
+  if (saveError) {
+    console.error('[Guru] Failed to save chat interaction:', saveError);
+  }
+
+  // Self-learning — fire-and-forget, skip for whole-class
+  const childAgeMonthsForLearning = isWholeClassMode ? 0 : ((childContext?.age_years || 0) * 12 + (childContext?.age_months || 0));
+  const activeAreasForLearning = isWholeClassMode ? [] : (childContext?.focus_works?.map(fw => fw.area) || []);
+
+  if (!isWholeClassMode && childContext) {
+    if (actionsTaken.length > 0) {
+      learnFromConversation(child_id, childAgeMonthsForLearning).catch(err =>
+        console.error('[Guru] Pattern learning error:', err instanceof Error ? err.message : String(err))
+      );
+    }
+
+    if (!saveError) {
+      recordLearning({
+        conversation_id: saved?.id as string | undefined,
+        child_age_months: childAgeMonthsForLearning,
+        areas: activeAreasForLearning,
+        learning_type: actionsTaken.length > 0 ? 'insight' : 'technique',
+        description: `Q: ${question.slice(0, 150)}... → A: ${responseText.slice(0, 200)}...`,
+        context: `Child ${childContext.name || 'unknown'}, ${childAgeMonthsForLearning}mo. ${actionsTaken.length} actions taken: ${actionsTaken.map(a => a.tool).join(', ')}`,
+        tags: [
+          ...activeAreasForLearning.map(a => a.replace('practical_life', 'practical')),
+          `age_${Math.round(childAgeMonthsForLearning / 12)}`,
+        ].filter(Boolean),
+      }).catch(err =>
+        console.error('[Guru] Brain learning error:', err instanceof Error ? err.message : String(err))
+      );
+    }
+
+    if (isTeacher && !isGreetingTrigger && !saveError) {
+      processTeacherConversation({
+        childId: child_id,
+        childName: childContext.name || 'Unknown',
+        question,
+        response: responseText,
+        currentWorks: (childContext.focus_works || []).map(fw => ({
+          area: fw.area,
+          work_name: fw.work_name || '',
+          status: 'assigned',
+        })),
+        interactionId: saved?.id,
+      }).catch(err =>
+        console.error('[Guru] Post-conversation processing error:', err instanceof Error ? err.message : String(err))
+      );
+    }
+  }
+
+  return { data: saved, error: saveError };
 }
 
 // Helper to detect question type
