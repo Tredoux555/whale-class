@@ -14,7 +14,7 @@ export interface PhonicsWord {
 }
 
 export interface PhonicsWordGroup {
-  id: string;
+  id?: string;
   label: string;
   description: string;
   words: PhonicsWord[];
@@ -27,6 +27,35 @@ export interface PhonicsPhase {
   description: string;
   groups: PhonicsWordGroup[];
 }
+
+export interface CommandSentence {
+  sentence: string;
+  phonicsWords: string[];
+  phase: string;
+}
+
+export interface CommandSentenceTemplate {
+  pattern: string;
+  requiredWords: string[];
+  phase: string;
+}
+
+// Alias for backward compat — some consumers import as SentenceTemplate
+export type SentenceTemplate = CommandSentenceTemplate;
+
+export interface StoryPage {
+  text: string;
+  keywords: string[];
+}
+
+export interface PhonicsStory {
+  title: string;
+  phase: string;
+  pages: StoryPage[];
+}
+
+// Alias for backward compat — some consumers import as ShortStory
+export type ShortStory = PhonicsStory;
 
 // =====================================================================
 // SIGHT WORDS — High-frequency words for sentences & stories
@@ -1258,6 +1287,16 @@ export const ALL_PHASES: PhonicsPhase[] = [
   GREEN_3,
 ];
 
+// Auto-generate group IDs from phase + label for consumer compatibility
+// (consumers use group.id for React keys and selection state)
+ALL_PHASES.forEach(phase => {
+  phase.groups.forEach(group => {
+    if (!group.id) {
+      group.id = `${phase.id}-${group.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+    }
+  });
+});
+
 // ============================================================
 // COMMAND SENTENCES — Action sentences using phonics words
 // ============================================================
@@ -1465,3 +1504,7 @@ export const INITIAL_BLENDS = BLUE_1;
 export const FINAL_BLENDS = BLUE_2;
 /** @deprecated Use GREEN_1 */
 export const DIGRAPHS = GREEN_1;
+/** @deprecated Use PHONICS_STORIES */
+export const SHORT_STORIES = PHONICS_STORIES;
+/** @deprecated Use COMMAND_SENTENCE_TEMPLATES */
+export const SENTENCE_TEMPLATES = COMMAND_SENTENCE_TEMPLATES;
