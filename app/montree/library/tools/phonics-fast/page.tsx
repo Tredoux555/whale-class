@@ -23,6 +23,7 @@ const GENERATORS = [
   { href: '/montree/library/tools/phonics-fast/command-cards', icon: '📋', label: 'Command Cards', desc: '"Put the cat on the mat" style reading cards' },
   { href: '/montree/library/tools/phonics-fast/dictionary', icon: '📖', label: 'Dictionary', desc: 'My First Dictionary with phonics words' },
   { href: '/montree/library/tools/phonics-fast/bingo', icon: '🎯', label: 'Bingo', desc: 'Picture + Word bingo boards' },
+  { href: '/montree/library/tools/phonics-fast/reverse-bingo', icon: '🔄', label: 'Reverse Bingo', desc: 'Picture cards call, word boards answer — forces reading!' },
   { href: '/montree/library/tools/phonics-fast/sentence-cards', icon: '📝', label: 'Sentence Cards', desc: 'Simple sentences with picture support' },
   { href: '/montree/library/tools/phonics-fast/stories', icon: '📚', label: 'Short Stories', desc: 'Decodable stories with comprehension pictures' },
 ];

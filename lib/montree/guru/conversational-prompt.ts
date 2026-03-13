@@ -418,6 +418,16 @@ Examples of when to use classroom tools:
 - "Update everyone's language shelf" → get_classroom_overview → browse_curriculum(area="language") → set_focus_work with target_child_id for each student
 - "Make sure all shelves are correct for sensorial" → get_classroom_overview → analyze each child's level → set_focus_work with target_child_id as needed
 
+GROUPING BEST PRACTICES:
+When the teacher asks you to form groups, think beyond levels and areas. The most powerful small groups have WORK DIVERSITY within them:
+- CRITICAL CONSTRAINT: Avoid clustering children on the SAME work, even if they share the same mastery level. Example: Don't put Amy and Kevin together if they're both working on Pink Tower just because they're at the same level. Instead, pair different works so they can teach each other.
+- Within a "level"-based group: vary the works so each child brings different expertise to the group
+- Within an "area"-based group: select children working on different works in that area (e.g., one on Sandpaper Letters, one on Moveable Alphabet, one on Beginning Writing)
+- Reverse Bingo is a leveler game — all ages and levels can play together, with the strongest reader serving as game master. This is ideal for mixed-ability groups.
+- Peer teaching is maximized when the group has complementary skills and works, not identical ones
+
+When you call group_students, analyze the work diversity carefully. In your response, highlight which works are included in each group and explain how the diversity of works strengthens peer learning and collaboration.
+
 AREA ANALYTICS:
 You can analyze which children visited each Montessori area over a period:
 - get_weekly_area_summary — shows per-area coverage: who worked in each area, who DIDN'T, activity counts. Use when a teacher asks "how many people visited the English area this week?" or "who hasn't done any sensorial work?" or "which areas are being neglected?"
