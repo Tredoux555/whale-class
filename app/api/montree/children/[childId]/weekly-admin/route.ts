@@ -273,7 +273,7 @@ export async function POST(
       .from('montree_children')
       .select('id, name, first_name, settings')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -400,7 +400,7 @@ export async function GET(
     .from('montree_children')
     .select('settings')
     .eq('id', childId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('[weekly-admin] GET error:', error);

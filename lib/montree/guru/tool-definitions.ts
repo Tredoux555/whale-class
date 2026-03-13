@@ -448,7 +448,7 @@ export const GURU_TOOLS: Tool[] = [
   },
   {
     name: "group_students",
-    description: "Analyze all students in the classroom and create groups based on specified criteria. Use when the teacher asks to form small groups for collaborative work, level-based grouping, area-based grouping, or any classroom organization task. Returns suggested groups with reasoning.",
+    description: "Analyze all students in the classroom and create groups based on specified criteria. Use when the teacher asks to form small groups for collaborative work, level-based grouping, area-based grouping, or any classroom organization task. Returns suggested groups with reasoning. CRITICAL CONSTRAINT: When forming groups, ensure children in the same group are working on DIFFERENT works — even if they share the same mastery level or area focus. Varied works within a group encourages peer teaching, cross-pollination of skills, and richer collaborative learning. Avoid clustering children on the same work even if they're at the same level. For games like Reverse Bingo (a leveler activity — all ages and levels play together), the strongest reader can serve as game master.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -468,7 +468,7 @@ export const GURU_TOOLS: Tool[] = [
         },
         custom_instructions: {
           type: "string",
-          description: "Additional instructions for grouping (e.g., 'separate Amy and Kevin', 'keep siblings together')"
+          description: "Additional instructions for grouping (e.g., 'separate Amy and Kevin', 'keep siblings together', 'ensure each group has different works')"
         }
       },
       required: ["num_groups", "criteria"]

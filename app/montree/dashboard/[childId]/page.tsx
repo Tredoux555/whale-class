@@ -587,40 +587,57 @@ export default function WeekPage() {
         />
       )}
 
-      {/* Search + Actions Row */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex-1" />
-        <div data-tutorial="work-search-bar">
-        <WorkSearchBar
-          curriculum={curriculum}
-          onSelectWork={(work, areaKey) => {
-            setSelectedArea(areaKey);
-            setPickerOpen(true);
-          }}
-          onFocus={async () => {
-            // Pre-load curriculum if not yet cached (normally loads on picker open)
-            if (Object.keys(curriculum).length === 0) {
-              try {
-                const res = await fetch(`/api/montree/works/search`);
-                const data = await res.json();
-                const byArea: Record<string, CurriculumWork[]> = {};
-                for (const w of data.works || []) {
-                  const areaKey = w.area?.area_key || 'unknown';
-                  if (!byArea[areaKey]) byArea[areaKey] = [];
-                  byArea[areaKey].push({
-                    id: w.id,
-                    name: w.name,
-                    name_chinese: w.chinese_name,
-                    area_id: areaKey,
-                  });
-                }
-                setCurriculum(byArea);
-              } catch {}
-            }
-          }}
-          placeholder={t('weekview.findWork')}
-        />
+      {/* Jump to Student Selector + Find Work Search Row */}
+      <div className="flex items-center justify-between gap-3">
+        {/* Student selector — left side */}
+        <div className="flex-shrink-0">
+          <select
+            value={childId}
+            onChange={(e) => router.push(`/montree/dashboard/${e.target.value}`)}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white text-gray-700 hover:border-emerald-400 transition-colors"
+          >
+            {session?.classroom?.children?.map((child: Child) => (
+              <option key={child.id} value={child.id}>
+                {child.name}
+              </option>
+            ))}
+          </select>
         </div>
+
+        {/* Find Work search — center */}
+        <div data-tutorial="work-search-bar" className="flex-1">
+          <WorkSearchBar
+            curriculum={curriculum}
+            onSelectWork={(work, areaKey) => {
+              setSelectedArea(areaKey);
+              setPickerOpen(true);
+            }}
+            onFocus={async () => {
+              // Pre-load curriculum if not yet cached (normally loads on picker open)
+              if (Object.keys(curriculum).length === 0) {
+                try {
+                  const res = await fetch(`/api/montree/works/search`);
+                  const data = await res.json();
+                  const byArea: Record<string, CurriculumWork[]> = {};
+                  for (const w of data.works || []) {
+                    const areaKey = w.area?.area_key || 'unknown';
+                    if (!byArea[areaKey]) byArea[areaKey] = [];
+                    byArea[areaKey].push({
+                      id: w.id,
+                      name: w.name,
+                      name_chinese: w.chinese_name,
+                      area_id: areaKey,
+                    });
+                  }
+                  setCurriculum(byArea);
+                } catch {}
+              }
+            }}
+            placeholder={t('weekview.findWork')}
+          />
+        </div>
+
+        {/* Action buttons — right side */}
         {!isHomeschoolParent(session) && (
           <>
             <Link
@@ -639,6 +656,17 @@ export default function WeekPage() {
             </button>
           </>
         )}
+      </div>
+
+      {/* Guru Chat Icon — directly above Focus Works */}
+      <div className="flex justify-end">
+        <Link
+          href={`/montree/dashboard/guru`}
+          className="px-3 py-2 text-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
+          title="Ask Guru for advice"
+        >
+          🎓 {t('nav.guru' as any) || 'Guru'}
+        </Link>
       </div>
 
       {/* FOCUS WORKS — Unified area view with inline Guru advice */}

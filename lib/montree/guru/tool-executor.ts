@@ -927,6 +927,7 @@ export async function executeTool(
           age: ageStr || 'N/A',
           total_mastered: totalMastered,
           current_works: currentFocus.length > 0 ? currentFocus : 'none',
+          work_names_only: focusWorks.map(fw => fw.work_name), // List of actual work names for grouping constraint check
         };
 
         // Include area-specific data when focusing on a specific area
@@ -941,7 +942,7 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups})${customInstructions ? `\nInstructions: ${customInstructions}` : ''}\n\nStudent data:\n${JSON.stringify(studentData, null, 1)}\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students and explain your reasoning.`
+        message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups})${customInstructions ? `\nInstructions: ${customInstructions}` : ''}\n\nStudent data:\n${JSON.stringify(studentData, null, 1)}\n\nIMPORTANT GROUPING CONSTRAINT: When forming groups, ensure children in the same group are working on DIFFERENT works. Even if two children are at the same level, avoid putting them on the same work in the same group. Varied works encourage peer teaching and cross-pollination. The "work_names_only" field shows which works each child is currently doing.\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students, show which works they're doing, and explain your reasoning with attention to work diversity within groups.`
       };
     }
 
