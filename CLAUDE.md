@@ -66,31 +66,30 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ### Session Work (Mar 13, 2026)
 
-**3x3x3x3 Smart Capture Hardening — COMPLETE, NOT YET DEPLOYED (4 files modified, 9 build audits all CLEAN):**
+**3x3x3x3 Smart Capture Hardening — COMPLETE, NOT YET DEPLOYED (4 files modified, 9 build audits + final cross-cycle all CLEAN):**
 
 Full 3x3x3x3 methodology (3 complete Research→Plan→Build cycles, each with 3× plan audits and 3× build audits) applied to Smart Capture / Fire-and-Forget system.
 
-**Re-run #1 — montreeApi Timeout Fix (CRITICAL):**
+**Cycle 1 — montreeApi Timeout Fix (CRITICAL):**
 - `lib/montree/api.ts` — Added optional `timeout` parameter. Store passes `CLIENT_TIMEOUT_MS + 5000` (55s). Was hardcoded 30s killing 45s server calls.
 - Timeout chain: Server 45s → Store 50s → montreeApi 55s (each fires 5s after previous)
 
-**Re-run #2 — Group Photo Composite Key (MEDIUM):**
-- `lib/montree/photo-insight-store.ts` — `makeKey(mediaId, childId)` composite key. All `entries.get/set/delete` + all public API functions require both params. Fixes group photo cross-contamination (Child B seeing Child A's result).
+**Cycle 2 — Group Photo Composite Key + AbortController + Cache Locale (MEDIUM):**
+- `lib/montree/photo-insight-store.ts` — `makeKey(mediaId, childId)` composite key. All `entries.get/set/delete` + all public API functions require both params. Fixes group photo cross-contamination (Child B seeing Child A's result). AbortController tracking per entry (module-level `abortControllers` Map). `resetEntry`/`clearAll` abort in-flight fetches before deleting entries. Entry-existence guards (`entries.has(key)`) in `.then()`/`.catch()`/`handleAnalysisError` prevent zombie fetch resurrection.
 - `components/montree/guru/PhotoInsightButton.tsx` — All store calls pass `childId`, `storeKey = \`${mediaId}:${childId}\``
+- `app/api/montree/guru/photo-insight/route.ts` — Cache locale fix (`photo:${media_id}:${locale}` with backward-compatible fallback). Scenario A cache bust (skip stale >5min cached results). Parallelized 3 context queries with `Promise.allSettled` + graceful degradation. Scenario D staleness refresh when cache >5min old.
 
-**Re-run #3 — Scenario D Staleness + Query Parallelization (MEDIUM):**
-- `app/api/montree/guru/photo-insight/route.ts` — 3 changes:
-  1. Added `created_at` to cache query, extended `shouldRefreshScenario` to include D when cache >5min old (was B/C only)
-  2. Parallelized 3 sequential context queries (corrections, focus works, duplicate check) with `Promise.allSettled`
-  3. Each result guarded with `status === 'fulfilled'` for graceful degradation
-- `components/montree/guru/PhotoInsightButton.tsx` — `|| null` → `?? null` consistency
+**Cycle 3 — Per-Entry Selector + Duplicate Check Format (MEDIUM):**
+- `components/montree/guru/PhotoInsightButton.tsx` — Replaced full-Map `getSnapshot` with per-entry `getEntry` selector via `useCallback` + `useSyncExternalStore`. Only changed entry's component re-renders (was O(N) re-renders for N photos on screen).
+- `app/api/montree/guru/photo-insight/route.ts` — Duplicate check `.neq('question', ...)` → `.not('question', 'like', 'photo:${media_id}%')` to exclude both old-format and new locale-format cache entries.
+- NOTE: Cache-hit scenario refresh parallelization was researched but DROPPED in plan audit 3 — queries 2 and 3 are dependent (shelf check conditional on classroom check), not independent.
 
-**Methodology learned — 3x3x3x3:**
+**Methodology — 3x3x3x3:**
 - **3x3x3**: (1) Research/Analyze/Audit → (2) Plan + audit plan 3× → (3) Build + audit build 3×
-- **3x3x3x3**: Run entire 3x3x3 cycle 3 additional times from start to finish
+- **3x3x3x3**: Run entire 3x3x3 cycle 3 separate times, each starting with FRESH research
 - Reserved for most critical features only
 
-**Audit results:** 9 build audits (correctness, edge cases, race conditions, regression) + final cross-cycle verification. All CLEAN.
+**Audit results:** 9 build audits (3 per cycle: correctness, edge cases, race conditions/regression) + final cross-cycle verification. All CLEAN. Plan audit issues caught: 2 (Cycle 2 zombie resurrection fix, Cycle 3 dependent-query parallelization dropped).
 
 **Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in push.
 **Handoff:** `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`

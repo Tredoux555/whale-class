@@ -1,84 +1,72 @@
-# Handoff: 3x3x3x3 Smart Capture Hardening — Mar 13, 2026
+# Handoff: 3x3x3x3 Smart Capture Hardening
 
-## Summary
+**Date:** March 13, 2026
+**Status:** COMPLETE — NOT YET DEPLOYED
+**Migration:** None required
+**Files modified:** 4
 
-Full 3x3x3x3 methodology applied to Smart Capture / Fire-and-Forget system — the most critical feature in the platform. Three complete Research→Plan→Build cycles (each with 3× plan audits and 3× build audits), plus a final cross-cycle verification. 9 build audits total, all CLEAN.
+## Methodology
 
-## Methodology: 3x3x3x3
+Full 3x3x3x3 methodology applied to Smart Capture / Fire-and-Forget system:
+- **3x3x3**: (1) Research/Analyze/Audit → (2) Plan + audit plan 3× → (3) Build + audit build 3×
+- **3x3x3x3**: Run the entire 3x3x3 cycle 3 separate times from scratch, each starting with FRESH research
 
-1. **3x3x3**: Research/Analyze/Audit → Plan (audit plan 3×) → Build (audit build 3×)
-2. **3x3x3x3**: Run the entire 3x3x3 cycle 3 additional times from start to finish
-3. Used for the most important features only
+## Cycle 1 — montreeApi Timeout Chain Fix (CRITICAL)
 
-## Changes Per Re-run
+**Problem:** `montreeApi` had hardcoded 30s timeout. Server-side Sonnet vision call has 45s timeout. Store set 50s timeout. The 30s montreeApi timeout was killing fetches before the server could respond.
 
-### Re-run #1 — montreeApi Timeout Fix (CRITICAL)
-**Problem:** `montreeApi` had a hardcoded 30s timeout that killed photo-insight fetches 15 seconds before the server's 45s timeout. The store's 50s client timeout would fire but the underlying fetch was already aborted.
+**Fix:**
+- `lib/montree/api.ts` — Added optional `timeout` parameter to `montreeApi()`. Callers can override the 30s default.
+- `lib/montree/photo-insight-store.ts` — Passes `timeout: CLIENT_TIMEOUT_MS + 5000` (55s) to montreeApi.
 
-**Fix:** Added optional `timeout` parameter to `montreeApi()`. Store passes `CLIENT_TIMEOUT_MS + 5000` (55s).
+**Timeout chain:** Server 45s → Store 50s → montreeApi 55s (each fires 5s after previous for clean handling)
+## Cycle 2 — Group Photo Composite Key + AbortController Lifecycle (MEDIUM)
 
-**Timeout chain (each fires 5s after previous):**
-- Server: 45s (Anthropic API call)
-- Store: 50s (`CLIENT_TIMEOUT_MS` — sets error state)
-- montreeApi: 55s (AbortController — kills the actual fetch)
+**Problem 1:** Store keyed entries by `mediaId` alone. Group photos caused Child B to see Child A's analysis.
 
-**File:** `lib/montree/api.ts` (2 edits)
+**Fix:** Composite key `${mediaId}:${childId}` — `makeKey()` function, all store ops require both params.
 
-### Re-run #2 — Group Photo Composite Key (MEDIUM)
+**Problem 2:** Zombie fetches resurrecting deleted entries after `resetEntry`/`clearAll`.
 
-**Problem:** Store keyed entries by `mediaId` only, but server cache keyed by `(child_id, media_id)`. For group photos shared across children, Child B would see Child A's analysis result.
+**Fix:** AbortController tracking per entry. `resetEntry`/`clearAll` abort before delete. Entry-existence guards in `.then()`/`.catch()`.
 
-**Fix:** Introduced `makeKey(mediaId, childId)` composite key function. All store operations, public API functions, and PhotoInsightButton now use the composite key `${mediaId}:${childId}`.
+**Problem 3:** Cache locale mismatch (EN/ZH shared cache).
 
-**Files:**
-- `lib/montree/photo-insight-store.ts` (~25 edits — key function, all get/set/delete, all public API signatures)
-- `components/montree/guru/PhotoInsightButton.tsx` (~6 edits — storeKey, all store calls pass childId)
+**Fix:** Cache key `photo:${media_id}:${locale}` with backward-compatible fallback. Scenario A cache bust for stale results.
 
-### Re-run #3 — Scenario D Staleness + Query Parallelization (MEDIUM)
+**Problem 4:** 3 sequential context queries before Sonnet call.
 
-**Problem 1:** Cached scenario D entries never refreshed. If a work was REMOVED from the classroom after analysis, the cached response still said D (happy path) forever. Fresh scenario checks only ran for B/C.
+**Fix:** `Promise.allSettled` for parallel queries with per-query graceful degradation.
 
-**Fix 1:** Extended `shouldRefreshScenario` to include scenario D when cache is >5 minutes old. Added `created_at` to cache query select. Fallback: if `created_at` is null, `cacheAgeMs = Infinity` (always refreshes — safe default).
+## Cycle 3 — Per-Entry Selector + Duplicate Format Fix (MEDIUM)
 
-**Problem 2:** Three pre-API context queries (corrections, focus works, duplicate check) ran sequentially, wasting ~100-200ms.
+**Problem 1:** Full Map snapshot in `useSyncExternalStore` caused O(N) re-renders across all PhotoInsightButtons.
 
-**Fix 2:** Wrapped in `Promise.allSettled` for parallel execution. Each result processed with `status === 'fulfilled'` guard for graceful degradation if individual queries fail.
+**Fix:** Per-entry selector via `getEntry` + `useCallback`. Only changed entry's component re-renders.
 
-**Problem 3:** `entry?.result || null` in PhotoInsightButton used `||` instead of `??` (inconsistent with nullish coalescing pattern established across the system).
+**Problem 2:** Duplicate check `.neq` missed locale-format cache entries.
 
-**Fix 3:** Changed to `entry?.result ?? null`.
+**Fix:** `.not('question', 'like', 'photo:${media_id}%')` excludes both old and new format entries.
+## Files Modified (4)
 
-**Files:**
-- `app/api/montree/guru/photo-insight/route.ts` (3 edits — `created_at` select, scenario D check, `Promise.allSettled`)
-- `components/montree/guru/PhotoInsightButton.tsx` (1 edit — `?? null`)
-
-## All Modified Files (Cumulative)
-
-| File | Edits | Re-run(s) |
-|------|-------|-----------|
-| `lib/montree/api.ts` | 2 | #1 |
-| `lib/montree/photo-insight-store.ts` | ~25 | #1, #2 |
-| `components/montree/guru/PhotoInsightButton.tsx` | ~7 | #2, #3 |
-| `app/api/montree/guru/photo-insight/route.ts` | 3 | #3 |
+| File | Cycles | Changes |
+|------|--------|---------|
+| `lib/montree/api.ts` | 1 | Optional `timeout` parameter |
+| `lib/montree/photo-insight-store.ts` | 1, 2 | Timeout chain, composite keys, AbortController lifecycle, entry-existence guards |
+| `components/montree/guru/PhotoInsightButton.tsx` | 2, 3 | Composite key usage, per-entry useSyncExternalStore selector |
+| `app/api/montree/guru/photo-insight/route.ts` | 2, 3 | Cache locale key, scenario A bust, Promise.allSettled, duplicate check LIKE |
 
 ## Audit Results
 
-| Audit | Result |
-|-------|--------|
-| Re-run #1 Build Audit 1 (correctness) | CLEAN |
-| Re-run #1 Build Audit 2 (edge cases) | CLEAN |
-| Re-run #1 Build Audit 3 (regression) | CLEAN |
-| Re-run #2 Build Audit 1 (correctness) | CLEAN |
-| Re-run #2 Build Audit 2 (edge cases) | CLEAN |
-| Re-run #2 Build Audit 3 (regression) | CLEAN |
-| Re-run #3 Build Audit 1 (correctness) | CLEAN |
-| Re-run #3 Build Audit 2 (edge cases) | CLEAN |
-| Re-run #3 Build Audit 3 (regression) | CLEAN |
-| Final cross-cycle verification | CLEAN |
+- **Cycle 1:** 3× plan audits CLEAN, 3× build audits CLEAN
+- **Cycle 2:** 3× plan audits (1 issue: handleAnalysisError zombie — fixed), 3× build audits CLEAN
+- **Cycle 3:** 3× plan audits (1 issue: Finding 2 dropped — queries dependent not independent), 3× build audits CLEAN
+- **Final cross-cycle verification:** CLEAN — all changes compatible across cycles
 
 ## Deploy
 
-No new migrations. Push from Mac:
+Include in consolidated push. No new migrations.
+
 ```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 3x3x3x3 smart capture hardening — timeout chain, composite keys, scenario staleness, query parallelization" && git push origin main
+cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: 3x3x3x3 smart capture hardening + 401 fix + album upload + raz 4th photo + home guru fixes + session recovery + guru parity + home parent rebuild" && git push origin main
 ```

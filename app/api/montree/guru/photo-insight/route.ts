@@ -96,17 +96,31 @@ export async function POST(request: NextRequest) {
       .select('response_insight, context_snapshot, created_at')
       .eq('child_id', child_id)
       .eq('question_type', 'photo_insight')
-      .eq('question', `photo:${media_id}`)
+      .eq('question', `photo:${media_id}:${locale}`)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    if (cached?.response_insight) {
+    // Fallback: try old format (pre-locale cache entries) if new format missed
+    const effectiveCached = cached ?? (await (async () => {
+      const { data } = await supabase
+        .from('montree_guru_interactions')
+        .select('response_insight, context_snapshot, created_at')
+        .eq('child_id', child_id)
+        .eq('question_type', 'photo_insight')
+        .eq('question', `photo:${media_id}`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    })());
+
+    if (effectiveCached?.response_insight) {
       // Return cached structured response with FRESH scenario data
       // IMPORTANT: auto_updated is ALWAYS false on cache hits — the progress update already
       // happened on the original analysis. Returning true would cause the client to fire
       // onProgressUpdate again on every remount (duplicate refetches, potential UI flicker).
-      const snapshot = (cached.context_snapshot as Record<string, unknown>) || {};
+      const snapshot = (effectiveCached.context_snapshot as Record<string, unknown>) || {};
       const cachedWorkName = (snapshot.identified_work_name as string) || null;
       const cachedArea = (snapshot.identified_area as string) || null;
       const cachedMatchScore = (snapshot.curriculum_match_score as number) ?? 0;
@@ -122,71 +136,80 @@ export async function POST(request: NextRequest) {
       let freshInChildShelf = (snapshot.in_child_shelf as boolean) ?? false;
       let freshClassroomWorkId = (snapshot.classroom_work_id as string) ?? null;
 
-      // Re-check scenario freshness when:
+      // Scenario staleness rules:
+      // - Scenario A: unknown work — bust cache entirely after 5 min (re-analyze with fresh Sonnet)
+      //   Teacher may have added the work to classroom since original analysis
       // - Scenario B/C: classroom/shelf status may have changed (always re-check)
       // - Scenario D: work may have been REMOVED from classroom/shelf (re-check if cache > 5 min old)
-      const cacheAgeMs = cached.created_at ? Date.now() - new Date(cached.created_at).getTime() : Infinity;
-      const shouldRefreshScenario = freshScenario === 'B' || freshScenario === 'C'
-        || (freshScenario === 'D' && cacheAgeMs > 5 * 60 * 1000);
-      if (cachedWorkName && shouldRefreshScenario) {
-        try {
-          const childResult2 = await supabase.from('montree_children').select('classroom_id').eq('id', child_id).maybeSingle();
-          const freshClassroomId = childResult2.data?.classroom_id;
-          if (freshClassroomId) {
-            const { data: freshWork } = await supabase
-              .from('montree_classroom_curriculum_works')
-              .select('id')
-              .eq('classroom_id', freshClassroomId)
-              .eq('name', cachedWorkName)
-              .eq('is_active', true)
-              .limit(1)
-              .maybeSingle();
-            freshInClassroom = !!freshWork?.id;
-            freshClassroomWorkId = freshWork?.id || null;
+      const cacheAgeMs = effectiveCached.created_at ? Date.now() - new Date(effectiveCached.created_at).getTime() : Infinity;
 
-            if (freshInClassroom) {
-              const { data: freshShelf } = await supabase
-                .from('montree_child_focus_works')
+      // Scenario A cache bust: skip cached result → fall through to fresh Sonnet analysis
+      const shouldBustCache = freshScenario === 'A' && cacheAgeMs > 5 * 60 * 1000;
+
+      if (!shouldBustCache) {
+        const shouldRefreshScenario = freshScenario === 'B' || freshScenario === 'C'
+          || (freshScenario === 'D' && cacheAgeMs > 5 * 60 * 1000);
+        if (cachedWorkName && shouldRefreshScenario) {
+          try {
+            const childResult2 = await supabase.from('montree_children').select('classroom_id').eq('id', child_id).maybeSingle();
+            const freshClassroomId = childResult2.data?.classroom_id;
+            if (freshClassroomId) {
+              const { data: freshWork } = await supabase
+                .from('montree_classroom_curriculum_works')
                 .select('id')
-                .eq('child_id', child_id)
-                .eq('work_name', cachedWorkName)
+                .eq('classroom_id', freshClassroomId)
+                .eq('name', cachedWorkName)
+                .eq('is_active', true)
                 .limit(1)
                 .maybeSingle();
-              freshInChildShelf = !!freshShelf?.id;
-            }
+              freshInClassroom = !!freshWork?.id;
+              freshClassroomWorkId = freshWork?.id || null;
 
-            // Recalculate scenario with fresh data
-            if (cachedMatchScore < 0.5 || cachedConfidence < 0.5) {
-              freshScenario = 'A';
-            } else if (!freshInClassroom) {
-              freshScenario = 'B';
-            } else if (!freshInChildShelf) {
-              freshScenario = 'C';
-            } else {
-              freshScenario = 'D';
+              if (freshInClassroom) {
+                const { data: freshShelf } = await supabase
+                  .from('montree_child_focus_works')
+                  .select('id')
+                  .eq('child_id', child_id)
+                  .eq('work_name', cachedWorkName)
+                  .limit(1)
+                  .maybeSingle();
+                freshInChildShelf = !!freshShelf?.id;
+              }
+
+              // Recalculate scenario with fresh data
+              if (cachedMatchScore < 0.5 || cachedConfidence < 0.5) {
+                freshScenario = 'A';
+              } else if (!freshInClassroom) {
+                freshScenario = 'B';
+              } else if (!freshInChildShelf) {
+                freshScenario = 'C';
+              } else {
+                freshScenario = 'D';
+              }
             }
+          } catch {
+            // Non-fatal — use cached scenario data
           }
-        } catch {
-          // Non-fatal — use cached scenario data
         }
-      }
 
-      return NextResponse.json({
-        success: true,
-        insight: cached.response_insight,
-        work_name: cachedWorkName,
-        area: cachedArea,
-        mastery_evidence: snapshot.mastery_evidence ?? null,
-        auto_updated: false,
-        needs_confirmation: snapshot.needs_confirmation ?? false,
-        confidence: snapshot.sonnet_confidence ?? null,
-        match_score: snapshot.curriculum_match_score ?? null,
-        candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
-        scenario: freshScenario,
-        in_classroom: freshInClassroom,
-        in_child_shelf: freshInChildShelf,
-        classroom_work_id: freshClassroomWorkId,
-      });
+        return NextResponse.json({
+          success: true,
+          insight: effectiveCached.response_insight,
+          work_name: cachedWorkName,
+          area: cachedArea,
+          mastery_evidence: snapshot.mastery_evidence ?? null,
+          auto_updated: false,
+          needs_confirmation: snapshot.needs_confirmation ?? false,
+          confidence: snapshot.sonnet_confidence ?? null,
+          match_score: snapshot.curriculum_match_score ?? null,
+          candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
+          scenario: freshScenario,
+          in_classroom: freshInClassroom,
+          in_child_shelf: freshInChildShelf,
+          classroom_work_id: freshClassroomWorkId,
+        });
+      }
+      // If shouldBustCache is true, we fall through to fresh Sonnet analysis below
     }
 
     if (!AI_ENABLED || !anthropic) {
@@ -341,7 +364,7 @@ export async function POST(request: NextRequest) {
         .eq('child_id', child_id)
         .eq('question_type', 'photo_insight')
         .gte('created_at', fiveMinAgo)
-        .neq('question', `photo:${media_id}`)
+        .not('question', 'like', `photo:${media_id}%`)
         .order('created_at', { ascending: false })
         .limit(1),
     ]);
@@ -555,38 +578,35 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     let classroomWorkId: string | null = null;
 
     if (classroomId && finalWorkName) {
-      try {
+      // Run both lookups in parallel — they're independent queries
+      const [classroomLookup, shelfLookup] = await Promise.allSettled([
         // Lookup 1: Is this work in the classroom curriculum?
-        const { data: classroomWork } = await supabase
+        supabase
           .from('montree_classroom_curriculum_works')
           .select('id')
           .eq('classroom_id', classroomId)
           .eq('name', finalWorkName)
           .eq('is_active', true)
           .limit(1)
-          .maybeSingle();
-
-        if (classroomWork?.id) {
-          inClassroom = true;
-          classroomWorkId = classroomWork.id;
-        }
-
+          .maybeSingle(),
         // Lookup 2: Is this work on the child's shelf (focus works)?
-        if (child_id) {
-          const { data: shelfWork } = await supabase
-            .from('montree_child_focus_works')
-            .select('id')
-            .eq('child_id', child_id)
-            .eq('work_name', finalWorkName)
-            .limit(1)
-            .maybeSingle();
+        child_id
+          ? supabase
+              .from('montree_child_focus_works')
+              .select('id')
+              .eq('child_id', child_id)
+              .eq('work_name', finalWorkName)
+              .limit(1)
+              .maybeSingle()
+          : Promise.resolve({ data: null }),
+      ]);
 
-          if (shelfWork?.id) {
-            inChildShelf = true;
-          }
-        }
-      } catch {
-        // Non-fatal — lookups are for UI hints, not critical
+      if (classroomLookup.status === 'fulfilled' && classroomLookup.value?.data?.id) {
+        inClassroom = true;
+        classroomWorkId = classroomLookup.value.data.id;
+      }
+      if (shelfLookup.status === 'fulfilled' && shelfLookup.value?.data?.id) {
+        inChildShelf = true;
       }
     }
 
@@ -735,7 +755,7 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       .insert({
         child_id,
         classroom_id: classroomId,
-        question: `photo:${media_id}`,
+        question: `photo:${media_id}:${locale}`,
         question_type: 'photo_insight',
         response_insight: insightText,
         model_used: AI_MODEL,
