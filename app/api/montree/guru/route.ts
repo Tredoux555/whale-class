@@ -20,9 +20,9 @@ import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
-const MAX_TOOL_ROUNDS = 4; // Increased from 2: classroom-wide ops need overview → search → multiple set_focus_work calls
-const API_TIMEOUT_MS = 50_000; // 50s timeout per API call (was 35s — too tight for 20K token inputs on busy Anthropic days)
-const TOTAL_REQUEST_TIMEOUT_MS = 90_000; // 90s total for entire request
+const MAX_TOOL_ROUNDS = 3; // 3 rounds sufficient with SPEED RULE in prompt (batch tool calls)
+const API_TIMEOUT_MS = 30_000; // 30s per API call (context routing saves 30-50% tokens → faster responses)
+const TOTAL_REQUEST_TIMEOUT_MS = 60_000; // 60s hard wall for entire request (client has 70s)
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -544,11 +544,14 @@ export async function POST(request: NextRequest) {
         ? { ...baseApiParams, tools: GURU_TOOLS, tool_choice: forceToolUse ? { type: "any" as const } : { type: "auto" as const } }
         : baseApiParams;
 
-      // Track total time for all API calls + tool rounds combined
+      // Master AbortController: cancels ALL in-flight Anthropic API calls when total timeout fires.
+      // Without this, withTimeout only rejects the promise — the actual HTTP request keeps running.
+      const masterAbort = new AbortController();
+      const masterTimeout = setTimeout(() => masterAbort.abort(), TOTAL_REQUEST_TIMEOUT_MS);
       const requestStart = Date.now();
 
       let response = await withTimeout(
-        anthropic.messages.create(apiParams),
+        anthropic.messages.create(apiParams, { signal: masterAbort.signal }),
         API_TIMEOUT_MS,
         'Guru initial call'
       );
@@ -638,7 +641,7 @@ export async function POST(request: NextRequest) {
             tools: GURU_TOOLS,
             tool_choice: { type: "auto" },
             messages: currentMessages,
-          }),
+          }, { signal: masterAbort.signal }),
           API_TIMEOUT_MS,
           `Guru tool round ${rounds}`
         );
@@ -648,6 +651,9 @@ export async function POST(request: NextRequest) {
         const reason = rounds >= MAX_TOOL_ROUNDS ? `max rounds (${MAX_TOOL_ROUNDS})` : `total timeout (${Date.now() - requestStart}ms)`;
         console.warn(`[Guru] Tool loop stopped: ${reason}. Actions completed: ${actionsTaken.length}`);
       }
+
+      // All API calls done — clear the master timeout so it doesn't fire during DB saves
+      clearTimeout(masterTimeout);
 
       // Extract final text response
       let responseText = response.content
@@ -802,12 +808,16 @@ export async function POST(request: NextRequest) {
     // =============================================
     // userPrompt already pushed to conversationMessages above (line 227)
 
-    const message = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: MAX_TOKENS,
-      system: systemPrompt,
-      messages: conversationMessages,
-    });
+    const message = await withTimeout(
+      anthropic.messages.create({
+        model: AI_MODEL,
+        max_tokens: MAX_TOKENS,
+        system: systemPrompt,
+        messages: conversationMessages,
+      }),
+      API_TIMEOUT_MS,
+      'Guru structured call'
+    );
 
     // Extract response text
     const responseText = message.content
@@ -914,6 +924,14 @@ export async function POST(request: NextRequest) {
 
     // Check for specific error types
     if (error instanceof Error) {
+      // Timeout or abort — return 504 so client knows to retry
+      if (error.message.includes('timed out') || error.name === 'AbortError') {
+        console.warn(`[Guru] Request timed out after ${Date.now() - startTime}ms`);
+        return NextResponse.json(
+          { success: false, error: 'Response took too long. Please try again.' },
+          { status: 504 }
+        );
+      }
       if (error.message.includes('rate_limit')) {
         return NextResponse.json(
           { success: false, error: 'Rate limit exceeded. Please try again in a moment.' },

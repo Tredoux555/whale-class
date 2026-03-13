@@ -305,8 +305,8 @@ export default function PortalChat({
     // "Still thinking..." after 10s
     if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
     thinkingTimerRef.current = setTimeout(() => setThinkingLong(true), 10000);
-    // Hard timeout at 95s
-    const hardTimeout = setTimeout(() => controller.abort(), 95000);
+    // Hard timeout at 70s (server hard wall is 60s — 10s buffer for network)
+    const hardTimeout = setTimeout(() => controller.abort(), 70000);
 
     try {
       // Upload image if selected

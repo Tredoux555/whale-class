@@ -120,26 +120,288 @@ export default function SentenceCardsPage() {
 
   const printAreaRef = React.useRef<HTMLDivElement>(null);
 
+  // Inline HTML-escape for print output (no external dependency)
+  const esc = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  // Build highlighted sentence HTML: phonics words in bold green, rest in dark gray
+  const buildSentenceHTML = (
+    sentence: GeneratedSentence,
+    mode: 'card' | 'strip' | 'worksheet'
+  ): string => {
+    if (sentence.phonicsWords.length === 0) {
+      return `<span class="regular-word">${esc(sentence.text)}</span>`;
+    }
+    const pattern = new RegExp(
+      `(${sentence.phonicsWords.map((p) => p.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`
+    );
+    const parts = sentence.text.split(pattern);
+
+    if (mode === 'card') {
+      // Cards: phonics words stacked with emoji above
+      return parts
+        .map((part) => {
+          const pw = sentence.phonicsWords.find((p) => p.word === part);
+          if (pw) {
+            return `<span class="word-group"><span class="emoji">${pw.image}</span><span class="phonics-word">${esc(part)}</span></span>`;
+          }
+          return part.trim() ? `<span class="regular-word">${esc(part)}</span>` : '';
+        })
+        .join('');
+    }
+    // Strips & worksheet: inline highlight only
+    return parts
+      .map((part) => {
+        const isPhonics = sentence.phonicsWords.some((p) => p.word === part);
+        return isPhonics
+          ? `<span class="phonics-highlight">${esc(part)}</span>`
+          : `<span>${esc(part)}</span>`;
+      })
+      .join('');
+  };
+
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow || !printAreaRef.current) return;
-    printWindow.document.write(`
-      <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Sentence Cards</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Comic Sans MS', cursive, sans-serif; background: white; padding: 15mm; }
-        .page-break { page-break-after: always; }
-        .grid { display: grid; gap: 1rem; }
-        .grid-2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-3 { grid-template-columns: repeat(3, 1fr); }
-        .grid-4 { grid-template-columns: repeat(4, 1fr); }
-        @media print { body { padding: 10mm; } }
-      </style></head><body>
-        ${printAreaRef.current.innerHTML}
-      </body></html>
-    `);
+    const printWindow = window.open('', '', 'width=800,height=1000');
+    if (!printWindow) return;
+
+    // --- Grid config for cards mode ---
+    const GRID_CONFIGS: Record<CardsPerPage, { cols: number; rows: number }> = {
+      4: { cols: 2, rows: 2 },
+      6: { cols: 3, rows: 2 },
+      8: { cols: 4, rows: 2 },
+    };
+    const gridCfg = GRID_CONFIGS[cardsPerPage];
+
+    // --- Build full HTML document ---
+    let html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sentence Cards</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: white;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* === PAGE CONTAINER === */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 10mm;
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+      background: white;
+    }
+    .page:last-child { page-break-after: auto; }
+
+    /* === CARDS MODE === */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(${gridCfg.cols}, 1fr);
+      grid-template-rows: repeat(${gridCfg.rows}, 1fr);
+      gap: 6mm;
+      height: 100%;
+    }
+    .card {
+      border: 4px solid ${borderColor};
+      border-radius: 10px;
+      background: #FFFDF8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px 8px;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .card-words {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .word-group {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .emoji { font-size: 1.8rem; }
+    .phonics-word {
+      font-weight: bold;
+      color: #10b981;
+      font-size: ${cardsPerPage >= 8 ? '0.9rem' : cardsPerPage >= 6 ? '1.1rem' : '1.3rem'};
+    }
+    .regular-word {
+      color: #1f2937;
+      font-size: ${cardsPerPage >= 8 ? '0.85rem' : cardsPerPage >= 6 ? '1rem' : '1.15rem'};
+    }
+    .card-footer {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    /* === STRIPS MODE === */
+    .strip {
+      border: 4px solid ${borderColor};
+      border-radius: 10px;
+      background: #FFFDF8;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 6mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .strip-icon { font-size: 2.5rem; flex-shrink: 0; }
+    .strip-text { flex: 1; font-size: 1.3rem; line-height: 1.5; }
+    .strip-number { flex-shrink: 0; font-size: 0.8rem; color: #9ca3af; font-family: monospace; }
+    .phonics-highlight { font-weight: bold; color: #10b981; }
+
+    /* === WORKSHEET MODE === */
+    .ws-header {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 6mm;
+      padding-bottom: 3mm;
+      border-bottom: 4px solid ${borderColor};
+      color: #1f2937;
+    }
+    .ws-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 6mm;
+      margin-bottom: 8mm;
+      min-height: 20mm;
+    }
+    .ws-picture {
+      width: 20mm;
+      height: 20mm;
+      border: 4px solid ${borderColor};
+      border-radius: 8px;
+      background: #F5E6D3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .ws-text {
+      flex: 1;
+      border-bottom: 2px solid #9ca3af;
+      padding-bottom: 2mm;
+      display: flex;
+      align-items: center;
+      font-size: 1.15rem;
+      min-height: 20mm;
+      color: #1f2937;
+    }
+    .ws-footer {
+      margin-top: 12mm;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+      body { margin: 0; padding: 0; }
+    }
+    @media screen {
+      body { padding: 20px; background: #f0f0f0; }
+      .page { margin: 0 auto 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    }
+  </style>
+</head>
+<body>`;
+
+    // --- Generate content by mode ---
+    if (printMode === 'cards') {
+      paginatedSentences.forEach((page) => {
+        html += '<div class="page"><div class="card-grid">';
+        page.forEach((sentence) => {
+          const wordsHtml = buildSentenceHTML(sentence, 'card');
+          const footerEmojis = sentence.phonicsWords
+            .slice(0, 2)
+            .map((pw) => `<span>${pw.image}</span>`)
+            .join('');
+          html += `<div class="card">
+            <div class="card-words">${wordsHtml}</div>
+            ${footerEmojis ? `<div class="card-footer">${footerEmojis}</div>` : ''}
+          </div>`;
+        });
+        // Fill empty grid cells if page not full
+        const remaining = cardsPerPage - page.length;
+        for (let i = 0; i < remaining; i++) {
+          html += '<div></div>';
+        }
+        html += '</div></div>';
+      });
+    } else if (printMode === 'strips') {
+      // Paginate strips: ~8 per A4 page
+      const STRIPS_PER_PAGE = 8;
+      for (let i = 0; i < allSentences.length; i += STRIPS_PER_PAGE) {
+        const pageStrips = allSentences.slice(i, i + STRIPS_PER_PAGE);
+        html += '<div class="page">';
+        pageStrips.forEach((sentence, idx) => {
+          const iconEmoji =
+            sentence.phonicsWords.length > 0 ? sentence.phonicsWords[0].image : '';
+          const textHtml = buildSentenceHTML(sentence, 'strip');
+          html += `<div class="strip">
+            ${iconEmoji ? `<div class="strip-icon">${iconEmoji}</div>` : ''}
+            <div class="strip-text">${textHtml}</div>
+            <div class="strip-number">${i + idx + 1}</div>
+          </div>`;
+        });
+        html += '</div>';
+      }
+    } else {
+      // Worksheet mode: 5 sentences per page
+      const WS_PER_PAGE = 5;
+      let pageNum = 0;
+      for (let i = 0; i < allSentences.length; i += WS_PER_PAGE) {
+        pageNum++;
+        const pageRows = allSentences.slice(i, i + WS_PER_PAGE);
+        html += `<div class="page">
+          <div class="ws-header">Reading Practice — Page ${pageNum}</div>`;
+        pageRows.forEach((sentence) => {
+          const emoji =
+            sentence.phonicsWords.length > 0 ? sentence.phonicsWords[0].image : '📖';
+          html += `<div class="ws-row">
+            <div class="ws-picture">${emoji}</div>
+            <div class="ws-text">${esc(sentence.text)}</div>
+          </div>`;
+        });
+        html += `<div class="ws-footer">Name: _________________________ Date: _____________</div>
+        </div>`;
+      }
+    }
+
+    html += `
+  <script>window.onload = function() { setTimeout(function() { window.print(); }, 500); };</script>
+</body></html>`;
+
+    printWindow.document.write(html);
     printWindow.document.close();
-    setTimeout(() => printWindow.print(), 250);
   };
 
   return (

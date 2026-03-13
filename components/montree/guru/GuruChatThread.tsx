@@ -245,9 +245,9 @@ export default function GuruChatThread({
         return;
       }
 
-      // 95s client-side timeout (server allows 90s for batch classroom operations)
+      // 70s client-side timeout (server hard wall is 60s — 10s buffer for network + response parsing)
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 95_000);
+      const timeout = setTimeout(() => controller.abort(), 70_000);
 
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
