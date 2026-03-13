@@ -64,9 +64,9 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const supabaseForRateLimit = getSupabase();
+    const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const { allowed } = await checkRateLimit(supabaseForRateLimit, ip, '/api/montree/guru/photo-insight', 60, 60);
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/guru/photo-insight', 60, 60);
     if (!allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
     }
@@ -88,8 +88,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    const supabase = getSupabase();
-
     // Check for cached insight (use maybeSingle to handle 0 or 2+ rows gracefully)
     const { data: cached } = await supabase
       .from('montree_guru_interactions')
@@ -102,17 +100,23 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
 
     // Fallback: try old format (pre-locale cache entries) if new format missed
+    // Wrapped in try-catch: fallback is best-effort — if it fails, fall through to fresh analysis
     const effectiveCached = cached ?? (await (async () => {
-      const { data } = await supabase
-        .from('montree_guru_interactions')
-        .select('response_insight, context_snapshot, created_at')
-        .eq('child_id', child_id)
-        .eq('question_type', 'photo_insight')
-        .eq('question', `photo:${media_id}`)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
+      try {
+        const { data } = await supabase
+          .from('montree_guru_interactions')
+          .select('response_insight, context_snapshot, created_at')
+          .eq('child_id', child_id)
+          .eq('question_type', 'photo_insight')
+          .eq('question', `photo:${media_id}`)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        return data;
+      } catch {
+        // Non-fatal: old-format cache lookup failed — fall through to fresh analysis
+        return null;
+      }
     })());
 
     if (effectiveCached?.response_insight) {
@@ -258,7 +262,7 @@ export async function POST(request: NextRequest) {
 
     // Build works context for Sonnet
     const worksContext = currentWorks && currentWorks.length > 0
-      ? `Current works on shelf:\n${currentWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}`
+      ? `Child's recent work progress (for background only — identify based on what you SEE, not this list):\n${currentWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}`
       : 'No current works tracked yet.';
 
     // Load curriculum for matching (static 329 + classroom custom works)
@@ -488,6 +492,8 @@ CONFIDENCE CALIBRATION:
 ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
+    // AbortController ensures the API call is actually cancelled on timeout (not just ignored)
+    const apiAbortController = new AbortController();
     const apiPromise = anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 500,
@@ -507,11 +513,14 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
           },
         ],
       }],
-    });
+    }, { signal: apiAbortController.signal });
 
     let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
     const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutHandle = setTimeout(() => reject(new Error('Analysis took too long')), 45000);
+      timeoutHandle = setTimeout(() => {
+        apiAbortController.abort();
+        reject(new Error('Analysis took too long'));
+      }, 45000);
     });
 
     const message = await Promise.race([apiPromise, timeoutPromise]).finally(() => {
@@ -651,10 +660,12 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       }
     }
 
-    // Auto-update progress if confidence is high
+    // Auto-update progress if confidence is high AND work is in classroom
     // "Self-driving car" — Guru auto-manages, teacher can override anytime via shelf
     // Key rule: ONLY upgrade status, NEVER downgrade (teacher manual override always wins)
-    if (shouldAutoUpdate && finalWorkName && finalArea) {
+    // Gate on inClassroom: if teacher hasn't added this work to the classroom, don't auto-update
+    // progress — the Scenario B CTA lets them opt in first (prevents rogue progress entries)
+    if (shouldAutoUpdate && inClassroom && finalWorkName && finalArea) {
       try {
         // Check current status — only upgrade, never downgrade
         const { data: existingProgress } = await supabase
