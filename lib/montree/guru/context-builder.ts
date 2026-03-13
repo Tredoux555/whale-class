@@ -63,6 +63,9 @@ export interface ChildContext {
     recorded_at: string;
   }>;
 
+  // Teacher's onboarding notes about this child (free-text from student creation)
+  teacher_onboarding_notes?: string;
+
   // ESL context (school-level — detected from school location/name)
   isESL?: boolean;
   l1Language?: string;
@@ -190,7 +193,7 @@ export async function buildChildContext(
   // Note: montree_children has 'age' (integer years, not date_of_birth which is nullable)
   const { data: child, error: childError } = await supabase
     .from('montree_children')
-    .select('id, name, age, classroom_id, created_at')
+    .select('id, name, age, classroom_id, created_at, notes')
     .eq('id', childId)
     .single();
 
@@ -419,6 +422,7 @@ export async function buildChildContext(
       set_at: fw.set_at,
       set_by: fw.set_by,
     })),
+    teacher_onboarding_notes: child.notes || undefined,
     guru_child_profile: settings.guru_child_profile as Record<string, unknown> | undefined,
     parent_emotional_state: settings.guru_parent_current_state as ChildContext['parent_emotional_state'] | undefined,
     developmental_insights: (Array.isArray(settings.guru_developmental_insights) ? settings.guru_developmental_insights : []).map((i: Record<string, unknown>) => ({
@@ -448,6 +452,13 @@ export function formatContextForPrompt(context: ChildContext): string {
     lines.push(`LANGUAGE: L1 ${context.l1Language} — learning English as a second language`);
   }
   lines.push('');
+
+  // Teacher's onboarding notes (goals, personality, context entered during student creation)
+  if (context.teacher_onboarding_notes) {
+    lines.push('TEACHER\'S NOTES ABOUT THIS CHILD:');
+    lines.push(context.teacher_onboarding_notes);
+    lines.push('');
+  }
 
   // Progress summary
   lines.push('PROGRESS SUMMARY:');

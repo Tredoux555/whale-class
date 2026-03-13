@@ -353,6 +353,7 @@ export default function PortalChat({
           question: text || (imageUrl ? t('home.portal.photoAttached') : ''),
           classroom_id: classroomId,
           conversational: true,
+          stream: true, // Request SSE streaming response
       };
       // Send image_url as separate field so the guru route can use Claude's vision API
       if (imageUrl) {
@@ -369,18 +370,10 @@ export default function PortalChat({
       clearTimeout(hardTimeout);
       if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
 
-      // Parse response JSON (even for non-OK responses, guru route returns JSON)
-      let data: Record<string, unknown> = {};
-      try {
-        data = await res.json();
-      } catch {
-        // Non-JSON response (server error, etc.)
-        toast.error(t('home.portal.failedToRespond'));
-        return;
-      }
-
+      // Check for non-streaming error responses
       if (!res.ok) {
-        // Check for specific guru error codes BEFORE generic handling
+        let data: Record<string, unknown> = {};
+        try { data = await res.json(); } catch { /* non-JSON */ }
         if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
           onGuruLimitReached?.();
           toast.error(t('home.portal.limitReached'));
@@ -392,22 +385,81 @@ export default function PortalChat({
         return;
       }
 
-      if (data.success && data.insight) {
-        const guruMsg: ChatMessage = {
-          id: `guru-${Date.now()}`,
-          content: data.insight as string,
+      // Check if response is SSE stream
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') && res.body) {
+        // Streaming response — read SSE events and update message incrementally
+        const guruMsgId = `guru-${Date.now()}`;
+        let streamedText = '';
+
+        // Add empty guru message bubble
+        setMessages(prev => [...prev, {
+          id: guruMsgId,
+          content: '',
           isUser: false,
           timestamp: new Date().toISOString(),
-          actions: (data.actions as Array<{ success: boolean }>) || undefined,
-        };
-        setMessages(prev => [...prev, guruMsg]);
+        }]);
 
-        // Notify parent if tools were used (shelf may have changed)
-        if ((data.actions as Array<{ success: boolean }>)?.some(a => a.success)) {
-          onShelfUpdated?.();
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              try {
+                const event = JSON.parse(line.slice(6));
+                if (event.type === 'text' && event.text) {
+                  streamedText += event.text;
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === guruMsgId ? { ...msg, content: streamedText } : msg
+                  ));
+                } else if (event.type === 'error') {
+                  toast.error(t('home.portal.failedToRespond'));
+                }
+              } catch { /* skip malformed JSON */ }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+
+        if (!streamedText.trim()) {
+          setMessages(prev => prev.filter(msg => msg.id !== guruMsgId));
+          toast.error(t('home.portal.failedToRespond'));
         }
       } else {
-        toast.error((data.error as string) || t('home.portal.failedToRespond'));
+        // Fallback: non-streaming JSON response
+        let data: Record<string, unknown> = {};
+        try { data = await res.json(); } catch {
+          toast.error(t('home.portal.failedToRespond'));
+          return;
+        }
+
+        if (data.success && data.insight) {
+          const guruMsg: ChatMessage = {
+            id: `guru-${Date.now()}`,
+            content: data.insight as string,
+            isUser: false,
+            timestamp: new Date().toISOString(),
+            actions: (data.actions as Array<{ success: boolean }>) || undefined,
+          };
+          setMessages(prev => [...prev, guruMsg]);
+
+          if ((data.actions as Array<{ success: boolean }>)?.some(a => a.success)) {
+            onShelfUpdated?.();
+          }
+        } else {
+          toast.error((data.error as string) || t('home.portal.failedToRespond'));
+        }
       }
     } catch (err) {
       clearTimeout(hardTimeout);

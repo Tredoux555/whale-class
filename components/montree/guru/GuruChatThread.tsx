@@ -245,9 +245,9 @@ export default function GuruChatThread({
         return;
       }
 
-      // 70s client-side timeout (server hard wall is 60s — 10s buffer for network + response parsing)
+      // 120s client-side timeout (streaming can take longer — server does tool rounds before streaming)
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 70_000);
+      const timeout = setTimeout(() => controller.abort(), 120_000);
 
       const res = await fetch('/api/montree/guru', {
         method: 'POST',
@@ -255,29 +255,113 @@ export default function GuruChatThread({
         body: JSON.stringify({
           child_id: childId,
           question: text,
-          classroom_id: classroomId || undefined, // Don't send null, let server use auth.classroomId
+          classroom_id: classroomId || undefined,
           conversational: true,
+          stream: true, // Request SSE streaming response
           ...(imageUrl ? { image_url: imageUrl } : {}),
         }),
         signal: controller.signal,
       });
-      clearTimeout(timeout);
 
-      const data = await res.json();
+      // Check for non-streaming error responses (rate limits, auth errors, etc.)
+      if (!res.ok) {
+        clearTimeout(timeout);
+        try {
+          const data = await res.json();
+          if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
+            onGuruLimitReached?.();
+            toast.error(t('guru.limitReachedUpgrade'));
+          } else {
+            toast.error(data.error || t('guru.failedResponse'));
+          }
+        } catch {
+          toast.error(t('guru.failedResponse'));
+        }
+        setSending(false);
+        return;
+      }
 
-      if (data.success && data.insight) {
-        const guruMsg: ChatMessage = {
-          id: `guru-${Date.now()}`,
-          content: data.insight,
+      // Check if response is SSE stream
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') && res.body) {
+        // Streaming response — read SSE events and update message incrementally
+        const guruMsgId = `guru-${Date.now()}`;
+        let streamedText = '';
+
+        // Add empty guru message bubble that we'll fill incrementally
+        setMessages(prev => [...prev, {
+          id: guruMsgId,
+          content: '',
           isUser: false,
           timestamp: new Date().toISOString(),
-        };
-        setMessages(prev => [...prev, guruMsg]);
-      } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
-        onGuruLimitReached?.();
-        toast.error(t('guru.limitReachedUpgrade'));
+        }]);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+
+            // Parse SSE events from buffer
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const jsonStr = line.slice(6); // Remove 'data: ' prefix
+              try {
+                const event = JSON.parse(jsonStr);
+                if (event.type === 'text' && event.text) {
+                  streamedText += event.text;
+                  // Update the message content incrementally
+                  setMessages(prev => prev.map(msg =>
+                    msg.id === guruMsgId ? { ...msg, content: streamedText } : msg
+                  ));
+                } else if (event.type === 'error') {
+                  toast.error(t('guru.failedResponse'));
+                } else if (event.type === 'done') {
+                  // Stream complete
+                }
+              } catch {
+                // Skip malformed JSON lines
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+
+        clearTimeout(timeout);
+
+        // If we got no text at all, show an error
+        if (!streamedText.trim()) {
+          setMessages(prev => prev.filter(msg => msg.id !== guruMsgId));
+          toast.error(t('guru.failedResponse'));
+        }
       } else {
-        toast.error(data.error || t('guru.failedResponse'));
+        // Fallback: non-streaming JSON response (shouldn't happen but handle gracefully)
+        clearTimeout(timeout);
+        const data = await res.json();
+
+        if (data.success && data.insight) {
+          const guruMsg: ChatMessage = {
+            id: `guru-${Date.now()}`,
+            content: data.insight,
+            isUser: false,
+            timestamp: new Date().toISOString(),
+          };
+          setMessages(prev => [...prev, guruMsg]);
+        } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
+          onGuruLimitReached?.();
+          toast.error(t('guru.limitReachedUpgrade'));
+        } else {
+          toast.error(data.error || t('guru.failedResponse'));
+        }
       }
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') {
