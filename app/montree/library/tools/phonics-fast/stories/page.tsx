@@ -20,7 +20,7 @@ interface BorderStyle {
 
 export default function PhonicsStoriesPage() {
   const searchParams = useSearchParams();
-  const [selectedPhase, setSelectedPhase] = useState(searchParams.get('phase') || 'initial');
+  const [selectedPhase, setSelectedPhase] = useState(searchParams.get('phase') || 'pink1');
   const [selectedStory, setSelectedStory] = useState<ShortStory | null>(null);
   const [printMode, setPrintMode] = useState<PrintMode>('book');
   const [fontSize, setFontSize] = useState<FontSize>('large');

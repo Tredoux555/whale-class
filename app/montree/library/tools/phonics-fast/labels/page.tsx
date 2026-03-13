@@ -26,7 +26,7 @@ const BORDER_WIDTHS = {
 
 export default function LabelsPage() {
   const searchParams = useSearchParams();
-  const initialPhase = searchParams.get('phase') || 'initial';
+  const initialPhase = searchParams.get('phase') || 'pink1';
 
   const [selectedPhase, setSelectedPhase] = useState(initialPhase);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);

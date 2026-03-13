@@ -15,6 +15,7 @@ import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationCo
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
+import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
 import { getRelevantBrainWisdom, recordLearning } from '@/lib/montree/guru/brain';
 import { processTeacherConversation } from '@/lib/montree/guru/post-conversation-processor';
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
@@ -326,6 +327,9 @@ export async function POST(request: NextRequest) {
     // 1. Build child context (or classroom context for whole-class mode)
     let childContext: ChildContext | null = null;
     let classroomContext: ClassroomContext | null = null;
+
+    // Classify question for selective knowledge injection + observability
+    const questionCategory: QuestionCategory = classifyQuestion(question);
 
     if (isWholeClassMode) {
       console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
@@ -702,6 +706,7 @@ export async function POST(request: NextRequest) {
             child_count: classroomContext?.child_count,
             conversational: true,
             mode: guruMode,
+            question_category: questionCategory,
             tools_enabled: toolsEnabled,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
@@ -713,6 +718,7 @@ export async function POST(request: NextRequest) {
             mastered_count: childContext!.mastered_count || 0,
             conversational: true,
             mode: guruMode,
+            question_category: questionCategory,
             tools_enabled: toolsEnabled,
             tool_rounds: rounds,
             actions_taken: actionsTaken.length,
@@ -831,6 +837,7 @@ export async function POST(request: NextRequest) {
           observations_count: childContext!.recent_observations.length,
           notes_count: childContext!.teacher_notes.length,
           topics_used: knowledge.topics_used,
+          question_category: questionCategory,
         },
         response_insight: parsed.insight,
         response_root_cause: parsed.root_cause,

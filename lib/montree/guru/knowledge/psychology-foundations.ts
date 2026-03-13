@@ -160,12 +160,120 @@ NUANCE: Kohn's position is strong but not universally accepted. Some researchers
 CRITICAL FOR PARENT SUPPORT: Many parents instinctively use rewards ("If you finish your work, you can watch TV"). This feels natural but actively damages the child's relationship with learning. Help parents see this WITHOUT making them feel guilty. Frame it as: "You were taught this way, so it makes sense you'd use it. Here's what the research shows works better..." The transition from reward-based to intrinsic-motivation parenting is one of the hardest shifts homeschool parents make.
 `;
 
+// =============================================
+// SECTION-BASED KNOWLEDGE RETRIEVAL
+// Split into named sections for selective injection
+// based on question category (from question-classifier.ts)
+// =============================================
+
+/** Psychologist section keys */
+export type PsychologistKey =
+  | 'freud' | 'piaget' | 'erikson' | 'bowlby_ainsworth' | 'winnicott'
+  | 'vygotsky' | 'jung' | 'montessori' | 'bandura' | 'maslow'
+  | 'bronfenbrenner' | 'stern' | 'dweck' | 'kohn';
+
 /**
- * Returns the psychology knowledge as a formatted string for inclusion in Guru prompts.
- * This is selectively included based on conversation context — not sent every time.
+ * Maps psychologist keys to the ### header prefix used to find each section
+ * in the PSYCHOLOGY_KNOWLEDGE string.
+ */
+const SECTION_HEADERS: Record<PsychologistKey, string> = {
+  freud: '### SIGMUND FREUD',
+  piaget: '### JEAN PIAGET',
+  erikson: '### ERIK ERIKSON',
+  bowlby_ainsworth: '### JOHN BOWLBY',
+  winnicott: '### DONALD WINNICOTT',
+  vygotsky: '### LEV VYGOTSKY',
+  jung: '### CARL JUNG',
+  montessori: '### MARIA MONTESSORI',
+  bandura: '### ALBERT BANDURA',
+  maslow: '### ABRAHAM MASLOW',
+  bronfenbrenner: '### URIE BRONFENBRENNER',
+  stern: '### DANIEL STERN',
+  dweck: '### CAROL DWECK',
+  kohn: '### ALFIE KOHN',
+};
+
+/**
+ * Which psychologists to include for each question category.
+ * - curriculum: ZPD/scaffolding (Vygotsky), stages (Piaget), Montessori core
+ * - psychology: ALL (behavioral questions need full context)
+ * - development: stages + attachment + mindset
+ * - general: Montessori only (minimal)
+ */
+export const CATEGORY_PSYCHOLOGISTS: Record<string, PsychologistKey[]> = {
+  curriculum: ['montessori', 'piaget', 'vygotsky'],
+  psychology: [
+    'freud', 'piaget', 'erikson', 'bowlby_ainsworth', 'winnicott',
+    'vygotsky', 'jung', 'montessori', 'bandura', 'maslow',
+    'bronfenbrenner', 'stern', 'dweck', 'kohn',
+  ],
+  development: ['piaget', 'erikson', 'montessori', 'bowlby_ainsworth', 'dweck'],
+  general: ['montessori'],
+};
+
+// Cached parsed sections (lazy, computed once)
+let _parsedSections: Map<PsychologistKey, string> | null = null;
+
+function parseSections(): Map<PsychologistKey, string> {
+  if (_parsedSections) return _parsedSections;
+
+  _parsedSections = new Map();
+  const keys = Object.keys(SECTION_HEADERS) as PsychologistKey[];
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const header = SECTION_HEADERS[key];
+    const startIdx = PSYCHOLOGY_KNOWLEDGE.indexOf(header);
+    if (startIdx === -1) continue;
+
+    // Find the end: either the next ### header or end of string
+    let endIdx = PSYCHOLOGY_KNOWLEDGE.length;
+    for (let j = i + 1; j < keys.length; j++) {
+      const nextHeader = SECTION_HEADERS[keys[j]];
+      const nextIdx = PSYCHOLOGY_KNOWLEDGE.indexOf(nextHeader, startIdx + 1);
+      if (nextIdx !== -1) {
+        endIdx = nextIdx;
+        break;
+      }
+    }
+
+    _parsedSections.set(key, PSYCHOLOGY_KNOWLEDGE.slice(startIdx, endIdx).trim());
+  }
+
+  return _parsedSections;
+}
+
+/**
+ * Returns psychology knowledge filtered by topic keys.
+ * - Empty array or ['all'] → returns full knowledge (backward compat)
+ * - Specific keys → returns only matching psychologist sections
+ *
+ * @param topics - Array of PsychologistKey strings, or empty/['all'] for full knowledge
  */
 export function getRelevantPsychologyKnowledge(topics: string[]): string {
-  // For now, return the full knowledge base — it's comprehensive but not enormous
-  // Future: use topic matching to return only relevant sections
-  return PSYCHOLOGY_KNOWLEDGE;
+  // Backward compat: empty array or 'all' returns everything
+  if (topics.length === 0 || topics.includes('all')) {
+    return PSYCHOLOGY_KNOWLEDGE;
+  }
+
+  const sections = parseSections();
+  const selected: string[] = [];
+  const seen = new Set<string>();
+
+  for (const topic of topics) {
+    if (seen.has(topic)) continue;
+    seen.add(topic);
+    const section = sections.get(topic as PsychologistKey);
+    if (section) {
+      selected.push(section);
+    }
+  }
+
+  if (selected.length === 0) {
+    // Fallback: at least return Montessori section
+    const montessori = sections.get('montessori');
+    return montessori ? `## DEVELOPMENTAL PSYCHOLOGY FOUNDATIONS\n\n${montessori}` : '';
+  }
+
+  return `## DEVELOPMENTAL PSYCHOLOGY FOUNDATIONS\n\n${selected.join('\n\n')}`;
 }

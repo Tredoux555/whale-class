@@ -1,22 +1,21 @@
 // /montree/library/tools/phonics-fast/page.tsx
 // Phonics Fast — Master Hub for all phonics word lists + generators
+// Tabs are DYNAMICALLY generated from ALL_PHASES — no hardcoded phase IDs
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ALL_PHASES, SIGHT_WORDS, getWordCounts, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup, type CommandSentence } from '@/lib/montree/phonics/phonics-data';
+import { ALL_PHASES, SIGHT_WORDS, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup, type CommandSentence } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 
-type TabId = 'initial' | 'phase2' | 'blue1' | 'blue2' | 'tools';
-
-const TABS: { id: TabId; label: string; emoji: string }[] = [
-  { id: 'initial', label: 'Initial Words', emoji: '🟢' },
-  { id: 'phase2', label: 'Phase 2 CVC', emoji: '🔵' },
-  { id: 'blue1', label: 'Blue 1', emoji: '🟣' },
-  { id: 'blue2', label: 'Blue 2', emoji: '💜' },
-  { id: 'tools', label: 'Generators', emoji: '🛠️' },
-];
+// Derive series color from phase ID prefix
+function getSeriesInfo(phaseId: string): { series: string; color: string; bgClass: string } {
+  if (phaseId.startsWith('pink')) return { series: 'Pink', color: '#10b981', bgClass: 'bg-emerald-700' };
+  if (phaseId.startsWith('blue')) return { series: 'Blue', color: '#6366f1', bgClass: 'bg-indigo-700' };
+  if (phaseId.startsWith('green')) return { series: 'Green', color: '#16a34a', bgClass: 'bg-green-700' };
+  return { series: '?', color: '#666', bgClass: 'bg-gray-700' };
+}
 
 const GENERATORS = [
   { href: '/montree/library/tools/phonics-fast/three-part-cards', icon: '🃏', label: '3-Part Cards', desc: 'Auto-generate nomenclature cards from word lists' },
@@ -29,9 +28,19 @@ const GENERATORS = [
 ];
 
 export default function PhonicsHubPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('initial');
-  const counts = getWordCounts();
-  const printRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<string>(ALL_PHASES[0]?.id || 'pink1');
+
+  // Compute word counts dynamically from ALL_PHASES
+  const { totalWords, phaseCounts } = useMemo(() => {
+    let total = 0;
+    const counts: Record<string, number> = {};
+    for (const phase of ALL_PHASES) {
+      const count = phase.groups.reduce((sum, g) => sum + g.words.length, 0);
+      counts[phase.id] = count;
+      total += count;
+    }
+    return { totalWords: total, phaseCounts: counts };
+  }, []);
 
   const currentPhase = ALL_PHASES.find(p => p.id === activeTab);
 
@@ -47,34 +56,55 @@ export default function PhonicsHubPage() {
             Phonics Fast
           </h1>
           <p className="text-emerald-200 mt-1">
-            {counts.total} words across 4 phases — complete Montessori phonics progression
+            {totalWords} words across {ALL_PHASES.length} phases — complete Montessori phonics progression
           </p>
-          <div className="flex gap-3 mt-3 text-sm">
-            <span className="bg-emerald-700 px-3 py-1 rounded-full">Initial: {counts.initial}</span>
-            <span className="bg-blue-700 px-3 py-1 rounded-full">Phase 2: {counts.phase2}</span>
-            <span className="bg-indigo-700 px-3 py-1 rounded-full">Blue 1: {counts.blue1}</span>
-            <span className="bg-violet-700 px-3 py-1 rounded-full">Blue 2: {counts.blue2}</span>
+          <div className="flex flex-wrap gap-2 mt-3 text-sm">
+            {ALL_PHASES.map(phase => {
+              const { bgClass } = getSeriesInfo(phase.id);
+              return (
+                <span key={phase.id} className={`${bgClass} px-3 py-1 rounded-full`}>
+                  {phase.name.split('—')[0].trim()}: {phaseCounts[phase.id]}
+                </span>
+              );
+            })}
           </div>
         </div>
       </header>
 
-      {/* Tabs */}
+      {/* Tabs — dynamically generated from ALL_PHASES + Tools */}
       <div className="bg-[#0a2624] overflow-x-auto">
         <div className="max-w-5xl mx-auto px-4 flex gap-0">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-sm font-bold whitespace-nowrap border-b-3 transition-colors ${
-                activeTab === tab.id
-                  ? 'text-emerald-300 border-emerald-400'
-                  : 'text-gray-400 border-transparent hover:text-gray-200'
-              }`}
-              style={{ borderBottomWidth: '3px' }}
-            >
-              {tab.emoji} {tab.label}
-            </button>
-          ))}
+          {ALL_PHASES.map(phase => {
+            const isActive = activeTab === phase.id;
+            const { series } = getSeriesInfo(phase.id);
+            // Short label: "Pink 1", "Blue 2", etc.
+            const shortLabel = phase.name.split('—')[0].trim();
+            return (
+              <button
+                key={phase.id}
+                onClick={() => setActiveTab(phase.id)}
+                className={`px-4 py-3 text-sm font-bold whitespace-nowrap transition-colors ${
+                  isActive
+                    ? 'text-emerald-300 border-emerald-400'
+                    : 'text-gray-400 border-transparent hover:text-gray-200'
+                }`}
+                style={{ borderBottomWidth: '3px', borderBottomStyle: 'solid', borderBottomColor: isActive ? phase.color : 'transparent' }}
+              >
+                {shortLabel}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => setActiveTab('tools')}
+            className={`px-4 py-3 text-sm font-bold whitespace-nowrap transition-colors ${
+              activeTab === 'tools'
+                ? 'text-emerald-300 border-emerald-400'
+                : 'text-gray-400 border-transparent hover:text-gray-200'
+            }`}
+            style={{ borderBottomWidth: '3px', borderBottomStyle: 'solid', borderBottomColor: activeTab === 'tools' ? '#10b981' : 'transparent' }}
+          >
+            🛠️ Generators
+          </button>
         </div>
       </div>
 
@@ -122,6 +152,8 @@ function generateAllMaterialsHTML(phase: PhonicsPhase, photoMap: Map<string, str
   const allWords = phase.groups.flatMap(g => g.words);
   const nounWords = allWords.filter(w => w.isNoun);
   const commands = getCommands(phase.id);
+  // Build set of all phonics words in this phase for bold highlighting in commands
+  const phaseWordSet = new Set(allWords.map(w => w.word.toLowerCase()));
 
   // Card dimensions
   const A4W = 21, A4H = 29.7;
@@ -224,8 +256,8 @@ body { font-family: system-ui, sans-serif; background: white; }
       html += '<div class="page"><div class="cmd-grid">';
       batch.forEach(cmd => {
         const textHtml = cmd.text.split(/\b/).map((part: string) => {
-          const w = part.trim();
-          if (cmd.phonicsWords.some(pw => pw.toLowerCase() === w.toLowerCase())) {
+          const w = part.trim().toLowerCase();
+          if (w && phaseWordSet.has(w)) {
             return `<strong>${escapeHtml(part)}</strong>`;
           }
           return escapeHtml(part);
