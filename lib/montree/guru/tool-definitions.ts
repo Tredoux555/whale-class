@@ -4,6 +4,59 @@
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
+// Mode-based tool injection: only send tools the model needs for the current conversation mode.
+// NORMAL mode (80%+ of calls) drops 8 niche tools → saves ~1,600 tokens (~8% of total input).
+// Each tool definition averages ~200 tokens in the API payload.
+
+type GuruMode = 'SETUP' | 'INTAKE' | 'CHECKIN' | 'REFLECTION' | 'NORMAL';
+
+// Tool name → which modes it's available in. Missing = available in ALL tool-enabled modes.
+const MODE_TOOL_MAP: Record<string, GuruMode[]> = {
+  // Profile tools: only during intake/checkin when gathering info
+  save_child_profile:        ['INTAKE', 'SETUP'],
+  save_developmental_insight: ['CHECKIN', 'NORMAL'],
+  track_guidance_outcome:     ['CHECKIN'],
+  save_checkin:               ['CHECKIN'],
+
+  // Custom work creation: only during setup or when explicitly building shelf
+  add_curriculum_work:        ['SETUP', 'NORMAL'],
+
+  // Classroom-wide tools: only in whole-class mode (injected separately)
+  get_classroom_overview:     [],  // empty = never auto-included, only via wholeClass flag
+  group_students:             [],
+  get_classroom_media_summary: [],
+};
+
+// Tool names that are ONLY injected in whole-class mode
+const WHOLE_CLASS_ONLY_TOOLS = new Set([
+  'get_classroom_overview',
+  'group_students',
+  'get_classroom_media_summary',
+]);
+
+/**
+ * Returns the subset of GURU_TOOLS appropriate for the current mode.
+ * NORMAL mode (80%+ of calls): ~11 tools instead of 19 → saves ~1,600 tokens.
+ * Whole-class mode adds 3 classroom-wide tools on top.
+ */
+export function getToolsForMode(mode: GuruMode, isWholeClass: boolean): Tool[] {
+  if (mode === 'REFLECTION') return []; // Reflection = pure conversation
+
+  return GURU_TOOLS.filter(tool => {
+    const name = tool.name;
+
+    // Whole-class-only tools: include only when isWholeClass
+    if (WHOLE_CLASS_ONLY_TOOLS.has(name)) {
+      return isWholeClass;
+    }
+
+    // Check mode-specific restrictions
+    const allowedModes = MODE_TOOL_MAP[name];
+    if (allowedModes === undefined) return true; // No restriction → always included
+    return allowedModes.includes(mode);
+  });
+}
+
 export const GURU_TOOLS: Tool[] = [
   {
     name: "set_focus_work",
