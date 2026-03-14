@@ -7,6 +7,7 @@ const SECTIONS = [
     title: '⚡ INTELLIGENCE',
     tools: [
       { name: 'The Nerve Center', desc: 'Marketing brain — algorithms, hooks, viral playbook, content calendar', href: '/montree/super-admin/marketing/nerve-center', icon: '🧠', featured: true },
+      { name: 'Outreach Campaign', desc: 'Global sales — 9 personalized emails, 50 schools ranked, 4-week game plan', href: '/montree/super-admin/marketing/outreach-campaign', icon: '🎯', featured: true },
       { name: 'Sales Playbook', desc: 'School intel, outreach schedule, the letter', href: '/montree/super-admin/marketing/sales-playbook', icon: '🎯', featured: true },
     ],
   },
