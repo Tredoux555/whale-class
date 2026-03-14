@@ -13,6 +13,54 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
+// ================================================================
+// IN-MEMORY RATE LIMITER FALLBACK
+// Used when DB-based rate limiter is unavailable (Supabase down)
+// Simple sliding window: max 60 requests per IP per 60 minutes
+// Module-level Map survives across requests in the same serverless instance
+// ================================================================
+const inMemoryRateLimitMap = new Map<string, number[]>();
+const IN_MEMORY_RATE_LIMIT = 60;
+const IN_MEMORY_RATE_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+
+function inMemoryRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = inMemoryRateLimitMap.get(ip) || [];
+  // Evict old entries outside the window
+  const recent = timestamps.filter(ts => now - ts < IN_MEMORY_RATE_WINDOW_MS);
+  if (recent.length >= IN_MEMORY_RATE_LIMIT) {
+    inMemoryRateLimitMap.set(ip, recent);
+    return false;
+  }
+  recent.push(now);
+  inMemoryRateLimitMap.set(ip, recent);
+  // Periodic cleanup: if map grows beyond 1000 IPs, evict oldest entries
+  if (inMemoryRateLimitMap.size > 1000) {
+    const keys = [...inMemoryRateLimitMap.keys()];
+    for (let i = 0; i < 200; i++) {
+      inMemoryRateLimitMap.delete(keys[i]);
+    }
+  }
+  return true;
+}
+
+/**
+ * Sanitize a string for safe embedding in a prompt template.
+ * Prevents prompt injection via malicious work names, areas, or observations
+ * stored in the DB (e.g., a teacher correction with "Ignore all instructions..." as the name).
+ * Strips control characters, trims to maxLen, and collapses whitespace.
+ */
+function sanitizeForPrompt(input: string, maxLen: number = 200): string {
+  if (!input || typeof input !== 'string') return '';
+  return input
+    // Strip characters that could be used for prompt injection: newlines, tabs, backticks, angle brackets
+    .replace(/[\n\r\t`<>]/g, ' ')
+    // Collapse multiple spaces
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLen);
+}
+
 // Tool definition for structured photo analysis
 const PHOTO_ANALYSIS_TOOL = {
   name: 'tag_photo' as const,
@@ -66,8 +114,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
-    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/guru/photo-insight', 60, 60);
-    if (!allowed) {
+    // In-memory rate limit fallback: if DB rate limiter throws (Supabase down), don't fail-open
+    // Simple sliding window per IP — 60 requests per 60 minutes
+    let rateLimitAllowed = true;
+    try {
+      const result = await checkRateLimit(supabase, ip, '/api/montree/guru/photo-insight', 60, 60);
+      rateLimitAllowed = result.allowed;
+    } catch (rateLimitErr) {
+      console.error('[PhotoInsight] DB rate limiter failed, using in-memory fallback:', rateLimitErr);
+      rateLimitAllowed = inMemoryRateLimit(ip);
+    }
+    if (!rateLimitAllowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
     }
 
@@ -379,10 +436,12 @@ export async function POST(request: NextRequest) {
       if (corrections && corrections.length > 0) {
         const promptEntries: string[] = [];
         for (const c of corrections) {
-          if (c.original_work_name && c.corrected_work_name) {
-            correctionsMap.set(c.original_work_name.toLowerCase().trim(), c.corrected_work_name);
+          const origTrimmed = typeof c.original_work_name === 'string' ? c.original_work_name.trim() : '';
+          const corrTrimmed = typeof c.corrected_work_name === 'string' ? c.corrected_work_name.trim() : '';
+          if (origTrimmed && corrTrimmed) {
+            correctionsMap.set(origTrimmed.toLowerCase(), corrTrimmed);
             if (promptEntries.length < 10) {
-              promptEntries.push(`- You said "${c.original_work_name}" but teacher corrected to "${c.corrected_work_name}"`);
+              promptEntries.push(`- You said "${sanitizeForPrompt(c.original_work_name, 100)}" but teacher corrected to "${sanitizeForPrompt(c.corrected_work_name, 100)}"`);
             }
           }
         }
@@ -397,7 +456,7 @@ export async function POST(request: NextRequest) {
       const focusWorks = focusWorksResult.value?.data;
       if (focusWorks && focusWorks.length > 0) {
         focusWorksContext = `\n\nCHILD'S CURRENT SHELF (for context only — do NOT bias your identification):
-${focusWorks.map((w: { work_name: string; area: string; status: string }, i: number) => `${i + 1}. ${w.work_name} (${w.area}, status: ${w.status})`).join('\n')}
+${focusWorks.map((w: { work_name: string; area: string; status: string }, i: number) => `${i + 1}. ${sanitizeForPrompt(w.work_name, 100)} (${sanitizeForPrompt(w.area, 30)}, status: ${sanitizeForPrompt(w.status, 20)})`).join('\n')}
 NOTE: These are works on the child's shelf. The photo may or may not show one of these. Identify based on what you SEE in the photo, not what is on the shelf.`;
       }
     }
@@ -408,7 +467,7 @@ NOTE: These are works on the child's shelf. The photo may or may not show one of
       if (recentPhotos && recentPhotos.length > 0) {
         const snapshot = recentPhotos[0].context_snapshot as Record<string, unknown>;
         if (snapshot?.identified_work_name) {
-          duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): A previous photo was identified as "${snapshot.identified_work_name}" (${snapshot.identified_area}). Make your OWN independent assessment of THIS photo — do not copy the previous identification unless you genuinely see the same activity.`;
+          duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): A previous photo was identified as "${sanitizeForPrompt(String(snapshot.identified_work_name), 100)}" (${sanitizeForPrompt(String(snapshot.identified_area), 30)}). Make your OWN independent assessment of THIS photo — do not copy the previous identification unless you genuinely see the same activity.`;
         }
       }
     }
@@ -484,11 +543,16 @@ LANGUAGE — Look for letter materials:
 - Object + label matching → "Object Box"
 - Picture + word cards → "Classified Cards"
 
-CONFIDENCE CALIBRATION:
-- 0.95+ : Material is unmistakable (Pink Tower cubes, specific transfer tool clearly visible)
+CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences):
+- 0.95+ : ONLY use when the material is unmistakable and you are CERTAIN of the exact work name
+  → The system will AUTOMATICALLY update the child's progress record (no teacher review)
+  → False positives at this level corrupt educational records — be conservative
 - 0.7-0.94 : Likely match but some ambiguity (partially visible materials, angle obscures key features)
-- 0.5-0.69 : Best guess based on limited visual evidence
-- Below 0.5 : Cannot reliably identify — describe what you see
+  → Teacher will be asked to confirm before any update happens
+- 0.5-0.69 : Best guess based on limited visual evidence — requires teacher confirmation
+- Below 0.5 : Cannot reliably identify — describe what you see, no matching attempted
+IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask the teacher
+to confirm (0.7-0.94) than to auto-update incorrectly (0.95+).
 ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
@@ -523,9 +587,20 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
       }, 45000);
     });
 
-    const message = await Promise.race([apiPromise, timeoutPromise]).finally(() => {
+    let message;
+    try {
+      message = await Promise.race([apiPromise, timeoutPromise]);
+    } catch (raceErr) {
       clearTimeout(timeoutHandle);
-    });
+      // Explicit timeout handling — return 408 instead of falling to generic 500 catch
+      if (raceErr instanceof Error && raceErr.message === 'Analysis took too long') {
+        console.error('[PhotoInsight] Anthropic API timeout after 45s');
+        return NextResponse.json({ success: false, error: 'Analysis took too long' }, { status: 408 });
+      }
+      throw raceErr; // Re-throw non-timeout errors to outer catch
+    } finally {
+      clearTimeout(timeoutHandle);
+    }
 
     // Extract tool use result
     const toolBlock = message.content.find(b => b.type === 'tool_use');
@@ -555,12 +630,15 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Validate tool input fields
     const rawInput = toolBlock.input as Record<string, unknown>;
+    // Validate and cap Sonnet's tool output — prevents oversized strings from reaching DB/client
+    const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'unknown'];
+    const VALID_MASTERY = ['mastered', 'practicing', 'presented', 'unclear'];
     const input = {
-      work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name : '',
-      area: typeof rawInput.area === 'string' ? rawInput.area : 'unknown',
-      mastery_evidence: typeof rawInput.mastery_evidence === 'string' ? rawInput.mastery_evidence : 'unclear',
+      work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
+      area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
+      mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
       confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
-      observation: typeof rawInput.observation === 'string' ? rawInput.observation : '',
+      observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
     };
 
     // Match to curriculum using V2 (area-constrained, alias-aware, materials-boosted)
@@ -747,15 +825,18 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     // C: In classroom but NOT on shelf → "Add to Shelf"
     // D: Happy path (in classroom + on shelf or auto-updated)
     // CONFIDENCE FLOOR: if Sonnet confidence < 0.5, always scenario A regardless of match
+    // Scenario determination based on ACTUAL state after all auto-updates
+    // Don't use autoUpdated as a proxy — check actual shelf/classroom state
+    // If auto-add-to-shelf failed, inChildShelf is still false → scenario C (user can add manually)
     let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
     if (matchScore < 0.5 || input.confidence < 0.5) {
       scenario = 'A'; // Unknown or too uncertain
     } else if (!inClassroom) {
       scenario = 'B'; // Known work, not in this classroom
-    } else if (!inChildShelf && !autoUpdated) {
-      scenario = 'C'; // In classroom, not on shelf
+    } else if (!inChildShelf) {
+      scenario = 'C'; // In classroom, not on shelf (regardless of whether auto-update succeeded)
     }
-    // else scenario = 'D' (happy path)
+    // else scenario = 'D' (happy path — in classroom AND on shelf)
 
     // Build clean insight text (1 sentence observation, not verbose)
     const insightText = input.observation || 'Photo analyzed';

@@ -12,8 +12,24 @@ export const fuzzyScore = (str1: string, str2: string): number => {
   // Exact match
   if (s1 === s2) return 1;
 
-  // One contains the other
-  if (s1.includes(s2) || s2.includes(s1)) return 0.85;
+  // One contains the other — but guard against short substring false positives
+  // e.g., "hand" matching "Sand Tray Handwriting" at 0.85 is too generous
+  // Require the shorter string to be at least 60% of the longer string's length
+  // OR use word-boundary matching for short substrings
+  if (s1.includes(s2) || s2.includes(s1)) {
+    const shorter = s1.length < s2.length ? s1 : s2;
+    const longer = s1.length < s2.length ? s2 : s1;
+    const lengthRatio = shorter.length / longer.length;
+    if (lengthRatio >= 0.6) {
+      return 0.85; // Genuine containment (similar length strings)
+    }
+    // Short substring in long string — check if it's a whole word
+    const wordBoundaryRegex = new RegExp(`\\b${shorter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+    if (wordBoundaryRegex.test(longer)) {
+      return 0.7; // Whole word match but big length difference — moderate score
+    }
+    return 0.5; // Partial substring buried in longer string — low confidence
+  }
 
   // Word-level matching
   const words1 = s1.split(/[\s\-_]+/).filter(w => w.length > 2);
@@ -296,17 +312,25 @@ export function matchToCurriculumV2(
   const input = identifiedName.toLowerCase().trim();
 
   // 0. Check corrections alias map first (instant match from teacher feedback)
+  // SAFETY: Corrections map entries are validated — the corrected name MUST exist in the
+  // curriculum to prevent poisoned corrections (e.g., a bad DB entry pointing to a nonexistent
+  // work) from returning a phantom score of 1.0. If the corrected name doesn't resolve to a
+  // real curriculum work, we skip the shortcut and fall through to normal matching.
+  // Score is capped at 0.98 (not 1.0) so corrections don't bypass the GREEN zone threshold
+  // check identically to a perfect visual match — teacher confirmation is still possible.
   if (corrections && corrections.size > 0) {
     const correctedName = corrections.get(input);
     if (correctedName) {
       const exactMatch = curriculum.find(w => w.name.toLowerCase().trim() === correctedName.toLowerCase().trim());
       if (exactMatch) {
         return {
-          candidates: [{ work: exactMatch, score: 1.0 }],
+          candidates: [{ work: exactMatch, score: 0.98 }],
           bestMatch: exactMatch,
-          bestScore: 1.0,
+          bestScore: 0.98,
         };
       }
+      // Corrected name doesn't match any curriculum work — skip (don't trust stale correction)
+      console.warn(`[Matching] Stale correction ignored: "${input}" → "${correctedName}" (corrected name not in curriculum)`);
     }
   }
 
