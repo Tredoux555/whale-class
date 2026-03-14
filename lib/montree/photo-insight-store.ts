@@ -33,7 +33,7 @@ export interface PhotoInsightResult {
 
 export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected' | 'retrying';
 
-export type InsightErrorType = 'timeout' | 'rate_limit' | 'server_error' | 'network' | 'unknown';
+export type InsightErrorType = 'timeout' | 'rate_limit' | 'server_error' | 'network' | 'auth_error' | 'unknown';
 
 export interface InsightEntry {
   mediaId: string;
@@ -118,29 +118,47 @@ export function getEntriesForChild(childId: string): InsightEntry[] {
 }
 
 // Max auto-retries for transient errors (network, server 5xx)
-const MAX_AUTO_RETRIES = 1;
-const RETRY_DELAY_MS = 2000;
+// 2 retries = 3 total attempts — handles double-failures common on classroom WiFi
+const MAX_AUTO_RETRIES = 2;
+// Base delay for exponential backoff (ms) — jitter prevents thundering herd
+const RETRY_BASE_DELAY_MS = 2000;
 // Client timeout: slightly longer than server's 45s to allow server response
 const CLIENT_TIMEOUT_MS = 50000;
 // Re-analysis TTL: allow re-analysis of "done" entries after 10 minutes
 const REANALYSIS_TTL_MS = 10 * 60 * 1000;
 
+/** Exponential backoff with jitter: base * 2^attempt + random(0, base) */
+function getRetryDelay(attempt: number): number {
+  const exponential = RETRY_BASE_DELAY_MS * Math.pow(2, attempt);
+  const jitter = Math.random() * RETRY_BASE_DELAY_MS;
+  return Math.min(exponential + jitter, 15000); // Cap at 15s
+}
+
 /** Classify error type from fetch response or exception */
 function classifyError(res?: Response, err?: unknown): InsightErrorType {
   if (err) {
     if (err instanceof Error && err.name === 'AbortError') return 'timeout';
-    if (err instanceof TypeError) return 'network'; // fetch() network failure
+    // fetch() network failure is TypeError with specific messages
+    if (err instanceof TypeError && (
+      err.message.includes('fetch') ||
+      err.message.includes('network') ||
+      err.message.includes('Failed to fetch') ||
+      err.message.includes('NetworkError') ||
+      err.message.includes('Load failed')
+    )) return 'network';
+    if (err instanceof TypeError) return 'unknown'; // Non-network TypeError
     return 'unknown';
   }
   if (res) {
     if (res.status === 429) return 'rate_limit';
     if (res.status >= 500) return 'server_error';
     if (res.status === 408) return 'timeout';
+    if (res.status === 403 || res.status === 401) return 'auth_error' as InsightErrorType;
   }
   return 'unknown';
 }
 
-/** Whether an error type is retryable */
+/** Whether an error type is retryable (auth + rate limit are permanent failures) */
 function isRetryable(errorType: InsightErrorType): boolean {
   return errorType === 'network' || errorType === 'server_error' || errorType === 'timeout';
 }
@@ -323,7 +341,8 @@ function handleAnalysisError(
 
   // Auto-retry once for transient errors (not rate limits)
   if (retryCount < MAX_AUTO_RETRIES && isRetryable(errorType)) {
-    console.log(`[PhotoInsight] Retrying in ${RETRY_DELAY_MS}ms (attempt ${retryCount + 2}, error: ${errorType})`);
+    const delay = getRetryDelay(retryCount);
+    console.log(`[PhotoInsight] Retrying in ${delay}ms (attempt ${retryCount + 2}/${MAX_AUTO_RETRIES + 1}, error: ${errorType})`);
     entries.set(key, {
       mediaId,
       childId,
@@ -335,12 +354,12 @@ function handleAnalysisError(
     });
     notify();
     setTimeout(() => {
-      // Only retry if still in retrying state (user might have manually reset)
+      // Only retry if still in retrying state (user might have manually reset or clearAll called)
       const current = entries.get(key);
       if (current?.status === 'retrying') {
         runAnalysisFetch(mediaId, childId, locale, retryCount + 1);
       }
-    }, RETRY_DELAY_MS);
+    }, delay);
     return;
   }
 

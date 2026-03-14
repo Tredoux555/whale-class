@@ -46,8 +46,13 @@ export default function PhotoInsightButton({
 
   // Mounted guard — prevents state updates on unmounted component
   const mountedRef = useRef(true);
+  // Track setTimeout IDs for cleanup on unmount (prevents orphaned timers setting state)
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    return () => { mountedRef.current = false; };
+    return () => {
+      mountedRef.current = false;
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
   }, []);
 
   // Subscribe to the global store — per-entry selector limits re-renders to THIS entry only
@@ -75,11 +80,16 @@ export default function PhotoInsightButton({
   }, [mediaId]);
 
   // Fire onProgressUpdate exactly once when auto_updated result arrives
+  // Try-catch: parent's callback may throw — don't let it crash this component
   const firedAutoUpdateRef = useRef<string | null>(null);
   useEffect(() => {
     if (result?.auto_updated && onProgressUpdate && firedAutoUpdateRef.current !== storeKey) {
       firedAutoUpdateRef.current = storeKey;
-      onProgressUpdate();
+      try {
+        onProgressUpdate();
+      } catch (err) {
+        console.error('[PhotoInsight] onProgressUpdate callback threw:', err);
+      }
     }
   }, [result, storeKey, onProgressUpdate]);
 
@@ -114,7 +124,8 @@ export default function PhotoInsightButton({
         if (!progressRes.ok) {
           console.error('[PhotoInsight] Progress update failed:', progressRes.status);
           setCtaError(t('photoInsight.actionFailed'));
-          setTimeout(() => setCtaError(null), 4000);
+          if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
           setCtaLoading(false);
           return; // Don't mark as confirmed if progress update failed
         }
@@ -143,12 +154,15 @@ export default function PhotoInsightButton({
       if (!mountedRef.current) return;
       confirmEntry(mediaId, childId);
       setCtaDone(true);
-      if (onProgressUpdate) onProgressUpdate();
+      if (onProgressUpdate) {
+        try { onProgressUpdate(); } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
+      }
     } catch (err) {
       console.error('[PhotoInsight] Confirm error:', err);
       if (mountedRef.current) {
         setCtaError(t('photoInsight.actionFailed'));
-        setTimeout(() => setCtaError(null), 4000);
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
       }
     } finally {
       if (mountedRef.current) setCtaLoading(false);
@@ -199,13 +213,15 @@ export default function PhotoInsightButton({
       } else {
         console.error('[PhotoInsight] Add to classroom failed:', res.status);
         setCtaError(t('photoInsight.actionFailed'));
-        setTimeout(() => setCtaError(null), 4000);
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to classroom error:', err);
       if (mountedRef.current) {
         setCtaError(t('photoInsight.actionFailed'));
-        setTimeout(() => setCtaError(null), 4000);
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
       }
     } finally {
       if (mountedRef.current) setCtaLoading(false);
@@ -236,17 +252,21 @@ export default function PhotoInsightButton({
             classroomWorkId: result.classroom_work_id || null,
           });
         }
-        if (onProgressUpdate) onProgressUpdate();
+        if (onProgressUpdate) {
+          try { onProgressUpdate(); } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
+        }
       } else {
         console.error('[PhotoInsight] Add to shelf failed:', res.status);
         setCtaError(t('photoInsight.actionFailed'));
-        setTimeout(() => setCtaError(null), 4000);
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
       }
     } catch (err) {
       console.error('[PhotoInsight] Add to shelf error:', err);
       if (mountedRef.current) {
         setCtaError(t('photoInsight.actionFailed'));
-        setTimeout(() => setCtaError(null), 4000);
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
       }
     } finally {
       if (mountedRef.current) setCtaLoading(false);
