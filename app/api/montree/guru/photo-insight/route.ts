@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -389,18 +389,19 @@ export async function POST(request: NextRequest) {
     }
 
     // ========================================================
-    // SELF-LEARNING CONTEXT: corrections, focus works, duplicates
-    // Run all 3 in parallel — they're independent queries sharing only classroomId/child_id
+    // SELF-LEARNING CONTEXT: corrections, focus works, duplicates, visual memory
+    // Run all 4 in parallel — they're independent queries sharing only classroomId/child_id
     // ========================================================
 
     let correctionsContext = '';
     const correctionsMap = new Map<string, string>(); // lowercase original → corrected (for matchToCurriculumV2)
     let focusWorksContext = '';
     let duplicateContext = '';
+    let visualMemoryContext = '';
 
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
-    const [correctionsResult, focusWorksResult, duplicateResult] = await Promise.allSettled([
+    const [correctionsResult, focusWorksResult, duplicateResult, visualMemoryResult] = await Promise.allSettled([
       // 1. Corrections for this classroom (used for BOTH prompt context AND V2 matching)
       classroomId
         ? supabase
@@ -428,6 +429,18 @@ export async function POST(request: NextRequest) {
         .not('question', 'like', `photo:${media_id}%`)
         .order('created_at', { ascending: false })
         .limit(1),
+
+      // 4. Visual memory — per-classroom learned descriptions of what works look like
+      // Built from teacher corrections + first-capture photos. Injected into prompt so Sonnet
+      // "remembers" what each material looks like in THIS specific classroom.
+      classroomId
+        ? supabase
+            .from('montree_visual_memory')
+            .select('work_name, area, visual_description, is_custom')
+            .eq('classroom_id', classroomId)
+            .order('updated_at', { ascending: false })
+            .limit(30)
+        : Promise.resolve({ data: null }),
     ]);
 
     // Process corrections result
@@ -468,6 +481,50 @@ NOTE: These are works on the child's shelf. The photo may or may not show one of
         const snapshot = recentPhotos[0].context_snapshot as Record<string, unknown>;
         if (snapshot?.identified_work_name) {
           duplicateContext = `\n\nRECENT PHOTO (same child, last 5 minutes): A previous photo was identified as "${sanitizeForPrompt(String(snapshot.identified_work_name), 100)}" (${sanitizeForPrompt(String(snapshot.identified_area), 30)}). Make your OWN independent assessment of THIS photo — do not copy the previous identification unless you genuinely see the same activity.`;
+        }
+      }
+    }
+
+    // Process visual memory result — per-classroom learned descriptions
+    if (visualMemoryResult.status === 'fulfilled') {
+      const memories = visualMemoryResult.value?.data;
+      if (memories && memories.length > 0) {
+        const standardMemories: string[] = [];
+        const customMemories: string[] = [];
+
+        for (const m of memories) {
+          const desc = sanitizeForPrompt(m.visual_description, 200);
+          const name = sanitizeForPrompt(m.work_name, 100);
+          const entry = `- "${name}" (${sanitizeForPrompt(m.area || 'unknown', 30)}): ${desc}`;
+
+          if (m.is_custom) {
+            customMemories.push(entry);
+          } else {
+            standardMemories.push(entry);
+          }
+        }
+
+        const sections: string[] = [];
+        if (customMemories.length > 0) {
+          sections.push(`CUSTOM WORKS in this classroom (teacher-created — NOT in standard curriculum):\n${customMemories.join('\n')}`);
+        }
+        if (standardMemories.length > 0) {
+          sections.push(`Learned material descriptions (from previous photos in this classroom):\n${standardMemories.join('\n')}`);
+        }
+
+        if (sections.length > 0) {
+          visualMemoryContext = `\n\nCLASSROOM VISUAL MEMORY (what materials look like in THIS specific classroom):\n${sections.join('\n\n')}
+NOTE: These descriptions were learned from previous photos. Use them to help identify materials, especially custom works that are NOT in the standard curriculum guide above.`;
+
+          // Fire-and-forget: increment times_used for all injected memories
+          // This tracks which descriptions are actually being used in prompts
+          if (classroomId) {
+            const memoryNames = memories.map((m: { work_name: string }) => m.work_name);
+            supabase.rpc('increment_visual_memory_used', {
+              p_classroom_id: classroomId,
+              p_work_names: memoryNames,
+            }).catch(() => {}); // Non-fatal — analytics only
+          }
         }
       }
     }
@@ -767,7 +824,7 @@ CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences
 - Below 0.5 : Cannot reliably identify — describe what you see, no matching attempted
 IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask the teacher
 to confirm (0.7-0.94) than to auto-update incorrectly (0.95+).
-${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
+${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
     // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
     // AbortController ensures the API call is actually cancelled on timeout (not just ignored)
@@ -1032,6 +1089,71 @@ ${curriculumHint}${focusWorksContext}${correctionsContext}${duplicateContext}`;
     // SELF-LEARNING: Do NOT mark as "assumed correct" on auto-update
     // Accuracy EMA is ONLY updated when teacher explicitly confirms (via confirm button)
     // or corrects (via correction flow). This prevents poisoning the accuracy data.
+
+    // VISUAL MEMORY: First-capture learning for custom works
+    // If this is a custom work (work_key starts with 'custom_') and we have a confident match
+    // but NO visual memory entry yet, generate one from this photo.
+    // This way, future photos of the same custom work get the visual description injected.
+    // Fire-and-forget: don't await, don't block the response.
+    if (
+      finalWorkKey && finalWorkKey.startsWith('custom_') &&
+      matchScore >= 0.7 && input.confidence >= 0.7 &&
+      classroomId && photoUrl && anthropic
+    ) {
+      // Check if visual memory already exists for this work (cheap query)
+      supabase
+        .from('montree_visual_memory')
+        .select('id')
+        .eq('classroom_id', classroomId)
+        .eq('work_name', finalWorkName)
+        .maybeSingle()
+        .then(({ data: existingMemory }) => {
+          if (!existingMemory) {
+            // No visual memory yet — generate from this photo using Haiku
+            return anthropic!.messages.create({
+              model: HAIKU_MODEL,
+              max_tokens: 150,
+              system: `You are a Montessori classroom material describer. Given a photo of a child working with Montessori materials, describe ONLY the physical materials/objects visible — NOT the child, NOT the activity, NOT the room. Focus on: shape, color, size, material (wood/metal/fabric/plastic), arrangement, and any distinctive visual features. Keep it to 1-2 sentences, max 120 words.`,
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'image', source: { type: 'url', url: photoUrl } },
+                  { type: 'text', text: `This is the Montessori work "${finalWorkName}" (area: ${finalArea || 'unknown'}). Describe the physical materials visible.` },
+                ],
+              }],
+            }).then((msg) => {
+              let desc = '';
+              for (const block of msg.content) {
+                if (block.type === 'text') { desc = block.text.trim().slice(0, 500); break; }
+              }
+              if (desc.length >= 10) {
+                return supabase
+                  .from('montree_visual_memory')
+                  .upsert({
+                    classroom_id: classroomId,
+                    work_name: finalWorkName,
+                    work_key: finalWorkKey,
+                    area: finalArea,
+                    is_custom: true,
+                    visual_description: desc,
+                    source: 'first_capture',
+                    source_media_id: media_id,
+                    photo_url: photoUrl,
+                    description_confidence: 0.7,
+                    updated_at: new Date().toISOString(),
+                  }, { onConflict: 'classroom_id,work_name' })
+                  .then(({ error }) => {
+                    if (error) console.error('[VisualMemory] First-capture upsert error:', error);
+                    else console.log(`[VisualMemory] First-capture stored for custom work "${finalWorkName}"`);
+                  });
+              }
+            });
+          }
+        })
+        .catch((err) => {
+          console.error('[VisualMemory] First-capture check error (non-fatal):', err);
+        });
+    }
 
     // Determine scenario for client UI:
     // A: Unknown work (low confidence OR low match) → "Teach Guru This Work"
