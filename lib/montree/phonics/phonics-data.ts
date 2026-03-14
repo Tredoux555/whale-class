@@ -1,8 +1,8 @@
 // lib/montree/phonics/phonics-data.ts
 // =====================================================================
-// MASTER PHONICS DATA — Single source of truth for ALL phonics tools
+// FAST PHONICS — Single source of truth for ALL phonics tools
 // AMI Montessori-aligned progression:
-//   Pink Series (CVC) → Blue Series (blends + doubles) → Green Series (phonograms)
+//   Beginning Sounds (vocabulary) → Pink Series (CVC) → Blue Series (blends + doubles) → Green Series (phonograms)
 // =====================================================================
 
 export interface PhonicsWord {
@@ -67,6 +67,306 @@ export const SIGHT_WORDS = [
   'you', 'do', 'no', 'so', 'said', 'with', 'this', 'that', 'of', 'from',
   'ride', 'like', 'nice', 'far', 'dark',
 ];
+
+// =====================================================================
+// PHASE: BEGINNING SOUNDS (Vocabulary Building — Pre-Reading)
+// ~5 words per letter. NOT for decoding — children learn to SAY these
+// words and associate the beginning sound. Same pictures reappear in
+// Pink/Blue/Green when the child encounters the word in decoding.
+// =====================================================================
+
+export const BEGINNING_SOUNDS: PhonicsPhase = {
+  id: 'beginning',
+  name: 'Beginning Sounds — Vocabulary',
+  color: '#F59E0B',
+  description: 'Pre-reading vocabulary building. Children learn object names and associate beginning sounds. These words and pictures reappear throughout the phonics journey.',
+  groups: [
+    {
+      label: 'A — /a/ as in apple',
+      description: 'Words starting with the /a/ sound',
+      words: [
+        { word: 'apple', image: '🍎', miniature: 'plastic apple', isNoun: true },
+        { word: 'ant', image: '🐜', miniature: 'plastic ant figurine', isNoun: true },
+        { word: 'arm', image: '💪', miniature: 'arm picture card', isNoun: true },
+        { word: 'ax', image: '🪓', miniature: 'toy ax', isNoun: true },
+        { word: 'avocado', image: '🥑', miniature: 'plastic avocado', isNoun: true },
+      ],
+    },
+    {
+      label: 'B — /b/ as in bus',
+      description: 'Words starting with the /b/ sound',
+      words: [
+        { word: 'bat', image: '🦇', miniature: 'plastic bat figurine', isNoun: true },
+        { word: 'bus', image: '🚌', miniature: 'toy bus', isNoun: true },
+        { word: 'bell', image: '🔔', miniature: 'small bell', isNoun: true },
+        { word: 'boat', image: '⛵', miniature: 'toy boat', isNoun: true },
+        { word: 'bird', image: '🐦', miniature: 'bird figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'C — /k/ as in cat',
+      description: 'Words starting with the /k/ sound',
+      words: [
+        { word: 'cat', image: '🐱', miniature: 'plastic cat figurine', isNoun: true },
+        { word: 'cup', image: '🥤', miniature: 'dollhouse cup or shot glass', isNoun: true },
+        { word: 'clam', image: '🐚', miniature: 'clam shell', isNoun: true },
+        { word: 'cake', image: '🎂', miniature: 'toy cake', isNoun: true },
+        { word: 'car', image: '🚗', miniature: 'toy car', isNoun: true },
+      ],
+    },
+    {
+      label: 'D — /d/ as in dog',
+      description: 'Words starting with the /d/ sound',
+      words: [
+        { word: 'dog', image: '🐕', miniature: 'plastic dog figurine', isNoun: true },
+        { word: 'drum', image: '🥁', miniature: 'miniature drum', isNoun: true },
+        { word: 'duck', image: '🦆', miniature: 'rubber duck', isNoun: true },
+        { word: 'dish', image: '🍽️', miniature: 'small dish', isNoun: true },
+        { word: 'dawn', image: '🌅', miniature: 'sunrise card', isNoun: true },
+      ],
+    },
+    {
+      label: 'E — /e/ as in egg',
+      description: 'Words starting with the /e/ sound',
+      words: [
+        { word: 'egg', image: '🥚', miniature: 'wooden egg', isNoun: true },
+        { word: 'elephant', image: '🐘', miniature: 'elephant figurine', isNoun: true },
+        { word: 'elbow', image: '💪', miniature: 'elbow picture card', isNoun: true },
+        { word: 'envelope', image: '✉️', miniature: 'real envelope', isNoun: true },
+        { word: 'eraser', image: '🧽', miniature: 'eraser', isNoun: true },
+      ],
+    },
+    {
+      label: 'F — /f/ as in fish',
+      description: 'Words starting with the /f/ sound',
+      words: [
+        { word: 'fan', image: '🪭', miniature: 'small folding fan', isNoun: true },
+        { word: 'frog', image: '🐸', miniature: 'plastic frog', isNoun: true },
+        { word: 'fist', image: '✊', miniature: 'fist card', isNoun: true },
+        { word: 'fish', image: '🐟', miniature: 'plastic fish', isNoun: true },
+        { word: 'fork', image: '🍴', miniature: 'small fork', isNoun: true },
+      ],
+    },
+    {
+      label: 'G — /g/ as in goat',
+      description: 'Words starting with the /g/ sound',
+      words: [
+        { word: 'gum', image: '💭', miniature: 'bubble gum picture', isNoun: true },
+        { word: 'grip', image: '🤝', miniature: 'grip handle', isNoun: true },
+        { word: 'gong', image: '🔔', miniature: 'small gong', isNoun: true },
+        { word: 'goat', image: '🐐', miniature: 'goat figurine', isNoun: true },
+        { word: 'girl', image: '👧', miniature: 'girl figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'H — /h/ as in hat',
+      description: 'Words starting with the /h/ sound',
+      words: [
+        { word: 'hat', image: '🎩', miniature: 'doll hat or mini hat', isNoun: true },
+        { word: 'hand', image: '✋', miniature: 'hand model', isNoun: true },
+        { word: 'hill', image: '⛰️', miniature: 'hill picture card', isNoun: true },
+        { word: 'hook', image: '🪝', miniature: 'small hook', isNoun: true },
+        { word: 'horn', image: '📯', miniature: 'small horn', isNoun: true },
+      ],
+    },
+    {
+      label: 'I — /i/ as in igloo',
+      description: 'Words starting with the /i/ sound',
+      words: [
+        { word: 'igloo', image: '🏠', miniature: 'model igloo', isNoun: true },
+        { word: 'insect', image: '🐛', miniature: 'plastic insect figurine', isNoun: true },
+        { word: 'inch', image: '📏', miniature: 'ruler', isNoun: true },
+        { word: 'ice', image: '🧊', miniature: 'ice cube', isNoun: true },
+        { word: 'ink', image: '🖋️', miniature: 'ink bottle', isNoun: true },
+      ],
+    },
+    {
+      label: 'J — /j/ as in jug',
+      description: 'Words starting with the /j/ sound',
+      words: [
+        { word: 'jug', image: '🫗', miniature: 'small ceramic jug', isNoun: true },
+        { word: 'jet', image: '✈️', miniature: 'toy jet', isNoun: true },
+        { word: 'jazz', image: '🎷', miniature: 'saxophone card', isNoun: true },
+        { word: 'jaw', image: '🦴', miniature: 'jaw bone card', isNoun: true },
+        { word: 'jar', image: '🫙', miniature: 'small jar', isNoun: true },
+      ],
+    },
+    {
+      label: 'K — /k/ as in kite',
+      description: 'Words starting with the /k/ sound',
+      words: [
+        { word: 'kit', image: '🧰', miniature: 'small toolkit', isNoun: true },
+        { word: 'king', image: '👑', miniature: 'crown', isNoun: true },
+        { word: 'kiss', image: '💋', miniature: 'lips card', isNoun: true },
+        { word: 'kite', image: '🪁', miniature: 'toy kite', isNoun: true },
+        { word: 'knife', image: '🔪', miniature: 'butter knife', isNoun: true },
+      ],
+    },
+    {
+      label: 'L — /l/ as in leaf',
+      description: 'Words starting with the /l/ sound',
+      words: [
+        { word: 'leg', image: '🦵', miniature: 'doll leg or toy figure', isNoun: true },
+        { word: 'lamp', image: '💡', miniature: 'dollhouse lamp', isNoun: true },
+        { word: 'lock', image: '🔒', miniature: 'padlock', isNoun: true },
+        { word: 'leaf', image: '🍃', miniature: 'real leaf', isNoun: true },
+        { word: 'light', image: '💡', miniature: 'lightbulb', isNoun: true },
+      ],
+    },
+    {
+      label: 'M — /m/ as in moon',
+      description: 'Words starting with the /m/ sound',
+      words: [
+        { word: 'map', image: '🗺️', miniature: 'mini folded paper map', isNoun: true },
+        { word: 'mast', image: '⛵', miniature: 'boat mast card', isNoun: true },
+        { word: 'mill', image: '🏭', miniature: 'windmill figurine', isNoun: true },
+        { word: 'moth', image: '🦋', miniature: 'moth figurine', isNoun: true },
+        { word: 'moon', image: '🌙', miniature: 'moon figure', isNoun: true },
+      ],
+    },
+    {
+      label: 'N — /n/ as in nest',
+      description: 'Words starting with the /n/ sound',
+      words: [
+        { word: 'net', image: '🥅', miniature: 'small fish net or mesh', isNoun: true },
+        { word: 'nest', image: '🪺', miniature: 'bird nest', isNoun: true },
+        { word: 'neck', image: '🦒', miniature: 'giraffe figurine', isNoun: true },
+        { word: 'nail', image: '🔨', miniature: 'small nail', isNoun: true },
+        { word: 'nurse', image: '👩‍⚕️', miniature: 'nurse figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'O — /o/ as in octopus',
+      description: 'Words starting with the /o/ sound',
+      words: [
+        { word: 'octopus', image: '🐙', miniature: 'octopus figurine', isNoun: true },
+        { word: 'orange', image: '🍊', miniature: 'plastic orange', isNoun: true },
+        { word: 'owl', image: '🦉', miniature: 'owl figurine', isNoun: true },
+        { word: 'oil', image: '🛢️', miniature: 'oil bottle', isNoun: true },
+        { word: 'oak', image: '🌳', miniature: 'oak leaf', isNoun: true },
+      ],
+    },
+    {
+      label: 'P — /p/ as in pig',
+      description: 'Words starting with the /p/ sound',
+      words: [
+        { word: 'pig', image: '🐷', miniature: 'plastic pig figurine', isNoun: true },
+        { word: 'plug', image: '🔌', miniature: 'small plug', isNoun: true },
+        { word: 'pump', image: '⛽', miniature: 'toy pump', isNoun: true },
+        { word: 'path', image: '🛤️', miniature: 'path picture card', isNoun: true },
+        { word: 'park', image: '🌳', miniature: 'park picture card', isNoun: true },
+      ],
+    },
+    {
+      label: 'Q — /kw/ as in queen',
+      description: 'Words starting with the /kw/ sound',
+      words: [
+        { word: 'queen', image: '👸', miniature: 'queen figurine', isNoun: true },
+        { word: 'quilt', image: '🛏️', miniature: 'small quilt', isNoun: true },
+        { word: 'quarter', image: '🪙', miniature: 'quarter coin', isNoun: true },
+        { word: 'quail', image: '🐦', miniature: 'quail figurine', isNoun: true },
+        { word: 'quiz', image: '❓', miniature: 'quiz card', isNoun: true },
+      ],
+    },
+    {
+      label: 'R — /r/ as in rain',
+      description: 'Words starting with the /r/ sound',
+      words: [
+        { word: 'rat', image: '🐀', miniature: 'plastic rat figurine', isNoun: true },
+        { word: 'ramp', image: '📐', miniature: 'small ramp', isNoun: true },
+        { word: 'rock', image: '🪨', miniature: 'small rock', isNoun: true },
+        { word: 'rain', image: '🌧️', miniature: 'rain cloud card', isNoun: true },
+        { word: 'ring', image: '💍', miniature: 'small ring', isNoun: true },
+      ],
+    },
+    {
+      label: 'S — /s/ as in sun',
+      description: 'Words starting with the /s/ sound',
+      words: [
+        { word: 'sun', image: '☀️', miniature: 'sun charm or cutout', isNoun: true },
+        { word: 'sled', image: '🛷', miniature: 'toy sled', isNoun: true },
+        { word: 'sand', image: '🏖️', miniature: 'sand in jar', isNoun: true },
+        { word: 'ship', image: '🚢', miniature: 'toy ship', isNoun: true },
+        { word: 'star', image: '⭐', miniature: 'star card', isNoun: true },
+      ],
+    },
+    {
+      label: 'T — /t/ as in tree',
+      description: 'Words starting with the /t/ sound',
+      words: [
+        { word: 'top', image: '🔝', miniature: 'spinning top toy', isNoun: true },
+        { word: 'tram', image: '🚋', miniature: 'toy tram', isNoun: true },
+        { word: 'tank', image: '🐠', miniature: 'fish tank card', isNoun: true },
+        { word: 'tack', image: '📌', miniature: 'thumbtack', isNoun: true },
+        { word: 'tree', image: '🌳', miniature: 'tree figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'U — /u/ as in umbrella',
+      description: 'Words starting with the /u/ sound',
+      words: [
+        { word: 'umbrella', image: '☂️', miniature: 'mini umbrella', isNoun: true },
+        { word: 'unicorn', image: '🦄', miniature: 'unicorn figurine', isNoun: true },
+        { word: 'urchin', image: '🦔', miniature: 'sea urchin model', isNoun: true },
+        { word: 'utensil', image: '🍴', miniature: 'kitchen utensil', isNoun: true },
+        { word: 'uniform', image: '👔', miniature: 'doll uniform', isNoun: true },
+      ],
+    },
+    {
+      label: 'V — /v/ as in van',
+      description: 'Words starting with the /v/ sound',
+      words: [
+        { word: 'van', image: '🚐', miniature: 'toy van', isNoun: true },
+        { word: 'vet', image: '👩‍⚕️', miniature: 'vet figurine', isNoun: true },
+        { word: 'vest', image: '🦺', miniature: 'vest', isNoun: true },
+        { word: 'vine', image: '🌿', miniature: 'vine picture card', isNoun: true },
+        { word: 'volcano', image: '🌋', miniature: 'model volcano', isNoun: true },
+      ],
+    },
+    {
+      label: 'W — /w/ as in wave',
+      description: 'Words starting with the /w/ sound',
+      words: [
+        { word: 'web', image: '🕸️', miniature: 'plastic spider web', isNoun: true },
+        { word: 'wand', image: '🪄', miniature: 'magic wand', isNoun: true },
+        { word: 'wall', image: '🧱', miniature: 'brick', isNoun: true },
+        { word: 'whip', image: '🏇', miniature: 'small whip', isNoun: true },
+        { word: 'wave', image: '🌊', miniature: 'wave picture card', isNoun: true },
+      ],
+    },
+    {
+      label: 'X — /ks/ as in x-ray',
+      description: 'Words with the /ks/ sound (X has very few starting words in English)',
+      words: [
+        { word: 'xylophone', image: '🎵', miniature: 'toy xylophone', isNoun: true },
+        { word: 'x-ray', image: '🩻', miniature: 'x-ray picture card', isNoun: true },
+        { word: 'fox', image: '🦊', miniature: 'plastic fox figurine', isNoun: true },
+      ],
+    },
+    {
+      label: 'Y — /y/ as in yam',
+      description: 'Words starting with the /y/ sound',
+      words: [
+        { word: 'yam', image: '🍠', miniature: 'small yam or picture', isNoun: true },
+        { word: 'yawn', image: '🥱', miniature: 'yawning face card', isNoun: true },
+        { word: 'yard', image: '🏡', miniature: 'house yard card', isNoun: true },
+        { word: 'yogurt', image: '🥛', miniature: 'mini yogurt cup', isNoun: true },
+        { word: 'yolk', image: '🍳', miniature: 'egg yolk picture', isNoun: true },
+      ],
+    },
+    {
+      label: 'Z — /z/ as in zebra',
+      description: 'Words starting with the /z/ sound',
+      words: [
+        { word: 'zip', image: '🤐', miniature: 'zipper pull or sample', isNoun: true },
+        { word: 'zoo', image: '🦁', miniature: 'zoo animal figurine', isNoun: true },
+        { word: 'zebra', image: '🦓', miniature: 'zebra figurine', isNoun: true },
+        { word: 'zipper', image: '🔗', miniature: 'real zipper', isNoun: true },
+        { word: 'zucchini', image: '🥒', miniature: 'plastic zucchini', isNoun: true },
+      ],
+    },
+  ],
+};
 
 // =====================================================================
 // PHASE: PINK 1 (CMAT Tray System)
@@ -1277,6 +1577,7 @@ export const GREEN_3: PhonicsPhase = {
 // ============================================================
 
 export const ALL_PHASES: PhonicsPhase[] = [
+  BEGINNING_SOUNDS,
   PINK_1,
   PINK_2,
   BLUE_1,

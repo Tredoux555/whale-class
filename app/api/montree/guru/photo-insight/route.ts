@@ -495,53 +495,267 @@ CRITICAL RULES:
 
 VISUAL IDENTIFICATION GUIDE — Identify by the PRIMARY TOOL/MATERIAL visible:
 
-PRACTICAL LIFE — Transfer Activities (look for the TRANSFER TOOL):
-- Eye Dropper/Pipette → "Eye Dropper" (NOT Sponging, NOT Basting)
-- Spoon → "Spooning"
-- Tongs → "Tonging"
-- Tweezers → "Tweezers Transfer"
-- Chopsticks → "Chopsticks Transfer"
-- Hands only (dry materials) → "Dry Transfer-Hands"
-- Sponge between bowls → "Sponging"
-- Baster/turkey baster → "Basting"
-- Pouring (dry) → "Pouring Dry Materials"
-- Pouring (water/liquid) → "Pouring Water"
+=== PRACTICAL LIFE ===
 
-PRACTICAL LIFE — Preliminary Activities:
-- Folding fabric/cloth → "Folding Cloths"
-- Rolling/unrolling a mat → "Rolling & Unrolling a Mat"
-- Carrying a chair → "Carrying a Chair"
-- Opening/closing containers → "Opening & Closing Containers"
+TRANSFER ACTIVITIES (identify by the TRANSFER TOOL — the tool determines the work name):
+- Eye dropper/pipette transferring liquid → "Eye Dropper" (NOT Sponging, NOT Basting)
+- Spoon transferring between bowls → "Spooning"
+- Tongs/tweezers (large, spring-loaded) → "Tonging"
+- Tweezers (small, fine-point) → "Tweezers Transfer"
+- Chopsticks transferring items → "Chopsticks Transfer"
+- Hands scooping dry materials between bowls → "Dry Transfer-Hands"
+- Sponge squeezing water between bowls → "Sponging"
+- Turkey baster/baster → "Basting"
+- Pouring beans/rice/dry items → "Pouring Dry Materials"
+- Pouring water/liquid between containers → "Pouring Water"
 
-PRACTICAL LIFE — Care of Environment:
-- Sweeping with broom → "Sweeping"
-- Scrubbing table → "Table Scrubbing"
-- Polishing metal → "Metal Polishing"
-- Arranging flowers → "Flower Arranging"
+PRELIMINARY EXERCISES:
+- Child carrying/rolling/unrolling a work mat → "Carrying a Mat"
+- Walking along a line (tape/painted on floor) → "Walking on the Line"
+- Carrying a small chair → "Carrying a Chair"
+- Sitting down/standing up from chair slowly → "Sitting and Standing"
+- Opening/closing jars, bottles, boxes → "Opening & Closing Containers"
+- Folding fabric/cloth/napkins → "Folding Cloths"
+- Cutting with scissors (paper strips/lines) → "Using Scissors"
 
-SENSORIAL — Look for specific sensorial materials:
-- Pink graduated cubes → "Pink Tower"
-- Brown graduated prisms → "Brown Stair"
-- Red graduated rods → "Red Rods"
-- Cylinders in blocks → "Cylinder Blocks"
-- Color tablets → "Color Box 1/2/3"
-- Sound cylinders → "Sound Cylinders"
-- Geometric shapes in tray → "Geometric Solids"
+CARE OF SELF (Dressing Frames — wooden frames with fabric closures):
+- Frame with large buttons → "Dressing Frame - Buttons"
+- Frame with zipper → "Dressing Frame - Zipping"
+- Frame with bow ties/ribbons → "Dressing Frame - Bows"
+- Frame with buckles → "Dressing Frame - Buckles"
+- Frame with lacing holes/string → "Dressing Frame - Lacing"
+- Frame with snaps/press studs → "Dressing Frame - Snaps"
+- Frame with safety pins → "Dressing Frame - Safety Pins"
+- Frame with velcro strips → "Dressing Frame - Velcro"
+- Frame with hook and eye closures → "Dressing Frame - Hook & Eye"
+- Child washing hands at basin → "Hand Washing"
+- Polishing shoes with brush/cloth → "Shoe Polishing"
+- Brushing/braiding hair on doll/mannequin → "Hair Brushing & Braiding"
 
-MATHEMATICS — Look for number materials:
-- Sandpaper numerals → "Sandpaper Numbers"
-- Red/blue rods → "Number Rods"
-- Spindle box → "Spindle Box"
-- Golden beads → "Golden Bead Material"
-- Bead chains → "Bead Chains"
-- Addition/subtraction boards → "Addition Strip Board" / "Subtraction Strip Board"
+CARE OF ENVIRONMENT:
+- Sweeping floor with child-sized broom → "Sweeping"
+- Dusting with cloth or duster → "Dusting"
+- Scrubbing table with brush, soap, water → "Table Scrubbing" (wet table, brush, suds)
+- Washing windows/mirrors with spray/squeegee → "Window Washing" or "Mirror Polishing"
+- Polishing metal objects with polish/cloth → "Metal Polishing"
+- Washing cloth/fabric in basin → "Cloth Washing"
+- Arranging flowers in vase with scissors → "Flower Arranging"
+- Watering plants with small watering can → "Plant Care"
+- Washing dishes in basin with sponge → "Dish Washing"
 
-LANGUAGE — Look for letter materials:
-- Sandpaper letters → "Sandpaper Letters"
-- Moveable alphabet → "Moveable Alphabet"
-- Metal insets → "Metal Insets"
-- Object + label matching → "Object Box"
-- Picture + word cards → "Classified Cards"
+FOOD PREPARATION:
+- Peeling fruit/vegetables → "Peeling"
+- Cutting banana/soft food with knife → "Cutting"
+- Spreading butter/jam on bread → "Spreading"
+- Squeezing oranges/citrus on juicer → "Squeezing"
+- Grating cheese/soap on grater → "Grating"
+- Rolling dough with rolling pin → "Rolling and Kneading Dough"
+
+⚠️ PRACTICAL LIFE CONFUSION PAIRS:
+- Table with suds + brush = "Table Scrubbing" NOT "Dish Washing" (dishes visible = Dish Washing)
+- Eye Dropper = pipette with bulb tip. Baster = large turkey baster. DIFFERENT works.
+- Dressing frames all look similar — identify by the CLOSURE TYPE on the fabric
+
+=== SENSORIAL ===
+
+VISUAL — DIMENSION (graduated materials, usually natural wood or painted):
+- 10 pink graduated CUBES (1cm³→10cm³), stacked as tower → "Pink Tower"
+- 10 brown graduated PRISMS (same length, varying width) → "Brown Stair" (aka "Broad Stair")
+- 10 red graduated RODS (10cm→1m, all red) → "Red Rods" (NOT Number Rods — no blue sections)
+- Wooden block with 10 cylinders with KNOBS (child uses 3-finger grip) → "Cylinder Block 1/2/3/4"
+  → Block 1: diameter varies only. Block 2: height varies only. Block 3: both vary same direction. Block 4: both vary opposite.
+  → Multiple blocks mixed together → "Cylinder Blocks Combined"
+- Colored cylinders WITHOUT knobs (yellow/red/green/blue boxes) → "Knobless Cylinders"
+
+VISUAL — COLOR:
+- Small box with 6 color tablets (3 pairs: red, yellow, blue) → "Color Box 1 (Primary Colors)"
+- Medium box with 22 color tablets (11 pairs) → "Color Box 2 (Secondary Colors)"
+- Large box with 63 color tablets (9 colors × 7 shades) → "Color Box 3 (Color Gradations)"
+
+VISUAL — FORM (geometric shapes):
+- Cabinet with drawers of flat geometric shape insets → "Geometric Cabinet"
+- 10 blue 3D wooden shapes (sphere, cube, cone, cylinder, pyramid, etc.) → "Geometric Solids"
+- Colored triangles being assembled into shapes → "Constructive Triangles" (specify box if visible:
+  → Rectangular Box, Triangular Box, Large Hexagonal, Small Hexagonal, Blue Triangles)
+- Red/blue/black cube puzzle (8 pieces, pattern on lid) → "Binomial Cube"
+- Larger cube puzzle (27 pieces, more complex pattern) → "Trinomial Cube"
+
+TACTILE/BARIC/THERMIC:
+- Boards with rough/smooth sandpaper sections → "Touch Boards"
+- Small tablets with varying sandpaper grades in box → "Touch Tablets (Rough and Smooth)"
+- Fabric swatches in box being matched → "Fabric Matching"
+- Three sets of wooden tablets of different weights → "Baric Tablets"
+- Tablets of different materials (metal, wood, cork, felt) → "Thermic Tablets"
+- Metal bottles being compared → "Thermic Bottles"
+
+AUDITORY/OLFACTORY/GUSTATORY:
+- 2 sets of 6 wooden cylinders (red/blue lids) being shaken → "Sound Boxes (Sound Cylinders)"
+- Metal bells on stands with mallet → "Montessori Bells"
+- Bottles being smelled → "Smelling Bottles"
+- Bottles/cups being tasted with dropper → "Tasting Bottles/Cups"
+
+STEREOGNOSTIC:
+- Cloth bag, child reaching in blindfolded → "Mystery Bag"
+- Blindfolded child sorting objects into containers → "Sorting Objects Stereognostically"
+
+⚠️ SENSORIAL CONFUSION PAIRS:
+- RED RODS (all red, Sensorial) vs NUMBER RODS (red AND blue alternating, Mathematics) — check for blue sections!
+- CYLINDER BLOCKS (knobbed, in wooden block) vs KNOBLESS CYLINDERS (no knobs, colored, free-standing)
+- BINOMIAL CUBE (smaller, 8 pieces) vs TRINOMIAL CUBE (larger, 27 pieces)
+- PINK TOWER (cubes) vs BROWN STAIR (prisms/rectangular) vs RED RODS (long thin rods)
+- SOUND BOXES (shaking cylinders) vs SMELLING BOTTLES (sniffing bottles)
+- TOUCH BOARDS (flat boards) vs TOUCH TABLETS (small paired tablets in box)
+
+=== MATHEMATICS ===
+
+NUMBERS 1-10:
+- Red AND blue alternating rods (10cm→1m) → "Number Rods" (NOT Red Rods — has blue sections)
+- Sandpaper numerals 0-9 on green/wood boards → "Sandpaper Numbers"
+- Wooden box with 45 spindles in compartments 0-9 → "Spindle Box"
+- Number cards + loose counters (usually red dots) arranged in rows → "Cards and Counters"
+
+DECIMAL SYSTEM (Golden Bead Material):
+- Single golden beads (units) → "Golden Bead Material"
+- Bar of 10 beads (tens) → "Golden Bead Material"
+- Square of 100 beads (hundreds) → "Golden Bead Material"
+- Cube of 1000 beads (thousands) → "Golden Bead Material"
+- Large wooden number cards (1-9000, color-coded green/blue/red) → "Large Number Cards"
+- Golden beads + number cards together on mat → "Formation of Numbers"
+- Golden beads being combined/separated for operations → "Addition/Subtraction/Multiplication/Division with Golden Beads"
+
+TEENS AND TENS:
+- Wooden board with slots, cards 10-19, placing bead bars → "Seguin Board A (Teens)"
+- Wooden board with slots, cards 10-90, placing bead bars → "Seguin Board B (Tens)"
+- Short colored bead stair (1-9 beads, each color) → "Short Bead Stair"
+- Wooden board with numbers 1-100 + number tiles → "Hundred Board"
+
+LINEAR COUNTING (BEAD CHAINS):
+- Short bead chains (squares: 1²→10²) → "Short Bead Chains (Squared)"
+- Long bead chains (cubes: 1³→10³, very long) → "Long Bead Chains (Cubed)"
+- Bead chain with arrow labels (skip counting) → "Bead Chain" (specify short/long if visible)
+
+MEMORIZATION — OPERATION BOARDS:
+- Red/blue strip board with number strips for addition → "Addition Strip Board"
+- Strip board with number strips for subtraction → "Subtraction Strip Board"
+- Board with bead/disc moved along grid (100 holes) → "Multiplication Board"
+- Board with skittles + beads for division → "Division Board"
+- Small boards with finger charts → "Addition/Subtraction/Multiplication/Division Finger Charts"
+
+PASSAGE TO ABSTRACTION:
+- Small tiles with numbers + colored dots → "Stamp Game"
+- Paper with dots in color-coded columns → "Dot Game"
+- Small wooden frame with 4 rows of sliding beads → "Small Bead Frame"
+- Large wooden frame with 7 rows of sliding beads → "Large Bead Frame"
+
+FRACTIONS:
+- Red metal circle cut into fraction pieces (½, ⅓, ¼, etc.) in green frame → "Fraction Circles"
+- Colored skittles (fraction visualization) → "Fraction Skittles"
+
+⚠️ MATHEMATICS CONFUSION PAIRS:
+- NUMBER RODS (red+blue, Math) vs RED RODS (all red, Sensorial)
+- GOLDEN BEADS (gold colored) vs SHORT BEAD STAIR (colored 1-9)
+- STAMP GAME (small tiles) vs LARGE NUMBER CARDS (big wooden cards)
+- SMALL BEAD FRAME (4 wires) vs LARGE BEAD FRAME (7 wires)
+- ADDITION STRIP BOARD vs SUBTRACTION STRIP BOARD (same board, different strips — check operation context)
+- HUNDRED BOARD (1-100 grid) vs MULTIPLICATION BOARD (bead on grid)
+
+=== LANGUAGE ===
+
+ORAL LANGUAGE:
+- Picture cards sorted by category (animals, vehicles, food) → "Classified Cards (Nomenclature Cards)"
+- Miniature objects matched to picture cards → "Object to Picture Matching"
+- Small objects in basket + child pointing/naming sounds → "Sound Games (I Spy)"
+- Rhyming picture card pairs → "Rhyming Activities"
+
+WRITING PREPARATION:
+- Pink metal geometric frames + colored pencils + traced designs → "Metal Insets"
+- Rough textured letters on pink/blue boards (child tracing with fingers) → "Sandpaper Letters"
+- Tray of colored sand, child writing with finger → "Sand Tray Writing"
+- Child writing on chalkboard/whiteboard → "Chalkboard Writing"
+- Box of loose letters (blue consonants, red vowels) spelling words → "Moveable Alphabet"
+- Child writing on lined paper → "Handwriting on Paper"
+
+READING:
+- PINK miniature objects + CVC word labels → "Pink Object Box"
+- Pink picture cards + 3-letter word cards → "Pink Series (CVC Words)"
+- BLUE miniature objects + blend word labels → "Blue Object Box"
+- Blue picture cards + blend word cards → "Blue Series (Blends)"
+- Sandpaper letter combinations (sh, ch, th, ai, ee) → "Phonogram Introduction"
+- GREEN miniature objects + phonogram word labels → "Green Object Box"
+- Green picture/word cards with phonograms → "Green Series (Phonograms)"
+- High-frequency word cards (the, said, was) → "Puzzle Words (Sight Words)"
+- Child reading card and performing action → "Command Cards (Action Reading)"
+
+GRAMMAR (identify by GRAMMAR SYMBOL if visible):
+- Black triangle symbol + objects/labels → "Introduction to the Noun"
+- Small light blue triangle → "Introduction to the Article"
+- Medium dark blue triangle + describing game → "Introduction to the Adjective"
+- Large red circle symbol + action cards → "Introduction to the Verb"
+- Small orange circle → "Introduction to the Adverb"
+- Colored boxes with sentence cards → "Grammar Boxes" (specify number if visible)
+- Sentence analysis charts with arrows → "Sentence Analysis"
+
+⚠️ LANGUAGE CONFUSION PAIRS:
+- PINK Object Box (CVC objects) vs BLUE Object Box (blends) vs GREEN Object Box (phonograms) — identify by COLOR of labels/box
+- SANDPAPER LETTERS (individual letters) vs PHONOGRAM INTRODUCTION (letter pairs like sh, ch, th)
+- MOVEABLE ALPHABET (loose letters building words) vs SANDPAPER LETTERS (tracing on boards)
+- CLASSIFIED CARDS (vocabulary, oral) vs PINK/BLUE/GREEN SERIES (reading, phonetic progression)
+- METAL INSETS (geometric frames for pencil control) vs GEOMETRIC CABINET (Sensorial shape matching)
+
+=== CULTURAL ===
+
+GEOGRAPHY:
+- Globe with rough (land) and smooth (water) surfaces → "Globe - Land and Water" (Sandpaper Globe)
+- Globe with colored continents → "Globe - Continents"
+- Large wooden puzzle map showing continents → "Puzzle Map - World"
+- Puzzle map of a single continent with countries → "Puzzle Maps - Individual Continents"
+- Miniature flags on stands → "Flags of the World"
+- Trays with clay/water showing island/lake/peninsula/gulf → "Land and Water Forms"
+- Solar system model or planet cards → "Solar System"
+
+HISTORY AND TIME:
+- Calendar activities, day/month cards → "Calendar Work"
+- Walking around sun candle with globe → "Birthday Celebration"
+- Learning clock / toy clock → "Clock Work"
+- Long scroll showing eras of life → "Timeline of Life"
+
+BOTANY (wooden inset puzzles — similar to Geometric Cabinet but showing plant parts):
+- Wooden puzzle of whole plant (root, stem, leaf, flower) → "Parts of a Plant"
+- Wooden puzzle of flower anatomy → "Parts of a Flower"
+- Wooden puzzle of leaf with labeled parts → "Parts of a Leaf"
+- Wooden puzzle of root system → "Parts of a Root"
+- Wooden puzzle of seed cross-section → "Parts of a Seed"
+- Life cycle cards/materials for plants → "Plant Life Cycle"
+- Sorting cards living vs non-living → "Living vs Non-Living"
+
+ZOOLOGY (wooden inset puzzles of animals):
+- Wooden puzzle of fish anatomy → "Parts of a Fish"
+- Wooden puzzle of frog anatomy → "Parts of a Frog"
+- Wooden puzzle of turtle anatomy → "Parts of a Turtle"
+- Wooden puzzle of bird anatomy → "Parts of a Bird"
+- Wooden puzzle of horse anatomy → "Parts of a Horse"
+- Animal sorting cards by vertebrate class → "Five Classes of Vertebrates"
+- Animal figurines matched to continent mats → "Animals of the Continents"
+- Life cycle cards (butterfly, frog, chicken) → "Animal Life Cycles"
+
+SCIENCE:
+- Basin of water + objects testing buoyancy → "Sink and Float"
+- Magnet + various objects testing attraction → "Magnetic/Non-Magnetic"
+- Ice/water experiments → "States of Matter"
+- Mixing paint colors → "Color Mixing"
+
+ART & MUSIC:
+- Easel/paper + paints/brushes → "Painting"
+- Drawing with pencils/crayons → "Drawing"
+- Cutting/gluing paper collage → "Collage"
+- Clay/playdough + tools → "Clay and Playdough"
+- Rhythm instruments (shakers, drums, sticks) → "Rhythm Instruments"
+
+⚠️ CULTURAL CONFUSION PAIRS:
+- SANDPAPER GLOBE (rough/smooth, no colors) vs COLORED GLOBE (painted continents)
+- PUZZLE MAP WORLD (all continents) vs INDIVIDUAL CONTINENT MAP (one continent with countries)
+- BOTANY PUZZLES (plant parts) vs ZOOLOGY PUZZLES (animal parts) — look at the SUBJECT of the puzzle
+- LAND AND WATER FORMS (clay trays with water) vs "Sink and Float" (objects in water basin)
 
 CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences):
 - 0.95+ : ONLY use when the material is unmistakable and you are CERTAIN of the exact work name
