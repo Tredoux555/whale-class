@@ -351,6 +351,7 @@ export async function GET(request: NextRequest) {
     const reportItems: Array<{
       work_id: string | null;
       work_name: string;
+      chineseName?: string | null;
       area: string;
       status: string;
       photo_url: string | null;
@@ -455,6 +456,7 @@ export async function GET(request: NextRequest) {
       documented: reportItems.filter(r => r.status === 'documented').length,
       selected_photos: selectedPhotos.length,
       available_photos: availablePhotos.length,
+      unassigned_photos: unassignedPhotos.length,
       has_selections: selectedPhotoIds.length > 0,
       from_progress: reportItems.filter(r => r.source === 'progress').length,
       from_photos: reportItems.filter(r => r.source === 'photo').length,

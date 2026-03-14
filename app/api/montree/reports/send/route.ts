@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { getLocaleFromRequest, getTranslator } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator, getTranslatedStatus } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 export async function POST(request: NextRequest) {
@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fallback: if no selected photos found, query by date range (backwards compatibility)
+    // Include BOTH direct photos AND group photos from junction table
     if (photos.length === 0) {
       let photoQuery = supabase
         .from('montree_media')
@@ -149,12 +150,33 @@ export async function POST(request: NextRequest) {
 
       const { data: photoData } = await photoQuery;
 
-      photos = (photoData || []).map(p => ({
-        id: p.id,
-        storage_path: p.storage_path,
-        work_id: p.work_id,
-        caption: p.caption,
-        captured_at: p.captured_at,
+      // Also fetch group photos from junction table
+      const { data: groupPhotos } = await supabase
+        .from('montree_media_children')
+        .select(`
+          media:montree_media (
+            id, storage_path, work_id, caption, captured_at
+          )
+        `)
+        .eq('child_id', child_id);
+
+      // Combine and deduplicate
+      const photoMap = new Map();
+      for (const p of photoData || []) {
+        photoMap.set(p.id, p);
+      }
+      for (const gp of groupPhotos || []) {
+        if (gp.media) {
+          photoMap.set(gp.media.id, gp.media);
+        }
+      }
+
+      photos = Array.from(photoMap.values()).map((p: Record<string, unknown>) => ({
+        id: p.id as string,
+        storage_path: p.storage_path as string,
+        work_id: p.work_id as string | null,
+        caption: p.caption as string | null,
+        captured_at: p.captured_at as string,
         url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
       }));
     }
@@ -190,35 +212,59 @@ export async function POST(request: NextRequest) {
     // Build report content with FULL descriptions (so parent view doesn't need to regenerate)
     const now = new Date().toISOString();
 
-    // Helper for status labels
+    // Helper for status labels — locale-aware for Chinese translation
     const getStatusLabel = (status: string) => {
-      if (status === 'mastered' || status === 'completed') return 'mastered';
-      if (status === 'practicing') return 'practicing';
-      if (status === 'documented') return 'documented'; // Photo exists but no formal progress
-      return 'presented';
+      const normalized = status === 'completed' ? 'mastered' : status;
+      return getTranslatedStatus(normalized, locale);
     };
+
+    // Build works from progress records
+    const progressWorks = works.map(w => {
+      const workNameLower = (w.work_name || '').toLowerCase();
+      const desc = dbDescriptions.get(workNameLower);
+      const photo = photosByWorkName.get(workNameLower);
+
+      return {
+        name: w.work_name,
+        chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
+        area: w.area,
+        status: w.status === 'completed' ? 'mastered' : w.status,
+        status_label: getStatusLabel(w.status),
+        parent_description: desc?.description || null,
+        why_it_matters: desc?.why_it_matters || null,
+        photo_url: photo?.url || null,
+        photo_caption: photo?.caption || null,
+      };
+    });
+
+    // Add "documented" works — photos with work_id but no matching progress record
+    // This ensures ALL photos appear in reports (consistent with gallery/preview)
+    const addedWorkNames = new Set(works.map(w => (w.work_name || '').toLowerCase()));
+    const documentedWorks: typeof progressWorks = [];
+    for (const p of photos) {
+      if (!p.work_id) continue;
+      const workName = workIdToName.get(p.work_id);
+      if (!workName) continue;
+      if (addedWorkNames.has(workName.toLowerCase())) continue;
+
+      const desc = dbDescriptions.get(workName.toLowerCase());
+      documentedWorks.push({
+        name: workName,
+        chineseName: getChineseNameForWork(workName),
+        area: '', // Area not available from photo alone
+        status: 'documented',
+        status_label: getStatusLabel('documented'),
+        parent_description: desc?.description || null,
+        why_it_matters: desc?.why_it_matters || null,
+        photo_url: p.url,
+        photo_caption: p.caption || null,
+      });
+      addedWorkNames.add(workName.toLowerCase());
+    }
 
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
-      works: works.map(w => {
-        const workNameLower = (w.work_name || '').toLowerCase();
-        // Get description from database
-        const desc = dbDescriptions.get(workNameLower);
-        // Get photo if matched
-        const photo = photosByWorkName.get(workNameLower);
-
-        return {
-          name: w.work_name,
-          chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
-          area: w.area,
-          status: w.status === 'completed' ? 'mastered' : w.status,
-          status_label: getStatusLabel(w.status),
-          parent_description: desc?.description || null,
-          why_it_matters: desc?.why_it_matters || null,
-          photo_url: photo?.url || null,
-          photo_caption: photo?.caption || null,
-        };
-      }),
+      works: [...progressWorks, ...documentedWorks],
       // Include work_name in photos for better frontend matching
       photos: photos.map(p => ({
         ...p,
@@ -285,10 +331,16 @@ export async function POST(request: NextRequest) {
         return '🌱';
       };
 
-      const worksHtml = works.length > 0
-        ? works.map(w => {
-            const cnName = w.work_name ? getChineseNameForWork(w.work_name) : null;
-            const displayName = locale === 'zh' && cnName ? cnName : w.work_name;
+      // Combine progress + documented works for email
+      const allWorksForEmail = [
+        ...works.map(w => ({ name: w.work_name, status: w.status })),
+        ...documentedWorks.map(dw => ({ name: dw.name, status: 'documented' })),
+      ];
+
+      const worksHtml = allWorksForEmail.length > 0
+        ? allWorksForEmail.map(w => {
+            const cnName = w.name ? getChineseNameForWork(w.name) : null;
+            const displayName = locale === 'zh' && cnName ? cnName : w.name;
             return `<li>${statusEmoji(w.status)} ${displayName}</li>`;
           }).join('')
         : `<li>${t('report.email.noProgress' as any, 'No new progress this period')}</li>`;
@@ -330,7 +382,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       sent,
-      works_count: works.length,
+      works_count: progressWorks.length + documentedWorks.length,
       photos_count: photos?.length || 0,
     });
 

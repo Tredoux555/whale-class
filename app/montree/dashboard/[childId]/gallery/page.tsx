@@ -13,6 +13,7 @@ import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge'
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 interface GalleryItem extends MontreeMedia {
@@ -41,7 +42,7 @@ export default function GalleryPage() {
   const [childName, setChildName] = useState('');
 
   // Filter state
-  const [filterTab, setFilterTab] = useState<'all' | 'area' | 'work'>('all');
+  const [filterTab, setFilterTab] = useState<'all' | 'timeline' | 'area' | 'work'>('all');
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [selectedWork, setSelectedWork] = useState<string | null>(null);
 
@@ -73,6 +74,10 @@ export default function GalleryPage() {
 
   // Photo detail expansion
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   // Image URL cache — use ref to avoid re-render loops
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -394,9 +399,17 @@ export default function GalleryPage() {
             </div>
           )}
 
-          {/* The image */}
+          {/* The image — tap to open fullscreen lightbox */}
           <button
-            onClick={() => setExpandedPhoto(isExpanded ? null : photo.id)}
+            onClick={() => {
+              if (url) {
+                // Find index of this photo in filteredPhotos for navigation
+                const idx = filteredPhotos.findIndex(p => p.id === photo.id);
+                setLightboxIndex(idx >= 0 ? idx : 0);
+                setLightboxOpen(true);
+              }
+              setExpandedPhoto(isExpanded ? null : photo.id);
+            }}
             className="w-full"
           >
             {url ? (
@@ -591,6 +604,52 @@ export default function GalleryPage() {
     );
   };
 
+  // Render chronological timeline — grouped by date, newest first
+  const renderTimelineView = () => {
+    if (filteredPhotos.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <div className="text-4xl mb-3">📷</div>
+          <p className="text-gray-500">{t('gallery.noPhotos')}</p>
+        </div>
+      );
+    }
+
+    // Group by date (YYYY-MM-DD), already sorted newest first
+    const byDate = new Map<string, GalleryItem[]>();
+    for (const photo of filteredPhotos) {
+      const dateKey = new Date(photo.captured_at).toISOString().split('T')[0];
+      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+      byDate.get(dateKey)!.push(photo);
+    }
+
+    return (
+      <div className="space-y-6">
+        {Array.from(byDate.entries()).map(([dateKey, datePhotos]) => (
+          <div key={dateKey}>
+            <div className="flex items-center gap-3 mb-3 px-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
+              <h3 className="font-bold text-gray-800 text-sm">
+                {new Date(dateKey + 'T12:00:00').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </h3>
+              <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
+                {datePhotos.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {datePhotos.map(photo => renderPhotoCard(photo))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 pb-8">
       {/* Header */}
@@ -623,12 +682,12 @@ export default function GalleryPage() {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-1">
-        {(['all', 'area', 'work'] as const).map(tab => (
+        {(['all', 'timeline', 'area', 'work'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => {
               setFilterTab(tab);
-              if (tab === 'all') { setSelectedArea(null); setSelectedWork(null); }
+              if (tab === 'all' || tab === 'timeline') { setSelectedArea(null); setSelectedWork(null); }
               if (tab === 'area' && !selectedArea && uniqueAreas.length > 0) setSelectedArea(uniqueAreas[0]);
               if (tab === 'work' && !selectedWork && uniqueWorks.length > 0) setSelectedWork(uniqueWorks[0] || null);
             }}
@@ -638,7 +697,7 @@ export default function GalleryPage() {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            {tab === 'all' ? t('gallery.allPhotos') : tab === 'area' ? t('gallery.byArea') : t('gallery.byWork')}
+            {tab === 'all' ? t('gallery.allPhotos') : tab === 'timeline' ? (t('gallery.timeline' as any) || 'Timeline') : tab === 'area' ? t('gallery.byArea') : t('gallery.byWork')}
           </button>
         ))}
       </div>
@@ -735,6 +794,8 @@ export default function GalleryPage() {
         </div>
       ) : filterTab === 'all' ? (
         renderGroupedView()
+      ) : filterTab === 'timeline' ? (
+        renderTimelineView()
       ) : (
         renderFlatView()
       )}
@@ -809,6 +870,21 @@ export default function GalleryPage() {
         onConfirm={handleBulkDelete}
         onCancel={() => setShowBulkDeleteConfirm(false)}
         isDeleting={isDeleting}
+      />
+
+      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
+      <PhotoLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        src={imageUrls[filteredPhotos[lightboxIndex]?.id] || ''}
+        alt={filteredPhotos[lightboxIndex]?.work_name || filteredPhotos[lightboxIndex]?.caption || 'Photo'}
+        photos={filteredPhotos.map(p => ({
+          url: imageUrls[p.id] || '',
+          caption: p.caption,
+          date: p.captured_at,
+        }))}
+        currentIndex={lightboxIndex}
+        onNavigate={(idx) => setLightboxIndex(idx)}
       />
     </div>
   );

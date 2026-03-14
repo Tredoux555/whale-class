@@ -60,3 +60,5 @@ generated-images/
 
 # GitHub PAT for Cowork push (never commit this)
 .github-pat
+phonics-images/
+phonics-images.zip

@@ -14,6 +14,7 @@ import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 interface AreaSummary {
   area: string;
@@ -455,25 +456,19 @@ export default function ProgressPage() {
         />
       )}
 
-      {photoViewerUrl && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setPhotoViewerUrl(null)}
-        >
-          <button
-            onClick={() => setPhotoViewerUrl(null)}
-            className="absolute top-4 right-4 text-white text-2xl font-bold z-10 w-10 h-10 flex items-center justify-center"
-          >
-            ✕
-          </button>
-          <img
-            src={photoViewerUrl}
-            alt="Full size"
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
+      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
+      <PhotoLightbox
+        isOpen={!!photoViewerUrl}
+        onClose={() => setPhotoViewerUrl(null)}
+        src={photoViewerUrl || ''}
+        photos={media.map(m => ({
+          url: getPhotoUrl(m.storage_path),
+          caption: m.caption || m.work_name || undefined,
+          date: m.captured_at,
+        }))}
+        currentIndex={media.findIndex(m => getPhotoUrl(m.storage_path) === photoViewerUrl)}
+        onNavigate={(idx) => setPhotoViewerUrl(getPhotoUrl(media[idx]?.storage_path))}
+      />
     </div>
   );
 }

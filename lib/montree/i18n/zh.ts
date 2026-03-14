@@ -744,6 +744,7 @@ export const zh = {
   'gallery.allPhotos': '所有照片',
   'gallery.byArea': '按领域',
   'gallery.byWork': '按工作',
+  'gallery.timeline': '时间线',
   'gallery.photosSelected': '张照片已选择',
   'gallery.photoSelected': '张照片已选择',
   'gallery.selectAll': '全选',
@@ -2496,6 +2497,13 @@ export const zh = {
   'photoInsight.rateLimited': '请求过多 — 点击重试',
   'photoInsight.timeout': '时间过长 — 点击重试',
   'photoInsight.networkError': '连接失败 — 点击重试',
+  'photoInsight.documented': '已记录',
+
+  // Report status translations
+  'reportStatus.mastered': '已掌握',
+  'reportStatus.practicing': '练习中',
+  'reportStatus.presented': '已展示',
+  'reportStatus.documented': '已记录',
 
   // Snap & Identify
   'snap.title': '📸 拍照识别',
