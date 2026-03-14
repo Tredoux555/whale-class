@@ -16,10 +16,11 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. 5 features + fixes from Mar 8–12 sessions + Smart Capture accuracy overhaul + Home Parent rebuild + Session Recovery + Guru Parity + RAZ 4th Photo + Home Guru Fixes + 401 zombie session fix + album upload + 3x3x3x3 Smart Capture hardening + Phonics Fast AMI restructure + Guru Context-Aware Routing + Guru Speed Optimization + Guru Timeout Fix. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: guru context routing + phonics fast AMI restructure + 3x3x3x3 smart capture hardening + guru speed optimization + 401 fix + album upload + all Mar 8-13 features" && git push origin main`
+All code is local, NOT yet pushed. Mar 8–14 features + fixes including Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes (invite parent, photo lightbox, gallery timeline, report photos) + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: pink box + blue box AMI phonics generators, fix CommandSentence.text crash, parent feature fixes, photo lightbox, gallery timeline, all Mar 8-14 features" && git push origin main`
 
-**Includes:** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction — mode-based tool injection, pre-API parallelization, conversation memory 5→3, role-based prompt trimming, parallel tool execution), Guru Timeout Fix (master AbortController 60s hard wall, withTimeout helper, per-call 30s cap, client 70s timeout), Guru Context-Aware Routing / Selective Knowledge Injection (3x3x3x3, 4 files, ~30-50% input token reduction per Guru request, regex question classifier + conditional knowledge module injection), Phonics Fast AMI-aligned 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology, pink→blue→green series), 3x3x3x3 Smart Capture hardening — 2 FULL ROUNDS (Round 1: timeout chain, composite keys, scenario D staleness, query parallelization. Round 2: Anthropic AbortController, GREEN zone inClassroom gate, cache fallback resilience, worksContext debiasing — 4 files, 36 audits + 2 cross-cycle verifications all CLEAN), 401 zombie session fix (JWT + cookie TTL 7d→365d + dashboard 401 detection + localStorage cleanup), Smart Capture album upload (CameraCapture file input + compressImage + gallery button), RAZ 4th photo slot (new_book_signature, migration 137), Home Guru 4 critical fixes (image_url vision API, 429 handler, onGuruLimitReached callback, image upload error handling), RAZ PATCH `.maybeSingle()` fix, Session recovery pipeline (1 new API + `recoverSession()` wired into 3 entry pages), Guru home parent parity revert (removed capability trimming — all users get full 12 tools, 5 memory, 4 tool rounds, deep psychology), PortalChat static greeting (removed auto-AI-greeting), PWA manifest middleware fix, Home Parent system rebuild (3×3×3 + 6 deep audit cycles, 28 issues fixed, 6 files, 29 new i18n keys, 3 consecutive CLEAN audits), Smart Capture accuracy overhaul (3×3×3 process, 7 files, GREEN/AMBER/RED zones), Weekly Review system, fire-and-forget background store (1 new + 1 rewritten), whole-class Guru fix (3 files), FeedbackButton removal (3 layouts), batch parent reports (2 new + 6 modified), classroom overview print page (2 new), guru whole-class mode (1 new + 9 modified), 3-cycle audit fixes (8 issues fixed across 9 files), 18+ audit cycles all clean, 59+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Includes (Mar 14):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
+**Includes (Mar 8-13):** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction), Guru Timeout Fix (60s hard wall), Guru Context-Aware Routing (4 files, ~30-50% token reduction), Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed), 3x3x3x3 Smart Capture hardening (2 FULL ROUNDS, 4 files, 36 audits CLEAN), 401 zombie session fix, album upload, RAZ 4th photo (migration 137), Home Guru 4 fixes, Session recovery pipeline, Guru parity revert, Home Parent rebuild (28 issues fixed), Smart Capture accuracy overhaul (GREEN/AMBER/RED zones), Weekly Review, fire-and-forget store, whole-class Guru fix, FeedbackButton removal, batch parent reports, classroom overview print, guru whole-class mode, 3-cycle audit fixes, 59+ new i18n keys.
+**Full deploy handoff:** `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`, `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
 
 ### Rewrite Phonics Image Downloader with Montessori Filters (Priority #1 — FIRST CALL TO ACTION)
@@ -84,7 +85,46 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 13, 2026)
+## CURRENT STATUS (Mar 14, 2026)
+
+### Session Work (Mar 14, 2026)
+
+**Parent Feature Fixes + Pink/Blue Box AMI Generators + CRITICAL CommandSentence Fix — COMPLETE, NOT YET DEPLOYED:**
+
+Multi-part session: restored broken parent features, built comprehensive AMI phonics generators, and caught a critical runtime crash during triple audit.
+
+**Part 1 — Parent Feature Fixes (4 fixes):**
+- Restored missing "Invite Parent" button and "Send Report" functionality on child week view
+- Added PhotoLightbox component with zoom/download capability for photos
+- Added chronological "all photos" timeline view to gallery
+- Fixed photo consistency between gallery and reports + Chinese translation support for reports
+
+**Part 2 — Pink Box & Blue Box AMI Generators (2 new pages + 1 updated):**
+- `app/montree/library/tools/phonics-fast/pink-box/page.tsx` (~750 lines) — 9 print modes: full-set, shopping-list, control-cards, picture-cards, word-cards, object-labels, command-cards, movable-alpha-mat, presentation-guide. Contains `PINK_AMI_GUIDE` with prerequisites, materials, 3 exercises, sequence.
+- `app/montree/library/tools/phonics-fast/blue-box/page.tsx` (~785 lines) — 10 print modes (adds blend-chart, sorting-mat). Contains `BLUE_AMI_GUIDE` with keyRule, 3 exercises, 3-phase sequence. `getBlendFromLabel()` + `highlightBlend()` helpers.
+- `app/montree/library/tools/phonics-fast/page.tsx` — Updated GENERATORS array descriptions for Pink Box and Blue Box.
+
+**Part 3 — Triple Audit (CRITICAL bug found and fixed):**
+- **CRITICAL: `CommandSentence` interface in `phonics-data.ts` defined `sentence: string` but ALL consumers accessed `.text`** — at runtime `cmd.text` was `undefined`, causing `TypeError`. Masked by `ignoreBuildErrors: true` in next.config.ts. Fixed: renamed interface field + all 28 data entries from `sentence` to `text`.
+- MEDIUM: Removed dead `cardsPerRow` state in Pink Box
+- LOW: Cleaned unused imports in both pages
+- Audit: 3 rounds (file read → data layer cross-reference → hub integration verification)
+
+**Files Modified (~8+):**
+1. `lib/montree/phonics/phonics-data.ts` — CRITICAL: CommandSentence `.sentence` → `.text` (interface + 28 data entries)
+2. `app/montree/library/tools/phonics-fast/pink-box/page.tsx` — NEW comprehensive AMI generator
+3. `app/montree/library/tools/phonics-fast/blue-box/page.tsx` — NEW comprehensive AMI generator
+4. `app/montree/library/tools/phonics-fast/page.tsx` — Hub descriptions updated
+5. + Parent fix files (invite parent, photo lightbox, gallery timeline, report photos)
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`
+
+**Note:** Cowork VM disk is completely full — Bash commands fail with ENOSPC. Only Read/Write/Edit/Grep tools work. Could not generate PDF. User can use the Labels generator on montree.xyz to print Blue Box labels (save as PDF from print dialog).
+
+---
+
+## PREVIOUS STATUS (Mar 13, 2026)
 
 ### Session Work (Mar 13, 2026 — Late Night Session)
 
@@ -2856,7 +2896,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md` | **CURRENT** — Phonics image download attempt (355 images, ~90% unusable), 2 code fixes (Clap template + useMemo), script rewrite needed |
+| `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md` | **CURRENT** — Parent feature fixes (invite parent, lightbox, gallery timeline, report photos) + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix |
+| `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md` | Phonics image download attempt (355 images, ~90% unusable), 2 code fixes (Clap template + useMemo), script rewrite needed |
 | `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md` | Guru context-aware routing / selective knowledge injection (4 files, ~30-50% token reduction, 3x3x3x3 methodology) |
 | `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md` | Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology) |
 | `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md` | 3x3x3x3 hardening: timeout chain, composite keys, scenario D staleness, query parallelization (4 files, 9 audits CLEAN) |
