@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 interface HighlightItem {
   work: string;
@@ -55,6 +56,8 @@ export default function ParentReportPage() {
   const [loading, setLoading] = useState(true);
   const [report, setReport] = useState<ReportData | null>(null);
   const [error, setError] = useState('');
+  const [lightboxSrc, setLightboxSrc] = useState('');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     // Check session
@@ -251,31 +254,37 @@ export default function ParentReportPage() {
                   <span className={`text-xs px-2 py-1 rounded-full ${
                     work.status === 'mastered' ? 'bg-emerald-100 text-emerald-700' :
                     work.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
+                    work.status === 'documented' ? 'bg-purple-100 text-purple-700' :
                     'bg-amber-100 text-amber-700'
                   }`}>
                     {work.status === 'mastered' ? t('parentReport.statusMastered' as any) :
-                     work.status === 'practicing' ? t('parentReport.statusPracticing' as any) : t('parentReport.statusIntroduced' as any)}
+                     work.status === 'practicing' ? t('parentReport.statusPracticing' as any) :
+                     work.status === 'documented' ? (locale === 'zh' ? '📸 已记录' : '📸 Documented') :
+                     t('parentReport.statusIntroduced' as any)}
                   </span>
                   <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
                 </div>
 
-                {/* Photo */}
+                {/* Photo — tap to zoom */}
                 {work.photo_url && (
                   <div className="relative -mx-4 my-3">
-                    <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg relative group">
+                    <button
+                      onClick={() => { setLightboxSrc(work.photo_url!); setLightboxOpen(true); }}
+                      className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg relative group block cursor-zoom-in"
+                    >
                       <img
                         src={work.photo_url}
                         alt={work.work_name}
                         className="w-full h-full object-cover"
                       />
-                      <button
-                        onClick={() => downloadPhoto(work.photo_url!, work.work_name)}
-                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                      <span
+                        onClick={(e) => { e.stopPropagation(); downloadPhoto(work.photo_url!, work.work_name); }}
+                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm cursor-pointer"
                         title={t('common.save')}
                       >
                         ⬇
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                     {work.photo_caption && (
                       <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
                     )}
@@ -365,6 +374,13 @@ export default function ParentReportPage() {
           {t('parentReport.reportGenerated')} {new Date(report.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </div>
       </main>
+
+      {/* Photo Lightbox — fullscreen zoom + download */}
+      <PhotoLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        src={lightboxSrc}
+      />
     </div>
   );
 }

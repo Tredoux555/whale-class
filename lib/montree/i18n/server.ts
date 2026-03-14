@@ -58,6 +58,7 @@ export function getTranslatedStatus(status: string, locale: Locale): string {
     case 'practicing': return t('progress.practicing' as TranslationKey, 'Practicing');
     case 'presented':
     case 'introduced': return t('progress.presented' as TranslationKey, 'Presented');
+    case 'documented': return t('photoInsight.documented' as TranslationKey, 'Documented');
     case 'not_started': return t('progress.notStarted' as TranslationKey, 'Not Started');
     default: return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }

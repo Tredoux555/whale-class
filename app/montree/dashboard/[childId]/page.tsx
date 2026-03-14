@@ -588,7 +588,7 @@ export default function WeekPage() {
       )}
 
       {/* Jump to Student Selector + Find Work Search Row */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
         {/* Student selector — left side */}
         <div className="flex-shrink-0">
           <select
@@ -604,7 +604,7 @@ export default function WeekPage() {
           </select>
         </div>
 
-        {/* Find Work search — center */}
+        {/* Find Work search — fills remaining space */}
         <div data-tutorial="work-search-bar" className="flex-1">
           <WorkSearchBar
             curriculum={curriculum}
@@ -636,27 +636,33 @@ export default function WeekPage() {
             placeholder={t('weekview.findWork')}
           />
         </div>
-
-        {/* Action buttons — right side */}
-        {!isHomeschoolParent(session) && (
-          <>
-            <Link
-              href={`/montree/dashboard/${childId}/weekly-review`}
-              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
-            >
-              📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
-            </Link>
-            <PrintButton childId={childId} schoolId={session?.school?.id} />
-            <button
-              data-tutorial="invite-parent-button"
-              onClick={() => setInviteModalOpen(true)}
-              className="px-3 py-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors flex-shrink-0"
-            >
-              👨‍👩‍👧 {t('weekview.inviteParent')}
-            </button>
-          </>
-        )}
       </div>
+
+      {/* Teacher Action Bar — always visible, wraps on mobile */}
+      {!isHomeschoolParent(session) && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            data-tutorial="invite-parent-button"
+            onClick={() => setInviteModalOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            <span>👨‍👩‍👧</span> {t('weekview.inviteParent')}
+          </button>
+          <Link
+            href={`/montree/dashboard/${childId}/reports`}
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors"
+          >
+            <span>📋</span> {t('weeklyReview.sendReport' as any) || 'Send Report'}
+          </Link>
+          <Link
+            href={`/montree/dashboard/${childId}/weekly-review`}
+            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+          >
+            📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
+          </Link>
+          <PrintButton childId={childId} schoolId={session?.school?.id} />
+        </div>
+      )}
 
       {/* Guru Chat Icon — directly above Focus Works */}
       <div className="flex justify-end">

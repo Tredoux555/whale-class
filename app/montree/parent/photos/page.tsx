@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 interface Photo {
   id: string;
@@ -209,62 +210,22 @@ function ParentPhotosContent() {
         )}
       </main>
 
-      {/* Photo Modal */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setSelectedPhoto(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Image */}
-            <div className="bg-gray-100 aspect-video relative">
-              {fullImageUrl ? (
-                <img
-                  src={fullImageUrl}
-                  alt={selectedPhoto.caption || 'Photo'}
-                  className="absolute inset-0 w-full h-full object-contain"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-8 h-8 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
-                </div>
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="p-4">
-              <p className="text-sm text-gray-500">📅 {formatDate(selectedPhoto.captured_at)}</p>
-              {selectedPhoto.caption && (
-                <p className="mt-2 text-gray-800">{selectedPhoto.caption}</p>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="p-4 border-t flex gap-3">
-              {fullImageUrl && (
-                <button
-                  onClick={() => downloadPhoto(
-                    fullImageUrl,
-                    selectedPhoto.caption || `${childName || 'photo'}_${formatDate(selectedPhoto.captured_at)}`
-                  )}
-                  className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
-                >
-                  ⬇ {t('common.save')}
-                </button>
-              )}
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200"
-              >
-                {t('common.close')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
+      <PhotoLightbox
+        isOpen={!!selectedPhoto}
+        onClose={() => setSelectedPhoto(null)}
+        src={fullImageUrl || ''}
+        alt={selectedPhoto?.caption || 'Photo'}
+        photos={photos.map(p => ({
+          url: p.thumbnail_url || '',
+          caption: p.caption,
+          date: p.captured_at,
+        }))}
+        currentIndex={selectedPhoto ? photos.findIndex(p => p.id === selectedPhoto.id) : 0}
+        onNavigate={(idx) => {
+          if (photos[idx]) handlePhotoClick(photos[idx]);
+        }}
+      />
     </div>
   );
 }

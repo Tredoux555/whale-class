@@ -751,6 +751,7 @@ export const en = {
   'gallery.allPhotos': 'All Photos',
   'gallery.byArea': 'By Area',
   'gallery.byWork': 'By Work',
+  'gallery.timeline': 'Timeline',
   'gallery.photosSelected': 'photos selected',
   'gallery.photoSelected': 'photo selected',
   'gallery.selectAll': 'Select All',
@@ -2495,6 +2496,13 @@ export const en = {
   'photoInsight.rateLimited': 'Too many requests — tap to retry',
   'photoInsight.timeout': 'Took too long — tap to retry',
   'photoInsight.networkError': 'Connection failed — tap to retry',
+  'photoInsight.documented': 'Documented',
+
+  // Report status translations
+  'reportStatus.mastered': 'Mastered',
+  'reportStatus.practicing': 'Practicing',
+  'reportStatus.presented': 'Introduced',
+  'reportStatus.documented': 'Documented',
 
   // Snap & Identify
   'snap.title': '📸 Snap & Identify',

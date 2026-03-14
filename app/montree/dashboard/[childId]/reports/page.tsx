@@ -7,10 +7,12 @@ import { useParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 interface ReportItem {
   work_id: string | null;
   work_name: string;
+  chineseName?: string | null;
   area: string;
   status: string;
   photo_url: string | null;
@@ -114,6 +116,10 @@ export default function ReportsPage() {
   const [showLastReport, setShowLastReport] = useState(false);
   const [lastReport, setLastReport] = useState<SentReport | null>(null);
   const [loadingLastReport, setLoadingLastReport] = useState(false);
+
+  // Lightbox for zoomable photos
+  const [lightboxSrc, setLightboxSrc] = useState('');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Fetch report preview
   const fetchPreview = async () => {
@@ -300,7 +306,7 @@ export default function ReportsPage() {
             {items.map((item, i) => (
               <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
                 <StatusBadge status={item.status} locale={locale} />
-                <span className="flex-1 text-sm font-medium text-gray-700">{locale === 'zh' && (item as any).chineseName ? (item as any).chineseName : item.work_name}</span>
+                <span className="flex-1 text-sm font-medium text-gray-700">{locale === 'zh' && item.chineseName ? item.chineseName : item.work_name}</span>
                 {item.photo_url && <span className="text-blue-500">📸</span>}
                 {item.has_description && <span className="text-emerald-500">📝</span>}
               </div>
@@ -383,19 +389,22 @@ export default function ReportsPage() {
                   {/* Work header */}
                   <div className="flex items-center gap-2">
                     <StatusBadge status={item.status} locale={locale} />
-                    <h4 className="font-bold text-gray-800">{locale === 'zh' && (item as any).chineseName ? (item as any).chineseName : item.work_name}</h4>
+                    <h4 className="font-bold text-gray-800">{locale === 'zh' && item.chineseName ? item.chineseName : item.work_name}</h4>
                   </div>
 
-                  {/* Photo - Hero style */}
+                  {/* Photo - Hero style, tap to zoom */}
                   {item.photo_url && (
                     <div className="relative -mx-4 my-3">
-                      <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                      <button
+                        onClick={() => { setLightboxSrc(item.photo_url!); setLightboxOpen(true); }}
+                        className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
+                      >
                         <img
                           src={item.photo_url}
                           alt={item.work_name}
                           className="w-full h-full object-cover"
                         />
-                      </div>
+                      </button>
                       {item.photo_caption && (
                         <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{item.photo_caption}</p>
                       )}
@@ -432,7 +441,11 @@ export default function ReportsPage() {
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {unassignedPhotos.map((photo) => (
-                      <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
+                      <button
+                        key={photo.id}
+                        onClick={() => { setLightboxSrc(photo.url); setLightboxOpen(true); }}
+                        className="rounded-xl overflow-hidden shadow-md text-left cursor-zoom-in"
+                      >
                         <div className="aspect-square w-full">
                           <img
                             src={photo.url}
@@ -443,7 +456,7 @@ export default function ReportsPage() {
                         {photo.caption && (
                           <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -575,16 +588,19 @@ export default function ReportsPage() {
                                 <h4 className="font-bold text-gray-800">{locale === 'zh' && (work as any).chineseName ? (work as any).chineseName : work.name}</h4>
                               </div>
 
-                              {/* Photo - Hero style */}
+                              {/* Photo - Hero style, tap to zoom */}
                               {photoUrl && (
                                 <div className="relative -mx-4 my-3">
-                                  <div className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg">
+                                  <button
+                                    onClick={() => { setLightboxSrc(photoUrl); setLightboxOpen(true); }}
+                                    className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
+                                  >
                                     <img
                                       src={photoUrl}
                                       alt={work.name}
                                       className="w-full h-full object-cover"
                                     />
-                                  </div>
+                                  </button>
                                   {photoCaption && (
                                     <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{photoCaption}</p>
                                   )}
@@ -649,7 +665,11 @@ export default function ReportsPage() {
                         </h4>
                         <div className="grid grid-cols-2 gap-2">
                           {unassignedPhotos.map((photo: ReportPhoto) => (
-                            <div key={photo.id} className="rounded-xl overflow-hidden shadow-md">
+                            <button
+                              key={photo.id}
+                              onClick={() => { setLightboxSrc(photo.url || photo.thumbnail_url || ''); setLightboxOpen(true); }}
+                              className="rounded-xl overflow-hidden shadow-md text-left cursor-zoom-in"
+                            >
                               <div className="aspect-square w-full">
                                 <img
                                   src={photo.url || photo.thumbnail_url}
@@ -660,7 +680,7 @@ export default function ReportsPage() {
                               {photo.caption && (
                                 <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
                               )}
-                            </div>
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -686,6 +706,13 @@ export default function ReportsPage() {
           </div>
         </div>
       )}
+
+      {/* Photo Lightbox — fullscreen zoom + download */}
+      <PhotoLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        src={lightboxSrc}
+      />
 
       {/* Info */}
       <p className="text-xs text-gray-400 text-center">

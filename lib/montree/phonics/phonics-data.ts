@@ -29,7 +29,7 @@ export interface PhonicsPhase {
 }
 
 export interface CommandSentence {
-  sentence: string;
+  text: string;
   phonicsWords: string[];
   phase: string;
 }
@@ -1303,32 +1303,32 @@ ALL_PHASES.forEach(phase => {
 
 export const COMMAND_SENTENCES: CommandSentence[] = [
   // Pink level commands
-  { sentence: 'Sit on the mat.', phonicsWords: ['sit', 'mat'], phase: 'pink1' },
-  { sentence: 'Get the red cup.', phonicsWords: ['get', 'red', 'cup'], phase: 'pink2' },
-  { sentence: 'Put the pen in the box.', phonicsWords: ['put', 'pen', 'box'], phase: 'pink2' },
-  { sentence: 'Run to the big rug.', phonicsWords: ['run', 'big', 'rug'], phase: 'pink2' },
-  { sentence: 'Pat the cat on the bed.', phonicsWords: ['pat', 'cat', 'bed'], phase: 'pink1' },
-  { sentence: 'Dip the mop in the tub.', phonicsWords: ['dip', 'mop', 'tub'], phase: 'pink2' },
-  { sentence: 'Set the cup on the lid.', phonicsWords: ['set', 'cup', 'lid'], phase: 'pink2' },
-  { sentence: 'Hop to the top of the mat.', phonicsWords: ['hop', 'top', 'mat'], phase: 'pink2' },
-  { sentence: 'Tap the tin with a pen.', phonicsWords: ['tap', 'tin', 'pen'], phase: 'pink1' },
+  { text: 'Sit on the mat.', phonicsWords: ['sit', 'mat'], phase: 'pink1' },
+  { text: 'Get the red cup.', phonicsWords: ['get', 'red', 'cup'], phase: 'pink2' },
+  { text: 'Put the pen in the box.', phonicsWords: ['put', 'pen', 'box'], phase: 'pink2' },
+  { text: 'Run to the big rug.', phonicsWords: ['run', 'big', 'rug'], phase: 'pink2' },
+  { text: 'Pat the cat on the bed.', phonicsWords: ['pat', 'cat', 'bed'], phase: 'pink1' },
+  { text: 'Dip the mop in the tub.', phonicsWords: ['dip', 'mop', 'tub'], phase: 'pink2' },
+  { text: 'Set the cup on the lid.', phonicsWords: ['set', 'cup', 'lid'], phase: 'pink2' },
+  { text: 'Hop to the top of the mat.', phonicsWords: ['hop', 'top', 'mat'], phase: 'pink2' },
+  { text: 'Tap the tin with a pen.', phonicsWords: ['tap', 'tin', 'pen'], phase: 'pink1' },
   // Blue level commands
-  { sentence: 'Clap and then stop.', phonicsWords: ['clap', 'stop'], phase: 'blue1' },
-  { sentence: 'Grab the drum and tap it.', phonicsWords: ['grab', 'drum', 'tap'], phase: 'blue1' },
-  { sentence: 'Skip to the flag and stand.', phonicsWords: ['skip', 'flag', 'stand'], phase: 'blue1' },
-  { sentence: 'Step on the rug and jump.', phonicsWords: ['step', 'rug', 'jump'], phase: 'blue2' },
-  { sentence: 'Put the plug in the sink.', phonicsWords: ['plug', 'sink'], phase: 'blue3' },
-  { sentence: 'Pick the lock with the stick.', phonicsWords: ['pick', 'lock', 'stick'], phase: 'blue3' },
-  { sentence: 'Toss the ball and kick it back.', phonicsWords: ['toss', 'ball', 'kick', 'back'], phase: 'blue3' },
+  { text: 'Clap and then stop.', phonicsWords: ['clap', 'stop'], phase: 'blue1' },
+  { text: 'Grab the drum and tap it.', phonicsWords: ['grab', 'drum', 'tap'], phase: 'blue1' },
+  { text: 'Skip to the flag and stand.', phonicsWords: ['skip', 'flag', 'stand'], phase: 'blue1' },
+  { text: 'Step on the rug and jump.', phonicsWords: ['step', 'rug', 'jump'], phase: 'blue2' },
+  { text: 'Put the plug in the sink.', phonicsWords: ['plug', 'sink'], phase: 'blue3' },
+  { text: 'Pick the lock with the stick.', phonicsWords: ['pick', 'lock', 'stick'], phase: 'blue3' },
+  { text: 'Toss the ball and kick it back.', phonicsWords: ['toss', 'ball', 'kick', 'back'], phase: 'blue3' },
   // Green level commands
-  { sentence: 'Push the ship to the dish.', phonicsWords: ['push', 'ship', 'dish'], phase: 'green1' },
-  { sentence: 'Chop the thin stick in half.', phonicsWords: ['chop', 'thin'], phase: 'green1' },
-  { sentence: 'Take the cake to the gate.', phonicsWords: ['take', 'cake', 'gate'], phase: 'green2' },
-  { sentence: 'Ride the bike down the line.', phonicsWords: ['ride', 'bike', 'line'], phase: 'green2' },
-  { sentence: 'Read the book by the tree.', phonicsWords: ['read', 'book', 'tree'], phase: 'green2' },
-  { sentence: 'Turn right at the bright light.', phonicsWords: ['turn', 'right', 'bright', 'light'], phase: 'green3' },
-  { sentence: 'Park the car near the barn.', phonicsWords: ['park', 'car', 'barn'], phase: 'green3' },
-  { sentence: 'Write your name on the page.', phonicsWords: ['write', 'name', 'page'], phase: 'green3' },
+  { text: 'Push the ship to the dish.', phonicsWords: ['push', 'ship', 'dish'], phase: 'green1' },
+  { text: 'Chop the thin stick in half.', phonicsWords: ['chop', 'thin'], phase: 'green1' },
+  { text: 'Take the cake to the gate.', phonicsWords: ['take', 'cake', 'gate'], phase: 'green2' },
+  { text: 'Ride the bike down the line.', phonicsWords: ['ride', 'bike', 'line'], phase: 'green2' },
+  { text: 'Read the book by the tree.', phonicsWords: ['read', 'book', 'tree'], phase: 'green2' },
+  { text: 'Turn right at the bright light.', phonicsWords: ['turn', 'right', 'bright', 'light'], phase: 'green3' },
+  { text: 'Park the car near the barn.', phonicsWords: ['park', 'car', 'barn'], phase: 'green3' },
+  { text: 'Write your name on the page.', phonicsWords: ['write', 'name', 'page'], phase: 'green3' },
 ];
 
 // ============================================================

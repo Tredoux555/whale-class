@@ -18,6 +18,8 @@ function getSeriesInfo(phaseId: string): { series: string; color: string; bgClas
 }
 
 const GENERATORS = [
+  { href: '/montree/library/tools/phonics-fast/pink-box', icon: '🩷', label: 'Pink Box', desc: 'AMI material prep system — presentation guide, exercises, 3-part cards, object labels, command cards, movable alphabet mat, shopping list' },
+  { href: '/montree/library/tools/phonics-fast/blue-box', icon: '💙', label: 'Blue Box', desc: 'AMI material prep system — presentation guide, exercises, blend chart, sorting mat, 3-part cards, command cards, shopping list' },
   { href: '/montree/library/tools/phonics-fast/three-part-cards', icon: '🃏', label: '3-Part Cards', desc: 'Auto-generate nomenclature cards from word lists' },
   { href: '/montree/library/tools/phonics-fast/labels', icon: '🏷️', label: 'Labels', desc: 'Print labels for movable alphabet matching' },
   { href: '/montree/library/tools/phonics-fast/command-cards', icon: '📋', label: 'Command Cards', desc: '"Put the cat on the mat" style reading cards' },
