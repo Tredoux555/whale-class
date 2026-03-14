@@ -16,12 +16,13 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Deploy All Local Changes (Priority #0 — URGENT)
 
-All code is local, NOT yet pushed. Mar 8–14 features + fixes including Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes (invite parent, photo lightbox, gallery timeline, report photos) + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: pink box + blue box AMI phonics generators, fix CommandSentence.text crash, parent feature fixes, photo lightbox, gallery timeline, all Mar 8-14 features" && git push origin main`
+All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-learning visual memory system + expanded visual ID guide (262 lines, 200+ works) + Smart Capture marketing tab + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: self-learning visual memory, expanded visual ID guide, Smart Capture marketing, pink/blue box generators, all Mar 8-14 features" && git push origin main`
 
-**Includes (Mar 14):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
+**Includes (Mar 14 — late):** Per-classroom visual memory self-learning system (1 migration, 2 modified API routes). Expanded visual ID guide from ~48 to ~262 lines covering 200+ works with 6 confusion pair sections. Smart Capture marketing tab in Nerve Center (6 competitors analysed — all confirmed zero AI photo recognition). Competitive research: Montree is category of one.
+**Includes (Mar 14 — earlier):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
 **Includes (Mar 8-13):** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction), Guru Timeout Fix (60s hard wall), Guru Context-Aware Routing (4 files, ~30-50% token reduction), Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed), 3x3x3x3 Smart Capture hardening (2 FULL ROUNDS, 4 files, 36 audits CLEAN), 401 zombie session fix, album upload, RAZ 4th photo (migration 137), Home Guru 4 fixes, Session recovery pipeline, Guru parity revert, Home Parent rebuild (28 issues fixed), Smart Capture accuracy overhaul (GREEN/AMBER/RED zones), Weekly Review, fire-and-forget store, whole-class Guru fix, FeedbackButton removal, batch parent reports, classroom overview print, guru whole-class mode, 3-cycle audit fixes, 59+ new i18n keys.
-**Full deploy handoff:** `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`, `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
-**Migration required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column)
+**Full deploy handoff:** `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md`, `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`, `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
+**Migrations required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column) AND `psql $DATABASE_URL -f migrations/138_visual_memory.sql` (visual memory table + RPCs + corrections columns)
 
 ### Rewrite Phonics Image Downloader with Montessori Filters (Priority #1 — FIRST CALL TO ACTION)
 
@@ -85,7 +86,85 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 14, 2026)
+## CURRENT STATUS (Mar 15, 2026)
+
+### Session Work (Mar 15, 2026)
+
+**Global Montessori School Research for Sales Outreach — COMPLETE, SPREADSHEET PENDING (VM disk full):**
+
+Systematic deep-dive web research to find every premium Montessori school worldwide for Montree sales outreach. Researched chains/franchises, Tier 1-4 countries, and training organizations.
+
+**Key Findings:**
+- **550+ schools reachable through 5 chain HQ contacts:** Guidepost/CEG (100+), Spring Education/LePort (200+), Etonkids (60+), Brainy Bunch (120), Montessori Academy AU (70+)
+- **Top 50 schools ranked** by scoring system (max 40: size, accreditation, premium fees, tech readiness, reachability)
+- **Reachability grades A/B/C** — Grade A = direct email to owner/principal found
+- **India has most direct emails** — Indian Montessori Foundation publishes principal contacts openly
+- **China hardest to reach** — most behind contact forms, but Etonkids campus emails available
+- **AMI Global School Accreditation launching 2025-26** — perfect timing for Montree alignment
+
+**Top Priority Targets (Tier S, Score 33+):**
+1. Guidepost/CEG — Steve Xu (CEO), 100+ schools, @guidepostmontessori.com
+2. Spring Education/LePort — 200+ schools, 19 US states, 484-947-2000
+3. Etonkids — Vivien Wang (CEO), 60+ campuses China, multiple campus emails available
+4. Montessori Academy Australia — 70+ centres, 1300 000 162
+5. MSB Beijing — longest-running Montessori in China, @msb.edu.cn
+6. Brainy Bunch — 120 campuses across 6 countries, brainybunch.com
+7. MST Tokyo — James Moore (Head), first AMI accredited in Asia, info@montessorijapan.com
+8. Maria Montessori School London — 3 sites, +44 20 7435 3646
+
+**Countries Researched:** China, USA, UK, India, Australia, Canada, Japan, Singapore, UAE/Dubai, Germany, Netherlands, Mexico, Thailand, Malaysia, Sweden/Scandinavia, Kenya, South Africa
+
+**Also this session (earlier — from previous context that compacted):**
+- Completed visual memory self-learning system audit (all 3 entry points verified)
+- Added Smart Capture marketing tab to Nerve Center with competitive analysis
+- Wrote pitch document (PITCH_SMART_CAPTURE.md) with 30-second version and cold email
+- Updated Nerve Center with pitch, cold email, headlines, how-it-works, competitors, economics
+- Confirmed zero competitors have AI photo recognition (category of one)
+
+**Output:** `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` — Full data for all 50+ schools with contacts, scores, grades. Ready to generate Excel spreadsheet next session.
+
+**Next Session:** Generate `docs/Montree_Global_Outreach_List.xlsx` with sheets: Top 50, Chains, By Country, Training Orgs, Cold Email template. VM disk was full (ENOSPC) — need to clear space or use Desktop Commander on Mac.
+
+---
+
+## PREVIOUS STATUS (Mar 14, 2026)
+
+### Session Work (Mar 14, 2026 — Late Session)
+
+**Per-Classroom Visual Memory Self-Learning System + Expanded Visual ID Guide + Smart Capture Marketing — COMPLETE, NOT YET DEPLOYED:**
+
+Built a self-learning visual memory system that makes Smart Capture permanently smarter from every teacher correction. Also expanded the visual identification guide from ~48 lines to ~262 lines, and added a comprehensive Smart Capture competitive analysis tab to the Nerve Center.
+
+**Part 1 — Per-Classroom Visual Memory (1 migration + 2 modified routes):**
+- `migrations/138_visual_memory.sql` (NEW) — `montree_visual_memory` table (classroom_id, work_name, work_key, area, is_custom, visual_description, source, source_media_id, photo_url, description_confidence, times_used, times_correct, UNIQUE on classroom_id+work_name). 2 indexes. 2 RPCs: `increment_visual_memory_used` (batch), `increment_visual_memory_correct` (single). Also adds `visual_description` + `photo_url` columns to `montree_guru_corrections`.
+- `app/api/montree/guru/photo-insight/route.ts` — 5 changes: visual memory query in parallel Promise.allSettled (4th query), processing block separating custom vs standard memories, prompt injection between curriculum hint and focus works, fire-and-forget `times_used` tracking via RPC, first-capture learning for custom works (Haiku generates visual description on first confident photo of custom work, upserts with confidence 0.7).
+- `app/api/montree/guru/corrections/route.ts` — Complete rewrite: photo URL lookup from cached interaction, new `generateAndStoreVisualMemory()` function (Haiku vision → upsert confidence 0.9), parallelized steps 3-6 via Promise.allSettled, cleaned up confirm path with proper RPC, extracted `feedBrainLearning()` helper.
+
+**Three learning sources:** Teacher corrections (confidence 0.9, highest), first-capture for custom works (confidence 0.7, auto on first photo), teacher manual (future, 1.0).
+
+**Self-learning loop:** Photo → Sonnet identifies (with visual memory injected) → Teacher corrects → Haiku generates visual description → stored permanently → injected into all future prompts → system cannot make same mistake twice.
+
+**Part 2 — Expanded Visual Identification Guide (~262 lines, 200+ works):**
+- Replaced old ~48-line guide in photo-insight/route.ts with comprehensive guide covering all 5 areas with subcategories
+- 6 "⚠️ CONFUSION PAIRS" sections: Red Rods vs Number Rods, Cylinder Blocks vs Knobless Cylinders, Pink/Blue/Green Object Boxes, Metal Insets vs Geometric Cabinet, Sandpaper Letters vs Numerals, Bead Stair vs Golden Beads
+
+**Part 3 — Smart Capture Marketing Tab (Nerve Center):**
+- `app/montree/super-admin/marketing/nerve-center/page.tsx` — New "📸 Smart Capture" tab (first tab). 6 marketing headline lines with context labels, 5-step "How It Works" flow, 6 competitors analysed (all confirmed: zero AI photo recognition), unit economics table (Sonnet vs Haiku), technical architecture summary. "WORLD FIRST" badge.
+
+**Competitive Research (March 2026):** Searched Transparent Classroom, Montessori Compass, Brightwheel, iCare, Montessorium, Onespot. **Zero competitors offer AI photo recognition for Montessori materials.** Montree is category of one.
+
+**Current architecture:** Pure Sonnet for main vision call. Haiku only for background tasks (visual description generation on corrections + first-capture learning). Two-tier Haiku/Sonnet router designed but NOT yet built.
+
+**API Cost Estimates (250 students daily):** Sonnet ~$300-330/mo, Haiku+memory ~$80-95/mo. Suggested pricing: $15-25/student/mo (Sonnet) or $10-15/student/mo (Haiku+memory).
+
+**Files Modified (3) + 1 Migration:**
+1. `migrations/138_visual_memory.sql` — NEW migration
+2. `app/api/montree/guru/photo-insight/route.ts` — 5 edits (visual memory query, processing, prompt injection, usage tracking, first-capture learning)
+3. `app/api/montree/guru/corrections/route.ts` — Complete rewrite (photo lookup, Haiku vision, parallelization, confirm cleanup)
+4. `app/montree/super-admin/marketing/nerve-center/page.tsx` — New Smart Capture tab with competitive analysis
+
+**Deploy:** ⚠️ NOT YET PUSHED. Run migration 138 before testing. Include in consolidated push.
+**Handoff:** `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md`
 
 ### Session Work (Mar 14, 2026)
 
@@ -2641,6 +2720,8 @@ Rebuilt the Progress tab (`/montree/dashboard/[childId]/progress`) from a simple
 - `montree_child_extras` — explicitly-added extra works per child (UNIQUE child_id+work_name)
 - `montree_raz_records` — RAZ reading tracker records (child_id, date, status, 3 photo URLs)
 - `montree_feature_toggles`, `montree_school_features`, `montree_feature_audit_log` — feature flag system
+- `montree_visual_memory` — per-classroom visual descriptions of materials for Smart Capture self-learning (UNIQUE classroom_id+work_name, times_used, times_correct)
+- `montree_guru_corrections` — teacher corrections to Smart Capture identifications (includes visual_description, photo_url)
 - `montree_community_works` — public community works library (title, area, materials, photos, videos, PDFs, AI guide, moderation status, stats)
 - `montree_community_backups` — daily JSON backup records (date, work_count, storage_path)
 - `montree_super_admin_audit` — central security audit log (all auth events, destructive ops)
@@ -2896,7 +2977,9 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md` | **CURRENT** — Parent feature fixes (invite parent, lightbox, gallery timeline, report photos) + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix |
+| `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` | **CURRENT** — Global Montessori school research: Top 50 ranked list, 7 chains (550+ schools), contacts for 17 countries, scoring system, reachability grades. Ready for Excel generation. |
+| `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md` | Per-classroom visual memory self-learning system, expanded visual ID guide (262 lines, 200+ works), Smart Capture marketing tab, competitive analysis (zero competitors have AI photo recognition) |
+| `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md` | Parent feature fixes (invite parent, lightbox, gallery timeline, report photos) + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix |
 | `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md` | Phonics image download attempt (355 images, ~90% unusable), 2 code fixes (Clap template + useMemo), script rewrite needed |
 | `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md` | Guru context-aware routing / selective knowledge injection (4 files, ~30-50% token reduction, 3x3x3x3 methodology) |
 | `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md` | Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed, 3x3x3x3 methodology) |
