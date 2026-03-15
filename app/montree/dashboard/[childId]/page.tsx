@@ -541,6 +541,7 @@ export default function WeekPage() {
       try {
         // Load all works at once
         const res = await fetch(`/api/montree/works/search`);
+        if (!res.ok) throw new Error(`Search fetch failed: ${res.status}`);
         const data = await res.json();
 
         // Group by area
@@ -609,6 +610,7 @@ export default function WeekPage() {
               if (Object.keys(curriculum).length === 0) {
                 try {
                   const res = await fetch(`/api/montree/works/search`);
+                  if (!res.ok) throw new Error(`Search pre-load failed: ${res.status}`);
                   const data = await res.json();
                   const byArea: Record<string, CurriculumWork[]> = {};
                   for (const w of data.works || []) {

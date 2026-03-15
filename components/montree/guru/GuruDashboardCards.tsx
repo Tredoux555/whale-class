@@ -43,7 +43,7 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
     }
 
     fetch(`/api/montree/guru/dashboard-summary?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Dashboard summary failed: ${r.status}`); return r.json(); })
       .then(result => {
         if (result.success) {
           setData(result);
@@ -58,6 +58,7 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
     setPlanError(null);
     try {
       const res = await fetch(`/api/montree/guru/daily-plan?child_id=${childId}`);
+      if (!res.ok) throw new Error(`Daily plan fetch failed: ${res.status}`);
       const result = await res.json();
       if (result.success) {
         setPlan(result.plan);

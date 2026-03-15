@@ -125,6 +125,7 @@ export function useCurriculumDragDrop({
           items
         })
       });
+      if (!res.ok) throw new Error(`Reorder save failed: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         toast.success(t('toast.orderSaved'));

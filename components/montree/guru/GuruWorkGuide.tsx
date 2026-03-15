@@ -29,6 +29,7 @@ export default function GuruWorkGuide({ workName, childId, childAge }: GuruWorkG
           child_age: childAge,
         }),
       });
+      if (!res.ok) throw new Error(`Work guide fetch failed: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         setGuide(data.guide);
