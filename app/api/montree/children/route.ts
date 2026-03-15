@@ -204,7 +204,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
 
-    return NextResponse.json({ children: data || [] });
+    const response = NextResponse.json({ children: data || [] });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     // Phase 8: Sanitized — don't leak error details to client

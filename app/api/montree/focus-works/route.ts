@@ -51,29 +51,27 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Convert to area -> work mapping, enriched with Chinese names (fuzzy matching)
+    // Convert to area -> work mapping, enriched with Chinese names (single pass)
     const focusByArea: Record<string, any> = {};
-    for (const fw of focusWorks || []) {
+    const enrichedRaw = (focusWorks || []).map(fw => {
+      const chineseName = fw.work_name ? getChineseNameForWork(fw.work_name) : null;
       focusByArea[fw.area] = {
         id: fw.work_id,
         name: fw.work_name,
-        chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
+        chineseName,
         set_at: fw.set_at,
         set_by: fw.set_by,
       };
-    }
+      return { ...fw, chineseName };
+    });
 
-    // Also enrich raw array
-    const enrichedRaw = (focusWorks || []).map(fw => ({
-      ...fw,
-      chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
-    }));
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       focus_works: focusByArea,
       raw: enrichedRaw,
     });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     console.error('Focus works GET error:', error);

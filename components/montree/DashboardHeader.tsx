@@ -37,10 +37,10 @@ export default function DashboardHeader() {
 
   // Extract childId from URL when on a child's page (e.g. /montree/dashboard/[childId]/...)
   // This ensures the Guru link carries the current child context
-  const childIdFromPath = (() => {
+  const childIdFromPath = useMemo(() => {
     const match = pathname.match(/\/montree\/dashboard\/([a-f0-9-]{36})/);
     return match ? match[1] : null;
-  })();
+  }, [pathname]);
 
   useEffect(() => {
     const sess = getSession();
@@ -102,7 +102,8 @@ export default function DashboardHeader() {
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
       })
       .catch(() => {});
-  }, [session]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.classroom?.id]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

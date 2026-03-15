@@ -13,16 +13,19 @@ import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData } from '@/lib/montree/cache';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
-import WelcomeModal from '@/components/montree/WelcomeModal';
-import GuruDashboardCards from '@/components/montree/guru/GuruDashboardCards';
-import ConcernCardsGrid from '@/components/montree/guru/ConcernCardsGrid';
-import QuickGuruFAB from '@/components/montree/guru/QuickGuruFAB';
-import DashboardGuide from '@/components/montree/onboarding/DashboardGuide';
-import GuruFAQSection from '@/components/montree/guru/GuruFAQSection';
-import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import GuruChatThread from '@/components/montree/guru/GuruChatThread';
-import WeeklyAdminCard from '@/components/montree/voice-notes/WeeklyAdminCard';
-import BatchReportsCard from '@/components/montree/reports/BatchReportsCard';
+import dynamic from 'next/dynamic';
+
+// Lazy-load heavy components — only loaded when actually rendered
+const WelcomeModal = dynamic(() => import('@/components/montree/WelcomeModal'), { ssr: false });
+const GuruDashboardCards = dynamic(() => import('@/components/montree/guru/GuruDashboardCards'), { ssr: false });
+const ConcernCardsGrid = dynamic(() => import('@/components/montree/guru/ConcernCardsGrid'), { ssr: false });
+const QuickGuruFAB = dynamic(() => import('@/components/montree/guru/QuickGuruFAB'), { ssr: false });
+const DashboardGuide = dynamic(() => import('@/components/montree/onboarding/DashboardGuide'), { ssr: false });
+const GuruFAQSection = dynamic(() => import('@/components/montree/guru/GuruFAQSection'), { ssr: false });
+const GuruContextBubble = dynamic(() => import('@/components/montree/guru/GuruContextBubble'), { ssr: false });
+const GuruChatThread = dynamic(() => import('@/components/montree/guru/GuruChatThread'), { ssr: false });
+const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/WeeklyAdminCard'), { ssr: false });
+const BatchReportsCard = dynamic(() => import('@/components/montree/reports/BatchReportsCard'), { ssr: false });
 
 
 interface Child {

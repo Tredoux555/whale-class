@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
   
   // Image config
-  images: isCapacitorBuild 
+  images: isCapacitorBuild
     ? { unoptimized: true }
     : {
         remotePatterns: [
@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
             pathname: '/storage/v1/object/public/**',
           },
         ],
+        formats: ['image/webp', 'image/avif'],
+        minimumCacheTTL: 86400,
+        deviceSizes: [640, 750, 828, 1080],
+        imageSizes: [16, 32, 48, 64, 96, 128, 256],
       },
   
   // Transpile server-only modules
@@ -121,7 +125,12 @@ const nextConfig: NextConfig = {
   
   // Enable Turbopack
   turbopack: {},
-  
+
+  // View Transitions API for smooth page navigation
+  experimental: {
+    viewTransition: true,
+  },
+
   // Webpack config for PWA
   webpack: (config, { isServer }) => {
     if (isServer) {
@@ -140,6 +149,32 @@ const pwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development" || isCapacitorBuild,
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/.*\.supabase\.co\/storage\//,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'supabase-images',
+        expiration: { maxEntries: 500, maxAgeSeconds: 30 * 24 * 60 * 60 },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'google-fonts',
+        expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 60 * 60 },
+      },
+    },
+    {
+      urlPattern: /\/_next\/static\/.*/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'next-static',
+        expiration: { maxEntries: 200, maxAgeSeconds: 365 * 24 * 60 * 60 },
+      },
+    },
+  ],
   buildExcludes: [
     /chunks\/app\/admin/,
     /chunks\/app\/api\/circle-plans\/generate/,

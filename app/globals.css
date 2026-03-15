@@ -319,3 +319,79 @@ select {
 .active\:scale-98:active {
   transform: scale(0.98);
 }
+
+/* ============================================
+   NATIVE APP FEEL - Performance Optimizations
+   ============================================ */
+
+/* Prevent rubber-band overscroll on iOS (feels "webby") */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Smooth page transitions using View Transitions API */
+@supports (view-transition-name: root) {
+  ::view-transition-old(root) {
+    animation: 200ms ease-out both fade-out;
+  }
+  ::view-transition-new(root) {
+    animation: 200ms ease-in both fade-in;
+  }
+  @keyframes fade-out {
+    to { opacity: 0; transform: translateY(4px); }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+  }
+}
+
+/* Instant touch feedback - remove 300ms tap delay */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a, button, [role="button"], .clickable {
+  touch-action: manipulation;
+}
+
+/* Active press feedback for all interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  a:active,
+  button:active,
+  [role="button"]:active,
+  .clickable:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+    transition: transform 80ms ease, opacity 80ms ease;
+  }
+}
+
+/* GPU-accelerated animations */
+.animate-native {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* Prevent content shift during font loading */
+body {
+  font-display: swap;
+  text-rendering: optimizeSpeed;
+}
+
+/* Smooth momentum scrolling everywhere */
+.scroll-container,
+main,
+[data-scroll] {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar on mobile for cleaner look */
+@media (hover: none) and (pointer: coarse) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+  }
+}

@@ -13,6 +13,9 @@
 
 const TOKEN_KEY = 'montree_token';
 
+// In-flight GET request deduplication — prevents duplicate concurrent fetches
+const inflightGets = new Map<string, Promise<Response>>();
+
 /**
  * @deprecated Cookie is now set by the server on login. This is a no-op.
  * Cleans up any leftover localStorage token from before the migration.
@@ -49,6 +52,7 @@ export function clearToken(): void {
  * - Auth cookie (montree-auth) is automatically included by the browser
  * - Adds Content-Type: application/json for non-FormData requests
  * - On 401 response, clears auth state (session expired)
+ * - Deduplicates concurrent GET requests to the same URL
  *
  * Returns the fetch Response object (caller handles .json() etc.)
  */
@@ -57,6 +61,17 @@ export async function montreeApi(
   options: RequestInit & { timeout?: number } = {}
 ): Promise<Response> {
   const { timeout: customTimeout, ...fetchOptions } = options;
+  const method = (fetchOptions.method || 'GET').toUpperCase();
+
+  // Deduplicate concurrent GET requests to the same URL
+  if (method === 'GET') {
+    const existing = inflightGets.get(url);
+    if (existing) {
+      // Return a clone so each caller gets their own readable stream
+      return existing.then(res => res.clone());
+    }
+  }
+
   const headers = new Headers(fetchOptions.headers);
 
   // Add Content-Type for JSON bodies (skip for FormData — browser sets it with boundary)
@@ -76,23 +91,33 @@ export async function montreeApi(
     fetchOptions.signal.addEventListener('abort', () => controller.abort(), { once: true });
   }
 
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      ...fetchOptions,
-      headers,
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timeoutId);
+  const fetchPromise = (async () => {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        ...fetchOptions,
+        headers,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
+    // If server returns 401, the token is expired or invalid
+    if (response.status === 401) {
+      clearToken();
+      // Don't redirect here — let the calling component handle it
+      // (some pages may want to show a message, others redirect to login)
+    }
+
+    return response;
+  })();
+
+  // Track GET requests for deduplication
+  if (method === 'GET') {
+    inflightGets.set(url, fetchPromise);
+    fetchPromise.finally(() => inflightGets.delete(url));
   }
 
-  // If server returns 401, the token is expired or invalid
-  if (response.status === 401) {
-    clearToken();
-    // Don't redirect here — let the calling component handle it
-    // (some pages may want to show a message, others redirect to login)
-  }
-
-  return response;
+  return fetchPromise;
 }
