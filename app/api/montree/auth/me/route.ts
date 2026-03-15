@@ -22,12 +22,25 @@ export async function GET(request: NextRequest) {
       supabase.from('montree_teachers').select('id, name, email, role').eq('id', userId).maybeSingle(),
       supabase.from('montree_schools').select('id, name, slug').eq('id', schoolId).maybeSingle(),
       classroomId
-        ? supabase.from('montree_classrooms').select('id, name, age_group').eq('id', classroomId).maybeSingle()
+        ? supabase.from('montree_classrooms').select('id, name, age_group, school_id').eq('id', classroomId).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
 
     if (!teacherRes.data || !schoolRes.data) {
       return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    // Security: verify classroom belongs to the authenticated school
+    // Prevents cross-school data leakage if token contains a mismatched classroomId
+    let classroom: { id: string; name: string; age_group: string | null } | null = null;
+    if (classroomRes.data) {
+      if (classroomRes.data.school_id && classroomRes.data.school_id !== schoolId) {
+        console.warn(`[auth/me] Classroom ${classroomId} does not belong to school ${schoolId} — clearing`);
+      } else {
+        // Strip school_id from response (internal field, not needed by client)
+        const { school_id: _sid, ...rest } = classroomRes.data;
+        classroom = rest;
+      }
     }
 
     return NextResponse.json({
@@ -39,7 +52,7 @@ export async function GET(request: NextRequest) {
         email: teacherRes.data.email,
       },
       school: schoolRes.data,
-      classroom: classroomRes.data || null,
+      classroom,
     });
   } catch {
     return NextResponse.json({ authenticated: false }, { status: 500 });

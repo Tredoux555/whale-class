@@ -25,8 +25,10 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const limited = await checkRateLimit(`send-report-${auth.userId}`, 50, 86400);
-    if (limited) {
+    const supabase = getSupabase();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/weekly-review/send', 50, 1440);
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
@@ -38,8 +40,6 @@ export async function POST(
     if (!report_text || typeof report_text !== 'string' || report_text.length > 10000) {
       return NextResponse.json({ error: 'report_text required (max 10000 chars)' }, { status: 400 });
     }
-
-    const supabase = getSupabase();
 
     // Get child + classroom info
     const { data: child } = await supabase

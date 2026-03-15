@@ -6,7 +6,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -14,7 +13,6 @@ import { useI18n } from '@/lib/montree/i18n';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
-import InviteParentModal from '@/components/montree/InviteParentModal';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
@@ -57,9 +55,6 @@ export default function WeekPage() {
   const { t, locale } = useI18n();
   const childId = params.childId as string;
   const session = getSession();
-
-  // Invite parent modal
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const [focusWorks, setFocusWorks] = useState<Assignment[]>([]);
   const [extraWorks, setExtraWorks] = useState<Assignment[]>([]);
@@ -151,6 +146,12 @@ export default function WeekPage() {
         url += '&locale=zh';
       }
       const res = await fetch(url);
+      if (!res.ok) {
+        console.error('Guide fetch failed:', res.status);
+        setQuickGuideData({ error: true });
+        setQuickGuideLoading(false);
+        return;
+      }
       const data = await res.json();
       setQuickGuideData(data);
     } catch (err) {
@@ -283,7 +284,7 @@ export default function WeekPage() {
       : `/api/montree/works/search`;
 
     fetch(url)
-      .then(res => res.json())
+      .then(res => res.ok ? res.json() : Promise.reject(new Error(`Curriculum pre-cache failed: ${res.status}`)))
       .then(data => {
         const allCurrWorks = data.works || [];
         const byArea: Record<string, CurriculumWork[]> = {};
@@ -344,6 +345,7 @@ export default function WeekPage() {
         ? `/api/montree/works/search?area=${encodeURIComponent(areaKey)}&classroom_id=${classroomId}`
         : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`Curriculum fetch failed: ${res.status}`);
       const data = await res.json();
 
       const curriculumWorks = (data.works || []).map((w: Record<string, unknown>, idx: number) => {
@@ -388,6 +390,7 @@ export default function WeekPage() {
         ? `/api/montree/works/search?area=${encodeURIComponent(areaKey)}&classroom_id=${classroomId}`
         : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`Refresh fetch failed: ${res.status}`);
       const data = await res.json();
 
       const currentWorks = [...focusWorks, ...extraWorks];
@@ -576,17 +579,6 @@ export default function WeekPage() {
         <GuruContextBubble pageKey="weekView" role="parent" />
       )}
 
-      {/* Invite Parent Modal — hidden for homeschool parents (they ARE the parent) */}
-      {!isHomeschoolParent(session) && (
-        <InviteParentModal
-          childId={childId}
-          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          teacherId={session?.teacher?.id}
-          isOpen={inviteModalOpen}
-          onClose={() => setInviteModalOpen(false)}
-        />
-      )}
-
       {/* Jump to Student Selector + Find Work Search Row */}
       <div className="flex items-center gap-3">
         {/* Student selector — left side */}
@@ -638,42 +630,12 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Teacher Action Bar — always visible, wraps on mobile */}
+      {/* Minimal action bar — just print labels (teacher only) */}
       {!isHomeschoolParent(session) && (
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            data-tutorial="invite-parent-button"
-            onClick={() => setInviteModalOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            <span>👨‍👩‍👧</span> {t('weekview.inviteParent')}
-          </button>
-          <Link
-            href={`/montree/dashboard/${childId}/reports`}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-500 text-white hover:bg-blue-600 rounded-lg text-sm font-medium transition-colors"
-          >
-            <span>📋</span> {t('weeklyReview.sendReport' as any) || 'Send Report'}
-          </Link>
-          <Link
-            href={`/montree/dashboard/${childId}/weekly-review`}
-            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
-          >
-            📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
-          </Link>
+        <div className="flex justify-end">
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
       )}
-
-      {/* Guru Chat Icon — directly above Focus Works */}
-      <div className="flex justify-end">
-        <Link
-          href={`/montree/dashboard/guru`}
-          className="px-3 py-2 text-lg bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg transition-colors"
-          title="Ask Guru for advice"
-        >
-          🎓 {t('nav.guru' as any) || 'Guru'}
-        </Link>
-      </div>
 
       {/* FOCUS WORKS — Unified area view with inline Guru advice */}
       <div data-tutorial="focus-section">
@@ -698,8 +660,8 @@ export default function WeekPage() {
       />
       </div>
 
-      {/* Weekly Admin — collapsed by default, for government doc copy-paste */}
-      {!isHomeschoolParent(session) && (
+      {/* Weekly Admin — collapsed by default, Whale Class only (government doc copy-paste) */}
+      {!isHomeschoolParent(session) && session?.classroom?.id === '945c846d-fb33-4370-8a95-a29b7767af54' && (
         <WeeklyAdminCollapsible
           childId={childId}
           childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}

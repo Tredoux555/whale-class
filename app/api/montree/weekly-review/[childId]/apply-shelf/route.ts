@@ -28,8 +28,10 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const limited = await checkRateLimit(`apply-shelf-${auth.userId}`, 20, 86400);
-    if (limited) {
+    const supabase = getSupabase();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/weekly-review/apply-shelf', 20, 1440);
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

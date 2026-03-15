@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         .eq('child_id', child_id),
       supabase
         .from('montree_media')
-        .select('id, storage_path, caption, captured_at')
+        .select('id, storage_path, caption, captured_at, work_id')
         .eq('child_id', child_id)
         .neq('parent_visible', false)
         .gte('captured_at', `${weekStart}T00:00:00.000Z`)
@@ -128,9 +128,30 @@ export async function POST(request: NextRequest) {
       else if (s === 3 || s === 'mastered' || s === 'completed') stats.mastered++;
     }
 
-    // Group week's progress by area
+    // Build set of work names that have photos (photo-centric reports)
+    // Photos can be matched via work_id (from curriculum) or caption (from Week view capture)
+    const workNamesWithPhotos = new Set<string>();
+    if (child.classroom_id) {
+      const { data: curriculumWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name')
+        .eq('classroom_id', child.classroom_id);
+      const workIdToName = new Map<string, string>();
+      for (const w of curriculumWorks || []) {
+        workIdToName.set(w.id, w.name);
+      }
+      for (const m of mediaItems || []) {
+        const workName = m.work_id ? workIdToName.get(m.work_id) : m.caption;
+        if (workName) workNamesWithPhotos.add(workName.toLowerCase());
+      }
+    }
+
+    // Group week's progress by area — ONLY include works with photos
+    // Reports are photo-centric: no photo = not in report
     const worksByArea: Record<string, string[]> = {};
     for (const p of weekProgress || []) {
+      // Skip works without photos
+      if (!workNamesWithPhotos.has((p.work_name || '').toLowerCase())) continue;
       if (!worksByArea[p.area]) worksByArea[p.area] = [];
       if (!worksByArea[p.area].includes(p.work_name)) {
         worksByArea[p.area].push(p.work_name);
@@ -161,9 +182,10 @@ export async function POST(request: NextRequest) {
         }))
       : [];
 
-    // Build the report content
-    const worksThisWeek = weekProgress?.length || 0;
-    const hasActivity = worksThisWeek > 0 || (focusWorks?.length || 0) > 0;
+    // Build the report content — count only photo-backed works
+    const worksThisWeek = Object.values(worksByArea).reduce((sum, works) => sum + works.length, 0);
+    // Photo-centric: only count works with photos as "activity"
+    const hasActivity = worksThisWeek > 0 || photos.length > 0;
 
     // Greeting — using i18n keys
     const greeting = hasActivity
