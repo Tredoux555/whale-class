@@ -62,7 +62,7 @@ function GuruContent() {
     const fetches: Promise<void>[] = [
       // Fetch children
       fetch(`/api/montree/children?classroom_id=${sess.classroom?.id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
         .then(data => {
           const kids = data.children || [];
           setChildren(kids);
@@ -84,7 +84,7 @@ function GuruContent() {
     if (isParentUser) {
       fetches.push(
         fetch('/api/montree/guru/status')
-          .then(r => r.json())
+          .then(r => { if (!r.ok) throw new Error(`Guru status: ${r.status}`); return r.json(); })
           .then(data => {
             if (data.success) {
               setGuruStatus(data);
@@ -105,6 +105,7 @@ function GuruContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
+      if (!res.ok) throw new Error(`Checkout failed: ${res.status}`);
       const data = await res.json();
       if (data.success && data.checkout_url) {
         window.location.href = data.checkout_url;

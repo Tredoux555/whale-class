@@ -262,6 +262,7 @@ export async function POST(request: NextRequest) {
           .from('montree_guru_interactions')
           .select('id', { count: 'exact', head: true })
           .eq('teacher_id', teacherId)
+          .not('question', 'like', 'photo:%')
           .gte('asked_at', todayStartUTC.toISOString()),
       ]);
 
@@ -1167,6 +1168,7 @@ export async function GET(request: NextRequest) {
       .from('montree_guru_interactions')
       .select('id, asked_at, question, question_type, response_insight, response_action_plan, outcome')
       .eq('child_id', childId)
+      .not('question', 'like', 'photo:%')
       .order('asked_at', { ascending: false })
       .limit(limit);
 

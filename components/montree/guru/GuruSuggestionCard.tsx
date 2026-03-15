@@ -25,7 +25,7 @@ export default function GuruSuggestionCard({ childId, childName }: GuruSuggestio
     }
 
     fetch(`/api/montree/guru/suggestions?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Suggestions: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success && data.suggestion) {
           setSuggestion(data.suggestion);

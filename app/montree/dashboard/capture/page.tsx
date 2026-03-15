@@ -215,7 +215,7 @@ function CaptureContent() {
 
     // Step 4: Fire-and-forget upload (fetch survives page navigation)
     fetch('/api/montree/media/upload', { method: 'POST', body: formData })
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`Upload failed: ${res.status}`); return res.json(); })
       .then(result => {
         if (result.success && result.media?.id && idsToTag.length === 1) {
           // Auto-trigger Smart Capture for single-child photos

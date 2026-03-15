@@ -118,7 +118,7 @@ export default function TeacherMessagesPage() {
     // Reload messages
     if (session?.classroom?.id) {
       fetch(`/api/montree/messages?classroom_id=${session.classroom.id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`Messages reload: ${r.status}`); return r.json(); })
         .then(data => setMessages(data.messages || []))
         .catch(error => console.error('Reload error:', error));
     }

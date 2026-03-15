@@ -64,7 +64,7 @@ export default function ReportViewPage() {
     if (!reportId) return;
 
     fetch(`/api/montree/reports/${reportId}?locale=${locale}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Report fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success) {
           setReport(data.report);

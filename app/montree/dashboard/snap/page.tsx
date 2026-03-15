@@ -227,7 +227,7 @@ export default function SnapIdentifyPage() {
 
     if (sess.classroom?.id) {
       montreeApi(`/api/montree/children?classroom_id=${sess.classroom.id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
         .then((data: { children?: Child[] }) => {
           setChildren((data.children || []).sort((a, b) => a.name.localeCompare(b.name)));
         })

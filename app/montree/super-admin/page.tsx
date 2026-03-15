@@ -114,7 +114,7 @@ export default function SuperAdminPage() {
     if (!authenticated) return;
 
     fetch('/api/montree/onboarding/settings')
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Settings fetch: ${r.status}`); return r.json(); })
       .then(setOnboardingSettings)
       .catch(() => {
         // Failed to fetch, use defaults
@@ -255,7 +255,9 @@ export default function SuperAdminPage() {
       });
 
       // Refresh settings
-      const updated = await fetch('/api/montree/onboarding/settings').then(r => r.json());
+      const settingsRes = await fetch('/api/montree/onboarding/settings');
+      if (!settingsRes.ok) throw new Error(`Settings refresh: ${settingsRes.status}`);
+      const updated = await settingsRes.json();
       setOnboardingSettings(updated);
 
       await logAction('onboarding_toggle', { role, enabled });

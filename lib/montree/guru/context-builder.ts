@@ -243,11 +243,12 @@ export async function buildChildContext(
       .gte('observed_at', thirtyDaysAgo.toISOString())
       .order('observed_at', { ascending: false })
       .limit(10),
-    // 5. Past guru interactions
+    // 5. Past guru interactions (exclude photo insight cache entries)
     supabase
       .from('montree_guru_interactions')
       .select('asked_at, question, response_insight, outcome, context_snapshot')
       .eq('child_id', childId)
+      .not('question', 'like', 'photo:%')
       .order('asked_at', { ascending: false })
       .limit(5),
     // 6. Teacher notes from work sessions

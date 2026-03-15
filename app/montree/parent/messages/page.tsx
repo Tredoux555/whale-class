@@ -113,7 +113,7 @@ export default function ParentMessagesPage() {
     // Reload messages
     if (session?.parent?.id) {
       fetch(`/api/montree/messages?parent_id=${session.parent.id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`Messages reload: ${r.status}`); return r.json(); })
         .then(data => setMessages(data.messages || []))
         .catch(error => console.error('Reload error:', error));
     }

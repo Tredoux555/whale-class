@@ -107,7 +107,7 @@ export default function CurriculumBrowsePage() {
       setShowRecommended(true);
       // Fetch first child's progress for recommendations
       fetch(`/api/montree/children?classroom_id=${sess.classroom.id}`)
-        .then(r => r.json())
+        .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
         .then(data => {
           const kids = data.children || [];
           if (kids.length > 0) {
@@ -116,7 +116,7 @@ export default function CurriculumBrowsePage() {
             setChildAge(firstChild.age || 4);
             // Fetch progress
             fetch(`/api/montree/progress?child_id=${firstChild.id}`)
-              .then(r => r.json())
+              .then(r => { if (!r.ok) throw new Error(`Progress fetch: ${r.status}`); return r.json(); })
               .then(pData => {
                 if (pData.progress) {
                   setChildProgress(pData.progress);

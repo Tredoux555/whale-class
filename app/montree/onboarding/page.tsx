@@ -50,7 +50,7 @@ export default function OnboardingPage() {
       // Check if teacher already has students - if so, go to dashboard
       if (parsed.classroom?.id) {
         fetch(`/api/montree/children?classroom_id=${parsed.classroom.id}`)
-          .then(r => r.json())
+          .then(r => { if (!r.ok) throw new Error(`Children fetch: ${r.status}`); return r.json(); })
           .then(data => {
             if (data.children && data.children.length > 0) {
               // Already onboarded - go to dashboard
