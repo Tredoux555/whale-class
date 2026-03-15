@@ -60,6 +60,7 @@ function CaptureContent() {
     preSelectedChildId ? [preSelectedChildId] : []
   );
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
@@ -118,14 +119,60 @@ function CaptureContent() {
   // UPLOAD + SMART CAPTURE
   // ============================================
 
-  const doUploadAndAnalyze = (media: CapturedMedia, childIds: string[]) => {
+  const doUploadAndAnalyze = async (media: CapturedMedia, childIds: string[]) => {
     const idsToTag = isClassMode ? children.map(c => c.id) : childIds;
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
 
-    toast.success(`${label} saved! Uploading...`, { duration: 2000 });
+    setIsUploading(true);
 
-    // Navigate back immediately
+    // IMPORTANT: Upload FIRST, navigate AFTER.
+    // uploadPhoto() uses Canvas API for compression/thumbnails — these DOM operations
+    // fail silently if we navigate away first (page teardown destroys DOM context).
+    // The fetch() itself survives navigation, but compression must complete first.
+
+    pendingUploadsRef.current++;
+
+    const uploadOpts = {
+      school_id: schoolId || 'default-school',
+      classroom_id: classroomId || undefined,
+      child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+      child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+      is_class_photo: isClassMode,
+      work_id: workId || undefined,
+      caption: workName || undefined,
+      tags: workArea ? [workArea] : undefined,
+    };
+
+    // Start upload (compression + fetch) — await it so DOM stays alive during Canvas ops
+    const uploadPromise = isVideo
+      ? uploadVideo(media.data as CapturedVideo, uploadOpts)
+      : uploadPhoto(media.data as CapturedPhoto, uploadOpts);
+
+    // Wait for the upload to fully complete BEFORE navigating
+    // This ensures compression (Canvas API) and the fetch both finish while DOM is alive
+    try {
+      const result = await uploadPromise;
+      pendingUploadsRef.current--;
+
+      if (result.success) {
+        toast.success(`${label} saved!`, { duration: 2000 });
+
+        // Auto-trigger Smart Capture for single-child photos
+        if (!isVideo && result.media?.id && idsToTag.length === 1) {
+          const currentLocale = localStorage.getItem('montree_lang') || 'en';
+          startAnalysis(result.media.id, idsToTag[0], currentLocale);
+        }
+      } else {
+        toast.error(`${label} failed: ${result.error || 'Upload error'}`, { duration: 5000 });
+      }
+    } catch (err) {
+      pendingUploadsRef.current--;
+      console.error('Upload error:', err);
+      toast.error(`${label} upload failed`, { duration: 5000 });
+    }
+
+    // Navigate AFTER upload completes
     if (preSelectedChildId) {
       router.push(`/montree/dashboard/${preSelectedChildId}`);
     } else if (childIds.length === 1) {
@@ -133,52 +180,6 @@ function CaptureContent() {
     } else {
       router.push('/montree/dashboard');
     }
-
-    // Fire-and-forget upload
-    pendingUploadsRef.current++;
-
-    const uploadPromise = isVideo
-      ? uploadVideo(media.data as CapturedVideo, {
-          school_id: schoolId || 'default-school',
-          classroom_id: classroomId || undefined,
-          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
-          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-          is_class_photo: isClassMode,
-          work_id: workId || undefined,
-          caption: workName || undefined,
-          tags: workArea ? [workArea] : undefined,
-        })
-      : uploadPhoto(media.data as CapturedPhoto, {
-          school_id: schoolId || 'default-school',
-          classroom_id: classroomId || undefined,
-          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
-          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-          is_class_photo: isClassMode,
-          work_id: workId || undefined,
-          caption: workName || undefined,
-          tags: workArea ? [workArea] : undefined,
-        });
-
-    uploadPromise
-      .then(result => {
-        pendingUploadsRef.current--;
-        if (result.success) {
-          toast.success(`${label} saved`, { duration: 2000 });
-          // Auto-trigger Smart Capture for single-child photos
-          if (!isVideo && result.media?.id && idsToTag.length === 1) {
-            const currentLocale = localStorage.getItem('montree_lang') || 'en';
-            startAnalysis(result.media.id, idsToTag[0], currentLocale);
-            toast(`🔍 ${t('photoInsight.analyzing') || 'Identifying work...'}`, { duration: 3000 });
-          }
-        } else {
-          toast.error(`${label} upload failed: ${result.error}`, { duration: 5000 });
-        }
-      })
-      .catch(err => {
-        pendingUploadsRef.current--;
-        console.error('Background upload error:', err);
-        toast.error(`${label} upload failed`, { duration: 5000 });
-      });
   };
 
   // ============================================
@@ -233,6 +234,30 @@ function CaptureContent() {
   // ============================================
   // RENDER
   // ============================================
+
+  // Uploading overlay (shown on top of camera or tagging screen)
+  if (isUploading) {
+    const previewUrl = capturedMedia?.type === 'photo'
+      ? (capturedMedia.data as CapturedPhoto).dataUrl
+      : null;
+
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
+        <Toaster position="top-center" />
+        {previewUrl && (
+          <div className="absolute inset-0">
+            <img src={previewUrl} alt="" className="w-full h-full object-cover opacity-20" />
+          </div>
+        )}
+        <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-400 border-t-transparent" />
+          <p className="text-white text-lg font-medium">
+            {t('capture.uploading') || 'Saving photo...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Step 1: Camera (opens immediately)
   if (step === 'camera') {
