@@ -44,7 +44,7 @@ export default function WorkDetailPage() {
   useEffect(() => {
     if (!workId) return;
     fetch(`/api/montree/community/works/${workId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Work fetch: ${r.status}`); return r.json(); })
       .then(d => setWork(d.work))
       .catch(() => {})
       .finally(() => setLoading(false));

@@ -30,7 +30,7 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
     setError(null);
 
     fetch(`/api/montree/guru/concern?child_id=${childId}&concern_id=${concernId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Concern fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success) {
           setGuide(data.guide);
@@ -153,7 +153,7 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
                 setLoading(true);
                 setError(null);
                 fetch(`/api/montree/guru/concern?child_id=${childId}&concern_id=${concernId}`)
-                  .then(r => r.json())
+                  .then(r => { if (!r.ok) throw new Error(`Concern fetch: ${r.status}`); return r.json(); })
                   .then(data => {
                     if (data.success) setGuide(data.guide);
                     else setError(data.error || 'Failed');

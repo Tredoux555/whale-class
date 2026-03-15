@@ -32,7 +32,7 @@ export default function ProgressDetailPage() {
   useEffect(() => {
     if (!childId) return;
     fetch(`/api/montree/progress/summary?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Progress summary: ${r.status}`); return r.json(); })
       .then(data => {
         setProgress(data.progress || []);
         setLoading(false);

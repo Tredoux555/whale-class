@@ -34,6 +34,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
     }
 
+    // Verify school_id matches authenticated user's school
+    if (school_id !== auth.schoolId) {
+      return NextResponse.json({ error: 'school_id mismatch' }, { status: 403 });
+    }
+
     // Verify child belongs to the authenticated user's school
     if (child_id) {
       const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);

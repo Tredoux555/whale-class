@@ -133,7 +133,7 @@ export default function ProfilePage() {
 
     // Fetch child info
     fetch(`/api/montree/children/${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Child fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.child) setChild(data.child);
       })
@@ -141,7 +141,7 @@ export default function ProfilePage() {
 
     // Fetch profile
     fetch(`/api/montree/children/${childId}/profile`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Profile fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.profile) {
           setProfile(data.profile);

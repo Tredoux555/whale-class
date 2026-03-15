@@ -94,7 +94,7 @@ export default function ObservationsPage() {
 
     // Fetch child info
     fetch(`/api/montree/children/${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Child fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.child) setChild(data.child);
       })

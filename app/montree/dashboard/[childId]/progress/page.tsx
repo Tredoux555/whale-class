@@ -257,6 +257,8 @@ export default function ProgressPage() {
                   classroomId={session?.classroom?.id}
                   onProgressUpdate={debouncedFetchAll}
                   onTeachWork={(data) => setTeachModalData(data)}
+                  onAddToClassroom={() => debouncedFetchAll()}
+                  onAddToShelf={() => debouncedFetchAll()}
                 />
               </div>
             ))}

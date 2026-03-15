@@ -61,7 +61,7 @@ export default function ClassroomOverviewPage() {
 
     const controller = new AbortController();
     montreeApi(`/api/montree/focus-works/batch?classroom_id=${sess.classroom.id}`, { signal: controller.signal })
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`Batch fetch: ${res.status}`); return res.json(); })
       .then(data => {
         if (data.success) {
           setChildren(data.children || []);

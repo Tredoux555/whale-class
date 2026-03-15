@@ -51,7 +51,7 @@ export default function VoiceObservationPage() {
 
     // Check feature toggle
     montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`Feature check: ${res.status}`); return res.json(); })
       .then(data => {
         const voiceFeature = data.features?.find((f: any) => f.feature_key === 'voice_observations');
         setFeatureEnabled(voiceFeature?.enabled || false);
@@ -60,7 +60,7 @@ export default function VoiceObservationPage() {
 
     // Load history
     montreeApi('/api/montree/voice-observation/history?limit=10')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`History fetch: ${res.status}`); return res.json(); })
       .then(data => {
         setHistory(data.sessions || []);
       })
@@ -134,7 +134,7 @@ export default function VoiceObservationPage() {
     toast.success(t('voiceObs.commitSuccess'));
     // Refresh history
     montreeApi('/api/montree/voice-observation/history?limit=10')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error(`History refresh: ${res.status}`); return res.json(); })
       .then(data => setHistory(data.sessions || []))
       .catch((err) => { console.error('[voice-obs] History refresh error:', err); });
   }, []);

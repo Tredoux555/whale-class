@@ -12,6 +12,7 @@ import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
+import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import type { MontreeMedia } from '@/lib/montree/media/types';
@@ -74,6 +75,9 @@ export default function GalleryPage() {
 
   // Photo detail expansion
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
+
+  // Teach Guru Work modal state (correction flow from Smart Capture)
+  const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -533,6 +537,9 @@ export default function GalleryPage() {
               childId={childId}
               classroomId={session?.classroom?.id}
               onProgressUpdate={handleProgressUpdate}
+              onTeachWork={(data) => setTeachModalData(data)}
+              onAddToClassroom={() => fetchPhotos()}
+              onAddToShelf={() => fetchPhotos()}
             />
           </div>
 
@@ -893,6 +900,19 @@ export default function GalleryPage() {
         currentIndex={lightboxIndex}
         onNavigate={(idx) => setLightboxIndex(idx)}
       />
+
+      {/* Teach Guru Work Modal — correction flow when Smart Capture misidentifies */}
+      {teachModalData && session?.classroom?.id && (
+        <TeachGuruWorkModal
+          isOpen={true}
+          onClose={() => setTeachModalData(null)}
+          initialWorkName={teachModalData.workName}
+          initialArea={teachModalData.area}
+          mediaId={teachModalData.mediaId}
+          classroomId={session.classroom.id}
+          onWorkSaved={() => { setTeachModalData(null); fetchPhotos(); }}
+        />
+      )}
     </div>
   );
 }

@@ -15,7 +15,7 @@ export default function EndOfDayNudge({ childId, childName }: EndOfDayNudgeProps
 
   useEffect(() => {
     fetch(`/api/montree/guru/end-of-day?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`End of day: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success && data.nudge) {
           setNudge(data.nudge);

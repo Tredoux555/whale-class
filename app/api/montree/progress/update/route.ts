@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
       .from('montree_children')
       .select('id, classroom_id')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       console.error('[progress/update] Child not found:', child_id);
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
           .select('id')
           .eq('child_id', child_id)
           .eq('work_name', workNameToSave)
-          .single();
+          .maybeSingle();
 
         if (existing) {
           // Update

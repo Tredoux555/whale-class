@@ -190,6 +190,8 @@ export default function RazTrackerPage() {
         fetch(`/api/montree/children?classroom_id=${session.classroom.id}`, { signal }),
         fetch(`/api/montree/raz?classroom_id=${session.classroom.id}&date=${selectedDate}`, { signal }),
       ]);
+      if (!childRes.ok) throw new Error(`Children fetch: ${childRes.status}`);
+      if (!razRes.ok) throw new Error(`RAZ fetch: ${razRes.status}`);
       const childData = await childRes.json();
       const razData = await razRes.json();
       setChildren(sortChildrenForRaz(childData.children || []));

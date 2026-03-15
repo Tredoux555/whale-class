@@ -23,7 +23,7 @@ export default function WeeklyReview({ childId, childName }: WeeklyReviewProps) 
 
     setLoading(true);
     fetch(`/api/montree/guru/weekly-review?child_id=${childId}`)
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(`Weekly review: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success && data.review) {
           setReview(data.review);

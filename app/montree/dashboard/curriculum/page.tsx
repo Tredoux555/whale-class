@@ -57,6 +57,7 @@ export default function CurriculumPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/montree/curriculum?classroom_id=${session.classroom.id}`);
+      if (!res.ok) throw new Error(`Curriculum fetch: ${res.status}`);
       const data = await res.json();
       setCurriculum(data.curriculum || []);
       setByArea(data.byArea || {});
@@ -101,11 +102,12 @@ export default function CurriculumPage() {
       const res = await fetch('/api/montree/curriculum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          classroom_id: session.classroom.id, 
+        body: JSON.stringify({
+          classroom_id: session.classroom.id,
           action: 'seed_from_brain'
         })
       });
+      if (!res.ok) throw new Error(`Import failed: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         toast.success(`${data.seeded} ${t('curriculum.works')}!`);
@@ -132,6 +134,7 @@ export default function CurriculumPage() {
           work_id: work.id,
         })
       });
+      if (!res.ok) throw new Error(`Delete failed: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         toast.success(t('curriculum.workDeleted'));
@@ -158,6 +161,7 @@ export default function CurriculumPage() {
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
       if (locale === 'zh') url += '&locale=zh';
       const res = await fetch(url);
+      if (!res.ok) throw new Error(`Guide fetch: ${res.status}`);
       const data = await res.json();
       setFullDetailsData(data);
     } catch {

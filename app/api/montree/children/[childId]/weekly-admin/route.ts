@@ -236,7 +236,9 @@ export async function POST(
 
   // Verify child belongs to school
   const childCheck = await verifyChildBelongsToSchool(childId, auth.schoolId);
-  if (childCheck instanceof NextResponse) return childCheck;
+  if (!childCheck.allowed) {
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+  }
 
   try {
     const body = await request.json();
@@ -393,7 +395,9 @@ export async function GET(
   const { childId } = await params;
 
   const childCheck = await verifyChildBelongsToSchool(childId, auth.schoolId);
-  if (childCheck instanceof NextResponse) return childCheck;
+  if (!childCheck.allowed) {
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+  }
 
   const supabase = getSupabase();
   const { data: child, error } = await supabase
