@@ -170,10 +170,10 @@ export default function DashboardHeader() {
 
           {/* Primary tools — always visible */}
           <Link
-            href="/montree/dashboard/snap"
-            data-guide="nav-snap"
+            href="/montree/dashboard/capture"
+            data-guide="nav-capture"
             className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
-            title={t('snap.title') || 'Snap & Identify'}
+            title={t('capture.takePhoto')}
           >
             📸
           </Link>

@@ -13,6 +13,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import ChildSelector from '@/components/montree/media/ChildSelector';
 import { uploadPhoto, uploadVideo, getProgressMessage, getProgressColor } from '@/lib/montree/media/upload';
+import { startAnalysis } from '@/lib/montree/photo-insight-store';
 import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia, UploadProgress } from '@/lib/montree/media/types';
 
 
@@ -214,6 +215,14 @@ function CaptureContent() {
         pendingUploadsRef.current--;
         if (result.success) {
           toast.success(`${label} saved`, { duration: 2000 });
+
+          // Auto-trigger Smart Capture analysis for photos (not videos)
+          // The store is module-level — survives navigation, results appear in gallery/progress
+          if (!isVideo && result.media?.id && idsToTag.length === 1) {
+            const currentLocale = localStorage.getItem('montree_lang') || 'en';
+            startAnalysis(result.media.id, idsToTag[0], currentLocale);
+            toast(`🔍 ${t('photoInsight.analyzing') || 'Identifying work...'}`, { duration: 3000 });
+          }
         } else {
           toast.error(`${label} upload failed: ${result.error}`, { duration: 5000 });
         }
