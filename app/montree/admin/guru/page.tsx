@@ -167,32 +167,32 @@ export default function GuruPage() {
     const date = new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
     if (reportMode === 'home_plan') {
-      lines.push(`HOME ACTION PLAN FOR ${selected.name.toUpperCase()}`);
+      lines.push(`${t('admin.guru.printHomeActionPlan')} ${selected.name.toUpperCase()}`);
       lines.push(`${selected.classroom_icon} ${selected.classroom_name} · ${schoolName}`);
-      lines.push(`Prepared: ${date}`);
+      lines.push(`${t('admin.guru.printPrepared')}: ${date}`);
       lines.push('─'.repeat(50));
     } else if (reportMode === 'parent') {
-      lines.push(`PROGRESS UPDATE — ${selected.name.toUpperCase()}`);
+      lines.push(`${t('admin.guru.printProgressUpdate')} — ${selected.name.toUpperCase()}`);
       lines.push(`${selected.classroom_icon} ${selected.classroom_name} · ${schoolName}`);
-      lines.push(`Date: ${date}`);
+      lines.push(`${t('admin.guru.printDate')}: ${date}`);
       lines.push('─'.repeat(50));
     } else {
-      lines.push(`PRINCIPAL REPORT — ${selected.name.toUpperCase()}`);
+      lines.push(`${t('admin.guru.printPrincipalReport')} — ${selected.name.toUpperCase()}`);
       lines.push(`${selected.classroom_icon} ${selected.classroom_name} · ${schoolName}`);
-      lines.push(`Date: ${date}`);
+      lines.push(`${t('admin.guru.printDate')}: ${date}`);
       lines.push('─'.repeat(50));
     }
 
     lines.push('');
 
     if (guruResponse.insight) {
-      lines.push('OVERVIEW');
+      lines.push(t('admin.guru.printOverview'));
       lines.push(guruResponse.insight);
       lines.push('');
     }
 
     if (guruResponse.action_plan?.length) {
-      lines.push(reportMode === 'home_plan' ? 'ACTIVITIES FOR HOME' : 'RECOMMENDATIONS');
+      lines.push(reportMode === 'home_plan' ? t('admin.guru.printActivitiesForHome') : t('admin.guru.printRecommendations'));
       guruResponse.action_plan.forEach((a, i) => {
         lines.push(`${i + 1}. ${a.action}`);
         if (a.details) lines.push(`   ${a.details}`);
@@ -201,13 +201,13 @@ export default function GuruPage() {
     }
 
     if (guruResponse.timeline) {
-      lines.push('TIMELINE');
+      lines.push(t('admin.guru.printTimeline'));
       lines.push(guruResponse.timeline);
       lines.push('');
     }
 
     if (guruResponse.parent_talking_point) {
-      lines.push('NOTE FOR PARENTS');
+      lines.push(t('admin.guru.printNoteForParents'));
       lines.push(`"${guruResponse.parent_talking_point}"`);
       lines.push('');
     }
@@ -260,7 +260,7 @@ export default function GuruPage() {
 
     // Overview / Insight
     if (guruResponse?.insight) {
-      printWindow.document.write('<h2>Overview</h2>');
+      printWindow.document.write(`<h2>${t('admin.guru.printOverviewHtml')}</h2>`);
       printWindow.document.write(`<p>${escHtml(guruResponse.insight)}</p>`);
     }
 
@@ -272,7 +272,7 @@ export default function GuruPage() {
 
     // Action plan / Activities
     if (guruResponse?.action_plan?.length) {
-      printWindow.document.write(`<h2>${reportMode === 'home_plan' ? 'Activities for Home' : 'Recommendations'}</h2>`);
+      printWindow.document.write(`<h2>${reportMode === 'home_plan' ? t('admin.guru.printActivitiesForHomeHtml') : t('admin.guru.printRecommendationsHtml')}</h2>`);
       guruResponse.action_plan.forEach((a, i) => {
         printWindow.document.write(`<div class="action-item"><span class="action-num">${i + 1}. ${escHtml(a.action)}</span>`);
         if (a.details) printWindow.document.write(`<p class="action-detail">${escHtml(a.details)}</p>`);
@@ -282,13 +282,13 @@ export default function GuruPage() {
 
     // Timeline
     if (guruResponse?.timeline) {
-      printWindow.document.write('<h2>Timeline</h2>');
+      printWindow.document.write(`<h2>${t('admin.guru.printTimelineHtml')}</h2>`);
       printWindow.document.write(`<p>${escHtml(guruResponse.timeline)}</p>`);
     }
 
     // Parent talking point
     if (guruResponse?.parent_talking_point) {
-      printWindow.document.write('<h2>Note for Parents</h2>');
+      printWindow.document.write(`<h2>${t('admin.guru.printNoteForParentsHtml')}</h2>`);
       printWindow.document.write(`<div class="quote">"${escHtml(guruResponse.parent_talking_point)}"</div>`);
     }
 

@@ -5,6 +5,7 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n/context';
 import { ALL_PHASES, SIGHT_WORDS, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
@@ -18,20 +19,23 @@ function getSeriesInfo(phaseId: string): { series: string; color: string; bgClas
   return { series: '?', color: '#666', bgClass: 'bg-gray-700' };
 }
 
-const GENERATORS = [
-  { href: '/montree/library/tools/phonics-fast/pink-box', icon: '🩷', label: 'Pink Box', desc: 'AMI material prep system — presentation guide, exercises, 3-part cards, object labels, command cards, movable alphabet mat, shopping list' },
-  { href: '/montree/library/tools/phonics-fast/blue-box', icon: '💙', label: 'Blue Box', desc: 'AMI material prep system — presentation guide, exercises, blend chart, sorting mat, 3-part cards, command cards, shopping list' },
-  { href: '/montree/library/tools/phonics-fast/three-part-cards', icon: '🃏', label: '3-Part Cards', desc: 'Auto-generate nomenclature cards from word lists' },
-  { href: '/montree/library/tools/phonics-fast/labels', icon: '🏷️', label: 'Labels', desc: 'Print labels for movable alphabet matching' },
-  { href: '/montree/library/tools/phonics-fast/command-cards', icon: '📋', label: 'Command Cards', desc: '"Put the cat on the mat" style reading cards' },
-  { href: '/montree/library/tools/phonics-fast/dictionary', icon: '📖', label: 'Dictionary', desc: 'My First Dictionary with phonics words' },
-  { href: '/montree/library/tools/phonics-fast/bingo', icon: '🎯', label: 'Bingo', desc: 'Picture + Word bingo boards' },
-  { href: '/montree/library/tools/phonics-fast/reverse-bingo', icon: '🔄', label: 'Reverse Bingo', desc: 'Picture cards call, word boards answer — forces reading!' },
-  { href: '/montree/library/tools/phonics-fast/sentence-cards', icon: '📝', label: 'Sentence Cards', desc: 'Simple sentences with picture support' },
-  { href: '/montree/library/tools/phonics-fast/stories', icon: '📚', label: 'Short Stories', desc: 'Decodable stories with comprehension pictures' },
-];
+function getGenerators(t: any) {
+  return [
+    { href: '/montree/library/tools/phonics-fast/pink-box', icon: '🩷', label: t('library.phonicsPinkBox'), desc: t('library.phonicsPinkBoxDesc') },
+    { href: '/montree/library/tools/phonics-fast/blue-box', icon: '💙', label: t('library.phonicsBlueBox'), desc: t('library.phonicsBlueBoxDesc') },
+    { href: '/montree/library/tools/phonics-fast/three-part-cards', icon: '🃏', label: t('library.phonics3PartCards'), desc: t('library.phonics3PartCardsDesc') },
+    { href: '/montree/library/tools/phonics-fast/labels', icon: '🏷️', label: t('library.phonicsLabels'), desc: t('library.phonicsLabelsDesc') },
+    { href: '/montree/library/tools/phonics-fast/command-cards', icon: '📋', label: t('library.phonicsCommandCards'), desc: t('library.phonicsCommandCardsDesc') },
+    { href: '/montree/library/tools/phonics-fast/dictionary', icon: '📖', label: t('library.phonicsDictionary'), desc: t('library.phonicsDictionaryDesc') },
+    { href: '/montree/library/tools/phonics-fast/bingo', icon: '🎯', label: t('library.phonicsBingo'), desc: t('library.phonicsBingoDesc') },
+    { href: '/montree/library/tools/phonics-fast/reverse-bingo', icon: '🔄', label: t('library.phonicsReverseBingo'), desc: t('library.phonicsReverseBingoDesc') },
+    { href: '/montree/library/tools/phonics-fast/sentence-cards', icon: '📝', label: t('library.phonicsSentenceCards'), desc: t('library.phonicsSentenceCardsDesc') },
+    { href: '/montree/library/tools/phonics-fast/stories', icon: '📚', label: t('library.phonicsShortStories'), desc: t('library.phonicsShortStoriesDesc') },
+  ];
+}
 
 export default function PhonicsHubPage() {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<string>(ALL_PHASES[0]?.id || 'pink1');
 
   // Compute word counts dynamically from ALL_PHASES
@@ -54,13 +58,13 @@ export default function PhonicsHubPage() {
       <header className="bg-[#0D3330] text-white">
         <div className="max-w-5xl mx-auto px-4 py-6">
           <Link href="/montree/library/tools" className="text-emerald-300 text-sm hover:underline">
-            ← Content Creation Tools
+            {t('library.contentCreationToolsBack')}
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold mt-2">
-            Fast Phonics
+            {t('library.phonicsFastTitle')}
           </h1>
           <p className="text-emerald-200 mt-1">
-            {totalWords} words across {ALL_PHASES.length} phases — complete Montessori phonics progression
+            {totalWords} {t('library.phonicsWordsAcross')} {ALL_PHASES.length} {t('library.phonicsPhases')}
           </p>
           <div className="flex flex-wrap gap-2 mt-3 text-sm">
             {ALL_PHASES.map(phase => {
@@ -107,7 +111,7 @@ export default function PhonicsHubPage() {
             }`}
             style={{ borderBottomWidth: '3px', borderBottomStyle: 'solid', borderBottomColor: activeTab === 'tools' ? '#10b981' : 'transparent' }}
           >
-            🛠️ Generators
+            🛠️ {t('library.phonicsGenerators')}
           </button>
         </div>
       </div>
@@ -507,13 +511,16 @@ function WordCard({ word, photoMap }: { word: PhonicsWord; photoMap: Map<string,
 // =====================================================================
 
 function ToolsTab() {
+  const { t } = useI18n();
+  const generators = getGenerators(t);
+
   return (
     <div>
-      <h2 className="text-xl font-bold text-gray-800 mb-2">Content Generators</h2>
-      <p className="text-gray-600 mb-6">Auto-generate printable materials from the phonics word lists above.</p>
+      <h2 className="text-xl font-bold text-gray-800 mb-2">{t('library.phonicsContentGenerators')}</h2>
+      <p className="text-gray-600 mb-6">{t('library.phonicsGenerateDescription')}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {GENERATORS.map(gen => (
+        {generators.map(gen => (
           <Link
             key={gen.href}
             href={gen.href}
@@ -533,8 +540,8 @@ function ToolsTab() {
 
       {/* Sight words reference */}
       <div className="mt-8 p-5 bg-amber-50 rounded-xl border border-amber-200">
-        <h3 className="font-bold text-amber-800 mb-2">Sight Words Reference</h3>
-        <p className="text-sm text-amber-700 mb-3">These high-frequency words appear in sentence cards and stories alongside phonics words.</p>
+        <h3 className="font-bold text-amber-800 mb-2">{t('library.phonicsSightWordsReference')}</h3>
+        <p className="text-sm text-amber-700 mb-3">{t('library.phonicsSightWordsDescription')}</p>
         <div className="flex flex-wrap gap-2">
           {SIGHT_WORDS.map(w => (
             <span key={w} className="text-sm bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-medium">
