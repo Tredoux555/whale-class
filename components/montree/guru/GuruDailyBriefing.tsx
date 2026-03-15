@@ -19,6 +19,7 @@ export default function GuruDailyBriefing({ childId, childName }: GuruDailyBrief
     setError(null);
     try {
       const res = await fetch(`/api/montree/guru/daily-plan?child_id=${childId}`);
+      if (!res.ok) throw new Error(`Daily plan fetch failed: ${res.status}`);
       const data = await res.json();
       if (data.success) {
         setPlan(data.plan);

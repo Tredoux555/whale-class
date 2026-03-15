@@ -34,12 +34,12 @@ export async function GET(request: NextRequest) {
     // Prevents cross-school data leakage if token contains a mismatched classroomId
     let classroom: { id: string; name: string; age_group: string | null } | null = null;
     if (classroomRes.data) {
-      if (classroomRes.data.school_id && classroomRes.data.school_id !== schoolId) {
-        console.warn(`[auth/me] Classroom ${classroomId} does not belong to school ${schoolId} — clearing`);
-      } else {
+      if (classroomRes.data.school_id === schoolId) {
         // Strip school_id from response (internal field, not needed by client)
         const { school_id: _sid, ...rest } = classroomRes.data;
         classroom = rest;
+      } else {
+        console.warn(`[auth/me] Classroom ${classroomId} does not belong to school ${schoolId} — clearing`);
       }
     }
 

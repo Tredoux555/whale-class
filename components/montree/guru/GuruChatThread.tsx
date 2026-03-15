@@ -78,6 +78,7 @@ export default function GuruChatThread({
         if (isTeacher) {
           // Fetch chat history
           const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
+          if (!histRes.ok) throw new Error(`History fetch failed: ${histRes.status}`);
           const histData = await histRes.json();
 
           if (histData.success && histData.history && histData.history.length > 0) {
@@ -108,6 +109,7 @@ export default function GuruChatThread({
 
         // Parent flow — fetch concerns for onboarding check
         const concernsRes = await fetch(`/api/montree/guru/concerns?child_id=${childId}`, { signal: abortController.signal });
+        if (!concernsRes.ok) throw new Error(`Concerns fetch failed: ${concernsRes.status}`);
         const concernsData = await concernsRes.json();
 
         if (concernsData.success && concernsData.onboarded) {
@@ -115,6 +117,7 @@ export default function GuruChatThread({
 
           // Fetch chat history
           const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
+          if (!histRes.ok) throw new Error(`History fetch failed: ${histRes.status}`);
           const histData = await histRes.json();
 
           if (histData.success && histData.history) {

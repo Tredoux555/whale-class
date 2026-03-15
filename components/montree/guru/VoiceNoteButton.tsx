@@ -62,6 +62,7 @@ export default function VoiceNoteButton({ onTranscription, disabled }: VoiceNote
             method: 'POST',
             body: formData,
           });
+          if (!res.ok) throw new Error(`Transcription failed: ${res.status}`);
 
           const data = await res.json();
           if (data.success && data.text) {
