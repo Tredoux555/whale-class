@@ -4,7 +4,7 @@
 // States: onboarding (no concerns, parents only) → chat (concerns saved)
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import ChatBubble from './ChatBubble';
@@ -48,6 +48,8 @@ export default function GuruChatThread({
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const streamBufferRef = useRef('');
+  const streamFlushTimerRef = useRef<NodeJS.Timeout | null>(null);
   const firstName = childName.split(' ')[0];
 
   // Auto-scroll to bottom when messages change
@@ -299,6 +301,29 @@ export default function GuruChatThread({
           timestamp: new Date().toISOString(),
         }]);
 
+        // Helper: flush accumulated buffer to state with debounce
+        const flushStreamBuffer = () => {
+          if (streamBufferRef.current) {
+            streamedText += streamBufferRef.current;
+            // Update the message content with accumulated text
+            setMessages(prev => prev.map(msg =>
+              msg.id === guruMsgId ? { ...msg, content: streamedText } : msg
+            ));
+            streamBufferRef.current = '';
+          }
+        };
+
+        // Helper: schedule flush with 100ms debounce
+        const scheduleFlush = () => {
+          if (streamFlushTimerRef.current) {
+            clearTimeout(streamFlushTimerRef.current);
+          }
+          streamFlushTimerRef.current = setTimeout(() => {
+            flushStreamBuffer();
+            streamFlushTimerRef.current = null;
+          }, 100);
+        };
+
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
@@ -320,11 +345,10 @@ export default function GuruChatThread({
               try {
                 const event = JSON.parse(jsonStr);
                 if (event.type === 'text' && event.text) {
-                  streamedText += event.text;
-                  // Update the message content incrementally
-                  setMessages(prev => prev.map(msg =>
-                    msg.id === guruMsgId ? { ...msg, content: streamedText } : msg
-                  ));
+                  // Accumulate text in buffer instead of updating state immediately
+                  streamBufferRef.current += event.text;
+                  // Schedule a debounced flush
+                  scheduleFlush();
                 } else if (event.type === 'error') {
                   toast.error(t('guru.failedResponse'));
                 } else if (event.type === 'done') {
@@ -338,6 +362,13 @@ export default function GuruChatThread({
         } finally {
           reader.releaseLock();
         }
+
+        // Final flush of any remaining buffered text
+        if (streamFlushTimerRef.current) {
+          clearTimeout(streamFlushTimerRef.current);
+          streamFlushTimerRef.current = null;
+        }
+        flushStreamBuffer();
 
         clearTimeout(timeout);
 
@@ -477,21 +508,23 @@ export default function GuruChatThread({
   }
 
   // Theme colors — teachers get violet/indigo, parents get botanical green
-  const headerGradient = isTeacher
-    ? 'bg-gradient-to-r from-violet-600 to-indigo-700'
-    : 'bg-gradient-to-r from-[#0D3330] to-[#164340]';
-  const guruIcon = isTeacher ? '🎓' : '🌿';
-  const bgClass = isTeacher
-    ? 'bg-gradient-to-br from-violet-50 to-indigo-50'
-    : HOME_THEME.pageBgGradient;
-  const accentColor = isTeacher ? 'violet' : '[#0D3330]';
+  const themeClasses = useMemo(() => ({
+    headerGradient: isTeacher
+      ? 'bg-gradient-to-r from-violet-600 to-indigo-700'
+      : 'bg-gradient-to-r from-[#0D3330] to-[#164340]',
+    guruIcon: isTeacher ? '🎓' : '🌿',
+    bgClass: isTeacher
+      ? 'bg-gradient-to-br from-violet-50 to-indigo-50'
+      : HOME_THEME.pageBgGradient,
+    accentColor: isTeacher ? 'violet' : '[#0D3330]',
+  }), [isTeacher]);
 
   // Loading state
   if (state === 'loading') {
     return (
       <div className={`flex-1 flex items-center justify-center ${isTeacher ? 'bg-gradient-to-br from-violet-50 to-indigo-50' : HOME_THEME.pageBg}`}>
         <div className="text-center">
-          <div className="animate-pulse text-4xl mb-2">{guruIcon}</div>
+          <div className="animate-pulse text-4xl mb-2">{themeClasses.guruIcon}</div>
           <p className={`text-sm ${isTeacher ? 'text-gray-500' : HOME_THEME.subtleText}`}>{t('common.loading')}</p>
         </div>
       </div>
@@ -513,10 +546,10 @@ export default function GuruChatThread({
   return (
     <div className="flex flex-col h-full">
       {/* Chat header with concern pills */}
-      <div className={`${headerGradient} px-4 py-3`}>
+      <div className={`${themeClasses.headerGradient} px-4 py-3`}>
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
-            <span className="text-lg">{guruIcon}</span>
+            <span className="text-lg">{themeClasses.guruIcon}</span>
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-white font-bold text-base">
@@ -534,7 +567,7 @@ export default function GuruChatThread({
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className={`flex-1 overflow-y-auto px-4 py-4 ${bgClass}`}
+        className={`flex-1 overflow-y-auto px-4 py-4 ${themeClasses.bgClass}`}
       >
         {messages.map(msg => (
           <ChatBubble
@@ -550,7 +583,7 @@ export default function GuruChatThread({
         {sending && (
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-violet-600' : 'bg-[#0D3330]'} flex items-center justify-center`}>
-              <span className="text-sm">{guruIcon}</span>
+              <span className="text-sm">{themeClasses.guruIcon}</span>
             </div>
             <div className={`bg-white border ${isTeacher ? 'border-violet-200' : 'border-[#0D3330]/10'} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm`}>
               <div className="flex gap-1.5">

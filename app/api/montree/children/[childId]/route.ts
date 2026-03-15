@@ -67,7 +67,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       thumbnail_url: photo.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${photo.thumbnail_path}` : null
     }));
 
-    return NextResponse.json({ success: true, child, photos: formattedPhotos });
+    const response = NextResponse.json({ success: true, child, photos: formattedPhotos });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
   } catch (error: unknown) {
     console.error('Get child error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -205,39 +207,40 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       isSensitive: true,
     });
 
-    // Delete related records first (foreign key constraints)
+    // Delete all related records in parallel first (foreign key constraints)
+    // These are independent and can run concurrently
+    const deleteResults = await Promise.all([
+      supabase
+        .from('montree_child_progress')
+        .delete()
+        .eq('child_id', childId),
+      supabase
+        .from('montree_work_sessions')
+        .delete()
+        .eq('child_id', childId),
+      supabase
+        .from('montree_media')
+        .delete()
+        .eq('child_id', childId),
+      supabase
+        .from('montree_parent_children')
+        .delete()
+        .eq('child_id', childId),
+      supabase
+        .from('montree_weekly_reports')
+        .delete()
+        .eq('child_id', childId),
+    ]);
 
-    // 1. Delete progress records
-    await supabase
-      .from('montree_child_progress')
-      .delete()
-      .eq('child_id', childId);
+    // Check for any errors in the related deletes
+    for (const result of deleteResults) {
+      if (result.error) {
+        console.error('Delete related data error:', result.error);
+        return NextResponse.json({ error: 'Failed to delete child data' }, { status: 500 });
+      }
+    }
 
-    // 2. Delete work sessions/notes
-    await supabase
-      .from('montree_work_sessions')
-      .delete()
-      .eq('child_id', childId);
-
-    // 3. Delete photos from montree_media
-    await supabase
-      .from('montree_media')
-      .delete()
-      .eq('child_id', childId);
-
-    // 4. Delete parent links
-    await supabase
-      .from('montree_parent_children')
-      .delete()
-      .eq('child_id', childId);
-
-    // 5. Delete weekly reports
-    await supabase
-      .from('montree_weekly_reports')
-      .delete()
-      .eq('child_id', childId);
-
-    // 6. Finally delete the child
+    // Finally delete the child record (after all related data is gone)
     const { error: deleteError } = await supabase
       .from('montree_children')
       .delete()

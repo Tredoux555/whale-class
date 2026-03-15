@@ -72,16 +72,29 @@ const nextConfig: NextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
-      // API routes: no browser caching (auth-dependent responses)
+      // API mutation routes: no browser caching (POST/PATCH/DELETE are not cached by browsers anyway,
+      // but this ensures no proxy caching). Read-only GET routes set their own Cache-Control per-route.
+      // NOTE: Removed blanket max-age=0 on /api/montree/(.*) — it was overriding per-route
+      // Cache-Control headers on GET endpoints (children, observations, works/search, reports).
       {
-        source: '/api/montree/(.*)',
+        source: '/api/montree/:path*/upload',
         headers: [
-          { key: 'Cache-Control', value: 'private, max-age=0, must-revalidate' },
+          { key: 'Cache-Control', value: 'private, no-store' },
+        ],
+      },
+      {
+        source: '/api/montree/auth/(.*)',
+        headers: [
+          { key: 'Cache-Control', value: 'private, no-store' },
         ],
       },
       {
         source: '/(.*)',
         headers: [
+          // DNS prefetch + preconnect for external origins (Supabase, Google Fonts)
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'Link', value: '<https://dmfncjjtsoxrnvcdnvjq.supabase.co>; rel=preconnect, <https://fonts.googleapis.com>; rel=preconnect; crossorigin, <https://fonts.gstatic.com>; rel=preconnect; crossorigin' },
+          // Security headers
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },

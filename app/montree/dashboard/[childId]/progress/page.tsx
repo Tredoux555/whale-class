@@ -78,6 +78,7 @@ export default function ProgressPage() {
 
   // Debounced fetchAll to prevent multiple SmartCaptures from triggering simultaneous refreshes
   const debouncedFetchRef = useRef<NodeJS.Timeout | null>(null);
+  const fetchAllRef = useRef<() => Promise<void>>();
 
   // Fetch all data — extracted as useCallback so PhotoInsightButton can trigger refresh
   const fetchAll = useCallback(async () => {
@@ -173,15 +174,19 @@ export default function ProgressPage() {
     setLoading(false);
   }, [childId, t]);
 
+  // Always keep fetchAllRef pointing to the latest fetchAll function
+  fetchAllRef.current = fetchAll;
+
   // Debounced fetchAll to throttle multiple SmartCapture auto-updates
+  // Uses ref pattern to ensure latest fetchAll is always called, even if childId changes
   const debouncedFetchAll = useCallback(() => {
     if (debouncedFetchRef.current) {
       clearTimeout(debouncedFetchRef.current);
     }
     debouncedFetchRef.current = setTimeout(() => {
-      fetchAll();
+      fetchAllRef.current?.(); // Always calls latest version
     }, 500); // Wait 500ms for multiple SmartCaptures to complete before refreshing
-  }, [fetchAll]);
+  }, []); // Empty deps — stable reference, reads from ref
 
   useEffect(() => {
     fetchAll();

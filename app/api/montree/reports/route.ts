@@ -122,7 +122,9 @@ export async function GET(request: NextRequest) {
       return { ...report, content: { ...content, works: enrichedWorks } };
     });
 
-    return NextResponse.json({ success: true, reports: enrichedReports });
+    const response = NextResponse.json({ success: true, reports: enrichedReports });
+    response.headers.set('Cache-Control', 'private, max-age=3600, stale-while-revalidate=7200');
+    return response;
   } catch (error) {
     console.error('Reports GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

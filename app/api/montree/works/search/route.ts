@@ -120,7 +120,9 @@ export async function GET(request: NextRequest) {
             );
           }
 
-          return NextResponse.json({ works, total: works.length, source: 'classroom' });
+          const response = NextResponse.json({ works, total: works.length, source: 'classroom' });
+          response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+          return response;
         }
       }
     }
@@ -165,7 +167,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ works: allWorks, total: allWorks.length, source: 'global' });
+    const response = NextResponse.json({ works: allWorks, total: allWorks.length, source: 'global' });
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    return response;
 
   } catch (error) {
     console.error('Works search error:', error);
