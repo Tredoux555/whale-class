@@ -95,7 +95,6 @@ Return ONLY the JSON array, no markdown fencing.`;
       return NextResponse.json({ error: 'Invalid recommendations format' }, { status: 500 });
     }
 
-    const supabase = getSupabase();
     const applied: Array<{ area: string; work_name: string; status: string }> = [];
     const skipped: Array<{ area: string; work_name: string; reason: string }> = [];
 
