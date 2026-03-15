@@ -386,8 +386,10 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const limited = await checkRateLimit(`weekly-review-${auth.userId}`, 30, 86400);
-    if (limited) {
+    const supabase = getSupabase();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/weekly-review', 30, 1440);
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
@@ -478,8 +480,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    const limited = await checkRateLimit(`weekly-review-refine-${auth.userId}`, 30, 86400);
-    if (limited) {
+    const supabase = getSupabase();
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const { allowed } = await checkRateLimit(supabase, ip, '/api/montree/weekly-review/refine', 30, 1440);
+    if (!allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 

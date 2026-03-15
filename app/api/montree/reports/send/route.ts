@@ -218,13 +218,28 @@ export async function POST(request: NextRequest) {
       return getTranslatedStatus(normalized, locale);
     };
 
-    // Build works from progress records
-    const progressWorks = works.map(w => {
+    // Build works from progress records — ONLY include works with photos
+    // Reports are photo-centric: no photo = not in report
+    const progressWorks: Array<{
+      name: string;
+      chineseName: string | null;
+      area: string;
+      status: string;
+      status_label: string;
+      parent_description: string | null;
+      why_it_matters: string | null;
+      photo_url: string | null;
+      photo_caption: string | null;
+    }> = [];
+    for (const w of works) {
       const workNameLower = (w.work_name || '').toLowerCase();
       const desc = dbDescriptions.get(workNameLower);
       const photo = photosByWorkName.get(workNameLower);
 
-      return {
+      // Skip works without photos — reports only show photo-captured works
+      if (!photo?.url) continue;
+
+      progressWorks.push({
         name: w.work_name,
         chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
         area: w.area,
@@ -232,14 +247,15 @@ export async function POST(request: NextRequest) {
         status_label: getStatusLabel(w.status),
         parent_description: desc?.description || null,
         why_it_matters: desc?.why_it_matters || null,
-        photo_url: photo?.url || null,
-        photo_caption: photo?.caption || null,
-      };
-    });
+        photo_url: photo.url,
+        photo_caption: photo.caption || null,
+      });
+    }
 
     // Add "documented" works — photos with work_id but no matching progress record
     // This ensures ALL photos appear in reports (consistent with gallery/preview)
-    const addedWorkNames = new Set(works.map(w => (w.work_name || '').toLowerCase()));
+    // Use progressWorks (photo-filtered) for deduplication — not raw works
+    const addedWorkNames = new Set(progressWorks.map(w => (w.name || '').toLowerCase()));
     const documentedWorks: typeof progressWorks = [];
     for (const p of photos) {
       if (!p.work_id) continue;
@@ -331,9 +347,9 @@ export async function POST(request: NextRequest) {
         return '🌱';
       };
 
-      // Combine progress + documented works for email
+      // Combine progress + documented works for email — use FILTERED lists (photo-only)
       const allWorksForEmail = [
-        ...works.map(w => ({ name: w.work_name, status: w.status })),
+        ...progressWorks.map(w => ({ name: w.name, status: w.status })),
         ...documentedWorks.map(dw => ({ name: dw.name, status: 'documented' })),
       ];
 

@@ -363,7 +363,8 @@ export async function GET(request: NextRequest) {
       source: 'progress' | 'photo';
     }> = [];
 
-    // First: Add works from progress
+    // First: Add works from progress — BUT ONLY IF THEY HAVE A PHOTO
+    // Reports are photo-centric: no photo = not in report
     for (const p of progress || []) {
       const workNameLower = (p.work_name || '').toLowerCase();
       const workId = workNameToId.get(workNameLower);
@@ -383,9 +384,12 @@ export async function GET(request: NextRequest) {
         });
       }
 
+      // SKIP works without photos — reports only show photo-captured works
+      if (!photo?.url) continue;
+
       // Get description - pass the area from progress data for safe fallback
       const progressArea = p.area || workInfo?.area || 'practical_life';
-      let desc = findBestDescription(p.work_name || '', dbDescriptions, progressArea);
+      const desc = findBestDescription(p.work_name || '', dbDescriptions, progressArea);
 
       reportItems.push({
         work_id: workId || null,
@@ -393,9 +397,9 @@ export async function GET(request: NextRequest) {
         chineseName: p.work_name ? getChineseNameForWork(p.work_name) : null,
         area: p.area || workInfo?.area || 'practical_life',
         status: p.status === 'completed' ? 'mastered' : p.status,
-        photo_url: photo?.url || null,
-        photo_id: photo?.id || null,
-        photo_caption: photo?.caption || null,
+        photo_url: photo.url,
+        photo_id: photo.id,
+        photo_caption: photo.caption || null,
         parent_description: desc?.description || workInfo?.description || null,
         why_it_matters: desc?.why_it_matters || workInfo?.why_it_matters || null,
         has_description: !!(desc || workInfo?.description),

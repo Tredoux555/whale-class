@@ -1,11 +1,15 @@
 // /montree/dashboard/[childId]/reports/page.tsx
-// Report preview + send - shows exactly what parents will see
+// Reports tab — Teacher Summary + Parent Report preview/send + Invite Parent
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { AREA_CONFIG } from '@/lib/montree/types';
+import InviteParentModal from '@/components/montree/InviteParentModal';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
@@ -101,6 +105,13 @@ export default function ReportsPage() {
   const { t, locale } = useI18n();
   const params = useParams();
   const childId = params.childId as string;
+  const session = getSession();
+
+  // Report view toggle
+  const [reportView, setReportView] = useState<'teacher' | 'parent'>('teacher');
+
+  // Invite Parent modal
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -128,6 +139,10 @@ export default function ReportsPage() {
         fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`),
         fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`),
       ]);
+
+      if (!previewRes.ok || !photosRes.ok) {
+        throw new Error(`Fetch failed: preview=${previewRes.status}, photos=${photosRes.status}`);
+      }
 
       const previewData = await previewRes.json();
       const photosData = await photosRes.json();
@@ -164,7 +179,8 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (childId) fetchPreview();
-  }, [childId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId, locale]);
 
   // Fetch the last sent report
   const fetchLastReport = async () => {
@@ -173,6 +189,7 @@ export default function ReportsPage() {
     setLoadingLastReport(true);
     try {
       const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1&locale=${locale}`);
+      if (!res.ok) throw new Error(`Report fetch failed: ${res.status}`);
       const data = await res.json();
 
       if (data.success && data.reports && data.reports.length > 0) {
@@ -199,6 +216,7 @@ export default function ReportsPage() {
           selected_media_ids: selectedMediaIds,
         }),
       });
+      if (!res.ok) throw new Error(`Photo update failed: ${res.status}`);
       const data = await res.json();
 
       if (data.success) {
@@ -222,6 +240,7 @@ export default function ReportsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId }),
       });
+      if (!res.ok) throw new Error(`Send failed: ${res.status}`);
       const data = await res.json();
 
       if (data.success) {
@@ -249,62 +268,195 @@ export default function ReportsPage() {
 
   const hasItems = items.length > 0;
 
+  // Memoize available photos for photo selection modal (Set-based O(n) dedup)
+  const availableForSelection = useMemo(() => {
+    const ids = new Set(currentPhotos.map(cp => cp.id));
+    return allPhotos.filter(p => !ids.has(p.id));
+  }, [currentPhotos, allPhotos]);
+
   return (
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
 
-      {/* Header */}
-      <div className="bg-white rounded-2xl p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">{childName}'s {t('reports.report')}</h2>
-            {lastReportDate && (
-              <p className="text-xs text-gray-400">
-                {t('reports.lastSent')}: {new Date(lastReportDate).toLocaleDateString()}
-              </p>
-            )}
-            {!lastReportDate && (
-              <p className="text-xs text-gray-400">{t('reports.noReportsSentYet')}</p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {lastReportDate && (
-              <button
-                onClick={fetchLastReport}
-                disabled={loadingLastReport}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50"
-              >
-                {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
-              </button>
-            )}
-            {hasItems && (
-              <button
-                onClick={() => setShowPreview(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
-              >
-                👁️ {t('reports.previewReport')}
-              </button>
-            )}
-          </div>
+      {/* Report View Toggle */}
+      <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div className="flex">
+          <button
+            onClick={() => setReportView('teacher')}
+            className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${
+              reportView === 'teacher'
+                ? 'bg-violet-100 text-violet-700 border-b-2 border-violet-500'
+                : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            📋 {t('reports.teacherReview' as any) || 'Teacher Review'}
+          </button>
+          <button
+            onClick={() => setReportView('parent')}
+            className={`flex-1 py-3 text-sm font-medium text-center transition-colors ${
+              reportView === 'parent'
+                ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500'
+                : 'text-gray-500 hover:bg-gray-50'
+            }`}
+          >
+            👨‍👩‍👧 {t('reports.parentReport' as any) || 'Parent Report'}
+          </button>
         </div>
       </div>
 
-      {/* Stats */}
-      {stats && hasItems && (
-        <div className="grid grid-cols-3 gap-2">
-          <StatCard icon="📚" value={stats.total} label={t('reports.works')} color="gray" />
-          <StatCard icon="📸" value={stats.with_photos + (stats.unassigned_photos || 0)} label={t('reports.photos')} color="blue" />
-          <StatCard icon="📝" value={stats.with_descriptions} label={t('reports.descriptions')} color="emerald" />
-        </div>
+      {/* ── TEACHER REVIEW ── */}
+      {reportView === 'teacher' && (
+        <>
+          {/* Teacher Summary Card — achievements + what's next */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-gray-800">
+              {childName ? `${childName}'s ` : ''}{t('reports.weekSummary' as any) || 'Week Summary'}
+            </h2>
+
+            {/* Achievement Stats */}
+            {stats && hasItems && (
+              <div className="grid grid-cols-3 gap-2">
+                <StatCard icon="⭐" value={stats.mastered} label={t('reports.mastered')} color="emerald" />
+                <StatCard icon="🔄" value={stats.practicing} label={t('reports.practicing' as any) || 'Practicing'} color="blue" />
+                <StatCard icon="🌱" value={stats.presented} label={t('reports.presented' as any) || 'Introduced'} color="gray" />
+              </div>
+            )}
+
+            {/* This Week's Work — grouped by area */}
+            {hasItems ? (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-gray-600">{t('reports.thisWeekAchievements' as any) || 'This Week'}</h3>
+                {Object.entries(
+                  items.reduce((acc, item) => {
+                    const area = item.area || 'other';
+                    if (!acc[area]) acc[area] = [];
+                    acc[area].push(item);
+                    return acc;
+                  }, {} as Record<string, ReportItem[]>)
+                ).map(([area, areaItems]) => {
+                  const areaConf = AREA_CONFIG[area];
+                  return (
+                    <div key={area} className="bg-gray-50 rounded-xl p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        {areaConf && (
+                          <span className={`text-[10px] font-medium ${areaConf.text} ${areaConf.bg} px-2 py-0.5 rounded-full`}>
+                            {t(`area.${area}` as any) || areaConf.name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {areaItems.map((item) => (
+                          <div key={`${item.work_name}-${item.status}`} className="flex items-center gap-2">
+                            <StatusBadge status={item.status} locale={locale} />
+                            <span className="text-sm text-gray-700">
+                              {locale === 'zh' && item.chineseName ? item.chineseName : item.work_name}
+                            </span>
+                            {item.photo_url && <span className="text-blue-400 text-xs">📸</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-400 text-sm">{t('reports.noProgressThisWeek' as any) || 'No new progress this week'}</p>
+              </div>
+            )}
+
+            {/* What's Next — link to update shelf */}
+            <div className="bg-violet-50 rounded-xl p-4 border border-violet-100">
+              <h3 className="text-sm font-semibold text-violet-800 mb-2">
+                {t('reports.whatsNext' as any) || "What's Next"}
+              </h3>
+              <p className="text-sm text-violet-700 mb-3">
+                {t('reports.whatsNextDescription' as any) || 'Update the shelf based on this week\'s progress. Mastered works can be replaced with the next work in the sequence.'}
+              </p>
+              <Link
+                href={`/montree/dashboard/${childId}`}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-violet-500 text-white hover:bg-violet-600 active:scale-95 transition-all text-sm"
+              >
+                📋 {t('reports.updateShelf' as any) || 'Update Shelf'}
+              </Link>
+            </div>
+          </div>
+
+          {/* Invite Parent — only for teachers */}
+          {session && !isHomeschoolParent(session) && (
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700">{t('reports.inviteParent' as any) || 'Invite Parent'}</h3>
+                  <p className="text-xs text-gray-400">{t('reports.inviteParentDesc' as any) || 'Share an access code so parents can view reports'}</p>
+                </div>
+                <button
+                  onClick={() => setInviteModalOpen(true)}
+                  className="px-4 py-2 rounded-xl font-medium bg-blue-500 text-white hover:bg-blue-600 active:scale-95 transition-all text-sm"
+                >
+                  ✉️ {t('reports.invite' as any) || 'Invite'}
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
+
+      {/* ── PARENT REPORT ── */}
+      {reportView === 'parent' && (
+        <>
+          {/* Header */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-800">{childName}'s {t('reports.report')}</h2>
+                {lastReportDate && (
+                  <p className="text-xs text-gray-400">
+                    {t('reports.lastSent')}: {new Date(lastReportDate).toLocaleDateString()}
+                  </p>
+                )}
+                {!lastReportDate && (
+                  <p className="text-xs text-gray-400">{t('reports.noReportsSentYet')}</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                {lastReportDate && (
+                  <button
+                    onClick={fetchLastReport}
+                    disabled={loadingLastReport}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50 text-sm"
+                  >
+                    {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
+                  </button>
+                )}
+                {hasItems && (
+                  <button
+                    onClick={() => setShowPreview(true)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all text-sm"
+                  >
+                    👁️ {t('reports.previewReport')}
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          {stats && hasItems && (
+            <div className="grid grid-cols-3 gap-2">
+              <StatCard icon="📚" value={stats.total} label={t('reports.works')} color="gray" />
+              <StatCard icon="📸" value={stats.with_photos + (stats.unassigned_photos || 0)} label={t('reports.photos')} color="blue" />
+              <StatCard icon="📝" value={stats.with_descriptions} label={t('reports.descriptions')} color="emerald" />
+            </div>
+          )}
 
       {/* Work list (summary) */}
       {hasItems ? (
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-3">{t('reports.progressToReport')} ({items.length})</h3>
           <div className="space-y-2 max-h-[300px] overflow-y-auto">
-            {items.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
+            {items.map((item) => (
+              <div key={`${item.work_name}-${item.area}`} className="flex items-center gap-3 p-2 rounded-lg bg-gray-50">
                 <StatusBadge status={item.status} locale={locale} />
                 <span className="flex-1 text-sm font-medium text-gray-700">{locale === 'zh' && item.chineseName ? item.chineseName : item.work_name}</span>
                 {item.photo_url && <span className="text-blue-500">📸</span>}
@@ -323,6 +475,7 @@ export default function ReportsPage() {
               setLoading(true);
               try {
                 const res = await fetch(`/api/montree/reports/preview?child_id=${childId}&show_all=true&locale=${locale}`);
+                if (!res.ok) throw new Error(`Preview fetch failed: ${res.status}`);
                 const data = await res.json();
                 if (data.success) {
                   setItems(data.items || []);
@@ -489,7 +642,7 @@ export default function ReportsPage() {
         onClose={() => setShowPhotoModal(false)}
         onSave={handlePhotoSelectionSave}
         currentPhotos={currentPhotos}
-        availablePhotos={allPhotos.filter(p => !currentPhotos.some(cp => cp.id === p.id))}
+        availablePhotos={availableForSelection}
         childId={childId}
       />
 
@@ -573,7 +726,7 @@ export default function ReportsPage() {
                           const photoCaption = work.photo_caption || photosByWorkName.get(work.name?.toLowerCase())?.caption;
 
                           return (
-                            <div key={`work-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                            <div key={`work-${work.name || i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
                               {/* Work header */}
                               <div className="flex items-center gap-2">
                                 <span className={`text-xs px-2 py-1 rounded-full ${
@@ -673,7 +826,7 @@ export default function ReportsPage() {
                               <div className="aspect-square w-full">
                                 <img
                                   src={photo.url || photo.thumbnail_url}
-                                  alt={photo.caption || 'Learning moment'}
+                                  alt={photo.caption || t('reports.learningMoment')}
                                   className="w-full h-full object-cover"
                                 />
                               </div>
@@ -718,6 +871,19 @@ export default function ReportsPage() {
       <p className="text-xs text-gray-400 text-center">
         {t('reports.photosSavedInfo')}
       </p>
+        </>
+      )}
+
+      {/* Invite Parent Modal */}
+      {session && !isHomeschoolParent(session) && (
+        <InviteParentModal
+          childId={childId}
+          childName={childName || 'Child'}
+          teacherId={session?.teacher?.id}
+          isOpen={inviteModalOpen}
+          onClose={() => setInviteModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

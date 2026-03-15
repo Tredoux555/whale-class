@@ -427,25 +427,30 @@ export async function POST(request: NextRequest) {
       const safeConcerns = Array.isArray(savedConcerns) ? savedConcerns : [];
 
       // Issue #21: Log errors instead of silently swallowing
-      const [brainWisdom, crossFamilyPatterns] = await Promise.all([
-        getRelevantBrainWisdom({
-          childAgeMonths,
-          areas: activeAreas,
-          concerns: safeConcerns,
-          parentConfidence: parentConf,
-        }).catch(err => {
-          console.warn('[Guru] Brain wisdom fetch failed:', err instanceof Error ? err.message : String(err));
-          return '';
-        }),
-        getRelevantPatterns({
-          age_months: childAgeMonths,
-          areas_active: activeAreas,
-          recent_concerns: safeConcerns,
-        }).catch(err => {
-          console.warn('[Guru] Pattern fetch failed:', err instanceof Error ? err.message : String(err));
-          return '';
-        }),
-      ]);
+      // Skip brain wisdom + patterns for curriculum questions (shelf updates, work recommendations)
+      // — they add 1-3s latency and are irrelevant for tool-driven actions
+      const skipBrainWisdom = questionCategory === 'curriculum';
+      const [brainWisdom, crossFamilyPatterns] = skipBrainWisdom
+        ? ['', '']
+        : await Promise.all([
+            getRelevantBrainWisdom({
+              childAgeMonths,
+              areas: activeAreas,
+              concerns: safeConcerns,
+              parentConfidence: parentConf,
+            }).catch(err => {
+              console.warn('[Guru] Brain wisdom fetch failed:', err instanceof Error ? err.message : String(err));
+              return '';
+            }),
+            getRelevantPatterns({
+              age_months: childAgeMonths,
+              areas_active: activeAreas,
+              recent_concerns: safeConcerns,
+            }).catch(err => {
+              console.warn('[Guru] Pattern fetch failed:', err instanceof Error ? err.message : String(err));
+              return '';
+            }),
+          ]);
 
       // Compute celebration context if we have proactive data (greeting trigger)
       let proactiveForPrompt: ProactiveContext | undefined = greetingProactiveContext;
@@ -616,6 +621,37 @@ export async function POST(request: NextRequest) {
           });
 
           const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
+
+          // Fast path: when tool_choice was forced AND all tools succeeded,
+          // skip the expensive second API call (~15-30s) and return tool results directly.
+          // This makes shelf updates respond in ~5-10s instead of 30-60s.
+          const allToolsSucceeded = actionsTaken.every(a => a.success);
+          if (forceToolUse && allToolsSucceeded && actionsTaken.length > 0) {
+            clearTimeout(masterTimeout);
+            const summaryText = actionsTaken.map(a => a.message).filter(Boolean).join('\n\n');
+            const finalText = summaryText || 'Done!';
+            console.log(`[Guru Stream] Fast-path: forced tool use, ${actionsTaken.length} tools succeeded, skipping second API call. Elapsed: ${Date.now() - requestStart}ms`);
+
+            const encoder = new TextEncoder();
+            const responseStream = new ReadableStream({
+              start(controller) {
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+                controller.close();
+
+                saveInteractionAndLearn(supabase, {
+                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+                  guruTier, estCost: 0, responseText: finalText, knowledge, guruModel, startTime,
+                  isTeacher, isGreetingTrigger, isParentRole,
+                });
+              }
+            });
+
+            return new Response(responseStream, {
+              headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+            });
+          }
 
           currentMessages = [
             ...currentMessages,
@@ -843,6 +879,24 @@ export async function POST(request: NextRequest) {
         });
 
         const toolResults: ToolResultBlockParam[] = await Promise.all(toolPromises);
+
+        // Fast path (non-streaming): skip second API call when forced tool use succeeded
+        const allToolsSucceeded = actionsTaken.every(a => a.success);
+        if (forceToolUse && allToolsSucceeded && actionsTaken.length > 0) {
+          clearTimeout(masterTimeout);
+          const summaryText = actionsTaken.map(a => a.message).filter(Boolean).join('\n\n');
+          const responseText = summaryText || 'Done!';
+          console.log(`[Guru] Fast-path (non-stream): forced tool use, ${actionsTaken.length} tools succeeded. Elapsed: ${Date.now() - requestStart}ms`);
+
+          saveInteractionAndLearn(supabase, {
+            child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+            question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+            guruTier, estCost: 0, responseText, knowledge, guruModel, startTime,
+            isTeacher, isGreetingTrigger, isParentRole,
+          });
+
+          return NextResponse.json({ success: true, insight: responseText, conversational: true });
+        }
 
         currentMessages = [
           ...currentMessages,

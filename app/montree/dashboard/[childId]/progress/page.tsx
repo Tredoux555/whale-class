@@ -3,27 +3,16 @@
 // Layout handles auth + header + tabs
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
-import AreaHistoryModal from '@/components/montree/progress/AreaHistoryModal';
 import { AREA_CONFIG } from '@/lib/montree/types';
-import AreaBadge from '@/components/montree/shared/AreaBadge';
 import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
-
-interface AreaSummary {
-  area: string;
-  totalWorks: number;
-  completed: number;
-  inProgress: number;
-  progressPercent: number;
-  currentWork: { id: string; name: string; index: number } | null;
-}
 
 interface ProgressItem {
   id: string;
@@ -76,25 +65,16 @@ export default function ProgressPage() {
   const photosRef = useRef<HTMLDivElement>(null);
 
   // State
-  const [areas, setAreas] = useState<AreaSummary[]>([]);
-  const [stats, setStats] = useState({ presented: 0, practicing: 0, mastered: 0 });
-  const [overallPercent, setOverallPercent] = useState(0);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [historyArea, setHistoryArea] = useState<string | null>(null);
   const [photoViewerUrl, setPhotoViewerUrl] = useState<string | null>(null);
   const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
   // Supabase URL for media
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const getPhotoUrl = (path: string) => path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${path}` : '';
-
-  // Child name
-  const childName = (session?.classroom as Record<string, unknown[]> | null)?.children
-    ? ((session?.classroom as unknown as { children: Array<{ id: string; name: string }> })?.children?.find(c => c.id === childId)?.name || 'Child')
-    : 'Child';
 
   // Debounced fetchAll to prevent multiple SmartCaptures from triggering simultaneous refreshes
   const debouncedFetchRef = useRef<NodeJS.Timeout | null>(null);
@@ -104,26 +84,20 @@ export default function ProgressPage() {
     if (!childId) return;
     setLoading(true);
     try {
-      const [summaryRes, mediaRes, progressRes] = await Promise.all([
-        fetch(`/api/montree/progress/summary?child_id=${childId}`),
+      const [mediaRes, progressRes] = await Promise.all([
         fetch(`/api/montree/media?child_id=${childId}&limit=20`),
         fetch(`/api/montree/progress?child_id=${childId}&include_observations=true`),
       ]);
 
-      const [summaryData, mediaData, progressData] = await Promise.all([
-        summaryRes.json(), mediaRes.json(), progressRes.json(),
+      if (!mediaRes.ok || !progressRes.ok) {
+        console.error('Progress fetch failed:', { media: mediaRes.status, progress: progressRes.status });
+        setLoading(false);
+        return;
+      }
+
+      const [mediaData, progressData] = await Promise.all([
+        mediaRes.json(), progressRes.json(),
       ]);
-
-      // Summary → area bars
-      if (summaryData.success) {
-        setAreas(summaryData.areas || []);
-        setOverallPercent(summaryData.overall?.percent || 0);
-      }
-
-      // Stats from progress API
-      if (progressData.stats) {
-        setStats(progressData.stats);
-      }
 
       // Media
       setMedia((mediaData.media || []).filter((m: MediaItem) =>
@@ -218,20 +192,23 @@ export default function ProgressPage() {
     };
   }, [fetchAll]);
 
-  // Filtered + grouped timeline
-  const filtered = selectedArea
-    ? timeline.filter(e => e.area === selectedArea)
-    : timeline;
+  // Filtered + grouped timeline (memoized to avoid re-computation on unrelated state changes)
+  const grouped = useMemo(() => {
+    const filtered = selectedArea
+      ? timeline.filter(e => e.area === selectedArea)
+      : timeline;
 
-  const grouped: { label: string; events: TimelineEvent[] }[] = [];
-  const monthMap = new Map<string, TimelineEvent[]>();
-  for (const event of filtered) {
-    const d = new Date(event.date);
-    const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
-    if (!monthMap.has(label)) monthMap.set(label, []);
-    monthMap.get(label)!.push(event);
-  }
-  monthMap.forEach((events, label) => grouped.push({ label, events }));
+    const result: { label: string; events: TimelineEvent[] }[] = [];
+    const monthMap = new Map<string, TimelineEvent[]>();
+    for (const event of filtered) {
+      const d = new Date(event.date);
+      const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
+      if (!monthMap.has(label)) monthMap.set(label, []);
+      monthMap.get(label)!.push(event);
+    }
+    monthMap.forEach((events, label) => result.push({ label, events }));
+    return result;
+  }, [timeline, selectedArea, locale]);
 
   // Format date
   const fmtDate = (iso: string) => {
@@ -252,96 +229,10 @@ export default function ProgressPage() {
         <GuruContextBubble pageKey="progress" role="parent" />
       )}
 
-      {/* ── Hero Stats ── */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="bg-yellow-50 rounded-xl p-3">
-            <div className="text-3xl font-bold text-yellow-600">{stats.mastered}</div>
-            <div className="text-xs font-medium text-yellow-700 mt-1">{t('progress.mastered_count')}</div>
-          </div>
-          <div className="bg-blue-50 rounded-xl p-3">
-            <div className="text-3xl font-bold text-blue-600">{stats.practicing}</div>
-            <div className="text-xs font-medium text-blue-700 mt-1">{t('progress.practicing_count')}</div>
-          </div>
-          <div className="bg-purple-50 rounded-xl p-3">
-            <div className="text-3xl font-bold text-purple-600">{stats.presented}</div>
-            <div className="text-xs font-medium text-purple-700 mt-1">{t('progress.presented_count')}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Area Progress Bars ── */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gray-800">{t('progress.progressByArea')}</h2>
-          <div className="text-lg font-bold text-emerald-600">{overallPercent}%</div>
-        </div>
-
-        <div className="space-y-4">
-          {areas.map((area) => {
-            const config = AREA_CONFIG[area.area];
-            if (!config) return null;
-            const isActive = selectedArea === area.area;
-
-            return (
-              <button
-                key={area.area}
-                onClick={() => setSelectedArea(isActive ? null : area.area)}
-                onDoubleClick={() => setHistoryArea(area.area)}
-                onTouchStart={(e) => {
-                  const timer = setTimeout(() => {
-                    setHistoryArea(area.area);
-                  }, 500);
-                  const clear = () => clearTimeout(timer);
-                  e.currentTarget.addEventListener('touchend', clear, { once: true });
-                  e.currentTarget.addEventListener('touchmove', clear, { once: true });
-                }}
-                className={`w-full text-left transition-all rounded-xl p-3 -mx-1 ${
-                  isActive ? config.bg : 'hover:bg-gray-50'
-                }`}
-                style={isActive ? { boxShadow: `0 0 0 2px ${AREA_CONFIG[area.area]?.color}` } : undefined}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <AreaBadge area={area.area} size="sm" />
-                    <span className="font-semibold text-gray-800 text-sm">{areaName(area.area)}</span>
-                  </div>
-                  <span className="text-xs font-bold" style={{ color: AREA_CONFIG[area.area]?.color }}>
-                    {area.completed}/{area.totalWorks}
-                  </span>
-                </div>
-
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full bg-gradient-to-r ${config.gradient} transition-all duration-700`}
-                    style={{ width: `${area.progressPercent}%` }}
-                  />
-                </div>
-
-                {area.currentWork && area.completed < area.totalWorks && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    📍 {area.currentWork.name}
-                  </p>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {selectedArea && (
-          <button
-            onClick={() => setSelectedArea(null)}
-            className="w-full text-center text-xs text-gray-400 mt-3 py-1"
-          >
-            {t('progress.tapAreaHint')} · {t('progress.showing')} {selectedArea ? areaName(selectedArea) : ''}
-          </button>
-        )}
-      </div>
-
-      {/* ── Recent Photos ── */}
-      {media.length > 0 && (
+      {/* ── Recent Photos — primary content of Review tab ── */}
+      {media.length > 0 ? (
         <div className="bg-white rounded-2xl p-5 shadow-sm">
-          <h2 className="text-base font-bold text-gray-800 mb-3">{t('progress.recentPhotos')}</h2>
+          <h2 className="text-base font-bold text-gray-800 mb-3">{t('review.reviewPhotos' as any)}</h2>
           <div ref={photosRef} className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
             {media.map((m) => (
               <div key={m.id} className="flex-shrink-0 snap-start">
@@ -363,13 +254,19 @@ export default function ProgressPage() {
                 <PhotoInsightButton
                   childId={childId}
                   mediaId={m.id}
-                  classroomId={session?.classroomId}
+                  classroomId={session?.classroom?.id}
                   onProgressUpdate={debouncedFetchAll}
                   onTeachWork={(data) => setTeachModalData(data)}
                 />
               </div>
             ))}
           </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <div className="text-4xl mb-3">📷</div>
+          <h2 className="text-base font-bold text-gray-800 mb-1">{t('review.noPhotos' as any)}</h2>
+          <p className="text-sm text-gray-500">{t('review.takePhotos' as any)}</p>
         </div>
       )}
 
@@ -433,25 +330,16 @@ export default function ProgressPage() {
         ))}
       </div>
 
-      {/* ── Area History Modal ── */}
-      <AreaHistoryModal
-        isOpen={historyArea !== null}
-        onClose={() => setHistoryArea(null)}
-        area={historyArea || ''}
-        childId={childId}
-        childName={childName}
-      />
-
       {/* ── Photo Viewer Overlay ── */}
       {/* ── Teach Guru Work Modal ── */}
-      {teachModalData && session?.classroomId && (
+      {teachModalData && session?.classroom?.id && (
         <TeachGuruWorkModal
           isOpen={true}
           onClose={() => setTeachModalData(null)}
           initialWorkName={teachModalData.workName}
           initialArea={teachModalData.area}
           mediaId={teachModalData.mediaId}
-          classroomId={session.classroomId}
+          classroomId={session?.classroom?.id || ''}
           onWorkSaved={() => { setTeachModalData(null); debouncedFetchAll(); }}
         />
       )}
@@ -466,7 +354,7 @@ export default function ProgressPage() {
           caption: m.caption || m.work_name || undefined,
           date: m.captured_at,
         }))}
-        currentIndex={media.findIndex(m => getPhotoUrl(m.storage_path) === photoViewerUrl)}
+        currentIndex={Math.max(0, media.findIndex(m => getPhotoUrl(m.storage_path) === photoViewerUrl))}
         onNavigate={(idx) => setPhotoViewerUrl(getPhotoUrl(media[idx]?.storage_path))}
       />
     </div>
