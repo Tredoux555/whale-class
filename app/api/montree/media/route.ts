@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
       }
 
-      // Get curriculum works to map work_id to work_name and area
+      // PARALLEL: Get curriculum works (moved inside, runs in parallel on second Promise.all)
       const workIdToInfo = new Map<string, { name: string; area: string }>();
       if (childData?.classroom_id) {
         const { data: curriculumWorks } = await supabase

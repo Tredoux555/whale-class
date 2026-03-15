@@ -4,12 +4,13 @@
 // Layout handles auth + header + tabs
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { montreeApi } from '@/lib/montree/api';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
@@ -69,35 +70,42 @@ export default function WeekPage() {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
 
-  // Guru weekly summary state
-  // Weekly admin settings (all from child settings JSONB)
-  const [guruPlanRow, setGuruPlanRow] = useState<Record<string, string> | null>(null);
-  const [guruAreaDetails, setGuruAreaDetails] = useState<Record<string, { work: string; this_week: string; next_week: string }> | null>(null);
-  const [guruFullSummary, setGuruFullSummary] = useState<string | null>(null);
-  const [guruThisWeek, setGuruThisWeek] = useState<string | null>(null);
-  const [guruNextWeek, setGuruNextWeek] = useState<string | null>(null);
-  const [guruOneLiner, setGuruOneLiner] = useState<string | null>(null);
-  const [guruAdvice, setGuruAdvice] = useState<string | null>(null);
-  const [guruSummaryUpdatedAt, setGuruSummaryUpdatedAt] = useState<string | null>(null);
+  // Guru weekly summary state — single object instead of 7 individual useState calls
+  const [guruSettings, setGuruSettings] = useState<{
+    planRow: Record<string, string> | null;
+    areaDetails: Record<string, { work: string; this_week: string; next_week: string }> | null;
+    fullSummary: string | null;
+    thisWeek: string | null;
+    nextWeek: string | null;
+    oneLiner: string | null;
+    advice: string | null;
+    updatedAt: string | null;
+  }>({ planRow: null, areaDetails: null, fullSummary: null, thisWeek: null, nextWeek: null, oneLiner: null, advice: null, updatedAt: null });
+
+  // Staleness tracking — prevents redundant refetches
+  const lastFetchTimeRef = useRef<number>(0);
+  const STALE_THRESHOLD_MS = 30_000; // 30s — don't refetch if data is fresh
 
   // Fetch guru weekly settings from child settings JSONB
-  const fetchGuruSettings = () => {
+  const fetchGuruSettings = useCallback(() => {
     if (!childId) return;
-    fetch(`/api/montree/children/${childId}?fields=settings`)
+    montreeApi(`/api/montree/children/${childId}?fields=settings`)
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        const settings = data?.child?.settings || data?.settings || {};
-        setGuruPlanRow(settings.guru_weekly_plan_row || null);
-        setGuruAreaDetails(settings.guru_weekly_area_details || null);
-        setGuruFullSummary(settings.guru_weekly_full_summary || null);
-        setGuruThisWeek(settings.guru_weekly_this_week || null);
-        setGuruNextWeek(settings.guru_weekly_next_week || null);
-        setGuruOneLiner(settings.guru_weekly_one_liner || null);
-        setGuruAdvice(settings.guru_weekly_advice || null);
-        setGuruSummaryUpdatedAt(settings.guru_weekly_summary_updated_at || null);
+        const s = data?.child?.settings || data?.settings || {};
+        setGuruSettings({
+          planRow: s.guru_weekly_plan_row || null,
+          areaDetails: s.guru_weekly_area_details || null,
+          fullSummary: s.guru_weekly_full_summary || null,
+          thisWeek: s.guru_weekly_this_week || null,
+          nextWeek: s.guru_weekly_next_week || null,
+          oneLiner: s.guru_weekly_one_liner || null,
+          advice: s.guru_weekly_advice || null,
+          updatedAt: s.guru_weekly_summary_updated_at || null,
+        });
       })
       .catch(() => {});
-  };
+  }, [childId]);
 
   // All works combined (for checking if already added)
   const allWorks = [...focusWorks, ...extraWorks];
@@ -145,7 +153,7 @@ export default function WeekPage() {
       if (locale === 'zh') {
         url += '&locale=zh';
       }
-      const res = await fetch(url);
+      const res = await montreeApi(url);
       if (!res.ok) {
         console.error('Guide fetch failed:', res.status);
         setQuickGuideData({ error: true });
@@ -162,11 +170,12 @@ export default function WeekPage() {
   };
 
   // Fetch progress and separate into focus works (1 per area) and extras
-  const fetchAssignments = () => {
+  const fetchAssignments = useCallback(() => {
     // Don't refetch while a save is in progress (prevents race conditions)
     if (isSaving) return;
 
-    fetch(`/api/montree/progress?child_id=${childId}`)
+    lastFetchTimeRef.current = Date.now();
+    montreeApi(`/api/montree/progress?child_id=${childId}`)
       .then(r => {
         if (!r.ok) {
           // Auth expired or server error — redirect to login with return URL
@@ -233,13 +242,14 @@ export default function WeekPage() {
         setExtraWorks([]);
         setLoading(false);
       });
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId, router]); // isSaving checked at runtime inside the callback, not as dependency
 
   // Fetch guru weekly summary from child settings
   useEffect(() => {
     if (!childId) return;
     fetchGuruSettings();
-  }, [childId]);
+  }, [childId, fetchGuruSettings]);
 
   // Fetch on mount and when childId changes
   useEffect(() => {
@@ -251,17 +261,19 @@ export default function WeekPage() {
   }, [childId]);
 
   // Also re-fetch when returning to this page (handles tab navigation)
-  // Skip refetch if currently saving to prevent overwriting optimistic updates
+  // Skip refetch if data is fresh (<30s old) or currently saving
   useEffect(() => {
+    const isStale = () => Date.now() - lastFetchTimeRef.current > STALE_THRESHOLD_MS;
+
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible' && childId && !isSaving) {
+      if (document.visibilityState === 'visible' && childId && !isSaving && isStale()) {
         fetchAssignments();
       }
     };
 
     // Re-fetch on focus (when switching tabs or returning to page)
     const handleFocus = () => {
-      if (childId && !isSaving) fetchAssignments();
+      if (childId && !isSaving && isStale()) fetchAssignments();
     };
 
     window.addEventListener('focus', handleFocus);
@@ -271,44 +283,51 @@ export default function WeekPage() {
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [childId]);
+  }, [childId, isSaving, fetchAssignments]);
 
-  // PRE-CACHE curriculum for all areas — SINGLE fetch, split client-side
-  // PERF: Was 5 separate API calls (one per area). Now 1 call returning all 329 works.
-  useEffect(() => {
+  // LAZY curriculum cache — fetches all 329 works when first needed (wheel picker or search)
+  // Moved from eager useEffect to on-demand to cut page load by ~200-500ms
+  const curriculumLoadedRef = useRef(false);
+  const loadCurriculumCache = useCallback(async () => {
+    if (curriculumLoadedRef.current || Object.keys(curriculum).length >= 5) return;
+    curriculumLoadedRef.current = true; // Prevent concurrent loads
+
     const classroomId = session?.classroom?.id;
-    if (Object.keys(curriculum).length >= 5) return; // Already cached all areas
-
     const url = classroomId
       ? `/api/montree/works/search?classroom_id=${classroomId}`
       : `/api/montree/works/search`;
 
-    fetch(url)
-      .then(res => res.ok ? res.json() : Promise.reject(new Error(`Curriculum pre-cache failed: ${res.status}`)))
-      .then(data => {
-        const allCurrWorks = data.works || [];
-        const byArea: Record<string, CurriculumWork[]> = {};
-        for (const w of allCurrWorks) {
-          const areaKey = w.area?.area_key || 'unknown';
-          if (!byArea[areaKey]) byArea[areaKey] = [];
-          byArea[areaKey].push({
-            id: String(w.id),
-            name: String(w.name),
-            name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
-            status: 'not_started',
-            sequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
-            dbSequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
-          } as CurriculumWork & { status: string; sequence: number; dbSequence: number });
-        }
-        setCurriculum(byArea);
-      })
-      .catch(() => {});
-  }, [session?.classroom?.id]); // Only re-run if classroom changes
+    try {
+      const res = await montreeApi(url);
+      if (!res.ok) throw new Error(`Curriculum cache failed: ${res.status}`);
+      const data = await res.json();
+      const allCurrWorks = data.works || [];
+      const byArea: Record<string, CurriculumWork[]> = {};
+      for (const w of allCurrWorks) {
+        const areaKey = w.area?.area_key || 'unknown';
+        if (!byArea[areaKey]) byArea[areaKey] = [];
+        byArea[areaKey].push({
+          id: String(w.id),
+          name: String(w.name),
+          name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+          status: 'not_started',
+          sequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
+          dbSequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
+        } as CurriculumWork & { status: string; sequence: number; dbSequence: number });
+      }
+      setCurriculum(byArea);
+    } catch {
+      curriculumLoadedRef.current = false; // Allow retry on failure
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.classroom?.id]); // Don't include `curriculum` — would cause infinite re-creation loop. curriculumLoadedRef guards redundant loads.
 
   // Open wheel picker for a specific area - INSTANT with cached data
-  const openWheelPicker = (area: string, currentWorkName?: string) => {
+  const openWheelPicker = async (area: string, currentWorkName?: string) => {
     // Haptic feedback
     if (navigator.vibrate) navigator.vibrate(30);
+    // Ensure curriculum is loaded
+    await loadCurriculumCache();
 
     const areaKey = area === 'math' ? 'mathematics' : area;
     const cachedCurriculum = curriculum[areaKey] || curriculum[area] || [];
@@ -344,7 +363,7 @@ export default function WeekPage() {
       const url = classroomId
         ? `/api/montree/works/search?area=${encodeURIComponent(areaKey)}&classroom_id=${classroomId}`
         : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
-      const res = await fetch(url);
+      const res = await montreeApi(url);
       if (!res.ok) throw new Error(`Curriculum fetch failed: ${res.status}`);
       const data = await res.json();
 
@@ -389,7 +408,7 @@ export default function WeekPage() {
       const url = classroomId
         ? `/api/montree/works/search?area=${encodeURIComponent(areaKey)}&classroom_id=${classroomId}`
         : `/api/montree/works/search?area=${encodeURIComponent(areaKey)}`;
-      const res = await fetch(url);
+      const res = await montreeApi(url);
       if (!res.ok) throw new Error(`Refresh fetch failed: ${res.status}`);
       const data = await res.json();
 
@@ -458,7 +477,7 @@ export default function WeekPage() {
     // 2. Fire smart-note AI in parallel (non-blocking)
     setSmartNoteProcessing(work.work_name);
     try {
-      const res = await fetch('/api/montree/guru/smart-note', {
+      const res = await montreeApi('/api/montree/guru/smart-note', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -538,26 +557,7 @@ export default function WeekPage() {
     setPickerOpen(true);
     if (Object.keys(curriculum).length === 0) {
       setLoadingCurriculum(true);
-      try {
-        // Load all works at once
-        const res = await fetch(`/api/montree/works/search`);
-        if (!res.ok) throw new Error(`Search fetch failed: ${res.status}`);
-        const data = await res.json();
-
-        // Group by area
-        const byArea: Record<string, CurriculumWork[]> = {};
-        for (const w of data.works || []) {
-          const areaKey = w.area?.area_key || 'unknown';
-          if (!byArea[areaKey]) byArea[areaKey] = [];
-          byArea[areaKey].push({
-            id: w.id,
-            name: w.name,
-            name_chinese: w.chinese_name,
-            area_id: areaKey,
-          });
-        }
-        setCurriculum(byArea);
-      } catch {}
+      await loadCurriculumCache();
       setLoadingCurriculum(false);
     }
   };
@@ -605,28 +605,7 @@ export default function WeekPage() {
               setSelectedArea(areaKey);
               setPickerOpen(true);
             }}
-            onFocus={async () => {
-              // Pre-load curriculum if not yet cached (normally loads on picker open)
-              if (Object.keys(curriculum).length === 0) {
-                try {
-                  const res = await fetch(`/api/montree/works/search`);
-                  if (!res.ok) throw new Error(`Search pre-load failed: ${res.status}`);
-                  const data = await res.json();
-                  const byArea: Record<string, CurriculumWork[]> = {};
-                  for (const w of data.works || []) {
-                    const areaKey = w.area?.area_key || 'unknown';
-                    if (!byArea[areaKey]) byArea[areaKey] = [];
-                    byArea[areaKey].push({
-                      id: w.id,
-                      name: w.name,
-                      name_chinese: w.chinese_name,
-                      area_id: areaKey,
-                    });
-                  }
-                  setCurriculum(byArea);
-                } catch {}
-              }
-            }}
+            onFocus={() => loadCurriculumCache()}
             placeholder={t('weekview.findWork')}
           />
         </div>
@@ -657,7 +636,7 @@ export default function WeekPage() {
         childId={childId}
         getAreaConfig={getAreaConfig}
         isHomeschoolParent={isHomeschoolParent(session)}
-        guruAreaDetails={guruAreaDetails}
+        guruAreaDetails={guruSettings.areaDetails}
         smartNoteProcessing={smartNoteProcessing}
       />
       </div>
@@ -667,14 +646,14 @@ export default function WeekPage() {
         <WeeklyAdminCollapsible
           childId={childId}
           childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          planRow={guruPlanRow}
-          areaDetails={guruAreaDetails}
-          fullSummary={guruFullSummary}
-          thisWeek={guruThisWeek}
-          nextWeek={guruNextWeek}
-          oneLiner={guruOneLiner}
-          advice={guruAdvice}
-          updatedAt={guruSummaryUpdatedAt}
+          planRow={guruSettings.planRow}
+          areaDetails={guruSettings.areaDetails}
+          fullSummary={guruSettings.fullSummary}
+          thisWeek={guruSettings.thisWeek}
+          nextWeek={guruSettings.nextWeek}
+          oneLiner={guruSettings.oneLiner}
+          advice={guruSettings.advice}
+          updatedAt={guruSettings.updatedAt}
           onGenerated={fetchGuruSettings}
         />
       )}

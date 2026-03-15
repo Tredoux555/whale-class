@@ -193,53 +193,51 @@ export async function middleware(req: NextRequest) {
   if (!supabaseUrl || !supabaseAnonKey) {
     return res;
   }
-  
-  // Create Supabase client for middleware (only for protected routes)
-  let supabase;
-  try {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-  } catch (error) {
-    console.error('[MIDDLEWARE] Error creating Supabase client:', error);
-    // If Supabase client creation fails, allow request through
-    return res;
-  }
-  
+
   // Get session from cookies
   const authHeader = req.headers.get('authorization');
-  const accessToken = authHeader?.replace('Bearer ', '') || 
+  const accessToken = authHeader?.replace('Bearer ', '') ||
     req.cookies.get('sb-access-token')?.value ||
     req.cookies.get('supabase-auth-token')?.value;
-  
-  let session = null;
-  
-  // CRITICAL FIX #4: Add 3-second timeout to setSession
-  if (accessToken) {
-    try {
-      await withTimeout(
-        supabase.auth.setSession({ access_token: accessToken, refresh_token: '' }),
-        3000
-      );
-    } catch (error) {
-      console.error('[MIDDLEWARE] setSession timeout or error:', error);
-      // Continue without session if setSession fails
-    }
-  }
 
-  // CRITICAL FIX #4: Add 3-second timeout to getSession
-  try {
-    const sessionResult = await withTimeout(
-      supabase.auth.getSession(),
-      3000
-    );
-    session = sessionResult?.data?.session || null;
-  } catch (error) {
-    console.error('[MIDDLEWARE] getSession timeout or error:', error);
-    session = null;
+  let session = null;
+
+  // Only create Supabase client and fetch session if we have an access token
+  // This avoids unnecessary DB calls for unauthenticated requests
+  if (accessToken) {
+    let supabase;
+    try {
+      supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
+    } catch (error) {
+      console.error('[MIDDLEWARE] Error creating Supabase client:', error);
+      // If Supabase client creation fails, treat as no session
+      session = null;
+    }
+
+    if (supabase) {
+      // OPTIMIZATION: Combine setSession + getSession into single operation
+      // setSession sets the auth context, then getSession retrieves it
+      // No need for two separate DB calls with separate timeouts
+      try {
+        await withTimeout(
+          supabase.auth.setSession({ access_token: accessToken, refresh_token: '' }),
+          3000
+        );
+        const sessionResult = await withTimeout(
+          supabase.auth.getSession(),
+          3000
+        );
+        session = sessionResult?.data?.session || null;
+      } catch (error) {
+        console.error('[MIDDLEWARE] Session fetch timeout or error:', error);
+        session = null;
+      }
+    }
   }
 
   // If not authenticated and trying to access protected route
@@ -255,24 +253,41 @@ export async function middleware(req: NextRequest) {
   // If authenticated, check role-based access
   if (session) {
     let roles: string[] = [];
-    
+
+    // Recreate Supabase client if needed (for role check)
+    // This only happens if we have a valid session from above
+    let supabase;
+    try {
+      supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
+    } catch (error) {
+      console.error('[MIDDLEWARE] Error creating Supabase client for role check:', error);
+      supabase = null;
+    }
+
     // CRITICAL FIX #4: Add 3-second timeout to database query
     // CRITICAL FIX #5: Wrap in try/catch so errors don't break middleware
-    try {
-      const userRolesResult = await withTimeout(
-        Promise.resolve(
-          supabase
-            .from('user_roles')
-            .select('role_name')
-            .eq('user_id', session.user.id)
-        ),
-        3000
-      );
-      roles = userRolesResult?.data?.map(r => r.role_name) || [];
-    } catch (error) {
-      console.error('[MIDDLEWARE] Database query timeout or error:', error);
-      // If query fails, continue with empty roles array
-      roles = [];
+    if (supabase) {
+      try {
+        const userRolesResult = await withTimeout(
+          Promise.resolve(
+            supabase
+              .from('user_roles')
+              .select('role_name')
+              .eq('user_id', session.user.id)
+          ),
+          3000
+        );
+        roles = userRolesResult?.data?.map(r => r.role_name) || [];
+      } catch (error) {
+        console.error('[MIDDLEWARE] Database query timeout or error:', error);
+        // If query fails, continue with empty roles array
+        roles = [];
+      }
     }
 
     // Admin routes - require admin, super_admin, or teacher role OR admin-token cookie
