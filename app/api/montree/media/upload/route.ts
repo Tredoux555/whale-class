@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
     }
 
-    const { school_id, child_id, child_ids, work_id, caption, tags, width, height, media_type, duration } = metadata;
+    const { school_id, classroom_id, child_id, child_ids, work_id, caption, tags, width, height, media_type, duration } = metadata;
 
     if (!school_id) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
@@ -107,6 +107,7 @@ export async function POST(request: NextRequest) {
     // Create database record
     const mediaRecord = {
       school_id,
+      classroom_id: classroom_id || null,
       child_id: child_id || null,
       media_type: media_type || 'photo',
       storage_path: storagePath,
