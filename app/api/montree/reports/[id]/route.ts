@@ -24,10 +24,10 @@ export async function GET(
       .from('montree_weekly_reports')
       .select('*')
       .eq('id', reportId)
-      .single();
+      .maybeSingle();
 
     if (error || !report) {
-      console.error('Report fetch error:', error);
+      if (error) console.error('Report fetch error:', error);
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 

@@ -80,6 +80,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           body: JSON.stringify({ child_id: child.id, locale }),
           signal: abortRef.current?.signal,
         });
+        if (!res.ok) throw new Error(`Batch report failed: ${res.status}`);
         const data = await res.json();
 
         if (!mountedRef.current) break;
@@ -153,6 +154,7 @@ export default function BatchReportsCard({ classroomId, children }: Props) {
           body: JSON.stringify({ child_id: child.id, locale }),
           signal: abortRef.current?.signal,
         });
+        if (!res.ok) throw new Error(`Batch report retry failed: ${res.status}`);
         const data = await res.json();
 
         if (!mountedRef.current) break;

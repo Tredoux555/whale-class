@@ -66,7 +66,7 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
           status: res.status,
           statusText: res.statusText,
           error: errorData,
-          passwordSent: password ? `${password.substring(0, 2)}***` : 'none'
+          passwordSent: password ? 'provided' : 'none'
         });
         throw new Error(`Failed to fetch leads (${res.status}): ${errorData.error || res.statusText}`);
       }
