@@ -35,23 +35,6 @@ interface Child {
   name: string;
 }
 
-const BEHAVIOR_FUNCTIONS = [
-  { value: 'attention', label: '👀 Attention', description: 'Seeking connection or recognition' },
-  { value: 'escape', label: '🏃 Escape', description: 'Avoiding a task or situation' },
-  { value: 'sensory', label: '✨ Sensory', description: 'Seeking or avoiding sensory input' },
-  { value: 'tangible', label: '🎁 Tangible', description: 'Wanting an object or activity' },
-  { value: 'unknown', label: '❓ Unknown', description: 'Not yet determined' },
-];
-
-const TIME_OF_DAY = [
-  { value: 'arrival', label: 'Arrival' },
-  { value: 'morning_work', label: 'Morning Work' },
-  { value: 'snack', label: 'Snack' },
-  { value: 'outdoor', label: 'Outdoor' },
-  { value: 'afternoon_work', label: 'Afternoon Work' },
-  { value: 'dismissal', label: 'Dismissal' },
-];
-
 const EFFECTIVENESS = [
   { value: 'effective', label: '✅ Effective', color: 'bg-green-100 text-green-700' },
   { value: 'partially', label: '⚡ Partial', color: 'bg-yellow-100 text-yellow-700' },
@@ -64,6 +47,25 @@ export default function ObservationsPage() {
   const router = useRouter();
   const childId = params.childId as string;
   const { t } = useI18n();
+
+  // Behavior function options - translated
+  const BEHAVIOR_FUNCTIONS = [
+    { value: 'attention', label: `👀 ${t('observations.attention')}`, description: t('observations.attentionDesc') },
+    { value: 'escape', label: `🏃 ${t('observations.escape')}`, description: t('observations.escapeDesc') },
+    { value: 'sensory', label: `✨ ${t('observations.sensory')}`, description: t('observations.sensoryDesc') },
+    { value: 'tangible', label: `🎁 ${t('observations.tangible')}`, description: t('observations.tangibleDesc') },
+    { value: 'unknown', label: `❓ ${t('observations.unknown')}`, description: t('observations.unknownDesc') },
+  ];
+
+  // Time of day options - translated
+  const TIME_OF_DAY = [
+    { value: 'arrival', label: t('observations.arrival') },
+    { value: 'morning_work', label: t('observations.morningWork') },
+    { value: 'snack', label: t('observations.snack') },
+    { value: 'outdoor', label: t('observations.outdoor') },
+    { value: 'afternoon_work', label: t('observations.afternoonWork') },
+    { value: 'dismissal', label: t('observations.dismissal') },
+  ];
 
   const [child, setChild] = useState<Child | null>(null);
   const [observations, setObservations] = useState<Observation[]>([]);

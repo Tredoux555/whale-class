@@ -239,7 +239,7 @@ const VocabularyFlashcardGenerator = () => {
           await processImageFiles(folderFiles);
         } catch (err) {
           console.error('Error reading folder:', err);
-          alert('Error reading folder. Try using the Choose Folder button instead.');
+          alert(t('flashcard.errorReadingFolder'));
           setProcessingZip(false);
         }
         return;
@@ -488,7 +488,7 @@ const VocabularyFlashcardGenerator = () => {
                   navigator.clipboard.writeText(word);
                   const el = document.getElementById(`word-${word}`);
                   if (el) {
-                    el.textContent = '✓ copied';
+                    el.textContent = t('flashcard.copiedFeedback');
                     setTimeout(() => { el.textContent = word; }, 1000);
                   }
                 }}
@@ -578,7 +578,7 @@ const VocabularyFlashcardGenerator = () => {
         {/* Vocabulary Grid */}
         <div className="bg-white rounded-xl shadow-sm border border-cyan-200 p-4">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">📇 {t('flashcard.vocabularyWords')}</h2>
+            <h2 className="text-lg font-semibold text-gray-800">📇 {vocabulary.length} {t('flashcard.vocabularyWords')}</h2>
             <span className="text-sm text-gray-500">{t('flashcard.readyCount').replace('{ready}', String(readyCount)).replace('{total}', String(vocabulary.length))}</span>
           </div>
 

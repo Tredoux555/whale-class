@@ -101,15 +101,15 @@ export default function SetPasswordPage() {
       <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="text-5xl mb-4">🔐</div>
-          <h1 className="text-2xl font-bold text-gray-800">Set Your Password</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('setPassword.title' as TranslationKey)}</h1>
           <p className="text-gray-500 mt-2">
-            Welcome, {session?.teacher?.name}! Set a password for easier future logins.
+            {t('setPassword.greeting' as TranslationKey, { name: session?.teacher?.name })}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('setPassword.emailLabel' as TranslationKey)}</label>
             <input
               type="email"
               value={email}
@@ -117,11 +117,11 @@ export default function SetPasswordPage() {
               placeholder="your@email.com"
               className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
-            <p className="text-xs text-gray-400 mt-1">For password recovery</p>
+            <p className="text-xs text-gray-400 mt-1">{t('setPassword.emailHint' as TranslationKey)}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('setPassword.passwordLabel' as TranslationKey)}</label>
             <input
               type="password"
               value={password}
@@ -134,7 +134,7 @@ export default function SetPasswordPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('setPassword.confirmPasswordLabel' as TranslationKey)}</label>
             <input
               type="password"
               value={confirmPassword}
@@ -149,10 +149,10 @@ export default function SetPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-4 rounded-xl font-bold 
+            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-4 rounded-xl font-bold
               shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
           >
-            {loading ? 'Setting...' : 'Set Password'}
+            {loading ? t('setPassword.setting' as TranslationKey) : t('setPassword.button' as TranslationKey)}
           </button>
 
           <button
@@ -160,12 +160,12 @@ export default function SetPasswordPage() {
             onClick={handleSkip}
             className="w-full text-gray-500 py-2 hover:text-gray-700"
           >
-            Skip for now
+            {t('setPassword.skipButton' as TranslationKey)}
           </button>
         </form>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          You can always set a password later in settings
+          {t('setPassword.settingsHint' as TranslationKey)}
         </p>
       </div>
     </div>

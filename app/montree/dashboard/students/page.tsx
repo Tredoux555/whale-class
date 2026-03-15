@@ -34,25 +34,12 @@ const AGE_OPTIONS = [
   { value: 6, label: '6' },
 ];
 
-// Gender options
-const GENDER_OPTIONS = [
-  { value: 'boy', label: 'Boy' },
-  { value: 'girl', label: 'Girl' },
-];
-
-// Tenure options - how long has student been in the program
-const TENURE_OPTIONS = [
-  { value: 'new', label: 'Just started (less than 2 weeks)', months: 0 },
-  { value: 'few_weeks', label: 'A few weeks (2-4 weeks)', months: 1 },
-  { value: '1_3_months', label: '1-3 months', months: 2 },
-  { value: '3_6_months', label: '3-6 months', months: 4 },
-  { value: '6_12_months', label: '6-12 months', months: 9 },
-  { value: '1_year_plus', label: 'More than a year', months: 15 },
-];
+// Helper type for tenure options
+type TenureOption = { value: string; label: string; months: number };
 
 // Helper to calculate enrolled_at from tenure selection
-function getEnrolledAtFromTenure(tenure: string): string {
-  const option = TENURE_OPTIONS.find(t => t.value === tenure);
+function getEnrolledAtFromTenure(tenure: string, tenureOptions: TenureOption[]): string {
+  const option = tenureOptions.find(t => t.value === tenure);
   if (!option) return new Date().toISOString().split('T')[0];
   const date = new Date();
   date.setMonth(date.getMonth() - option.months);
@@ -60,7 +47,7 @@ function getEnrolledAtFromTenure(tenure: string): string {
 }
 
 // Helper to get tenure value from enrolled_at date
-function getTenureFromEnrolledAt(enrolledAt: string | null): string {
+function getTenureFromEnrolledAt(enrolledAt: string | null, tenureOptions: TenureOption[]): string {
   if (!enrolledAt) return 'new';
   const enrolled = new Date(enrolledAt);
   const now = new Date();
@@ -267,6 +254,23 @@ export default function StudentsPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const areaNameT = (key: string) => t(`area.${key}` as any) || AREA_CONFIG[key]?.name || key;
+
+  // Gender options - translated
+  const GENDER_OPTIONS = [
+    { value: 'boy', label: t('students.genderBoy') },
+    { value: 'girl', label: t('students.genderGirl') },
+  ];
+
+  // Tenure options - translated
+  const TENURE_OPTIONS: TenureOption[] = [
+    { value: 'new', label: t('students.tenureNew'), months: 0 },
+    { value: 'few_weeks', label: t('students.tenureFewWeeks'), months: 1 },
+    { value: '1_3_months', label: t('students.tenure1to3Months'), months: 2 },
+    { value: '3_6_months', label: t('students.tenure3to6Months'), months: 4 },
+    { value: '6_12_months', label: t('students.tenure6to12Months'), months: 9 },
+    { value: '1_year_plus', label: t('students.tenureMoreThan1Year'), months: 15 },
+  ];
+
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
@@ -376,7 +380,7 @@ export default function StudentsPage() {
     setFormData({
       name: student.name,
       age: student.age || 3.5,
-      tenure: getTenureFromEnrolledAt(student.enrolled_at || null),
+      tenure: getTenureFromEnrolledAt(student.enrolled_at || null, TENURE_OPTIONS),
       progress: student.progress || {},
     });
     setShowForm(true);
@@ -398,7 +402,7 @@ export default function StudentsPage() {
     setSaving(true);
 
     try {
-      const enrolledAt = getEnrolledAtFromTenure(formData.tenure);
+      const enrolledAt = getEnrolledAtFromTenure(formData.tenure, TENURE_OPTIONS);
 
       if (editingStudent) {
         // Update existing student

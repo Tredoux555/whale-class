@@ -5,9 +5,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useI18n } from '@/lib/montree/i18n';
 
 export default function PrincipalRegisterPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,12 +29,12 @@ export default function PrincipalRegisterPage() {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('principalRegister.passwordMismatch'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('principalRegister.passwordTooShort'));
       return;
     }
 
@@ -54,7 +56,7 @@ export default function PrincipalRegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.error || t('principalRegister.registrationFailed'));
       }
 
       // Store session
@@ -65,7 +67,7 @@ export default function PrincipalRegisterPage() {
       router.push('/montree/principal/setup');
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('principalRegister.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -84,10 +86,10 @@ export default function PrincipalRegisterPage() {
             <span className="text-4xl">🌱</span>
           </div>
           <h1 className="text-3xl font-light text-white mb-2">
-            Welcome to <span className="font-semibold">Montree</span>
+            {t('principalRegister.welcome')} <span className="font-semibold">Montree</span>
           </h1>
           <p className="text-emerald-300/70 text-sm">
-            Let's set up your school
+            {t('principalRegister.subtitle')}
           </p>
           
           {/* Progress dots */}
@@ -102,12 +104,12 @@ export default function PrincipalRegisterPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">School Name</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.schoolNameLabel')}</label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder="e.g. Sunshine Montessori"
+                  placeholder={t('principalRegister.schoolNamePlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -120,12 +122,12 @@ export default function PrincipalRegisterPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Your Name (Principal)</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.principalNameLabel')}</label>
                 <input
                   type="text"
                   value={principalName}
                   onChange={(e) => setPrincipalName(e.target.value)}
-                  placeholder="e.g. Sarah Johnson"
+                  placeholder={t('principalRegister.principalNamePlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
@@ -137,7 +139,7 @@ export default function PrincipalRegisterPage() {
                 disabled={!schoolName.trim() || !principalName.trim()}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
               >
-                Continue →
+                {t('principalRegister.continue')}
               </button>
             </div>
           )}
@@ -146,12 +148,12 @@ export default function PrincipalRegisterPage() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Email</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.emailLabel')}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="principal@school.com"
+                  placeholder={t('principalRegister.emailPlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -159,24 +161,24 @@ export default function PrincipalRegisterPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Create Password</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.passwordLabel')}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder={t('principalRegister.passwordPlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Confirm Password</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('principalRegister.confirmPasswordLabel')}</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder={t('principalRegister.confirmPasswordPlaceholder')}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
@@ -194,14 +196,14 @@ export default function PrincipalRegisterPage() {
                   onClick={() => setStep(1)}
                   className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 >
-                  ← Back
+                  {t('principalRegister.back')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !email || !password || !confirmPassword}
                   className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {loading ? 'Creating...' : 'Create Account'}
+                  {loading ? t('principalRegister.creatingAccount') : t('principalRegister.createAccount')}
                 </button>
               </div>
             </div>
@@ -211,9 +213,9 @@ export default function PrincipalRegisterPage() {
         {/* Links */}
         <div className="mt-8 text-center">
           <p className="text-white/50 text-sm">
-            Already have an account?{' '}
+            {t('principalRegister.alreadyHaveAccount')}{' '}
             <Link href="/montree/principal/login" className="text-emerald-400 hover:text-emerald-300">
-              Sign in
+              {t('principalRegister.signIn')}
             </Link>
           </p>
         </div>

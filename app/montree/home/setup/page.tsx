@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
+import { useI18n } from '@/lib/montree/i18n';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
 
@@ -13,6 +14,7 @@ const AGE_OPTIONS = [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6];
 
 export default function SetupPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [name, setName] = useState('');
   const [age, setAge] = useState<number>(3.5);
@@ -31,7 +33,7 @@ export default function SetupPage() {
   const handleSubmit = async () => {
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('Please enter your child\'s name');
+      setError(t('home.setup.enterChildName'));
       return;
     }
 
@@ -42,7 +44,7 @@ export default function SetupPage() {
       // Validate classroom exists before API call
       const classroomId = session?.classroom?.id;
       if (!classroomId) {
-        setError('Session error — please log in again.');
+        setError(t('home.setup.sessionError'));
         setSaving(false);
         return;
       }
@@ -128,23 +130,23 @@ export default function SetupPage() {
             <span className="text-3xl">🌿</span>
           </div>
           <h1 className={`text-2xl font-bold ${BIO.text.primary} mb-2`}>
-            Let&apos;s begin
+            {t('home.setup.letBegin')}
           </h1>
           <p className={`text-sm ${BIO.text.secondary}`}>
-            Tell us a little about your child
+            {t('home.setup.tellAboutChild')}
           </p>
         </div>
 
         {/* Name input */}
         <div className="mb-6">
           <label className={`block text-xs ${BIO.text.mint} mb-2 font-medium`}>
-            Child&apos;s name
+            {t('home.setup.childName')}
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => { setName(e.target.value); setError(''); }}
-            placeholder="e.g. Emma"
+            placeholder={t('home.setup.namePlaceholder')}
             className={`w-full px-4 py-3.5 rounded-2xl border ${BIO.border.dim} ${BIO.bg.cardSolid} ${BIO.text.primary} text-base placeholder:text-white/25 focus:outline-none focus:border-[#4ADE80]/30 focus:ring-1 focus:ring-[#4ADE80]/10`}
             autoFocus
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
@@ -154,7 +156,7 @@ export default function SetupPage() {
         {/* Age picker */}
         <div className="mb-8">
           <label className={`block text-xs ${BIO.text.mint} mb-3 font-medium`}>
-            How old?
+            {t('home.setup.howOld')}
           </label>
           <div className="grid grid-cols-5 gap-2">
             {AGE_OPTIONS.map(a => (
@@ -168,7 +170,7 @@ export default function SetupPage() {
                 }`}
                 style={age === a ? { boxShadow: BIO.glow.soft } : undefined}
               >
-                {a === 6 ? '6+' : a}
+                {a === 6 ? t('home.setup.ageLabel6plus') : a}
               </button>
             ))}
           </div>
@@ -191,18 +193,18 @@ export default function SetupPage() {
           {saving ? (
             <>
               <div className="w-4 h-4 rounded-full border-2 border-[#0A1F1C]/30 border-t-[#0A1F1C] animate-spin" />
-              Creating...
+              {t('home.setup.creating')}
             </>
           ) : (
             <>
-              Meet Your Guide
+              {t('home.setup.meetGuide')}
               <span>→</span>
             </>
           )}
         </button>
 
         <p className={`text-center text-xs ${BIO.text.muted} mt-6`}>
-          Your guide will help set up everything else
+          {t('home.setup.guideWillHelp')}
         </p>
       </div>
     </div>
