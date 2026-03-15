@@ -21,6 +21,17 @@ const DEFAULT_LOCALE: Locale = 'en';
 
 const messages: Record<Locale, Record<string, string>> = { en, zh };
 
+// Pre-compiled regex cache for interpolation params (avoids creating new RegExp per t() call)
+const regexCache = new Map<string, RegExp>();
+function getParamRegex(key: string): RegExp {
+  let re = regexCache.get(key);
+  if (!re) {
+    re = new RegExp(`\\{${key}\\}`, 'g');
+    regexCache.set(key, re);
+  }
+  return re;
+}
+
 // ---------------------------------------------------------------------------
 // Context
 // ---------------------------------------------------------------------------
@@ -65,7 +76,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       let text = messages[locale][key] ?? messages[DEFAULT_LOCALE][key] ?? key;
       if (params) {
         for (const [k, v] of Object.entries(params)) {
-          text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+          text = text.replace(getParamRegex(k), String(v));
         }
       }
       return text;

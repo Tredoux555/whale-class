@@ -182,7 +182,7 @@ export async function POST(request: NextRequest) {
           .maybeSingle();
 
         if (!existingWork) {
-          // Get area_id for this area
+          // Get area_id — need this first for the max_seq query
           const { data: areaData } = await supabase
             .from('montree_classroom_curriculum_areas')
             .select('id')
@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
 
           if (areaData) {
-            // Get next sequence number
+            // Get next sequence number (now that we have area_id)
             const { data: maxSeq } = await supabase
               .from('montree_classroom_curriculum_works')
               .select('sequence')

@@ -201,7 +201,7 @@ export default function DashboardPage() {
                   >
                     <div className={`w-6 h-6 rounded-full ${child.id === selectedChild.id ? 'bg-white/20' : 'bg-[#0D3330]/10'} flex items-center justify-center text-xs font-bold overflow-hidden`}>
                       {child.photo_url ? (
-                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
+                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
                       ) : (
                         child.name.charAt(0)
                       )}
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                   >
                     <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
                       {child.photo_url ? (
-                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" />
+                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
                       ) : (
                         child.name.charAt(0)
                       )}

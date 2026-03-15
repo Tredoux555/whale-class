@@ -331,7 +331,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Fetch child
+    // Fetch child first (needed for classroom_id in curriculum query)
     const { data: child } = await supabase
       .from('montree_children')
       .select('id, name, date_of_birth, classroom_id')
@@ -345,30 +345,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch progress
-    const { data: progress } = await supabase
-      .from('montree_child_progress')
-      .select('*')
-      .eq('child_id', child_id)
-      .gte('created_at', week_start)
-      .lte('created_at', week_end + 'T23:59:59');
-
-    // Fetch historical
+    // Fetch progress, historical, and curriculum in parallel (all independent)
     const fourWeeksAgo = new Date(week_start);
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
-    
-    const { data: historical } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, created_at')
-      .eq('child_id', child_id)
-      .gte('created_at', fourWeeksAgo.toISOString())
-      .lt('created_at', week_start);
 
-    // Fetch curriculum
-    const { data: curriculum } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('id, name, area')
-      .eq('classroom_id', child.classroom_id);
+    const [progressResult, historicalResult, curriculumResult] = await Promise.all([
+      supabase
+        .from('montree_child_progress')
+        .select('*')
+        .eq('child_id', child_id)
+        .gte('created_at', week_start)
+        .lte('created_at', week_end + 'T23:59:59'),
+      supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, created_at')
+        .eq('child_id', child_id)
+        .gte('created_at', fourWeeksAgo.toISOString())
+        .lt('created_at', week_start),
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area')
+        .eq('classroom_id', child.classroom_id),
+    ]);
+
+    const progress = progressResult.data;
+    const historical = historicalResult.data;
+    const curriculum = curriculumResult.data;
 
     // Run analysis
     const analysis = analyzeWeeklyProgress({

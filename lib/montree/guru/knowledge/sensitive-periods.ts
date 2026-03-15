@@ -290,20 +290,17 @@ export function formatSensitivePeriodsForPrompt(ageMonths: number): string {
   let text = `\nACTIVE SENSITIVE PERIODS (child is ${ageYears}y ${ageRemMonths}m):\n`;
   text += 'Proactively mention these when relevant — parents are often unaware of sensitive period windows.\n\n';
 
+  // Only inject peak and active periods into prompt — waning adds token bloat with minimal value
   for (const { period, status } of periods) {
     if (status === 'peak') {
-      text += `🔥 ${period.name} — AT PEAK INTENSITY\n`;
-      text += `   ${period.description}\n`;
-      text += `   You might notice: ${period.behaviors.slice(0, 3).join('; ')}\n`;
+      text += `${period.name} — AT PEAK: ${period.description}\n`;
+      text += `   Signs: ${period.behaviors.slice(0, 3).join('; ')}\n`;
       text += `   Channel with: ${period.curriculumAlignment.slice(0, 2).join('; ')}\n`;
       text += `   At home: ${period.homeActivities.slice(0, 2).join('; ')}\n\n`;
     } else if (status === 'active') {
-      text += `✨ ${period.name} — Active\n`;
-      text += `   ${period.behaviors[0]}\n`;
-      text += `   Channel with: ${period.curriculumAlignment[0]}\n\n`;
-    } else {
-      text += `🌙 ${period.name} — Waning (still present but less intense)\n\n`;
+      text += `${period.name} — Active: ${period.behaviors[0]}. Channel with: ${period.curriculumAlignment[0]}\n\n`;
     }
+    // Skip waning periods — saves ~100 tokens per waning period, minimal guidance value
   }
 
   return text;

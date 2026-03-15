@@ -68,7 +68,24 @@ export async function middleware(req: NextRequest) {
       headers: requestHeaders,
     },
   });
-  
+
+  // ============================================
+  // EARLY EXIT: Static files, Next.js internals, SEO files
+  // Must be BEFORE CSRF check to avoid unnecessary URL parsing on every asset
+  // ============================================
+  if (
+    pathname.startsWith('/_next/') ||
+    pathname.startsWith('/favicon.ico') ||
+    pathname.startsWith('/audio/') ||
+    pathname.startsWith('/audio-new/') ||
+    pathname.startsWith('/images/') ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/robots.txt' ||
+    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|html|avif|json|webmanifest)$/i.test(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
   // ============================================
   // PHASE 7: CSRF PROTECTION
   // Block cross-origin state-changing requests
@@ -135,18 +152,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Static files, Next.js internals, and SEO files - bypass completely
-  if (
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/favicon.ico') ||
-    pathname.startsWith('/audio/') ||
-    pathname.startsWith('/images/') ||
-    pathname === '/sitemap.xml' ||
-    pathname === '/robots.txt' ||
-    /\.(svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|eot|mp3|mp4|html|avif)$/i.test(pathname)
-  ) {
-    return NextResponse.next();
-  }
+  // Static files already handled above (before CSRF check)
   
   // Public pages - NO AUTH REQUIRED, NO REDIRECTS
   // These routes should load directly without any authentication checks
