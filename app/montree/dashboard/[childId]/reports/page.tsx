@@ -326,14 +326,21 @@ export default function ReportsPage() {
             {hasItems ? (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-gray-600">{t('reports.thisWeekAchievements' as any) || 'This Week'}</h3>
-                {Object.entries(
-                  items.reduce((acc, item) => {
+                {(() => {
+                  const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+                  const grouped = items.reduce((acc, item) => {
                     const area = item.area || 'other';
                     if (!acc[area]) acc[area] = [];
                     acc[area].push(item);
                     return acc;
-                  }, {} as Record<string, ReportItem[]>)
-                ).map(([area, areaItems]) => {
+                  }, {} as Record<string, ReportItem[]>);
+                  const sortedAreas = Object.keys(grouped).sort((a, b) => {
+                    const ai = AREA_ORDER.indexOf(a);
+                    const bi = AREA_ORDER.indexOf(b);
+                    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+                  });
+                  return sortedAreas.map(area => [area, grouped[area]] as [string, ReportItem[]]);
+                })().map(([area, areaItems]) => {
                   const areaConf = AREA_CONFIG[area];
                   return (
                     <div key={area} className="bg-gray-50 rounded-xl p-3">
