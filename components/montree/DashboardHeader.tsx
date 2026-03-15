@@ -159,13 +159,13 @@ export default function DashboardHeader() {
     <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left: Logo + classroom */}
-        <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <span className="text-2xl">🌳</span>
-          <span className="font-bold text-lg">{session.classroom?.name || t('app.name')}</span>
+        <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-2 hover:opacity-90 transition-opacity min-w-0 flex-shrink">
+          <span className="text-xl sm:text-2xl flex-shrink-0">🌳</span>
+          <span className="font-bold text-base sm:text-lg truncate">{session.classroom?.name || t('app.name')}</span>
         </Link>
 
-        {/* Right: Action icons */}
-        <div className="flex items-center gap-2">
+        {/* Right: Action icons — overflow-x-auto prevents wrapping on narrow screens */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
           {/* Language toggle — always visible, far left */}
           <LanguageToggle />
 
@@ -173,7 +173,7 @@ export default function DashboardHeader() {
           <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
             title={t('capture.takePhoto')}
           >
             📸
@@ -182,7 +182,7 @@ export default function DashboardHeader() {
             href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
             data-tutorial="guru-link"
             data-guide="nav-guru"
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
             title={t('nav.guru')}
           >
             🧠
@@ -191,7 +191,7 @@ export default function DashboardHeader() {
             <Link
               href="/montree/dashboard/classroom-overview"
               data-guide="nav-overview"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+              className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
               title={t('nav.classroomOverview')}
             >
               📋
@@ -201,7 +201,7 @@ export default function DashboardHeader() {
             <Link
               href="/montree/dashboard/raz"
               data-guide="nav-raz"
-              className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium"
+              className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
               title="RAZ Reading Tracker"
             >
               📖
@@ -214,7 +214,7 @@ export default function DashboardHeader() {
           />
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}
-            className="px-3 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm flex-shrink-0 whitespace-nowrap"
           >
             {t('auth.logout')}
           </button>

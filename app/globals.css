@@ -223,24 +223,32 @@ body, html {
    MOBILE & PWA SUPPORT - Session 125
    ============================================ */
 
-/* iOS Safe Area Support */
+/* iOS Safe Area Support
+   NOTE: Do NOT add safe-area padding to body — it doubles up with
+   component-level safe-area padding (DashboardHeader, CameraCapture, etc).
+   Each full-screen component handles its own safe area insets. */
 @supports (padding: env(safe-area-inset-top)) {
-  body {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
   /* Fixed headers should account for notch */
   .safe-top {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
-  
+
   /* Fixed footers/bottom nav should account for home indicator */
   .safe-bottom {
     padding-bottom: max(1rem, env(safe-area-inset-bottom));
   }
+}
+
+/* Dynamic viewport height — fixes iOS Safari 100vh including hidden URL bar.
+   h-dvh = dynamic viewport height (shrinks when URL bar shows).
+   Falls back to 100vh for browsers that don't support dvh. */
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+.min-h-dvh {
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Touch-friendly tap targets (minimum 44px) */
@@ -296,13 +304,8 @@ select {
   font-size: 16px !important;
 }
 
-/* PWA Standalone mode adjustments */
-@media (display-mode: standalone) {
-  body {
-    /* Extra space at top for status bar in PWA mode */
-    padding-top: env(safe-area-inset-top, 20px);
-  }
-}
+/* PWA Standalone mode — safe area handled per-component, not on body.
+   Body padding would double with sticky headers that already use env(safe-area-inset-top). */
 
 /* Landscape phone adjustments */
 @media (max-height: 500px) and (orientation: landscape) {

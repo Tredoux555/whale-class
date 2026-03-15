@@ -116,7 +116,7 @@ export default function HomePage() {
   // Loading state — also wait for selectedChild when children are loaded
   if (loading || !session || (!selectedChild && children.length > 0)) {
     return (
-      <div className={`h-screen flex items-center justify-center ${BIO.bg.deep}`}>
+      <div className={`h-dvh flex items-center justify-center ${BIO.bg.deep}`}>
         <AmbientParticles />
         <div className="relative z-10 text-center">
           <div className="animate-pulse text-5xl mb-4">🌿</div>
@@ -127,7 +127,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className={`h-screen flex flex-col ${BIO.bg.deep}`}>
+    <div className={`h-dvh flex flex-col ${BIO.bg.deep}`}>
       <AmbientParticles />
 
       {/* Minimal header */}

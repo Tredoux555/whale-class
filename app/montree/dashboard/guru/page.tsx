@@ -124,7 +124,7 @@ function GuruContent() {
 
   if (pageLoading) {
     return (
-      <div className={`h-screen flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
+      <div className={`h-dvh flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
         <div className="animate-bounce text-4xl">{guruEmoji}</div>
       </div>
     );
@@ -134,7 +134,7 @@ function GuruContent() {
   const activeChild = selectedChild || children[0];
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-dvh flex flex-col">
       <Toaster position="top-center" />
 
       {/* Paywall Modal (homeschool parents only) */}
@@ -234,7 +234,7 @@ function GuruContent() {
 export default function GuruPage() {
   return (
     <Suspense fallback={
-      <div className="h-screen bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
+      <div className="h-dvh bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
         <div className="animate-bounce text-4xl">🌿</div>
       </div>
     }>
