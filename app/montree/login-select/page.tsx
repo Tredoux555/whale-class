@@ -105,12 +105,12 @@ function UnifiedLoginContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Language toggle */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Language toggle — respects safe area for notch */}
+      <div className="absolute right-4 z-10" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
         <LanguageToggle className="bg-white/10 hover:bg-white/20 text-white" />
       </div>
 
@@ -184,8 +184,8 @@ function UnifiedLoginContent() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="absolute bottom-6 text-center left-0 right-0">
+      {/* Footer — respects safe area on iPhones */}
+      <div className="absolute text-center left-0 right-0" style={{ bottom: 'max(24px, env(safe-area-inset-bottom, 24px))' }}>
         <p className="text-slate-500 text-xs">🌳 Montree • montree.xyz</p>
       </div>
     </div>
@@ -195,7 +195,7 @@ function UnifiedLoginContent() {
 export default function LoginSelectPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center">
+      <div className="min-h-dvh bg-gradient-to-br from-slate-900 via-emerald-900 to-teal-900 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
       </div>
     }>

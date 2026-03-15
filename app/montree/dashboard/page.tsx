@@ -140,7 +140,7 @@ export default function DashboardPage() {
   if (isParent && children.length >= 1 && guruFirstView) {
     const selectedChild = children.find(c => c.id === selectedChildId) || children[0];
     return (
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-dvh">
         {/* Mini header with child tabs + back button */}
         <div className="bg-gradient-to-r from-[#0D3330] to-[#164340] px-4 py-2 flex items-center gap-3">
           <button

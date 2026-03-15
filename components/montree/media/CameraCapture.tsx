@@ -406,9 +406,9 @@ export default function CameraCapture({
         className="hidden"
       />
 
-      {/* Mode toggle (top) */}
+      {/* Mode toggle (top — respects safe area for notch/dynamic island) */}
       {allowVideo && !isCaptured && !isRecording && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex bg-black/50 rounded-full p-1">
+        <div className="absolute left-1/2 -translate-x-1/2 z-10 flex bg-black/50 rounded-full p-1" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
           <button
             onClick={() => handleModeChange('photo')}
             className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
@@ -432,16 +432,16 @@ export default function CameraCapture({
         </div>
       )}
 
-      {/* Camera indicator (top right) */}
+      {/* Camera indicator (top right — respects safe area) */}
       {!isCaptured && (
-        <div className="absolute top-4 right-4 z-10 px-3 py-1.5 bg-black/50 rounded-full text-white text-xs font-medium">
+        <div className="absolute right-4 z-10 px-3 py-1.5 bg-black/50 rounded-full text-white text-xs font-medium" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
           {currentFacing === 'user' ? `🤳 ${t('camera.front')}` : `📷 ${t('camera.back')}`}
         </div>
       )}
 
       {/* Recording indicator */}
       {isRecording && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-full">
+        <div className="absolute left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-full" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
           <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
           <span className="font-mono font-bold">{formatTime(recordingTime)}</span>
           <span className="text-white/70 text-sm">/ {formatTime(MAX_VIDEO_DURATION)}</span>
@@ -504,7 +504,7 @@ export default function CameraCapture({
       </div>
 
       {/* Controls */}
-      <div className="bg-black/80 backdrop-blur-sm safe-area-bottom">
+      <div className="bg-black/80 backdrop-blur-sm" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         {isCaptured ? (
           // Captured controls
           <div className="flex items-center justify-between px-6 py-4">

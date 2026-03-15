@@ -91,7 +91,7 @@ export default function ClassroomOverviewPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-dvh flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full mx-auto mb-2" />
           <p className="text-gray-500 text-sm">{t('common.loading')}</p>
@@ -102,7 +102,7 @@ export default function ClassroomOverviewPage() {
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
+      <div className="h-dvh flex items-center justify-center bg-gray-50">
         <p className="text-red-500">{t('common.connectionError')}</p>
       </div>
     );
