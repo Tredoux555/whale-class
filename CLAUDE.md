@@ -14,9 +14,31 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🔥 NEXT SESSION PRIORITIES
 
-### Deploy All Local Changes (Priority #0 — URGENT)
+### Fix Smart Capture Critical Bugs (Priority #0 — FIRST CALL TO ACTION)
 
-All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-learning visual memory system + expanded visual ID guide (262 lines, 200+ works) + Smart Capture marketing tab + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: self-learning visual memory, expanded visual ID guide, Smart Capture marketing, pink/blue box generators, all Mar 8-14 features" && git push origin main`
+**Status:** Deep audit completed Mar 15. Found 3 CRITICAL, 4 HIGH bugs. System works but has silent failure modes that lose data and hang requests.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` — Full details with exact file paths, line numbers, and fix patterns.
+**Estimated time:** ~2.5 hours for all CRITICALs + HIGHs.
+
+**CRITICAL-001: No timeout on Haiku vision call** — `app/api/montree/guru/corrections/route.ts` lines ~276-293. `generateAndStoreVisualMemory()` calls `anthropic.messages.create({ model: HAIKU_MODEL })` with NO AbortController, NO timeout. If Haiku hangs, teacher correction request hangs forever. Fix: Add AbortController + 45s timeout + graceful skip (correction still saves, only visual learning skipped).
+
+**CRITICAL-002: Verify Sonnet vision AbortController** — `app/api/montree/guru/photo-insight/route.ts` lines ~830-870. Mar 13 R2C1 supposedly added `apiAbortController` with signal to Sonnet call. NEEDS VERIFICATION — open the file, find `anthropic.messages.create()` for main vision call (model: AI_MODEL), confirm second argument `{ signal: apiAbortController.signal }` exists. If not, add same pattern as CRITICAL-001 but return graceful JSON (not 500).
+
+**CRITICAL-003: Brain learning silent data loss** — `app/api/montree/guru/corrections/route.ts` lines ~374-401. If `supabase.rpc('append_brain_learning')` fails AND manual upsert fallback fails, learning is silently discarded via `console.error`. Fix: Add in-memory retry queue (module-level array, 3 attempts, 30s delay). See handoff for full code pattern.
+
+**HIGH-001: Photo URL lookup silent failure** — `corrections/route.ts` lines ~85-130. If all 3 photo URL resolution paths fail, `photoUrl` stays null, `generateAndStoreVisualMemory()` is skipped silently. Teacher thinks correction worked but system didn't learn visually. Fix: Log error + return warning in response.
+
+**HIGH-002: Double onProgressUpdate race condition** — `components/montree/guru/PhotoInsightButton.tsx`. GREEN zone auto-update fires `onProgressUpdate` via useEffect AND user clicking confirm fires it again. Fix: Add `progressUpdateFiredRef` guard.
+
+**HIGH-003: Stale closures in PhotoInsightButton handlers** — Same file. `result` derived from `entry?.result` during render can be stale by the time handler executes. Fix: Read fresh from store inside handlers via `photoInsightStore.getEntry(storeKey)`.
+
+**HIGH-004: Missing child_id validation** — `corrections/route.ts` lines ~35-40. If child_id is null/undefined, access check skipped, correction recorded with null child_id, breaks learning loop. Fix: Add `if (!child_id) return 400` at top of handler.
+
+**Architecture note:** Haiku is NOT in the main vision pipeline. Every photo goes through Sonnet (~$0.06). Two-tier Haiku/Sonnet router was designed but NEVER built — would cut costs 60-70%. Build after fixing these bugs.
+
+### Deploy All Local Changes (Priority #1 — URGENT)
+
+All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-learning visual memory system + expanded visual ID guide (262 lines, 200+ works) + Smart Capture marketing tab + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: self-learning visual memory, expanded visual ID guide, Smart Capture marketing, outreach campaign, pink/blue box generators, all Mar 8-15 features" && git push origin main`
 
 **Includes (Mar 14 — late):** Per-classroom visual memory self-learning system (1 migration, 2 modified API routes). Expanded visual ID guide from ~48 to ~262 lines covering 200+ works with 6 confusion pair sections. Smart Capture marketing tab in Nerve Center (6 competitors analysed — all confirmed zero AI photo recognition). Competitive research: Montree is category of one.
 **Includes (Mar 14 — earlier):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
@@ -24,7 +46,7 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 **Full deploy handoff:** `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md`, `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`, `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
 **Migrations required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column) AND `psql $DATABASE_URL -f migrations/138_visual_memory.sql` (visual memory table + RPCs + corrections columns)
 
-### Rewrite Phonics Image Downloader with Montessori Filters (Priority #1 — FIRST CALL TO ACTION)
+### Rewrite Phonics Image Downloader with Montessori Filters (Priority #2)
 
 **Status:** Script exists (`scripts/download-phonics-images.py`), ran successfully (355 images downloaded), but ~90% of images are NOT Montessori-standard. Pixabay returns artistic stock photos — wrong objects, cluttered backgrounds, zoomed-in macro shots, inappropriate content. Only ~10% usable.
 
@@ -46,7 +68,7 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 **Current images on Mac:** `phonics-images/` (355 files, 27.8MB) — delete and re-download after rewrite
 **Handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`
 
-### Fix i18n Work Names Not Translating to Chinese (Priority #2)
+### Fix i18n Work Names Not Translating to Chinese (Priority #3)
 
 **Problem:** When Chinese is selected, UI labels translate correctly but **work names stay English** ("Dropper Water Transfer" instead of Chinese). Affects: FocusWorksSection work names, Weekly Admin generated content, classroom overview print page.
 
@@ -58,29 +80,29 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 3. `classroom-overview/page.tsx` — Already enriches via batch API's `getChineseNameMap()` — verify it works
 4. Ensure Claude's `outputLang` directive is working for narrative generation in Weekly Admin
 
-### Fix `{count}m ago` Timestamp Bug (Priority #3)
+### Fix `{count}m ago` Timestamp Bug (Priority #4)
 
 GuruChatThread welcome message shows literal `{count}m ago` instead of actual time. Check timestamp formatting in GuruChatThread — likely a missing i18n interpolation or template literal issue.
 
-### Seed Community Library (Priority #4)
+### Seed Community Library (Priority #5)
 
 Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
 
-### Per-School Guru Personality Settings (Priority #5)
+### Per-School Guru Personality Settings (Priority #6)
 
 **Status:** DESIGNED, ready to build. ~1-2 hours.
 **What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school.
 **Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
 
-### Stripe Setup (Priority #6 — Deferred)
+### Stripe Setup (Priority #7 — Deferred)
 
 **Needs:** `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`, `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM`
 
-### i18n Remaining Wiring (Priority #7)
+### i18n Remaining Wiring (Priority #8)
 
 Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
 
-### Story Vault Image Viewer (Priority #8 — Deferred)
+### Story Vault Image Viewer (Priority #9 — Deferred)
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
@@ -120,6 +142,13 @@ Systematic deep-dive web research to find every premium Montessori school worldw
 - Wrote pitch document (PITCH_SMART_CAPTURE.md) with 30-second version and cold email
 - Updated Nerve Center with pitch, cold email, headlines, how-it-works, competitors, economics
 - Confirmed zero competitors have AI photo recognition (category of one)
+
+**Also this session:**
+- Deep audit of Smart Capture system — found 3 CRITICAL, 4 HIGH, 5 MEDIUM, 4 LOW issues
+- Built outreach campaign page (`app/montree/super-admin/marketing/outreach-campaign/page.tsx`) with 9 personalized emails, 4-week game plan, mailto links, sent tracking
+- Generated `docs/Montree_Global_Outreach_List.xlsx` (Top 50, Chains, Training Orgs, Cold Email sheets)
+- Updated marketing hub with outreach campaign link
+- Wrote comprehensive handoff: `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md`
 
 **Output:** `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` — Full data for all 50+ schools with contacts, scores, grades. Ready to generate Excel spreadsheet next session.
 
@@ -2977,6 +3006,7 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
+| `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | **CURRENT** — Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
 | `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` | **CURRENT** — Global Montessori school research: Top 50 ranked list, 7 chains (550+ schools), contacts for 17 countries, scoring system, reachability grades. Ready for Excel generation. |
 | `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md` | Per-classroom visual memory self-learning system, expanded visual ID guide (262 lines, 200+ works), Smart Capture marketing tab, competitive analysis (zero competitors have AI photo recognition) |
 | `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md` | Parent feature fixes (invite parent, lightbox, gallery timeline, report photos) + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix |
