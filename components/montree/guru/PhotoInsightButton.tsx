@@ -79,16 +79,21 @@ export default function PhotoInsightButton({
     }
   }, [mediaId]);
 
+  // HIGH-002 fix: Guard ensures onProgressUpdate fires AT MOST once per entry
+  // Prevents race: GREEN auto-update useEffect + user clicking confirm both calling onProgressUpdate
+  const progressUpdateFiredRef = useRef<string | null>(null);
+
   // Fire onProgressUpdate exactly once when auto_updated result arrives
   // Try-catch: parent's callback may throw — don't let it crash this component
-  const firedAutoUpdateRef = useRef<string | null>(null);
+  // Set ref AFTER success so failures don't permanently block retries
   useEffect(() => {
-    if (result?.auto_updated && onProgressUpdate && firedAutoUpdateRef.current !== storeKey) {
-      firedAutoUpdateRef.current = storeKey;
+    if (result?.auto_updated && onProgressUpdate && progressUpdateFiredRef.current !== storeKey) {
       try {
         onProgressUpdate();
+        progressUpdateFiredRef.current = storeKey; // Only lock after success
       } catch (err) {
         console.error('[PhotoInsight] onProgressUpdate callback threw:', err);
+        // Ref stays unset — allows retry via handleConfirm
       }
     }
   }, [result, storeKey, onProgressUpdate]);
@@ -104,20 +109,23 @@ export default function PhotoInsightButton({
   }, [mediaId, childId, locale]);
 
   // CTA: Confirm identification (AMBER zone — teacher says "yes, correct")
+  // HIGH-003 fix: Read fresh from store inside handler to avoid stale closures
   const handleConfirm = useCallback(async () => {
-    if (!result?.work_name || !result?.area || ctaLoading) return;
+    const freshEntry = getEntry(mediaId, childId);
+    const freshResult = freshEntry?.result;
+    if (!freshResult?.work_name || !freshResult?.area || ctaLoading) return;
     setCtaLoading(true);
     try {
       // 1. Update progress (same as auto-update but teacher-initiated)
-      if (result.mastery_evidence && ['mastered', 'practicing', 'presented'].includes(result.mastery_evidence)) {
+      if (freshResult.mastery_evidence && ['mastered', 'practicing', 'presented'].includes(freshResult.mastery_evidence)) {
         const progressRes = await montreeApi(`/api/montree/progress/update`, {
           method: 'POST',
           body: JSON.stringify({
             child_id: childId,
-            work_name: result.work_name,
-            area: result.area,
-            status: result.mastery_evidence,
-            notes: `[Smart Capture — Confirmed] ${result.insight || ''}`,
+            work_name: freshResult.work_name,
+            area: freshResult.area,
+            status: freshResult.mastery_evidence,
+            notes: `[Smart Capture — Confirmed] ${freshResult.insight || ''}`,
           }),
         });
         if (!mountedRef.current) return;
@@ -125,7 +133,7 @@ export default function PhotoInsightButton({
           console.error('[PhotoInsight] Progress update failed:', progressRes.status);
           setCtaError(t('photoInsight.actionFailed'));
           if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
-        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
+          errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
           setCtaLoading(false);
           return; // Don't mark as confirmed if progress update failed
         }
@@ -138,8 +146,8 @@ export default function PhotoInsightButton({
             body: JSON.stringify({
               child_id: childId,
               media_id: mediaId,
-              original_work_name: result.work_name,
-              original_area: result.area,
+              original_work_name: freshResult.work_name,
+              original_area: freshResult.area,
               action: 'confirm',
             }),
           });
@@ -154,8 +162,13 @@ export default function PhotoInsightButton({
       if (!mountedRef.current) return;
       confirmEntry(mediaId, childId);
       setCtaDone(true);
-      if (onProgressUpdate) {
-        try { onProgressUpdate(); } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
+      // HIGH-002 fix: Only fire onProgressUpdate if not already fired by auto-update
+      // Set ref AFTER success so failures don't permanently block retries
+      if (onProgressUpdate && progressUpdateFiredRef.current !== storeKey) {
+        try {
+          onProgressUpdate();
+          progressUpdateFiredRef.current = storeKey;
+        } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
       }
     } catch (err) {
       console.error('[PhotoInsight] Confirm error:', err);
@@ -167,33 +180,38 @@ export default function PhotoInsightButton({
     } finally {
       if (mountedRef.current) setCtaLoading(false);
     }
-  }, [result, childId, mediaId, classroomId, ctaLoading, onProgressUpdate, t]);
+  }, [mediaId, childId, classroomId, ctaLoading, onProgressUpdate, storeKey, t]);
 
   // CTA: Reject identification (AMBER zone — teacher says "wrong")
+  // HIGH-003 fix: Read fresh from store inside handler to avoid stale closures
   const handleReject = useCallback(() => {
-    if (!result?.work_name) return;
+    const freshEntry = getEntry(mediaId, childId);
+    const freshResult = freshEntry?.result;
+    if (!freshResult?.work_name) return;
     rejectEntry(mediaId, childId);
     // Open the "Teach Guru" modal so teacher can correct
     if (onTeachWork) {
       onTeachWork({
-        workName: result.work_name,
-        area: result.area,
+        workName: freshResult.work_name,
+        area: freshResult.area,
         mediaId,
       });
     }
-  }, [result, mediaId, childId, onTeachWork]);
+  }, [mediaId, childId, onTeachWork]);
 
   // CTA: Add known standard work to classroom (Scenario B)
+  // HIGH-003 fix: Read fresh from store inside handler to avoid stale closures
   const handleAddToClassroom = useCallback(async () => {
-    if (!result?.work_name || !result?.area || !classroomId || ctaLoading) return;
+    const freshResult = getEntry(mediaId, childId)?.result;
+    if (!freshResult?.work_name || !freshResult?.area || !classroomId || ctaLoading) return;
     setCtaLoading(true);
     try {
       const res = await montreeApi(`/api/montree/curriculum`, {
         method: 'POST',
         body: JSON.stringify({
           classroom_id: classroomId,
-          name: result.work_name,
-          area_key: result.area,
+          name: freshResult.work_name,
+          area_key: freshResult.area,
           is_custom: false,
           source: 'smart_capture',
         }),
@@ -205,9 +223,9 @@ export default function PhotoInsightButton({
         setCtaDone(true);
         if (onAddToClassroom) {
           onAddToClassroom({
-            workName: result.work_name!,
-            area: result.area!,
-            classroomWorkId: data.work?.id || null,
+            workName: freshResult.work_name!,
+            area: freshResult.area!,
+            classroomWorkId: data?.work?.id || null,
           });
         }
       } else {
@@ -226,20 +244,22 @@ export default function PhotoInsightButton({
     } finally {
       if (mountedRef.current) setCtaLoading(false);
     }
-  }, [result, classroomId, ctaLoading, onAddToClassroom, t]);
+  }, [mediaId, childId, classroomId, ctaLoading, onAddToClassroom, t]);
 
   // CTA: Add to child's shelf (Scenario C)
+  // HIGH-003 fix: Read fresh from store inside handler to avoid stale closures
   const handleAddToShelf = useCallback(async () => {
-    if (!result?.work_name || !result?.area || !childId || ctaLoading) return;
+    const freshResult = getEntry(mediaId, childId)?.result;
+    if (!freshResult?.work_name || !freshResult?.area || !childId || ctaLoading) return;
     setCtaLoading(true);
     try {
       const res = await montreeApi(`/api/montree/focus-works`, {
         method: 'POST',
         body: JSON.stringify({
           child_id: childId,
-          work_name: result.work_name,
-          area: result.area,
-          work_id: result.classroom_work_id || undefined,
+          work_name: freshResult.work_name,
+          area: freshResult.area,
+          work_id: freshResult.classroom_work_id || undefined,
         }),
       });
       if (!mountedRef.current) return;
@@ -247,13 +267,18 @@ export default function PhotoInsightButton({
         setCtaDone(true);
         if (onAddToShelf) {
           onAddToShelf({
-            workName: result.work_name!,
-            area: result.area!,
-            classroomWorkId: result.classroom_work_id || null,
+            workName: freshResult.work_name!,
+            area: freshResult.area!,
+            classroomWorkId: freshResult.classroom_work_id || null,
           });
         }
-        if (onProgressUpdate) {
-          try { onProgressUpdate(); } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
+        // Use progressUpdateFiredRef guard to prevent double-fire
+        // Set ref AFTER success so failures don't permanently block retries
+        if (onProgressUpdate && progressUpdateFiredRef.current !== storeKey) {
+          try {
+            onProgressUpdate();
+            progressUpdateFiredRef.current = storeKey;
+          } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
         }
       } else {
         console.error('[PhotoInsight] Add to shelf failed:', res.status);
@@ -271,19 +296,21 @@ export default function PhotoInsightButton({
     } finally {
       if (mountedRef.current) setCtaLoading(false);
     }
-  }, [result, childId, ctaLoading, onAddToShelf, onProgressUpdate, t]);
+  }, [mediaId, childId, ctaLoading, onAddToShelf, onProgressUpdate, storeKey, t]);
 
   // CTA: Teach Guru this unknown work (Scenario A) — opens modal
+  // HIGH-003 fix: Read fresh from store inside handler to avoid stale closures
   const handleTeachWork = useCallback(() => {
-    if (!result?.work_name) return;
+    const freshResult = getEntry(mediaId, childId)?.result;
+    if (!freshResult?.work_name) return;
     if (onTeachWork) {
       onTeachWork({
-        workName: result.work_name,
-        area: result.area,
+        workName: freshResult.work_name,
+        area: freshResult.area,
         mediaId,
       });
     }
-  }, [result, mediaId, onTeachWork]);
+  }, [mediaId, childId, onTeachWork]);
 
   const statusInfo = result?.mastery_evidence
     ? STATUS_LABELS[result.mastery_evidence]
@@ -409,15 +436,17 @@ export default function PhotoInsightButton({
                         key={`${c.name}-${c.area}`}
                         onClick={async () => {
                           // Record soft correction: original was wrong, this candidate was right
-                          if (classroomId && result.work_name) {
+                          // Read fresh from store for consistency (avoid stale closure on result)
+                          const freshRes = getEntry(mediaId, childId)?.result;
+                          if (classroomId && freshRes?.work_name) {
                             try {
                               await montreeApi(`/api/montree/guru/corrections`, {
                                 method: 'POST',
                                 body: JSON.stringify({
                                   child_id: childId,
                                   media_id: mediaId,
-                                  original_work_name: result.work_name,
-                                  original_area: result.area,
+                                  original_work_name: freshRes.work_name,
+                                  original_area: freshRes.area,
                                   corrected_work_name: c.name,
                                   corrected_area: c.area,
                                   correction_type: 'candidate_selection',

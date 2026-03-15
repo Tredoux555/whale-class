@@ -27,12 +27,20 @@ export async function POST(request: NextRequest) {
       action,
     } = body;
 
+    // HIGH-004 fix: Validate required fields upfront — null child_id skips access check + breaks learning loop
+    if (!child_id || typeof child_id !== 'string') {
+      return NextResponse.json({ error: 'child_id is required' }, { status: 400 });
+    }
+    if (!media_id || typeof media_id !== 'string') {
+      return NextResponse.json({ error: 'media_id is required' }, { status: 400 });
+    }
+
     if (!original_work_id && !original_work_name) {
       return NextResponse.json({ error: 'Missing original identification' }, { status: 400 });
     }
 
     // Security: verify child belongs to school
-    if (child_id && auth.schoolId) {
+    if (auth.schoolId) {
       const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
       if (!access.allowed) {
         return NextResponse.json({ error: 'Access denied' }, { status: 403 });
@@ -127,6 +135,11 @@ export async function POST(request: NextRequest) {
       } catch {
         // Non-fatal — continue without photo URL
       }
+    }
+
+    // HIGH-001 fix: Warn if photo URL not resolved — visual memory will be skipped
+    if (!photoUrl) {
+      console.error(`[Corrections] Could not resolve photo URL for media_id=${media_id}. Visual learning will be skipped.`);
     }
 
     // 2. Record the correction (now with photo_url)
@@ -235,6 +248,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       correction_id: correction?.id || null,
+      visual_learning: !!photoUrl,
+      ...(photoUrl ? {} : { warning: 'Correction saved but visual learning could not be applied (photo not found)' }),
     });
   } catch (error) {
     console.error('[Corrections] Error:', error);
@@ -273,24 +288,40 @@ async function generateAndStoreVisualMemory({
 
   // Generate visual description using Haiku with vision
   // Haiku is perfect here: we don't need deep reasoning, just "describe what you see"
-  const message = await anthropic.messages.create({
-    model: HAIKU_MODEL,
-    max_tokens: 150,
-    system: `You are a Montessori classroom material describer. Given a photo of a child working with Montessori materials, describe ONLY the physical materials/objects visible — NOT the child, NOT the activity, NOT the room. Focus on: shape, color, size, material (wood/metal/fabric/plastic), arrangement, and any distinctive visual features. Keep it to 1-2 sentences, max 120 words. This description will be used to help identify the same materials in future photos.`,
-    messages: [{
-      role: 'user',
-      content: [
-        {
-          type: 'image',
-          source: { type: 'url', url: photoUrl },
-        },
-        {
-          type: 'text',
-          text: `This is the Montessori work "${workName}" (area: ${area || 'unknown'}). Describe the physical materials visible so they can be recognized in future photos.`,
-        },
-      ],
-    }],
-  });
+  // CRITICAL-001 fix: AbortController + 45s timeout prevents hanging if Haiku API stalls
+  const apiAbortController = new AbortController();
+  const apiTimeout = setTimeout(() => apiAbortController.abort(), 45000);
+
+  let message;
+  try {
+    message = await anthropic.messages.create({
+      model: HAIKU_MODEL,
+      max_tokens: 150,
+      system: `You are a Montessori classroom material describer. Given a photo of a child working with Montessori materials, describe ONLY the physical materials/objects visible — NOT the child, NOT the activity, NOT the room. Focus on: shape, color, size, material (wood/metal/fabric/plastic), arrangement, and any distinctive visual features. Keep it to 1-2 sentences, max 120 words. This description will be used to help identify the same materials in future photos.`,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'url', url: photoUrl },
+          },
+          {
+            type: 'text',
+            text: `This is the Montessori work "${workName}" (area: ${area || 'unknown'}). Describe the physical materials visible so they can be recognized in future photos.`,
+          },
+        ],
+      }],
+    }, { signal: apiAbortController.signal });
+  } catch (err) {
+    // Check if OUR AbortController fired (the 45s timeout) — most reliable signal
+    if (apiAbortController.signal.aborted) {
+      console.error('[VisualMemory] Haiku vision call timed out after 45s — skipping visual memory generation');
+      return; // Non-fatal: correction still saved, only visual learning skipped
+    }
+    throw err;
+  } finally {
+    clearTimeout(apiTimeout);
+  }
 
   // Extract text response
   let visualDescription = '';
@@ -347,8 +378,20 @@ async function generateAndStoreVisualMemory({
 }
 
 // ========================================================
-// Brain Learning (extracted from inline for readability)
+// Brain Learning with Retry Queue (CRITICAL-003 fix)
+// In-memory queue catches transient Supabase failures
+// Survives within a single container lifetime (not across deploys)
 // ========================================================
+
+interface RetryItem {
+  payload: Record<string, unknown>;
+  attempts: number;
+  lastAttempt: number;
+}
+
+const LEARNING_RETRY_QUEUE: RetryItem[] = [];
+const MAX_RETRY_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 30000; // 30s between retries
 
 async function feedBrainLearning({
   supabase,
@@ -363,6 +406,12 @@ async function feedBrainLearning({
   originalArea: string;
   correctedArea: string;
 }) {
+  // Guard: skip if names are empty/undefined — produces nonsensical learning text
+  if (!originalWorkName?.trim()) {
+    console.warn('[Corrections] Brain learning skipped: empty original work name');
+    return;
+  }
+
   const newLearning = {
     text: `Smart Capture misidentified "${originalWorkName}" as the work in a photo — teacher corrected it to "${correctedWorkName || 'untagged'}". These works may look visually similar. Original area: ${originalArea || 'unknown'}, corrected area: ${correctedArea || 'unknown'}.`,
     category: 'vision_learnings',
@@ -371,32 +420,91 @@ async function feedBrainLearning({
     timestamp: new Date().toISOString(),
   };
 
-  const { error: brainError } = await supabase.rpc('append_brain_learning', {
-    p_learning: newLearning,
-  });
+  const payload = { p_learning: newLearning };
 
-  if (brainError) {
-    // Fallback: try upsert approach (less atomic but still works)
-    console.error('[Corrections] RPC append failed, using fallback:', brainError);
-    const { data: brain } = await supabase
-      .from('montree_guru_brain')
-      .select('raw_learnings')
-      .eq('id', 'global')
-      .maybeSingle();
+  try {
+    const { error: brainError } = await supabase.rpc('append_brain_learning', payload);
+    if (brainError) throw brainError;
 
-    const rawLearnings = (brain && Array.isArray(brain.raw_learnings))
-      ? [...brain.raw_learnings, newLearning]
-      : [newLearning];
+    // Success — also process any queued retries opportunistically
+    processRetryQueue(supabase);
+  } catch (err) {
+    console.error('[Corrections] Brain learning failed, queuing for retry:', err);
+    const retryItem: RetryItem = { payload, attempts: 1, lastAttempt: Date.now() };
+    LEARNING_RETRY_QUEUE.push(retryItem);
 
-    if (brain) {
-      await supabase
+    // Also try manual fallback for this immediate failure
+    try {
+      const { data: brain } = await supabase
         .from('montree_guru_brain')
-        .update({ raw_learnings: rawLearnings, updated_at: new Date().toISOString() })
-        .eq('id', 'global');
-    } else {
-      await supabase
-        .from('montree_guru_brain')
-        .insert({ id: 'global', raw_learnings: rawLearnings });
+        .select('raw_learnings')
+        .eq('id', 'global')
+        .maybeSingle();
+
+      const rawLearnings = (brain && Array.isArray(brain.raw_learnings))
+        ? [...brain.raw_learnings, newLearning]
+        : [newLearning];
+
+      if (brain) {
+        const { error: updateErr } = await supabase
+          .from('montree_guru_brain')
+          .update({ raw_learnings: rawLearnings, updated_at: new Date().toISOString() })
+          .eq('id', 'global');
+        if (!updateErr) {
+          // Fallback succeeded — remove THIS specific item from retry queue
+          const idx = LEARNING_RETRY_QUEUE.indexOf(retryItem);
+          if (idx >= 0) LEARNING_RETRY_QUEUE.splice(idx, 1);
+          return;
+        }
+      } else {
+        const { error: insertErr } = await supabase
+          .from('montree_guru_brain')
+          .insert({ id: 'global', raw_learnings: rawLearnings });
+        if (!insertErr) {
+          const idx = LEARNING_RETRY_QUEUE.indexOf(retryItem);
+          if (idx >= 0) LEARNING_RETRY_QUEUE.splice(idx, 1);
+          return;
+        }
+      }
+    } catch {
+      // Both RPC and fallback failed — item is in retry queue
+      console.error('[Corrections] Brain learning fallback also failed — will retry later');
+    }
+  }
+}
+
+// NOTE: Module-level array may be accessed concurrently by multiple requests during
+// await points. Low probability under normal load (<10 corrections/sec). Acceptable
+// trade-off vs adding a mutex for a best-effort retry queue.
+async function processRetryQueue(supabase: ReturnType<typeof getSupabase>) {
+  if (LEARNING_RETRY_QUEUE.length === 0) return;
+
+  const now = Date.now();
+  // Process items that are ready for retry (respect delay)
+  for (let i = LEARNING_RETRY_QUEUE.length - 1; i >= 0; i--) {
+    const item = LEARNING_RETRY_QUEUE[i];
+
+    // Evict items that exceeded max attempts
+    if (item.attempts >= MAX_RETRY_ATTEMPTS) {
+      console.error('[Corrections] Brain learning permanently failed after 3 attempts:', JSON.stringify(item.payload));
+      LEARNING_RETRY_QUEUE.splice(i, 1);
+      continue;
+    }
+
+    // Skip items not yet ready for retry
+    if (now - item.lastAttempt < RETRY_DELAY_MS) continue;
+
+    try {
+      const { error } = await supabase.rpc('append_brain_learning', item.payload);
+      if (!error) {
+        LEARNING_RETRY_QUEUE.splice(i, 1); // Success — remove
+      } else {
+        item.attempts++;
+        item.lastAttempt = now;
+      }
+    } catch {
+      item.attempts++;
+      item.lastAttempt = now;
     }
   }
 }
