@@ -372,18 +372,14 @@ a, button, [role="button"], .clickable {
   transform: translateZ(0);
 }
 
-/* Prevent content shift during font loading */
-body {
-  font-display: swap;
-  text-rendering: optimizeSpeed;
-}
-
-/* Smooth momentum scrolling everywhere */
-.scroll-container,
-main,
-[data-scroll] {
-  -webkit-overflow-scrolling: touch;
-  scroll-behavior: smooth;
+/* Smooth momentum scrolling everywhere — respect reduced-motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-container,
+  main,
+  [data-scroll] {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
 }
 
 /* Hide scrollbar on mobile for cleaner look */

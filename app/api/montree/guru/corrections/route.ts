@@ -89,39 +89,40 @@ export async function POST(request: NextRequest) {
     // ========================================================
 
     // 1. Look up the original photo URL from cached interaction (needed for visual description)
+    // Parallelize queries 1 and 2 (en + zh locales) to avoid sequential latency
     let photoUrl: string | null = null;
     if (media_id) {
       try {
-        const { data: interaction } = await supabase
-          .from('montree_guru_interactions')
-          .select('context_snapshot')
-          .eq('question', `photo:${media_id}:en`)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (interaction?.context_snapshot) {
-          const snapshot = interaction.context_snapshot as Record<string, unknown>;
-          photoUrl = typeof snapshot.photo_url === 'string' ? snapshot.photo_url : null;
-        }
-
-        // Try zh locale if en not found
-        if (!photoUrl) {
-          const { data: zhInteraction } = await supabase
+        // Parallel queries for both en and zh locales
+        const [enResult, zhResult] = await Promise.allSettled([
+          supabase
+            .from('montree_guru_interactions')
+            .select('context_snapshot')
+            .eq('question', `photo:${media_id}:en`)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
             .from('montree_guru_interactions')
             .select('context_snapshot')
             .eq('question', `photo:${media_id}:zh`)
             .order('created_at', { ascending: false })
             .limit(1)
-            .maybeSingle();
+            .maybeSingle(),
+        ]);
 
-          if (zhInteraction?.context_snapshot) {
-            const snapshot = zhInteraction.context_snapshot as Record<string, unknown>;
-            photoUrl = typeof snapshot.photo_url === 'string' ? snapshot.photo_url : null;
-          }
+        // Extract photo URL from whichever locale succeeded
+        if (enResult.status === 'fulfilled' && enResult.value.data?.context_snapshot) {
+          const snapshot = enResult.value.data.context_snapshot as Record<string, unknown>;
+          photoUrl = typeof snapshot.photo_url === 'string' ? snapshot.photo_url : null;
         }
 
-        // Fallback: try to get photo URL directly from media table
+        if (!photoUrl && zhResult.status === 'fulfilled' && zhResult.value.data?.context_snapshot) {
+          const snapshot = zhResult.value.data.context_snapshot as Record<string, unknown>;
+          photoUrl = typeof snapshot.photo_url === 'string' ? snapshot.photo_url : null;
+        }
+
+        // Fallback: try to get photo URL directly from media table if both locales failed
         if (!photoUrl) {
           const { data: media } = await supabase
             .from('montree_media')

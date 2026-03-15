@@ -64,6 +64,9 @@ const listeners = new Set<Listener>();
 // AbortControllers for in-flight fetches — keyed same as entries (mediaId:childId)
 // Prevents zombie fetches from resurrecting deleted entries after resetEntry/clearAll
 const abortControllers = new Map<string, AbortController>();
+// Retry timeout IDs — keyed same as entries (mediaId:childId)
+// Prevents retry timeouts from firing after resetEntry/clearAll deletes an entry
+const retryTimeouts = new Map<string, NodeJS.Timeout>();
 
 // Version counter — incremented on every mutation to produce new snapshot identity
 // useSyncExternalStore compares snapshots with Object.is — same reference = no re-render
@@ -353,13 +356,16 @@ function handleAnalysisError(
       retryCount,
     });
     notify();
-    setTimeout(() => {
+    // Schedule retry timeout — store ID so resetEntry/clearAll can cancel it
+    const retryTimeoutId = setTimeout(() => {
       // Only retry if still in retrying state (user might have manually reset or clearAll called)
       const current = entries.get(key);
       if (current?.status === 'retrying') {
+        retryTimeouts.delete(key); // Timeout is firing, remove from tracking
         runAnalysisFetch(mediaId, childId, locale, retryCount + 1);
       }
     }, delay);
+    retryTimeouts.set(key, retryTimeoutId);
     return;
   }
 
@@ -382,6 +388,12 @@ export function resetEntry(mediaId: string, childId: string): void {
   // Abort any in-flight fetch for this key — prevents zombie fetch from resurrecting entry
   abortControllers.get(key)?.abort();
   abortControllers.delete(key);
+  // Clear any pending retry timeout — prevents retry from firing after entry is deleted
+  const retryTimeout = retryTimeouts.get(key);
+  if (retryTimeout) {
+    clearTimeout(retryTimeout);
+    retryTimeouts.delete(key);
+  }
   entries.delete(key);
   notify();
 }
@@ -413,6 +425,11 @@ export function clearAll(): void {
     controller.abort();
   }
   abortControllers.clear();
+  // Clear all pending retry timeouts — prevents orphaned timeouts from firing after logout
+  for (const retryTimeout of retryTimeouts.values()) {
+    clearTimeout(retryTimeout);
+  }
+  retryTimeouts.clear();
   entries.clear();
   notify();
 }

@@ -51,10 +51,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       observations: observations || [],
     });
+    response.headers.set('Cache-Control', 'private, max-age=180, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     console.error('Observations GET error:', error);
