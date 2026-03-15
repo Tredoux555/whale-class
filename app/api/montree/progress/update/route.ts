@@ -51,12 +51,6 @@ export async function POST(request: NextRequest) {
 
     // EARLY RETURN: Remove extra — just delete from extras table, don't touch progress
     if (remove_extra) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-      if (!supabaseUrl || !supabaseKey) {
-        return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
-      }
-      const supabase = createClient(supabaseUrl, supabaseKey);
       const workNameToRemove = work_name || work_key;
       try {
         await supabase
