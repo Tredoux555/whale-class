@@ -192,7 +192,9 @@ export default function ParentReportPage() {
               {childName.charAt(0)}
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-800">{childName}'s {t('parentReport.weeklyReport')}</h1>
+              <h1 className="text-xl font-bold text-gray-800">
+                {locale === 'zh' ? `${childName}的${t('parentReport.weeklyReport')}` : `${childName}'s ${t('parentReport.weeklyReport')}`}
+              </h1>
               <p className="text-gray-500">{formatWeekDisplay()}</p>
             </div>
           </div>
@@ -259,7 +261,7 @@ export default function ParentReportPage() {
                   }`}>
                     {work.status === 'mastered' ? t('parentReport.statusMastered' as any) :
                      work.status === 'practicing' ? t('parentReport.statusPracticing' as any) :
-                     work.status === 'documented' ? (locale === 'zh' ? '📸 已记录' : '📸 Documented') :
+                     work.status === 'documented' ? t('parentReport.statusDocumented' as any, locale === 'zh' ? '📸 已记录' : '📸 Documented') :
                      t('parentReport.statusIntroduced' as any)}
                   </span>
                   <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
@@ -309,8 +311,8 @@ export default function ParentReportPage() {
                   <p className="text-gray-600 text-sm">
                     {areaEmoji[work.area] || '📌'}
                     {locale === 'zh'
-                      ? `您的孩子在这个${work.area.replace('_', ' ')}活动中进行了练习。`
-                      : `Your child practiced this ${work.area.replace('_', ' ')} activity.`}
+                      ? `您的孩子在${t(`area.${work.area}` as any) || work.area.replace('_', ' ')}领域进行了练习。`
+                      : `Your child practiced this ${t(`area.${work.area}` as any) || work.area.replace('_', ' ')} activity.`}
                   </p>
                 )}
               </div>
