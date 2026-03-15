@@ -2,13 +2,14 @@
 // Native-feeling capture flow: Camera opens instantly → Take photo → Tag child → Upload
 'use client';
 
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
 import CameraCapture from '@/components/montree/media/CameraCapture';
-import { uploadPhoto, uploadVideo } from '@/lib/montree/media/upload';
+import { compressImage, generateThumbnail } from '@/lib/montree/media/compression';
+import { uploadVideo } from '@/lib/montree/media/upload';
 import { startAnalysis } from '@/lib/montree/photo-insight-store';
 import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 
@@ -64,8 +65,6 @@ function CaptureContent() {
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
-
-  const pendingUploadsRef = useRef(0);
 
   // ============================================
   // INIT: Session + Children + Work lookup
@@ -128,71 +127,113 @@ function CaptureContent() {
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
 
-    // Guard: in class mode, if children haven't loaded yet, wait briefly
-    if (isClassMode && idsToTag.length === 0 && loadingChildren) {
-      // Children API still in-flight — this shouldn't happen (camera + tag flow)
-      // but guard defensively. Photo will still save to classroom without child tags.
-      console.warn('Class mode upload with no children loaded — photo will be untagged');
-    }
-
-    setIsUploading(true);
-
     // Guard: school_id is required for upload — if missing, session is broken
     if (!schoolId) {
       console.error('Upload failed: no school_id in session');
       toast.error('Session error — please log in again', { duration: 5000 });
-      setIsUploading(false);
       router.push('/montree/login');
       return;
     }
 
-    // IMPORTANT: Upload FIRST, navigate AFTER.
-    // uploadPhoto() uses Canvas API for compression/thumbnails — these DOM operations
-    // fail silently if we navigate away first (page teardown destroys DOM context).
-    // The fetch() itself survives navigation, but compression must complete first.
+    // For videos: still await the full upload (no Canvas compression needed, but large files)
+    if (isVideo) {
+      setIsUploading(true);
+      try {
+        const result = await uploadVideo(media.data as CapturedVideo, {
+          school_id: schoolId,
+          classroom_id: classroomId || undefined,
+          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+          is_class_photo: isClassMode,
+          work_id: workId || undefined,
+          caption: workName || undefined,
+          tags: workArea ? [workArea] : undefined,
+        });
+        if (result.success) {
+          toast.success(`${label} saved!`, { duration: 2000 });
+        } else {
+          toast.error(`${label} failed: ${result.error || 'Upload error'}`, { duration: 5000 });
+        }
+      } catch (err) {
+        console.error('Video upload error:', err);
+        toast.error(`${label} upload failed`, { duration: 5000 });
+      }
+      // Navigate after video upload
+      navigateAfterCapture(childIds);
+      return;
+    }
 
-    pendingUploadsRef.current++;
+    // PHOTOS: Fire-and-forget pattern
+    // Step 1: Compress image + generate thumbnail (needs live DOM — ~200ms, must await)
+    const photo = media.data as CapturedPhoto;
+    let compressedBlob: Blob;
+    let compressedWidth = photo.width;
+    let compressedHeight = photo.height;
+    let thumbnailBlob: Blob | null = null;
 
-    const uploadOpts = {
+    try {
+      const compressed = await compressImage(photo.blob);
+      compressedBlob = compressed.blob;
+      compressedWidth = compressed.width;
+      compressedHeight = compressed.height;
+    } catch (err) {
+      console.error('Compression failed, using original:', err);
+      compressedBlob = photo.blob;
+    }
+
+    try {
+      const thumb = await generateThumbnail(compressedBlob);
+      thumbnailBlob = thumb.blob;
+    } catch (err) {
+      console.error('Thumbnail generation failed:', err);
+    }
+
+    // Step 2: Build FormData (synchronous, no DOM needed)
+    const formData = new FormData();
+    formData.append('file', compressedBlob, `photo-${Date.now()}.jpg`);
+    if (thumbnailBlob) {
+      formData.append('thumbnail', thumbnailBlob, `thumb-${Date.now()}.jpg`);
+    }
+    formData.append('metadata', JSON.stringify({
       school_id: schoolId,
       classroom_id: classroomId || undefined,
       child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
       child_ids: idsToTag.length > 1 ? idsToTag : undefined,
       is_class_photo: isClassMode,
+      media_type: 'photo',
+      captured_at: new Date().toISOString(),
       work_id: workId || undefined,
       caption: workName || undefined,
       tags: workArea ? [workArea] : undefined,
-    };
+      width: compressedWidth,
+      height: compressedHeight,
+    }));
 
-    // Start upload (compression + fetch) — await it so DOM stays alive during Canvas ops
-    const uploadPromise = isVideo
-      ? uploadVideo(media.data as CapturedVideo, uploadOpts)
-      : uploadPhoto(media.data as CapturedPhoto, uploadOpts);
+    // Step 3: Navigate IMMEDIATELY — don't wait for network
+    toast.success(`${label} saved!`, { duration: 2000 });
+    navigateAfterCapture(childIds);
 
-    // Wait for the upload to fully complete BEFORE navigating
-    // This ensures compression (Canvas API) and the fetch both finish while DOM is alive
-    try {
-      const result = await uploadPromise;
-      pendingUploadsRef.current--;
-
-      if (result.success) {
-        toast.success(`${label} saved!`, { duration: 2000 });
-
-        // Auto-trigger Smart Capture for single-child photos
-        if (!isVideo && result.media?.id && idsToTag.length === 1) {
+    // Step 4: Fire-and-forget upload (fetch survives page navigation)
+    fetch('/api/montree/media/upload', { method: 'POST', body: formData })
+      .then(res => res.json())
+      .then(result => {
+        if (result.success && result.media?.id && idsToTag.length === 1) {
+          // Auto-trigger Smart Capture for single-child photos
           const currentLocale = localStorage.getItem('montree_lang') || 'en';
           startAnalysis(result.media.id, idsToTag[0], currentLocale);
         }
-      } else {
-        toast.error(`${label} failed: ${result.error || 'Upload error'}`, { duration: 5000 });
-      }
-    } catch (err) {
-      pendingUploadsRef.current--;
-      console.error('Upload error:', err);
-      toast.error(`${label} upload failed`, { duration: 5000 });
-    }
+        if (!result.success) {
+          console.error('Background upload failed:', result.error);
+          toast.error('Photo upload failed — please retake', { duration: 5000 });
+        }
+      })
+      .catch(err => {
+        console.error('Background upload error:', err);
+        toast.error('Photo upload failed — please retake', { duration: 5000 });
+      });
+  };
 
-    // Navigate AFTER upload completes
+  const navigateAfterCapture = (childIds: string[]) => {
     if (preSelectedChildId) {
       router.push(`/montree/dashboard/${preSelectedChildId}`);
     } else if (childIds.length === 1) {
@@ -263,24 +304,15 @@ function CaptureContent() {
   // RENDER
   // ============================================
 
-  // Uploading overlay (shown on top of camera or tagging screen)
+  // Uploading overlay (only for video uploads which still block)
   if (isUploading) {
-    const previewUrl = capturedMedia?.type === 'photo'
-      ? (capturedMedia.data as CapturedPhoto).dataUrl
-      : null;
-
     return (
       <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
         <Toaster position="top-center" />
-        {previewUrl && (
-          <div className="absolute inset-0">
-            <img src={previewUrl} alt="" className="w-full h-full object-cover opacity-20" />
-          </div>
-        )}
         <div className="relative z-10 flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-400 border-t-transparent" />
           <p className="text-white text-lg font-medium">
-            {t('capture.uploading') || 'Saving photo...'}
+            {t('capture.uploading') || 'Uploading video...'}
           </p>
         </div>
       </div>
