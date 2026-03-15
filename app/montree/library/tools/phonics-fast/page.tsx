@@ -3,9 +3,9 @@
 // Tabs are DYNAMICALLY generated from ALL_PHASES — no hardcoded phase IDs
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { ALL_PHASES, SIGHT_WORDS, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup, type CommandSentence } from '@/lib/montree/phonics/phonics-data';
+import { ALL_PHASES, SIGHT_WORDS, getCommands, type PhonicsPhase, type PhonicsWord, type PhonicsWordGroup } from '@/lib/montree/phonics/phonics-data';
 import { resolvePhotoBankImages } from '@/lib/montree/phonics/photo-bank-resolver';
 import { escapeHtml } from '@/lib/sanitize';
 
@@ -352,48 +352,62 @@ function PhaseTab({ phase }: { phase: PhonicsPhase }) {
         ))}
       </div>
 
-      {/* Quick actions */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-xl">
-        <h3 className="font-bold text-gray-700 mb-3">Quick Generate for {phase.name}</h3>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/montree/library/tools/phonics-fast/three-part-cards?phase=${phase.id}`}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700"
-          >
-            🃏 3-Part Cards
-          </Link>
-          <Link
-            href={`/montree/library/tools/phonics-fast/labels?phase=${phase.id}`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700"
-          >
-            🏷️ Labels
-          </Link>
-          <Link
-            href={`/montree/library/tools/phonics-fast/command-cards?phase=${phase.id}`}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700"
-          >
-            📋 Commands
-          </Link>
-          <Link
-            href={`/montree/library/tools/phonics-fast/bingo?phase=${phase.id}`}
-            className="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700"
-          >
-            🎯 Bingo
-          </Link>
-          <Link
-            href={`/montree/library/tools/phonics-fast/sentence-cards?phase=${phase.id}`}
-            className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700"
-          >
-            📝 Sentences
-          </Link>
-          <Link
-            href={`/montree/library/tools/phonics-fast/stories?phase=${phase.id}`}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700"
-          >
-            📚 Stories
-          </Link>
-        </div>
+      {/* Copyable word list */}
+      <CopyableWordList phase={phase} />
+    </div>
+  );
+}
+
+// =====================================================================
+// COPYABLE WORD LIST — Vertical word list with copy button
+// =====================================================================
+
+function CopyableWordList({ phase }: { phase: PhonicsPhase }) {
+  const [copied, setCopied] = useState(false);
+  const allWords = useMemo(() => phase.groups.flatMap(g => g.words.map(w => w.word)), [phase]);
+  const wordText = useMemo(() => allWords.join('\n'), [allWords]);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(wordText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers
+      const textarea = document.createElement('textarea');
+      textarea.value = wordText;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [wordText]);
+
+  return (
+    <div className="mt-8 p-5 bg-gray-50 rounded-xl border border-gray-200">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-gray-700">Word List — {allWords.length} words</h3>
+        <button
+          onClick={handleCopy}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+            copied
+              ? 'bg-emerald-600 text-white'
+              : 'bg-[#0D3330] text-white hover:bg-[#1a4a47]'
+          }`}
+        >
+          {copied ? '✓ Copied!' : '📋 Copy All'}
+        </button>
       </div>
+      <pre
+        className="bg-white border border-gray-200 rounded-lg p-4 text-base leading-relaxed font-mono text-gray-800 max-h-80 overflow-y-auto select-all cursor-text"
+        style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+      >
+        {wordText}
+      </pre>
     </div>
   );
 }
