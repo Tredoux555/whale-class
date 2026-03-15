@@ -83,6 +83,10 @@ function CaptureContent() {
     const fetchChildren = async () => {
       try {
         const response = await fetch('/api/montree/children');
+        if (!response.ok) {
+          console.error('Children API error:', response.status);
+          return;
+        }
         const data = await response.json();
         if (data.children) setChildren(data.children);
       } catch (err) {
@@ -124,7 +128,23 @@ function CaptureContent() {
     const isVideo = media.type === 'video';
     const label = isVideo ? 'Video' : 'Photo';
 
+    // Guard: in class mode, if children haven't loaded yet, wait briefly
+    if (isClassMode && idsToTag.length === 0 && loadingChildren) {
+      // Children API still in-flight — this shouldn't happen (camera + tag flow)
+      // but guard defensively. Photo will still save to classroom without child tags.
+      console.warn('Class mode upload with no children loaded — photo will be untagged');
+    }
+
     setIsUploading(true);
+
+    // Guard: school_id is required for upload — if missing, session is broken
+    if (!schoolId) {
+      console.error('Upload failed: no school_id in session');
+      toast.error('Session error — please log in again', { duration: 5000 });
+      setIsUploading(false);
+      router.push('/montree/login');
+      return;
+    }
 
     // IMPORTANT: Upload FIRST, navigate AFTER.
     // uploadPhoto() uses Canvas API for compression/thumbnails — these DOM operations
@@ -134,7 +154,7 @@ function CaptureContent() {
     pendingUploadsRef.current++;
 
     const uploadOpts = {
-      school_id: schoolId || 'default-school',
+      school_id: schoolId,
       classroom_id: classroomId || undefined,
       child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
       child_ids: idsToTag.length > 1 ? idsToTag : undefined,
@@ -193,13 +213,21 @@ function CaptureContent() {
       return;
     }
 
+    // If children are still loading, save the media and go to tagging screen
+    // (the tagging screen shows a spinner while children load)
+    if (loadingChildren) {
+      setCapturedMedia(media);
+      setStep('tag-child');
+      return;
+    }
+
     // If only one child in classroom, auto-tag and upload directly
     if (children.length === 1) {
       doUploadAndAnalyze(media, [children[0].id]);
       return;
     }
 
-    // Multiple children — show tagging screen
+    // Multiple children (or zero — let them see the empty state) — show tagging screen
     setCapturedMedia(media);
     setStep('tag-child');
   };
