@@ -303,6 +303,22 @@ export async function DELETE(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // Verify the observation belongs to the authenticated school
+    const { data: obs } = await supabase
+      .from('montree_behavioral_observations')
+      .select('child_id')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (!obs) {
+      return NextResponse.json({ success: false, error: 'Observation not found' }, { status: 404 });
+    }
+
+    const access = await verifyChildBelongsToSchool(obs.child_id, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
     const { error } = await supabase
       .from('montree_behavioral_observations')
       .delete()

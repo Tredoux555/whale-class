@@ -40,9 +40,9 @@ export async function GET(
       .from('montree_child_mental_profiles')
       .select('*')
       .eq('child_id', childId)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = not found
+    if (error) {
       console.error('Failed to fetch profile:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch profile' },

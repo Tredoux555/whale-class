@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .from('montree_children')
       .select('*')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .select('id')
       .eq('id', (child as Record<string, unknown>).classroom_id as string)
       .eq('school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .from('montree_children')
       .select('*')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -140,7 +140,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .select('id')
       .eq('id', (child as Record<string, unknown>).classroom_id as string)
       .eq('school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });

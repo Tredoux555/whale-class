@@ -80,12 +80,12 @@ export async function sendMessage(input: MessageCreateInput) {
     body: JSON.stringify(input),
   });
 
+  const data = await response.json();
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || 'Failed to send message');
+    throw new Error(data.error || 'Failed to send message');
   }
 
-  return response.json();
+  return data;
 }
 
 // Mark message as read
