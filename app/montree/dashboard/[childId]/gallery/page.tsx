@@ -79,9 +79,9 @@ export default function GalleryPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Image URL cache — use ref to avoid re-render loops
+  // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const loadingUrlsRef = useRef<Set<string>>(new Set());
+  const batchUrlLoadedRef = useRef(false);
 
   // Fetch child info
   useEffect(() => {
@@ -100,6 +100,7 @@ export default function GalleryPage() {
   const fetchPhotos = useCallback(() => {
     if (!childId) return;
     setLoading(true);
+    batchUrlLoadedRef.current = false; // Reset so URLs are re-fetched for new photos
     fetch(`/api/montree/media?child_id=${childId}&limit=1000`)
       .then(r => {
         if (!r.ok) throw new Error('Failed to fetch');
@@ -159,26 +160,40 @@ export default function GalleryPage() {
       .catch(() => {});
   }, [childId]);
 
-  // Fetch image URL for a photo (ref-guarded to prevent duplicate requests)
-  const loadImageUrl = useCallback((photo: GalleryItem) => {
-    if (loadingUrlsRef.current.has(photo.id)) return;
-    loadingUrlsRef.current.add(photo.id);
-    fetch(`/api/montree/media/url?path=${encodeURIComponent(photo.storage_path)}`)
-      .then(r => r.json())
+  // Batch-load all image URLs in a single request (replaces N individual fetches)
+  useEffect(() => {
+    if (photos.length === 0 || batchUrlLoadedRef.current) return;
+    batchUrlLoadedRef.current = true;
+
+    const paths = photos.map(p => p.storage_path).filter(Boolean);
+    if (paths.length === 0) return;
+
+    fetch('/api/montree/media/urls', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paths }),
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`Batch URL request failed: ${r.status}`);
+        return r.json();
+      })
       .then(data => {
-        if (data.url) {
-          setImageUrls(prev => ({ ...prev, [photo.id]: data.url }));
+        if (data.urls) {
+          // Map storage_path→signedUrl to photo.id→signedUrl
+          const urlMap: Record<string, string> = {};
+          for (const photo of photos) {
+            if (data.urls[photo.storage_path]) {
+              urlMap[photo.id] = data.urls[photo.storage_path];
+            }
+          }
+          setImageUrls(urlMap);
         }
       })
-      .catch(() => {
-        loadingUrlsRef.current.delete(photo.id); // Allow retry on error
+      .catch(err => {
+        console.error('Failed to batch-load image URLs:', err);
+        batchUrlLoadedRef.current = false; // Allow retry
       });
-  }, []);
-
-  // Load image URLs when photos change (only new ones, guarded by ref)
-  useEffect(() => {
-    photos.forEach(p => loadImageUrl(p));
-  }, [photos, loadImageUrl]);
+  }, [photos]);
 
   // Unique areas and works
   const uniqueAreas = Array.from(new Set(photos.map(p => p.area).filter(Boolean)));
@@ -781,16 +796,8 @@ export default function GalleryPage() {
 
       {/* Loading */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl overflow-hidden shadow-sm">
-              <div className="aspect-[4/3] bg-gray-100 animate-pulse" />
-              <div className="p-3 space-y-2">
-                <div className="h-4 bg-gray-100 rounded animate-pulse w-2/3" />
-                <div className="h-3 bg-gray-100 rounded animate-pulse w-full" />
-              </div>
-            </div>
-          ))}
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
         </div>
       ) : filterTab === 'all' ? (
         renderGroupedView()
