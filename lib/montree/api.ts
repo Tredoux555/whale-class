@@ -113,10 +113,19 @@ export async function montreeApi(
     return response;
   })();
 
-  // Track GET requests for deduplication
+  // Track GET requests for deduplication (with safety cleanup to prevent memory leaks)
   if (method === 'GET') {
     inflightGets.set(url, fetchPromise);
-    fetchPromise.finally(() => inflightGets.delete(url));
+    // Safety: clean up after 30s even if promise never resolves (network hang)
+    const safetyTimeout = setTimeout(() => {
+      if (inflightGets.get(url) === fetchPromise) {
+        inflightGets.delete(url);
+      }
+    }, 30000);
+    fetchPromise.finally(() => {
+      clearTimeout(safetyTimeout);
+      inflightGets.delete(url);
+    });
   }
 
   return fetchPromise;

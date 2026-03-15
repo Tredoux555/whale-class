@@ -92,17 +92,12 @@ export function getSupabaseUrl(): string {
 }
 
 /**
- * Get public URL for a file in a Supabase storage bucket
+ * Get public URL for a file in a Supabase storage bucket.
+ * Uses direct URL construction — no client instantiation needed.
  */
 export function getPublicUrl(bucket: string, path: string): string {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
-  }
-  const supabase = createSupabaseClientJS(supabaseUrl, supabaseAnonKey);
-  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-  return data.publicUrl;
+  const supabaseUrl = getSupabaseUrl();
+  return `${supabaseUrl}/storage/v1/object/public/${bucket}/${path}`;
 }
 
 // Storage constants

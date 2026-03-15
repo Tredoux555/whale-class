@@ -228,13 +228,13 @@ export async function buildChildContext(
       .select('temperament_activity_level, temperament_regularity, temperament_initial_reaction, temperament_adaptability, temperament_intensity, temperament_mood_quality, temperament_distractibility, temperament_persistence, temperament_sensory_threshold, learning_modality_visual, learning_modality_auditory, learning_modality_kinesthetic, baseline_focus_minutes, optimal_time_of_day, sensitive_period_order, sensitive_period_language, sensitive_period_movement, sensitive_period_sensory, sensitive_period_small_objects, sensitive_period_grace_courtesy, family_notes, sleep_status, special_considerations, successful_strategies, challenging_triggers')
       .eq('child_id', childId)
       .single(),
-    // 3. Progress (limit 100 — no need for full history)
+    // 3. Progress (limit 30 — only top 30 used in prompt formatting)
     supabase
       .from('montree_child_progress')
       .select('work_name, area, status, created_at, notes')
       .eq('child_id', childId)
       .order('created_at', { ascending: false })
-      .limit(100),
+      .limit(30),
     // 4. Observations (last 30 days)
     supabase
       .from('montree_behavioral_observations')
@@ -251,22 +251,22 @@ export async function buildChildContext(
       .not('question', 'like', 'photo:%')
       .order('asked_at', { ascending: false })
       .limit(5),
-    // 6. Teacher notes from work sessions
+    // 6. Teacher notes from work sessions (only 10 used in prompt)
     supabase
       .from('montree_work_sessions')
       .select('work_id, notes, observed_at')
       .eq('child_id', childId)
       .not('notes', 'is', null)
       .order('observed_at', { ascending: false })
-      .limit(20),
-    // 7. Voice notes (last 30 days)
+      .limit(10),
+    // 7. Voice notes (last 30 days, limit 10 for prompt)
     supabase
       .from('montree_voice_notes')
       .select('work_name, transcript, behavioral_notes, next_steps, created_at')
       .eq('child_id', childId)
       .gte('created_at', thirtyDaysAgo.toISOString())
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(10),
     // 8. Focus works (current shelf)
     supabase
       .from('montree_child_focus_works')
