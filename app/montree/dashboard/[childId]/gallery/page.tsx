@@ -1,6 +1,5 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Gallery — AI-assisted photo review + area progress summary
-// Gallery view with confirm/reject UI, area breakdown, progress bar graph, lightbox
+// Gallery — Photo gallery with Smart Capture AI review, area grouping, timeline view
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -33,12 +32,6 @@ interface CurriculumWork {
   dbSequence?: number;
 }
 
-interface ProgressItem {
-  work_name: string;
-  area: string;
-  status: number | string;
-}
-
 export default function GalleryPage() {
   const params = useParams();
   const childId = params.childId as string;
@@ -49,11 +42,8 @@ export default function GalleryPage() {
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Progress data for bar graph
-  const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
-
   // View state
-  const [viewMode, setViewMode] = useState<'review' | 'area' | 'timeline'>('review');
+  const [viewMode, setViewMode] = useState<'grid' | 'timeline'>('grid');
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
 
   // Selection state
@@ -139,31 +129,6 @@ export default function GalleryPage() {
     return () => { fetchPhotosControllerRef.current?.abort(); };
   }, [fetchPhotos]);
 
-  // Fetch progress data for bar graph
-  useEffect(() => {
-    if (!childId) return;
-    const controller = new AbortController();
-    fetch(`/api/montree/progress?child_id=${childId}`, { signal: controller.signal })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.progress) {
-          setProgressItems(data.progress.map((p: Record<string, unknown>) => ({
-            work_name: p.work_name as string,
-            area: p.area as string,
-            status: p.status as number | string,
-          })));
-          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
-            work_name: p.work_name as string,
-            status: String(p.status),
-          })));
-        }
-      })
-      .catch((err) => {
-        if (err?.name !== 'AbortError') console.error('Failed to fetch progress:', err);
-      });
-    return () => controller.abort();
-  }, [childId]);
-
   // Fetch curriculum for wheel picker (lazy load)
   const curriculumLoadedRef = useRef(false);
   const curriculumLoadingRef = useRef(false);
@@ -234,37 +199,7 @@ export default function GalleryPage() {
     return () => controller.abort();
   }, [photos]);
 
-  // ── Computed: Area progress stats for bar graph ──
-  const areaStats = useMemo(() => {
-    const stats: Record<string, { mastered: number; practicing: number; presented: number; total: number }> = {};
-    for (const area of AREA_ORDER) {
-      stats[area] = { mastered: 0, practicing: 0, presented: 0, total: 0 };
-    }
-    for (const p of progressItems) {
-      const area = normalizeArea(p.area || '');
-      if (!stats[area]) stats[area] = { mastered: 0, practicing: 0, presented: 0, total: 0 };
-      const s = typeof p.status === 'number'
-        ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : ''
-        : String(p.status);
-      if (s === 'mastered' || s === 'completed') stats[area].mastered++;
-      else if (s === 'practicing') stats[area].practicing++;
-      else if (s === 'presented') stats[area].presented++;
-      stats[area].total++;
-    }
-    return stats;
-  }, [progressItems]);
-
-  // Total progress counts for hero
-  const totalStats = useMemo(() => {
-    let mastered = 0, practicing = 0, presented = 0;
-    for (const area of AREA_ORDER) {
-      const s = areaStats[area];
-      if (s !== undefined) { mastered += s.mastered; practicing += s.practicing; presented += s.presented; }
-    }
-    return { mastered, practicing, presented, total: mastered + practicing + presented };
-  }, [areaStats]);
-
-  // Photos grouped by area for the review view
+  // Photos grouped by area for the grid view
   const photosByArea = useMemo(() => {
     const map: Record<string, GalleryItem[]> = {};
     for (const area of AREA_ORDER) map[area] = [];
@@ -411,26 +346,7 @@ export default function GalleryPage() {
 
   const handleProgressUpdate = useCallback(() => {
     fetchPhotos();
-    // Also refresh progress data (bar graph + wheel picker statuses)
-    fetch(`/api/montree/progress?child_id=${childId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.progress) {
-          setProgressItems(data.progress.map((p: Record<string, unknown>) => ({
-            work_name: p.work_name as string,
-            area: p.area as string,
-            status: p.status as number | string,
-          })));
-          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
-            work_name: p.work_name as string,
-            status: String(p.status),
-          })));
-        }
-      })
-      .catch((err) => {
-        if (err?.name !== 'AbortError') console.error('Failed to refresh progress:', err);
-      });
-  }, [childId, fetchPhotos]);
+  }, [fetchPhotos]);
 
   const getAreaConfig = (area: string) =>
     AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
@@ -442,16 +358,6 @@ export default function GalleryPage() {
       status: allProgress.find(p => p.work_name === w.name)?.status || 'not_started',
     }));
   };
-
-  // Max works across all areas for bar graph scale
-  const maxAreaWorks = useMemo(() => {
-    let max = 0;
-    for (const area of AREA_ORDER) {
-      const s = areaStats[area];
-      if (s && s.total > max) max = s.total;
-    }
-    return Math.max(max, 1);
-  }, [areaStats]);
 
   // ── Render: Photo Card ──
   const renderPhotoCard = (photo: GalleryItem) => {
@@ -627,23 +533,12 @@ export default function GalleryPage() {
   if (loading) {
     return (
       <div className="space-y-4 pb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-sm animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-40 mb-4" />
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-200 rounded-full" />
-                <div className="flex-1 h-6 bg-gray-200 rounded-full" />
-                <div className="w-8 h-4 bg-gray-200 rounded" />
-              </div>
-            ))}
-          </div>
-        </div>
         <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white rounded-xl p-4 shadow-sm animate-pulse">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="bg-white rounded-xl p-3 shadow-sm animate-pulse">
               <div className="aspect-[4/3] bg-gray-200 rounded-lg mb-3" />
-              <div className="h-4 bg-gray-200 rounded w-3/4" />
+              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
             </div>
           ))}
         </div>
@@ -660,121 +555,20 @@ export default function GalleryPage() {
       )}
 
       {/* ══════════════════════════════════════════════
-          AREA PROGRESS SUMMARY — Bar Graph
-          ══════════════════════════════════════════════ */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-gray-800">
-            {t('review.progressSummary' as any) || 'Progress Summary'}
-          </h2>
-          <div className="flex items-center gap-3 text-xs text-gray-500">
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> {t('progress.mastered')}</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> {t('progress.practicing')}</span>
-            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" /> {t('progress.presented')}</span>
-          </div>
-        </div>
-
-        {/* Hero stats row */}
-        <div className="flex items-center gap-4 mb-5 pb-4 border-b border-gray-100">
-          <div className="text-center flex-1">
-            <div className="text-2xl font-bold text-emerald-600">{totalStats.mastered}</div>
-            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.mastered')}</div>
-          </div>
-          <div className="text-center flex-1">
-            <div className="text-2xl font-bold text-amber-500">{totalStats.practicing}</div>
-            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.practicing')}</div>
-          </div>
-          <div className="text-center flex-1">
-            <div className="text-2xl font-bold text-blue-500">{totalStats.presented}</div>
-            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.presented')}</div>
-          </div>
-          <div className="text-center flex-1 border-l border-gray-200 pl-4">
-            <div className="text-2xl font-bold text-gray-800">{totalStats.total}</div>
-            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('review.totalWorks' as any) || 'Total'}</div>
-          </div>
-        </div>
-
-        {/* Area bar graph */}
-        <div className="space-y-3">
-          {AREA_ORDER.map(area => {
-            const config = AREA_CONFIG[area];
-            const stats = areaStats[area] || { mastered: 0, practicing: 0, presented: 0, total: 0 };
-            const photoCount = photosByArea[area]?.length || 0;
-            const isActive = selectedArea === area;
-
-            return (
-              <button
-                key={area}
-                onClick={() => {
-                  setSelectedArea(isActive ? null : area);
-                  setViewMode('area');
-                }}
-                className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${
-                  isActive ? 'bg-gray-50 ring-2 ring-emerald-300' : 'hover:bg-gray-50'
-                }`}
-              >
-                <AreaBadge area={area} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-gray-700">{config.name}</span>
-                    <span className="text-xs font-bold text-gray-800">{stats.total}</span>
-                  </div>
-                  {/* Stacked bar */}
-                  <div className="h-4 bg-gray-100 rounded-full overflow-hidden flex">
-                    {stats.mastered > 0 && (
-                      <div
-                        className="h-full bg-emerald-500 transition-all duration-500"
-                        style={{ width: `${(stats.mastered / maxAreaWorks) * 100}%` }}
-                      />
-                    )}
-                    {stats.practicing > 0 && (
-                      <div
-                        className="h-full bg-amber-400 transition-all duration-500"
-                        style={{ width: `${(stats.practicing / maxAreaWorks) * 100}%` }}
-                      />
-                    )}
-                    {stats.presented > 0 && (
-                      <div
-                        className="h-full bg-blue-400 transition-all duration-500"
-                        style={{ width: `${(stats.presented / maxAreaWorks) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                </div>
-                {/* Photo count badge */}
-                {photoCount > 0 && (
-                  <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full font-medium">
-                    📷 {photoCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Guidance note */}
-        <div className="mt-4 pt-3 border-t border-gray-100">
-          <p className="text-xs text-gray-400 italic text-center">
-            {t('review.guidanceNote' as any) || 'Tap an area to filter photos. Longer bars suggest stronger engagement — shorter bars may need more focus.'}
-          </p>
-        </div>
-      </div>
-
-      {/* ══════════════════════════════════════════════
-          VIEW CONTROLS + SELECTION
+          VIEW CONTROLS + AREA FILTER + SELECTION
           ══════════════════════════════════════════════ */}
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           <button
-            onClick={() => { setViewMode('review'); setSelectedArea(null); }}
+            onClick={() => { setViewMode('grid'); setSelectedArea(null); }}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === 'review' && !selectedArea ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              viewMode === 'grid' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
             {t('review.allPhotos' as any) || 'All Photos'}
           </button>
           <button
-            onClick={() => setViewMode('timeline')}
+            onClick={() => { setViewMode('timeline'); setSelectedArea(null); }}
             className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
               viewMode === 'timeline' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
@@ -798,35 +592,38 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Area filter chips (when an area is selected from bar graph) */}
-      {selectedArea && (
+      {/* Area filter chips */}
+      {viewMode === 'grid' && (
         <div className="flex gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setSelectedArea(null)}
+            className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${
+              !selectedArea ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {t('common.all' as any) || 'All'}
+          </button>
           {AREA_ORDER.map(area => {
             const config = AREA_CONFIG[area];
             const count = photosByArea[area]?.length || 0;
+            if (count === 0) return null;
             const isActive = selectedArea === area;
             return (
               <button
                 key={area}
                 onClick={() => setSelectedArea(isActive ? null : area)}
-                className={`px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   isActive
-                    ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-500'
-                    : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
+                    ? 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-400'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 <AreaBadge area={area} size="xs" />
                 <span>{config.name}</span>
-                <span className="text-xs opacity-75">({count})</span>
+                <span className="text-xs opacity-60">({count})</span>
               </button>
             );
           })}
-          <button
-            onClick={() => setSelectedArea(null)}
-            className="px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
-          >
-            ✕ {t('review.clearFilter' as any) || 'Clear'}
-          </button>
         </div>
       )}
 
@@ -874,7 +671,7 @@ export default function GalleryPage() {
             {t('review.takePhotos' as any) || 'Take photos of the child working to build their portfolio'}
           </p>
         </div>
-      ) : viewMode === 'timeline' ? (
+      ) : viewMode === 'timeline' && !selectedArea ? (
         // Timeline view — grouped by date
         <div className="space-y-6">
           {(() => {
@@ -907,25 +704,12 @@ export default function GalleryPage() {
       ) : selectedArea ? (
         // Single area view
         <div>
-          <div className="flex items-center gap-2 mb-3 px-1">
-            <AreaBadge area={selectedArea} size="md" />
-            <div>
-              <h3 className="font-bold text-gray-800">{AREA_CONFIG[selectedArea]?.name || selectedArea}</h3>
-              <p className="text-xs text-gray-500">
-                {filteredPhotos.length} {t('gallery.photosTotal')}
-                {' · '}
-                {areaStats[selectedArea]?.mastered || 0} {t('progress.mastered').toLowerCase()}
-                {', '}
-                {areaStats[selectedArea]?.practicing || 0} {t('progress.practicing').toLowerCase()}
-              </p>
-            </div>
-          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {filteredPhotos.map(photo => renderPhotoCard(photo))}
           </div>
         </div>
       ) : (
-        // Default review view — grouped by area
+        // Default grid view — grouped by area
         <div className="space-y-6">
           {AREA_ORDER.map(area => {
             const areaPhotos = photosByArea[area] || [];

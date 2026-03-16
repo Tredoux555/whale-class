@@ -254,7 +254,7 @@ export async function GET(
     const classroomId = report.classroom_id || child?.classroom_id;
 
     // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions)
-    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string }>; photos?: Record<string, unknown>[] } | null;
+    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string; photo_caption?: string }>; photos?: Record<string, unknown>[] } | null;
 
     if (savedContent?.works && savedContent.works.length > 0) {
       // USE SAVED CONTENT - This is the preferred path for new reports
@@ -266,7 +266,7 @@ export async function GET(
         status: w.status,
         completed_at: report.created_at,
         photo_url: w.photo_url || null,
-        photo_caption: null,
+        photo_caption: w.photo_caption || null,
         parent_description: w.parent_description || null,
         why_it_matters: w.why_it_matters || null,
       }));

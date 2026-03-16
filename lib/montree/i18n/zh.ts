@@ -1308,6 +1308,7 @@ export const zh = {
   'parentReport.statusMastered': '⭐ 已掌握',
   'parentReport.statusPracticing': '🔄 练习中',
   'parentReport.statusIntroduced': '🌱 已展示',
+  'parentReport.statusDocumented': '📸 已记录',
   'parentReport.weekOf': '周',
 
   // Phase 9 — Library
@@ -2039,6 +2040,7 @@ export const zh = {
   'parentReport.statusMastered': '⭐ 已掌握',
   'parentReport.statusPracticing': '🔄 练习中',
   'parentReport.statusIntroduced': '🌱 已展示',
+  'parentReport.statusDocumented': '📸 已记录',
 
   // Validation/Error messages
   'validation.passwordsDoNotMatch': '密码不匹配',

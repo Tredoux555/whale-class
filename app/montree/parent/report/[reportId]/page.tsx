@@ -261,7 +261,7 @@ export default function ParentReportPage() {
                   }`}>
                     {work.status === 'mastered' ? t('parentReport.statusMastered' as any) :
                      work.status === 'practicing' ? t('parentReport.statusPracticing' as any) :
-                     work.status === 'documented' ? t('parentReport.statusDocumented' as any, locale === 'zh' ? '📸 已记录' : '📸 Documented') :
+                     work.status === 'documented' ? t('parentReport.statusDocumented' as any) :
                      t('parentReport.statusIntroduced' as any)}
                   </span>
                   <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>

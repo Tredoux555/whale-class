@@ -1308,6 +1308,7 @@ export const en = {
   'parentReport.statusMastered': '⭐ Mastered',
   'parentReport.statusPracticing': '🔄 Practicing',
   'parentReport.statusIntroduced': '🌱 Introduced',
+  'parentReport.statusDocumented': '📸 Documented',
   'parentReport.weekOf': 'Week of',
 
   // Phase 9 — Library
@@ -2039,6 +2040,7 @@ export const en = {
   'parentReport.statusMastered': '⭐ Mastered',
   'parentReport.statusPracticing': '🔄 Practicing',
   'parentReport.statusIntroduced': '🌱 Introduced',
+  'parentReport.statusDocumented': '📸 Documented',
 
   // Validation/Error messages
   'validation.passwordsDoNotMatch': 'Passwords do not match',
