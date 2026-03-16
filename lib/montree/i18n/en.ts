@@ -824,6 +824,11 @@ export const en = {
   'gallery.workUpdateError': 'Failed to update work tag',
   'gallery.capturedBy': 'Captured by',
   'gallery.chooseArea': 'Choose an area',
+  'gallery.lessonNotes': 'Lesson Notes',
+  'gallery.notePlaceholder': 'Add a note about this lesson...',
+  'gallery.saveNote': 'Save',
+  'gallery.noteSaved': 'Note saved',
+  'gallery.noteSaveError': 'Failed to save note',
 
   // Phase 4 — Observations
   'observations.title': 'Observations',

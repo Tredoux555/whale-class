@@ -195,8 +195,8 @@ export default function PhotoLightbox({
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col">
-      {/* Top toolbar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/60 backdrop-blur-sm z-10">
+      {/* Top toolbar — padded for iOS safe area (notch/dynamic island) */}
+      <div className="flex items-center justify-between px-4 py-3 bg-black/60 backdrop-blur-sm z-10" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
         <div className="flex items-center gap-3">
           {/* Close button */}
           <button

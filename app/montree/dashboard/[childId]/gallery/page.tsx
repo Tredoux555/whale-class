@@ -82,6 +82,10 @@ export default function GalleryPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Lesson notes state
+  const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
+  const [savingNote, setSavingNote] = useState<string | null>(null);
+
   // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const batchUrlLoadedRef = useRef(false);
@@ -348,6 +352,36 @@ export default function GalleryPage() {
     fetchPhotos();
   }, [fetchPhotos]);
 
+  // Use refs to avoid stale closures + recreation on every keystroke
+  const notesDraftRef = useRef(notesDraft);
+  notesDraftRef.current = notesDraft;
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+
+  const handleSaveNote = useCallback(async (photoId: string) => {
+    const note = notesDraftRef.current[photoId]?.trim();
+    if (!note) return;
+    setSavingNote(photoId);
+    try {
+      const res = await fetch('/api/montree/observations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          behavior_description: note,
+          activity_during: photosRef.current.find(p => p.id === photoId)?.work_name || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed');
+      toast.success(t('gallery.noteSaved'));
+      setNotesDraft(prev => { const next = { ...prev }; delete next[photoId]; return next; });
+    } catch {
+      toast.error(t('gallery.noteSaveError'));
+    } finally {
+      setSavingNote(null);
+    }
+  }, [childId, t]);
+
   const getAreaConfig = (area: string) =>
     AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
 
@@ -506,6 +540,27 @@ export default function GalleryPage() {
               onAddToClassroom={() => fetchPhotos()}
               onAddToShelf={() => fetchPhotos()}
             />
+          </div>
+
+          {/* Lesson Notes — observation textarea */}
+          <div className="pt-1 border-t border-gray-50">
+            <p className="text-xs font-medium text-gray-500 mb-1">{t('gallery.lessonNotes')}</p>
+            <textarea
+              value={notesDraft[photo.id] || ''}
+              onChange={(e) => setNotesDraft(prev => ({ ...prev, [photo.id]: e.target.value }))}
+              placeholder={t('gallery.notePlaceholder')}
+              rows={2}
+              className="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-400 resize-none"
+            />
+            {notesDraft[photo.id]?.trim() && (
+              <button
+                onClick={() => handleSaveNote(photo.id)}
+                disabled={savingNote === photo.id}
+                className="mt-1 px-3 py-1 text-xs font-medium rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50 transition-colors"
+              >
+                {savingNote === photo.id ? '...' : t('gallery.saveNote')}
+              </button>
+            )}
           </div>
 
           {/* Expanded details */}

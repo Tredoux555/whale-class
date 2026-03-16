@@ -817,6 +817,11 @@ export const zh = {
   'gallery.workUpdateError': '更新工作标签失败',
   'gallery.capturedBy': '拍摄者',
   'gallery.chooseArea': '选择领域',
+  'gallery.lessonNotes': '课堂笔记',
+  'gallery.notePlaceholder': '添加关于这节课的笔记...',
+  'gallery.saveNote': '保存',
+  'gallery.noteSaved': '笔记已保存',
+  'gallery.noteSaveError': '保存笔记失败',
 
   // Phase 4 — Observations
   'observations.title': '观察记录',
