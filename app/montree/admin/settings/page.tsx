@@ -194,7 +194,7 @@ export default function AdminSettingsPage() {
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
                   className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder="e.g., Beijing International School"
+                  placeholder={t('admin.placeholders.schoolName') || 'e.g., Beijing International School'}
                 />
               </div>
               {school?.slug && (
@@ -220,7 +220,7 @@ export default function AdminSettingsPage() {
                   value={principalName}
                   onChange={(e) => setPrincipalName(e.target.value)}
                   className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder="Your name"
+                  placeholder={t('admin.placeholders.yourName') || 'Your name'}
                 />
               </div>
               <div>
@@ -230,7 +230,7 @@ export default function AdminSettingsPage() {
                   value={principalEmail}
                   onChange={(e) => setPrincipalEmail(e.target.value)}
                   className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder="principal@school.com"
+                  placeholder={t('admin.placeholders.principalEmail') || 'principal@school.com'}
                 />
               </div>
             </div>
@@ -251,7 +251,7 @@ export default function AdminSettingsPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder="Leave blank to keep current"
+                  placeholder={t('admin.placeholders.leaveBlank') || 'Leave blank to keep current'}
                 />
               </div>
               <div>
@@ -261,7 +261,7 @@ export default function AdminSettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full px-4 py-3 bg-black/20 border border-emerald-600 rounded-xl text-white placeholder-emerald-400/50 focus:border-emerald-400 focus:outline-none"
-                  placeholder="Confirm password"
+                  placeholder={t('admin.placeholders.confirmPassword') || 'Confirm password'}
                 />
               </div>
             </div>

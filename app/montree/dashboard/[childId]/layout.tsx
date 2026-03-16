@@ -62,9 +62,9 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   // Visible tabs - Profile & Observations hidden but routes still work
   const tabs = [
     { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
-    { id: 'progress', label: `📸 ${t('nav.review' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/progress` },
+    { id: 'gallery', label: `📸 ${t('nav.review' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
+    { id: 'progress', label: `📊 ${t('nav.progress' as any) || 'Progress'}`, href: `/montree/dashboard/${childId}/progress` },
     { id: 'reports', label: `📄 ${t('nav.reports' as any)}`, href: `/montree/dashboard/${childId}/reports` },
-    { id: 'gallery', label: `📷 ${t('nav.gallery' as any)}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
   // Hidden but functional: /profile, /observations
 

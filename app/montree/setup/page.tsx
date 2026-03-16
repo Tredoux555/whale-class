@@ -4,9 +4,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 export default function TeacherSetupPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<any>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -48,27 +50,27 @@ export default function TeacherSetupPage() {
 
     // Validation
     if (!username.trim()) {
-      setError('Please enter a username');
+      setError(t('setup.validation.enterUsername' as TranslationKey));
       return;
     }
     if (username.length < 3) {
-      setError('Username must be at least 3 characters');
+      setError(t('setup.validation.usernameMinLength' as TranslationKey));
       return;
     }
     if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError('Username can only contain letters, numbers, and underscores');
+      setError(t('setup.validation.usernameChars' as TranslationKey));
       return;
     }
     if (!password) {
-      setError('Please enter a password');
+      setError(t('setup.validation.enterPassword' as TranslationKey));
       return;
     }
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError(t('setup.validation.passwordMinLength' as TranslationKey));
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('setup.validation.passwordsDoNotMatch' as TranslationKey));
       return;
     }
 
@@ -102,10 +104,10 @@ export default function TeacherSetupPage() {
         // Redirect to onboarding
         router.push('/montree/onboarding');
       } else {
-        setError(data.error || 'Failed to set up account');
+        setError(data.error || t('setup.validation.setupFailed' as TranslationKey));
       }
     } catch (err) {
-      setError('Connection error. Please try again.');
+      setError(t('setup.validation.connectionError' as TranslationKey));
     } finally {
       setLoading(false);
     }
@@ -127,10 +129,9 @@ export default function TeacherSetupPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg shadow-emerald-500/20 mb-4">
             <span className="text-4xl">🌳</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Welcome to Montree!</h1>
+          <h1 className="text-2xl font-bold text-slate-800">{t('setup.welcomeTitle' as TranslationKey)}</h1>
           <p className="text-slate-600 mt-2 leading-relaxed max-w-sm mx-auto">
-            A system designed to make your life easy, pleasant, and splendid.
-            I can&apos;t wait to show you the magnificence of what we&apos;ve built for you!
+            {t('setup.welcomeSubtitle' as TranslationKey)}
           </p>
         </div>
 
@@ -146,39 +147,39 @@ export default function TeacherSetupPage() {
             {/* Friendly intro */}
             <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100">
               <p className="text-emerald-700 text-sm">
-                <strong>First, a tiny bit of setup!</strong> ✨ Create your personal login so you can access Montree anytime without needing your code.
+                <strong>{t('setup.introTitle' as TranslationKey)}</strong> ✨ {t('setup.introMessage' as TranslationKey)}
               </p>
             </div>
 
             {/* Username */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Choose a Username
+                {t('setup.chooseUsername' as TranslationKey)}
               </label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-                placeholder="e.g., sarah_teacher"
+                placeholder={t('setup.usernamePlaceholder' as TranslationKey)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none transition-colors"
                 required
                 autoFocus
               />
               <p className="text-slate-400 text-xs mt-1">
-                Letters, numbers, and underscores only
+                {t('setup.usernameHint' as TranslationKey)}
               </p>
             </div>
 
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Create a Password
+                {t('setup.createPassword' as TranslationKey)}
               </label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
+                placeholder={t('setup.passwordPlaceholder' as TranslationKey)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none transition-colors"
                 required
                 minLength={6}
@@ -188,21 +189,21 @@ export default function TeacherSetupPage() {
             {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Confirm Password
+                {t('setup.confirmPassword' as TranslationKey)}
               </label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Type password again"
+                placeholder={t('setup.confirmPasswordPlaceholder' as TranslationKey)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder-slate-400 focus:border-blue-400 focus:bg-white outline-none transition-colors"
                 required
               />
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-red-500 text-xs mt-1">Passwords don&apos;t match</p>
+                <p className="text-red-500 text-xs mt-1">{t('setup.passwordsMismatch' as TranslationKey)}</p>
               )}
               {confirmPassword && password === confirmPassword && (
-                <p className="text-green-500 text-xs mt-1">✓ Passwords match</p>
+                <p className="text-green-500 text-xs mt-1">✓ {t('setup.passwordsMatch' as TranslationKey)}</p>
               )}
             </div>
 
@@ -215,10 +216,10 @@ export default function TeacherSetupPage() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="animate-spin">⏳</span>
-                  Setting up...
+                  {t('setup.settingUp' as TranslationKey)}
                 </span>
               ) : (
-                'Let\'s Go! →'
+                t('setup.letsGo' as TranslationKey)
               )}
             </button>
           </form>

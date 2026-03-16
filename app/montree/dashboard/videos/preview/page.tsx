@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface VideoContent {
   studentId: string;
@@ -14,6 +15,7 @@ interface VideoContent {
 }
 
 export default function VideoPreviewPage() {
+  const { t } = useI18n();
   const [videos, setVideos] = useState<VideoContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -51,8 +53,8 @@ export default function VideoPreviewPage() {
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4 animate-pulse">🎬</div>
-          <div className="text-white font-medium">Generating videos...</div>
-          <div className="text-gray-400 text-sm mt-2">Using AI to create personalized narrations</div>
+          <div className="text-white font-medium">{t('videos.generating' as TranslationKey)}</div>
+          <div className="text-gray-400 text-sm mt-2">{t('videos.generatingSubtext' as TranslationKey)}</div>
         </div>
       </div>
     );
@@ -65,7 +67,7 @@ export default function VideoPreviewPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
             <span className="text-xl">🎬</span>
-            <h1 className="text-lg font-bold text-white">Weekly Videos</h1>
+            <h1 className="text-lg font-bold text-white">{t('videos.weeklyVideos' as TranslationKey)}</h1>
           </div>
           <div className="text-gray-400 text-sm">
             {currentIndex + 1} / {videos.length}
@@ -86,7 +88,7 @@ export default function VideoPreviewPage() {
               ) : (
                 <div className="text-center">
                   <div className="text-6xl mb-2">📷</div>
-                  <div className="text-white/60">No photos this week</div>
+                  <div className="text-white/60">{t('videos.noPhotosThisWeek' as TranslationKey)}</div>
                 </div>
               )}
               {/* Student name overlay */}
@@ -125,7 +127,7 @@ export default function VideoPreviewPage() {
             disabled={currentIndex === 0}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 text-white rounded-lg"
           >
-            ← Previous
+            ← {t('common.previous' as TranslationKey)}
           </button>
           
           {/* Dots */}
@@ -147,7 +149,7 @@ export default function VideoPreviewPage() {
             disabled={currentIndex === videos.length - 1}
             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-30 text-white rounded-lg"
           >
-            Next →
+            {t('common.next' as TranslationKey)} →
           </button>
         </div>
 
@@ -159,16 +161,16 @@ export default function VideoPreviewPage() {
         >
           {sending ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">📤</span> Sending...
+              <span className="animate-spin">📤</span> {t('videos.sending' as TranslationKey)}
             </span>
           ) : (
-            `📤 Send All ${videos.length} Videos to Parents`
+            `📤 ${t('videos.sendAll' as TranslationKey)} ${videos.length} ${t('videos.videosToParents' as TranslationKey)}`
           )}
         </button>
 
         {/* Student List Quick Jump */}
         <div className="mt-6">
-          <h3 className="text-gray-400 text-sm mb-2">Jump to student:</h3>
+          <h3 className="text-gray-400 text-sm mb-2">{t('videos.jumpToStudent' as TranslationKey)}</h3>
           <div className="flex flex-wrap gap-2">
             {videos.map((v, i) => (
               <button

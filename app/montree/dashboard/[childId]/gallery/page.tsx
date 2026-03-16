@@ -1,20 +1,21 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Gallery — the central workflow hub for managing captured work
-// Photo → Work → Description flow. All post-capture work happens here.
+// Review Tab — AI-assisted photo review + area progress summary
+// Photos with confirm/reject UI, area breakdown, progress bar graph
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
-import { getSession } from '@/lib/montree/auth';
-import { AREA_CONFIG } from '@/lib/montree/types';
+import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
+import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 interface GalleryItem extends MontreeMedia {
@@ -31,6 +32,12 @@ interface CurriculumWork {
   dbSequence?: number;
 }
 
+interface ProgressItem {
+  work_name: string;
+  area: string;
+  status: number | string;
+}
+
 export default function GalleryPage() {
   const params = useParams();
   const childId = params.childId as string;
@@ -40,19 +47,20 @@ export default function GalleryPage() {
   // Core state
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [childName, setChildName] = useState('');
 
-  // Filter state
-  const [filterTab, setFilterTab] = useState<'all' | 'timeline' | 'area' | 'work'>('all');
+  // Progress data for bar graph
+  const [progressItems, setProgressItems] = useState<ProgressItem[]>([]);
+
+  // View state
+  const [viewMode, setViewMode] = useState<'review' | 'area' | 'timeline'>('review');
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [selectedWork, setSelectedWork] = useState<string | null>(null);
 
   // Selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [selectionMode, setSelectionMode] = useState(false);
 
   // Editing state
-  const [editingCaption, setEditingCaption] = useState<string | null>(null); // photo id being edited
+  const [editingCaption, setEditingCaption] = useState<string | null>(null);
   const [captionDraft, setCaptionDraft] = useState('');
   const [savingCaption, setSavingCaption] = useState(false);
 
@@ -64,7 +72,7 @@ export default function GalleryPage() {
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
   const [allProgress, setAllProgress] = useState<Array<{ work_name: string; status: string }>>([]);
 
-  // Area picker state (shown when photo has no area before opening wheel picker)
+  // Area picker state
   const [showAreaPicker, setShowAreaPicker] = useState(false);
   const [areaPickerPhotoId, setAreaPickerPhotoId] = useState<string | null>(null);
 
@@ -76,36 +84,49 @@ export default function GalleryPage() {
   // Photo detail expansion
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
 
-  // Teach Guru Work modal state (correction flow from Smart Capture)
+  // Teach Guru Work modal state
   const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Clamp lightbox index when filtered photos change (e.g. after deletion or filter switch)
+  useEffect(() => {
+    if (lightboxOpen && filteredPhotos.length > 0 && lightboxIndex >= filteredPhotos.length) {
+      setLightboxIndex(filteredPhotos.length - 1);
+    } else if (lightboxOpen && filteredPhotos.length === 0) {
+      setLightboxOpen(false);
+      setLightboxIndex(0);
+    }
+  }, [filteredPhotos.length, lightboxOpen, lightboxIndex]);
+
   // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const batchUrlLoadedRef = useRef(false);
+  const prevChildIdRef = useRef(childId);
 
-  // Fetch child info
+  // Reset URL cache when childId changes
   useEffect(() => {
-    if (!childId) return;
-    const controller = new AbortController();
-    fetch(`/api/montree/children/${childId}`, { signal: controller.signal })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.child?.name) setChildName(data.child.name);
-      })
-      .catch(() => {});
-    return () => controller.abort();
+    if (prevChildIdRef.current !== childId) {
+      prevChildIdRef.current = childId;
+      batchUrlLoadedRef.current = false;
+      setImageUrls({});
+      curriculumLoadedRef.current = false;
+    }
   }, [childId]);
 
   // Fetch photos
+  const fetchPhotosControllerRef = useRef<AbortController | null>(null);
   const fetchPhotos = useCallback(() => {
     if (!childId) return;
+    // Abort any in-flight fetch
+    fetchPhotosControllerRef.current?.abort();
+    const controller = new AbortController();
+    fetchPhotosControllerRef.current = controller;
     setLoading(true);
-    batchUrlLoadedRef.current = false; // Reset so URLs are re-fetched for new photos
-    fetch(`/api/montree/media?child_id=${childId}&limit=1000`)
+    batchUrlLoadedRef.current = false;
+    fetch(`/api/montree/media?child_id=${childId}&limit=1000`, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error('Failed to fetch');
         return r.json();
@@ -116,19 +137,51 @@ export default function GalleryPage() {
         );
         setPhotos(sorted);
       })
-      .catch(() => toast.error(t('gallery.loadPhotosError')))
+      .catch((err) => {
+        if (err?.name !== 'AbortError') toast.error(t('gallery.loadPhotosError'));
+      })
       .finally(() => setLoading(false));
-  }, [childId]);
+  }, [childId, t]);
 
-  useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
+  useEffect(() => {
+    fetchPhotos();
+    return () => { fetchPhotosControllerRef.current?.abort(); };
+  }, [fetchPhotos]);
+
+  // Fetch progress data for bar graph
+  useEffect(() => {
+    if (!childId) return;
+    const controller = new AbortController();
+    fetch(`/api/montree/progress?child_id=${childId}`, { signal: controller.signal })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.progress) {
+          setProgressItems(data.progress.map((p: Record<string, unknown>) => ({
+            work_name: p.work_name as string,
+            area: p.area as string,
+            status: p.status as number | string,
+          })));
+          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
+            work_name: p.work_name as string,
+            status: String(p.status),
+          })));
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error('Failed to fetch progress:', err);
+      });
+    return () => controller.abort();
+  }, [childId]);
 
   // Fetch curriculum for wheel picker (lazy load)
   const curriculumLoadedRef = useRef(false);
+  const curriculumLoadingRef = useRef(false);
   const loadCurriculum = useCallback(async () => {
-    if (curriculumLoadedRef.current) return;
-    curriculumLoadedRef.current = true;
+    if (curriculumLoadedRef.current || curriculumLoadingRef.current) return;
+    curriculumLoadingRef.current = true;
     try {
       const res = await fetch('/api/montree/works/search');
+      if (!res.ok) throw new Error('Failed to load curriculum');
       const data = await res.json();
       const byArea: Record<string, CurriculumWork[]> = {};
       for (const w of data.works || []) {
@@ -143,28 +196,15 @@ export default function GalleryPage() {
         });
       }
       setCurriculum(byArea);
-    } catch {
-      curriculumLoadedRef.current = false; // Allow retry on error
+      curriculumLoadedRef.current = true;
+    } catch (err) {
+      console.error('Failed to load curriculum:', err);
+    } finally {
+      curriculumLoadingRef.current = false;
     }
   }, []);
 
-  // Fetch child progress for status badges on works
-  useEffect(() => {
-    if (!childId) return;
-    fetch(`/api/montree/progress?child_id=${childId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.progress) {
-          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
-            work_name: p.work_name as string,
-            status: p.status as string,
-          })));
-        }
-      })
-      .catch(() => {});
-  }, [childId]);
-
-  // Batch-load all image URLs in a single request (replaces N individual fetches)
+  // Batch-load all image URLs
   useEffect(() => {
     if (photos.length === 0 || batchUrlLoadedRef.current) return;
     batchUrlLoadedRef.current = true;
@@ -172,10 +212,12 @@ export default function GalleryPage() {
     const paths = photos.map(p => p.storage_path).filter(Boolean);
     if (paths.length === 0) return;
 
+    const controller = new AbortController();
     fetch('/api/montree/media/urls', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ paths }),
+      signal: controller.signal,
     })
       .then(r => {
         if (!r.ok) throw new Error(`Batch URL request failed: ${r.status}`);
@@ -183,7 +225,6 @@ export default function GalleryPage() {
       })
       .then(data => {
         if (data.urls) {
-          // Map storage_path→signedUrl to photo.id→signedUrl
           const urlMap: Record<string, string> = {};
           for (const photo of photos) {
             if (data.urls[photo.storage_path]) {
@@ -194,75 +235,82 @@ export default function GalleryPage() {
         }
       })
       .catch(err => {
-        console.error('Failed to batch-load image URLs:', err);
-        batchUrlLoadedRef.current = false; // Allow retry
+        if (err?.name !== 'AbortError') {
+          console.error('Failed to batch-load image URLs:', err);
+          batchUrlLoadedRef.current = false;
+        }
       });
+    return () => controller.abort();
   }, [photos]);
 
-  // Unique areas and works
-  const uniqueAreas = Array.from(new Set(photos.map(p => p.area).filter(Boolean)));
-  const uniqueWorks = Array.from(new Set(photos.map(p => p.work_name).filter(Boolean)));
+  // ── Computed: Area progress stats for bar graph ──
+  const areaStats = useMemo(() => {
+    const stats: Record<string, { mastered: number; practicing: number; presented: number; total: number }> = {};
+    for (const area of AREA_ORDER) {
+      stats[area] = { mastered: 0, practicing: 0, presented: 0, total: 0 };
+    }
+    for (const p of progressItems) {
+      const area = normalizeArea(p.area || '');
+      if (!stats[area]) stats[area] = { mastered: 0, practicing: 0, presented: 0, total: 0 };
+      const s = typeof p.status === 'number'
+        ? p.status === 3 ? 'mastered' : p.status === 2 ? 'practicing' : p.status === 1 ? 'presented' : ''
+        : String(p.status);
+      if (s === 'mastered' || s === 'completed') stats[area].mastered++;
+      else if (s === 'practicing') stats[area].practicing++;
+      else if (s === 'presented') stats[area].presented++;
+      stats[area].total++;
+    }
+    return stats;
+  }, [progressItems]);
 
-  // Filter photos
-  const getFilteredPhotos = (): GalleryItem[] => {
-    if (filterTab === 'area' && selectedArea) {
-      return photos.filter(p => p.area === selectedArea);
+  // Total progress counts for hero
+  const totalStats = useMemo(() => {
+    let mastered = 0, practicing = 0, presented = 0;
+    for (const area of AREA_ORDER) {
+      const s = areaStats[area];
+      if (s !== undefined) { mastered += s.mastered; practicing += s.practicing; presented += s.presented; }
     }
-    if (filterTab === 'work' && selectedWork) {
-      return photos.filter(p => p.work_name === selectedWork);
+    return { mastered, practicing, presented, total: mastered + practicing + presented };
+  }, [areaStats]);
+
+  // Photos grouped by area for the review view
+  const photosByArea = useMemo(() => {
+    const map: Record<string, GalleryItem[]> = {};
+    for (const area of AREA_ORDER) map[area] = [];
+    map['untagged'] = [];
+    for (const photo of photos) {
+      const area = photo.area ? normalizeArea(photo.area) : 'untagged';
+      if (!map[area]) map[area] = [];
+      map[area].push(photo);
     }
+    return map;
+  }, [photos]);
+
+  // Filtered photos based on view + area selection
+  const filteredPhotos = useMemo(() => {
+    if (selectedArea) return photos.filter(p => (p.area ? normalizeArea(p.area) : 'untagged') === selectedArea);
     return photos;
-  };
+  }, [photos, selectedArea]);
 
-  const filteredPhotos = getFilteredPhotos();
+  // ── Handlers ──
 
-  // Group photos by work+area for the "all" view
-  const groupPhotosByWork = (items: GalleryItem[]) => {
-    const groups: Array<{ key: string; area: string; work: string; items: GalleryItem[] }> = [];
-    const map = new Map<string, GalleryItem[]>();
-
-    items.forEach(item => {
-      const area = item.area || 'untagged';
-      const work = item.work_name || 'Untagged';
-      const key = `${area}|${work}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(item);
-    });
-
-    map.forEach((groupItems, key) => {
-      const [area, work] = key.split('|');
-      groups.push({ key, area, work, items: groupItems });
-    });
-
-    return groups;
-  };
-
-  // Format date
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
+      weekday: 'short', month: 'short', day: 'numeric',
     });
   };
 
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   };
 
-  // Open wheel picker for a specific photo
   const openWorkPicker = async (photo: GalleryItem) => {
     await loadCurriculum();
     if (!photo.area) {
-      // No area yet — show area picker first
       setAreaPickerPhotoId(photo.id);
       setShowAreaPicker(true);
       return;
@@ -273,7 +321,6 @@ export default function GalleryPage() {
     setPickerOpen(true);
   };
 
-  // Handle area selection from area picker (for untagged photos)
   const handleAreaSelected = (area: string) => {
     setShowAreaPicker(false);
     setPickerArea(area);
@@ -283,29 +330,18 @@ export default function GalleryPage() {
     setAreaPickerPhotoId(null);
   };
 
-  // Handle work selection from wheel picker
   const handleWorkSelected = async (work: CurriculumWork) => {
     if (!pickerPhotoId) return;
-
     setPickerOpen(false);
-
     try {
       const res = await fetch('/api/montree/media', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: pickerPhotoId,
-          work_id: work.id,
-        }),
+        body: JSON.stringify({ id: pickerPhotoId, work_id: work.id }),
       });
-
       if (!res.ok) throw new Error('Failed to update');
-
-      // Update local state
       setPhotos(prev => prev.map(p =>
-        p.id === pickerPhotoId
-          ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea }
-          : p
+        p.id === pickerPhotoId ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea } : p
       ));
       toast.success(t('gallery.workUpdated'));
     } catch {
@@ -313,7 +349,6 @@ export default function GalleryPage() {
     }
   };
 
-  // Save caption/description edit
   const saveCaption = async (photoId: string) => {
     setSavingCaption(true);
     try {
@@ -323,7 +358,6 @@ export default function GalleryPage() {
         body: JSON.stringify({ id: photoId, caption: captionDraft }),
       });
       if (!res.ok) throw new Error('Failed to save');
-
       setPhotos(prev => prev.map(p =>
         p.id === photoId ? { ...p, caption: captionDraft } : p
       ));
@@ -336,7 +370,6 @@ export default function GalleryPage() {
     }
   };
 
-  // Delete handlers
   const handleDeletePhoto = async () => {
     if (!photoToDelete) return;
     setIsDeleting(true);
@@ -344,6 +377,8 @@ export default function GalleryPage() {
       const res = await fetch(`/api/montree/media?id=${photoToDelete.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPhotos(prev => prev.filter(p => p.id !== photoToDelete.id));
+      // Clean up image URL cache for deleted photo
+      setImageUrls(prev => { const next = { ...prev }; delete next[photoToDelete.id]; return next; });
       toast.success(t('gallery.photoDeletedSuccessfully'));
       setPhotoToDelete(null);
     } catch {
@@ -360,6 +395,8 @@ export default function GalleryPage() {
       const res = await fetch(`/api/montree/media?ids=${Array.from(selectedIds).join(',')}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)));
+      // Clean up image URL cache for deleted photos
+      setImageUrls(prev => { const next = { ...prev }; selectedIds.forEach(id => delete next[id]); return next; });
       toast.success(t('gallery.photosDeletedSuccessfully').replace('{count}', selectedIds.size.toString()));
       setSelectedIds(new Set());
       setShowBulkDeleteConfirm(false);
@@ -371,16 +408,32 @@ export default function GalleryPage() {
     }
   };
 
-  // Progress update callback for PhotoInsight
-  const handleProgressUpdate = () => {
+  const handleProgressUpdate = useCallback(() => {
     fetchPhotos();
-  };
+    // Also refresh progress data (bar graph + wheel picker statuses)
+    fetch(`/api/montree/progress?child_id=${childId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.progress) {
+          setProgressItems(data.progress.map((p: Record<string, unknown>) => ({
+            work_name: p.work_name as string,
+            area: p.area as string,
+            status: p.status as number | string,
+          })));
+          setAllProgress(data.progress.map((p: Record<string, unknown>) => ({
+            work_name: p.work_name as string,
+            status: String(p.status),
+          })));
+        }
+      })
+      .catch((err) => {
+        if (err?.name !== 'AbortError') console.error('Failed to refresh progress:', err);
+      });
+  }, [childId, fetchPhotos]);
 
-  // Get area config safely
   const getAreaConfig = (area: string) =>
     AREA_CONFIG[normalizeArea(area)] || { name: area, icon: '?', color: '#888' };
 
-  // Merge curriculum works with progress statuses for the wheel picker
   const getPickerWorks = (): CurriculumWork[] => {
     const works = curriculum[pickerArea] || [];
     return works.map(w => ({
@@ -389,7 +442,17 @@ export default function GalleryPage() {
     }));
   };
 
-  // Render a single photo card (the core unit of the gallery)
+  // Max works across all areas for bar graph scale
+  const maxAreaWorks = useMemo(() => {
+    let max = 0;
+    for (const area of AREA_ORDER) {
+      const s = areaStats[area];
+      if (s && s.total > max) max = s.total;
+    }
+    return Math.max(max, 1);
+  }, [areaStats]);
+
+  // ── Render: Photo Card ──
   const renderPhotoCard = (photo: GalleryItem) => {
     const isExpanded = expandedPhoto === photo.id;
     const isEditingThis = editingCaption === photo.id;
@@ -400,9 +463,8 @@ export default function GalleryPage() {
         key={photo.id}
         className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
       >
-        {/* Photo + Date overlay */}
+        {/* Photo */}
         <div className="relative group">
-          {/* Selection checkbox */}
           {selectionMode && (
             <div className="absolute top-3 left-3 z-10">
               <input
@@ -418,11 +480,9 @@ export default function GalleryPage() {
             </div>
           )}
 
-          {/* The image — tap to open fullscreen lightbox */}
           <button
             onClick={() => {
               if (url) {
-                // Find index of this photo in filteredPhotos for navigation
                 const idx = filteredPhotos.findIndex(p => p.id === photo.id);
                 setLightboxIndex(idx >= 0 ? idx : 0);
                 setLightboxOpen(true);
@@ -444,12 +504,10 @@ export default function GalleryPage() {
             )}
           </button>
 
-          {/* Date badge — always visible */}
           <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm">
             {formatDate(photo.captured_at)}
           </div>
 
-          {/* Delete button (on hover/expanded) */}
           {!selectionMode && (
             <button
               onClick={() => setPhotoToDelete(photo)}
@@ -461,9 +519,9 @@ export default function GalleryPage() {
           )}
         </div>
 
-        {/* Work tag + Description section */}
+        {/* Work tag + AI Review */}
         <div className="p-3 space-y-2">
-          {/* Work tag bar — tappable to change */}
+          {/* Work tag */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => openWorkPicker(photo)}
@@ -483,7 +541,7 @@ export default function GalleryPage() {
             </button>
           </div>
 
-          {/* AI Description / Caption — editable */}
+          {/* Caption editing */}
           {isEditingThis ? (
             <div className="space-y-2">
               <textarea
@@ -519,7 +577,7 @@ export default function GalleryPage() {
               className="w-full text-left"
             >
               {photo.caption ? (
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 hover:text-gray-800 transition-colors">
+                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 hover:text-gray-800 transition-colors">
                   {photo.caption}
                 </p>
               ) : (
@@ -530,8 +588,8 @@ export default function GalleryPage() {
             </button>
           )}
 
-          {/* Smart Capture / Photo Insight — shows AI analysis inline */}
-          <div className="pt-1">
+          {/* Smart Capture / Photo Insight — AI confirm/reject UI */}
+          <div className="pt-1 border-t border-gray-50">
             <PhotoInsightButton
               mediaId={photo.id}
               childId={childId}
@@ -564,211 +622,210 @@ export default function GalleryPage() {
     );
   };
 
-  // Render the grouped "all" view
-  const renderGroupedView = () => {
-    const groups = groupPhotosByWork(filteredPhotos);
-
-    if (groups.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">📷</div>
-          <p className="text-gray-500">{t('gallery.noPhotos')}</p>
-        </div>
-      );
-    }
-
+  // ── Loading state ──
+  if (loading) {
     return (
-      <div className="space-y-6">
-        {groups.map(group => {
-          const areaConfig = getAreaConfig(group.area);
-          return (
-            <div key={group.key}>
-              {/* Group header */}
-              <div className="flex items-center gap-2 mb-3 px-1">
-                <AreaBadge area={group.area} size="sm" />
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-gray-800 text-sm truncate">{group.work}</p>
-                  {group.area !== 'untagged' && (
-                    <p className="text-xs text-gray-500">{areaConfig.name}</p>
-                  )}
-                </div>
-                <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
-                  {group.items.length} {group.items.length !== 1 ? t('gallery.photos') : t('gallery.photo')}
-                </span>
+      <div className="space-y-4 pb-8">
+        <div className="bg-white rounded-2xl p-6 shadow-sm animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-40 mb-4" />
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full" />
+                <div className="flex-1 h-6 bg-gray-200 rounded-full" />
+                <div className="w-8 h-4 bg-gray-200 rounded" />
               </div>
-
-              {/* Photo cards in this group */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {group.items.map(photo => renderPhotoCard(photo))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Render flat grid view (for area/work filters)
-  const renderFlatView = () => {
-    if (filteredPhotos.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">📷</div>
-          <p className="text-gray-500">{loading ? t('gallery.loadingPhotos') : t('gallery.noPhotosInFilter')}</p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {filteredPhotos.map(photo => renderPhotoCard(photo))}
-      </div>
-    );
-  };
-
-  // Render chronological timeline — grouped by date, newest first
-  const renderTimelineView = () => {
-    if (filteredPhotos.length === 0) {
-      return (
-        <div className="text-center py-12">
-          <div className="text-4xl mb-3">📷</div>
-          <p className="text-gray-500">{t('gallery.noPhotos')}</p>
-        </div>
-      );
-    }
-
-    // Group by date (YYYY-MM-DD), already sorted newest first
-    const byDate = new Map<string, GalleryItem[]>();
-    for (const photo of filteredPhotos) {
-      const dateKey = new Date(photo.captured_at).toISOString().split('T')[0];
-      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-      byDate.get(dateKey)!.push(photo);
-    }
-
-    return (
-      <div className="space-y-6">
-        {Array.from(byDate.entries()).map(([dateKey, datePhotos]) => (
-          <div key={dateKey}>
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <h3 className="font-bold text-gray-800 text-sm">
-                {new Date(dateKey + 'T12:00:00').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
-                  weekday: 'long',
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </h3>
-              <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
-                {datePhotos.length}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {datePhotos.map(photo => renderPhotoCard(photo))}
-            </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-xl p-4 shadow-sm animate-pulse">
+              <div className="aspect-[4/3] bg-gray-200 rounded-lg mb-3" />
+              <div className="h-4 bg-gray-200 rounded w-3/4" />
+            </div>
+          ))}
+        </div>
       </div>
     );
-  };
+  }
 
   return (
     <div className="space-y-4 pb-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {childName ? (locale === 'zh' ? `${childName}的${t('gallery.gallery')}` : `${childName}'s ${t('gallery.gallery')}`) : t('gallery.photoGallery')}
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {photos.length} {t('gallery.photosTotal')}
-          </p>
+
+      {/* Contextual Tip Bubble */}
+      {session && isHomeschoolParent(session) && (
+        <GuruContextBubble pageKey="gallery" role="parent" />
+      )}
+
+      {/* ══════════════════════════════════════════════
+          AREA PROGRESS SUMMARY — Bar Graph
+          ══════════════════════════════════════════════ */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-gray-800">
+            {t('review.progressSummary' as any) || 'Progress Summary'}
+          </h2>
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> {t('progress.mastered')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block" /> {t('progress.practicing')}</span>
+            <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-400 inline-block" /> {t('progress.presented')}</span>
+          </div>
         </div>
 
-        {filteredPhotos.length > 0 && (
-          <button
-            onClick={() => {
-              setSelectionMode(!selectionMode);
-              setSelectedIds(new Set());
-            }}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors text-sm ${
-              selectionMode
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-            }`}
-          >
-            {selectionMode ? `✓ ${t('gallery.select')}` : t('gallery.select')}
-          </button>
-        )}
-      </div>
+        {/* Hero stats row */}
+        <div className="flex items-center gap-4 mb-5 pb-4 border-b border-gray-100">
+          <div className="text-center flex-1">
+            <div className="text-2xl font-bold text-emerald-600">{totalStats.mastered}</div>
+            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.mastered')}</div>
+          </div>
+          <div className="text-center flex-1">
+            <div className="text-2xl font-bold text-amber-500">{totalStats.practicing}</div>
+            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.practicing')}</div>
+          </div>
+          <div className="text-center flex-1">
+            <div className="text-2xl font-bold text-blue-500">{totalStats.presented}</div>
+            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('progress.presented')}</div>
+          </div>
+          <div className="text-center flex-1 border-l border-gray-200 pl-4">
+            <div className="text-2xl font-bold text-gray-800">{totalStats.total}</div>
+            <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wide">{t('review.totalWorks' as any) || 'Total'}</div>
+          </div>
+        </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-1">
-        {(['all', 'timeline', 'area', 'work'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => {
-              setFilterTab(tab);
-              if (tab === 'all' || tab === 'timeline') { setSelectedArea(null); setSelectedWork(null); }
-              if (tab === 'area' && !selectedArea && uniqueAreas.length > 0) setSelectedArea(uniqueAreas[0]);
-              if (tab === 'work' && !selectedWork && uniqueWorks.length > 0) setSelectedWork(uniqueWorks[0] || null);
-            }}
-            className={`px-4 py-2 rounded-full whitespace-nowrap font-medium transition-colors text-sm ${
-              filterTab === tab
-                ? 'bg-emerald-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            {tab === 'all' ? t('gallery.allPhotos') : tab === 'timeline' ? (t('gallery.timeline' as any) || 'Timeline') : tab === 'area' ? t('gallery.byArea') : t('gallery.byWork')}
-          </button>
-        ))}
-      </div>
+        {/* Area bar graph */}
+        <div className="space-y-3">
+          {AREA_ORDER.map(area => {
+            const config = AREA_CONFIG[area];
+            const stats = areaStats[area] || { mastered: 0, practicing: 0, presented: 0, total: 0 };
+            const photoCount = photosByArea[area]?.length || 0;
+            const isActive = selectedArea === area;
 
-      {/* Area sub-filter */}
-      {filterTab === 'area' && uniqueAreas.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {uniqueAreas.map(area => {
-            const config = getAreaConfig(area || '');
-            const count = photos.filter(p => p.area === area).length;
             return (
               <button
                 key={area}
-                onClick={() => setSelectedArea(area || null)}
+                onClick={() => {
+                  setSelectedArea(isActive ? null : area);
+                  setViewMode('area');
+                }}
+                className={`w-full flex items-center gap-3 p-2 rounded-xl transition-all ${
+                  isActive ? 'bg-gray-50 ring-2 ring-emerald-300' : 'hover:bg-gray-50'
+                }`}
+              >
+                <AreaBadge area={area} size="sm" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-gray-700">{config.name}</span>
+                    <span className="text-xs font-bold text-gray-800">{stats.total}</span>
+                  </div>
+                  {/* Stacked bar */}
+                  <div className="h-4 bg-gray-100 rounded-full overflow-hidden flex">
+                    {stats.mastered > 0 && (
+                      <div
+                        className="h-full bg-emerald-500 transition-all duration-500"
+                        style={{ width: `${(stats.mastered / maxAreaWorks) * 100}%` }}
+                      />
+                    )}
+                    {stats.practicing > 0 && (
+                      <div
+                        className="h-full bg-amber-400 transition-all duration-500"
+                        style={{ width: `${(stats.practicing / maxAreaWorks) * 100}%` }}
+                      />
+                    )}
+                    {stats.presented > 0 && (
+                      <div
+                        className="h-full bg-blue-400 transition-all duration-500"
+                        style={{ width: `${(stats.presented / maxAreaWorks) * 100}%` }}
+                      />
+                    )}
+                  </div>
+                </div>
+                {/* Photo count badge */}
+                {photoCount > 0 && (
+                  <span className="text-[10px] bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full font-medium">
+                    📷 {photoCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Guidance note */}
+        <div className="mt-4 pt-3 border-t border-gray-100">
+          <p className="text-xs text-gray-400 italic text-center">
+            {t('review.guidanceNote' as any) || 'Tap an area to filter photos. Longer bars suggest stronger engagement — shorter bars may need more focus.'}
+          </p>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════
+          VIEW CONTROLS + SELECTION
+          ══════════════════════════════════════════════ */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setViewMode('review'); setSelectedArea(null); }}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'review' && !selectedArea ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {t('review.allPhotos' as any) || 'All Photos'}
+          </button>
+          <button
+            onClick={() => setViewMode('timeline')}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === 'timeline' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            {t('gallery.timeline' as any) || 'Timeline'}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">{filteredPhotos.length} {t('gallery.photosTotal')}</span>
+          {filteredPhotos.length > 0 && (
+            <button
+              onClick={() => { setSelectionMode(!selectionMode); setSelectedIds(new Set()); }}
+              className={`px-3 py-2 rounded-lg font-medium transition-colors text-xs ${
+                selectionMode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {selectionMode ? `✓ ${t('gallery.select')}` : t('gallery.select')}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Area filter chips (when an area is selected from bar graph) */}
+      {selectedArea && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {AREA_ORDER.map(area => {
+            const config = AREA_CONFIG[area];
+            const count = photosByArea[area]?.length || 0;
+            const isActive = selectedArea === area;
+            return (
+              <button
+                key={area}
+                onClick={() => setSelectedArea(isActive ? null : area)}
                 className={`px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-2 ${
-                  selectedArea === area
+                  isActive
                     ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-500'
                     : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
                 }`}
               >
-                <AreaBadge area={area || ''} size="xs" />
+                <AreaBadge area={area} size="xs" />
                 <span>{config.name}</span>
                 <span className="text-xs opacity-75">({count})</span>
               </button>
             );
           })}
-        </div>
-      )}
-
-      {/* Work sub-filter */}
-      {filterTab === 'work' && uniqueWorks.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {uniqueWorks.map(work => {
-            const count = photos.filter(p => p.work_name === work).length;
-            return (
-              <button
-                key={work}
-                onClick={() => setSelectedWork(work || null)}
-                className={`px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${
-                  selectedWork === work
-                    ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-500'
-                    : 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200'
-                }`}
-              >
-                <span className="truncate">{work}</span>
-                <span className="text-xs opacity-75 ml-1">({count})</span>
-              </button>
-            );
-          })}
+          <button
+            onClick={() => setSelectedArea(null)}
+            className="px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium text-gray-500 hover:bg-gray-100 transition-colors"
+          >
+            ✕ {t('review.clearFilter' as any) || 'Clear'}
+          </button>
         </div>
       )}
 
@@ -801,18 +858,115 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Loading */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
+      {/* ══════════════════════════════════════════════
+          PHOTO GRID
+          ══════════════════════════════════════════════ */}
+      {filteredPhotos.length === 0 ? (
+        <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+          <div className="text-4xl mb-3">📷</div>
+          <h2 className="text-base font-bold text-gray-800 mb-1">
+            {selectedArea
+              ? (t('review.noPhotosInArea' as any) || 'No photos in this area yet')
+              : (t('review.noPhotos' as any) || 'No photos yet')}
+          </h2>
+          <p className="text-sm text-gray-500">
+            {t('review.takePhotos' as any) || 'Take photos of the child working to build their portfolio'}
+          </p>
         </div>
-      ) : filterTab === 'all' ? (
-        renderGroupedView()
-      ) : filterTab === 'timeline' ? (
-        renderTimelineView()
+      ) : viewMode === 'timeline' ? (
+        // Timeline view — grouped by date
+        <div className="space-y-6">
+          {(() => {
+            const byDate = new Map<string, GalleryItem[]>();
+            for (const photo of filteredPhotos) {
+              const dateKey = new Date(photo.captured_at).toISOString().split('T')[0];
+              if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+              byDate.get(dateKey)!.push(photo);
+            }
+            return Array.from(byDate.entries()).map(([dateKey, datePhotos]) => (
+              <div key={dateKey}>
+                <div className="flex items-center gap-3 mb-3 px-1">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <h3 className="font-bold text-gray-800 text-sm">
+                    {new Date(dateKey + 'T12:00:00').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+                      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+                    })}
+                  </h3>
+                  <span className="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600 font-medium">
+                    {datePhotos.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {datePhotos.map(photo => renderPhotoCard(photo))}
+                </div>
+              </div>
+            ));
+          })()}
+        </div>
+      ) : selectedArea ? (
+        // Single area view
+        <div>
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <AreaBadge area={selectedArea} size="md" />
+            <div>
+              <h3 className="font-bold text-gray-800">{AREA_CONFIG[selectedArea]?.name || selectedArea}</h3>
+              <p className="text-xs text-gray-500">
+                {filteredPhotos.length} {t('gallery.photosTotal')}
+                {' · '}
+                {areaStats[selectedArea]?.mastered || 0} {t('progress.mastered').toLowerCase()}
+                {', '}
+                {areaStats[selectedArea]?.practicing || 0} {t('progress.practicing').toLowerCase()}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {filteredPhotos.map(photo => renderPhotoCard(photo))}
+          </div>
+        </div>
       ) : (
-        renderFlatView()
+        // Default review view — grouped by area
+        <div className="space-y-6">
+          {AREA_ORDER.map(area => {
+            const areaPhotos = photosByArea[area] || [];
+            if (areaPhotos.length === 0) return null;
+            const config = AREA_CONFIG[area];
+            return (
+              <div key={area}>
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <AreaBadge area={area} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-gray-800 text-sm">{config.name}</p>
+                    <p className="text-xs text-gray-500">{areaPhotos.length} {areaPhotos.length !== 1 ? t('gallery.photos') : t('gallery.photo')}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {areaPhotos.map(photo => renderPhotoCard(photo))}
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Untagged photos at the end */}
+          {(photosByArea['untagged']?.length || 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3 px-1">
+                <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">?</div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-800 text-sm">{t('gallery.untagged')}</p>
+                  <p className="text-xs text-gray-500">{photosByArea['untagged'].length} {t('gallery.photosTotal')}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {photosByArea['untagged'].map(photo => renderPhotoCard(photo))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
+
+      {/* ══════════════════════════════════════════════
+          MODALS + OVERLAYS
+          ══════════════════════════════════════════════ */}
 
       {/* Area Picker (for untagged photos) */}
       {showAreaPicker && (
@@ -834,7 +988,7 @@ export default function GalleryPage() {
               </button>
             </div>
             <div className="grid grid-cols-1 gap-2">
-              {['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'].map(area => {
+              {AREA_ORDER.map(area => {
                 const config = getAreaConfig(area);
                 return (
                   <button
@@ -861,7 +1015,6 @@ export default function GalleryPage() {
         currentWorkName={pickerCurrentWork}
         onSelectWork={(work, _status) => handleWorkSelected(work as CurriculumWork)}
         onWorkAdded={() => {
-          // Refresh curriculum cache
           curriculumLoadedRef.current = false;
           setCurriculum({});
           loadCurriculum();
@@ -886,22 +1039,28 @@ export default function GalleryPage() {
         isDeleting={isDeleting}
       />
 
-      {/* Photo Lightbox — fullscreen zoom + download + navigation */}
-      <PhotoLightbox
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-        src={imageUrls[filteredPhotos[lightboxIndex]?.id] || ''}
-        alt={filteredPhotos[lightboxIndex]?.work_name || filteredPhotos[lightboxIndex]?.caption || 'Photo'}
-        photos={filteredPhotos.map(p => ({
-          url: imageUrls[p.id] || '',
-          caption: p.caption,
-          date: p.captured_at,
-        }))}
-        currentIndex={lightboxIndex}
-        onNavigate={(idx) => setLightboxIndex(idx)}
-      />
+      {/* Photo Lightbox */}
+      {(() => {
+        const safeIndex = Math.min(lightboxIndex, Math.max(filteredPhotos.length - 1, 0));
+        const currentPhoto = filteredPhotos[safeIndex];
+        return (
+          <PhotoLightbox
+            isOpen={lightboxOpen && filteredPhotos.length > 0}
+            onClose={() => setLightboxOpen(false)}
+            src={currentPhoto ? (imageUrls[currentPhoto.id] || '') : ''}
+            alt={currentPhoto?.work_name || currentPhoto?.caption || 'Photo'}
+            photos={filteredPhotos.map(p => ({
+              url: imageUrls[p.id] || '',
+              caption: p.caption,
+              date: p.captured_at,
+            }))}
+            currentIndex={safeIndex}
+            onNavigate={(idx) => setLightboxIndex(idx)}
+          />
+        );
+      })()}
 
-      {/* Teach Guru Work Modal — correction flow when Smart Capture misidentifies */}
+      {/* Teach Guru Work Modal */}
       {teachModalData && session?.classroom?.id && (
         <TeachGuruWorkModal
           isOpen={true}

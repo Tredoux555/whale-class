@@ -8,19 +8,21 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 function ReportViewContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const reportId = searchParams.get('id');
-  
+  const { t } = useI18n();
+
   // Minimal state for loading
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     if (!reportId) {
-      setError('No report ID provided');
+      setError(t('reportView.noReportId' as TranslationKey));
       setLoading(false);
       return;
     }
@@ -52,9 +54,9 @@ function ReportViewContent() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="text-5xl mb-4">😕</div>
-          <p className="text-gray-600 mb-4">{error || 'No report ID'}</p>
+          <p className="text-gray-600 mb-4">{error || t('reportView.noReportId' as TranslationKey)}</p>
           <Link href="/montree/dashboard/reports" className="text-blue-500 hover:underline">
-            ← Back to reports
+            ← {t('reportView.backToReports' as TranslationKey)}
           </Link>
         </div>
       </div>
@@ -66,13 +68,13 @@ function ReportViewContent() {
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-2xl mx-auto">
         <Link href="/montree/dashboard/reports" className="text-blue-500 mb-4 inline-block">
-          ← Back to reports
+          ← {t('reportView.backToReports' as TranslationKey)}
         </Link>
         <div className="bg-white rounded-xl p-6 shadow-sm">
-          <h1 className="text-xl font-bold text-gray-800 mb-4">Report View</h1>
-          <p className="text-gray-600">Report ID: {reportId}</p>
+          <h1 className="text-xl font-bold text-gray-800 mb-4">{t('reportView.title' as TranslationKey)}</h1>
+          <p className="text-gray-600">{t('reportView.reportId' as TranslationKey)}: {reportId}</p>
           <p className="text-gray-400 text-sm mt-4">
-            Native report viewing coming in Phase 2 (SQLite integration)
+            {t('reportView.nativeComingSoon' as TranslationKey)}
           </p>
         </div>
       </div>

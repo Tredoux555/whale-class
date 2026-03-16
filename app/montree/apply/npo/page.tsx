@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 export default function NPOApplicationPage() {
   const [step, setStep] = useState(1);
@@ -29,6 +30,7 @@ export default function NPOApplicationPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [documentationUrl, setDocumentationUrl] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const { t } = useI18n();
 
   const countries = [
     'Afghanistan', 'Albania', 'Algeria', 'Argentina', 'Australia',
@@ -59,27 +61,27 @@ export default function NPOApplicationPage() {
 
     // Validation
     if (!organizationName.trim()) {
-      setError('Organization name is required');
+      setError(t('npo.validation.orgNameRequired' as TranslationKey));
       return;
     }
     if (!country) {
-      setError('Country is required');
+      setError(t('npo.validation.countryRequired' as TranslationKey));
       return;
     }
     if (!contactName.trim()) {
-      setError('Contact name is required');
+      setError(t('npo.validation.contactNameRequired' as TranslationKey));
       return;
     }
     if (!contactEmail.trim()) {
-      setError('Contact email is required');
+      setError(t('npo.validation.contactEmailRequired' as TranslationKey));
       return;
     }
     if (!missionStatement.trim()) {
-      setError('Mission statement is required');
+      setError(t('npo.validation.missionRequired' as TranslationKey));
       return;
     }
     if (!communityServed.trim()) {
-      setError('Community description is required');
+      setError(t('npo.validation.communityRequired' as TranslationKey));
       return;
     }
 
@@ -111,13 +113,13 @@ export default function NPOApplicationPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Application submission failed');
+        throw new Error(data.error || t('npo.submissionFailed' as TranslationKey));
       }
 
       setSubmittedEmail(contactEmail);
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Application submission failed');
+      setError(err instanceof Error ? err.message : t('npo.submissionFailed' as TranslationKey));
     } finally {
       setLoading(false);
     }
@@ -135,25 +137,25 @@ export default function NPOApplicationPage() {
             <span className="text-4xl">✓</span>
           </div>
 
-          <h1 className="text-3xl font-semibold text-white mb-2">Application Submitted</h1>
-          <p className="text-emerald-300/70 mb-6">Thank you for applying to the Community Impact Program</p>
+          <h1 className="text-3xl font-semibold text-white mb-2">{t('npo.submitted' as TranslationKey)}</h1>
+          <p className="text-emerald-300/70 mb-6">{t('npo.submittedThankYou' as TranslationKey)}</p>
 
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-6 mb-6 space-y-4">
             <div>
-              <p className="text-white/70 text-sm mb-1">We'll review your application</p>
-              <p className="text-emerald-300 font-semibold">within 5-7 business days</p>
+              <p className="text-white/70 text-sm mb-1">{t('npo.reviewApplication' as TranslationKey)}</p>
+              <p className="text-emerald-300 font-semibold">{t('npo.reviewTimeline' as TranslationKey)}</p>
             </div>
 
             <div className="h-px bg-white/10" />
 
             <div>
-              <p className="text-white/70 text-sm mb-2">Decision notification sent to:</p>
+              <p className="text-white/70 text-sm mb-2">{t('npo.notificationSentTo' as TranslationKey)}</p>
               <p className="text-white font-semibold break-all">{submittedEmail}</p>
             </div>
           </div>
 
           <p className="text-white/60 text-sm mb-8">
-            In the meantime, explore our platform at{' '}
+            {t('npo.exploreInMeantime' as TranslationKey)}{' '}
             <Link href="/montree" className="text-emerald-400 hover:text-emerald-300">
               montree.app
             </Link>
@@ -163,7 +165,7 @@ export default function NPOApplicationPage() {
             href="/montree"
             className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
           >
-            Return to Montree
+            {t('npo.returnToMontree' as TranslationKey)}
           </Link>
         </div>
 
@@ -190,16 +192,16 @@ export default function NPOApplicationPage() {
             <span className="text-4xl">🌍</span>
           </div>
           <h1 className="text-4xl font-light text-white mb-2">
-            Community <span className="font-semibold">Impact Program</span>
+            {t('npo.title' as TranslationKey)}
           </h1>
           <p className="text-emerald-300/70 text-lg mb-6">
-            Free Montessori software for schools serving underprivileged communities
+            {t('npo.subtitle' as TranslationKey)}
           </p>
 
           {/* Banner */}
           <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-400/30 rounded-xl p-6 mb-8">
             <p className="text-white/90 leading-relaxed">
-              We believe every child deserves quality Montessori education. If your organization serves underprivileged communities, you may qualify for <span className="text-emerald-300 font-semibold">free lifetime access</span> to Montree.
+              {t('npo.bannerText' as TranslationKey)}
             </p>
           </div>
 
@@ -217,12 +219,12 @@ export default function NPOApplicationPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Organization Name *</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.orgName' as TranslationKey)} *</label>
                 <input
                   type="text"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
-                  placeholder="e.g. Hope Education Foundation"
+                  placeholder={t('npo.orgNamePlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -231,7 +233,7 @@ export default function NPOApplicationPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Organization Type *</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.orgType' as TranslationKey)} *</label>
                   <select
                     value={organizationType}
                     onChange={(e) => setOrganizationType(e.target.value)}
@@ -246,12 +248,12 @@ export default function NPOApplicationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Registration Number</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.regNumber' as TranslationKey)}</label>
                   <input
                     type="text"
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
-                    placeholder="e.g. EIN, Charity Number"
+                    placeholder={t('npo.regNumberPlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   />
                 </div>
@@ -259,7 +261,7 @@ export default function NPOApplicationPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Country *</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.country' as TranslationKey)} *</label>
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
@@ -267,7 +269,7 @@ export default function NPOApplicationPage() {
                     required
                   >
                     <option value="" className="bg-slate-900">
-                      Select country
+                      {t('npo.selectCountry' as TranslationKey)}
                     </option>
                     {countries.map((c) => (
                       <option key={c} value={c} className="bg-slate-900">
@@ -278,12 +280,12 @@ export default function NPOApplicationPage() {
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">City</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.city' as TranslationKey)}</label>
                   <input
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    placeholder="e.g. Lagos"
+                    placeholder={t('npo.cityPlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   />
                 </div>
@@ -294,7 +296,7 @@ export default function NPOApplicationPage() {
                 onClick={() => setStep(2)}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all mt-6"
               >
-                Continue →
+                {t('common.continue' as TranslationKey)} →
               </button>
             </div>
           )}
@@ -303,11 +305,11 @@ export default function NPOApplicationPage() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Mission Statement *</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.missionStatement' as TranslationKey)} *</label>
                 <textarea
                   value={missionStatement}
                   onChange={(e) => setMissionStatement(e.target.value)}
-                  placeholder="Describe your organization's mission and approach to education..."
+                  placeholder={t('npo.missionPlaceholder' as TranslationKey)}
                   rows={4}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all resize-none"
                   required
@@ -315,12 +317,12 @@ export default function NPOApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Community Served *</label>
-                <p className="text-white/60 text-xs mb-2">Describe the underprivileged community you serve</p>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.communityServed' as TranslationKey)} *</label>
+                <p className="text-white/60 text-xs mb-2">{t('npo.communityServedHint' as TranslationKey)}</p>
                 <textarea
                   value={communityServed}
                   onChange={(e) => setCommunityServed(e.target.value)}
-                  placeholder="Tell us about the communities, challenges they face, and how Montree can help..."
+                  placeholder={t('npo.communityPlaceholder' as TranslationKey)}
                   rows={4}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all resize-none"
                   required
@@ -329,19 +331,19 @@ export default function NPOApplicationPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Estimated Students</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.estimatedStudents' as TranslationKey)}</label>
                   <input
                     type="number"
                     value={estimatedStudents}
                     onChange={(e) => setEstimatedStudents(e.target.value)}
-                    placeholder="e.g. 150"
+                    placeholder={t('npo.estimatedStudentsPlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Tuition Model *</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.tuitionModel' as TranslationKey)} *</label>
                   <select
                     value={tuitionModel}
                     onChange={(e) => setTuitionModel(e.target.value)}
@@ -362,14 +364,14 @@ export default function NPOApplicationPage() {
                   onClick={() => setStep(1)}
                   className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 >
-                  ← Back
+                  ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
                   className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all"
                 >
-                  Continue →
+                  {t('common.continue' as TranslationKey)} →
                 </button>
               </div>
             </div>
@@ -380,24 +382,24 @@ export default function NPOApplicationPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Contact Name *</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.contactName' as TranslationKey)} *</label>
                   <input
                     type="text"
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
-                    placeholder="e.g. Sarah Johnson"
+                    placeholder={t('npo.contactNamePlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Contact Email *</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.contactEmail' as TranslationKey)} *</label>
                   <input
                     type="email"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="contact@organization.com"
+                    placeholder={t('npo.contactEmailPlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                     required
                   />
@@ -405,7 +407,7 @@ export default function NPOApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Contact Phone</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.contactPhone' as TranslationKey)}</label>
                 <input
                   type="tel"
                   value={contactPhone}
@@ -416,8 +418,8 @@ export default function NPOApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Documentation URL</label>
-                <p className="text-white/60 text-xs mb-2">Link to NPO registration or mission documents (optional)</p>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.documentationUrl' as TranslationKey)}</label>
+                <p className="text-white/60 text-xs mb-2">{t('npo.documentationUrlHint' as TranslationKey)}</p>
                 <input
                   type="url"
                   value={documentationUrl}
@@ -428,11 +430,11 @@ export default function NPOApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Additional Notes</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('npo.additionalNotes' as TranslationKey)}</label>
                 <textarea
                   value={additionalNotes}
                   onChange={(e) => setAdditionalNotes(e.target.value)}
-                  placeholder="Any additional information you'd like us to know..."
+                  placeholder={t('npo.additionalNotesPlaceholder' as TranslationKey)}
                   rows={3}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all resize-none"
                 />
@@ -450,19 +452,19 @@ export default function NPOApplicationPage() {
                   onClick={() => setStep(2)}
                   className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 >
-                  ← Back
+                  ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
                   className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {loading ? 'Submitting...' : 'Submit Application'}
+                  {loading ? t('npo.submitting' as TranslationKey) : t('npo.submitApplication' as TranslationKey)}
                 </button>
               </div>
 
               <p className="text-white/50 text-xs text-center mt-4">
-                * Required fields • We take your privacy seriously
+                {t('npo.requiredFields' as TranslationKey)}
               </p>
             </div>
           )}
@@ -471,9 +473,9 @@ export default function NPOApplicationPage() {
         {/* Navigation Links */}
         <div className="mt-8 text-center">
           <p className="text-white/50 text-sm">
-            Looking for something else?{' '}
+            {t('npo.lookingForSomethingElse' as TranslationKey)}{' '}
             <Link href="/montree" className="text-emerald-400 hover:text-emerald-300">
-              Back to Montree
+              {t('npo.backToMontree' as TranslationKey)}
             </Link>
           </p>
         </div>

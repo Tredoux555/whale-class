@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface ChildCode {
   child_id: string;
@@ -16,6 +17,7 @@ interface ChildCode {
 }
 
 export default function ParentCodesPage() {
+  const { t } = useI18n();
   const [codes, setCodes] = useState<ChildCode[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -64,7 +66,7 @@ export default function ParentCodesPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <span className="text-4xl animate-bounce block mb-4">🌳</span>
-          <p className="text-gray-600">Loading parent codes...</p>
+          <p className="text-gray-600">{t('parentCodes.loading' as TranslationKey)}</p>
         </div>
       </div>
     );
@@ -81,11 +83,11 @@ export default function ParentCodesPage() {
                 href="/montree/dashboard"
                 className="text-gray-500 hover:text-gray-700"
               >
-                ← Back to Dashboard
+                ← {t('parentCodes.backToDashboard' as TranslationKey)}
               </Link>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Parent Access Codes</h1>
-                <p className="text-sm text-gray-500">{codes.length} students</p>
+                <h1 className="text-xl font-bold text-gray-900">{t('parentCodes.title' as TranslationKey)}</h1>
+                <p className="text-sm text-gray-500">{codes.length} {t('parentCodes.students' as TranslationKey)}</p>
               </div>
             </div>
             <div className="flex gap-3">
@@ -94,13 +96,13 @@ export default function ParentCodesPage() {
                 disabled={generating}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
               >
-                {generating ? '⏳ Generating...' : '🔄 Generate Missing Codes'}
+                {generating ? `⏳ ${t('parentCodes.generating' as TranslationKey)}` : `🔄 ${t('parentCodes.generateMissing' as TranslationKey)}`}
               </button>
               <button
                 onClick={handlePrint}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                🖨️ Print Cards
+                🖨️ {t('parentCodes.printCards' as TranslationKey)}
               </button>
             </div>
           </div>
@@ -109,8 +111,8 @@ export default function ParentCodesPage() {
 
       {/* Print Header - only show on print */}
       <div className="hidden print:block text-center py-4 border-b">
-        <h1 className="text-2xl font-bold">🌳 My Classroom - Parent Portal Access</h1>
-        <p className="text-gray-600">Scan QR code or visit the URL and enter your code</p>
+        <h1 className="text-2xl font-bold">🌳 {t('parentCodes.printHeader' as TranslationKey)}</h1>
+        <p className="text-gray-600">{t('parentCodes.printSubheader' as TranslationKey)}</p>
       </div>
 
       {/* Code Cards Grid */}
@@ -118,14 +120,14 @@ export default function ParentCodesPage() {
         {codes.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-6xl block mb-4">📭</span>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">No codes yet</h2>
-            <p className="text-gray-500 mb-4">Generate access codes for all students</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{t('parentCodes.noCodesYet' as TranslationKey)}</h2>
+            <p className="text-gray-500 mb-4">{t('parentCodes.generateForAll' as TranslationKey)}</p>
             <button
               onClick={generateAllCodes}
               disabled={generating}
               className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
             >
-              {generating ? '⏳ Generating...' : '✨ Generate All Codes'}
+              {generating ? `⏳ ${t('parentCodes.generating' as TranslationKey)}` : `✨ ${t('parentCodes.generateAll' as TranslationKey)}`}
             </button>
           </div>
         ) : (
@@ -138,7 +140,7 @@ export default function ParentCodesPage() {
                 {/* Child Name */}
                 <div className="text-center mb-3">
                   <h3 className="text-lg font-bold text-gray-900">{item.child_name}</h3>
-                  <p className="text-xs text-gray-500">Parent Portal Access</p>
+                  <p className="text-xs text-gray-500">{t('parentCodes.portalAccess' as TranslationKey)}</p>
                 </div>
 
                 {/* QR Code */}
@@ -152,7 +154,7 @@ export default function ParentCodesPage() {
 
                 {/* Access Code */}
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center mb-2">
-                  <p className="text-xs text-emerald-600 mb-1">Access Code</p>
+                  <p className="text-xs text-emerald-600 mb-1">{t('parentCodes.accessCode' as TranslationKey)}</p>
                   <p className="text-2xl font-mono font-bold tracking-wider text-emerald-700">
                     {item.code}
                   </p>
@@ -167,7 +169,7 @@ export default function ParentCodesPage() {
                 {item.used && (
                   <div className="mt-2 text-center print:hidden">
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
-                      ✓ Connected
+                      ✓ {t('parentCodes.connected' as TranslationKey)}
                     </span>
                   </div>
                 )}

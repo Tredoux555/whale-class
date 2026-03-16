@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface FocusWork {
   work_name: string;
@@ -26,13 +27,6 @@ interface ChildData {
 }
 
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
 const AREA_COLORS: Record<string, string> = {
   practical_life: '#10B981',
   sensorial: '#F59E0B',
@@ -41,17 +35,11 @@ const AREA_COLORS: Record<string, string> = {
   cultural: '#8B5CF6',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  not_started: 'Not Started',
-  presented: 'Presented',
-  practicing: 'Practicing',
-  mastered: 'Mastered',
-};
-
 export default function PrintWeeklyPlan() {
   const params = useParams();
   const childId = params.childId as string;
   const session = getSession();
+  const { t } = useI18n();
 
   const [child, setChild] = useState<ChildData | null>(null);
   const [works, setWorks] = useState<FocusWork[]>([]);
@@ -69,7 +57,7 @@ export default function PrintWeeklyPlan() {
         if (childData?.child) {
           setChild(childData.child);
         } else {
-          setError('Could not load child data');
+          setError(t('printWeekly.couldNotLoadChild' as TranslationKey));
         }
         if (progressData?.progress) {
           setWorks(progressData.progress);
@@ -77,7 +65,7 @@ export default function PrintWeeklyPlan() {
         setLoading(false);
       })
       .catch(() => {
-        setError('Failed to load data');
+        setError(t('printWeekly.failedToLoadData' as TranslationKey));
         setLoading(false);
       });
   }, [childId]);
@@ -85,7 +73,7 @@ export default function PrintWeeklyPlan() {
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'system-ui' }}>
-        <p style={{ color: '#666' }}>Loading weekly plan...</p>
+        <p style={{ color: '#666' }}>{t('printWeekly.loading' as TranslationKey)}</p>
       </div>
     );
   }
@@ -93,7 +81,7 @@ export default function PrintWeeklyPlan() {
   if (error || !child) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'system-ui' }}>
-        <p style={{ color: '#EF4444' }}>{error || 'Error loading data'}</p>
+        <p style={{ color: '#EF4444' }}>{error || t('printWeekly.errorLoadingData' as TranslationKey)}</p>
       </div>
     );
   }
@@ -148,7 +136,7 @@ export default function PrintWeeklyPlan() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <span style={{ color: '#fff', fontFamily: 'system-ui', fontSize: '14px' }}>
-          Weekly Plan — {child.name}
+          {t('printWeekly.weeklyPlan' as TranslationKey)} — {child.name}
         </span>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button
@@ -159,7 +147,7 @@ export default function PrintWeeklyPlan() {
               cursor: 'pointer', fontFamily: 'system-ui', fontSize: '14px',
             }}
           >
-            🖨️ Print
+            🖨️ {t('print.printPage' as TranslationKey)}
           </button>
           <button
             onClick={() => window.close()}
@@ -169,7 +157,7 @@ export default function PrintWeeklyPlan() {
               cursor: 'pointer', fontFamily: 'system-ui', fontSize: '14px',
             }}
           >
-            Close
+            {t('common.close' as TranslationKey)}
           </button>
         </div>
       </div>
@@ -187,7 +175,7 @@ export default function PrintWeeklyPlan() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
             <div>
               <h1 style={{ fontSize: '22px', fontWeight: 700, margin: 0, color: '#064E3B' }}>
-                WEEKLY PLAN
+                {t('printWeekly.weeklyPlanTitle' as TranslationKey)}
               </h1>
               <h2 style={{ fontSize: '18px', fontWeight: 600, margin: '4px 0 0', color: '#1F2937' }}>
                 {child.name}
@@ -200,7 +188,7 @@ export default function PrintWeeklyPlan() {
             </div>
             <div style={{ textAlign: 'right', fontSize: '11px', color: '#6B7280' }}>
               <div style={{ fontWeight: 600, fontSize: '13px', color: '#374151' }}>{weekLabel}</div>
-              {teacherName && <div>Teacher: {teacherName}</div>}
+              {teacherName && <div>{t('print.teacher' as TranslationKey)}: {teacherName}</div>}
             </div>
           </div>
         </div>
@@ -212,7 +200,7 @@ export default function PrintWeeklyPlan() {
             padding: '10px 14px', marginBottom: '16px',
           }}>
             <div style={{ fontSize: '11px', fontWeight: 700, color: '#5B21B6', marginBottom: '4px' }}>
-              🧠 GURU SUMMARY
+              🧠 {t('printWeekly.guruSummary' as TranslationKey)}
             </div>
             <p style={{ margin: 0, fontSize: '12px', color: '#374151', lineHeight: 1.5 }}>
               {guruSummary}
@@ -240,14 +228,14 @@ export default function PrintWeeklyPlan() {
                   background: AREA_COLORS[area] || '#888',
                 }} />
                 <span style={{ fontWeight: 700, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {AREA_LABELS[area] || area}
+                  {t(`areas.${area}` as TranslationKey) || area}
                 </span>
               </div>
 
               {/* Works */}
               {allAreaWorks.length === 0 ? (
                 <div style={{ color: '#9CA3AF', fontSize: '11px', fontStyle: 'italic', paddingLeft: '18px' }}>
-                  No works assigned
+                  {t('printWeekly.noWorksAssigned' as TranslationKey)}
                 </div>
               ) : (
                 allAreaWorks.map((work, idx) => (
@@ -271,7 +259,7 @@ export default function PrintWeeklyPlan() {
                         {work.work_name}
                       </span>
                       <span style={{ color: '#6B7280', fontSize: '10px', marginLeft: '8px' }}>
-                        ({STATUS_LABELS[work.status] || work.status})
+                        ({t(`status.${work.status}` as TranslationKey) || work.status})
                       </span>
                       {work.notes && (
                         <div style={{ color: '#6B7280', fontSize: '10px', fontStyle: 'italic', marginTop: '1px' }}>
@@ -293,7 +281,7 @@ export default function PrintWeeklyPlan() {
             letterSpacing: '0.5px', borderBottom: '2px solid #374151',
             paddingBottom: '4px', marginBottom: '12px',
           }}>
-            OBSERVATIONS
+            {t('printWeekly.observations' as TranslationKey)}
           </div>
           {[1, 2, 3, 4].map(i => (
             <div key={i} style={{
