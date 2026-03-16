@@ -96,10 +96,12 @@ export async function GET(request: NextRequest) {
       focus_works: focusByChild[child.id] || {},
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       children: result,
     });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     console.error('Batch focus-works error:', error);

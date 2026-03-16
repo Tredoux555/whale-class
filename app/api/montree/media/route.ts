@@ -81,9 +81,9 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Sort by captured_at descending
+      // Sort by captured_at descending (string compare — ISO dates sort lexicographically)
       const allMedia = Array.from(mediaMap.values()).sort((a, b) =>
-        new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
+        (b.captured_at || '').localeCompare(a.captured_at || '')
       );
 
       // Apply pagination

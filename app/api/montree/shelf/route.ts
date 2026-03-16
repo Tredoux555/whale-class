@@ -93,11 +93,13 @@ export async function GET(request: NextRequest) {
     const occupiedAreas = shelf.map(s => s.area);
     const emptyAreas = ALL_AREAS.filter(a => !occupiedAreas.includes(a));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       shelf,
       empty_areas: emptyAreas,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('[Shelf] Error:', error);

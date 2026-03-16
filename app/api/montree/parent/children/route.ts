@@ -27,12 +27,16 @@ export async function GET(request: NextRequest) {
         }, { status: 500 });
       }
 
-      return NextResponse.json({ children: [child] });
+      const response = NextResponse.json({ children: [child] });
+      response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+      return response;
     }
 
     // For standard login, this endpoint should not be used
     // The frontend should track authenticated children from the login response
-    return NextResponse.json({ children: [] });
+    const response = NextResponse.json({ children: [] });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
   } catch (error: unknown) {
     console.error('Get children error:', error);
     return NextResponse.json({

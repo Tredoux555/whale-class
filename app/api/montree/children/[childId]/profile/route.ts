@@ -50,10 +50,12 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       profile: profile || null,
     });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     console.error('Profile GET error:', error);

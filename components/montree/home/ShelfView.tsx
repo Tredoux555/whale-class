@@ -151,18 +151,23 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
     return () => controller.abort();
   }, []);
 
-  // Filter search results as user types
+  // Filter search results as user types (debounced 150ms to avoid jank on fast typing)
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!searchText.trim()) {
       setSearchResults([]);
       return;
     }
-    const needle = searchText.toLowerCase();
-    const matches = allCurriculumWorks.filter(w =>
-      w.name.toLowerCase().includes(needle) ||
-      (w.chineseName && w.chineseName.includes(searchText))
-    ).slice(0, 8);
-    setSearchResults(matches);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      const needle = searchText.toLowerCase();
+      const matches = allCurriculumWorks.filter(w =>
+        w.name.toLowerCase().includes(needle) ||
+        (w.chineseName && w.chineseName.includes(searchText))
+      ).slice(0, 8);
+      setSearchResults(matches);
+    }, 150);
+    return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); };
   }, [searchText, allCurriculumWorks]);
 
   const fetchShelf = useCallback(async () => {

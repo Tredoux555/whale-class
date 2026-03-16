@@ -59,11 +59,13 @@ export async function GET(request: NextRequest) {
       byArea[areaKey].sort((a, b) => (a.sequence || 0) - (b.sequence || 0));
     }
 
-    return NextResponse.json({ 
+    const response = NextResponse.json({
       curriculum: data || [],
       byArea,
       total: data?.length || 0
     });
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    return response;
 
   } catch (error) {
     console.error('Curriculum API error:', error);

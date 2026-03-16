@@ -96,12 +96,14 @@ export async function GET(request: NextRequest) {
         items
       }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       milestones,
       timeline,
       total_milestones: milestones.length
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Milestones API error:', error);

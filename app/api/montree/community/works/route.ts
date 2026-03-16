@@ -123,13 +123,15 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         works: paginated,
         total: count || sorted.length,
         page,
         limit,
         totalPages: Math.ceil((count || sorted.length) / limit),
       });
+      response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+      return response;
     }
 
     // Non-curriculum sorts: use DB pagination
@@ -153,13 +155,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       works: data || [],
       total: count || 0,
       page,
       limit,
       totalPages: Math.ceil((count || 0) / limit),
     });
+    response.headers.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+    return response;
   } catch (error) {
     console.error('Community works API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
