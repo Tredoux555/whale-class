@@ -101,13 +101,15 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      return NextResponse.json({
+      const response = NextResponse.json({
         success: true,
         media: mediaWithArea,
         total: allMedia.length,
         limit,
         offset
       });
+      response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+      return response;
     }
 
     // Standard query for non-child-specific requests (simple query, no FK join)
@@ -166,13 +168,15 @@ export async function GET(request: NextRequest) {
       mediaWithArea = mediaWithArea.filter((item: Record<string, unknown>) => item.area === area);
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       media: mediaWithArea,
       total: count || 0,
       limit,
       offset
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Media list error:', error);

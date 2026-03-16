@@ -275,6 +275,23 @@ export default function ReportsPage() {
 
   const hasItems = items.length > 0;
 
+  // Memoize area grouping to avoid re-computing on every render
+  const groupedByArea = useMemo(() => {
+    const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const grouped = items.reduce((acc, item) => {
+      const area = item.area || 'other';
+      if (!acc[area]) acc[area] = [];
+      acc[area].push(item);
+      return acc;
+    }, {} as Record<string, ReportItem[]>);
+    const sortedAreas = Object.keys(grouped).sort((a, b) => {
+      const ai = AREA_ORDER.indexOf(a);
+      const bi = AREA_ORDER.indexOf(b);
+      return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+    });
+    return sortedAreas.map(area => [area, grouped[area]] as [string, ReportItem[]]);
+  }, [items]);
+
   return (
     <div className="space-y-4">
       <Toaster position="top-center" richColors />
@@ -290,7 +307,7 @@ export default function ReportsPage() {
                 : 'text-gray-500 hover:bg-gray-50'
             }`}
           >
-            📋 {t('reports.teacherReview' as any) || 'Teacher Review'}
+            📋 {t('reports.teacherReport' as any) || 'Teacher Report'}
           </button>
           <button
             onClick={() => setReportView('parent')}
@@ -305,13 +322,13 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* ── TEACHER REVIEW ── */}
+      {/* ── TEACHER REPORT ── */}
       {reportView === 'teacher' && (
         <>
-          {/* Teacher Summary Card — achievements + what's next */}
+          {/* Teacher Report Header */}
           <div className="bg-white rounded-2xl p-5 shadow-sm space-y-4">
             <h2 className="text-base font-bold text-gray-800">
-              {childName ? `${childName}'s ` : ''}{t('reports.weekSummary' as any) || 'Week Summary'}
+              {childName ? `${childName}'s ` : ''}{t('reports.teacherWeeklyReport' as any) || 'Weekly Report'}
             </h2>
 
             {/* Achievement Stats */}
@@ -323,25 +340,11 @@ export default function ReportsPage() {
               </div>
             )}
 
-            {/* This Week's Work — grouped by area */}
+            {/* Section 1: What the child did this week — grouped by area, most recent first */}
             {hasItems ? (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-gray-600">{t('reports.thisWeekAchievements' as any) || 'This Week'}</h3>
-                {(() => {
-                  const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-                  const grouped = items.reduce((acc, item) => {
-                    const area = item.area || 'other';
-                    if (!acc[area]) acc[area] = [];
-                    acc[area].push(item);
-                    return acc;
-                  }, {} as Record<string, ReportItem[]>);
-                  const sortedAreas = Object.keys(grouped).sort((a, b) => {
-                    const ai = AREA_ORDER.indexOf(a);
-                    const bi = AREA_ORDER.indexOf(b);
-                    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
-                  });
-                  return sortedAreas.map(area => [area, grouped[area]] as [string, ReportItem[]]);
-                })().map(([area, areaItems]) => {
+                <h3 className="text-sm font-semibold text-gray-600">{t('reports.whatChildDid' as any) || 'What They Did This Week'}</h3>
+                {groupedByArea.map(([area, areaItems]) => {
                   const areaConf = AREA_CONFIG[area];
                   return (
                     <div key={area} className="bg-gray-50 rounded-xl p-3">
@@ -372,22 +375,40 @@ export default function ReportsPage() {
                 <p className="text-gray-400 text-sm">{t('reports.noProgressThisWeek' as any) || 'No new progress this week'}</p>
               </div>
             )}
+          </div>
 
-            {/* What's Next — link to update shelf */}
-            <div className="bg-violet-50 rounded-xl p-4 border border-violet-100">
-              <h3 className="text-sm font-semibold text-violet-800 mb-2">
-                {t('reports.whatsNext' as any) || "What's Next"}
-              </h3>
-              <p className="text-sm text-violet-700 mb-3">
-                {t('reports.whatsNextDescription' as any) || 'Update the shelf based on this week\'s progress. Mastered works can be replaced with the next work in the sequence.'}
-              </p>
-              <Link
-                href={`/montree/dashboard/${childId}`}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-violet-500 text-white hover:bg-violet-600 active:scale-95 transition-all text-sm"
-              >
-                📋 {t('reports.updateShelf' as any) || 'Update Shelf'}
-              </Link>
-            </div>
+          {/* Section 2: Focus for Next Week */}
+          <div className="bg-violet-50 rounded-2xl p-5 shadow-sm space-y-3 border border-violet-100">
+            <h3 className="text-sm font-semibold text-violet-800 flex items-center gap-2">
+              🎯 {t('reports.focusNextWeek' as any) || 'Focus for Next Week'}
+            </h3>
+            <p className="text-sm text-violet-700">
+              {hasItems
+                ? (t('reports.focusNextWeekDesc' as any) || 'Based on this week\'s progress, update the shelf. Mastered works can be replaced with the next in the sequence.')
+                : (t('reports.focusNextWeekEmpty' as any) || 'No activities recorded this week. Consider reviewing the shelf and presenting new works.')}
+            </p>
+            <Link
+              href={`/montree/dashboard/${childId}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium bg-violet-500 text-white hover:bg-violet-600 active:scale-95 transition-all text-sm"
+            >
+              📋 {t('reports.updateShelf' as any) || 'Update Shelf'}
+            </Link>
+          </div>
+
+          {/* Section 3: Teacher Observations (optional notes) */}
+          <div className="bg-white rounded-2xl p-5 shadow-sm space-y-3">
+            <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              📝 {t('reports.teacherObservations' as any) || 'Your Observations'}
+            </h3>
+            <p className="text-xs text-gray-400">
+              {t('reports.teacherObservationsHint' as any) || 'Add observations in the Gallery tab for each photo. They will appear in the parent report.'}
+            </p>
+            <Link
+              href={`/montree/dashboard/${childId}/gallery`}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95 transition-all text-sm"
+            >
+              🖼️ {t('reports.goToGallery' as any) || 'Go to Gallery'}
+            </Link>
           </div>
 
           {/* Invite Parent — only for teachers */}
@@ -593,19 +614,19 @@ export default function ReportsPage() {
                 </div>
               ))}
 
-              {/* Unassigned Photos Gallery */}
+              {/* Unassigned Photos — compact grid, no bunching */}
               {unassignedPhotos.length > 0 && (
                 <div className="bg-blue-50 rounded-xl p-4 space-y-3">
                   <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                    📸 {t('reports.recentPhotos')}
+                    📸 {t('reports.morePhotos' as any) || 'More Photos'}
                     <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     {unassignedPhotos.map((photo) => (
                       <button
                         key={photo.id}
                         onClick={() => { setLightboxSrc(photo.url); setLightboxOpen(true); }}
-                        className="rounded-xl overflow-hidden shadow-md text-left cursor-zoom-in"
+                        className="rounded-lg overflow-hidden shadow-sm text-left cursor-zoom-in"
                       >
                         <div className="aspect-square w-full">
                           <img
@@ -614,9 +635,6 @@ export default function ReportsPage() {
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        {photo.caption && (
-                          <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
-                        )}
                       </button>
                     ))}
                   </div>
@@ -714,7 +732,7 @@ export default function ReportsPage() {
                     </div>
                   )}
 
-                  {/* Works with Photos - Same layout as Preview */}
+                  {/* Works with Photos - Most recent first */}
                   {lastReport.content.works && lastReport.content.works.length > 0 && (() => {
                     // Build lookup for backwards compatibility with old reports
                     // Old reports might have work_name OR caption as the work identifier
@@ -793,54 +811,43 @@ export default function ReportsPage() {
                     );
                   })()}
 
-                  {/* Unassigned Photos (photos not matched to any work) */}
+                  {/* Unassigned Photos — compact grid */}
                   {lastReport.content.photos && lastReport.content.photos.length > 0 && (() => {
-                    // Build set of work names (lowercase) for matching
-                    const workNames = new Set(
-                      (lastReport.content.works || []).map((w: ReportWork) => w.name?.toLowerCase())
-                    );
-
-                    // Get all photo URLs that are already matched to works
                     const matchedPhotoUrls = new Set(
                       (lastReport.content.works || [])
                         .filter((w: ReportWork) => w.photo_url)
                         .map((w: ReportWork) => w.photo_url)
                     );
-
-                    // Filter to photos not matched to any work
-                    // Check: URL not matched AND (work_name OR caption) not in work names
-                    const unassignedPhotos = lastReport.content.photos.filter((p: ReportPhoto) => {
+                    const workNames = new Set(
+                      (lastReport.content.works || []).map((w: ReportWork) => w.name?.toLowerCase())
+                    );
+                    const extraPhotos = lastReport.content.photos.filter((p: ReportPhoto) => {
                       if (matchedPhotoUrls.has(p.url)) return false;
                       const photoKey = (p.work_name || p.caption || '').toLowerCase();
                       if (photoKey && workNames.has(photoKey)) return false;
                       return true;
                     });
 
-                    if (unassignedPhotos.length === 0) return null;
+                    if (extraPhotos.length === 0) return null;
 
                     return (
                       <div className="bg-blue-50 rounded-xl p-4 space-y-3">
                         <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                          📸 {t('reports.additionalPhotos')}
-                          <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
+                          📸 {t('reports.morePhotos' as any) || 'More Photos'}
+                          <span className="text-xs font-normal text-gray-500">({extraPhotos.length})</span>
                         </h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {unassignedPhotos.map((photo: ReportPhoto) => (
+                        <div className="grid grid-cols-3 gap-2">
+                          {extraPhotos.map((photo: ReportPhoto) => (
                             <button
                               key={photo.id}
                               onClick={() => { setLightboxSrc(photo.url || photo.thumbnail_url || ''); setLightboxOpen(true); }}
-                              className="rounded-xl overflow-hidden shadow-md text-left cursor-zoom-in"
+                              className="aspect-square rounded-lg overflow-hidden shadow-sm cursor-zoom-in"
                             >
-                              <div className="aspect-square w-full">
-                                <img
-                                  src={photo.url || photo.thumbnail_url}
-                                  alt={photo.caption || t('reports.learningMoment')}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                              {photo.caption && (
-                                <p className="p-2 text-xs text-gray-600 italic bg-white/90">{photo.caption}</p>
-                              )}
+                              <img
+                                src={photo.url || photo.thumbnail_url}
+                                alt={photo.caption || t('reports.learningMoment')}
+                                className="w-full h-full object-cover"
+                              />
                             </button>
                           ))}
                         </div>

@@ -222,6 +222,17 @@ export default function GalleryPage() {
     return photos;
   }, [photos, selectedArea]);
 
+  // Timeline grouping — memoized to avoid re-computing on every render
+  const timelineGroups = useMemo(() => {
+    const byDate = new Map<string, GalleryItem[]>();
+    for (const photo of filteredPhotos) {
+      const dateKey = new Date(photo.captured_at).toISOString().split('T')[0];
+      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+      byDate.get(dateKey)!.push(photo);
+    }
+    return Array.from(byDate.entries());
+  }, [filteredPhotos]);
+
   // Clamp lightbox index when filtered photos change (e.g. after deletion or filter switch)
   useEffect(() => {
     if (lightboxOpen && filteredPhotos.length > 0 && lightboxIndex >= filteredPhotos.length) {
@@ -729,14 +740,7 @@ export default function GalleryPage() {
       ) : viewMode === 'timeline' && !selectedArea ? (
         // Timeline view — grouped by date
         <div className="space-y-6">
-          {(() => {
-            const byDate = new Map<string, GalleryItem[]>();
-            for (const photo of filteredPhotos) {
-              const dateKey = new Date(photo.captured_at).toISOString().split('T')[0];
-              if (!byDate.has(dateKey)) byDate.set(dateKey, []);
-              byDate.get(dateKey)!.push(photo);
-            }
-            return Array.from(byDate.entries()).map(([dateKey, datePhotos]) => (
+          {timelineGroups.map(([dateKey, datePhotos]) => (
               <div key={dateKey}>
                 <div className="flex items-center gap-3 mb-3 px-1">
                   <div className="w-2 h-2 rounded-full bg-emerald-500" />
@@ -753,8 +757,7 @@ export default function GalleryPage() {
                   {datePhotos.map(photo => renderPhotoCard(photo))}
                 </div>
               </div>
-            ));
-          })()}
+            ))}
         </div>
       ) : selectedArea ? (
         // Single area view

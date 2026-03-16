@@ -38,29 +38,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Child not in a classroom' }, { status: 400 });
     }
 
-    // Get all works for this classroom with area info
-    const { data: allWorks, error: worksError } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select(`
-        id, name, sequence,
-        area:montree_classroom_curriculum_areas!area_id (
-          area_key
-        )
-      `)
-      .eq('classroom_id', classroomId)
-      .eq('is_active', true)
-      .order('sequence');
+    // Parallelize: fetch works AND progress simultaneously (they're independent)
+    const [worksResult, progressResult] = await Promise.all([
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select(`
+          id, name, sequence,
+          area:montree_classroom_curriculum_areas!area_id (
+            area_key
+          )
+        `)
+        .eq('classroom_id', classroomId)
+        .eq('is_active', true)
+        .order('sequence'),
+      // Single query with ALL columns needed (eliminates double-fetch)
+      supabase
+        .from('montree_child_progress')
+        .select('id, work_name, status, area, presented_at, mastered_at, updated_at')
+        .eq('child_id', childId)
+        .order('updated_at', { ascending: false }),
+    ]);
+
+    const { data: allWorks, error: worksError } = worksResult;
+    const { data: progress, error: progressError } = progressResult;
 
     if (worksError) {
       console.error('Works fetch error:', worksError);
       return NextResponse.json({ error: 'Failed to fetch curriculum' }, { status: 500 });
     }
-
-    // Get child's progress - uses work_name not work_id
-    const { data: progress, error: progressError } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, status, area')
-      .eq('child_id', childId);
 
     if (progressError) {
       console.error('Progress fetch error:', progressError);
@@ -133,14 +138,8 @@ export async function GET(request: NextRequest) {
     const totalWorks = areaSummary.reduce((sum, a) => sum + a.totalWorks, 0);
     const overallPercent = totalWorks > 0 ? Math.round((totalCompleted / totalWorks) * 100) : 0;
 
-    // Also return detailed progress list with dates
-    const { data: detailedProgress } = await supabase
-      .from('montree_child_progress')
-      .select('id, work_name, area, status, presented_at, mastered_at')
-      .eq('child_id', childId)
-      .order('updated_at', { ascending: false });
-
-    return NextResponse.json({
+    // Reuse the already-fetched progress data (already sorted by updated_at desc)
+    const response = NextResponse.json({
       success: true,
       areas: areaSummary,
       overall: {
@@ -148,8 +147,10 @@ export async function GET(request: NextRequest) {
         total: totalWorks,
         percent: overallPercent,
       },
-      progress: detailedProgress || [],
+      progress: progress || [],
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Summary API error:', error);

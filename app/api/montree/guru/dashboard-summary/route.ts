@@ -214,7 +214,9 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
     }
     // Don't auto-generate weekly review — it's expensive and only useful on tap
 
-    return NextResponse.json({ success: true, ...summary });
+    const response = NextResponse.json({ success: true, ...summary });
+    response.headers.set('Cache-Control', 'private, max-age=0, must-revalidate');
+    return response;
 
   } catch (error) {
     console.error('[Guru Dashboard Summary] Error:', error);

@@ -51,10 +51,24 @@ export async function GET(request: NextRequest) {
       students = studentData || [];
     }
 
+    // Pre-index teachers and students by classroom_id (O(N) instead of O(N×M))
+    const teachersByClassroom = new Map<string, typeof teachers>();
+    for (const t of teachers || []) {
+      if (!t.classroom_id) continue;
+      const arr = teachersByClassroom.get(t.classroom_id) || [];
+      arr.push(t);
+      teachersByClassroom.set(t.classroom_id, arr);
+    }
+    const studentCountByClassroom = new Map<string, number>();
+    for (const s of students || []) {
+      if (!s.classroom_id) continue;
+      studentCountByClassroom.set(s.classroom_id, (studentCountByClassroom.get(s.classroom_id) || 0) + 1);
+    }
+
     // Build classroom data with teachers and student counts
     const classroomsWithData = (classrooms || []).map(classroom => {
-      const classroomTeachers = teachers?.filter(t => t.classroom_id === classroom.id) || [];
-      const studentCount = students?.filter(s => s.classroom_id === classroom.id).length || 0;
+      const classroomTeachers = teachersByClassroom.get(classroom.id) || [];
+      const studentCount = studentCountByClassroom.get(classroom.id) || 0;
 
       // Sort: lead_teacher first, then assistant_teacher, then teacher
       const sortedTeachers = classroomTeachers.sort((a, b) => {
@@ -106,12 +120,14 @@ export async function GET(request: NextRequest) {
       classrooms_without_teacher: activeClassrooms.filter(c => c.teacher_count === 0).length,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       school,
       principal,
       classrooms: activeClassrooms,
       stats,
     });
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    return response;
 
   } catch (error) {
     console.error('Admin overview error:', error);
