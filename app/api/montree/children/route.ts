@@ -61,16 +61,15 @@ export async function POST(request: NextRequest) {
 
     // If progress is provided, create progress records
     if (progress && Object.keys(progress).length > 0) {
-      // Get curriculum works for this classroom
-      const { data: curriculumWorks } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select('id, work_key, name, name_chinese, area_id, sequence')
-        .eq('classroom_id', classroomId);
-
-      const { data: curriculumAreas } = await supabase
-        .from('montree_classroom_curriculum_areas')
-        .select('id, area_key')
-        .eq('classroom_id', classroomId);
+      // Get curriculum works + areas for this classroom in parallel
+      const [{ data: curriculumWorks }, { data: curriculumAreas }] = await Promise.all([
+        supabase.from('montree_classroom_curriculum_works')
+          .select('id, work_key, name, name_chinese, area_id, sequence')
+          .eq('classroom_id', classroomId),
+        supabase.from('montree_classroom_curriculum_areas')
+          .select('id, area_key')
+          .eq('classroom_id', classroomId),
+      ]);
 
       const areaKeyToId = new Map<string, string>();
       if (curriculumAreas) {

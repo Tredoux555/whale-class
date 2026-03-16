@@ -62,12 +62,14 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       photos: photosWithUrls,
       total: count || 0,
       hasMore: (count || 0) > offset + limit
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Parent photos API error:', error);

@@ -22,48 +22,32 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
-    // Get child info
-    const { data: child } = await supabase
-      .from('montree_children')
-      .select('name')
-      .eq('id', childId)
-      .single();
-
-    // Get last report date for this child
-    const { data: lastReport } = await supabase
-      .from('montree_weekly_reports')
-      .select('generated_at')
-      .eq('child_id', childId)
-      .order('generated_at', { ascending: false })
-      .limit(1)
-      .single();
+    // Step 1: Fetch child info + last report date in parallel (independent)
+    const [{ data: child }, { data: lastReport }] = await Promise.all([
+      supabase.from('montree_children').select('name').eq('id', childId).single(),
+      supabase.from('montree_weekly_reports').select('generated_at').eq('child_id', childId)
+        .order('generated_at', { ascending: false }).limit(1).single(),
+    ]);
 
     const lastReportDate = lastReport?.generated_at || null;
 
-    // Get all progress since last report (or all if no report yet)
-    let query = supabase
-      .from('montree_child_progress')
+    // Step 2: Fetch progress + photos in parallel (both depend on lastReportDate but are independent of each other)
+    let progressQuery = supabase.from('montree_child_progress')
       .select('work_name, area, status, updated_at')
-      .eq('child_id', childId)
-      .neq('status', 'not_started'); // Only include works with progress
-
-    if (lastReportDate) {
-      query = query.gt('updated_at', lastReportDate);
-    }
-
-    const { data: progress } = await query;
-
-    // Get unreported photos
-    let photoQuery = supabase
-      .from('montree_media')
+      .eq('child_id', childId).neq('status', 'not_started');
+    let photoQuery = supabase.from('montree_media')
       .select('id, storage_path, caption, captured_at, thumbnail_path')
       .eq('child_id', childId);
 
     if (lastReportDate) {
+      progressQuery = progressQuery.gt('updated_at', lastReportDate);
       photoQuery = photoQuery.gt('captured_at', lastReportDate);
     }
 
-    const { data: photosData } = await photoQuery;
+    const [{ data: progress }, { data: photosData }] = await Promise.all([
+      progressQuery,
+      photoQuery,
+    ]);
 
     // Build photo URLs from storage paths
     const photos = (photosData || []).map(p => ({
@@ -81,13 +65,15 @@ export async function GET(request: NextRequest) {
       status: p.status === 'completed' ? 'mastered' : p.status, // Normalize
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       child_name: child?.name || 'Student',
       works,
       photos: photos || [],
       last_report_date: lastReportDate,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Unreported fetch error:', error);

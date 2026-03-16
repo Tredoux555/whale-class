@@ -131,7 +131,9 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    return NextResponse.json({ sessions: data || [] });
+    const response = NextResponse.json({ sessions: data || [] });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
     
   } catch (error) {
     console.error('Sessions GET error:', error);

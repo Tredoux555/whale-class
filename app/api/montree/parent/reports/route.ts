@@ -44,7 +44,9 @@ export async function GET(request: NextRequest) {
       }, { status: 500 });
     }
 
-    return NextResponse.json({ reports: reports || [] });
+    const response = NextResponse.json({ reports: reports || [] });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
   } catch (error: unknown) {
     console.error('Get reports error:', error);
     return NextResponse.json({

@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       .order('updated_at', { ascending: false })
       .limit(5);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       stats: {
         works_this_week: worksThisWeek,
@@ -70,6 +70,8 @@ export async function GET(request: NextRequest) {
       },
       recent_activity: recentActivity || [],
     });
+    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    return response;
 
   } catch (error) {
     console.error('Parent stats error:', error);

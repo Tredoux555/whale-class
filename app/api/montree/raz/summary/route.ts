@@ -76,7 +76,9 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({ summary, date });
+      const response = NextResponse.json({ summary, date });
+      response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+      return response;
     }
 
     if (type === 'audit') {
@@ -183,7 +185,9 @@ export async function GET(request: NextRequest) {
         weeksWithNoFolder: weeklyData.filter(w => w.noFolderCount > 0).length,
       };
 
-      return NextResponse.json({ weeks: weeklyData, totals, childId, from: fromStr, to: toStr });
+      const response = NextResponse.json({ weeks: weeklyData, totals, childId, from: fromStr, to: toStr });
+      response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+      return response;
     }
 
     if (type === 'weekly') {
@@ -227,7 +231,9 @@ export async function GET(request: NextRequest) {
         else if (r.status === 'absent') childStats[r.child_id].totalAbsent++;
       }
 
-      return NextResponse.json({ childStats, from: fromStr, to: toStr, weeks });
+      const response = NextResponse.json({ childStats, from: fromStr, to: toStr, weeks });
+      response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+      return response;
     }
 
     return NextResponse.json({ error: 'Invalid type. Use: daily, audit, weekly' }, { status: 400 });

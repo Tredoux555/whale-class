@@ -94,10 +94,12 @@ export async function GET(request: NextRequest) {
       parent_visible: p.parent_visible !== false, // Default true for backward compat
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       photos: allPhotos,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
   } catch (error) {
     console.error('Available photos error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -84,11 +84,13 @@ export async function GET(request: NextRequest) {
       total: areaCounts[key].mastered + areaCounts[key].practicing + areaCounts[key].presented,
     }));
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       areas,
       totals: { mastered: totalMastered, practicing: totalPracticing, presented: totalPresented },
       childCount: childIds.length,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
