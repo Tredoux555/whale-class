@@ -408,6 +408,28 @@ export function confirmEntry(mediaId: string, childId: string): void {
   }
 }
 
+/** Update an entry's result after teacher correction (e.g., TeachGuruWorkModal)
+ *  Replaces the work_name, area, and marks as confirmed so the gallery/review shows the corrected work */
+export function updateEntryAfterCorrection(
+  mediaId: string,
+  childId: string,
+  correctedWorkName: string,
+  correctedArea: string,
+): void {
+  const key = makeKey(mediaId, childId);
+  const entry = entries.get(key);
+  if (entry) {
+    entries.set(key, {
+      ...entry,
+      status: 'confirmed',
+      result: entry.result
+        ? { ...entry.result, work_name: correctedWorkName, area: correctedArea, needs_confirmation: false, auto_updated: false }
+        : { insight: 'Corrected by teacher', work_name: correctedWorkName, area: correctedArea, mastery_evidence: 'practicing', auto_updated: false, needs_confirmation: false, scenario: 'D' },
+    });
+    notify();
+  }
+}
+
 /** Mark an entry as rejected by the teacher */
 export function rejectEntry(mediaId: string, childId: string): void {
   const key = makeKey(mediaId, childId);

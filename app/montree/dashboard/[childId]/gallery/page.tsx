@@ -13,6 +13,7 @@ import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge'
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
+import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -1070,7 +1071,14 @@ export default function GalleryPage() {
           mediaId={teachModalData.mediaId}
           classroomId={session.classroom.id}
           childId={childId}
-          onWorkSaved={() => { setTeachModalData(null); fetchPhotos(); }}
+          onWorkSaved={(work) => {
+            // Update the photo-insight-store so gallery shows the corrected work
+            if (teachModalData) {
+              updateEntryAfterCorrection(teachModalData.mediaId, childId, work.name, work.area);
+            }
+            setTeachModalData(null);
+            fetchPhotos();
+          }}
         />
       )}
     </div>
