@@ -14,9 +14,10 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     // MEDIUM-003: Rate limit corrections — 30 per minute per IP
+    const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateLimited = await checkRateLimit('corrections', ip, 30, 60);
-    if (rateLimited) {
+    const rateResult = await checkRateLimit(supabase, ip, '/api/montree/guru/corrections', 30, 60);
+    if (!rateResult.allowed) {
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const supabase = getSupabase();
+    // supabase already initialized above (rate limiter)
     const classroomId = auth.classroomId;
 
     if (!classroomId) {
