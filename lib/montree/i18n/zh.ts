@@ -1401,6 +1401,8 @@ export const zh = {
   'library.phonicsCommandCardsDesc': '"把猫放在垫子上"风格的阅读卡',
   'library.phonicsDictionary': '词典',
   'library.phonicsDictionaryDesc': '我的第一本包含拼读单词的词典',
+  'library.phonicsSoundBingo': '声音宾果',
+  'library.phonicsSoundBingoDesc': '首音、尾音和中间音辨识游戏',
   'library.phonicsBingo': '宾果',
   'library.phonicsBingoDesc': '图片 + 单词宾果板',
   'library.phonicsReverseBingo': '反向宾果',

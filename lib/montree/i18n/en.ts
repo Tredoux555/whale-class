@@ -1401,6 +1401,8 @@ export const en = {
   'library.phonicsCommandCardsDesc': '"Put the cat on the mat" style reading cards',
   'library.phonicsDictionary': 'Dictionary',
   'library.phonicsDictionaryDesc': 'My First Dictionary with phonics words',
+  'library.phonicsSoundBingo': 'Sound Bingo',
+  'library.phonicsSoundBingoDesc': 'Beginning, ending & middle sound identification game',
   'library.phonicsBingo': 'Bingo',
   'library.phonicsBingoDesc': 'Picture + Word bingo boards',
   'library.phonicsReverseBingo': 'Reverse Bingo',
