@@ -258,6 +258,13 @@ export default function ReportsPage() {
     setSending(false);
   };
 
+  // Memoize available photos for photo selection modal (Set-based O(n) dedup)
+  // MUST be above early returns to satisfy React Rules of Hooks
+  const availableForSelection = useMemo(() => {
+    const ids = new Set(currentPhotos.map(cp => cp.id));
+    return allPhotos.filter(p => !ids.has(p.id));
+  }, [currentPhotos, allPhotos]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -267,12 +274,6 @@ export default function ReportsPage() {
   }
 
   const hasItems = items.length > 0;
-
-  // Memoize available photos for photo selection modal (Set-based O(n) dedup)
-  const availableForSelection = useMemo(() => {
-    const ids = new Set(currentPhotos.map(cp => cp.id));
-    return allPhotos.filter(p => !ids.has(p.id));
-  }, [currentPhotos, allPhotos]);
 
   return (
     <div className="space-y-4">

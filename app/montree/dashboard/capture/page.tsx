@@ -217,8 +217,10 @@ function CaptureContent() {
     fetch('/api/montree/media/upload', { method: 'POST', body: formData })
       .then(res => { if (!res.ok) throw new Error(`Upload failed: ${res.status}`); return res.json(); })
       .then(result => {
-        if (result.success && result.media?.id && idsToTag.length === 1) {
-          // Auto-trigger Smart Capture for single-child photos
+        if (result.success && result.media?.id && idsToTag.length > 0) {
+          // Auto-trigger Smart Capture for ALL tagged photos (single + group)
+          // For group photos, analyze once for the first child (cost optimization ~$0.06/call)
+          // Photo is still tagged to all children via metadata child_ids
           const currentLocale = localStorage.getItem('montree_lang') || 'en';
           startAnalysis(result.media.id, idsToTag[0], currentLocale);
         }
