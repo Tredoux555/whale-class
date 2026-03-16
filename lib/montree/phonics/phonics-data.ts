@@ -369,6 +369,87 @@ export const BEGINNING_SOUNDS: PhonicsPhase = {
 };
 
 // =====================================================================
+// SOUND BINGO ANCHORS — One best word per letter (a-z)
+// Used for Sound Bingo games (beginning/ending/middle sound identification)
+// Criteria: instantly recognizable picture, easy to get miniature/object,
+// high frequency in children's vocabulary, unambiguous pronunciation.
+// Most are CVC (decodable in Pink series). Non-CVC marked for pre-reading only.
+// =====================================================================
+
+export interface SoundBingoAnchor {
+  letter: string;           // a-z
+  sound: string;            // IPA-ish: /a/, /b/, /k/, etc.
+  word: string;             // The anchor word
+  image: string;            // Emoji
+  miniature: string;        // Physical object to buy
+  isCVC: boolean;           // true = decodable in Pink series
+  appearsIn: string[];      // Phase IDs where this word appears
+}
+
+export const SOUND_BINGO_ANCHORS: SoundBingoAnchor[] = [
+  { letter: 'a', sound: '/a/', word: 'ant', image: '\uD83D\uDC1C', miniature: 'plastic ant figurine', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'b', sound: '/b/', word: 'bat', image: '\uD83E\uDD87', miniature: 'plastic bat figurine', isCVC: true, appearsIn: ['beginning', 'pink2'] },
+  { letter: 'c', sound: '/k/', word: 'cat', image: '\uD83D\uDC31', miniature: 'plastic cat figurine', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'd', sound: '/d/', word: 'dog', image: '\uD83D\uDC15', miniature: 'plastic dog figurine', isCVC: true, appearsIn: ['beginning'] },
+  { letter: 'e', sound: '/e/', word: 'egg', image: '\uD83E\uDD5A', miniature: 'wooden egg', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'f', sound: '/f/', word: 'fan', image: '\uD83E\uDEAD', miniature: 'small folding fan', isCVC: true, appearsIn: ['beginning', 'pink2'] },
+  { letter: 'g', sound: '/g/', word: 'goat', image: '\uD83D\uDC10', miniature: 'goat figurine', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'h', sound: '/h/', word: 'hat', image: '\uD83C\uDFA9', miniature: 'doll hat or mini hat', isCVC: true, appearsIn: ['beginning', 'pink2'] },
+  { letter: 'i', sound: '/i/', word: 'igloo', image: '\uD83C\uDFE0', miniature: 'model igloo', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'j', sound: '/j/', word: 'jug', image: '\uD83E\uDED7', miniature: 'small ceramic jug', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'k', sound: '/k/', word: 'kit', image: '\uD83E\uDDF0', miniature: 'small toolkit', isCVC: true, appearsIn: ['beginning'] },
+  { letter: 'l', sound: '/l/', word: 'leg', image: '\uD83E\uDDB5', miniature: 'doll leg or toy figure', isCVC: true, appearsIn: ['beginning', 'pink2'] },
+  { letter: 'm', sound: '/m/', word: 'mat', image: '\uD83E\uDDF6', miniature: 'small felt mat or coaster', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'n', sound: '/n/', word: 'net', image: '\uD83E\uDD45', miniature: 'small fish net or mesh', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'o', sound: '/o/', word: 'octopus', image: '\uD83D\uDC19', miniature: 'octopus figurine', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'p', sound: '/p/', word: 'pig', image: '\uD83D\uDC37', miniature: 'plastic pig figurine', isCVC: true, appearsIn: ['beginning'] },
+  { letter: 'q', sound: '/kw/', word: 'queen', image: '\uD83D\uDC78', miniature: 'queen figurine', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'r', sound: '/r/', word: 'rat', image: '\uD83D\uDC00', miniature: 'plastic rat figurine', isCVC: true, appearsIn: ['beginning', 'pink2'] },
+  { letter: 's', sound: '/s/', word: 'sun', image: '\u2600\uFE0F', miniature: 'sun charm or cutout', isCVC: true, appearsIn: ['beginning'] },
+  { letter: 't', sound: '/t/', word: 'top', image: '\uD83D\uDD1D', miniature: 'spinning top toy', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'u', sound: '/u/', word: 'umbrella', image: '\u2602\uFE0F', miniature: 'mini umbrella', isCVC: false, appearsIn: ['beginning'] },
+  { letter: 'v', sound: '/v/', word: 'van', image: '\uD83D\uDE90', miniature: 'toy van', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'w', sound: '/w/', word: 'web', image: '\uD83D\uDD78\uFE0F', miniature: 'plastic spider web', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'x', sound: '/ks/', word: 'fox', image: '\uD83E\uDD8A', miniature: 'plastic fox figurine', isCVC: true, appearsIn: ['ending'] },
+  { letter: 'y', sound: '/y/', word: 'yam', image: '\uD83C\uDF60', miniature: 'small yam or picture', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+  { letter: 'z', sound: '/z/', word: 'zip', image: '\uD83E\uDD10', miniature: 'zipper pull or sample', isCVC: true, appearsIn: ['beginning', 'pink1'] },
+];
+
+// Blue series blend anchors for Sound Bingo blend mode
+export const BLEND_ANCHORS: { blend: string; word: string; image: string }[] = [
+  { blend: 'bl', word: 'blob', image: '\uD83E\uDEE7' },
+  { blend: 'br', word: 'brim', image: '\uD83C\uDFA9' },
+  { blend: 'cl', word: 'clap', image: '\uD83D\uDC4F' },
+  { blend: 'cr', word: 'crab', image: '\uD83E\uDD80' },
+  { blend: 'dr', word: 'drum', image: '\uD83E\uDD41' },
+  { blend: 'fl', word: 'flag', image: '\uD83D\uDEA9' },
+  { blend: 'fr', word: 'frog', image: '\uD83D\uDC38' },
+  { blend: 'gl', word: 'glob', image: '\uD83E\uDEE7' },
+  { blend: 'gr', word: 'grab', image: '\u270B' },
+  { blend: 'pl', word: 'plop', image: '\uD83D\uDCA7' },
+  { blend: 'pr', word: 'prop', image: '\uD83E\uDE9C' },
+  { blend: 'sc', word: 'scan', image: '\uD83D\uDCF1' },
+  { blend: 'sk', word: 'skip', image: '\uD83E\uDDB6' },
+  { blend: 'sl', word: 'sled', image: '\uD83D\uDEF7' },
+  { blend: 'sm', word: 'smog', image: '\uD83C\uDF2B\uFE0F' },
+  { blend: 'sn', word: 'snap', image: '\uD83E\uDD1E' },
+  { blend: 'sp', word: 'spin', image: '\uD83C\uDF00' },
+  { blend: 'st', word: 'stop', image: '\uD83D\uDED1' },
+  { blend: 'sw', word: 'swim', image: '\uD83C\uDFCA' },
+  { blend: 'tr', word: 'trap', image: '\uD83E\uDEA4' },
+  { blend: 'tw', word: 'twin', image: '\uD83D\uDC6F' },
+  { blend: 'nd', word: 'hand', image: '\u270B' },
+  { blend: 'nk', word: 'tank', image: '\uD83D\uDC20' },
+  { blend: 'nt', word: 'tent', image: '\u26FA' },
+  { blend: 'mp', word: 'lamp', image: '\uD83D\uDCA1' },
+  { blend: 'lk', word: 'milk', image: '\uD83E\uDD5B' },
+  { blend: 'lt', word: 'belt', image: '\uD83E\uDE96' },
+  { blend: 'ft', word: 'raft', image: '\uD83D\uDEF6' },
+  { blend: 'sk-end', word: 'desk', image: '\uD83E\uDE91' },
+  { blend: 'st-end', word: 'nest', image: '\uD83E\uDEBA' },
+];
+
+// =====================================================================
 // PHASE: PINK 1 (CMAT Tray System)
 // Progressive letter introduction: c,m,a,t → d,n,e,k → s,r,i,p → h,u,j,l → b,f,o,g → v,w,x,y,z,q
 // ALL CVC (3-letter consonant-vowel-consonant) only

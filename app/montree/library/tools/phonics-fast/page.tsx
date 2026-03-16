@@ -21,6 +21,7 @@ function getSeriesInfo(phaseId: string): { series: string; color: string; bgClas
 
 function getGenerators(t: any) {
   return [
+    { href: '/montree/library/tools/phonics-fast/sound-bingo', icon: '🔊', label: t('library.phonicsSoundBingo'), desc: t('library.phonicsSoundBingoDesc') },
     { href: '/montree/library/tools/phonics-fast/pink-box', icon: '🩷', label: t('library.phonicsPinkBox'), desc: t('library.phonicsPinkBoxDesc') },
     { href: '/montree/library/tools/phonics-fast/blue-box', icon: '💙', label: t('library.phonicsBlueBox'), desc: t('library.phonicsBlueBoxDesc') },
     { href: '/montree/library/tools/phonics-fast/three-part-cards', icon: '🃏', label: t('library.phonics3PartCards'), desc: t('library.phonics3PartCardsDesc') },
