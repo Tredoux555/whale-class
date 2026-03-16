@@ -553,7 +553,7 @@ export default function ShelfView({ childId, classroomId, onAskGuide, refreshTri
       {/* Navigation links */}
       <div className="px-4 pb-6 flex gap-3">
         <a
-          href={`/montree/dashboard/${childId}/progress`}
+          href={`/montree/dashboard/${childId}/gallery`}
           className="flex-1 py-3 rounded-xl text-center text-xs font-medium transition-all"
           style={{
             background: 'rgba(255,255,255,0.04)',

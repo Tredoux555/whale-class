@@ -1,6 +1,6 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Review Tab — AI-assisted photo review + area progress summary
-// Photos with confirm/reject UI, area breakdown, progress bar graph
+// Progress Tab — AI-assisted photo review + area progress summary
+// Gallery view with confirm/reject UI, area breakdown, progress bar graph, lightbox
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -91,16 +91,6 @@ export default function GalleryPage() {
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-
-  // Clamp lightbox index when filtered photos change (e.g. after deletion or filter switch)
-  useEffect(() => {
-    if (lightboxOpen && filteredPhotos.length > 0 && lightboxIndex >= filteredPhotos.length) {
-      setLightboxIndex(filteredPhotos.length - 1);
-    } else if (lightboxOpen && filteredPhotos.length === 0) {
-      setLightboxOpen(false);
-      setLightboxIndex(0);
-    }
-  }, [filteredPhotos.length, lightboxOpen, lightboxIndex]);
 
   // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -292,6 +282,16 @@ export default function GalleryPage() {
     if (selectedArea) return photos.filter(p => (p.area ? normalizeArea(p.area) : 'untagged') === selectedArea);
     return photos;
   }, [photos, selectedArea]);
+
+  // Clamp lightbox index when filtered photos change (e.g. after deletion or filter switch)
+  useEffect(() => {
+    if (lightboxOpen && filteredPhotos.length > 0 && lightboxIndex >= filteredPhotos.length) {
+      setLightboxIndex(filteredPhotos.length - 1);
+    } else if (lightboxOpen && filteredPhotos.length === 0) {
+      setLightboxOpen(false);
+      setLightboxIndex(0);
+    }
+  }, [filteredPhotos.length, lightboxOpen, lightboxIndex]);
 
   // ── Handlers ──
 
@@ -656,7 +656,7 @@ export default function GalleryPage() {
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
-        <GuruContextBubble pageKey="gallery" role="parent" />
+        <GuruContextBubble pageKey="progress" role="parent" />
       )}
 
       {/* ══════════════════════════════════════════════
