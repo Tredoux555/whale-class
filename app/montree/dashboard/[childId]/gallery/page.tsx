@@ -910,6 +910,7 @@ export default function GalleryPage() {
           initialArea={teachModalData.area}
           mediaId={teachModalData.mediaId}
           classroomId={session.classroom.id}
+          childId={childId}
           onWorkSaved={() => { setTeachModalData(null); fetchPhotos(); }}
         />
       )}
