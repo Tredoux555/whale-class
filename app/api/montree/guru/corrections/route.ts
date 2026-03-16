@@ -3,6 +3,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 // POST /api/montree/guru/corrections — Record a teacher correction for self-learning
 // Called when teacher changes work_id in PhotoEditModal (correcting Smart Capture)
@@ -11,6 +12,13 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+
+    // MEDIUM-003: Rate limit corrections — 30 per minute per IP
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rateLimited = await checkRateLimit('corrections', ip, 30, 60);
+    if (rateLimited) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
 
     const body = await request.json();
     const {
@@ -63,7 +71,8 @@ export async function POST(request: NextRequest) {
       }
       if (original_work_name) {
         // Run EMA update and visual memory stats in parallel
-        await Promise.allSettled([
+        // LOW-003: Log errors from both RPCs instead of silently swallowing
+        const [emaResult, memoryResult] = await Promise.allSettled([
           supabase.rpc('update_work_accuracy', {
             p_classroom_id: classroomId,
             p_work_name: original_work_name,
@@ -75,10 +84,14 @@ export async function POST(request: NextRequest) {
           supabase.rpc('increment_visual_memory_correct', {
             p_classroom_id: classroomId,
             p_work_name: original_work_name,
-          }).catch(() => {
-            // Non-fatal — RPC may not exist yet or no visual memory entry
           }),
         ]);
+        if (emaResult.status === 'rejected') {
+          console.error('[Corrections] update_work_accuracy RPC failed on confirm (non-fatal):', emaResult.reason);
+        }
+        if (memoryResult.status === 'rejected') {
+          console.error('[Corrections] increment_visual_memory_correct RPC failed on confirm (non-fatal):', memoryResult.reason);
+        }
       }
       console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
       return NextResponse.json({ success: true, confirmed: true });
@@ -287,11 +300,18 @@ async function generateAndStoreVisualMemory({
 }) {
   if (!anthropic) return;
 
+  // LOW-001: Validate photoUrl before sending to Haiku
+  if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
+    console.warn('[VisualMemory] Invalid photoUrl, skipping visual memory generation:', photoUrl);
+    return;
+  }
+
   // Generate visual description using Haiku with vision
   // Haiku is perfect here: we don't need deep reasoning, just "describe what you see"
   // CRITICAL-001 fix: AbortController + 45s timeout prevents hanging if Haiku API stalls
   const apiAbortController = new AbortController();
   const apiTimeout = setTimeout(() => apiAbortController.abort(), 45000);
+  const haikuStartMs = Date.now();
 
   let message;
   try {
@@ -316,13 +336,16 @@ async function generateAndStoreVisualMemory({
   } catch (err) {
     // Check if OUR AbortController fired (the 45s timeout) — most reliable signal
     if (apiAbortController.signal.aborted) {
-      console.error('[VisualMemory] Haiku vision call timed out after 45s — skipping visual memory generation');
+      console.error(`[VisualMemory] Haiku vision call timed out after 45s (${Date.now() - haikuStartMs}ms) — skipping visual memory generation`);
       return; // Non-fatal: correction still saved, only visual learning skipped
     }
     throw err;
   } finally {
     clearTimeout(apiTimeout);
   }
+
+  // LOW-004: Log Haiku latency for monitoring degradation
+  console.log(`[VisualMemory] Correction Haiku latency: ${Date.now() - haikuStartMs}ms for "${workName}"`);
 
   // Extract text response
   let visualDescription = '';
