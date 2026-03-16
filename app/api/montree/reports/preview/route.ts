@@ -441,6 +441,17 @@ export async function GET(request: NextRequest) {
       addedWorkNames.add(workInfo.name.toLowerCase());
     }
 
+    // Sort report items: most recent first (forward-facing development timeline)
+    reportItems.sort((a, b) => {
+      // Use photo created_at for items with photos, fall back to progress updated_at
+      const aPhoto = a.photo_id ? allPhotos.find(p => p.id === a.photo_id) : null;
+      const bPhoto = b.photo_id ? allPhotos.find(p => p.id === b.photo_id) : null;
+      const aDate = aPhoto?.created_at || '';
+      const bDate = bPhoto?.created_at || '';
+      // Most recent first (descending)
+      return bDate.localeCompare(aDate);
+    });
+
     // Separate photos by selection status
     const selectedPhotos = allPhotos.filter(p => p.is_selected);
     const availablePhotos = allPhotos.filter(p => !p.is_selected);
@@ -466,7 +477,7 @@ export async function GET(request: NextRequest) {
       from_photos: reportItems.filter(r => r.source === 'photo').length,
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       child_name: child.name,
       child_photo: child.photo_url,
@@ -478,6 +489,8 @@ export async function GET(request: NextRequest) {
       all_photos: allPhotos,
       stats,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
 
   } catch (error) {
     console.error('Report preview error:', error);

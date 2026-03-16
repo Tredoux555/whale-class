@@ -7,7 +7,6 @@
 // Supports one-tap screenshot capture via html2canvas
 
 import { useState, useEffect, useRef } from 'react';
-import html2canvas from 'html2canvas-pro';
 import { useI18n, TranslationKey } from '@/lib/montree/i18n';
 
 interface FeedbackButtonProps {
@@ -166,6 +165,8 @@ export default function FeedbackButton({
       await new Promise(resolve => setTimeout(resolve, 100));
 
       // STEP 3: Run html2canvas on the clean page (no form DOM to get corrupted)
+      // Lazy-load html2canvas-pro only when screenshot capture is triggered
+      const html2canvas = (await import('html2canvas-pro')).default;
       const isMobile = window.innerWidth < 768;
       const canvas = await html2canvas(document.body, {
         useCORS: true,

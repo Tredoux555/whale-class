@@ -78,6 +78,22 @@ export default function ParentReportPage() {
         data.report.child = { name: 'Child', nickname: null };
       }
 
+      // Sort works_completed most recent first (forward-facing timeline)
+      if (data.report?.works_completed) {
+        data.report.works_completed.sort((a: { completed_at: string }, b: { completed_at: string }) => {
+          const aDate = a.completed_at || '';
+          const bDate = b.completed_at || '';
+          return bDate.localeCompare(aDate);
+        });
+      }
+      // Sort all_photos most recent first
+      if (data.report?.all_photos) {
+        data.report.all_photos.sort((a: { captured_at: string }, b: { captured_at: string }) => {
+          const aDate = a.captured_at || '';
+          const bDate = b.captured_at || '';
+          return bDate.localeCompare(aDate);
+        });
+      }
       setReport(data.report);
     } catch (err) {
       console.error('Failed to load report:', err);
@@ -326,7 +342,7 @@ export default function ParentReportPage() {
           </div>
         )}
 
-        {/* Additional Photos — only show photos NOT already displayed inline with works */}
+        {/* Additional Photos — compact grid, only extras not shown inline */}
         {report.all_photos && report.all_photos.length > 0 && (() => {
           // Build set of photo URLs already shown inline with works
           const inlinePhotoUrls = new Set(
@@ -339,31 +355,21 @@ export default function ParentReportPage() {
           return (
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📸</span> {t('parentReport.photosThisWeek')} ({extraPhotos.length})
+                <span>📸</span> {t('parentReport.morePhotos' as any) || 'More Photos'} ({extraPhotos.length})
               </h2>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {extraPhotos.map((photo, i) => (
-                  <div key={photo.id || i} className="relative group">
-                    <div className="aspect-square rounded-xl overflow-hidden shadow-md relative">
-                      <img
-                        src={photo.url}
-                        alt={photo.caption || photo.work_name || 'Activity photo'}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
-                        className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
-                        title={t('common.save')}
-                      >
-                        ⬇
-                      </button>
-                    </div>
-                    {(photo.caption || photo.work_name) && (
-                      <p className="mt-1 text-xs text-gray-600 text-center truncate">
-                        {photo.caption || photo.work_name}
-                      </p>
-                    )}
-                  </div>
+                  <button
+                    key={photo.id || i}
+                    onClick={() => { setLightboxSrc(photo.url); setLightboxOpen(true); }}
+                    className="aspect-square rounded-lg overflow-hidden shadow-sm cursor-zoom-in"
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || photo.work_name || 'Activity photo'}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
                 ))}
               </div>
             </div>

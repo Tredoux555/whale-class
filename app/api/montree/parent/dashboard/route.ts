@@ -248,7 +248,7 @@ export async function GET(request: NextRequest) {
     // Handle classroom which may be an object or array depending on Supabase
     const classroom = Array.isArray(child.classroom) ? child.classroom[0] : child.classroom;
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       child: {
         id: child.id,
@@ -261,6 +261,8 @@ export async function GET(request: NextRequest) {
       reports,
       recentMedia,
     });
+    response.headers.set('Cache-Control', 'private, max-age=60, stale-while-revalidate=120');
+    return response;
     
   } catch (error) {
     console.error('Parent dashboard error:', error);
