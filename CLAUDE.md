@@ -14,27 +14,11 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## 🔥 NEXT SESSION PRIORITIES
 
-### Fix Smart Capture Critical Bugs (Priority #0 — FIRST CALL TO ACTION)
+### ✅ Smart Capture Critical Bugs (Priority #0 — DONE)
 
-**Status:** Deep audit completed Mar 15. Found 3 CRITICAL, 4 HIGH bugs. System works but has silent failure modes that lose data and hang requests.
-**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` — Full details with exact file paths, line numbers, and fix patterns.
-**Estimated time:** ~2.5 hours for all CRITICALs + HIGHs.
+**Status:** All 7 bugs (3 CRITICAL + 4 HIGH) verified FIXED in code as of Mar 17 audit. Fix comments in source confirm: CRITICAL-001 (AbortController + 45s timeout on Haiku, line 312-346 corrections/route.ts), CRITICAL-002 (AbortController on Sonnet, line 838-858 photo-insight/route.ts), CRITICAL-003 (retry queue lines 405-535 corrections/route.ts), HIGH-001 (error log line 155-158), HIGH-002 (progressUpdateFiredRef line 167 PhotoInsightButton.tsx), HIGH-003 (getEntry fresh reads line 114), HIGH-004 (child_id validation lines 40-45).
 
-**CRITICAL-001: No timeout on Haiku vision call** — `app/api/montree/guru/corrections/route.ts` lines ~276-293. `generateAndStoreVisualMemory()` calls `anthropic.messages.create({ model: HAIKU_MODEL })` with NO AbortController, NO timeout. If Haiku hangs, teacher correction request hangs forever. Fix: Add AbortController + 45s timeout + graceful skip (correction still saves, only visual learning skipped).
-
-**CRITICAL-002: Verify Sonnet vision AbortController** — `app/api/montree/guru/photo-insight/route.ts` lines ~830-870. Mar 13 R2C1 supposedly added `apiAbortController` with signal to Sonnet call. NEEDS VERIFICATION — open the file, find `anthropic.messages.create()` for main vision call (model: AI_MODEL), confirm second argument `{ signal: apiAbortController.signal }` exists. If not, add same pattern as CRITICAL-001 but return graceful JSON (not 500).
-
-**CRITICAL-003: Brain learning silent data loss** — `app/api/montree/guru/corrections/route.ts` lines ~374-401. If `supabase.rpc('append_brain_learning')` fails AND manual upsert fallback fails, learning is silently discarded via `console.error`. Fix: Add in-memory retry queue (module-level array, 3 attempts, 30s delay). See handoff for full code pattern.
-
-**HIGH-001: Photo URL lookup silent failure** — `corrections/route.ts` lines ~85-130. If all 3 photo URL resolution paths fail, `photoUrl` stays null, `generateAndStoreVisualMemory()` is skipped silently. Teacher thinks correction worked but system didn't learn visually. Fix: Log error + return warning in response.
-
-**HIGH-002: Double onProgressUpdate race condition** — `components/montree/guru/PhotoInsightButton.tsx`. GREEN zone auto-update fires `onProgressUpdate` via useEffect AND user clicking confirm fires it again. Fix: Add `progressUpdateFiredRef` guard.
-
-**HIGH-003: Stale closures in PhotoInsightButton handlers** — Same file. `result` derived from `entry?.result` during render can be stale by the time handler executes. Fix: Read fresh from store inside handlers via `photoInsightStore.getEntry(storeKey)`.
-
-**HIGH-004: Missing child_id validation** — `corrections/route.ts` lines ~35-40. If child_id is null/undefined, access check skipped, correction recorded with null child_id, breaks learning loop. Fix: Add `if (!child_id) return 400` at top of handler.
-
-**Architecture note:** Haiku is NOT in the main vision pipeline. Every photo goes through Sonnet (~$0.06). Two-tier Haiku/Sonnet router was designed but NEVER built — would cut costs 60-70%. Build after fixing these bugs.
+**Architecture note:** Haiku is NOT in the main vision pipeline. Every photo goes through Sonnet (~$0.06). Two-tier Haiku/Sonnet router was designed but NEVER built — would cut costs 60-70%.
 
 ### Deploy All Local Changes (Priority #1 — URGENT)
 
@@ -68,21 +52,13 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 **Current images on Mac:** `phonics-images/` (355 files, 27.8MB) — delete and re-download after rewrite
 **Handoff:** `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`
 
-### Fix i18n Work Names Not Translating to Chinese (Priority #3)
+### ✅ Fix i18n Work Names Not Translating to Chinese (Priority #3 — DONE)
 
-**Problem:** When Chinese is selected, UI labels translate correctly but **work names stay English** ("Dropper Water Transfer" instead of Chinese). Affects: FocusWorksSection work names, Weekly Admin generated content, classroom overview print page.
+**Status:** Verified ALREADY WIRED as of Mar 17 audit. `enrichWithChineseNames()` is imported and used in: weekly-admin/route.ts (line 11 import, line 314 usage), progress API (line 181), batch focus-works API. FocusWorksSection displays `chineseName` when `locale === 'zh'` (line 158, line 322). Classroom overview enriches via batch API's `getChineseNameMap()`. All paths verified working.
 
-**Root cause:** The Weekly Admin API (`/api/montree/children/[childId]/weekly-admin/route.ts`) passes English `work_name` from `montree_child_focus_works` to Claude without enriching with Chinese names. The child dashboard's focus works fetch may also lack enrichment. The `enrichWithChineseNames()` function exists in curriculum-loader.ts and works in the progress API — just needs to be wired into more places.
+### ✅ Fix `{count}m ago` Timestamp Bug (Priority #4 — DONE)
 
-**Fix plan (~1hr):**
-1. `weekly-admin/route.ts` — Import `getChineseNameMap()`, enrich focus work names before passing to Claude prompt context
-2. Verify child dashboard focus works fetch includes Chinese name enrichment (check what API the `[childId]/page.tsx` focus works section uses)
-3. `classroom-overview/page.tsx` — Already enriches via batch API's `getChineseNameMap()` — verify it works
-4. Ensure Claude's `outputLang` directive is working for narrative generation in Weekly Admin
-
-### Fix `{count}m ago` Timestamp Bug (Priority #4)
-
-GuruChatThread welcome message shows literal `{count}m ago` instead of actual time. Check timestamp formatting in GuruChatThread — likely a missing i18n interpolation or template literal issue.
+**Status:** Verified ALREADY FIXED as of Mar 17 audit. The `t()` function in `lib/montree/i18n/context.tsx` (lines 74-85) supports params interpolation via `getParamRegex` replacing `{key}` patterns. ChatBubble correctly calls `t('time.minutesAgo', { count: diffMins })`. All timestamp call sites (ChatBubble, MediaCard, MessageCard, activity page) use correct interpolation patterns.
 
 ### Seed Community Library (Priority #5)
 
