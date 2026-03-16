@@ -1,5 +1,5 @@
 // /montree/dashboard/[childId]/gallery/page.tsx
-// Progress Tab — AI-assisted photo review + area progress summary
+// Gallery — AI-assisted photo review + area progress summary
 // Gallery view with confirm/reject UI, area breakdown, progress bar graph, lightbox
 'use client';
 

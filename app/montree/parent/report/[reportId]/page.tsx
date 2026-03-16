@@ -320,39 +320,49 @@ export default function ParentReportPage() {
           </div>
         )}
 
-        {/* Photo Gallery - Show ALL photos from the week */}
-        {report.all_photos && report.all_photos.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>📸</span> {t('parentReport.photosThisWeek')} ({report.all_photos.length})
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {report.all_photos.map((photo, i) => (
-                <div key={photo.id || i} className="relative group">
-                  <div className="aspect-square rounded-xl overflow-hidden shadow-md relative">
-                    <img
-                      src={photo.url}
-                      alt={photo.caption || photo.work_name || 'Activity photo'}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
-                      className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
-                      title={t('common.save')}
-                    >
-                      ⬇
-                    </button>
+        {/* Additional Photos — only show photos NOT already displayed inline with works */}
+        {report.all_photos && report.all_photos.length > 0 && (() => {
+          // Build set of photo URLs already shown inline with works
+          const inlinePhotoUrls = new Set(
+            (report.works_completed || [])
+              .filter(w => w.photo_url)
+              .map(w => w.photo_url!)
+          );
+          const extraPhotos = report.all_photos.filter(p => !inlinePhotoUrls.has(p.url));
+          if (extraPhotos.length === 0) return null;
+          return (
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <span>📸</span> {t('parentReport.photosThisWeek')} ({extraPhotos.length})
+              </h2>
+              <div className="grid grid-cols-2 gap-3">
+                {extraPhotos.map((photo, i) => (
+                  <div key={photo.id || i} className="relative group">
+                    <div className="aspect-square rounded-xl overflow-hidden shadow-md relative">
+                      <img
+                        src={photo.url}
+                        alt={photo.caption || photo.work_name || 'Activity photo'}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => downloadPhoto(photo.url, photo.caption || photo.work_name || `photo_${i + 1}`)}
+                        className="absolute bottom-2 right-2 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm text-sm"
+                        title={t('common.save')}
+                      >
+                        ⬇
+                      </button>
+                    </div>
+                    {(photo.caption || photo.work_name) && (
+                      <p className="mt-1 text-xs text-gray-600 text-center truncate">
+                        {photo.caption || photo.work_name}
+                      </p>
+                    )}
                   </div>
-                  {(photo.caption || photo.work_name) && (
-                    <p className="mt-1 text-xs text-gray-600 text-center truncate">
-                      {photo.caption || photo.work_name}
-                    </p>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Recommendations */}
         {report.recommendations && report.recommendations.length > 0 && (

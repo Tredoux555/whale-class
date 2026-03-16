@@ -861,7 +861,7 @@ export default function SnapIdentifyPage() {
           </div>
 
           <button
-            onClick={() => router.push(`/montree/dashboard/${resultChild.id}/gallery`)}
+            onClick={() => router.push(`/montree/dashboard/${resultChild.id}/progress`)}
             className="w-full py-2.5 text-sm text-violet-600 hover:text-violet-700 underline"
           >
             {resultChild.name} — {t('snap.viewProgress')}
