@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface Feature {
   feature_key: string;
@@ -22,6 +23,7 @@ interface Feature {
 
 export default function FeaturesAdminPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function FeaturesAdminPage() {
       const data = await res.json();
       if (data.success) setFeatures(data.features || []);
     } catch (err) {
-      toast.error('Failed to load features');
+      toast.error(t('features.failedToLoad' as TranslationKey));
     }
     setLoading(false);
   }
@@ -66,17 +68,17 @@ export default function FeaturesAdminPage() {
         setFeatures(prev => prev.map(f => 
           f.feature_key === featureKey ? { ...f, enabled, classroom_enabled: enabled } : f
         ));
-        toast.success(`${enabled ? 'Enabled' : 'Disabled'} ${featureKey}`);
+        toast.success(`${enabled ? t('features.enabled' as TranslationKey) : t('features.disabled' as TranslationKey)} ${featureKey}`);
       }
     } catch (err) {
-      toast.error('Failed to toggle feature');
+      toast.error(t('features.failedToToggle' as TranslationKey));
     }
   }
 
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0f172a' }}>
-        <div style={{ color: '#94a3b8', fontSize: 18 }}>Loading features...</div>
+        <div style={{ color: '#94a3b8', fontSize: 18 }}>{t('features.loading' as TranslationKey)}</div>
       </div>
     );
   }
@@ -90,16 +92,16 @@ export default function FeaturesAdminPage() {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>⚙️ Feature Toggles</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>⚙️ {t('features.title' as TranslationKey)}</h1>
           <p style={{ fontSize: 13, color: '#94a3b8', margin: '4px 0 0' }}>
-            {session?.classroom?.name || 'Classroom'} &middot; Switch features on or off
+            {session?.classroom?.name || t('features.classroom' as TranslationKey)} &middot; {t('features.subtitle' as TranslationKey)}
           </p>
         </div>
         <button
           onClick={() => router.push('/montree/admin')}
           style={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, padding: '8px 12px', color: '#94a3b8', cursor: 'pointer', fontSize: 13 }}
         >
-          ← Back
+          ← {t('common.back' as TranslationKey)}
         </button>
       </div>
 

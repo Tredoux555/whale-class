@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSession } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface Work {
   id: string;
@@ -21,6 +22,7 @@ interface ChildWithWorks {
 
 function PrintContent() {
   const router = useRouter();
+  const { t } = useI18n();
   const [children, setChildren] = useState<ChildWithWorks[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekNum, setWeekNum] = useState(0);
@@ -92,7 +94,7 @@ function PrintContent() {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-bounce">🌳</div>
-          <p className="text-gray-600">Loading weekly plan...</p>
+          <p className="text-gray-600">{t('printWeekly.loading' as TranslationKey)}</p>
         </div>
       </div>
     );
@@ -126,7 +128,7 @@ function PrintContent() {
         <div className="p-1">
           <div className="flex items-center gap-2 border-b border-gray-400 pb-1 mb-1">
             <span className="text-lg">🌳</span>
-            <span className="font-bold text-sm">Week {weekNum}</span>
+            <span className="font-bold text-sm">{t('printWeekly.weekLabel' as TranslationKey)} {weekNum}</span>
           </div>
           <div className="grid grid-cols-2 gap-0">
             {children.map((child) => (

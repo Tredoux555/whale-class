@@ -2,10 +2,12 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Suspense, useState, useEffect } from 'react';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 function JoinContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { t } = useI18n();
   const code = searchParams.get('code');
   const [copied, setCopied] = useState(false);
 
@@ -29,8 +31,8 @@ function JoinContent() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl shadow-lg mb-4">
             <span className="text-4xl">🌳</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Welcome to Montree</h1>
-          <p className="text-gray-500 mt-1">Your classroom awaits!</p>
+          <h1 className="text-2xl font-bold text-gray-800">{t('join.welcome' as TranslationKey)}</h1>
+          <p className="text-gray-500 mt-1">{t('join.classroomAwaits' as TranslationKey)}</p>
         </div>
 
         {/* Main Card */}
@@ -38,7 +40,7 @@ function JoinContent() {
           {code ? (
             <>
               <div className="text-center mb-6">
-                <p className="text-gray-600 mb-4">Your teacher login code is:</p>
+                <p className="text-gray-600 mb-4">{t('join.yourLoginCode' as TranslationKey)}</p>
                 <div 
                   onClick={handleCopyCode}
                   className="bg-emerald-50 border-2 border-emerald-200 rounded-2xl p-4 cursor-pointer hover:bg-emerald-100 transition-colors"
@@ -47,7 +49,7 @@ function JoinContent() {
                     {code}
                   </div>
                   <p className="text-xs text-emerald-500 mt-2">
-                    {copied ? '✓ Copied!' : 'Tap to copy'}
+                    {copied ? `✓ ${t('join.copied' as TranslationKey)}` : t('join.tapToCopy' as TranslationKey)}
                   </p>
                 </div>
               </div>
@@ -57,11 +59,11 @@ function JoinContent() {
                   onClick={handleGoToLogin}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
                 >
-                  Login Now →
+                  {t('join.loginNow' as TranslationKey)} →
                 </button>
                 
                 <div className="text-center text-sm text-gray-400">
-                  Save this code - you'll need it to login!
+                  {t('join.saveCode' as TranslationKey)}
                 </div>
               </div>
             </>
@@ -69,14 +71,14 @@ function JoinContent() {
             <>
               <div className="text-center py-6">
                 <div className="text-5xl mb-4">🔗</div>
-                <p className="text-gray-600">No code provided in the link.</p>
-                <p className="text-gray-400 text-sm mt-2">Ask your principal for your login code.</p>
+                <p className="text-gray-600">{t('join.noCodeProvided' as TranslationKey)}</p>
+                <p className="text-gray-400 text-sm mt-2">{t('join.askPrincipal' as TranslationKey)}</p>
               </div>
               <button
                 onClick={handleGoToLogin}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg"
               >
-                Go to Login →
+                {t('join.goToLogin' as TranslationKey)} →
               </button>
             </>
           )}
@@ -84,12 +86,12 @@ function JoinContent() {
 
         {/* Instructions */}
         <div className="mt-6 text-center text-sm text-gray-500">
-          <p className="font-medium mb-2">How to login:</p>
+          <p className="font-medium mb-2">{t('join.howToLogin' as TranslationKey)}</p>
           <ol className="text-left max-w-xs mx-auto space-y-1">
-            <li>1. Go to login page</li>
-            <li>2. Enter your 6-character code</li>
-            <li>3. Set a password (optional)</li>
-            <li>4. Start tracking progress! 🎉</li>
+            <li>1. {t('join.step1' as TranslationKey)}</li>
+            <li>2. {t('join.step2' as TranslationKey)}</li>
+            <li>3. {t('join.step3' as TranslationKey)}</li>
+            <li>4. {t('join.step4' as TranslationKey)} 🎉</li>
           </ol>
         </div>
       </div>

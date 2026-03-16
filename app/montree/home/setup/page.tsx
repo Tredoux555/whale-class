@@ -64,7 +64,7 @@ export default function SetupPage() {
       });
 
       if (!res.ok) {
-        let errorMsg = 'Failed to create child';
+        let errorMsg = t('home.setup.failedToCreate');
         try {
           const data = await res.json();
           errorMsg = data.error || errorMsg;
@@ -112,7 +112,7 @@ export default function SetupPage() {
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : t('home.setup.somethingWentWrong'));
     } finally {
       setSaving(false);
     }

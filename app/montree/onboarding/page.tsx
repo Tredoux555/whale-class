@@ -313,7 +313,7 @@ export default function OnboardingPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Failed to save students');
+        throw new Error(data.error || t('onboarding.failedToSaveStudents'));
       }
 
       const sessionData = localStorage.getItem('montree_session');
@@ -325,7 +325,7 @@ export default function OnboardingPage() {
 
       setStep(2);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save');
+      setError(err instanceof Error ? err.message : t('onboarding.failedToSave'));
     } finally {
       setLoading(false);
     }

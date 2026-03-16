@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 type ReasonType = 'developing_country' | 'small_school' | 'startup' | 'hardship' | 'other';
 type TierType = 'tier_a_500' | 'tier_b_250' | 'tier_c_100' | 'custom';
 
 export default function ReducedRateApplicationPage() {
+  const { t } = useI18n();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,17 +35,17 @@ export default function ReducedRateApplicationPage() {
 
     // Validation
     if (!schoolName.trim() || !country.trim() || !city.trim() || !contactName.trim() || !contactEmail.trim() || !estimatedStudents) {
-      setError('Please complete all fields in Step 1');
+      setError(t('reducedRate.validation.completeStep1' as TranslationKey));
       return;
     }
 
     if (!reason || !reasonDescription.trim() || !monthlyBudget || !requestedTier) {
-      setError('Please complete all fields in Step 2');
+      setError(t('reducedRate.validation.completeStep2' as TranslationKey));
       return;
     }
 
     if (requestedTier === 'custom' && !customAmount) {
-      setError('Please enter a custom amount');
+      setError(t('reducedRate.validation.enterCustomAmount' as TranslationKey));
       return;
     }
 
@@ -72,12 +74,12 @@ export default function ReducedRateApplicationPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Application submission failed');
+        throw new Error(data.error || t('reducedRate.submissionFailed' as TranslationKey));
       }
 
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Application submission failed');
+      setError(err instanceof Error ? err.message : t('reducedRate.submissionFailed' as TranslationKey));
     } finally {
       setLoading(false);
     }
@@ -96,35 +98,35 @@ export default function ReducedRateApplicationPage() {
               <span className="text-4xl">✓</span>
             </div>
             <h1 className="text-3xl font-light text-white mb-2">
-              Application <span className="font-semibold">Submitted</span>
+              {t('reducedRate.submitted' as TranslationKey)}
             </h1>
             <p className="text-emerald-300/70 text-sm mb-8">
-              Thank you for applying for reduced pricing!
+              {t('reducedRate.submittedThankYou' as TranslationKey)}
             </p>
           </div>
 
           <div className="bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-8 space-y-6">
             <div>
-              <h2 className="text-lg font-semibold text-emerald-300 mb-4">What's Next?</h2>
+              <h2 className="text-lg font-semibold text-emerald-300 mb-4">{t('reducedRate.whatsNext' as TranslationKey)}</h2>
               <ul className="space-y-3 text-sm text-white/70">
                 <li className="flex items-start gap-3">
                   <span className="text-emerald-400 font-bold">1.</span>
-                  <span>Our team will review your application within 2-3 business days</span>
+                  <span>{t('reducedRate.nextStep1' as TranslationKey)}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-emerald-400 font-bold">2.</span>
-                  <span>You'll receive an email with our decision and next steps</span>
+                  <span>{t('reducedRate.nextStep2' as TranslationKey)}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-emerald-400 font-bold">3.</span>
-                  <span>If approved, we'll set up your account with the approved pricing</span>
+                  <span>{t('reducedRate.nextStep3' as TranslationKey)}</span>
                 </li>
               </ul>
             </div>
 
             <div className="pt-4 border-t border-white/10">
               <p className="text-white/50 text-xs">
-                Application ID: <span className="text-emerald-400 font-mono">{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                {t('reducedRate.applicationId' as TranslationKey)}: <span className="text-emerald-400 font-mono">{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
               </p>
             </div>
           </div>
@@ -134,7 +136,7 @@ export default function ReducedRateApplicationPage() {
               href="/montree"
               className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all text-center block"
             >
-              Return to Montree
+              {t('reducedRate.returnToMontree' as TranslationKey)}
             </Link>
           </div>
         </div>
@@ -162,16 +164,16 @@ export default function ReducedRateApplicationPage() {
             <span className="text-4xl">🌱</span>
           </div>
           <h1 className="text-3xl font-light text-white mb-2">
-            Reduced Rate <span className="font-semibold">Application</span>
+            {t('reducedRate.title' as TranslationKey)}
           </h1>
           <p className="text-emerald-300/70 text-sm mb-6">
-            Making Montessori education software accessible to all
+            {t('reducedRate.subtitle' as TranslationKey)}
           </p>
 
           {/* Info Banner */}
           <div className="bg-white/5 backdrop-blur border border-emerald-400/30 rounded-xl p-4 mb-6">
             <p className="text-white/70 text-xs">
-              Standard pricing is <span className="font-semibold">$1,000/month</span>. We offer reduced rates to ensure cost isn't a barrier to quality education.
+              {t('reducedRate.pricingBanner' as TranslationKey)}
             </p>
           </div>
 
@@ -187,12 +189,12 @@ export default function ReducedRateApplicationPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">School Name</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.schoolName' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder="e.g. Sunshine Montessori"
+                  placeholder={t('reducedRate.schoolNamePlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -200,60 +202,60 @@ export default function ReducedRateApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Country</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.country' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  placeholder="e.g. Costa Rica"
+                  placeholder={t('reducedRate.countryPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">City</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.city' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. San José"
+                  placeholder={t('reducedRate.cityPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Contact Name</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.contactName' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  placeholder="e.g. Maria García"
+                  placeholder={t('reducedRate.contactNamePlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Contact Email</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.contactEmail' as TranslationKey)}</label>
                 <input
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="contact@school.com"
+                  placeholder={t('reducedRate.contactEmailPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Estimated Number of Students</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.estimatedStudents' as TranslationKey)}</label>
                 <input
                   type="number"
                   value={estimatedStudents}
                   onChange={(e) => setEstimatedStudents(e.target.value)}
-                  placeholder="e.g. 25"
+                  placeholder={t('reducedRate.estimatedStudentsPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   min="1"
                   required
@@ -266,7 +268,7 @@ export default function ReducedRateApplicationPage() {
                 disabled={!schoolName.trim() || !country.trim() || !city.trim() || !contactName.trim() || !contactEmail.trim() || !estimatedStudents}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
               >
-                Continue →
+                {t('common.continue' as TranslationKey)} →
               </button>
             </div>
           )}
@@ -275,28 +277,28 @@ export default function ReducedRateApplicationPage() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Reason for Reduced Rate</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.reason' as TranslationKey)}</label>
                 <select
                   value={reason}
                   onChange={(e) => setReason(e.target.value as ReasonType)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all appearance-none"
                   required
                 >
-                  <option value="">Select a reason...</option>
-                  <option value="developing_country">Developing country</option>
-                  <option value="small_school">Small school (under 30 students)</option>
-                  <option value="startup">New/startup school</option>
-                  <option value="hardship">Financial hardship</option>
-                  <option value="other">Other</option>
+                  <option value="">{t('reducedRate.selectReason' as TranslationKey)}</option>
+                  <option value="developing_country">{t('reducedRate.reasonDeveloping' as TranslationKey)}</option>
+                  <option value="small_school">{t('reducedRate.reasonSmallSchool' as TranslationKey)}</option>
+                  <option value="startup">{t('reducedRate.reasonStartup' as TranslationKey)}</option>
+                  <option value="hardship">{t('reducedRate.reasonHardship' as TranslationKey)}</option>
+                  <option value="other">{t('reducedRate.reasonOther' as TranslationKey)}</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Please explain your situation</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.explainSituation' as TranslationKey)}</label>
                 <textarea
                   value={reasonDescription}
                   onChange={(e) => setReasonDescription(e.target.value)}
-                  placeholder="Tell us more about your school's circumstances..."
+                  placeholder={t('reducedRate.explainPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all resize-none"
                   rows={4}
                   required
@@ -304,12 +306,12 @@ export default function ReducedRateApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">What can you afford per month (USD)?</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.monthlyBudget' as TranslationKey)}</label>
                 <input
                   type="number"
                   value={monthlyBudget}
                   onChange={(e) => setMonthlyBudget(e.target.value)}
-                  placeholder="e.g. 300"
+                  placeholder={t('reducedRate.monthlyBudgetPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   min="0"
                   required
@@ -317,29 +319,29 @@ export default function ReducedRateApplicationPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Requested Rate Tier</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.requestedTier' as TranslationKey)}</label>
                 <select
                   value={requestedTier}
                   onChange={(e) => setRequestedTier(e.target.value as TierType)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all appearance-none"
                   required
                 >
-                  <option value="">Select a tier...</option>
-                  <option value="tier_a_500">Tier A - $500/month (50% off)</option>
-                  <option value="tier_b_250">Tier B - $250/month (75% off)</option>
-                  <option value="tier_c_100">Tier C - $100/month (90% off)</option>
-                  <option value="custom">Custom - Request specific amount</option>
+                  <option value="">{t('reducedRate.selectTier' as TranslationKey)}</option>
+                  <option value="tier_a_500">{t('reducedRate.tierA' as TranslationKey)}</option>
+                  <option value="tier_b_250">{t('reducedRate.tierB' as TranslationKey)}</option>
+                  <option value="tier_c_100">{t('reducedRate.tierC' as TranslationKey)}</option>
+                  <option value="custom">{t('reducedRate.tierCustom' as TranslationKey)}</option>
                 </select>
               </div>
 
               {requestedTier === 'custom' && (
                 <div>
-                  <label className="block text-emerald-300/80 text-sm mb-2">Custom Monthly Amount (USD)</label>
+                  <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.customAmount' as TranslationKey)}</label>
                   <input
                     type="number"
                     value={customAmount}
                     onChange={(e) => setCustomAmount(e.target.value)}
-                    placeholder="e.g. 150"
+                    placeholder={t('reducedRate.customAmountPlaceholder' as TranslationKey)}
                     className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                     min="0"
                   />
@@ -347,12 +349,12 @@ export default function ReducedRateApplicationPage() {
               )}
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Documentation URL (optional)</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('reducedRate.documentationUrl' as TranslationKey)}</label>
                 <input
                   type="url"
                   value={documentationUrl}
                   onChange={(e) => setDocumentationUrl(e.target.value)}
-                  placeholder="https://example.com/documentation"
+                  placeholder={t('reducedRate.documentationUrlPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                 />
               </div>
@@ -369,14 +371,14 @@ export default function ReducedRateApplicationPage() {
                   onClick={() => setStep(1)}
                   className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 >
-                  ← Back
+                  ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !reason || !reasonDescription.trim() || !monthlyBudget || !requestedTier || (requestedTier === 'custom' && !customAmount)}
                   className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {loading ? 'Submitting...' : 'Submit Application'}
+                  {loading ? t('reducedRate.submitting' as TranslationKey) : t('reducedRate.submitApplication' as TranslationKey)}
                 </button>
               </div>
             </div>
@@ -386,9 +388,9 @@ export default function ReducedRateApplicationPage() {
         {/* Links */}
         <div className="mt-8 text-center">
           <p className="text-white/50 text-sm">
-            Questions?{' '}
+            {t('reducedRate.questions' as TranslationKey)}{' '}
             <Link href="/montree" className="text-emerald-400 hover:text-emerald-300">
-              Back to Montree
+              {t('reducedRate.backToMontree' as TranslationKey)}
             </Link>
           </p>
         </div>

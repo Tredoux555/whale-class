@@ -415,8 +415,8 @@ export default function StudentsPage() {
             enrolled_at: enrolledAt,
           }),
         });
-        if (!res.ok) throw new Error('Failed to update');
-        toast.success(`${formData.name} updated`);
+        if (!res.ok) throw new Error(t('students.failedToUpdate'));
+        toast.success(`${formData.name} ${t('students.updated')}`);
       } else {
         // Add new student - use /api/montree/children POST
         const res = await fetch('/api/montree/children', {
@@ -432,8 +432,8 @@ export default function StudentsPage() {
             ),
           }),
         });
-        if (!res.ok) throw new Error('Failed to add');
-        toast.success(`${formData.name} ${isHomeschoolParent(session) ? 'added' : 'added to class'}`);
+        if (!res.ok) throw new Error(t('students.failedToAdd'));
+        toast.success(`${formData.name} ${isHomeschoolParent(session) ? t('students.added') : t('students.addedToClass')}`);
 
         // Mark tutorial complete after first student added
         if (session.teacher && !session.teacher.has_completed_tutorial) {

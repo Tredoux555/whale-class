@@ -3,9 +3,11 @@
 import React, { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 function WelcomeContent() {
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const isDemo = searchParams.get('demo') === 'true';
   const schoolName = searchParams.get('school') || 'Your School';
   const [loading, setLoading] = useState(!isDemo);
@@ -25,7 +27,7 @@ function WelcomeContent() {
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-cyan-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Setting up your school...</p>
+          <p className="text-gray-600">{t('welcome.settingUp' as TranslationKey)}</p>
         </div>
       </div>
     );
@@ -38,38 +40,37 @@ function WelcomeContent() {
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center mb-8">
           <div className="text-6xl mb-4">🎉</div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome to Montree!
+            {t('welcome.title' as TranslationKey)}
           </h1>
           <p className="text-xl text-gray-600 mb-6">
             {isDemo ? (
-              <>Your demo account for <strong>{schoolName}</strong> is ready!</>
+              <>{t('welcome.demoReady' as TranslationKey)} <strong>{schoolName}</strong>!</>
             ) : (
-              <>Your 14-day free trial has started!</>
+              <>{t('welcome.trialStarted' as TranslationKey)}</>
             )}
           </p>
 
           {isDemo && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
               <p className="text-amber-800 text-sm">
-                <strong>Demo Mode:</strong> Stripe is not configured yet. 
-                When you're ready to accept payments, add your Stripe keys to the environment variables.
+                <strong>{t('welcome.demoMode' as TranslationKey)}:</strong> {t('welcome.demoModeMessage' as TranslationKey)}
               </p>
             </div>
           )}
 
           <div className="bg-emerald-50 rounded-xl p-6 mb-8">
-            <h2 className="font-bold text-emerald-800 mb-3">Your School Details</h2>
+            <h2 className="font-bold text-emerald-800 mb-3">{t('welcome.schoolDetails' as TranslationKey)}</h2>
             <div className="text-left space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">School:</span>
+                <span className="text-gray-600">{t('welcome.schoolLabel' as TranslationKey)}:</span>
                 <span className="font-medium">{schoolName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Plan:</span>
-                <span className="font-medium">School ($29/month)</span>
+                <span className="text-gray-600">{t('welcome.planLabel' as TranslationKey)}:</span>
+                <span className="font-medium">{t('welcome.planValue' as TranslationKey)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Trial ends:</span>
+                <span className="text-gray-600">{t('welcome.trialEndsLabel' as TranslationKey)}:</span>
                 <span className="font-medium">
                   {new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}
                 </span>
@@ -77,7 +78,7 @@ function WelcomeContent() {
             </div>
           </div>
 
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Get Started in 3 Steps</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">{t('welcome.getStarted' as TranslationKey)}</h2>
           
           <div className="space-y-4 text-left">
             <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
@@ -85,9 +86,9 @@ function WelcomeContent() {
                 1
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Add Your Teachers</h3>
+                <h3 className="font-bold text-gray-900">{t('welcome.step1Title' as TranslationKey)}</h3>
                 <p className="text-gray-600 text-sm">
-                  Teachers can log in with any name and the password "123" to start tracking.
+                  {t('welcome.step1Desc' as TranslationKey)}
                 </p>
               </div>
             </div>
@@ -97,9 +98,9 @@ function WelcomeContent() {
                 2
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Add Students</h3>
+                <h3 className="font-bold text-gray-900">{t('welcome.step2Title' as TranslationKey)}</h3>
                 <p className="text-gray-600 text-sm">
-                  Add students in the classroom view and assign them to teachers.
+                  {t('welcome.step2Desc' as TranslationKey)}
                 </p>
               </div>
             </div>
@@ -109,9 +110,9 @@ function WelcomeContent() {
                 3
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Start Tracking Progress</h3>
+                <h3 className="font-bold text-gray-900">{t('welcome.step3Title' as TranslationKey)}</h3>
                 <p className="text-gray-600 text-sm">
-                  Use the 342 Montessori works to track each child's learning journey.
+                  {t('welcome.step3Desc' as TranslationKey)}
                 </p>
               </div>
             </div>
@@ -124,19 +125,19 @@ function WelcomeContent() {
             href="/teacher"
             className="bg-emerald-600 text-white text-center py-4 px-6 rounded-xl font-semibold hover:bg-emerald-700 transition"
           >
-            👩‍🏫 Open Teacher Portal
+            👩‍🏫 {t('welcome.openTeacherPortal' as TranslationKey)}
           </Link>
           <Link
             href="/admin/teacher-students"
             className="bg-white text-gray-700 text-center py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition border-2 border-gray-200"
           >
-            ⚙️ Admin Setup
+            ⚙️ {t('welcome.adminSetup' as TranslationKey)}
           </Link>
         </div>
 
         {/* Help */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          <p>Need help? Email us at <a href="mailto:support@montree.xyz" className="text-emerald-600 hover:underline">support@montree.xyz</a></p>
+          <p>{t('welcome.needHelp' as TranslationKey)} <a href="mailto:support@montree.xyz" className="text-emerald-600 hover:underline">support@montree.xyz</a></p>
         </div>
       </div>
     </div>

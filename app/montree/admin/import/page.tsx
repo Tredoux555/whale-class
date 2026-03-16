@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
 
 interface ImportResult {
   success: boolean;
@@ -25,6 +26,7 @@ interface Classroom {
 
 export default function ImportPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
   const [selectedClassroom, setSelectedClassroom] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -107,12 +109,12 @@ export default function ImportPage() {
 
   async function processFile(file: File) {
     if (!file.name.endsWith('.docx')) {
-      setError('Please upload a .docx file');
+      setError(t('import.pleaseUploadDocx' as TranslationKey));
       return;
     }
 
     if (!selectedClassroom) {
-      setError('Please select a classroom first');
+      setError(t('import.selectClassroomFirst' as TranslationKey));
       return;
     }
 
@@ -135,11 +137,11 @@ export default function ImportPage() {
       if (data.success) {
         setResult(data);
       } else {
-        setError(data.error || 'Import failed');
+        setError(data.error || t('import.importFailed' as TranslationKey));
       }
     } catch (err) {
       console.error('Import error:', err);
-      setError('Failed to import file');
+      setError(t('import.failedToImportFile' as TranslationKey));
     }
     
     setUploading(false);
@@ -160,18 +162,18 @@ export default function ImportPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link href="/montree/admin" className="text-emerald-400 hover:text-emerald-300 text-sm mb-2 inline-block">
-              ← Back to Admin
+              ← {t('import.backToAdmin' as TranslationKey)}
             </Link>
-            <h1 className="text-2xl font-bold text-white">📄 Import Weekly Plan</h1>
+            <h1 className="text-2xl font-bold text-white">📄 {t('import.title' as TranslationKey)}</h1>
             <p className="text-emerald-300/70 mt-1">
-              Upload your Chinese weekly plan to add students and their work progress
+              {t('import.subtitle' as TranslationKey)}
             </p>
           </div>
         </div>
 
         {/* Classroom Selector */}
         <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-4 mb-6">
-          <label className="block text-white/70 text-sm mb-2">Import to Classroom</label>
+          <label className="block text-white/70 text-sm mb-2">{t('import.importToClassroom' as TranslationKey)}</label>
           <select
             value={selectedClassroom}
             onChange={(e) => setSelectedClassroom(e.target.value)}
@@ -201,20 +203,20 @@ export default function ImportPage() {
           {uploading ? (
             <div className="flex flex-col items-center">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-400 border-t-transparent mb-4" />
-              <p className="text-lg font-medium text-white">Processing document...</p>
-              <p className="text-sm text-white/60">Parsing Chinese content with AI</p>
+              <p className="text-lg font-medium text-white">{t('import.processingDocument' as TranslationKey)}</p>
+              <p className="text-sm text-white/60">{t('import.parsingContent' as TranslationKey)}</p>
             </div>
           ) : (
             <>
               <div className="text-6xl mb-4">📋</div>
               <p className="text-xl font-medium text-white mb-2">
-                Drop your weekly plan here
+                {t('import.dropHere' as TranslationKey)}
               </p>
               <p className="text-white/60 mb-6">
-                .docx files with Chinese weekly assignments
+                {t('import.docxFiles' as TranslationKey)}
               </p>
               <label className="inline-block px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl cursor-pointer hover:shadow-lg hover:shadow-emerald-500/30 transition-all font-medium text-lg">
-                Choose File
+                {t('import.chooseFile' as TranslationKey)}
                 <input
                   type="file"
                   accept=".docx"
@@ -237,21 +239,21 @@ export default function ImportPage() {
         {result?.success && result.results && (
           <div className="bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-6 mb-6">
             <h3 className="text-xl font-bold text-emerald-300 mb-4">
-              ✅ Import Complete!
+              ✅ {t('import.importComplete' as TranslationKey)}
             </h3>
             
             <div className="grid grid-cols-3 gap-4 mb-6">
               <div className="bg-white/5 rounded-lg p-4 text-center">
                 <p className="text-3xl font-bold text-white">{result.results.childrenCreated}</p>
-                <p className="text-emerald-300/70 text-sm">New Students</p>
+                <p className="text-emerald-300/70 text-sm">{t('import.newStudents' as TranslationKey)}</p>
               </div>
               <div className="bg-white/5 rounded-lg p-4 text-center">
                 <p className="text-3xl font-bold text-white">{result.results.childrenUpdated}</p>
-                <p className="text-emerald-300/70 text-sm">Existing Students</p>
+                <p className="text-emerald-300/70 text-sm">{t('import.existingStudents' as TranslationKey)}</p>
               </div>
               <div className="bg-white/5 rounded-lg p-4 text-center">
                 <p className="text-3xl font-bold text-white">{result.results.worksAdded}</p>
-                <p className="text-emerald-300/70 text-sm">Works Added</p>
+                <p className="text-emerald-300/70 text-sm">{t('import.worksAdded' as TranslationKey)}</p>
               </div>
             </div>
 
@@ -263,11 +265,11 @@ export default function ImportPage() {
                 >
                   <div className="flex items-center gap-3">
                     <span className={`px-2 py-1 rounded text-xs ${child.isNew ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/10 text-white/70'}`}>
-                      {child.isNew ? 'NEW' : 'EXISTS'}
+                      {child.isNew ? t('import.new' as TranslationKey) : t('import.exists' as TranslationKey)}
                     </span>
                     <span className="text-white font-medium">{child.name}</span>
                   </div>
-                  <span className="text-emerald-300/70 text-sm">{child.worksCount} works</span>
+                  <span className="text-emerald-300/70 text-sm">{child.worksCount} {t('import.works' as TranslationKey)}</span>
                 </div>
               ))}
             </div>
@@ -277,13 +279,13 @@ export default function ImportPage() {
                 href="/montree/admin/students"
                 className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-center font-medium hover:shadow-lg hover:shadow-emerald-500/30 transition-all"
               >
-                View Students →
+                {t('import.viewStudents' as TranslationKey)} →
               </Link>
               <button
                 onClick={() => setResult(null)}
                 className="px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all"
               >
-                Import Another
+                {t('import.importAnother' as TranslationKey)}
               </button>
             </div>
           </div>

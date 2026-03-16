@@ -149,7 +149,7 @@ export default function PrincipalSetupPage() {
       });
 
       if (!response.body) {
-        throw new Error('No response body');
+        throw new Error(t('principal.setup.error.noResponseBody'));
       }
 
       const reader = response.body.getReader();

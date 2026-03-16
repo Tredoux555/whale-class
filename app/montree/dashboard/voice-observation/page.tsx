@@ -217,7 +217,7 @@ export default function VoiceObservationPage() {
                       <div>
                         <div className="text-sm font-medium text-gray-900">{h.session_date}</div>
                         <div className="text-xs text-gray-500">
-                          {Math.round((h.duration_seconds || 0) / 60)}min · {h.approved_count || 0} approved
+                          {Math.round((h.duration_seconds || 0) / 60)}min · {h.approved_count || 0} {t('voiceObs.approved') || 'approved'}
                         </div>
                       </div>
                       <span className={`text-xs px-2 py-1 rounded-full ${
@@ -277,7 +277,7 @@ export default function VoiceObservationPage() {
               {t('voiceObs.committed') || 'Observations Committed!'}
             </h2>
             <p className="text-gray-600 mb-6 text-sm">
-              Student progress has been updated. All audio and transcripts have been permanently deleted.
+              {t('voiceObs.committedDescription') || 'Student progress has been updated. All audio and transcripts have been permanently deleted.'}
             </p>
             <button
               onClick={handleNewSession}

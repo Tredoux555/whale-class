@@ -52,7 +52,7 @@ export default function TeacherRegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Registration failed');
+        throw new Error(data.error || t('validation.registrationFailed' as TranslationKey));
       }
 
       // Store session
@@ -82,10 +82,10 @@ export default function TeacherRegisterPage() {
             <span className="text-4xl">🌱</span>
           </div>
           <h1 className="text-3xl font-light text-white mb-2">
-            Welcome to <span className="font-semibold">Montree</span>
+            {t('register.welcomeTo' as TranslationKey)} <span className="font-semibold">Montree</span>
           </h1>
           <p className="text-emerald-300/70 text-sm">
-            Start your personal classroom trial
+            {t('register.startTrial' as TranslationKey)}
           </p>
 
           {/* Progress dots */}
@@ -100,12 +100,12 @@ export default function TeacherRegisterPage() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Your Name</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.yourName' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={teacherName}
                   onChange={(e) => setTeacherName(e.target.value)}
-                  placeholder="e.g. Sarah Johnson"
+                  placeholder={t('register.namePlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -113,17 +113,17 @@ export default function TeacherRegisterPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">School Name (Reference Only)</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.schoolName' as TranslationKey)}</label>
                 <input
                   type="text"
                   value={schoolName}
                   onChange={(e) => setSchoolName(e.target.value)}
-                  placeholder="e.g. Lincoln High School"
+                  placeholder={t('register.schoolPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
                 <p className="mt-2 text-emerald-400/60 text-xs">
-                  This is just for your reference and won't create a school account
+                  {t('register.schoolNameHint' as TranslationKey)}
                 </p>
               </div>
 
@@ -133,7 +133,7 @@ export default function TeacherRegisterPage() {
                 disabled={!teacherName.trim() || !schoolName.trim()}
                 className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
               >
-                Continue →
+                {t('common.continue' as TranslationKey)} →
               </button>
             </div>
           )}
@@ -142,12 +142,12 @@ export default function TeacherRegisterPage() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Email</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.email' as TranslationKey)}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="teacher@example.com"
+                  placeholder={t('register.emailPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   autoFocus
                   required
@@ -155,19 +155,19 @@ export default function TeacherRegisterPage() {
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Create Password</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.createPassword' as TranslationKey)}</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder={t('register.passwordPlaceholder' as TranslationKey)}
                   className="w-full p-4 bg-white/10 backdrop-blur border border-white/20 rounded-xl text-white placeholder-white/40 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 outline-none transition-all"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-emerald-300/80 text-sm mb-2">Confirm Password</label>
+                <label className="block text-emerald-300/80 text-sm mb-2">{t('register.confirmPassword' as TranslationKey)}</label>
                 <input
                   type="password"
                   value={confirmPassword}
@@ -190,14 +190,14 @@ export default function TeacherRegisterPage() {
                   onClick={() => setStep(1)}
                   className="px-6 py-4 bg-white/10 backdrop-blur border border-white/20 text-white font-semibold rounded-xl hover:bg-white/20 transition-all"
                 >
-                  ← Back
+                  ← {t('common.back' as TranslationKey)}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || !email || !password || !confirmPassword}
                   className="flex-1 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {loading ? 'Creating...' : 'Create Account'}
+                  {loading ? t('register.creating' as TranslationKey) : t('register.createAccount' as TranslationKey)}
                 </button>
               </div>
             </div>
@@ -207,25 +207,25 @@ export default function TeacherRegisterPage() {
         {/* Trial Info Banner */}
         <div className="mt-8 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
           <p className="text-emerald-300 text-sm text-center">
-            ✨ <span className="font-semibold">90-day trial</span> • Up to 30 students
+            ✨ <span className="font-semibold">{t('register.trialDuration' as TranslationKey)}</span> • {t('register.trialStudentLimit' as TranslationKey)}
           </p>
           <p className="text-emerald-300/60 text-xs text-center mt-2">
-            Convince your school to subscribe for full access!
+            {t('register.trialConvince' as TranslationKey)}
           </p>
         </div>
 
         {/* Links */}
         <div className="mt-8 text-center space-y-3">
           <p className="text-white/50 text-sm">
-            Registering your whole school?{' '}
+            {t('register.registerSchool' as TranslationKey)}{' '}
             <Link href="/montree/principal/register" className="text-emerald-400 hover:text-emerald-300 font-semibold">
-              Register as Principal instead
+              {t('register.registerAsPrincipal' as TranslationKey)}
             </Link>
           </p>
           <p className="text-white/50 text-sm">
-            Already have an account?{' '}
+            {t('register.alreadyHaveAccount' as TranslationKey)}{' '}
             <Link href="/montree/teacher/login" className="text-emerald-400 hover:text-emerald-300">
-              Sign in
+              {t('register.signIn' as TranslationKey)}
             </Link>
           </p>
         </div>

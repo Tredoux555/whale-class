@@ -126,13 +126,13 @@ export default function StudentsPage() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) throw new Error(t('admin.students.failedToSave'));
 
       await fetchData();
       closeModal();
     } catch (err) {
       console.error('Save error:', err);
-      alert(t('admin.students.failedToSave'));
+      alert(err instanceof Error ? err.message : t('admin.students.failedToSave'));
     } finally {
       setSaving(false);
     }
@@ -147,7 +147,7 @@ export default function StudentsPage() {
         headers: getHeaders(),
       });
 
-      if (!res.ok) throw new Error('Failed to delete');
+      if (!res.ok) throw new Error(t('admin.students.failedToDelete'));
 
       await fetchData();
     } catch (err) {
