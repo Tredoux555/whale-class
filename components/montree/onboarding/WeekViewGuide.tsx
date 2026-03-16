@@ -1,5 +1,5 @@
 // WeekViewGuide.tsx
-// 20-step onboarding guide for the child week view + full platform tour.
+// 18-step onboarding guide for the child week view + full platform tour.
 // Each step can have onAdvance (fires going forward) and onReverse (fires going backward).
 // This ensures Back button properly undoes actions like opening/closing modals.
 'use client';
@@ -159,15 +159,23 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 10: Progress tab (consolidated — includes gallery + progress + reports)
+    // Step 10: Gallery tab
     {
-      key: 'tab-progress',
-      target: '[data-guide="tab-progress"]',
-      message: t('guide.weekView.tabProgress'),
+      key: 'tab-gallery',
+      target: '[data-guide="tab-gallery"]',
+      message: t('guide.weekView.tabGallery' as any),
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 11: Guru (header nav)
+    // Step 11: Reports tab
+    {
+      key: 'tab-reports',
+      target: '[data-guide="tab-reports"]',
+      message: t('guide.weekView.tabReports' as any),
+      buttonText: t('guide.common.gotIt'),
+      showGPB: true,
+    },
+    // Step 12: Guru (header nav)
     {
       key: 'nav-guru',
       target: '[data-guide="nav-guru"]',
@@ -175,7 +183,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 14: Curriculum (header nav)
+    // Step 13: Curriculum (header nav)
     {
       key: 'nav-curriculum',
       target: '[data-guide="nav-curriculum"]',
@@ -183,7 +191,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 15: Inbox (envelope icon)
+    // Step 14: Inbox (envelope icon)
     {
       key: 'nav-inbox',
       target: '[data-guide="nav-inbox"]',
@@ -191,7 +199,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 16: Feedback button
+    // Step 15: Feedback button
     {
       key: 'feedback-btn',
       target: '[data-guide="feedback-btn"]',
@@ -199,7 +207,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 17: Student faces intro
+    // Step 16: Student faces intro
     {
       key: 'student-faces-intro',
       target: null,
@@ -207,7 +215,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.weekView.showMe'),
       showGPB: false,
     },
-    // Step 18: Home link — navigate to classroom and explain faces + labels
+    // Step 17: Home link — navigate to classroom and explain faces + labels
     {
       key: 'nav-home',
       target: '[data-guide="nav-home"]',

@@ -1,8 +1,14 @@
-# Handoff: Performance Audit + Tab Consolidation (Mar 16, 2026)
+# Handoff: Performance Audit + Tab Revert (Mar 16, 2026)
+
+## ⚠️ TAB CONSOLIDATION REVERTED
+
+The initial tab consolidation (4→2 tabs) was **reverted by user request**. User wanted Gallery and Reports tabs preserved. Current state: **3 tabs (Week / Gallery / Reports)**. Progress tab hidden from tab bar but route still accessible.
+
+Additionally, parent report page fixed: duplicate photos in `all_photos` grid filtered out when already shown inline with work cards.
 
 ## Session Summary
 
-Full performance audit of the Montree PWA app (user reported lag), followed by implementation of tab consolidation as first major fix.
+Full performance audit of the Montree PWA app (user reported lag), followed by tab consolidation attempt (reverted) and parent report photo fix.
 
 ## Part 1 — Deep Performance Audits (3 parallel audits, research only)
 
@@ -22,54 +28,51 @@ Full performance audit of the Montree PWA app (user reported lag), followed by i
 ### Audit C: Database Query Patterns
 - Covered in API audit above
 
-## Part 2 — Tab Consolidation Implementation (4 tabs -> 2 tabs)
+## Part 2 — Tab Revert + Parent Report Fix (current state)
 
 ### What Changed
 
-Consolidated the child week view from 4 tabs (Week / Gallery / Progress / Reports) down to 2 tabs (Week / Progress). The gallery page now serves as the unified Progress tab, incorporating photos + area progress bars.
+Initial consolidation (4→2 tabs) was reverted. Restored 3 visible tabs: Week / Gallery / Reports. Progress tab hidden from tab bar but route still functional. Parent report page fixed to prevent duplicate photos.
 
-### Files Modified (5)
+### Files Modified (6)
 
-1. **`app/montree/dashboard/[childId]/layout.tsx`** — Complete tab rewrite:
-   - `tabs` array reduced from 4 entries to 2 (Week + Progress)
-   - Progress tab href points to `/gallery` route
-   - `getActiveTab()` maps both `/gallery` and `/progress` to 'progress' tab ID
-   - Old routes (`/progress`, `/reports`, `/profile`, `/observations`) still functional but hidden from tab bar
+1. **`app/montree/dashboard/[childId]/layout.tsx`** — Restored 3 tabs:
+   - `tabs` array: Week + Gallery + Reports
+   - `getActiveTab()` handles `/gallery` → 'gallery', `/reports` → 'reports', `/progress` → 'progress'
+   - `data-guide` attributes: `tab-week`, `tab-gallery`, `tab-reports`
 
-2. **`app/montree/dashboard/[childId]/gallery/page.tsx`** — TDZ fix:
-   - Moved `useEffect` (lightbox index clamping) AFTER `filteredPhotos` useMemo declaration
-   - Was referencing `filteredPhotos` before it was declared — caused Temporal Dead Zone error
-   - Added progress data fetch (bar graph) to gallery page
+2. **`app/montree/dashboard/[childId]/gallery/page.tsx`** — TDZ fix preserved:
+   - `filteredPhotos` useMemo declared BEFORE useEffect that references it
+   - Comment header corrected to "Gallery"
+   - Progress bars/stats in gallery are ORIGINAL features (pre-consolidation), kept as-is
 
-3. **`components/montree/home/ShelfView.tsx`** — Navigation link update:
-   - Line ~556: Changed `/montree/dashboard/${childId}/progress` to `/montree/dashboard/${childId}/gallery`
+3. **`components/montree/home/ShelfView.tsx`** — Nav link correct:
+   - Line ~556: Points to `/montree/dashboard/${childId}/progress` (route, not tab)
 
-4. **`app/montree/dashboard/snap/page.tsx`** — Navigation link update:
-   - Line ~864: Changed "View Progress" link from `/progress` to `/gallery`
+4. **`app/montree/dashboard/snap/page.tsx`** — Nav link correct:
+   - Line ~864: Points to `/montree/dashboard/${resultChild.id}/progress` (route, not tab)
 
-5. **`components/montree/onboarding/WeekViewGuide.tsx`** — Stale reference cleanup:
-   - Removed `tab-gallery` step (Step 11) — tab no longer exists
-   - Removed `tab-reports` step (Step 12) — tab no longer exists
-   - `tab-progress` step remains and covers the consolidated Progress tab
+5. **`components/montree/onboarding/WeekViewGuide.tsx`** — Restored + cleaned:
+   - Restored `tab-gallery` step (Step 10) and `tab-reports` step (Step 11)
+   - Removed stale `tab-progress` step (Progress tab not in tab bar)
+   - Fixed step numbering comments (0-17, 18 steps total)
+   - Updated header comment from "20-step" to "18-step"
 
-### Architecture Notes
-
-- Old `/progress/page.tsx` and `/reports/page.tsx` still exist as files — accessible via direct URL but not in tab bar
-- The gallery page IS the Progress tab now — shows photos + area progress bars + AI photo insight
-- Reports are accessible from within the gallery/progress view (not a separate tab)
-- `data-guide="tab-progress"` attribute on the Progress tab works for onboarding
+6. **`app/montree/parent/report/[reportId]/page.tsx`** — Duplicate photo fix:
+   - `all_photos` grid now filters out photos already shown inline with work cards
+   - Builds Set of `photo_url` from `works_completed`, excludes matching URLs from `all_photos`
+   - If no extra photos remain after filtering, section is not rendered
 
 ### Build Audit Results
 
-3-pass audit across all 5 modified files:
-- Pass 1: Verified hook order in gallery page (TDZ fix correct)
-- Pass 2: Verified all navigation links updated, no stale /progress refs in components
-- Pass 3: Found and fixed WeekViewGuide stale tab-gallery/tab-reports references
-- Final: CLEAN — no remaining issues
+3 audit cycles across all 6 modified files:
+- Cycle 1: Fixed step numbering comments in WeekViewGuide (cosmetic). Verified all other files correct.
+- Cycle 2: Fixed "20-step" → "18-step" comment. Grep confirmed zero `tab-progress` references in codebase. CLEAN.
+- Cycle 3: Full re-read of all files. CLEAN — zero issues.
 
 ### Deploy
 
-Commit `912fb559` — pushed from Mac. Includes WeekViewGuide fix (1 file changed, 2 insertions, 18 deletions).
+⚠️ NOT YET PUSHED. Previous commit `912fb559` (consolidation) needs to be overwritten with revert changes. Push from Mac with VPN off.
 
 Note: VM disk was completely full (ENOSPC) throughout this session. All work done via Read/Write/Edit/Grep tools only — no Bash available.
 

@@ -129,21 +129,25 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ### Session Work (Mar 16, 2026)
 
-**Performance Audit + Tab Consolidation — AUDIT COMPLETE, FIRST FIX DEPLOYED (commit `912fb559`):**
+**Performance Audit + Tab Revert — AUDIT COMPLETE, NOT YET DEPLOYED:**
 
-Full deep performance audit of the Montree PWA (user reported lag). Three parallel audits ran: API routes (18 issues), PWA/frontend (25+ issues), database patterns. Then implemented first major fix: child view tab consolidation.
+Full deep performance audit of the Montree PWA (user reported lag). Three parallel audits ran: API routes (18 issues), PWA/frontend (25+ issues), database patterns. Initial tab consolidation (4→2 tabs) was REVERTED by user request — Gallery and Reports tabs are important and must remain visible.
 
-**Tab Consolidation (4 tabs -> 2 tabs) — DEPLOYED:**
-Consolidated child week view from 4 tabs (Week / Gallery / Progress / Reports) to 2 tabs (Week / Progress). Gallery page now serves as the unified Progress tab with photos + area progress bars + AI photo insight.
+**Tab Revert (reverted consolidation → restored 3 tabs: Week / Gallery / Reports):**
+User rejected the 4→2 tab consolidation. Restored original 3-tab layout. Progress tab hidden from tab bar but route still accessible via direct URL and nav links.
 
-**Files Modified (5):**
-1. `app/montree/dashboard/[childId]/layout.tsx` — 4 tabs -> 2 tabs, gallery route maps to 'progress' tab
-2. `app/montree/dashboard/[childId]/gallery/page.tsx` — TDZ fix (useEffect moved after filteredPhotos useMemo)
-3. `components/montree/home/ShelfView.tsx` — Nav link /progress -> /gallery
-4. `app/montree/dashboard/snap/page.tsx` — Nav link /progress -> /gallery
-5. `components/montree/onboarding/WeekViewGuide.tsx` — Removed stale tab-gallery + tab-reports onboarding steps
+**Parent Report Photo Fix:**
+Fixed duplicate photos in parent-facing report page. The `all_photos` grid was showing ALL photos including ones already displayed inline with work cards. Now filters out inline photos using a Set of URLs from `works_completed`.
 
-**Build Audit:** 3-pass audit, all CLEAN. Old routes (/progress, /reports) still functional via direct URL, just hidden from tab bar.
+**Files Modified (6):**
+1. `app/montree/dashboard/[childId]/layout.tsx` — Restored 3 tabs (week, gallery, reports), `getActiveTab()` handles all routes
+2. `app/montree/dashboard/[childId]/gallery/page.tsx` — TDZ fix preserved (useEffect after filteredPhotos useMemo), comment header corrected
+3. `components/montree/home/ShelfView.tsx` — Nav link correctly points to `/progress` (route, not tab)
+4. `app/montree/dashboard/snap/page.tsx` — Nav link correctly points to `/progress` (route, not tab)
+5. `components/montree/onboarding/WeekViewGuide.tsx` — Restored tab-gallery + tab-reports steps, removed stale tab-progress step, fixed step numbering (18 steps total)
+6. `app/montree/parent/report/[reportId]/page.tsx` — Duplicate photo filter: builds Set of inline photo URLs, filters from all_photos grid
+
+**Build Audit:** 3 audit cycles, all CLEAN. No stale `tab-progress` references in codebase.
 
 **Performance Audit Summary (not yet implemented — backlog for future sessions):**
 
@@ -167,8 +171,8 @@ Consolidated child week view from 4 tabs (Week / Gallery / Progress / Reports) t
 
 **VM disk full** throughout session — only Read/Write/Edit/Grep tools worked. No Bash available.
 
-**Deploy:** Committed `912fb559` from Mac. Push required VPN off (Astrill SSL issue).
-**Handoff:** `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md`
+**Deploy:** ⚠️ NOT YET PUSHED. Previous commit `912fb559` (tab consolidation) was REVERTED. New changes need fresh commit + push. Push requires VPN off (Astrill SSL issue).
+**Handoff:** `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` (audit backlog still valid, tab section outdated — revert applied)
 
 ---
 
