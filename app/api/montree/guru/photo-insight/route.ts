@@ -181,6 +181,11 @@ export async function POST(request: NextRequest) {
       // IMPORTANT: auto_updated is ALWAYS false on cache hits — the progress update already
       // happened on the original analysis. Returning true would cause the client to fire
       // onProgressUpdate again on every remount (duplicate refetches, potential UI flicker).
+      // NOTE (MEDIUM-004): Visual memory is NOT re-injected on cache hits — the identification
+      // was made with whatever visual memory existed at original analysis time. If new visual
+      // memory was added (via correction) after the cache entry was created, the cached result
+      // may be stale. This is mitigated by: (1) Scenario A cache bust after 5min, (2) Scenario D
+      // staleness refresh after 5min. For truly fresh re-analysis, user can retry.
       const snapshot = (effectiveCached.context_snapshot as Record<string, unknown>) || {};
       const cachedWorkName = (snapshot.identified_work_name as string) || null;
       const cachedArea = (snapshot.identified_area as string) || null;
@@ -523,7 +528,9 @@ NOTE: These descriptions were learned from previous photos. Use them to help ide
             supabase.rpc('increment_visual_memory_used', {
               p_classroom_id: classroomId,
               p_work_names: memoryNames,
-            }).catch(() => {}); // Non-fatal — analytics only
+            }).catch((err) => {
+              console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', err);
+            });
           }
         }
       }
@@ -844,7 +851,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
           },
           {
             type: 'text',
-            text: `Child: ${childName}, age ${childAge}\n${worksContext}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level.`,
+            text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level.\n\n${worksContext}`,
           },
         ],
       }],
@@ -1097,7 +1104,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
     // Fire-and-forget: don't await, don't block the response.
     if (
       finalWorkKey && finalWorkKey.startsWith('custom_') &&
-      matchScore >= 0.7 && input.confidence >= 0.7 &&
+      matchScore >= 0.9 && input.confidence >= 0.9 &&
       classroomId && photoUrl && anthropic
     ) {
       // Check if visual memory already exists for this work (cheap query)
@@ -1110,6 +1117,15 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
         .then(({ data: existingMemory }) => {
           if (!existingMemory) {
             // No visual memory yet — generate from this photo using Haiku
+            // LOW-001: Validate photoUrl before sending to Haiku
+            if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
+              console.warn('[VisualMemory] Invalid photoUrl for first-capture, skipping:', photoUrl);
+              return;
+            }
+            // Add timeout to first-capture Haiku call (same pattern as corrections)
+            const fcAbort = new AbortController();
+            const fcTimeout = setTimeout(() => fcAbort.abort(), 45000);
+            const startMs = Date.now();
             return anthropic!.messages.create({
               model: HAIKU_MODEL,
               max_tokens: 150,
@@ -1121,7 +1137,9 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
                   { type: 'text', text: `This is the Montessori work "${finalWorkName}" (area: ${finalArea || 'unknown'}). Describe the physical materials visible.` },
                 ],
               }],
-            }).then((msg) => {
+            }, { signal: fcAbort.signal }).then((msg) => {
+              // LOW-004: Log Haiku latency for monitoring
+              console.log(`[VisualMemory] First-capture Haiku latency: ${Date.now() - startMs}ms`);
               let desc = '';
               for (const block of msg.content) {
                 if (block.type === 'text') { desc = block.text.trim().slice(0, 500); break; }
@@ -1147,6 +1165,14 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
                     else console.log(`[VisualMemory] First-capture stored for custom work "${finalWorkName}"`);
                   });
               }
+            }).catch((err) => {
+              if (fcAbort.signal.aborted) {
+                console.error('[VisualMemory] First-capture Haiku timed out after 45s — skipping');
+                return;
+              }
+              throw err; // Re-throw non-timeout errors to outer catch
+            }).finally(() => {
+              clearTimeout(fcTimeout);
             });
           }
         })
