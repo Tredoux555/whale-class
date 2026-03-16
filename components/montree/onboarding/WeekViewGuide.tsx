@@ -159,7 +159,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 10: Progress tab
+    // Step 10: Progress tab (consolidated — includes gallery + progress + reports)
     {
       key: 'tab-progress',
       target: '[data-guide="tab-progress"]',
@@ -167,23 +167,7 @@ export default function WeekViewGuide({
       buttonText: t('guide.common.gotIt'),
       showGPB: true,
     },
-    // Step 11: Gallery tab
-    {
-      key: 'tab-gallery',
-      target: '[data-guide="tab-gallery"]',
-      message: t('guide.weekView.tabGallery'),
-      buttonText: t('guide.common.gotIt'),
-      showGPB: true,
-    },
-    // Step 12: Reports tab
-    {
-      key: 'tab-reports',
-      target: '[data-guide="tab-reports"]',
-      message: t('guide.weekView.tabReports'),
-      buttonText: t('guide.common.gotIt'),
-      showGPB: true,
-    },
-    // Step 13: Guru (header nav)
+    // Step 11: Guru (header nav)
     {
       key: 'nav-guru',
       target: '[data-guide="nav-guru"]',
