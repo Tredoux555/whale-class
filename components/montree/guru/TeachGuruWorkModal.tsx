@@ -7,7 +7,7 @@
 //   Mode 3: Review AI-generated content before saving
 // Triggered from PhotoInsightButton Scenario A (unknown) or AMBER reject (wrong match)
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
@@ -25,6 +25,10 @@ interface TeachGuruWorkModalProps {
 }
 
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+
+// Module-level curriculum cache — survives component remounts
+// Key: classroomId → curriculum data. Prevents 20s reload on every modal open.
+const curriculumCache = new Map<string, Record<string, CurriculumWork[]>>();
 
 interface CurriculumWork {
   id: string;
@@ -97,39 +101,50 @@ export default function TeachGuruWorkModal({
     }
   }, [isOpen, initialWorkName, initialArea]);
 
-  // Fetch curriculum on first open
+  // Fetch curriculum on first open — uses module-level cache to avoid 20s reload on every modal open
   useEffect(() => {
-    if (isOpen && !curriculumLoaded && classroomId) {
-      setLoadingCurriculum(true);
-      montreeApi(`/api/montree/curriculum?classroom_id=${classroomId}`)
-        .then(async (res) => {
-          if (!mountedRef.current) return;
-          if (res.ok) {
-            const data = await res.json();
-            // data.byArea is a Record<string, work[]>
-            const byArea: Record<string, CurriculumWork[]> = {};
-            if (data.byArea) {
-              for (const [areaKey, works] of Object.entries(data.byArea)) {
-                byArea[areaKey] = (works as any[]).map(w => ({
-                  id: w.id,
-                  name: w.name,
-                  name_chinese: w.name_chinese,
-                  area_key: w.area?.area_key || areaKey,
-                  sequence: w.sequence,
-                }));
-              }
-            }
-            setCurriculum(byArea);
-            setCurriculumLoaded(true);
-          }
-        })
-        .catch((err) => {
-          console.error('[TeachGuruWorkModal] Curriculum fetch error:', err);
-        })
-        .finally(() => {
-          if (mountedRef.current) setLoadingCurriculum(false);
-        });
+    if (!isOpen || !classroomId) return;
+
+    // Check module-level cache first (persists across remounts)
+    const cached = curriculumCache.get(classroomId);
+    if (cached) {
+      setCurriculum(cached);
+      setCurriculumLoaded(true);
+      return;
     }
+
+    if (curriculumLoaded) return;
+
+    setLoadingCurriculum(true);
+    montreeApi(`/api/montree/curriculum?classroom_id=${classroomId}`)
+      .then(async (res) => {
+        if (!mountedRef.current) return;
+        if (res.ok) {
+          const data = await res.json();
+          const byArea: Record<string, CurriculumWork[]> = {};
+          if (data.byArea) {
+            for (const [areaKey, works] of Object.entries(data.byArea)) {
+              byArea[areaKey] = (works as any[]).map(w => ({
+                id: w.id,
+                name: w.name,
+                name_chinese: w.name_chinese,
+                area_key: w.area?.area_key || areaKey,
+                sequence: w.sequence,
+              }));
+            }
+          }
+          // Store in module-level cache + component state
+          curriculumCache.set(classroomId, byArea);
+          setCurriculum(byArea);
+          setCurriculumLoaded(true);
+        }
+      })
+      .catch((err) => {
+        console.error('[TeachGuruWorkModal] Curriculum fetch error:', err);
+      })
+      .finally(() => {
+        if (mountedRef.current) setLoadingCurriculum(false);
+      });
   }, [isOpen, curriculumLoaded, classroomId]);
 
   useEffect(() => {
@@ -140,15 +155,23 @@ export default function TeachGuruWorkModal({
   }, []);
 
   // Handle selecting a work from curriculum picker
+  // AbortController + 30s timeout prevents hang when API is slow
   const handlePickWork = useCallback(async (work: CurriculumWork) => {
     const areaKey = work.area_key || browseArea || 'practical_life';
     setSelectingWork(true);
 
+    // Create AbortController for this pick operation — 30s hard timeout
+    const pickAbort = new AbortController();
+    const timeoutId = setTimeout(() => pickAbort.abort(), 30000);
+
     try {
-      // 1. Record correction (original was wrong, this work is right)
+      // Run both API calls in parallel (neither depends on the other)
+      const promises: Promise<void>[] = [];
+
       if (childId) {
-        try {
-          await montreeApi(`/api/montree/guru/corrections`, {
+        // 1. Record correction (non-fatal — allSettled swallows errors)
+        promises.push(
+          montreeApi(`/api/montree/guru/corrections`, {
             method: 'POST',
             body: JSON.stringify({
               child_id: childId,
@@ -159,16 +182,15 @@ export default function TeachGuruWorkModal({
               corrected_area: areaKey,
               correction_type: 'work_mismatch',
             }),
-          });
-        } catch (err) {
-          console.error('[TeachGuruWorkModal] Correction error (non-fatal):', err);
-        }
-      }
+            signal: pickAbort.signal,
+          }).then(() => {}).catch((err) => {
+            console.error('[TeachGuruWorkModal] Correction error (non-fatal):', err);
+          })
+        );
 
-      // 2. Update progress for the correct work
-      if (childId) {
-        try {
-          await montreeApi(`/api/montree/progress/update`, {
+        // 2. Update progress (non-fatal — allSettled swallows errors)
+        promises.push(
+          montreeApi(`/api/montree/progress/update`, {
             method: 'POST',
             body: JSON.stringify({
               child_id: childId,
@@ -177,11 +199,16 @@ export default function TeachGuruWorkModal({
               status: 'practicing',
               notes: `[Smart Capture — Corrected] Photo originally identified as "${initialWorkName}"`,
             }),
-          });
-        } catch (err) {
-          console.error('[TeachGuruWorkModal] Progress update error (non-fatal):', err);
-        }
+            signal: pickAbort.signal,
+          }).then(() => {}).catch((err) => {
+            console.error('[TeachGuruWorkModal] Progress update error (non-fatal):', err);
+          })
+        );
       }
+
+      // Wait for both — allSettled never rejects, individual errors already logged
+      await Promise.allSettled(promises);
+      clearTimeout(timeoutId);
 
       if (!mountedRef.current) return;
 
@@ -190,7 +217,15 @@ export default function TeachGuruWorkModal({
       }
       onClose();
     } catch (err) {
+      // Safety net — should not reach here with allSettled, but guard against unexpected throws
+      clearTimeout(timeoutId);
       console.error('[TeachGuruWorkModal] Pick work error:', err);
+      // Still close modal — don't leave user stuck
+      if (!mountedRef.current) return;
+      if (onWorkSaved) {
+        onWorkSaved({ id: work.id, name: work.name, area: areaKey });
+      }
+      onClose();
     } finally {
       if (mountedRef.current) setSelectingWork(false);
     }
@@ -305,10 +340,8 @@ export default function TeachGuruWorkModal({
     }
   }, [content, saving, workName, selectedArea, classroomId, teacherPrompt, childId, mediaId, initialWorkName, initialArea, onWorkSaved, onClose]);
 
-  if (!isOpen) return null;
-
-  // Filter works by search query
-  const getFilteredWorks = (areaKey: string) => {
+  // Memoized filter function — prevents full recalculation + DOM reflow on every render
+  const getFilteredWorks = useCallback((areaKey: string) => {
     const works = curriculum[areaKey] || curriculum[areaKey === 'mathematics' ? 'math' : areaKey] || [];
     if (!searchQuery.trim()) return works;
     const q = searchQuery.toLowerCase();
@@ -316,12 +349,17 @@ export default function TeachGuruWorkModal({
       w.name?.toLowerCase().includes(q) ||
       w.name_chinese?.toLowerCase().includes(q)
     );
-  };
+  }, [curriculum, searchQuery]);
 
-  // Total works count for search across all areas
-  const allFilteredWorks = searchQuery.trim()
-    ? AREA_ORDER.flatMap(area => getFilteredWorks(area).map(w => ({ ...w, area_key: w.area_key || area })))
-    : [];
+  // Memoized cross-area search results — only recalculates when search/curriculum changes
+  const allFilteredWorks = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return AREA_ORDER.flatMap(area =>
+      getFilteredWorks(area).map(w => ({ ...w, area_key: w.area_key || area }))
+    );
+  }, [searchQuery, getFilteredWorks]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">

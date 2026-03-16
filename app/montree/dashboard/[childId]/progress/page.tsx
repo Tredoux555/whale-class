@@ -12,6 +12,7 @@ import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
+import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
 interface ProgressItem {
@@ -348,7 +349,14 @@ export default function ProgressPage() {
           mediaId={teachModalData.mediaId}
           classroomId={session?.classroom?.id || ''}
           childId={childId}
-          onWorkSaved={() => { setTeachModalData(null); debouncedFetchAll(); }}
+          onWorkSaved={(work) => {
+            // Update the photo-insight-store so the gallery/review shows the corrected work
+            if (teachModalData) {
+              updateEntryAfterCorrection(teachModalData.mediaId, childId, work.name, work.area);
+            }
+            setTeachModalData(null);
+            debouncedFetchAll();
+          }}
         />
       )}
 
