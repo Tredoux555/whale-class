@@ -11,13 +11,22 @@ import { useI18n } from '@/lib/montree/i18n/context';
 import { compressImage } from '@/lib/montree/cache';
 import VoiceNoteButton from '@/components/montree/guru/VoiceNoteButton';
 
-// TTS playback hook — manages audio state per message
+// TTS playback hook — reuses a single Audio element to avoid GC pressure
 function useTTS() {
   const { t } = useI18n();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const currentUrlRef = useRef<string | null>(null);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+
+  // Lazily create and reuse a single Audio element
+  const getAudio = useCallback(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+    return audioRef.current;
+  }, []);
 
   const stop = useCallback(() => {
     // Cancel any pending fetch
@@ -25,11 +34,16 @@ function useTTS() {
       abortRef.current.abort();
       abortRef.current = null;
     }
-    // Stop any playing audio
+    // Stop any playing audio (reuse element, don't destroy)
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current.src = '';
-      audioRef.current = null;
+      audioRef.current.removeAttribute('src');
+      audioRef.current.load(); // Reset internal state
+    }
+    // Revoke previous blob URL
+    if (currentUrlRef.current) {
+      URL.revokeObjectURL(currentUrlRef.current);
+      currentUrlRef.current = null;
     }
     setPlayingId(null);
     setLoadingId(null);
@@ -69,21 +83,26 @@ function useTTS() {
       if (controller.signal.aborted) return;
 
       const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
+      currentUrlRef.current = url;
+      const audio = getAudio();
 
       audio.onended = () => {
-        URL.revokeObjectURL(url);
+        if (currentUrlRef.current === url) {
+          URL.revokeObjectURL(url);
+          currentUrlRef.current = null;
+        }
         setPlayingId(null);
-        audioRef.current = null;
       };
       audio.onerror = () => {
-        URL.revokeObjectURL(url);
+        if (currentUrlRef.current === url) {
+          URL.revokeObjectURL(url);
+          currentUrlRef.current = null;
+        }
         setPlayingId(null);
         setLoadingId(null);
-        audioRef.current = null;
       };
 
-      audioRef.current = audio;
+      audio.src = url;
       abortRef.current = null;
       setLoadingId(null);
       setPlayingId(messageId);
@@ -93,7 +112,7 @@ function useTTS() {
       setLoadingId(null);
       toast.error(t('home.portal.couldNotGenerateSpeech'));
     }
-  }, [playingId, stop]);
+  }, [playingId, stop, getAudio]);
 
   // Cleanup on unmount
   useEffect(() => {

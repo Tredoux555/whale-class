@@ -25,9 +25,10 @@ interface ChildAccessResult {
   classroomId?: string;
 }
 
-// Cache to avoid repeated DB lookups within the same request lifecycle
-// Key: `${childId}:${schoolId}`, Value: result
-const accessCache = new Map<string, ChildAccessResult>();
+// Cache with TTL to avoid repeated DB lookups
+// Key: `${childId}:${schoolId}`, Value: { result, expiresAt }
+const CACHE_TTL_MS = 30_000; // 30 seconds
+const accessCache = new Map<string, { result: ChildAccessResult; expiresAt: number }>();
 
 /**
  * Verify that a child belongs to a classroom within the given school.
@@ -47,7 +48,8 @@ export async function verifyChildBelongsToSchool(
 
   const cacheKey = `${childId}:${schoolId}`;
   const cached = accessCache.get(cacheKey);
-  if (cached) return cached;
+  if (cached && cached.expiresAt > Date.now()) return cached.result;
+  if (cached) accessCache.delete(cacheKey); // Expired — remove stale entry
 
   try {
     const supabase = getSupabase();
@@ -62,7 +64,7 @@ export async function verifyChildBelongsToSchool(
 
     if (error || !data) {
       const result = { allowed: false };
-      accessCache.set(cacheKey, result);
+      accessCache.set(cacheKey, { result, expiresAt: Date.now() + CACHE_TTL_MS });
       return result;
     }
 
@@ -70,7 +72,7 @@ export async function verifyChildBelongsToSchool(
       allowed: true,
       classroomId: data.classroom_id,
     };
-    accessCache.set(cacheKey, result);
+    accessCache.set(cacheKey, { result, expiresAt: Date.now() + CACHE_TTL_MS });
     return result;
   } catch {
     return { allowed: false };

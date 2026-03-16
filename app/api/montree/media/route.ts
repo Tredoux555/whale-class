@@ -48,32 +48,30 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Failed to fetch media' }, { status: 500 });
       }
 
-      // PARALLEL: Get curriculum works (moved inside, runs in parallel on second Promise.all)
-      const workIdToInfo = new Map<string, { name: string; area: string }>();
-      if (childData?.classroom_id) {
-        const { data: curriculumWorks } = await supabase
-          .from('montree_classroom_curriculum_works')
-          .select('id, name, area_id, area:montree_classroom_curriculum_areas!area_id(area_key)')
-          .eq('classroom_id', childData.classroom_id);
-
-        for (const w of curriculumWorks || []) {
-          const areaKey = (w as any).area?.area_key || 'other';
-          workIdToInfo.set(w.id, { name: w.name, area: areaKey });
-        }
-      }
-
+      // PARALLEL: Curriculum works + group media fetched concurrently (both independent)
       const groupMediaIds = (groupLinks || []).map((link: { media_id: string }) => link.media_id);
 
-      let groupMedia: Array<Record<string, unknown>> = [];
-      if (groupMediaIds.length > 0) {
-        const { data: groupMediaData } = await supabase
-          .from('montree_media')
-          .select('*')
-          .in('id', groupMediaIds)
-          .order('captured_at', { ascending: false });
+      const [curriculumResult, groupMediaResult] = await Promise.all([
+        childData?.classroom_id
+          ? supabase.from('montree_classroom_curriculum_works')
+              .select('id, name, area_id, area:montree_classroom_curriculum_areas!area_id(area_key)')
+              .eq('classroom_id', childData.classroom_id)
+          : Promise.resolve({ data: null }),
+        groupMediaIds.length > 0
+          ? supabase.from('montree_media')
+              .select('*')
+              .in('id', groupMediaIds)
+              .order('captured_at', { ascending: false })
+          : Promise.resolve({ data: null }),
+      ]);
 
-        groupMedia = groupMediaData || [];
+      const workIdToInfo = new Map<string, { name: string; area: string }>();
+      for (const w of curriculumResult.data || []) {
+        const areaKey = (w as any).area?.area_key || 'other';
+        workIdToInfo.set(w.id, { name: w.name, area: areaKey });
       }
+
+      const groupMedia: Array<Record<string, unknown>> = groupMediaResult.data || [];
 
       // Combine and deduplicate by ID
       const mediaMap = new Map();
