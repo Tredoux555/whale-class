@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
@@ -59,6 +59,34 @@ export default function ParentReportPage() {
   const [lightboxSrc, setLightboxSrc] = useState('');
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
+  const loadReport = useCallback(async () => {
+    if (!reportId) {
+      return; // Wait until reportId is available
+    }
+
+    try {
+      const res = await fetch(`/api/montree/parent/report/${reportId}?locale=${locale}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Failed to load report');
+        return;
+      }
+
+      // Null safety: ensure child data exists
+      if (data.report && !data.report.child) {
+        data.report.child = { name: 'Child', nickname: null };
+      }
+
+      setReport(data.report);
+    } catch (err) {
+      console.error('Failed to load report:', err);
+      setError(t('common.connectionError') || 'Connection error');
+    } finally {
+      setLoading(false);
+    }
+  }, [reportId, locale, t]);
+
   useEffect(() => {
     // Check session
     const sessionStr = localStorage.getItem('montree_parent_session');
@@ -68,29 +96,7 @@ export default function ParentReportPage() {
     }
 
     loadReport();
-  }, [reportId, router]);
-
-  const loadReport = async () => {
-    if (!reportId) {
-      return; // Wait until reportId is available
-    }
-
-    try {
-      const res = await fetch(`/api/montree/parent/report/${reportId}?locale=${locale}`);
-      const data = await res.json();
-      
-      if (!res.ok) {
-        setError(data.error || 'Failed to load report');
-        return;
-      }
-      
-      setReport(data.report);
-    } catch (err) {
-      setError(t('common.connectionError'));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [reportId, router, loadReport]);
 
   const areaEmoji: Record<string, string> = {
     practical_life: '🧹',
@@ -122,7 +128,7 @@ export default function ParentReportPage() {
     }
     // Last resort: use created_at
     const created = new Date(report.created_at);
-    const weekOf = t('parentReport.weekOf' as any);
+    const weekOf = t('parentReport.weekOf');
     return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
   };
 
@@ -151,7 +157,7 @@ export default function ParentReportPage() {
     );
   }
 
-  const childName = report.child.nickname || report.child.name;
+  const childName = report.child?.nickname || report.child?.name || '';
 
   // Download a photo by fetching as blob and triggering save
   const downloadPhoto = async (url: string, name: string) => {
@@ -259,10 +265,10 @@ export default function ParentReportPage() {
                     work.status === 'documented' ? 'bg-purple-100 text-purple-700' :
                     'bg-amber-100 text-amber-700'
                   }`}>
-                    {work.status === 'mastered' ? t('parentReport.statusMastered' as any) :
-                     work.status === 'practicing' ? t('parentReport.statusPracticing' as any) :
-                     work.status === 'documented' ? t('parentReport.statusDocumented' as any) :
-                     t('parentReport.statusIntroduced' as any)}
+                    {work.status === 'mastered' ? t('parentReport.statusMastered') :
+                     work.status === 'practicing' ? t('parentReport.statusPracticing') :
+                     work.status === 'documented' ? t('parentReport.statusDocumented') :
+                     t('parentReport.statusIntroduced')}
                   </span>
                   <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
                 </div>
@@ -311,8 +317,8 @@ export default function ParentReportPage() {
                   <p className="text-gray-600 text-sm">
                     {areaEmoji[work.area] || '📌'}
                     {locale === 'zh'
-                      ? `您的孩子在${t(`area.${work.area}` as any) || work.area.replace('_', ' ')}领域进行了练习。`
-                      : `Your child practiced this ${t(`area.${work.area}` as any) || work.area.replace('_', ' ')} activity.`}
+                      ? `您的孩子在${t(`area.${work.area}`) || work.area.replace('_', ' ')}领域进行了练习。`
+                      : `Your child practiced this ${t(`area.${work.area}`) || work.area.replace('_', ' ')} activity.`}
                   </p>
                 )}
               </div>

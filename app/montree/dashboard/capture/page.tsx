@@ -312,7 +312,7 @@ function CaptureContent() {
         <div className="relative z-10 flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-400 border-t-transparent" />
           <p className="text-white text-lg font-medium">
-            {t('capture.uploading') || 'Uploading video...'}
+            {t('capture.uploading')}
           </p>
         </div>
       </div>
@@ -356,10 +356,10 @@ function CaptureContent() {
       {/* Header */}
       <div className="relative z-10 px-4 pt-12 pb-3">
         <h2 className="text-white text-xl font-bold text-center">
-          {t('capture.whoIsThis') || 'Who is this?'}
+          {t('capture.whoIsThis')}
         </h2>
         <p className="text-white/60 text-sm text-center mt-1">
-          {t('capture.tagChildHint') || 'Tap to tag children in this photo'}
+          {t('capture.tagChildHint')}
         </p>
       </div>
 
@@ -425,17 +425,17 @@ function CaptureContent() {
           `}
         >
           {selectedChildIds.length === 0
-            ? (t('capture.selectChild') || 'Select a child')
+            ? t('capture.selectChild')
             : selectedChildIds.length === 1
-              ? `✓ ${t('capture.save') || 'Save'}`
-              : `✓ ${(t('capture.saveForCount') || 'Save for {count} children').replace('{count}', String(selectedChildIds.length))}`
+              ? `✓ ${t('capture.save')}`
+              : `✓ ${t('capture.saveForCount').replace('{count}', String(selectedChildIds.length))}`
           }
         </button>
         <button
           onClick={handleSkipTagging}
           className="w-full py-3 text-white/50 text-sm font-medium"
         >
-          {t('capture.skipTagging') || 'Skip — save without tagging'}
+          {t('capture.skipTagging')}
         </button>
       </div>
     </div>

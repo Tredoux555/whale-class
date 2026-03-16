@@ -230,9 +230,12 @@ export async function GET(
         created_at, child_id, classroom_id, content
       `)
       .eq('id', reportId)
-      .single();
+      .maybeSingle();
 
-    if (reportError) throw reportError;
+    if (reportError) {
+      console.error('Report lookup error:', reportError.message);
+      throw reportError;
+    }
     if (!report) {
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
@@ -247,9 +250,16 @@ export async function GET(
       .from('montree_children')
       .select('name, nickname, classroom_id')
       .eq('id', report.child_id)
-      .single();
+      .maybeSingle();
 
-    if (childError) throw childError;
+    if (childError) {
+      console.error('Child lookup error:', childError.message);
+      throw childError;
+    }
+
+    if (!child) {
+      return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+    }
 
     const classroomId = report.classroom_id || child?.classroom_id;
 

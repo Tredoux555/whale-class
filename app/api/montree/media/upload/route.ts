@@ -144,19 +144,45 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    // If group photo, link to multiple children
+    // If group photo, link to multiple children via junction table
+    // AND set child_id on the media record to the first child (ensures it shows in direct queries)
     if (child_ids && child_ids.length > 0) {
       const childLinks = child_ids.map((cid: string) => ({
         media_id: media.id,
         child_id: cid
       }));
-      
-      await supabase.from('montree_media_children').insert(childLinks);
+
+      const { error: linkError } = await supabase.from('montree_media_children').insert(childLinks);
+
+      if (linkError) {
+        console.error('Group photo link error:', linkError.message, linkError.code);
+        // Don't fail the whole upload — media is saved, just links failed
+        // Return success but flag the issue
+        return NextResponse.json({
+          success: true,
+          media,
+          warning: 'Photo saved but group tagging partially failed'
+        });
+      }
+
+      // Also set child_id on the media record to the first child
+      // This ensures the photo appears in direct child_id queries (not just junction table)
+      if (!child_id && child_ids.length > 0) {
+        const { error: updateError } = await supabase
+          .from('montree_media')
+          .update({ child_id: child_ids[0] })
+          .eq('id', media.id);
+
+        if (updateError) {
+          console.error('Group photo child_id update error:', updateError.message);
+          // Non-fatal — photo is saved and junction links exist, just direct query fallback failed
+        }
+      }
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      media 
+    return NextResponse.json({
+      success: true,
+      media
     });
 
   } catch (error) {

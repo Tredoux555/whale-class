@@ -597,11 +597,11 @@ export default function GalleryPage() {
         <div className="flex gap-2 overflow-x-auto pb-1">
           <button
             onClick={() => setSelectedArea(null)}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors ${
-              !selectedArea ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors border-2 ${
+              !selectedArea ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
             }`}
           >
-            {t('common.all' as any) || 'All'}
+            {t('common.all')}
           </button>
           {AREA_ORDER.map(area => {
             const config = AREA_CONFIG[area];
@@ -612,10 +612,10 @@ export default function GalleryPage() {
               <button
                 key={area}
                 onClick={() => setSelectedArea(isActive ? null : area)}
-                className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 border-2 ${
                   isActive
-                    ? 'bg-emerald-100 text-emerald-800 ring-2 ring-emerald-400'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-400'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
                 }`}
               >
                 <AreaBadge area={area} size="xs" />
