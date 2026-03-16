@@ -50,23 +50,20 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
   // Determine active tab
   const getActiveTab = () => {
+    if (pathname.endsWith('/gallery')) return 'progress'; // gallery route = Progress tab
     if (pathname.endsWith('/progress')) return 'progress';
     if (pathname.endsWith('/profile')) return 'profile';
     if (pathname.endsWith('/observations')) return 'observations';
-    if (pathname.endsWith('/gallery')) return 'gallery';
-    if (pathname.endsWith('/reports')) return 'reports';
     return 'week';
   };
   const activeTab = getActiveTab();
 
-  // Visible tabs - Profile & Observations hidden but routes still work
+  // Visible tabs — consolidated: Week + Progress (gallery-based)
+  // Hidden but functional: /profile, /observations, /progress (old)
   const tabs = [
     { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
-    { id: 'gallery', label: `📸 ${t('nav.review' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
-    { id: 'progress', label: `📊 ${t('nav.progress' as any) || 'Progress'}`, href: `/montree/dashboard/${childId}/progress` },
-    { id: 'reports', label: `📄 ${t('nav.reports' as any)}`, href: `/montree/dashboard/${childId}/reports` },
+    { id: 'progress', label: `📸 ${t('nav.progress' as any) || 'Progress'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
-  // Hidden but functional: /profile, /observations
 
   // Don't show loading spinner - render immediately with fallbacks
   if (!session) {
