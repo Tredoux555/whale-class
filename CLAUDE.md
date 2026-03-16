@@ -102,13 +102,77 @@ Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for t
 
 Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
 
-### Story Vault Image Viewer (Priority #9 — Deferred)
+### Performance Optimization Backlog (Priority #9 — From Mar 16 Audit)
+
+**Status:** Full audit complete. Tab consolidation deployed. Remaining fixes listed in priority order.
+**Handoff:** `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md`
+**Estimated total:** ~10-12 hours for all issues.
+
+**Highest impact (do first):**
+1. Add Cache-Control headers to all API GET routes (2-3h) — immediate 2-4x dashboard speed
+2. Parallelize sequential DB queries in progress/media/guru routes with Promise.all (1.5h)
+3. Fix progress/summary double-fetch + O(N^2) loop (45min)
+
+**Component-level fixes:**
+4. DashboardHeader: consolidate 2 API calls into 1 (30min)
+5. ShelfView: paginate curriculum search, add debounce (30min)
+6. Child Week Page: consolidate 9+ state vars into useReducer (1h)
+7. verifyChildBelongsToSchool: add 30s TTL to cache (15min)
+
+### Story Vault Image Viewer (Priority #10 — Deferred)
 
 **Handoff:** `docs/HANDOFF_VAULT_IMAGE_VIEWER_FEB16.md`
 
 ---
 
-## CURRENT STATUS (Mar 15, 2026)
+## CURRENT STATUS (Mar 16, 2026)
+
+### Session Work (Mar 16, 2026)
+
+**Performance Audit + Tab Consolidation — AUDIT COMPLETE, FIRST FIX DEPLOYED (commit `912fb559`):**
+
+Full deep performance audit of the Montree PWA (user reported lag). Three parallel audits ran: API routes (18 issues), PWA/frontend (25+ issues), database patterns. Then implemented first major fix: child view tab consolidation.
+
+**Tab Consolidation (4 tabs -> 2 tabs) — DEPLOYED:**
+Consolidated child week view from 4 tabs (Week / Gallery / Progress / Reports) to 2 tabs (Week / Progress). Gallery page now serves as the unified Progress tab with photos + area progress bars + AI photo insight.
+
+**Files Modified (5):**
+1. `app/montree/dashboard/[childId]/layout.tsx` — 4 tabs -> 2 tabs, gallery route maps to 'progress' tab
+2. `app/montree/dashboard/[childId]/gallery/page.tsx` — TDZ fix (useEffect moved after filteredPhotos useMemo)
+3. `components/montree/home/ShelfView.tsx` — Nav link /progress -> /gallery
+4. `app/montree/dashboard/snap/page.tsx` — Nav link /progress -> /gallery
+5. `components/montree/onboarding/WeekViewGuide.tsx` — Removed stale tab-gallery + tab-reports onboarding steps
+
+**Build Audit:** 3-pass audit, all CLEAN. Old routes (/progress, /reports) still functional via direct URL, just hidden from tab bar.
+
+**Performance Audit Summary (not yet implemented — backlog for future sessions):**
+
+| # | Severity | Category | Est. Fix Time |
+|---|----------|----------|---------------|
+| 1 | CRITICAL | No Cache-Control headers on any API route | 2-3h |
+| 2 | CRITICAL | progress/summary double-fetches + O(N^2) loop | 45min |
+| 3 | CRITICAL | media GET sequential queries (should be parallel) | 45min |
+| 4 | CRITICAL | Guru redundant JWT verifications | 30min |
+| 5 | CRITICAL | focus-works Chinese name called 2x per record | 15min |
+| 6 | HIGH | progress GET 3 sequential queries (should be Promise.all) | 45min |
+| 7 | HIGH | children GET N+1 classroom lookups | 30min |
+| 8 | HIGH | media in-memory sort O(N log N) instead of DB sort | 45min |
+| 9 | HIGH | verifyChildBelongsToSchool no TTL on cache | 15min |
+| 10 | HIGH | DashboardHeader 2 API calls on every mount | 30min |
+| 11 | HIGH | ShelfView loads ALL 300+ curriculum works on mount | 30min |
+| 12 | HIGH | PortalChat TTS creates new Audio on every play | 30min |
+| 13 | HIGH | Child Week Page 9+ state variables (should be useReducer) | 1h |
+
+**Recommended fix priority:** Cache-Control headers first (biggest single impact, 2-4x dashboard speed), then parallelize DB queries, then component-level fixes.
+
+**VM disk full** throughout session — only Read/Write/Edit/Grep tools worked. No Bash available.
+
+**Deploy:** Committed `912fb559` from Mac. Push required VPN off (Astrill SSL issue).
+**Handoff:** `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md`
+
+---
+
+## PREVIOUS STATUS (Mar 15, 2026)
 
 ### Session Work (Mar 15, 2026)
 
@@ -3006,7 +3070,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | **CURRENT** — Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
+| `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | **CURRENT** — Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
+| `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
 | `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` | **CURRENT** — Global Montessori school research: Top 50 ranked list, 7 chains (550+ schools), contacts for 17 countries, scoring system, reachability grades. Ready for Excel generation. |
 | `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md` | Per-classroom visual memory self-learning system, expanded visual ID guide (262 lines, 200+ works), Smart Capture marketing tab, competitive analysis (zero competitors have AI photo recognition) |
 | `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md` | Parent feature fixes (invite parent, lightbox, gallery timeline, report photos) + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix |
