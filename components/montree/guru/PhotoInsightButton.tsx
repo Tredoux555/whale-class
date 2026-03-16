@@ -321,6 +321,12 @@ export default function PhotoInsightButton({
       {!result && (
         <>
           {error ? (
+            errorType === 'auth_error' ? (
+              <span className="inline-flex items-center gap-1 text-xs text-red-500">
+                <span>🔒</span>
+                <span>{t('photoInsight.sessionExpired')}</span>
+              </span>
+            ) : (
             <button
               onClick={handleRetry}
               className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-700 transition-colors"
@@ -337,6 +343,7 @@ export default function PhotoInsightButton({
                   : t('common.tryAgain')}
               </span>
             </button>
+            )
           ) : (
             <button
               onClick={handleClick}

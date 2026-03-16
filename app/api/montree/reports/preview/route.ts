@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found
 // Keyed by area_key from the progress data (always correct - no guessing needed)
@@ -125,12 +126,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
     }
 
+    // Security: verify child belongs to this school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
     // Get child info including classroom_id
     const { data: child } = await supabase
       .from('montree_children')
       .select('id, name, photo_url, classroom_id')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -258,7 +265,7 @@ export async function GET(request: NextRequest) {
       .select('id')
       .eq('child_id', childId)
       .eq('week_start', weekStartStr)
-      .single();
+      .maybeSingle();
 
     let selectedPhotoIds: string[] = [];
     if (draftReport) {
@@ -287,7 +294,7 @@ export async function GET(request: NextRequest) {
       .eq('child_id', childId)
       .order('generated_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     const lastReportDate = lastReport?.generated_at || null;
     const showAll = searchParams.get('show_all') === 'true';
@@ -441,13 +448,18 @@ export async function GET(request: NextRequest) {
       addedWorkNames.add(workInfo.name.toLowerCase());
     }
 
+    // Build photo date lookup for O(1) access during sort (avoids O(N²) .find())
+    const photoDateMap = new Map<string, string>();
+    for (const p of allPhotos) {
+      if (p.id && p.created_at) {
+        photoDateMap.set(p.id, p.created_at);
+      }
+    }
+
     // Sort report items: most recent first (forward-facing development timeline)
     reportItems.sort((a, b) => {
-      // Use photo created_at for items with photos, fall back to progress updated_at
-      const aPhoto = a.photo_id ? allPhotos.find(p => p.id === a.photo_id) : null;
-      const bPhoto = b.photo_id ? allPhotos.find(p => p.id === b.photo_id) : null;
-      const aDate = aPhoto?.created_at || '';
-      const bDate = bPhoto?.created_at || '';
+      const aDate = a.photo_id ? (photoDateMap.get(a.photo_id) || '') : '';
+      const bDate = b.photo_id ? (photoDateMap.get(b.photo_id) || '') : '';
       // Most recent first (descending)
       return bDate.localeCompare(aDate);
     });

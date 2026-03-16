@@ -617,7 +617,7 @@ export default function GalleryPage() {
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
-        <GuruContextBubble pageKey="progress" role="parent" />
+        <GuruContextBubble pageKey="gallery" role="parent" />
       )}
 
       {/* ══════════════════════════════════════════════

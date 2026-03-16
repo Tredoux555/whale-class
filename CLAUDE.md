@@ -125,7 +125,42 @@ Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.
 
 ---
 
-## CURRENT STATUS (Mar 16, 2026)
+## CURRENT STATUS (Mar 17, 2026)
+
+### Session Work (Mar 17, 2026)
+
+**Reports + Gallery 3x3x3 Audit & Fix — COMPLETE, NOT YET DEPLOYED:**
+
+Full 3x3x3 audit-plan-fix cycle on Reports and Gallery core features. 10 bugs found and fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Triple-audited + 5 health check cycles + final zero-error verification.
+
+**Bugs Fixed:**
+- **CRIT-1:** `checkRateLimit` wrong signature in corrections/route.ts — called with 4 args (string first) instead of 5 (SupabaseClient first). Would TypeError at runtime on every teacher correction.
+- **CRIT-3:** React error #310 on reports page — `groupedByArea` useMemo after early return violated Rules of Hooks.
+- **HIGH-3:** O(N²) sort in reports preview API — `.find()` inside `.sort()` comparator → replaced with Map O(1) lookup.
+- **HIGH:** Reports page fetchPreview missing AbortController — stale fetch could update state after unmount.
+- **HIGH:** Reports handlePhotoSelectionSave silent error — photo update failures logged but never shown to user.
+- **MED-3:** `.single()` crash in reports preview (2 places) → `.maybeSingle()` for draft report + last report queries.
+- **MED-4:** Missing `verifyChildBelongsToSchool` in reports preview — security gap allowing cross-school data access.
+- **MED-5:** PhotoInsightButton shows "Try again" for 403 auth errors (will never succeed) → non-clickable "Session expired" message.
+- **LOW-1:** Gallery GuruContextBubble pageKey was "progress" instead of "gallery".
+
+**Files Modified (7):**
+1. `app/montree/dashboard/[childId]/reports/page.tsx` — 3 edits (useMemo ordering, AbortController, error toast)
+2. `app/api/montree/reports/preview/route.ts` — 5 edits (import, access check, 2× .maybeSingle(), photoDateMap)
+3. `components/montree/guru/PhotoInsightButton.tsx` — 1 edit (auth_error branch)
+4. `app/api/montree/guru/corrections/route.ts` — 2 edits (rate limiter fix, duplicate removal)
+5. `app/montree/dashboard/[childId]/gallery/page.tsx` — 1 edit (pageKey)
+6. `lib/montree/i18n/en.ts` — 2 new keys
+7. `lib/montree/i18n/zh.ts` — 2 new keys (perfect EN/ZH parity)
+
+**Audit Summary:** 3x3x3 rounds, triple audit (3 independent agents), 5 health check cycles (security, performance, data integrity, data flow, API error handling), final zero-error verification. All CLEAN.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations.
+**Handoff:** `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md`
+
+---
+
+## PREVIOUS STATUS (Mar 16, 2026)
 
 ### Session Work (Mar 16, 2026)
 
@@ -3074,7 +3109,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | **CURRENT** — Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
+| `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md` | **CURRENT** — Reports + Gallery 3x3x3 audit: 10 bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Security, performance, React hooks, rate limiter, AbortController fixes. |
+| `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
 | `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` | **CURRENT** — Global Montessori school research: Top 50 ranked list, 7 chains (550+ schools), contacts for 17 countries, scoring system, reachability grades. Ready for Excel generation. |
 | `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md` | Per-classroom visual memory self-learning system, expanded visual ID guide (262 lines, 200+ works), Smart Capture marketing tab, competitive analysis (zero competitors have AI photo recognition) |

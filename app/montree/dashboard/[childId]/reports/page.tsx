@@ -133,11 +133,11 @@ export default function ReportsPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Fetch report preview
-  const fetchPreview = async () => {
+  const fetchPreview = async (signal?: AbortSignal) => {
     try {
       const [previewRes, photosRes] = await Promise.all([
-        fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`),
-        fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`),
+        fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`, { signal }),
+        fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`, { signal }),
       ]);
 
       if (!previewRes.ok || !photosRes.ok) {
@@ -146,6 +146,8 @@ export default function ReportsPage() {
 
       const previewData = await previewRes.json();
       const photosData = await photosRes.json();
+
+      if (signal?.aborted) return;
 
       if (previewData.success && photosData.success) {
         setChildName(previewData.child_name || 'Student');
@@ -171,6 +173,7 @@ export default function ReportsPage() {
         setAllPhotos(allAvailablePhotos);
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       console.error('Failed to fetch:', err);
       toast.error(t('reports.loadError'));
     }
@@ -178,7 +181,10 @@ export default function ReportsPage() {
   };
 
   useEffect(() => {
-    if (childId) fetchPreview();
+    if (!childId) return;
+    const controller = new AbortController();
+    fetchPreview(controller.signal);
+    return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [childId, locale]);
 
@@ -227,6 +233,7 @@ export default function ReportsPage() {
       }
     } catch (err) {
       console.error('Failed to update photos:', err);
+      toast.error(t('reports.photoUpdateFailed'));
       throw err;
     }
   };
@@ -259,23 +266,14 @@ export default function ReportsPage() {
   };
 
   // Memoize available photos for photo selection modal (Set-based O(n) dedup)
-  // MUST be above early returns to satisfy React Rules of Hooks
+  // ALL hooks MUST be above early returns to satisfy React Rules of Hooks
   const availableForSelection = useMemo(() => {
     const ids = new Set(currentPhotos.map(cp => cp.id));
     return allPhotos.filter(p => !ids.has(p.id));
   }, [currentPhotos, allPhotos]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-10 w-10 border-2 border-emerald-500 border-t-transparent" />
-      </div>
-    );
-  }
-
-  const hasItems = items.length > 0;
-
   // Memoize area grouping to avoid re-computing on every render
+  // MUST be above the loading early-return to maintain consistent hook ordering
   const groupedByArea = useMemo(() => {
     const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
     const grouped = items.reduce((acc, item) => {
@@ -291,6 +289,16 @@ export default function ReportsPage() {
     });
     return sortedAreas.map(area => [area, grouped[area]] as [string, ReportItem[]]);
   }, [items]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-emerald-500 border-t-transparent" />
+      </div>
+    );
+  }
+
+  const hasItems = items.length > 0;
 
   return (
     <div className="space-y-4">

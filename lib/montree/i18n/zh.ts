@@ -985,6 +985,7 @@ export const zh = {
 
   // Phase 5 — Reports
   'reports.loadError': '加载报告失败',
+  'reports.photoUpdateFailed': '更新照片失败',
   'reports.noReportsFound': '未找到报告',
   'reports.loadLastReportError': '加载最近报告失败',
   'reports.report': '报告',
@@ -2664,6 +2665,7 @@ export const zh = {
   'photoInsight.rateLimited': '请求过多 — 点击重试',
   'photoInsight.timeout': '时间过长 — 点击重试',
   'photoInsight.networkError': '连接失败 — 点击重试',
+  'photoInsight.sessionExpired': '会话已过期 — 请刷新页面',
   'photoInsight.documented': '已记录',
 
   // Report status translations

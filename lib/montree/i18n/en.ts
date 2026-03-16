@@ -992,6 +992,7 @@ export const en = {
 
   // Phase 5 — Reports
   'reports.loadError': 'Failed to load reports',
+  'reports.photoUpdateFailed': 'Failed to update photos',
   'reports.noReportsFound': 'No reports found',
   'reports.loadLastReportError': 'Failed to load last report',
   'reports.report': 'Report',
@@ -2663,6 +2664,7 @@ export const en = {
   'photoInsight.rateLimited': 'Too many requests — tap to retry',
   'photoInsight.timeout': 'Took too long — tap to retry',
   'photoInsight.networkError': 'Connection failed — tap to retry',
+  'photoInsight.sessionExpired': 'Session expired — please refresh',
   'photoInsight.documented': 'Documented',
 
   // Report status translations
