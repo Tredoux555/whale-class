@@ -347,6 +347,7 @@ export default function ProgressPage() {
           initialArea={teachModalData.area}
           mediaId={teachModalData.mediaId}
           classroomId={session?.classroom?.id || ''}
+          childId={childId}
           onWorkSaved={() => { setTeachModalData(null); debouncedFetchAll(); }}
         />
       )}
