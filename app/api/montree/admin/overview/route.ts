@@ -23,24 +23,26 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
-    // Get classrooms for this school
-    const { data: classrooms } = await supabase
-      .from('montree_classrooms')
-      .select('id, name, icon, color, is_active, created_at')
-      .eq('school_id', schoolId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: true });
+    // Get classrooms + teachers in parallel (both only need schoolId)
+    const [classroomsResult, teachersResult] = await Promise.all([
+      supabase
+        .from('montree_classrooms')
+        .select('id, name, icon, color, is_active, created_at')
+        .eq('school_id', schoolId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('montree_teachers')
+        .select('id, name, email, classroom_id, role, is_active, last_login_at, login_code')
+        .eq('school_id', schoolId)
+        .eq('is_active', true),
+    ]);
 
+    const classrooms = classroomsResult.data;
+    const teachers = teachersResult.data;
     const classroomIds = (classrooms || []).map(c => c.id);
 
-    // Get teachers for this school
-    const { data: teachers } = await supabase
-      .from('montree_teachers')
-      .select('id, name, email, classroom_id, role, is_active, last_login_at, login_code')
-      .eq('school_id', schoolId)
-      .eq('is_active', true);
-
-    // Get students for school classrooms (via classroom_id, not school_id)
+    // Get students for school classrooms (depends on classroomIds)
     let students: Record<string, unknown>[] = [];
     if (classroomIds.length > 0) {
       const { data: studentData } = await supabase

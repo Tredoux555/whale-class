@@ -44,9 +44,13 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
+    // Pre-index classrooms by id for O(1) lookup (was O(N) .find() per student)
+    const classroomMap = new Map<string, { id: string; name: string; icon: string }>();
+    schoolClassrooms?.forEach(c => classroomMap.set(c.id, c));
+
     // Add classroom info to each student
     const studentsWithClassroom = (students || []).map(s => {
-      const classroom = schoolClassrooms?.find(c => c.id === s.classroom_id);
+      const classroom = classroomMap.get(s.classroom_id);
       return {
         ...s,
         classroom_name: classroom?.name,

@@ -19,52 +19,55 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get all feature definitions
-    const { data: definitions } = await supabase
-      .from('montree_feature_definitions')
-      .select('*')
-      .order('category', { ascending: true });
-
-    // Get school-level toggles
+    // Fetch definitions (always needed) + parallel classroom/school data
     let schoolFeatures: any[] = [];
-    if (schoolId) {
-      const { data } = await supabase
-        .from('montree_school_features')
-        .select('*')
-        .eq('school_id', schoolId);
-      schoolFeatures = data || [];
-    }
-
-    // Get classroom-level toggles
     let classroomFeatures: any[] = [];
-    if (classroomId) {
-      // Also get school_id from classroom
-      const { data: classroom } = await supabase
-        .from('montree_classrooms')
-        .select('school_id')
-        .eq('id', classroomId)
-        .single();
+    let definitions: any[] | null = null;
 
-      if (classroom?.school_id) {
+    if (classroomId) {
+      // Fetch definitions + classroom lookup + classroom features in parallel
+      const [defsResult, classroomResult, cfResult] = await Promise.all([
+        supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true }),
+        supabase.from('montree_classrooms').select('school_id').eq('id', classroomId).single(),
+        supabase.from('montree_classroom_features').select('*').eq('classroom_id', classroomId),
+      ]);
+
+      definitions = defsResult.data;
+      classroomFeatures = cfResult.data || [];
+
+      // If classroom has a school, fetch school features
+      if (classroomResult.data?.school_id) {
         const { data: sf } = await supabase
           .from('montree_school_features')
           .select('*')
-          .eq('school_id', classroom.school_id);
+          .eq('school_id', classroomResult.data.school_id);
         schoolFeatures = sf || [];
       }
+    } else if (schoolId) {
+      // Fetch definitions + school features in parallel
+      const [defsResult, sfResult] = await Promise.all([
+        supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true }),
+        supabase.from('montree_school_features').select('*').eq('school_id', schoolId),
+      ]);
 
-      const { data: cf } = await supabase
-        .from('montree_classroom_features')
-        .select('*')
-        .eq('classroom_id', classroomId);
-      classroomFeatures = cf || [];
+      definitions = defsResult.data;
+      schoolFeatures = sfResult.data || [];
+    } else {
+      const { data } = await supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true });
+      definitions = data;
     }
+
+    // Pre-index school/classroom features as Maps for O(1) lookup (was O(N) .find() per definition)
+    const schoolFeatureMap = new Map<string, any>();
+    schoolFeatures.forEach(sf => schoolFeatureMap.set(sf.feature_key, sf));
+    const classroomFeatureMap = new Map<string, any>();
+    classroomFeatures.forEach(cf => classroomFeatureMap.set(cf.feature_key, cf));
 
     // Merge: classroom overrides school, school overrides default
     const features = (definitions || []).map((def: any) => {
-      const schoolToggle = schoolFeatures.find((sf: any) => sf.feature_key === def.feature_key);
-      const classroomToggle = classroomFeatures.find((cf: any) => cf.feature_key === def.feature_key);
-      
+      const schoolToggle = schoolFeatureMap.get(def.feature_key);
+      const classroomToggle = classroomFeatureMap.get(def.feature_key);
+
       // Priority: classroom toggle > school toggle > default
       let enabled = def.default_enabled;
       if (schoolToggle) enabled = schoolToggle.enabled;

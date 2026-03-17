@@ -159,15 +159,33 @@ export async function GET(request: NextRequest) {
     const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString();
     const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
     
-    // Fetch today's progress entries
-    const { data: todayProgress } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, updated_at, duration_minutes')
-      .eq('child_id', childId)
-      .gte('updated_at', todayStart)
-      .lt('updated_at', todayEnd)
-      .order('updated_at', { ascending: false });
-    
+    // Fetch today's progress, recent analyses, and photos in parallel (was 3 sequential queries)
+    const [todayProgressResult, analysesResult, photosResult] = await Promise.all([
+      supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, updated_at, duration_minutes')
+        .eq('child_id', childId)
+        .gte('updated_at', todayStart)
+        .lt('updated_at', todayEnd)
+        .order('updated_at', { ascending: false }),
+      supabase
+        .from('montree_weekly_analysis')
+        .select('id, week_start, week_end, parent_summary, created_at')
+        .eq('child_id', childId)
+        .order('week_start', { ascending: false })
+        .limit(5),
+      supabase
+        .from('montree_media')
+        .select('id, storage_path, work_id, captured_at, thumbnail_path')
+        .eq('child_id', childId)
+        .order('captured_at', { ascending: false })
+        .limit(9),
+    ]);
+
+    const todayProgress = todayProgressResult.data;
+    const analyses = analysesResult.data;
+    const photos = photosResult.data;
+
     // Build today's activities
     const todayActivities = (todayProgress || []).map(p => ({
       work_id: p.work_name, // Using name as ID since we don't have work_id
@@ -178,14 +196,14 @@ export async function GET(request: NextRequest) {
       total_minutes: p.duration_minutes || 0,
       session_count: 1,
     }));
-    
+
     // Get most active areas from today's activities
     const areaCounts: Record<string, number> = {};
     for (const activity of todayActivities) {
       const area = activity.area?.toLowerCase() || '';
       areaCounts[area] = (areaCounts[area] || 0) + 1;
     }
-    
+
     // Get recommended games based on today's areas
     const recommendedGames: Array<{
       game_id: string;
@@ -194,16 +212,16 @@ export async function GET(request: NextRequest) {
       game_icon: string;
       game_description: string;
     }> = [];
-    
+
     const sortedAreas = Object.entries(areaCounts)
       .sort(([,a], [,b]) => b - a)
       .map(([area]) => area);
-    
+
     for (const area of sortedAreas.slice(0, 2)) {
       const areaGames = GAMES_BY_AREA[area] || [];
       recommendedGames.push(...areaGames.slice(0, 2));
     }
-    
+
     // If no activities today, show some default games
     if (recommendedGames.length === 0) {
       recommendedGames.push(
@@ -211,15 +229,7 @@ export async function GET(request: NextRequest) {
         ...GAMES_BY_AREA.mathematics.slice(0, 2),
       );
     }
-    
-    // Fetch recent weekly analyses (as "reports")
-    const { data: analyses } = await supabase
-      .from('montree_weekly_analysis')
-      .select('id, week_start, week_end, parent_summary, created_at')
-      .eq('child_id', childId)
-      .order('week_start', { ascending: false })
-      .limit(5);
-    
+
     const reports = (analyses || []).map(a => ({
       id: a.id,
       week_start: a.week_start,
@@ -228,14 +238,6 @@ export async function GET(request: NextRequest) {
       share_token: null, // Can add later if needed
       summary_preview: a.parent_summary?.slice(0, 100) || null,
     }));
-    
-    // Fetch recent photos from montree_media
-    const { data: photos } = await supabase
-      .from('montree_media')
-      .select('id, storage_path, work_id, captured_at, thumbnail_path')
-      .eq('child_id', childId)
-      .order('captured_at', { ascending: false })
-      .limit(9);
 
     const recentMedia = (photos || []).map(p => ({
       id: p.id,

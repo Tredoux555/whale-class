@@ -77,33 +77,34 @@ export async function GET(request: NextRequest) {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Fetch photos by teacher
-    const { data: photos } = await supabase
-      .from('montree_media')
-      .select('id, captured_by, captured_at, child_id')
-      .in('captured_by', teacherIds)
-      .order('captured_at', { ascending: false });
+    // Fetch all activity data in parallel (was 4 sequential queries)
+    const [photosResult, workUpdatesResult, observationsResult, sessionsResult] = await Promise.all([
+      supabase
+        .from('montree_media')
+        .select('id, captured_by, captured_at, child_id')
+        .in('captured_by', teacherIds)
+        .order('captured_at', { ascending: false }),
+      supabase
+        .from('montree_child_progress')
+        .select('id, teacher_id, updated_at, child_id, work_name')
+        .in('teacher_id', teacherIds)
+        .order('updated_at', { ascending: false }),
+      supabase
+        .from('montree_behavioral_observations')
+        .select('id, observed_by, observed_at, child_id')
+        .in('observed_by', teacherIds)
+        .order('observed_at', { ascending: false }),
+      supabase
+        .from('montree_work_sessions')
+        .select('id, teacher_id, observed_at, child_id')
+        .in('teacher_id', teacherIds)
+        .order('observed_at', { ascending: false }),
+    ]);
 
-    // Fetch work updates by teacher
-    const { data: workUpdates } = await supabase
-      .from('montree_child_progress')
-      .select('id, teacher_id, updated_at, child_id, work_name')
-      .in('teacher_id', teacherIds)
-      .order('updated_at', { ascending: false });
-
-    // Fetch observations by teacher
-    const { data: observations } = await supabase
-      .from('montree_behavioral_observations')
-      .select('id, observed_by, observed_at, child_id')
-      .in('observed_by', teacherIds)
-      .order('observed_at', { ascending: false });
-
-    // Fetch work sessions by teacher
-    const { data: sessions } = await supabase
-      .from('montree_work_sessions')
-      .select('id, teacher_id, observed_at, child_id')
-      .in('teacher_id', teacherIds)
-      .order('observed_at', { ascending: false });
+    const photos = photosResult.data;
+    const workUpdates = workUpdatesResult.data;
+    const observations = observationsResult.data;
+    const sessions = sessionsResult.data;
 
     // Get all students for coverage calculation
     const { data: classrooms } = await supabase
@@ -124,16 +125,46 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================
+    // PRE-INDEX for O(1) lookups (replaces O(N²) .find() calls)
+    // ============================================
+    // Index first item per teacher (arrays are already sorted desc by date, so first = latest)
+    const latestPhotoByTeacher = new Map<string, (typeof photos extends (infer T)[] | null ? T : never)>();
+    photos?.forEach(p => { if (!latestPhotoByTeacher.has(p.captured_by)) latestPhotoByTeacher.set(p.captured_by, p); });
+
+    const latestUpdateByTeacher = new Map<string, (typeof workUpdates extends (infer T)[] | null ? T : never)>();
+    workUpdates?.forEach(u => { if (!latestUpdateByTeacher.has(u.teacher_id)) latestUpdateByTeacher.set(u.teacher_id, u); });
+
+    const latestObsByTeacher = new Map<string, (typeof observations extends (infer T)[] | null ? T : never)>();
+    observations?.forEach(o => { if (!latestObsByTeacher.has(o.observed_by)) latestObsByTeacher.set(o.observed_by, o); });
+
+    const latestSessionByTeacher = new Map<string, (typeof sessions extends (infer T)[] | null ? T : never)>();
+    sessions?.forEach(s => { if (!latestSessionByTeacher.has(s.teacher_id)) latestSessionByTeacher.set(s.teacher_id, s); });
+
+    // Index first photo/update per child for student coverage
+    const latestPhotoByChild = new Map<string, (typeof photos extends (infer T)[] | null ? T : never)>();
+    photos?.forEach(p => { if (p.child_id && !latestPhotoByChild.has(p.child_id)) latestPhotoByChild.set(p.child_id, p); });
+
+    const latestUpdateByChild = new Map<string, (typeof workUpdates extends (infer T)[] | null ? T : never)>();
+    workUpdates?.forEach(u => { if (u.child_id && !latestUpdateByChild.has(u.child_id)) latestUpdateByChild.set(u.child_id, u); });
+
+    // Index teachers/students by id for activity feed
+    const teacherById = new Map<string, { id: string; name: string; email: string }>();
+    teachers?.forEach(t => teacherById.set(t.id, t));
+
+    const studentById = new Map<string, { id: string; name: string; classroom_id: string }>();
+    students.forEach(s => studentById.set(s.id as string, s as any));
+
+    // ============================================
     // AGGREGATE TEACHER ACTIVITY
     // ============================================
     const teacherActivityMap = new Map<string, TeacherActivity>();
 
     // Initialize all teachers
     teachers?.forEach(teacher => {
-      const latestPhoto = photos?.find(p => p.captured_by === teacher.id);
-      const latestUpdate = workUpdates?.find(u => u.teacher_id === teacher.id);
-      const latestObservation = observations?.find(o => o.observed_by === teacher.id);
-      const latestSession = sessions?.find(s => s.teacher_id === teacher.id);
+      const latestPhoto = latestPhotoByTeacher.get(teacher.id);
+      const latestUpdate = latestUpdateByTeacher.get(teacher.id);
+      const latestObservation = latestObsByTeacher.get(teacher.id);
+      const latestSession = latestSessionByTeacher.get(teacher.id);
 
       const timestamps = [
         latestPhoto?.captured_at,
@@ -222,8 +253,8 @@ export async function GET(request: NextRequest) {
     const studentCoverageMap = new Map<string, StudentCoverage>();
 
     students.forEach(student => {
-      const lastPhoto = photos?.find(p => p.child_id === student.id);
-      const lastUpdate = workUpdates?.find(u => u.child_id === student.id);
+      const lastPhoto = latestPhotoByChild.get(student.id as string);
+      const lastUpdate = latestUpdateByChild.get(student.id as string);
 
       const lastPhotoDate = lastPhoto ? new Date(lastPhoto.captured_at) : null;
       const lastUpdateDate = lastUpdate ? new Date(lastUpdate.updated_at) : null;
@@ -262,10 +293,10 @@ export async function GET(request: NextRequest) {
       count?: number;
     }> = [];
 
-    // Collect all activities with timestamps
+    // Collect all activities with timestamps (using pre-indexed Maps for O(1) lookups)
     photos?.forEach(photo => {
-      const teacher = teachers?.find(t => t.id === photo.captured_by);
-      const child = students.find(s => s.id === photo.child_id);
+      const teacher = teacherById.get(photo.captured_by);
+      const child = studentById.get(photo.child_id);
       if (teacher) {
         allActivityEvents.push({
           timestamp: photo.captured_at,
@@ -274,14 +305,14 @@ export async function GET(request: NextRequest) {
           action_type: 'photo',
           action_description: `took a photo`,
           child_id: photo.child_id,
-          child_name: child?.name,
+          child_name: child?.name as string | undefined,
         });
       }
     });
 
     workUpdates?.forEach(update => {
-      const teacher = teachers?.find(t => t.id === update.teacher_id);
-      const child = students.find(s => s.id === update.child_id);
+      const teacher = teacherById.get(update.teacher_id);
+      const child = studentById.get(update.child_id);
       if (teacher) {
         allActivityEvents.push({
           timestamp: update.updated_at,
@@ -290,14 +321,14 @@ export async function GET(request: NextRequest) {
           action_type: 'work_update',
           action_description: `updated progress on ${update.work_name}`,
           child_id: update.child_id,
-          child_name: child?.name,
+          child_name: child?.name as string | undefined,
         });
       }
     });
 
     observations?.forEach(obs => {
-      const teacher = teachers?.find(t => t.id === obs.observed_by);
-      const child = students.find(s => s.id === obs.child_id);
+      const teacher = teacherById.get(obs.observed_by);
+      const child = studentById.get(obs.child_id);
       if (teacher) {
         allActivityEvents.push({
           timestamp: obs.observed_at,
@@ -306,7 +337,7 @@ export async function GET(request: NextRequest) {
           action_type: 'observation',
           action_description: `logged an observation`,
           child_id: obs.child_id,
-          child_name: child?.name,
+          child_name: child?.name as string | undefined,
         });
       }
     });
@@ -332,9 +363,9 @@ export async function GET(request: NextRequest) {
     }).length;
 
     const studentsWithActivityThisWeek = new Set(
-      [...photos, ...workUpdates, ...observations, ...sessions]
+      [...(photos || []), ...(workUpdates || []), ...(observations || []), ...(sessions || [])]
         .filter(item => {
-          const date = item.captured_at || item.updated_at || item.observed_at;
+          const date = (item as any).captured_at || (item as any).updated_at || (item as any).observed_at;
           return date && new Date(date) >= weekAgo;
         })
         .map(item => item.child_id)
