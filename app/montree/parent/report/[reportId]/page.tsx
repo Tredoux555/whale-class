@@ -1,15 +1,30 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
-interface HighlightItem {
-  work: string;
+// --- Types ---
+
+interface WorkItem {
+  work_name: string;
+  chineseName?: string | null;
+  area: string;
   status: string;
+  completed_at: string;
+  photo_url: string | null;
+  photo_caption: string | null;
+  parent_description: string | null;
+  why_it_matters: string | null;
+}
+
+interface AreaGroup {
+  area_key: string;
+  area_name: string;
+  works: WorkItem[];
 }
 
 interface ReportData {
@@ -19,25 +34,17 @@ interface ReportData {
   week_start: string | null;
   week_end: string | null;
   parent_summary: string | null;
-  highlights: HighlightItem[] | string[] | null;
+  highlights: string[] | null;
   areas_of_growth: string[] | null;
   recommendations: string[] | null;
+  closing: string | null;
+  areas_explored: AreaGroup[] | null;
   created_at: string;
   child: {
     name: string;
     nickname: string | null;
   };
-  works_completed: {
-    work_name: string;
-    chineseName?: string | null;
-    area: string;
-    status: string;
-    completed_at: string;
-    photo_url: string | null;
-    photo_caption: string | null;
-    parent_description: string | null;
-    why_it_matters: string | null;
-  }[];
+  works_completed: WorkItem[];
   all_photos?: {
     id: string;
     url: string;
@@ -46,6 +53,21 @@ interface ReportData {
     captured_at: string;
   }[];
 }
+
+// --- Area Config ---
+
+const AREA_CONFIG: Record<string, { emoji: string; bg: string; text: string; border: string }> = {
+  practical_life: { emoji: '🧹', bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
+  sensorial: { emoji: '👁️', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+  mathematics: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  math: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  language: { emoji: '📚', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  cultural: { emoji: '🌍', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+};
+
+const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+
+// --- Component ---
 
 export default function ParentReportPage() {
   const router = useRouter();
@@ -60,9 +82,7 @@ export default function ParentReportPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const loadReport = useCallback(async () => {
-    if (!reportId) {
-      return; // Wait until reportId is available
-    }
+    if (!reportId) return;
 
     try {
       const res = await fetch(`/api/montree/parent/report/${reportId}?locale=${locale}`);
@@ -73,27 +93,10 @@ export default function ParentReportPage() {
         return;
       }
 
-      // Null safety: ensure child data exists
       if (data.report && !data.report.child) {
         data.report.child = { name: 'Child', nickname: null };
       }
 
-      // Sort works_completed most recent first (forward-facing timeline)
-      if (data.report?.works_completed) {
-        data.report.works_completed.sort((a: { completed_at: string }, b: { completed_at: string }) => {
-          const aDate = a.completed_at || '';
-          const bDate = b.completed_at || '';
-          return bDate.localeCompare(aDate);
-        });
-      }
-      // Sort all_photos most recent first
-      if (data.report?.all_photos) {
-        data.report.all_photos.sort((a: { captured_at: string }, b: { captured_at: string }) => {
-          const aDate = a.captured_at || '';
-          const bDate = b.captured_at || '';
-          return bDate.localeCompare(aDate);
-        });
-      }
       setReport(data.report);
     } catch (err) {
       console.error('Failed to load report:', err);
@@ -104,29 +107,57 @@ export default function ParentReportPage() {
   }, [reportId, locale, t]);
 
   useEffect(() => {
-    // Check session
     const sessionStr = localStorage.getItem('montree_parent_session');
     if (!sessionStr) {
       router.push('/montree/parent/login');
       return;
     }
-
     loadReport();
   }, [reportId, router, loadReport]);
 
-  const areaEmoji: Record<string, string> = {
-    practical_life: '🧹',
-    sensorial: '👁️',
-    mathematics: '🔢',
-    math: '🔢',
-    language: '📚',
-    cultural: '🌍',
-    art: '🎨',
-    music: '🎵',
-    physical: '🏃'
-  };
+  // Group works by area — use areas_explored from API if available, else build locally
+  const groupedByArea: AreaGroup[] = useMemo(() => {
+    if (!report) return [];
 
-  // Format week display with fallback to date range
+    // If the API returned pre-grouped areas, use them
+    if (report.areas_explored && report.areas_explored.length > 0) {
+      return report.areas_explored;
+    }
+
+    // Fallback: group works_completed by area
+    const grouped: Record<string, WorkItem[]> = {};
+    for (const w of report.works_completed || []) {
+      const area = w.area || 'other';
+      if (!grouped[area]) grouped[area] = [];
+      grouped[area].push(w);
+    }
+
+    const result: AreaGroup[] = [];
+    // Add in AREA_ORDER first
+    for (const area of AREA_ORDER) {
+      if (grouped[area] && grouped[area].length > 0) {
+        const conf = AREA_CONFIG[area];
+        result.push({
+          area_key: area,
+          area_name: t(`area.${area}` as any) || (conf ? area.replace('_', ' ') : area),
+          works: grouped[area],
+        });
+      }
+    }
+    // Then any other areas
+    for (const [area, works] of Object.entries(grouped)) {
+      if (!AREA_ORDER.includes(area) && works.length > 0) {
+        result.push({
+          area_key: area,
+          area_name: t(`area.${area}` as any) || area.replace('_', ' '),
+          works,
+        });
+      }
+    }
+    return result;
+  }, [report, t]);
+
+  // Format week display
   const formatWeekDisplay = () => {
     if (!report) return '';
     const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
@@ -135,19 +166,35 @@ export default function ParentReportPage() {
         ? `${report.report_year}年 第${report.week_number}周`
         : `Week ${report.week_number}, ${report.report_year}`;
     }
-    // Fallback to date range
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
       const formatDate = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
-      return `${formatDate(start)} - ${formatDate(end)}`;
+      return `${formatDate(start)} – ${formatDate(end)}`;
     }
-    // Last resort: use created_at
     const created = new Date(report.created_at);
-    const weekOf = t('parentReport.weekOf');
-    return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
+    return `${t('parentReport.weekOf')} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
   };
 
+  // Download helper
+  const downloadPhoto = async (url: string, name: string) => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, '_blank');
+    }
+  };
+
+  // --- Loading ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
@@ -159,6 +206,7 @@ export default function ParentReportPage() {
     );
   }
 
+  // --- Error ---
   if (error || !report) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
@@ -174,25 +222,7 @@ export default function ParentReportPage() {
   }
 
   const childName = report.child?.nickname || report.child?.name || '';
-
-  // Download a photo by fetching as blob and triggering save
-  const downloadPhoto = async (url: string, name: string) => {
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = `${name.replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      // Fallback: open in new tab so they can long-press/right-click to save
-      window.open(url, '_blank');
-    }
-  };
+  const totalWorks = report.works_completed?.length || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
@@ -206,145 +236,90 @@ export default function ParentReportPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto p-4 space-y-6">
-        {/* Report Header */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
-              {childName.charAt(0)}
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800">
-                {locale === 'zh' ? `${childName}的${t('parentReport.weeklyReport')}` : `${childName}'s ${t('parentReport.weeklyReport')}`}
-              </h1>
-              <p className="text-gray-500">{formatWeekDisplay()}</p>
+      <main className="max-w-3xl mx-auto p-4 space-y-5">
+
+        {/* ── Report Header ── */}
+        <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
+                {childName.charAt(0)}
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">
+                  {locale === 'zh' ? `${childName}的${t('parentReport.weeklyReport')}` : `${childName}'s ${t('parentReport.weeklyReport')}`}
+                </h1>
+                <p className="text-emerald-100 text-sm">{formatWeekDisplay()}</p>
+              </div>
             </div>
           </div>
-          
+
+          {/* Greeting */}
           {report.parent_summary && (
-            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-gray-700 leading-relaxed">{report.parent_summary}</p>
+            <div className="px-5 py-4 border-l-4 border-emerald-400 bg-emerald-50 mx-4 mt-4 mb-2 rounded-r-xl">
+              <p className="text-gray-700 leading-relaxed text-[15px]">{report.parent_summary}</p>
+            </div>
+          )}
+
+          {/* Highlights */}
+          {report.highlights && report.highlights.length > 0 && (
+            <div className="px-5 py-3">
+              {report.highlights.map((item, i) => {
+                const text = typeof item === 'string' ? item : `${(item as any).work} (${(item as any).status})`;
+                return (
+                  <p key={i} className="text-gray-600 text-sm leading-relaxed mb-1">
+                    ⭐ {text}
+                  </p>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Highlights */}
-        {report.highlights && report.highlights.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>⭐</span> {t('parentReport.highlights')}
-            </h2>
-            <ul className="space-y-2">
-              {report.highlights.map((item, i) => {
-                const text = typeof item === 'string' ? item : `${item.work} (${item.status})`;
-                return (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-emerald-500 mt-1">•</span>
-                    <span className="text-gray-700">{text}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
-        {/* Areas of Growth */}
-        {report.areas_of_growth && report.areas_of_growth.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>🌱</span> {t('parentReport.areasOfGrowth')}
-            </h2>
-            <ul className="space-y-2">
-              {report.areas_of_growth.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-blue-500 mt-1">•</span>
-                  <span className="text-gray-700">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Works Completed */}
-        {report.works_completed && report.works_completed.length > 0 && (
+        {/* ── Works by Area ── */}
+        {groupedByArea.length > 0 && (
           <div className="space-y-4">
-            <h2 className="font-bold text-gray-800 flex items-center gap-2 px-2">
-              <span>📋</span> {t('parentReport.worksThisWeek')} ({report.works_completed.length})
+            <h2 className="font-bold text-gray-800 flex items-center gap-2 px-1">
+              📋 {t('parentReport.worksThisWeek')} ({totalWorks})
             </h2>
-            {report.works_completed.map((work, i) => (
-              <div key={i} className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
-                {/* Work header */}
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    work.status === 'mastered' ? 'bg-emerald-100 text-emerald-700' :
-                    work.status === 'practicing' ? 'bg-blue-100 text-blue-700' :
-                    work.status === 'documented' ? 'bg-purple-100 text-purple-700' :
-                    'bg-amber-100 text-amber-700'
-                  }`}>
-                    {work.status === 'mastered' ? t('parentReport.statusMastered') :
-                     work.status === 'practicing' ? t('parentReport.statusPracticing') :
-                     work.status === 'documented' ? t('parentReport.statusDocumented') :
-                     t('parentReport.statusIntroduced')}
-                  </span>
-                  <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.work_name}</h4>
+
+            {groupedByArea.map((areaGroup) => {
+              const conf = AREA_CONFIG[areaGroup.area_key] || { emoji: '📌', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
+
+              return (
+                <div key={areaGroup.area_key} className="space-y-3">
+                  {/* Area Header */}
+                  <div className={`${conf.bg} ${conf.text} ${conf.border} border rounded-xl px-4 py-2 font-semibold text-sm flex items-center gap-2`}>
+                    <span>{conf.emoji}</span>
+                    <span>{areaGroup.area_name}</span>
+                  </div>
+
+                  {/* Work Cards — Option B: photo on top, text below */}
+                  {areaGroup.works.map((work, i) => (
+                    <WorkCard
+                      key={`${areaGroup.area_key}-${work.work_name}-${i}`}
+                      work={work}
+                      locale={locale}
+                      t={t}
+                      onPhotoTap={(url) => { setLightboxSrc(url); setLightboxOpen(true); }}
+                      onDownload={downloadPhoto}
+                    />
+                  ))}
                 </div>
-
-                {/* Photo — tap to zoom */}
-                {work.photo_url && (
-                  <div className="relative -mx-4 my-3">
-                    <button
-                      onClick={() => { setLightboxSrc(work.photo_url!); setLightboxOpen(true); }}
-                      className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg relative group block cursor-zoom-in"
-                    >
-                      <img
-                        src={work.photo_url}
-                        alt={work.work_name}
-                        className="w-full h-full object-cover"
-                      />
-                      <span
-                        onClick={(e) => { e.stopPropagation(); downloadPhoto(work.photo_url!, work.work_name); }}
-                        className="absolute bottom-3 right-3 w-10 h-10 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center opacity-70 md:opacity-0 md:group-hover:opacity-100 transition-opacity backdrop-blur-sm cursor-pointer"
-                        title={t('common.save')}
-                      >
-                        ⬇
-                      </span>
-                    </button>
-                    {work.photo_caption && (
-                      <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
-                    )}
-                  </div>
-                )}
-
-                {/* Description */}
-                {work.parent_description ? (
-                  <div className="space-y-2">
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {work.parent_description}
-                    </p>
-                    {work.why_it_matters && (
-                      <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                        <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('parentReport.whyItMatters')}</p>
-                        <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // Fallback when no description - just show area and activity label
-                  <p className="text-gray-600 text-sm">
-                    {areaEmoji[work.area] || '📌'}
-                    {locale === 'zh'
-                      ? `您的孩子在${t(`area.${work.area}`) || work.area.replace('_', ' ')}领域进行了练习。`
-                      : `Your child practiced this ${t(`area.${work.area}`) || work.area.replace('_', ' ')} activity.`}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* Additional Photos — compact grid, only extras not shown inline */}
+        {/* ── No works fallback ── */}
+        {groupedByArea.length === 0 && totalWorks === 0 && (
+          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+            <p className="text-gray-400">{t('reports.noProgressThisWeek' as any) || 'No activities recorded this week.'}</p>
+          </div>
+        )}
+
+        {/* ── Extra Photos (not matched to works) ── */}
         {report.all_photos && report.all_photos.length > 0 && (() => {
-          // Build set of photo URLs already shown inline with works
           const inlinePhotoUrls = new Set(
             (report.works_completed || [])
               .filter(w => w.photo_url)
@@ -353,9 +328,9 @@ export default function ParentReportPage() {
           const extraPhotos = report.all_photos.filter(p => !inlinePhotoUrls.has(p.url));
           if (extraPhotos.length === 0) return null;
           return (
-            <div className="bg-white rounded-2xl p-6 shadow-sm">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📸</span> {t('parentReport.morePhotos' as any) || 'More Photos'} ({extraPhotos.length})
+            <div className="bg-white rounded-2xl p-5 shadow-sm">
+              <h2 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                📸 {t('parentReport.morePhotos')} ({extraPhotos.length})
               </h2>
               <div className="grid grid-cols-3 gap-2">
                 {extraPhotos.map((photo, i) => (
@@ -376,35 +351,140 @@ export default function ParentReportPage() {
           );
         })()}
 
-        {/* Recommendations */}
+        {/* ── Recommendations ── */}
         {report.recommendations && report.recommendations.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <span>💡</span> {t('parentReport.recommendationsForHome')}
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+            <h2 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+              💡 {t('parentReport.recommendationsForHome')}
             </h2>
             <ul className="space-y-2">
               {report.recommendations.map((item, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-amber-500 mt-1">•</span>
-                  <span className="text-gray-700">{item}</span>
+                <li key={i} className="text-amber-900 text-sm leading-relaxed flex items-start gap-2">
+                  <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500 py-4">
+        {/* ── Closing ── */}
+        {report.closing && (
+          <div className="text-center py-3">
+            <p className="text-gray-600 leading-relaxed">{report.closing} 🌿</p>
+          </div>
+        )}
+
+        {/* ── Footer ── */}
+        <div className="text-center text-xs text-gray-400 py-4">
           {t('parentReport.reportGenerated')} {new Date(report.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          {' · Montree'}
         </div>
       </main>
 
-      {/* Photo Lightbox — fullscreen zoom + download */}
+      {/* Photo Lightbox */}
       <PhotoLightbox
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         src={lightboxSrc}
       />
     </div>
+  );
+}
+
+// --- Work Card (Option B) ---
+
+function WorkCard({
+  work,
+  locale,
+  t,
+  onPhotoTap,
+  onDownload,
+}: {
+  work: WorkItem;
+  locale: string;
+  t: (key: any, fallback?: string) => string;
+  onPhotoTap: (url: string) => void;
+  onDownload: (url: string, name: string) => void;
+}) {
+  const displayName = locale === 'zh' && work.chineseName ? work.chineseName : work.work_name;
+
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+      {/* Photo — compact, not hero-sized */}
+      {work.photo_url && (
+        <div className="relative">
+          <button
+            onClick={() => onPhotoTap(work.photo_url!)}
+            className="w-full h-48 overflow-hidden block cursor-zoom-in"
+          >
+            <img
+              src={work.photo_url}
+              alt={displayName}
+              className="w-full h-full object-cover"
+            />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDownload(work.photo_url!, work.work_name); }}
+            className="absolute bottom-2 right-2 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center text-xs backdrop-blur-sm transition-colors"
+            title={t('common.save')}
+          >
+            ⬇
+          </button>
+          {work.photo_caption && (
+            <p className="px-4 py-1.5 text-xs text-gray-500 italic text-center bg-gray-50">{work.photo_caption}</p>
+          )}
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="px-4 py-3 space-y-2">
+        {/* Status + Name */}
+        <div className="flex items-center gap-2">
+          <StatusBadge status={work.status} locale={locale} />
+          <h4 className="font-bold text-gray-800 text-[15px]">{displayName}</h4>
+        </div>
+
+        {/* Description */}
+        {work.parent_description ? (
+          <p className="text-gray-600 text-sm leading-relaxed">{work.parent_description}</p>
+        ) : (
+          <p className="text-gray-400 text-sm">
+            {locale === 'zh'
+              ? `您的孩子在${t(`area.${work.area}` as any) || work.area.replace('_', ' ')}领域进行了练习。`
+              : `Your child practiced this ${work.area.replace('_', ' ')} activity.`}
+          </p>
+        )}
+
+        {/* Why It Matters */}
+        {work.why_it_matters && (
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+            <p className="text-[11px] font-semibold text-emerald-700 mb-0.5">💡 {t('parentReport.whyItMatters')}</p>
+            <p className="text-xs text-emerald-800 leading-relaxed">{work.why_it_matters}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- Status Badge ---
+
+function StatusBadge({ status, locale }: { status: string; locale: string }) {
+  const isZh = locale === 'zh';
+  const styles: Record<string, { bg: string; text: string; label: string }> = {
+    presented: { bg: 'bg-amber-100', text: 'text-amber-700', label: isZh ? '🌱 已展示' : '🌱 Introduced' },
+    practicing: { bg: 'bg-blue-100', text: 'text-blue-700', label: isZh ? '🔄 练习中' : '🔄 Practicing' },
+    mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    documented: { bg: 'bg-purple-100', text: 'text-purple-700', label: isZh ? '📸 已记录' : '📸 Documented' },
+  };
+
+  const style = styles[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: '○ Started' };
+
+  return (
+    <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${style.bg} ${style.text}`}>
+      {style.label}
+    </span>
   );
 }

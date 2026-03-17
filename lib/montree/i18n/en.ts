@@ -1332,6 +1332,7 @@ export const en = {
   'parentReport.statusPracticing': '🔄 Practicing',
   'parentReport.statusIntroduced': '🌱 Introduced',
   'parentReport.statusDocumented': '📸 Documented',
+  'parentReport.closing': 'We love having {name} in our classroom. See you next week!',
   'parentReport.weekOf': 'Week of',
 
   // Phase 9 — Library
@@ -1809,6 +1810,7 @@ export const en = {
   'report.email.yourTeam': 'Your Montessori Team',
   'report.email.progressSummary': 'Progress Summary',
   'report.email.statusLegend': 'Mastered • Practicing • Introduced • Documented',
+  'report.email.noProgress': 'No new progress this period',
 
   // Report PDF
   'report.pdf.title': 'Weekly Progress Report',
@@ -2060,12 +2062,6 @@ export const en = {
   'common.signOut': 'Sign out',
   'common.viewAll': 'View all',
   'common.copied': 'Copied!',
-
-  // Parent Report viewer additions
-  'parentReport.statusMastered': '⭐ Mastered',
-  'parentReport.statusPracticing': '🔄 Practicing',
-  'parentReport.statusIntroduced': '🌱 Introduced',
-  'parentReport.statusDocumented': '📸 Documented',
 
   // Validation/Error messages
   'validation.passwordsDoNotMatch': 'Passwords do not match',
