@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { getLocaleFromRequest, getTranslator, getTranslatedStatus } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 export async function POST(request: NextRequest) {
@@ -278,9 +278,82 @@ export async function POST(request: NextRequest) {
       addedWorkNames.add(workName.toLowerCase());
     }
 
+    // --- Narrative Generation ---
+    const allWorks = [...progressWorks, ...documentedWorks];
+    const firstName = child.name?.split(' ')[0] || child.name || '';
+
+    // Group works by area for structured display
+    const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const worksByArea: Record<string, typeof allWorks> = {};
+    for (const w of allWorks) {
+      const area = w.area || 'other';
+      if (!worksByArea[area]) worksByArea[area] = [];
+      worksByArea[area].push(w);
+    }
+    const areasExplored = AREA_ORDER
+      .filter(a => worksByArea[a] && worksByArea[a].length > 0)
+      .map(a => ({
+        area_key: a,
+        area_name: getTranslatedAreaName(a, locale),
+        works: worksByArea[a],
+      }));
+    // Add any "other" areas not in AREA_ORDER
+    for (const [area, works] of Object.entries(worksByArea)) {
+      if (!AREA_ORDER.includes(area) && works.length > 0) {
+        areasExplored.push({
+          area_key: area,
+          area_name: getTranslatedAreaName(area, locale),
+          works,
+        });
+      }
+    }
+
+    // Greeting
+    const masteredCount = allWorks.filter(w => w.status === 'mastered').length;
+    const greeting = allWorks.length > 3
+      ? t('report.generate.activeWeek' as any, '{name} had an active and engaged week!').replace('{name}', firstName)
+      : t('report.generate.wonderfulWeek' as any, '{name} had a wonderful week in the classroom!').replace('{name}', firstName);
+
+    // Highlights
+    const highlights: string[] = [];
+    if (allWorks.length > 0) {
+      highlights.push(
+        t('report.generate.excellentFocus' as any, '{name} demonstrated excellent focus during work time.').replace('{name}', firstName)
+      );
+    }
+    if (masteredCount > 0) {
+      highlights.push(
+        t('batchReports.masteredCount' as any, '{name} has mastered {count} works — amazing!')
+          .replace('{name}', firstName)
+          .replace('{count}', String(masteredCount))
+      );
+    }
+    if (areasExplored.length >= 3) {
+      highlights.push(
+        t('report.generate.specialInterest' as any, '{name} is showing special interest in the {area} area.')
+          .replace('{name}', firstName)
+          .replace('{area}', areasExplored[0].area_name.toLowerCase())
+      );
+    }
+
+    // Home suggestions
+    const recommendations: string[] = [
+      t('report.generate.encourageIndependence' as any, 'Continue encouraging independence at home — let them help with simple tasks!'),
+      t('report.generate.readTogether' as any, 'Read together daily and point out letters in the environment.'),
+      t('report.generate.sortAndCount' as any, 'Provide opportunities for sorting, counting, and organizing.'),
+    ];
+
+    // Closing
+    const closing = t('report.generate.loveHaving' as any, 'We love having {name} in our classroom. See you next week!').replace('{name}', firstName);
+
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
-      works: [...progressWorks, ...documentedWorks],
+      greeting,
+      highlights,
+      areas_explored: areasExplored,
+      recommendations,
+      closing,
+      works: allWorks,
       // Include work_name in photos for better frontend matching
       photos: photos.map(p => ({
         ...p,

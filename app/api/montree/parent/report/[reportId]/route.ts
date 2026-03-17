@@ -263,8 +263,16 @@ export async function GET(
 
     const classroomId = report.classroom_id || child?.classroom_id;
 
-    // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions)
-    const savedContent = report.content as { works?: Array<{ name: string; area: string; status: string; parent_description?: string; why_it_matters?: string; photo_url?: string; photo_caption?: string }>; photos?: Record<string, unknown>[] } | null;
+    // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions + narrative)
+    const savedContent = report.content as {
+      works?: Array<{ name: string; area: string; status: string; status_label?: string; chineseName?: string | null; parent_description?: string | null; why_it_matters?: string | null; photo_url?: string | null; photo_caption?: string | null }>;
+      photos?: Record<string, unknown>[];
+      greeting?: string;
+      highlights?: string[];
+      areas_explored?: Array<{ area_key: string; area_name: string; works: Array<{ name: string; area: string; status: string; photo_url?: string | null; photo_caption?: string | null; parent_description?: string | null; why_it_matters?: string | null }> }>;
+      recommendations?: string[];
+      closing?: string;
+    } | null;
 
     if (savedContent?.works && savedContent.works.length > 0) {
       // USE SAVED CONTENT - This is the preferred path for new reports
@@ -330,9 +338,25 @@ export async function GET(
         }));
       }
 
+      // Map areas_explored works to use work_name (send/route.ts saves as "name", frontend expects "work_name")
+      const mappedAreasExplored = savedContent.areas_explored?.map(ae => ({
+        ...ae,
+        works: ae.works.map((w: any) => ({
+          ...w,
+          work_name: w.name || w.work_name || '',
+          chineseName: w.chineseName || (w.name ? getChineseNameForWork(w.name) : null),
+        })),
+      })) || null;
+
       return NextResponse.json({
         report: {
           ...report,
+          // Populate narrative fields from saved content (new reports have these)
+          parent_summary: savedContent.greeting || report.parent_summary || null,
+          highlights: savedContent.highlights || report.highlights || null,
+          recommendations: savedContent.recommendations || report.recommendations || null,
+          closing: savedContent.closing || null,
+          areas_explored: mappedAreasExplored,
           child,
           works_completed: worksCompleted,
           all_photos: allPhotos,

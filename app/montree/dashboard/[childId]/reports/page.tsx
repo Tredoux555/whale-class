@@ -535,7 +535,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* Preview Modal */}
+      {/* Preview Modal — Option B: photo on top, grouped by area, narrative sections */}
       {showPreview && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
@@ -562,71 +562,139 @@ export default function ReportsPage() {
               </button>
             </div>
 
-            {/* Modal Body - Scrollable */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {/* Child header */}
-              <div className="text-center pb-4 border-b">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 mx-auto mb-2 flex items-center justify-center text-2xl">
-                  {childName.charAt(0)}
+            {/* Modal Body - Scrollable — mirrors parent report page layout */}
+            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-emerald-50 to-teal-50">
+              <div className="p-4 space-y-4">
+
+              {/* ── Report Header (green gradient) ── */}
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
+                      {childName.charAt(0)}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">
+                        {locale === 'zh' ? `${childName}的${t('parentReport.weeklyReport' as any) || '周报'}` : `${childName}'s ${t('parentReport.weeklyReport' as any) || 'Weekly Report'}`}
+                      </h2>
+                      <p className="text-emerald-100 text-sm">{items.length} {t('reports.activitiesToShare')}</p>
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">{childName}'s {t('reports.progress')}</h2>
-                <p className="text-gray-500 text-sm">{items.length} {t('reports.activitiesToShare')}</p>
+
+                {/* Greeting — template-based preview */}
+                <div className="px-5 py-4 border-l-4 border-emerald-400 bg-emerald-50 mx-4 mt-4 mb-2 rounded-r-xl">
+                  <p className="text-gray-700 leading-relaxed text-[15px]">
+                    {locale === 'zh'
+                      ? `${childName}度过了充实而专注的一周！本周共探索了${items.length}项工作。`
+                      : `${childName} had a wonderful week of learning! This week they explored ${items.length} different activities.`}
+                  </p>
+                </div>
+
+                {/* Highlights — show mastered/top works */}
+                {(() => {
+                  const masteredItems = items.filter(i => i.status === 'mastered' || i.status === 'completed');
+                  if (masteredItems.length === 0) return null;
+                  return (
+                    <div className="px-5 py-3">
+                      {masteredItems.slice(0, 3).map((item, i) => (
+                        <p key={i} className="text-gray-600 text-sm leading-relaxed mb-1">
+                          ⭐ {locale === 'zh' && item.chineseName ? item.chineseName : item.work_name} ({locale === 'zh' ? '已掌握' : 'Mastered'})
+                        </p>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
-              {/* Works */}
-              {items.map((item, i) => (
-                <div key={`work-${item.work_name}-${i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
-                  {/* Work header */}
-                  <div className="flex items-center gap-2">
-                    <StatusBadge status={item.status} locale={locale} />
-                    <h4 className="font-bold text-gray-800">{locale === 'zh' && item.chineseName ? item.chineseName : item.work_name}</h4>
-                  </div>
+              {/* ── Works by Area (Option B cards) ── */}
+              {groupedByArea.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2 px-1">
+                    📋 {t('parentReport.worksThisWeek' as any) || 'Works This Week'} ({items.length})
+                  </h3>
 
-                  {/* Photo - Hero style, tap to zoom */}
-                  {item.photo_url && (
-                    <div className="relative -mx-4 my-3">
-                      <button
-                        onClick={() => { setLightboxSrc(item.photo_url!); setLightboxOpen(true); }}
-                        className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
-                      >
-                        <img
-                          src={item.photo_url}
-                          alt={item.work_name}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                      {item.photo_caption && (
-                        <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{item.photo_caption}</p>
-                      )}
-                    </div>
-                  )}
+                  {groupedByArea.map(([area, areaItems]) => {
+                    const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; bg: string; text: string; border: string }> = {
+                      practical_life: { emoji: '🧹', bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
+                      sensorial: { emoji: '👁️', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+                      mathematics: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+                      math: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+                      language: { emoji: '📚', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+                      cultural: { emoji: '🌍', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+                    };
+                    const conf = PREVIEW_AREA_CONFIG[area] || { emoji: '📌', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
 
-                  {/* Description */}
-                  {item.parent_description ? (
-                    <div className="space-y-2">
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {item.parent_description}
-                      </p>
-                      {item.why_it_matters && (
-                        <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
-                          <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('reports.whyItMatters')}</p>
-                          <p className="text-sm text-emerald-800">{item.why_it_matters}</p>
+                    return (
+                      <div key={area} className="space-y-3">
+                        {/* Area Header */}
+                        <div className={`${conf.bg} ${conf.text} ${conf.border} border rounded-xl px-4 py-2 font-semibold text-sm flex items-center gap-2`}>
+                          <span>{conf.emoji}</span>
+                          <span>{t(`area.${area}` as any) || area.replace('_', ' ')}</span>
                         </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-gray-400 text-sm italic">
-                      {t('reports.noDescriptionAvailable')}
-                    </p>
-                  )}
-                </div>
-              ))}
 
-              {/* Unassigned Photos — compact grid, no bunching */}
+                        {/* Work Cards — Option B: photo on top, text below */}
+                        {areaItems.map((item, i) => {
+                          const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
+                          return (
+                            <div key={`${area}-${item.work_name}-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                              {/* Photo — compact h-48, not hero 4:3 */}
+                              {item.photo_url && (
+                                <div className="relative">
+                                  <button
+                                    onClick={() => { setLightboxSrc(item.photo_url!); setLightboxOpen(true); }}
+                                    className="w-full h-48 overflow-hidden block cursor-zoom-in"
+                                  >
+                                    <img
+                                      src={item.photo_url}
+                                      alt={displayName}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </button>
+                                  {item.photo_caption && (
+                                    <p className="px-4 py-1.5 text-xs text-gray-500 italic text-center bg-gray-50">{item.photo_caption}</p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Content */}
+                              <div className="px-4 py-3 space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <StatusBadge status={item.status} locale={locale} />
+                                  <h4 className="font-bold text-gray-800 text-[15px]">{displayName}</h4>
+                                </div>
+
+                                {item.parent_description ? (
+                                  <p className="text-gray-600 text-sm leading-relaxed">{item.parent_description}</p>
+                                ) : (
+                                  <p className="text-gray-400 text-sm">
+                                    {locale === 'zh'
+                                      ? `您的孩子在${t(`area.${area}` as any) || area.replace('_', ' ')}领域进行了练习。`
+                                      : `Your child practiced this ${area.replace('_', ' ')} activity.`}
+                                  </p>
+                                )}
+
+                                {item.why_it_matters && (
+                                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                                    <p className="text-[11px] font-semibold text-emerald-700 mb-0.5">💡 {t('parentReport.whyItMatters' as any) || 'Why it matters'}</p>
+                                    <p className="text-xs text-emerald-800 leading-relaxed">{item.why_it_matters}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── Unassigned Photos — compact grid ── */}
               {unassignedPhotos.length > 0 && (
-                <div className="bg-blue-50 rounded-xl p-4 space-y-3">
-                  <h4 className="font-bold text-gray-800 flex items-center gap-2">
-                    📸 {t('reports.morePhotos' as any) || 'More Photos'}
+                <div className="bg-white rounded-2xl p-5 shadow-sm">
+                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-3">
+                    📸 {t('parentReport.morePhotos' as any) || 'More Photos'}
                     <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
                   </h4>
                   <div className="grid grid-cols-3 gap-2">
@@ -634,20 +702,55 @@ export default function ReportsPage() {
                       <button
                         key={photo.id}
                         onClick={() => { setLightboxSrc(photo.url); setLightboxOpen(true); }}
-                        className="rounded-lg overflow-hidden shadow-sm text-left cursor-zoom-in"
+                        className="aspect-square rounded-lg overflow-hidden shadow-sm cursor-zoom-in"
                       >
-                        <div className="aspect-square w-full">
-                          <img
-                            src={photo.url}
-                            alt={photo.caption || t('reports.learningMoment')}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        <img
+                          src={photo.url}
+                          alt={photo.caption || t('reports.learningMoment')}
+                          className="w-full h-full object-cover"
+                        />
                       </button>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* ── Recommendations ── */}
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+                <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
+                  💡 {t('parentReport.recommendationsForHome' as any) || 'Try This at Home'}
+                </h4>
+                <ul className="space-y-2">
+                  {items.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
+                    <li key={i} className="text-amber-900 text-sm leading-relaxed flex items-start gap-2">
+                      <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                      <span>
+                        {locale === 'zh'
+                          ? `让${childName}在家里也尝试${item.chineseName || item.work_name}相关的活动。`
+                          : `Encourage ${childName} to practice ${item.work_name}-related activities at home.`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* ── Closing ── */}
+              <div className="text-center py-3">
+                <p className="text-gray-600 leading-relaxed">
+                  {locale === 'zh'
+                    ? `我们很开心有${childName}在课堂上，下周见！`
+                    : `We love having ${childName} in our classroom. See you next week!`}
+                  {' '}🌿
+                </p>
+              </div>
+
+              {/* ── Footer ── */}
+              <div className="text-center text-xs text-gray-400 py-2">
+                {t('parentReport.reportGenerated' as any) || 'Report generated'} {new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {' · Montree'}
+              </div>
+
+              </div>
             </div>
 
             {/* Modal Footer */}

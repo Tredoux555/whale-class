@@ -1332,6 +1332,7 @@ export const zh = {
   'parentReport.statusPracticing': '🔄 练习中',
   'parentReport.statusIntroduced': '🌱 已展示',
   'parentReport.statusDocumented': '📸 已记录',
+  'parentReport.closing': '我们很开心有{name}在课堂上，下周见！',
   'parentReport.weekOf': '周',
 
   // Phase 9 — Library
@@ -1809,6 +1810,7 @@ export const zh = {
   'report.email.yourTeam': '您的蒙特梭利团队',
   'report.email.progressSummary': '进度概要',
   'report.email.statusLegend': '已掌握 • 练习中 • 已展示 • 已记录',
+  'report.email.noProgress': '本期暂无新进展',
 
   // Report PDF
   'report.pdf.title': '每周进度报告',
@@ -2060,12 +2062,6 @@ export const zh = {
   'common.signOut': '退出登录',
   'common.viewAll': '查看全部',
   'common.copied': '已复制！',
-
-  // Parent Report viewer additions
-  'parentReport.statusMastered': '⭐ 已掌握',
-  'parentReport.statusPracticing': '🔄 练习中',
-  'parentReport.statusIntroduced': '🌱 已展示',
-  'parentReport.statusDocumented': '📸 已记录',
 
   // Validation/Error messages
   'validation.passwordsDoNotMatch': '密码不匹配',
