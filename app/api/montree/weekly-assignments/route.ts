@@ -81,6 +81,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       assignments,
       total: assignments.length
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
     });
 
   } catch (error) {

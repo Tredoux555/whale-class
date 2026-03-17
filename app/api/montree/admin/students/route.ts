@@ -54,7 +54,9 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ students: studentsWithClassroom, classrooms: schoolClassrooms });
+    return NextResponse.json({ students: studentsWithClassroom, classrooms: schoolClassrooms }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
+    });
   } catch (error) {
     console.error('Get students error:', error);
     return NextResponse.json({ error: 'Failed to get students' }, { status: 500 });

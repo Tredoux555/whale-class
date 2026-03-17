@@ -169,7 +169,7 @@ export default function ActivityPage() {
       setSummary(data.summary || null);
     } catch (error) {
       console.error('Failed to fetch activity:', error);
-      toast.error('Failed to load activity data');
+      toast.error(t('admin.activity.fetchError'));
     } finally {
       setLoading(false);
     }

@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ messages: data || [] });
+    return NextResponse.json({ messages: data || [] }, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
+    });
   } catch (error) {
     console.error('Get messages error:', error);
     return NextResponse.json(

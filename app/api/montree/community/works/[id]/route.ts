@@ -39,7 +39,9 @@ export async function GET(
       .eq('id', id)
       .then(() => {});
 
-    return NextResponse.json({ work: data });
+    return NextResponse.json({ work: data }, {
+      headers: { 'Cache-Control': 'public, max-age=300, stale-while-revalidate=600' }
+    });
   } catch (error) {
     console.error('Community work GET error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

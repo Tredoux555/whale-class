@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import JSZip from 'jszip';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface FlashCard {
   id: number;
@@ -248,6 +249,7 @@ const VocabularyFlashcardGenerator = () => {
           <div className="flex items-center gap-4">
             <button onClick={() => router.back()} className="text-cyan-600 hover:text-cyan-800">← Back</button>
             <h1 className="text-2xl font-bold text-gray-800">Vocabulary Flashcard Maker</h1>
+            <LanguageToggle />
           </div>
           {cards.length > 0 && (
             <button

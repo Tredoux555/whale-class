@@ -50,7 +50,9 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ works, total: works.length });
+    return NextResponse.json({ works, total: works.length }, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' }
+    });
   } catch (error) {
     console.error('[works] Error:', error);
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

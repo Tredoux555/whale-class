@@ -108,6 +108,8 @@ export async function GET(request: NextRequest) {
         active_this_week: activeStudents
       },
       classroom_stats: classroomStats
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
     });
 
   } catch (error) {

@@ -29,7 +29,9 @@ export async function GET(request: NextRequest) {
       .eq('role', 'principal')
       .single();
 
-    return NextResponse.json({ school, principal });
+    return NextResponse.json({ school, principal }, {
+      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' }
+    });
   } catch (error) {
     console.error('Get settings error:', error);
     return NextResponse.json({ error: 'Failed to get settings' }, { status: 500 });

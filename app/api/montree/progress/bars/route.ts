@@ -156,7 +156,9 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ areas: areasResponse });
+    return NextResponse.json({ areas: areasResponse }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
+    });
 
   } catch (error) {
     console.error('Progress bars API error:', error);

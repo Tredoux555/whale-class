@@ -36,6 +36,8 @@ export async function GET(request: NextRequest) {
         success: true,
         guru_access: 'unlimited',
         role,
+      }, {
+        headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
       });
     }
 
@@ -66,6 +68,8 @@ export async function GET(request: NextRequest) {
         haiku: { price: 5, prompts: 30, description: 'Quick, focused Montessori advice' },
         sonnet: { price: 20, prompts: 30, description: 'Deep therapeutic support + pattern detection' },
       },
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
     });
 
   } catch (error) {

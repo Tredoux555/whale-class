@@ -4,6 +4,7 @@
 
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 const TOOLS = [
   {
@@ -94,9 +95,12 @@ export default function LibraryToolsPage() {
       {/* Header */}
       <header className="bg-[#0D3330] text-white">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <Link href="/montree/library" className="text-emerald-300 text-sm hover:underline">
-            ← {t('tools.back_to_library')}
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href="/montree/library" className="text-emerald-300 text-sm hover:underline">
+              ← {t('tools.back_to_library')}
+            </Link>
+            <LanguageToggle />
+          </div>
           <h1 className="text-2xl md:text-3xl font-bold mt-2">
             {t('tools.content_creation')}
           </h1>

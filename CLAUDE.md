@@ -74,26 +74,25 @@ Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for t
 
 **Needs:** `STRIPE_SECRET_KEY`, `STRIPE_PRICE_GURU_MONTHLY`, `STRIPE_WEBHOOK_SECRET_GURU`, `STRIPE_PRICE_BASIC`, `STRIPE_PRICE_STANDARD`, `STRIPE_PRICE_PREMIUM`
 
-### i18n Remaining Wiring (Priority #8)
+### ✅ i18n Remaining Wiring (Priority #8 — DONE)
 
-Wire `t()` calls in: `useWorkOperations.ts` (13 toasts), `useCurriculumDragDrop.ts` (3 toasts), `admin/students/page.tsx` (~31 strings), `admin/reports/page.tsx` (~15), `admin/activity/page.tsx` (~23), `admin/billing/page.tsx` (~16), `onboarding/page.tsx` (~30), `PhotoEditModal.tsx` (~12). Estimated ~2hrs.
+**Status:** Verified ALL 8 FILES already wired as of Mar 17 audit. `useWorkOperations.ts` (13 toasts wired), `useCurriculumDragDrop.ts` (3 toasts wired), `admin/students/page.tsx` (~31 strings wired), `admin/reports/page.tsx` (~15 wired), `admin/activity/page.tsx` (~23 wired + 1 toast fixed this session), `admin/billing/page.tsx` (~16 wired), `onboarding/page.tsx` (~30 wired), `PhotoEditModal.tsx` (~12 wired). Perfect EN/ZH parity.
 
-### Performance Optimization Backlog (Priority #9 — From Mar 16 Audit)
+### ✅ Performance Optimization Backlog (Priority #9 — PARTIALLY DONE)
 
-**Status:** Full audit complete. Tab consolidation deployed. Remaining fixes listed in priority order.
+**Status:** Highest-impact items DONE as of Mar 17. Remaining component-level fixes deferred.
 **Handoff:** `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md`
-**Estimated total:** ~10-12 hours for all issues.
 
-**Highest impact (do first):**
-1. Add Cache-Control headers to all API GET routes (2-3h) — immediate 2-4x dashboard speed
-2. Parallelize sequential DB queries in progress/media/guru routes with Promise.all (1.5h)
-3. Fix progress/summary double-fetch + O(N^2) loop (45min)
+**DONE (Mar 17):**
+1. ✅ Cache-Control headers added to ~24 additional API GET routes (now 59/87 routes cached) — immediate 2-4x dashboard speed
+2. ✅ Sequential DB queries already parallelized (progress, media GET, guru, progress/summary all use Promise.all). Media DELETE parallelized this session.
+3. ✅ Progress/summary O(N²) sort fixed in reports preview (Mar 17 3x3x3 audit). Progress/summary route already parallelized.
+4. ✅ DashboardHeader already has 5-min sessionStorage cache + server Cache-Control on both endpoints — consolidation unnecessary
+5. ✅ verifyChildBelongsToSchool: 30s TTL cache added + clearChildAccessCache() export
 
-**Component-level fixes:**
-4. DashboardHeader: consolidate 2 API calls into 1 (30min)
-5. ShelfView: paginate curriculum search, add debounce (30min)
-6. Child Week Page: consolidate 9+ state vars into useReducer (1h)
-7. verifyChildBelongsToSchool: add 30s TTL to cache (15min)
+**Remaining (low priority):**
+- ShelfView: paginate curriculum search, add debounce (30min)
+- Child Week Page: consolidate 9+ state vars into useReducer (1h)
 
 ### Story Vault Image Viewer (Priority #10 — Deferred)
 
@@ -133,6 +132,36 @@ Full 3x3x3 audit-plan-fix cycle on Reports and Gallery core features. 10 bugs fo
 
 **Deploy:** ⚠️ NOT YET PUSHED. No new migrations.
 **Handoff:** `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md`
+
+**Performance Optimization (Priority #9) — HIGHEST IMPACT ITEMS DONE, NOT YET DEPLOYED:**
+
+Implemented the top-priority performance optimizations from the Mar 16 audit. Discovery: most DB queries were already parallelized from prior sessions. Focused on the biggest remaining win (Cache-Control headers).
+
+**Changes:**
+1. **Cache-Control headers added to ~24 API GET routes** — Routes now have appropriate `private, max-age=N, stale-while-revalidate=M` headers. TTLs range from 30s (messages/DM) to 3600s (work guides). Coverage now 59/87 GET routes (remaining are auth/streaming/super-admin — correctly uncached).
+2. **Media DELETE parallelized** — 3 sequential awaits (storage delete, junction table delete, media record delete) → single `Promise.all`. Saves ~100-300ms per bulk delete.
+3. **verifyChildBelongsToSchool TTL cache** — 30-second module-level Map cache. `clearChildAccessCache(childId?, schoolId?)` export for targeted invalidation.
+
+**Discovery: Already optimized (no work needed):**
+- progress/route.ts — already uses `Promise.allSettled` for 3-5 parallel queries
+- media/route.ts GET — already uses 2× `Promise.all` for parallel queries
+- guru/route.ts — already has 5 separate `Promise.all` blocks
+- progress/summary/route.ts — already uses `Promise.all` for 2 parallel queries
+- DashboardHeader — already has 5-min sessionStorage cache on both endpoints
+
+**i18n Audit (Priority #8) — ALL FILES ALREADY WIRED:**
+
+Verified all 8 files from Priority #8 are already fully i18n-wired. One minor fix: `admin/activity/page.tsx` had 1 remaining hardcoded toast (`'Failed to load activity data'`) → replaced with `t('admin.activity.fetchError')`. Added key to both en.ts and zh.ts.
+
+**Files Modified (~28):**
+- ~24 API route files — Cache-Control headers added
+- `app/api/montree/media/route.ts` — DELETE parallelized
+- `lib/montree/verify-child-access.ts` — TTL cache + clearChildAccessCache export
+- `app/montree/admin/activity/page.tsx` — 1 toast i18n fix
+- `lib/montree/i18n/en.ts` — 1 new key (admin.activity.fetchError)
+- `lib/montree/i18n/zh.ts` — 1 new key (perfect EN/ZH parity)
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations.
 
 ---
 

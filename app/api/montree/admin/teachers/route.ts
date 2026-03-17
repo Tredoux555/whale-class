@@ -56,7 +56,9 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ teachers: transformedTeachers });
+    return NextResponse.json({ teachers: transformedTeachers }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
+    });
   } catch (error) {
     console.error('List teachers error:', error);
     return NextResponse.json({ error: 'Failed to list teachers' }, { status: 500 });
