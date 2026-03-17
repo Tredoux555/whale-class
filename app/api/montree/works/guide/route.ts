@@ -113,14 +113,18 @@ export async function GET(request: NextRequest) {
     if (locale === 'zh' && anthropic && (result.quick_guide || result.presentation_steps)) {
       try {
         const translated = await translateGuideToZh(result);
-        return NextResponse.json(translated);
+        return NextResponse.json(translated, {
+          headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
+        });
       } catch (err) {
         console.error('Translation failed, returning English:', err);
         // Fall through to return English version
       }
     }
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
+    });
 
   } catch (error) {
     console.error('Guide API error:', error);

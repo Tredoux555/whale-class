@@ -4,6 +4,7 @@
 
 import Link from 'next/link';
 import { useI18n } from '@/lib/montree/i18n';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function LibraryWelcomePage() {
   const { t } = useI18n();
@@ -15,13 +16,14 @@ export default function LibraryWelcomePage() {
       <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #fbbf24, transparent 70%)' }} />
 
       {/* Nav */}
-      <nav className="relative z-10 px-6 py-5">
+      <nav className="relative z-10 px-6 py-5 flex items-center justify-between">
         <Link
           href="/montree"
           className="text-white/40 text-sm hover:text-white/70 transition-colors"
         >
           ← montree.xyz
         </Link>
+        <LanguageToggle />
       </nav>
 
       {/* Centered content */}

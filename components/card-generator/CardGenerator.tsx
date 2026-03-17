@@ -6,6 +6,7 @@ import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
 import { generateCards, generateLargeCards, generateLabelsOnly } from './print-utils';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 interface HeaderConfig {
   showBackButton?: boolean;
@@ -627,6 +628,9 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             </p>
           )}
         </div>
+        <div style={{ flexShrink: 0, marginLeft: '12px' }}>
+          <LanguageToggle />
+        </div>
       </div>
 
       {/* Settings Panel */}
@@ -867,7 +871,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         {activeTab === 'photo-bank' && (
           <div>
             <p style={{ margin: '0 0 12px 0', color: '#666', fontSize: '14px' }}>
-              Search and select pictures from the Montree Picture Bank. Click a picture to add it as a card.
+              Search and select pictures from the Montree Picture Bank. Click a picture to add it as a card. Type multiple words (one per line) for bulk search.
             </p>
             <PhotoBankPicker
               onSelectPhoto={(dataUrl, label, filename) => {

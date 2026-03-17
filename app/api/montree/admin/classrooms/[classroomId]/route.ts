@@ -85,6 +85,8 @@ export async function GET(
         total_teachers: (teachers || []).length,
         reports_this_month: reportsThisMonth,
       },
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
     });
   } catch (error) {
     console.error('Classroom detail error:', error);

@@ -5,6 +5,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
+import LanguageToggle from '@/components/montree/LanguageToggle';
 
 export default function PhotoBankPage() {
   const [uploadMode, setUploadMode] = useState(false);
@@ -131,7 +132,9 @@ export default function PhotoBankPage() {
         >
           ← Back to Library
         </Link>
-        <button
+        <div className="flex items-center gap-3">
+          <LanguageToggle />
+          <button
           onClick={() => setUploadMode(!uploadMode)}
           className="px-4 py-2 rounded-lg text-sm font-semibold transition-all"
           style={{
@@ -142,6 +145,7 @@ export default function PhotoBankPage() {
         >
           {uploadMode ? '✕ Close Upload' : '📤 Upload Pictures'}
         </button>
+        </div>
       </nav>
 
       {/* Header */}

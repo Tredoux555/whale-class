@@ -56,6 +56,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({
         total_unread: messages.length,
         per_conversation: perConversation,
+      }, {
+        headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
       });
     }
 
@@ -106,6 +108,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       messages: data || [],
       unread_count: unreadCount ?? 0
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' }
     });
 
   } catch (error) {

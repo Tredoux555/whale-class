@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
       success: true,
       school,
       history: history || [],
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
     });
 
   } catch (error) {

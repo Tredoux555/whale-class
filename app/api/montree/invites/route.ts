@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
               new Date(inv.expires_at) < now ? 'expired' : 'active'
     }));
 
-    return NextResponse.json({ invites: enrichedInvites });
+    return NextResponse.json({ invites: enrichedInvites }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
+    });
   } catch (error: unknown) {
     console.error('Get invites error:', error);
     return NextResponse.json({ error: 'Failed to load invites' }, { status: 500 });

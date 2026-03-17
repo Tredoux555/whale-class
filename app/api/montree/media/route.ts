@@ -300,19 +300,14 @@ export async function DELETE(request: NextRequest) {
       }
     });
 
-    // Delete from storage
-    if (pathsToDelete.length > 0) {
-      await supabase.storage.from('montree-media').remove(pathsToDelete);
-    }
-
-    // Delete child links for all media
-    await supabase.from('montree_media_children').delete().in('media_id', idsToDelete);
-
-    // Delete database records
-    const { error: deleteError } = await supabase
-      .from('montree_media')
-      .delete()
-      .in('id', idsToDelete);
+    // Parallelize: storage delete, junction delete, and media record delete (all independent)
+    const [storageResult, junctionResult, { error: deleteError }] = await Promise.all([
+      pathsToDelete.length > 0
+        ? supabase.storage.from('montree-media').remove(pathsToDelete)
+        : Promise.resolve(null),
+      supabase.from('montree_media_children').delete().in('media_id', idsToDelete),
+      supabase.from('montree_media').delete().in('id', idsToDelete),
+    ]);
 
     if (deleteError) {
       console.error('Media delete error:', deleteError.message, deleteError.code);

@@ -206,6 +206,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       leads: data || [],
       new_count: newCount || 0
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
     });
 
   } catch (error) {

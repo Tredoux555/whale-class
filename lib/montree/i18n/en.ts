@@ -2232,6 +2232,7 @@ export const en = {
   'admin.activity.labelWorkUpdate': 'Work Update',
   'admin.activity.labelObservation': 'Observation',
   'admin.activity.labelSession': 'Session',
+  'admin.activity.fetchError': 'Failed to load activity data',
 
   // --- Admin Billing ---
   'admin.billing.title': 'Billing',

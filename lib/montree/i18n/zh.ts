@@ -2232,6 +2232,7 @@ export const zh = {
   'admin.activity.labelWorkUpdate': '工作更新',
   'admin.activity.labelObservation': '观察',
   'admin.activity.labelSession': '会话',
+  'admin.activity.fetchError': '加载活动数据失败',
 
   // --- Admin Billing ---
   'admin.billing.title': '账单',

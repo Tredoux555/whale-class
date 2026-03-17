@@ -63,6 +63,8 @@ export async function GET(request: NextRequest) {
       page,
       limit,
       totalPages: Math.ceil((count || 0) / limit),
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }
     });
   } catch (err) {
     console.error('Photo bank GET error:', err);

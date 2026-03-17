@@ -63,12 +63,16 @@ export async function GET(request: NextRequest) {
             description: nextWork.description,
             source: 'curriculum_data'
           }
+        }, {
+          headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
         });
       }
     }
 
     // No next work in same area
-    return NextResponse.json({ success: true, next_work: null });
+    return NextResponse.json({ success: true, next_work: null }, {
+      headers: { 'Cache-Control': 'private, max-age=120, stale-while-revalidate=300' }
+    });
 
   } catch (error) {
     console.error('Next work error:', error);

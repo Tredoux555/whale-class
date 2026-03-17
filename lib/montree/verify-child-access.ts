@@ -80,6 +80,21 @@ export async function verifyChildBelongsToSchool(
 }
 
 /**
+ * Clear the child access cache. Call this when progress updates happen
+ * or when you need to force a fresh DB lookup for a specific child.
+ */
+export function clearChildAccessCache(childId?: string, schoolId?: string): void {
+  if (childId && schoolId) {
+    // Clear a specific entry
+    const cacheKey = `${childId}:${schoolId}`;
+    accessCache.delete(cacheKey);
+  } else {
+    // Clear the entire cache
+    accessCache.clear();
+  }
+}
+
+/**
  * Verify multiple child IDs belong to the same school.
  * Returns only the IDs that pass verification.
  */
