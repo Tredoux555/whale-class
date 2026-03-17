@@ -151,6 +151,7 @@ export default function AdminPage() {
             <p className="text-emerald-300 text-sm">{t('admin.principalLabel')} {principal?.name}</p>
           </div>
           <div className="flex items-center gap-2">
+            <button onClick={() => router.push('/montree/admin/guru-settings')} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600" title={t('admin.guruSettings.navLabel')}>🧠</button>
             <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-emerald-700/50 rounded-lg text-white hover:bg-emerald-600">⚙️</button>
             <button onClick={handleLogout} className="px-4 py-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 text-sm">{t('admin.logout')}</button>
           </div>
