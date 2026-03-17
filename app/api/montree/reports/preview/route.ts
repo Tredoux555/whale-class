@@ -325,17 +325,24 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================================
-    // STEP 5: BUILD UNIFIED REPORT - Photo-first approach
+    // STEP 5: BUILD UNIFIED REPORT - Include ALL works, match photos where possible
     // ============================================================
-    // Key insight: Start from PHOTOS (they have work_id) and UNION with progress
+    // Timeline approach: every progress entry appears, photos matched where available
 
-    // Build a map of work_id -> photos
+    // Build maps of photos by work_id and by work_name for matching
     const photosByWorkId = new Map<string, typeof allPhotos[0][]>();
+    const photosByWorkName = new Map<string, typeof allPhotos[0][]>();
     for (const photo of allPhotos) {
       if (photo.work_id) {
         const existing = photosByWorkId.get(photo.work_id) || [];
         existing.push(photo);
         photosByWorkId.set(photo.work_id, existing);
+      }
+      if (photo.work_name) {
+        const nameLower = photo.work_name.toLowerCase().trim();
+        const existing = photosByWorkName.get(nameLower) || [];
+        existing.push(photo);
+        photosByWorkName.set(nameLower, existing);
       }
     }
 
@@ -344,13 +351,16 @@ export async function GET(request: NextRequest) {
       ? allPhotos.filter(p => p.is_selected)
       : allPhotos;
 
-    // Build map of selected/available photos by work_id
+    // Build map of selected/available photos by work_id (best match per work)
     const selectedPhotosByWorkId = new Map<string, typeof allPhotos[0]>();
     for (const photo of photosForMatching) {
       if (photo.work_id && !selectedPhotosByWorkId.has(photo.work_id)) {
         selectedPhotosByWorkId.set(photo.work_id, photo);
       }
     }
+
+    // Track which photos have been claimed by a work (to avoid double-use)
+    const claimedPhotoIds = new Set<string>();
 
     // Track which works we've added (by work_id or name)
     const addedWorkIds = new Set<string>();
@@ -370,29 +380,56 @@ export async function GET(request: NextRequest) {
       source: 'progress' | 'photo';
     }> = [];
 
-    // First: Add works from progress — BUT ONLY IF THEY HAVE A PHOTO
-    // Reports are photo-centric: no photo = not in report
+    // Helper: find best matching photo for a work (multi-strategy)
+    function findPhotoForWork(workId: string | undefined, workNameLower: string): typeof allPhotos[0] | null {
+      // Strategy 1: Direct work_id match (most reliable)
+      if (workId) {
+        const photo = selectedPhotosByWorkId.get(workId);
+        if (photo && !claimedPhotoIds.has(photo.id)) return photo;
+        // Also check ALL photos by work_id (not just selected)
+        const allForWork = photosByWorkId.get(workId);
+        if (allForWork) {
+          const unclaimed = allForWork.find(p => !claimedPhotoIds.has(p.id));
+          if (unclaimed) return unclaimed;
+        }
+      }
+
+      // Strategy 2: Exact name match on photo work_name
+      const byName = photosByWorkName.get(workNameLower);
+      if (byName) {
+        const unclaimed = byName.find(p => !claimedPhotoIds.has(p.id));
+        if (unclaimed) return unclaimed;
+      }
+
+      // Strategy 3: Fuzzy name match (contains)
+      const fuzzyMatch = photosForMatching.find(ph => {
+        if (claimedPhotoIds.has(ph.id)) return false;
+        if (!ph.work_name) return false;
+        const photoNameLower = ph.work_name.toLowerCase().trim();
+        return photoNameLower.includes(workNameLower) || workNameLower.includes(photoNameLower);
+      });
+      if (fuzzyMatch) return fuzzyMatch;
+
+      // Strategy 4: Caption match (photo caption may contain work name)
+      const captionMatch = photosForMatching.find(ph => {
+        if (claimedPhotoIds.has(ph.id)) return false;
+        if (!ph.caption) return false;
+        return ph.caption.toLowerCase().includes(workNameLower);
+      });
+      if (captionMatch) return captionMatch;
+
+      return null;
+    }
+
+    // First: Add ALL works from progress (with or without photos)
     for (const p of progress || []) {
-      const workNameLower = (p.work_name || '').toLowerCase();
+      const workNameLower = (p.work_name || '').toLowerCase().trim();
       const workId = workNameToId.get(workNameLower);
       const workInfo = workId ? workIdToInfo.get(workId) : null;
 
-      // Find matching photo by work_id (direct match - most reliable)
-      let photo = workId ? selectedPhotosByWorkId.get(workId) : null;
-
-      // Fallback: fuzzy name match for photos without work_id
-      if (!photo) {
-        photo = photosForMatching.find(ph => {
-          if (!ph.work_name) return false;
-          const photoNameLower = ph.work_name.toLowerCase();
-          return photoNameLower === workNameLower ||
-                 photoNameLower.includes(workNameLower) ||
-                 workNameLower.includes(photoNameLower);
-        });
-      }
-
-      // SKIP works without photos — reports only show photo-captured works
-      if (!photo?.url) continue;
+      // Find best matching photo (may be null — that's OK now)
+      const photo = findPhotoForWork(workId, workNameLower);
+      if (photo) claimedPhotoIds.add(photo.id);
 
       // Get description - pass the area from progress data for safe fallback
       const progressArea = p.area || workInfo?.area || 'practical_life';
@@ -404,9 +441,9 @@ export async function GET(request: NextRequest) {
         chineseName: p.work_name ? getChineseNameForWork(p.work_name) : null,
         area: p.area || workInfo?.area || 'practical_life',
         status: p.status === 'completed' ? 'mastered' : p.status,
-        photo_url: photo.url,
-        photo_id: photo.id,
-        photo_caption: photo.caption || null,
+        photo_url: photo?.url || null,
+        photo_id: photo?.id || null,
+        photo_caption: photo?.caption || null,
         parent_description: desc?.description || workInfo?.description || null,
         why_it_matters: desc?.why_it_matters || workInfo?.why_it_matters || null,
         has_description: !!(desc || workInfo?.description),
@@ -418,23 +455,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Second: Add works that have PHOTOS but no progress entry
-    // This is the key improvement - photos drive report content too!
+    // These are photo-documented works not yet in progress tracking
     for (const photo of photosForMatching) {
       if (!photo.work_id) continue;
+      if (claimedPhotoIds.has(photo.id)) continue; // Already matched above
       if (addedWorkIds.has(photo.work_id)) continue; // Already added from progress
 
       const workInfo = workIdToInfo.get(photo.work_id);
       if (!workInfo) continue; // Unknown work
 
-      // Don't add if work name already added (handles case where progress uses different name)
+      // Don't add if work name already added
       if (addedWorkNames.has(workInfo.name.toLowerCase())) continue;
+
+      claimedPhotoIds.add(photo.id);
 
       reportItems.push({
         work_id: photo.work_id,
         work_name: workInfo.name,
         chineseName: workInfo.name ? getChineseNameForWork(workInfo.name) : null,
         area: workInfo.area || 'practical_life',
-        status: 'documented', // Special status: photo exists but no formal progress
+        status: 'documented',
         photo_url: photo.url,
         photo_id: photo.id,
         photo_caption: photo.caption,
@@ -448,7 +488,7 @@ export async function GET(request: NextRequest) {
       addedWorkNames.add(workInfo.name.toLowerCase());
     }
 
-    // Build photo date lookup for O(1) access during sort (avoids O(N²) .find())
+    // Build photo date lookup for O(1) access during sort
     const photoDateMap = new Map<string, string>();
     for (const p of allPhotos) {
       if (p.id && p.created_at) {
@@ -456,11 +496,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort report items: most recent first (forward-facing development timeline)
+    // Sort: items WITH photos first (most recent photo first), then items without photos
     reportItems.sort((a, b) => {
+      // Items with photos come before items without
+      if (a.photo_url && !b.photo_url) return -1;
+      if (!a.photo_url && b.photo_url) return 1;
+      // Within each group, sort by date (most recent first)
       const aDate = a.photo_id ? (photoDateMap.get(a.photo_id) || '') : '';
       const bDate = b.photo_id ? (photoDateMap.get(b.photo_id) || '') : '';
-      // Most recent first (descending)
       return bDate.localeCompare(aDate);
     });
 
@@ -468,9 +511,8 @@ export async function GET(request: NextRequest) {
     const selectedPhotos = allPhotos.filter(p => p.is_selected);
     const availablePhotos = allPhotos.filter(p => !p.is_selected);
 
-    // Identify unassigned photos (photos not matched to any report item)
-    const matchedPhotoIds = new Set(reportItems.filter(r => r.photo_id).map(r => r.photo_id));
-    const unassignedPhotos = allPhotos.filter(p => p.url && !matchedPhotoIds.has(p.id));
+    // Identify unassigned photos (photos not claimed by any report item)
+    const unassignedPhotos = allPhotos.filter(p => p.url && !claimedPhotoIds.has(p.id));
 
     // Count stats
     const stats = {

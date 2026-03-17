@@ -607,102 +607,79 @@ export default function ReportsPage() {
                 })()}
               </div>
 
-              {/* ── Works by Area (Option B cards) ── */}
-              {groupedByArea.length > 0 && (
+              {/* ── Works Timeline — flat chronological: photo → description → photo → description ── */}
+              {items.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="font-bold text-gray-800 flex items-center gap-2 px-1">
-                    📋 {t('parentReport.worksThisWeek' as any) || 'Works This Week'} ({items.length})
-                  </h3>
-
-                  {groupedByArea.map(([area, areaItems]) => {
-                    const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; bg: string; text: string; border: string }> = {
-                      practical_life: { emoji: '🧹', bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
-                      sensorial: { emoji: '👁️', bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
-                      mathematics: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-                      math: { emoji: '🔢', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-                      language: { emoji: '📚', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-                      cultural: { emoji: '🌍', bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
+                  {items.map((item, i) => {
+                    const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
+                    const AREA_EMOJI: Record<string, string> = {
+                      practical_life: '🧹', sensorial: '👁️', mathematics: '🔢', math: '🔢', language: '📚', cultural: '🌍',
                     };
-                    const conf = PREVIEW_AREA_CONFIG[area] || { emoji: '📌', bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' };
-
+                    const areaEmoji = AREA_EMOJI[item.area] || '📌';
                     return (
-                      <div key={area} className="space-y-3">
-                        {/* Area Header */}
-                        <div className={`${conf.bg} ${conf.text} ${conf.border} border rounded-xl px-4 py-2 font-semibold text-sm flex items-center gap-2`}>
-                          <span>{conf.emoji}</span>
-                          <span>{t(`area.${area}` as any) || area.replace('_', ' ')}</span>
-                        </div>
+                      <div key={`${item.work_name}-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                        {/* Photo on top (if available) */}
+                        {item.photo_url && (
+                          <div className="relative">
+                            <button
+                              onClick={() => { setLightboxSrc(item.photo_url!); setLightboxOpen(true); }}
+                              className="w-full h-48 overflow-hidden block cursor-zoom-in"
+                            >
+                              <img
+                                src={item.photo_url}
+                                alt={displayName}
+                                className="w-full h-full object-cover"
+                              />
+                            </button>
+                            {item.photo_caption && (
+                              <p className="px-4 py-1.5 text-xs text-gray-500 italic text-center bg-gray-50">{item.photo_caption}</p>
+                            )}
+                          </div>
+                        )}
 
-                        {/* Work Cards — Option B: photo on top, text below */}
-                        {areaItems.map((item, i) => {
-                          const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
-                          return (
-                            <div key={`${area}-${item.work_name}-${i}`} className="bg-white rounded-2xl overflow-hidden shadow-sm">
-                              {/* Photo — compact h-48, not hero 4:3 */}
-                              {item.photo_url && (
-                                <div className="relative">
-                                  <button
-                                    onClick={() => { setLightboxSrc(item.photo_url!); setLightboxOpen(true); }}
-                                    className="w-full h-48 overflow-hidden block cursor-zoom-in"
-                                  >
-                                    <img
-                                      src={item.photo_url}
-                                      alt={displayName}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </button>
-                                  {item.photo_caption && (
-                                    <p className="px-4 py-1.5 text-xs text-gray-500 italic text-center bg-gray-50">{item.photo_caption}</p>
-                                  )}
-                                </div>
-                              )}
+                        {/* Description below */}
+                        <div className="px-4 py-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <StatusBadge status={item.status} locale={locale} />
+                            <span className="text-sm">{areaEmoji}</span>
+                            <h4 className="font-bold text-gray-800 text-[15px]">{displayName}</h4>
+                          </div>
 
-                              {/* Content */}
-                              <div className="px-4 py-3 space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <StatusBadge status={item.status} locale={locale} />
-                                  <h4 className="font-bold text-gray-800 text-[15px]">{displayName}</h4>
-                                </div>
+                          {item.parent_description ? (
+                            <p className="text-gray-600 text-sm leading-relaxed">{item.parent_description}</p>
+                          ) : (
+                            <p className="text-gray-400 text-sm">
+                              {locale === 'zh'
+                                ? `您的孩子在${t(`area.${item.area}` as any) || item.area.replace('_', ' ')}领域进行了练习。`
+                                : `Your child practiced this ${item.area.replace('_', ' ')} activity.`}
+                            </p>
+                          )}
 
-                                {item.parent_description ? (
-                                  <p className="text-gray-600 text-sm leading-relaxed">{item.parent_description}</p>
-                                ) : (
-                                  <p className="text-gray-400 text-sm">
-                                    {locale === 'zh'
-                                      ? `您的孩子在${t(`area.${area}` as any) || area.replace('_', ' ')}领域进行了练习。`
-                                      : `Your child practiced this ${area.replace('_', ' ')} activity.`}
-                                  </p>
-                                )}
-
-                                {item.why_it_matters && (
-                                  <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
-                                    <p className="text-[11px] font-semibold text-emerald-700 mb-0.5">💡 {t('parentReport.whyItMatters' as any) || 'Why it matters'}</p>
-                                    <p className="text-xs text-emerald-800 leading-relaxed">{item.why_it_matters}</p>
-                                  </div>
-                                )}
-                              </div>
+                          {item.why_it_matters && (
+                            <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
+                              <p className="text-[11px] font-semibold text-emerald-700 mb-0.5">💡 {t('parentReport.whyItMatters' as any) || 'Why it matters'}</p>
+                              <p className="text-xs text-emerald-800 leading-relaxed">{item.why_it_matters}</p>
                             </div>
-                          );
-                        })}
+                          )}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               )}
 
-              {/* ── Unassigned Photos — compact grid ── */}
+              {/* ── Extra Photos — only shown if there are unclaimed photos after matching ── */}
               {unassignedPhotos.length > 0 && (
-                <div className="bg-white rounded-2xl p-5 shadow-sm">
-                  <h4 className="font-bold text-gray-800 flex items-center gap-2 mb-3">
-                    📸 {t('parentReport.morePhotos' as any) || 'More Photos'}
-                    <span className="text-xs font-normal text-gray-500">({unassignedPhotos.length})</span>
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-500 px-1">
+                    📸 {t('parentReport.morePhotos' as any) || 'More Photos'} ({unassignedPhotos.length})
                   </h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {unassignedPhotos.map((photo) => (
                       <button
                         key={photo.id}
                         onClick={() => { setLightboxSrc(photo.url); setLightboxOpen(true); }}
-                        className="aspect-square rounded-lg overflow-hidden shadow-sm cursor-zoom-in"
+                        className="aspect-[4/3] rounded-xl overflow-hidden shadow-sm cursor-zoom-in"
                       >
                         <img
                           src={photo.url}
