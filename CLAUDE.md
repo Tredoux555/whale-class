@@ -60,15 +60,14 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 
 **Status:** Verified ALREADY FIXED as of Mar 17 audit. The `t()` function in `lib/montree/i18n/context.tsx` (lines 74-85) supports params interpolation via `getParamRegex` replacing `{key}` patterns. ChatBubble correctly calls `t('time.minutesAgo', { count: diffMins })`. All timestamp call sites (ChatBubble, MediaCard, MessageCard, activity page) use correct interpolation patterns.
 
-### Seed Community Library (Priority #5)
+### ✅ Seed Community Library (Priority #5 — DONE)
 
-Go to `/montree/super-admin/community` → Click "Seed 329 Works". The fix for the 500 error is deployed (commit `41bf0c18`).
+**Status:** Verified ALREADY SEEDED as of Mar 17. Navigated to `/montree/super-admin/community` → clicked "Seed 329 Works" → "Seeded 0 works (329 already existed)".
 
-### Per-School Guru Personality Settings (Priority #6)
+### ✅ Per-School Guru Personality Settings (Priority #6 — DONE)
 
-**Status:** DESIGNED, ready to build. ~1-2 hours.
-**What:** Let principals configure Guru tone, philosophy, focus areas, materials available, custom instructions per school.
-**Handoff:** `docs/handoffs/HANDOFF_PER_SCHOOL_GURU_SETTINGS.md`
+**Status:** COMPLETE as of Mar 17. Built in full: API route (GET/PUT with validation + sanitization), settings UI page (tone, communication style, age range, focus areas, philosophy, materials, language preference, custom instructions), wired into context builder + conversational prompt. 40 i18n keys EN/ZH. No migration needed (uses existing JSONB column).
+**Handoff:** `docs/handoffs/HANDOFF_GURU_SETTINGS_PERF_I18N_MAR17.md`
 
 ### Stripe Setup (Priority #7 — Deferred)
 
