@@ -346,11 +346,91 @@ export async function POST(request: NextRequest) {
     // Closing
     const closing = t('report.generate.loveHaving' as any, 'We love having {name} in our classroom. See you next week!').replace('{name}', firstName);
 
+    // --- Inspiring Montessori Progress Summary ---
+    // Bridges the gap between the previous report and this one, showing developmental progress
+    let parentSummary = '';
+    {
+      const totalWorks = allWorks.length;
+      const areasCount = areasExplored.length;
+      const masteredNames = allWorks.filter(w => w.status === 'mastered').map(w => w.name);
+      const practicingNames = allWorks.filter(w => w.status === 'practicing').map(w => w.name);
+
+      // Fetch the previous report to compare
+      const { data: prevReport } = await supabase
+        .from('montree_weekly_reports')
+        .select('content')
+        .eq('child_id', child_id)
+        .eq('status', 'sent')
+        .order('generated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const prevWorks = (prevReport?.content as Record<string, unknown>)?.works as Array<{ name: string; status: string }> | undefined;
+      const prevMasteredSet = new Set((prevWorks || []).filter(w => w.status === 'mastered').map(w => w.name));
+      const newlyMastered = masteredNames.filter(n => !prevMasteredSet.has(n));
+      const prevWorkNames = new Set((prevWorks || []).map(w => w.name));
+      const brandNewWorks = allWorks.filter(w => !prevWorkNames.has(w.name));
+
+      if (locale === 'zh') {
+        // Chinese summary
+        const parts: string[] = [];
+        if (prevReport) {
+          parts.push(`自上次报告以来，${firstName}一直在稳步成长。`);
+          if (newlyMastered.length > 0) {
+            parts.push(`${firstName}新掌握了${newlyMastered.length}项工作${newlyMastered.length <= 3 ? '（' + newlyMastered.map(n => getChineseNameForWork(n) || n).join('、') + '）' : ''}——这展现了出色的专注力和毅力。`);
+          }
+          if (brandNewWorks.length > 0) {
+            parts.push(`本周还探索了${brandNewWorks.length}项全新的活动，表现出强烈的好奇心和学习热情。`);
+          }
+        } else {
+          parts.push(`这是${firstName}的第一份学习报告！`);
+        }
+
+        if (areasCount >= 3) {
+          parts.push(`${firstName}在${areasCount}个不同领域都有活动——这种全面的探索正是蒙特梭利教育的精髓所在。`);
+        }
+        if (practicingNames.length > 0) {
+          parts.push(`正在练习的工作说明${firstName}正处于深入学习的过程中——在蒙特梭利教育中，重复是通往精通的道路。`);
+        }
+        if (totalWorks >= 5) {
+          parts.push(`本周${totalWorks}项活动的参与度令人印象深刻，展现了内在的学习动力。`);
+        }
+        parentSummary = parts.join('');
+      } else {
+        // English summary
+        const parts: string[] = [];
+        if (prevReport) {
+          parts.push(`Since the last report, ${firstName} has been making steady progress.`);
+          if (newlyMastered.length > 0) {
+            parts.push(`${firstName} has newly mastered ${newlyMastered.length} ${newlyMastered.length === 1 ? 'work' : 'works'}${newlyMastered.length <= 3 ? ' (' + newlyMastered.join(', ') + ')' : ''} — showing wonderful focus and determination.`);
+          }
+          if (brandNewWorks.length > 0) {
+            parts.push(`They also explored ${brandNewWorks.length} brand new ${brandNewWorks.length === 1 ? 'activity' : 'activities'} this week, showing a strong drive to discover and learn.`);
+          }
+        } else {
+          parts.push(`This is ${firstName}'s very first learning report!`);
+        }
+
+        if (areasCount >= 3) {
+          parts.push(`${firstName} was active across ${areasCount} different areas — this kind of well-rounded exploration is at the heart of Montessori education.`);
+        }
+        if (practicingNames.length > 0) {
+          parts.push(`The works still being practiced show that ${firstName} is in the midst of deep learning — in Montessori, repetition is the path to mastery.`);
+        }
+        if (totalWorks >= 5) {
+          parts.push(`With ${totalWorks} activities this week, ${firstName} is showing impressive internal motivation and engagement.`);
+        }
+        parentSummary = parts.join(' ');
+      }
+    }
+
     const reportContent = {
       child: { name: child.name, photo_url: child.photo_url },
       greeting,
+      parent_summary: parentSummary,
       highlights,
       areas_explored: areasExplored,
+      areas_of_growth: areasExplored.map(a => a.area_name),
       recommendations,
       closing,
       works: allWorks,

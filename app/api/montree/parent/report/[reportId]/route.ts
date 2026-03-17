@@ -268,6 +268,7 @@ export async function GET(
       works?: Array<{ name: string; area: string; status: string; status_label?: string; chineseName?: string | null; parent_description?: string | null; why_it_matters?: string | null; photo_url?: string | null; photo_caption?: string | null }>;
       photos?: Record<string, unknown>[];
       greeting?: string;
+      parent_summary?: string;
       highlights?: string[];
       areas_explored?: Array<{ area_key: string; area_name: string; works: Array<{ name: string; area: string; status: string; photo_url?: string | null; photo_caption?: string | null; parent_description?: string | null; why_it_matters?: string | null }> }>;
       recommendations?: string[];
@@ -352,7 +353,7 @@ export async function GET(
         report: {
           ...report,
           // Populate narrative fields from saved content (new reports have these)
-          parent_summary: savedContent.greeting || report.parent_summary || null,
+          parent_summary: savedContent.parent_summary || savedContent.greeting || report.parent_summary || null,
           highlights: savedContent.highlights || report.highlights || null,
           recommendations: savedContent.recommendations || report.recommendations || null,
           closing: savedContent.closing || null,
