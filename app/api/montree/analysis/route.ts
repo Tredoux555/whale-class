@@ -121,34 +121,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch progress for the week
-    const { data: progress, error: progressError } = await supabase
-      .from('montree_child_progress')
-      .select('*')
-      .eq('child_id', child_id)
-      .gte('created_at', week_start)
-      .lte('created_at', week_end + 'T23:59:59');
+    // Fetch all child data in parallel (4 independent queries)
+    const [progressResult, historicalResult, sessionsResult, curriculumResult] = await Promise.all([
+      // Week's progress
+      supabase
+        .from('montree_child_progress')
+        .select('*')
+        .eq('child_id', child_id)
+        .gte('created_at', week_start)
+        .lte('created_at', week_end + 'T23:59:59'),
+      // Full historical progress (entire learning journey)
+      supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, created_at, notes')
+        .eq('child_id', child_id)
+        .lt('created_at', week_start)
+        .order('created_at', { ascending: true }),
+      // All teacher observations/notes from work_sessions
+      supabase
+        .from('montree_work_sessions')
+        .select('work_name, area, notes, observed_at, session_type, duration_minutes')
+        .eq('child_id', child_id)
+        .order('observed_at', { ascending: true }),
+      // Available curriculum works
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area, sequence_order')
+        .eq('classroom_id', child.classroom_id),
+    ]);
 
-    if (progressError) {
-      console.error('Error fetching progress:', progressError);
+    const progress = progressResult.data;
+    const historicalProgress = historicalResult.data;
+    const workSessions = sessionsResult.data;
+    const curriculum = curriculumResult.data;
+
+    if (progressResult.error) {
+      console.error('Error fetching progress:', progressResult.error);
     }
-
-    // Fetch FULL historical progress (entire learning journey, not just 4 weeks)
-    // This allows the AI to think like a teacher who's known the child for years
-    const { data: historicalProgress } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, created_at, notes')
-      .eq('child_id', child_id)
-      .lt('created_at', week_start)
-      .order('created_at', { ascending: true }); // Chronological order
-
-    // Fetch ALL teacher observations/notes from work_sessions
-    // These contain detailed observations that aren't in progress records
-    const { data: workSessions } = await supabase
-      .from('montree_work_sessions')
-      .select('work_name, area, notes, observed_at, session_type, duration_minutes')
-      .eq('child_id', child_id)
-      .order('observed_at', { ascending: true });
 
     // Create a map of notes by work_name for easy lookup
     const notesByWork: Record<string, string[]> = {};
@@ -161,12 +170,6 @@ export async function POST(request: NextRequest) {
         notesByWork[session.work_name].push(`[${dateStr}] ${session.notes}`);
       }
     }
-
-    // Fetch available curriculum works
-    const { data: curriculum } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('id, name, area, sequence_order')
-      .eq('classroom_id', child.classroom_id);
 
     // Run analysis with full learning journey data
     const analysisResult = analyzeWeeklyProgress({
