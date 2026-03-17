@@ -236,9 +236,7 @@ export async function POST(request: NextRequest) {
       const desc = dbDescriptions.get(workNameLower);
       const photo = photosByWorkName.get(workNameLower);
 
-      // Skip works without photos — reports only show photo-captured works
-      if (!photo?.url) continue;
-
+      // Include ALL works in report — not just photo-captured ones
       progressWorks.push({
         name: w.work_name,
         chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
@@ -247,8 +245,8 @@ export async function POST(request: NextRequest) {
         status_label: getStatusLabel(w.status),
         parent_description: desc?.description || null,
         why_it_matters: desc?.why_it_matters || null,
-        photo_url: photo.url,
-        photo_caption: photo.caption || null,
+        photo_url: photo?.url || null,
+        photo_caption: photo?.caption || null,
       });
     }
 
