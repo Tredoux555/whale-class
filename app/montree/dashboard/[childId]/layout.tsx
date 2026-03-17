@@ -48,10 +48,10 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
     }
   }, [childId, router]);
 
-  // Determine active tab
+  // Determine active tab — Gallery now handles reports too
   const getActiveTab = () => {
     if (pathname.endsWith('/gallery')) return 'gallery';
-    if (pathname.endsWith('/reports')) return 'reports';
+    if (pathname.endsWith('/reports')) return 'gallery'; // Reports consolidated into Gallery
     if (pathname.endsWith('/progress')) return 'progress';
     if (pathname.endsWith('/profile')) return 'profile';
     if (pathname.endsWith('/observations')) return 'observations';
@@ -62,7 +62,6 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   const tabs = [
     { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
     { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Gallery'}`, href: `/montree/dashboard/${childId}/gallery` },
-    { id: 'reports', label: `📄 ${t('nav.reports' as any) || 'Reports'}`, href: `/montree/dashboard/${childId}/reports` },
   ];
 
   // Don't show loading spinner - render immediately with fallbacks

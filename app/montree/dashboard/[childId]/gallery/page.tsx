@@ -16,6 +16,8 @@ import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
+import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
+import InviteParentModal from '@/components/montree/InviteParentModal';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 interface GalleryItem extends MontreeMedia {
@@ -30,6 +32,65 @@ interface CurriculumWork {
   status?: string;
   sequence?: number;
   dbSequence?: number;
+}
+
+// ── Report Types ──
+interface ReportItem {
+  work_id: string | null;
+  work_name: string;
+  chineseName?: string | null;
+  area: string;
+  status: string;
+  photo_url: string | null;
+  photo_id: string | null;
+  photo_caption: string | null;
+  parent_description: string | null;
+  why_it_matters: string | null;
+  has_description: boolean;
+  source: 'progress' | 'photo';
+}
+
+interface ReportStats {
+  total: number;
+  with_photos: number;
+  with_descriptions: number;
+  mastered: number;
+  practicing: number;
+  presented: number;
+  documented: number;
+  unassigned_photos?: number;
+  from_progress: number;
+  from_photos: number;
+  has_selections: boolean;
+}
+
+interface UnassignedPhoto {
+  id: string;
+  url: string;
+  caption: string | null;
+  created_at: string;
+}
+
+interface ReportPhoto {
+  id: string;
+  url: string;
+  caption: string | null;
+  created_at: string;
+  work_name?: string;
+}
+
+interface SentReport {
+  id?: string;
+  sent_at?: string;
+  published_at?: string;
+  created_at: string;
+  week_start: string;
+  content: {
+    child?: { name?: string };
+    summary?: { works_this_week?: number; photos_this_week?: number; overall_progress?: { mastered?: number } };
+    works?: Array<{ name: string; status: string; status_label?: string; photo_url?: string | null; photo_caption?: string | null; parent_description?: string | null; why_it_matters?: string | null; chineseName?: string | null }>;
+    photos?: Array<{ id: string; url?: string; thumbnail_url?: string; caption?: string | null; work_name?: string | null }>;
+  };
 }
 
 export default function GalleryPage() {
@@ -85,6 +146,30 @@ export default function GalleryPage() {
   // Lesson notes state
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [savingNote, setSavingNote] = useState<string | null>(null);
+
+  // ── Report State ──
+  const [reportItems, setReportItems] = useState<ReportItem[]>([]);
+  const [reportStats, setReportStats] = useState<ReportStats | null>(null);
+  const [reportChildName, setReportChildName] = useState('');
+  const [reportUnassigned, setReportUnassigned] = useState<UnassignedPhoto[]>([]);
+  const [lastReportDate, setLastReportDate] = useState<string | null>(null);
+  const [showReportPreview, setShowReportPreview] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [previewSelectedArea, setPreviewSelectedArea] = useState<string | null>(null);
+  const [previewExpandedCard, setPreviewExpandedCard] = useState<string | null>(null);
+  const [reportLightboxSrc, setReportLightboxSrc] = useState('');
+  const [reportLightboxOpen, setReportLightboxOpen] = useState(false);
+  // Photo selection modal
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [currentReportPhotos, setCurrentReportPhotos] = useState<ReportPhoto[]>([]);
+  const [allReportPhotos, setAllReportPhotos] = useState<ReportPhoto[]>([]);
+  // Past reports
+  const [showLastReport, setShowLastReport] = useState(false);
+  const [lastReport, setLastReport] = useState<SentReport | null>(null);
+  const [loadingLastReport, setLoadingLastReport] = useState(false);
+  // Invite parent
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -404,6 +489,122 @@ export default function GalleryPage() {
     }));
   };
 
+  // ── Report Handlers ──
+
+  const fetchReportPreview = useCallback(async () => {
+    setReportLoading(true);
+    try {
+      const controller = new AbortController();
+      const [previewRes, photosRes] = await Promise.all([
+        fetch(`/api/montree/reports/preview?child_id=${childId}&locale=${locale}`, { signal: controller.signal }),
+        fetch(`/api/montree/reports/available-photos?child_id=${childId}&locale=${locale}`, { signal: controller.signal }),
+      ]);
+      if (!previewRes.ok || !photosRes.ok) throw new Error('Fetch failed');
+      const previewData = await previewRes.json();
+      const photosData = await photosRes.json();
+
+      if (previewData.success && photosData.success) {
+        setReportChildName(previewData.child_name || 'Student');
+        setReportItems(previewData.items || []);
+        setReportStats(previewData.stats || null);
+        setLastReportDate(previewData.last_report_date);
+        setReportUnassigned(previewData.unassigned_photos || []);
+
+        const allAvailablePhotos = photosData.photos || [];
+        const reportedWorkNames = new Set(
+          (previewData.items || []).filter((item: ReportItem) => item.photo_url).map((item: ReportItem) => item.work_name)
+        );
+        const reportedPhotos = allAvailablePhotos.filter((p: ReportPhoto) => p.work_name && reportedWorkNames.has(p.work_name));
+        setCurrentReportPhotos(reportedPhotos);
+        setAllReportPhotos(allAvailablePhotos);
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('Failed to fetch report preview:', err);
+      toast.error(t('reports.loadError'));
+    }
+    setReportLoading(false);
+  }, [childId, locale, t]);
+
+  const handleOpenReportPreview = useCallback(async () => {
+    setPreviewSelectedArea(null);
+    setPreviewExpandedCard(null);
+    await fetchReportPreview();
+    setShowReportPreview(true);
+  }, [fetchReportPreview]);
+
+  const sendReport = async () => {
+    setSending(true);
+    try {
+      const res = await fetch(`/api/montree/reports/send?locale=${locale}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId }),
+      });
+      if (!res.ok) throw new Error(`Send failed: ${res.status}`);
+      const data = await res.json();
+      if (data.success) {
+        toast.success(t('reports.published'));
+        setReportItems([]);
+        setReportStats(null);
+        setLastReportDate(new Date().toISOString());
+        setShowReportPreview(false);
+      } else {
+        toast.error(data.error || t('common.failedToSend'));
+      }
+    } catch {
+      toast.error(t('common.failedToSend'));
+    }
+    setSending(false);
+  };
+
+  const handlePhotoSelectionSave = async (selectedMediaIds: string[]) => {
+    try {
+      const res = await fetch('/api/montree/reports/photos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId, selected_media_ids: selectedMediaIds }),
+      });
+      if (!res.ok) throw new Error(`Photo update failed: ${res.status}`);
+      const data = await res.json();
+      if (data.success) {
+        await fetchReportPreview();
+      } else {
+        throw new Error(data.error || 'Failed');
+      }
+    } catch (err) {
+      console.error('Failed to update photos:', err);
+      toast.error(t('reports.photoUpdateFailed'));
+      throw err;
+    }
+  };
+
+  const fetchLastReport = async () => {
+    if (!lastReportDate) return;
+    setLoadingLastReport(true);
+    try {
+      const res = await fetch(`/api/montree/reports?child_id=${childId}&status=sent&limit=1&locale=${locale}`);
+      if (!res.ok) throw new Error(`Report fetch failed: ${res.status}`);
+      const data = await res.json();
+      if (data.success && data.reports && data.reports.length > 0) {
+        setLastReport(data.reports[0]);
+        setShowLastReport(true);
+      } else {
+        toast.error(t('reports.noReportsFound'));
+      }
+    } catch (err) {
+      console.error('Failed to fetch last report:', err);
+      toast.error(t('reports.loadLastReportError'));
+    }
+    setLoadingLastReport(false);
+  };
+
+  // Memoize available photos for photo selection modal
+  const availableForSelection = useMemo(() => {
+    const ids = new Set(currentReportPhotos.map(cp => cp.id));
+    return allReportPhotos.filter(p => !ids.has(p.id));
+  }, [currentReportPhotos, allReportPhotos]);
+
   // ── Render: Photo Card ──
   const renderPhotoCard = (photo: GalleryItem) => {
     const isExpanded = expandedPhoto === photo.id;
@@ -618,6 +819,49 @@ export default function GalleryPage() {
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
         <GuruContextBubble pageKey="gallery" role="parent" />
+      )}
+
+      {/* ══════════════════════════════════════════════
+          REPORT ACTION BAR — Preview & Send + Past Reports
+          ══════════════════════════════════════════════ */}
+      {session && !isHomeschoolParent(session) && (
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">📤 {t('reports.parentReport' as any) || 'Parent Report'}</h3>
+              <p className="text-xs text-gray-400">
+                {lastReportDate
+                  ? `${t('reports.lastSent')}: ${new Date(lastReportDate).toLocaleDateString()}`
+                  : (t('reports.noReportsSentYet'))}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {lastReportDate && (
+                <button
+                  onClick={fetchLastReport}
+                  disabled={loadingLastReport}
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50 text-xs"
+                >
+                  {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
+                </button>
+              )}
+              <button
+                onClick={handleOpenReportPreview}
+                disabled={reportLoading}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50 text-xs"
+              >
+                {reportLoading ? '⏳' : '👁️'} {t('reports.previewReport')}
+              </button>
+            </div>
+          </div>
+          {/* Invite Parent */}
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            className="mt-2 w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            ✉️ {t('reports.inviteParent' as any) || 'Invite Parent'}
+          </button>
+        </div>
       )}
 
       {/* ══════════════════════════════════════════════
@@ -914,7 +1158,6 @@ export default function GalleryPage() {
           classroomId={session.classroom.id}
           childId={childId}
           onWorkSaved={(work) => {
-            // Update the photo-insight-store so gallery shows the corrected work
             if (teachModalData) {
               updateEntryAfterCorrection(teachModalData.mediaId, childId, work.name, work.area);
             }
@@ -923,6 +1166,500 @@ export default function GalleryPage() {
           }}
         />
       )}
+
+      {/* ══════════════════════════════════════════════
+          REPORT PREVIEW MODAL
+          ══════════════════════════════════════════════ */}
+      {showReportPreview && (() => {
+        const PREVIEW_AREA_CONFIG: Record<string, { emoji: string; label: string; labelZh: string; color: string }> = {
+          practical_life: { emoji: '🧹', label: 'Daily Living', labelZh: '日常生活', color: '#ec4899' },
+          sensorial: { emoji: '👁️', label: 'Senses & Discovery', labelZh: '感官探索', color: '#8b5cf6' },
+          mathematics: { emoji: '🔢', label: 'Numbers & Patterns', labelZh: '数学', color: '#3b82f6' },
+          math: { emoji: '🔢', label: 'Numbers & Patterns', labelZh: '数学', color: '#3b82f6' },
+          language: { emoji: '📚', label: 'Language & Reading', labelZh: '语言', color: '#f59e0b' },
+          cultural: { emoji: '🌍', label: 'World & Nature', labelZh: '文化', color: '#22c55e' },
+        };
+        const PREVIEW_AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+        const normalizePreviewArea = (area: string) => area === 'math' ? 'mathematics' : area;
+        const getPreviewAreaConf = (area: string) => PREVIEW_AREA_CONFIG[normalizePreviewArea(area)] || PREVIEW_AREA_CONFIG['cultural'];
+        const getPreviewAreaLabel = (area: string) => {
+          const conf = getPreviewAreaConf(area);
+          return locale === 'zh' ? conf.labelZh : conf.label;
+        };
+
+        const previewWorksByArea: Record<string, ReportItem[]> = {};
+        for (const area of PREVIEW_AREA_ORDER) previewWorksByArea[area] = [];
+        for (const item of reportItems) {
+          const area = normalizePreviewArea(item.area || 'other');
+          if (!previewWorksByArea[area]) previewWorksByArea[area] = [];
+          previewWorksByArea[area].push(item);
+        }
+
+        const previewMastered = reportItems.filter(i => i.status === 'mastered' || i.status === 'completed').length;
+        const previewPracticing = reportItems.filter(i => i.status === 'practicing').length;
+        const previewPresented = reportItems.filter(i => i.status === 'presented').length;
+
+        const previewFiltered = previewSelectedArea
+          ? reportItems.filter(i => normalizePreviewArea(i.area) === previewSelectedArea)
+          : reportItems;
+
+        const renderPreviewCard = (item: ReportItem, i: number) => {
+          const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
+          const areaConf = getPreviewAreaConf(item.area);
+          const cardKey = `${item.work_name}-${i}`;
+          const isExpanded = previewExpandedCard === cardKey;
+
+          return (
+            <div key={cardKey} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              {item.photo_url ? (
+                <div className="relative group">
+                  <button onClick={() => { setReportLightboxSrc(item.photo_url!); setReportLightboxOpen(true); }} className="w-full">
+                    <img src={item.photo_url} alt={displayName} className="w-full aspect-[4/3] object-cover" />
+                  </button>
+                  {item.photo_caption && (
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm max-w-[70%] truncate">
+                      {item.photo_caption}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: `${areaConf.color}10` }}>
+                  <div className="text-center">
+                    <span className="text-4xl">{areaConf.emoji}</span>
+                    <p className="text-xs mt-1 font-medium" style={{ color: areaConf.color }}>{getPreviewAreaLabel(item.area)}</p>
+                  </div>
+                </div>
+              )}
+              <div className="p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0" style={{ backgroundColor: areaConf.color }}>
+                    {areaConf.emoji.length <= 2 ? areaConf.emoji : (locale === 'zh' ? areaConf.labelZh : areaConf.label).charAt(0)}
+                  </div>
+                  <span className="font-semibold text-gray-800 text-sm truncate flex-1">{displayName}</span>
+                  <ReportStatusBadge status={item.status} locale={locale} />
+                </div>
+                {item.parent_description && <p className="text-gray-600 text-sm leading-relaxed">{item.parent_description}</p>}
+                {item.why_it_matters && (
+                  <button onClick={() => setPreviewExpandedCard(isExpanded ? null : cardKey)} className="w-full text-left">
+                    <div className={`bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5 transition-all ${isExpanded ? '' : 'cursor-pointer hover:bg-emerald-100/50'}`}>
+                      <p className="text-[11px] font-semibold text-emerald-700 mb-0.5 flex items-center gap-1">
+                        💡 {locale === 'zh' ? '为什么重要' : 'Why this matters'}
+                        {!isExpanded && <span className="text-emerald-400 text-[10px]">▼</span>}
+                      </p>
+                      {isExpanded && <p className="text-xs text-emerald-800 leading-relaxed mt-1">{item.why_it_matters}</p>}
+                    </div>
+                  </button>
+                )}
+                {!item.parent_description && !item.why_it_matters && (
+                  <p className="text-gray-400 text-xs">
+                    {locale === 'zh'
+                      ? `您的孩子在${getPreviewAreaLabel(item.area)}方面进行了学习。`
+                      : `Your child explored this ${getPreviewAreaLabel(item.area).toLowerCase()} activity.`}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        };
+
+        return (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+            {/* Modal Header */}
+            <div className="p-4 border-b bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="font-bold text-lg">📋 {t('reports.reportPreview')}</h3>
+                  <p className="text-emerald-100 text-sm">{t('reports.thisIsWhatParentsSee')}</p>
+                </div>
+                <button onClick={() => setShowReportPreview(false)} className="text-white/80 hover:text-white text-2xl">×</button>
+              </div>
+              <button
+                onClick={() => setShowPhotoModal(true)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all text-sm"
+              >
+                ✏️ {t('reports.editPhotos')}
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto bg-gradient-to-br from-emerald-50 to-teal-50">
+              <div className="p-4 space-y-4">
+
+              {/* Report Header */}
+              <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
+                <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-5 py-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-xl font-bold">
+                      {reportChildName.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="text-xl font-bold">
+                        {locale === 'zh' ? `${reportChildName}的学习报告` : `${reportChildName}'s Learning Report`}
+                      </h2>
+                      <p className="text-emerald-100 text-sm">{reportItems.length} {t('reports.activitiesToShare')}</p>
+                    </div>
+                  </div>
+                  {reportItems.length > 0 && (
+                    <div className="flex gap-3 mt-4">
+                      {previewMastered > 0 && (
+                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+                          <p className="text-lg font-bold">⭐ {previewMastered}</p>
+                          <p className="text-[10px] text-emerald-100">{locale === 'zh' ? '已掌握' : 'Mastered'}</p>
+                        </div>
+                      )}
+                      {previewPracticing > 0 && (
+                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+                          <p className="text-lg font-bold">🔄 {previewPracticing}</p>
+                          <p className="text-[10px] text-emerald-100">{locale === 'zh' ? '练习中' : 'Practicing'}</p>
+                        </div>
+                      )}
+                      {previewPresented > 0 && (
+                        <div className="bg-white/15 rounded-lg px-3 py-1.5 text-center">
+                          <p className="text-lg font-bold">🌱 {previewPresented}</p>
+                          <p className="text-[10px] text-emerald-100">{locale === 'zh' ? '已展示' : 'Introduced'}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Inspiring progress summary */}
+                <div className="px-5 py-4 border-l-4 border-emerald-400 bg-emerald-50 mx-4 mt-4 mb-2 rounded-r-xl">
+                  <p className="text-gray-700 leading-relaxed text-[15px]">
+                    {(() => {
+                      const areasCount = Object.values(previewWorksByArea).filter(a => a.length > 0).length;
+                      if (locale === 'zh') {
+                        const parts = [`${reportChildName}度过了充实而专注的一周！本周共探索了${reportItems.length}项工作。`];
+                        if (areasCount >= 3) parts.push(`涵盖了${areasCount}个不同领域——全面发展正是蒙特梭利教育的精髓。`);
+                        if (previewPracticing > 0) parts.push(`正在练习的工作说明孩子正处于深入学习中——重复是通往精通的道路。`);
+                        return parts.join('');
+                      }
+                      const parts = [`${reportChildName} had a wonderful week of learning! This week they explored ${reportItems.length} different activities.`];
+                      if (areasCount >= 3) parts.push(` Active across ${areasCount} areas — well-rounded exploration is at the heart of Montessori.`);
+                      if (previewPracticing > 0) parts.push(` The works still being practiced show deep learning in progress — in Montessori, repetition is the path to mastery.`);
+                      return parts.join('');
+                    })()}
+                  </p>
+                </div>
+
+                {/* Mastered highlights */}
+                {(() => {
+                  const masteredItems = reportItems.filter(i => i.status === 'mastered' || i.status === 'completed');
+                  if (masteredItems.length === 0) return null;
+                  return (
+                    <div className="px-5 py-3 pb-4">
+                      {masteredItems.slice(0, 3).map((item, i) => (
+                        <p key={i} className="text-gray-600 text-sm leading-relaxed mb-1">
+                          ⭐ {locale === 'zh' && item.chineseName ? item.chineseName : item.work_name} ({locale === 'zh' ? '已掌握' : 'Mastered'})
+                        </p>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Area filter chips */}
+              {reportItems.length > 0 && (
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                  <button
+                    onClick={() => setPreviewSelectedArea(null)}
+                    className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors border-2 flex-shrink-0 ${
+                      !previewSelectedArea ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
+                    }`}
+                  >
+                    {locale === 'zh' ? '全部' : 'All'}
+                  </button>
+                  {PREVIEW_AREA_ORDER.map(area => {
+                    const config = PREVIEW_AREA_CONFIG[area];
+                    const count = previewWorksByArea[area]?.length || 0;
+                    if (count === 0) return null;
+                    const isActive = previewSelectedArea === area;
+                    return (
+                      <button
+                        key={area}
+                        onClick={() => setPreviewSelectedArea(isActive ? null : area)}
+                        className={`px-3 py-1.5 rounded-lg whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 border-2 flex-shrink-0 ${
+                          isActive ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border-transparent'
+                        }`}
+                      >
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px]" style={{ backgroundColor: config.color }}>{config.emoji}</div>
+                        <span>{locale === 'zh' ? config.labelZh : config.label}</span>
+                        <span className="text-xs opacity-60">({count})</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Work Cards */}
+              {previewFiltered.length === 0 ? (
+                <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+                  <div className="text-4xl mb-3">📋</div>
+                  <p className="text-gray-500 text-sm">
+                    {previewSelectedArea
+                      ? (locale === 'zh' ? '此领域暂无活动记录' : 'No activities in this area')
+                      : (locale === 'zh' ? '本周暂无活动记录' : 'No activities this week')}
+                  </p>
+                </div>
+              ) : previewSelectedArea ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {previewFiltered.map((item, i) => renderPreviewCard(item, i))}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {PREVIEW_AREA_ORDER.map(area => {
+                    const areaWorks = previewWorksByArea[area] || [];
+                    if (areaWorks.length === 0) return null;
+                    const config = PREVIEW_AREA_CONFIG[area];
+                    return (
+                      <div key={area}>
+                        <div className="flex items-center gap-2 mb-3 px-1">
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: config.color }}>{config.emoji}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-gray-800 text-sm">{locale === 'zh' ? config.labelZh : config.label}</p>
+                            <p className="text-xs text-gray-500">{areaWorks.length} {locale === 'zh' ? '项活动' : areaWorks.length === 1 ? 'activity' : 'activities'}</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {areaWorks.map((item, i) => renderPreviewCard(item, i))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Extra Photos */}
+              {!previewSelectedArea && reportUnassigned.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3 px-1">
+                    <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">📸</div>
+                    <div>
+                      <p className="font-bold text-gray-800 text-sm">{locale === 'zh' ? '更多瞬间' : 'More Moments'}</p>
+                      <p className="text-xs text-gray-500">{reportUnassigned.length} {locale === 'zh' ? '张照片' : 'photos'}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {reportUnassigned.map((photo) => (
+                      <button
+                        key={photo.id}
+                        onClick={() => { setReportLightboxSrc(photo.url); setReportLightboxOpen(true); }}
+                        className="aspect-[4/3] rounded-xl overflow-hidden shadow-sm cursor-zoom-in relative group"
+                      >
+                        <img src={photo.url} alt={photo.caption || t('reports.learningMoment')} className="w-full h-full object-cover" />
+                        <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-[10px] font-medium backdrop-blur-sm">
+                          {new Date(photo.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {reportItems.filter(i => i.status === 'mastered' || i.status === 'practicing').length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
+                  <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-sm">
+                    💡 {locale === 'zh' ? '在家可以这样做' : 'Try This at Home'}
+                  </h4>
+                  <div className="space-y-2">
+                    {reportItems.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
+                      <p key={i} className="text-amber-900 text-sm leading-relaxed flex items-start gap-2">
+                        <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
+                        <span>
+                          {locale === 'zh'
+                            ? `让${reportChildName}在家里也尝试${item.chineseName || item.work_name}相关的活动。`
+                            : `Encourage ${reportChildName} to practice ${item.work_name}-related activities at home.`}
+                        </span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Closing */}
+              <div className="bg-white rounded-2xl p-5 shadow-sm text-center">
+                <p className="text-gray-600 leading-relaxed">
+                  {locale === 'zh'
+                    ? `我们很开心有${reportChildName}在课堂上，下周见！`
+                    : `We love having ${reportChildName} in our classroom. See you next week!`}
+                  {' '}🌿
+                </p>
+              </div>
+
+              <div className="text-center text-xs text-gray-400 py-2">
+                {new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {' · Montree'}
+              </div>
+
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50 flex gap-3">
+              <button
+                onClick={() => setShowReportPreview(false)}
+                className="flex-1 py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                {t('common.close')}
+              </button>
+              <button
+                onClick={sendReport}
+                disabled={sending}
+                className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
+              >
+                {sending ? `⏳ ${t('reports.publishing')}` : `✅ ${t('reports.publishReport')}`}
+              </button>
+            </div>
+          </div>
+        </div>
+        );
+      })()}
+
+      {/* Photo Selection Modal */}
+      <PhotoSelectionModal
+        isOpen={showPhotoModal}
+        onClose={() => setShowPhotoModal(false)}
+        onSave={handlePhotoSelectionSave}
+        currentPhotos={currentReportPhotos}
+        availablePhotos={availableForSelection}
+        childId={childId}
+      />
+
+      {/* Last Sent Report Modal */}
+      {showLastReport && lastReport && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl overflow-hidden flex flex-col">
+            <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-lg">📄 {t('reports.lastSentReport')}</h3>
+                  <p className="text-blue-100 text-sm">
+                    {t('reports.sentOn')} {new Date(lastReport.sent_at || lastReport.published_at || lastReport.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <button onClick={() => setShowLastReport(false)} className="text-white/80 hover:text-white text-2xl">×</button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {lastReport.content ? (
+                <>
+                  <div className="text-center pb-4 border-b">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 mx-auto mb-2 flex items-center justify-center text-2xl">
+                      {lastReport.content.child?.name?.charAt(0) || reportChildName.charAt(0) || '?'}
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      {lastReport.content.child?.name || reportChildName}'s {t('reports.progress')}
+                    </h2>
+                    <p className="text-gray-500 text-sm">
+                      {t('reports.weekOf')} {new Date(lastReport.week_start).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {lastReport.content.summary && (
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-gray-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">📚</span>
+                        <p className="text-xl font-bold text-gray-700">{lastReport.content.summary.works_this_week || 0}</p>
+                        <p className="text-xs text-gray-500">{t('reports.works')}</p>
+                      </div>
+                      <div className="bg-blue-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">📸</span>
+                        <p className="text-xl font-bold text-blue-600">{lastReport.content.summary.photos_this_week || 0}</p>
+                        <p className="text-xs text-gray-500">{t('reports.photos')}</p>
+                      </div>
+                      <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                        <span className="text-lg">⭐</span>
+                        <p className="text-xl font-bold text-emerald-600">{lastReport.content.summary.overall_progress?.mastered || 0}</p>
+                        <p className="text-xs text-gray-500">{t('reports.mastered')}</p>
+                      </div>
+                    </div>
+                  )}
+                  {lastReport.content.works && lastReport.content.works.length > 0 && (
+                    <div className="space-y-4">
+                      {lastReport.content.works.map((work, i) => (
+                        <div key={`work-${work.name || i}`} className="bg-gray-50 rounded-xl p-4 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <ReportStatusBadge status={work.status} locale={locale} />
+                            <h4 className="font-bold text-gray-800">{locale === 'zh' && work.chineseName ? work.chineseName : work.name}</h4>
+                          </div>
+                          {work.photo_url && (
+                            <div className="relative -mx-4 my-3">
+                              <button
+                                onClick={() => { setReportLightboxSrc(work.photo_url!); setReportLightboxOpen(true); }}
+                                className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
+                              >
+                                <img src={work.photo_url} alt={work.name} className="w-full h-full object-cover" />
+                              </button>
+                              {work.photo_caption && (
+                                <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>
+                              )}
+                            </div>
+                          )}
+                          {work.parent_description ? (
+                            <div className="space-y-2">
+                              <p className="text-gray-700 text-sm leading-relaxed">{work.parent_description}</p>
+                              {work.why_it_matters && (
+                                <div className="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                                  <p className="text-xs font-semibold text-emerald-700 mb-1">💡 {t('reports.whyItMatters')}</p>
+                                  <p className="text-sm text-emerald-800">{work.why_it_matters}</p>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-gray-400 text-sm italic">{t('reports.noDescriptionAvailable')}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>{t('reports.contentNotAvailable')}</p>
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t bg-gray-50">
+              <button onClick={() => setShowLastReport(false)} className="w-full py-3 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300">
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Lightbox */}
+      <PhotoLightbox
+        isOpen={reportLightboxOpen}
+        onClose={() => setReportLightboxOpen(false)}
+        src={reportLightboxSrc}
+      />
+
+      {/* Invite Parent Modal */}
+      {session && !isHomeschoolParent(session) && (
+        <InviteParentModal
+          childId={childId}
+          childName={reportChildName || 'Child'}
+          teacherId={session?.teacher?.id}
+          isOpen={inviteModalOpen}
+          onClose={() => setInviteModalOpen(false)}
+        />
+      )}
     </div>
   );
+}
+
+// ── Report Status Badge ──
+function ReportStatusBadge({ status, locale }: { status: string; locale?: string }) {
+  const isZh = locale === 'zh';
+  const styles: Record<string, { bg: string; text: string; label: string }> = {
+    presented: { bg: 'bg-amber-100', text: 'text-amber-700', label: isZh ? '🌱 已展示' : '🌱 Introduced' },
+    practicing: { bg: 'bg-blue-100', text: 'text-blue-700', label: isZh ? '🔄 练习中' : '🔄 Practicing' },
+    mastered: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    completed: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: isZh ? '⭐ 已掌握' : '⭐ Mastered' },
+    documented: { bg: 'bg-purple-100', text: 'text-purple-700', label: isZh ? '📸 已记录' : '📸 Documented' },
+  };
+  const style = styles[status] || { bg: 'bg-gray-100', text: 'text-gray-600', label: '○ Started' };
+  return <span className={`text-xs px-2 py-1 rounded-full ${style.bg} ${style.text}`}>{style.label}</span>;
 }
