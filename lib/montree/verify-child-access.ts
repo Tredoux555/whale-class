@@ -27,7 +27,7 @@ interface ChildAccessResult {
 
 // Cache with TTL to avoid repeated DB lookups
 // Key: `${childId}:${schoolId}`, Value: { result, expiresAt }
-const CACHE_TTL_MS = 30_000; // 30 seconds
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes — child-school relationships rarely change mid-session
 const accessCache = new Map<string, { result: ChildAccessResult; expiresAt: number }>();
 
 /**
@@ -60,7 +60,7 @@ export async function verifyChildBelongsToSchool(
       .select('id, classroom_id, montree_classrooms!inner(school_id)')
       .eq('id', childId)
       .eq('montree_classrooms.school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (error || !data) {
       const result = { allowed: false };

@@ -215,7 +215,7 @@ export const zh = {
   'nav.week': '本周',
   'nav.progress': '进度',
   'nav.review': '审查',
-  'nav.gallery': '相册',
+  'nav.gallery': '审阅',
   'nav.reports': '报告',
   'nav.shelf': '书架',
   'nav.portal': '对话',

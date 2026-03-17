@@ -207,21 +207,22 @@ export async function GET(request: NextRequest) {
     // ============================================================
     // STEP 2: Get ALL photos for this child
     // ============================================================
-    const { data: mediaPhotos } = await supabase
-      .from('montree_media')
-      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
-      .eq('child_id', childId)
-      .eq('media_type', 'photo');
-
-    // Also check junction table for group photos
-    const { data: groupPhotos } = await supabase
-      .from('montree_media_children')
-      .select(`
-        media:montree_media (
-          id, storage_path, thumbnail_path, work_id, caption, captured_at
-        )
-      `)
-      .eq('child_id', childId);
+    // Fetch direct photos AND group photos in parallel (independent queries)
+    const [{ data: mediaPhotos }, { data: groupPhotos }] = await Promise.all([
+      supabase
+        .from('montree_media')
+        .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
+        .eq('child_id', childId)
+        .eq('media_type', 'photo'),
+      supabase
+        .from('montree_media_children')
+        .select(`
+          media:montree_media (
+            id, storage_path, thumbnail_path, work_id, caption, captured_at
+          )
+        `)
+        .eq('child_id', childId),
+    ]);
 
     // Combine and deduplicate photos
     const photoMap = new Map();
@@ -267,7 +268,7 @@ export async function GET(request: NextRequest) {
       .eq('week_start', weekStartStr)
       .maybeSingle();
 
-    let selectedPhotoIds: string[] = [];
+    const selectedPhotoIdSet = new Set<string>();
     if (draftReport) {
       const { data: reportMedia } = await supabase
         .from('montree_report_media')
@@ -276,13 +277,13 @@ export async function GET(request: NextRequest) {
         .order('display_order', { ascending: true });
 
       if (reportMedia && reportMedia.length > 0) {
-        selectedPhotoIds = reportMedia.map(rm => rm.media_id);
+        for (const rm of reportMedia) selectedPhotoIdSet.add(rm.media_id);
       }
     }
 
-    // Mark selected photos
+    // Mark selected photos (Set.has is O(1) vs Array.includes O(N))
     for (const photo of allPhotos) {
-      photo.is_selected = selectedPhotoIds.includes(photo.id);
+      photo.is_selected = selectedPhotoIdSet.has(photo.id);
     }
 
     // ============================================================
@@ -347,7 +348,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get photos for matching (selected if any, otherwise all)
-    const photosForMatching = selectedPhotoIds.length > 0
+    const photosForMatching = selectedPhotoIdSet.size > 0
       ? allPhotos.filter(p => p.is_selected)
       : allPhotos;
 
@@ -507,28 +508,45 @@ export async function GET(request: NextRequest) {
       return bDate.localeCompare(aDate);
     });
 
-    // Separate photos by selection status
-    const selectedPhotos = allPhotos.filter(p => p.is_selected);
-    const availablePhotos = allPhotos.filter(p => !p.is_selected);
+    // Partition photos in a single pass (O(N) instead of 3× O(N))
+    // selectedPhotos + availablePhotos = exhaustive partition (mutually exclusive)
+    // unassignedPhotos = unclaimed photos with valid URLs (independent set, may overlap with either)
+    const selectedPhotos: typeof allPhotos = [];
+    const availablePhotos: typeof allPhotos = [];
+    const unassignedPhotos: typeof allPhotos = [];
+    for (const p of allPhotos) {
+      if (p.is_selected) selectedPhotos.push(p);
+      else availablePhotos.push(p);
+      if (p.url && !claimedPhotoIds.has(p.id)) unassignedPhotos.push(p);
+    }
 
-    // Identify unassigned photos (photos not claimed by any report item)
-    const unassignedPhotos = allPhotos.filter(p => p.url && !claimedPhotoIds.has(p.id));
-
-    // Count stats
+    // Count stats in a single pass (O(N) instead of 8× O(N))
+    let statWithPhotos = 0, statWithDesc = 0, statMastered = 0, statPracticing = 0;
+    let statPresented = 0, statDocumented = 0, statFromProgress = 0, statFromPhotos = 0;
+    for (const r of reportItems) {
+      if (r.photo_url) statWithPhotos++;
+      if (r.has_description) statWithDesc++;
+      if (r.status === 'mastered') statMastered++;
+      else if (r.status === 'practicing') statPracticing++;
+      else if (r.status === 'presented') statPresented++;
+      else if (r.status === 'documented') statDocumented++;
+      if (r.source === 'progress') statFromProgress++;
+      else if (r.source === 'photo') statFromPhotos++;
+    }
     const stats = {
       total: reportItems.length,
-      with_photos: reportItems.filter(r => r.photo_url).length,
-      with_descriptions: reportItems.filter(r => r.has_description).length,
-      mastered: reportItems.filter(r => r.status === 'mastered').length,
-      practicing: reportItems.filter(r => r.status === 'practicing').length,
-      presented: reportItems.filter(r => r.status === 'presented').length,
-      documented: reportItems.filter(r => r.status === 'documented').length,
+      with_photos: statWithPhotos,
+      with_descriptions: statWithDesc,
+      mastered: statMastered,
+      practicing: statPracticing,
+      presented: statPresented,
+      documented: statDocumented,
       selected_photos: selectedPhotos.length,
       available_photos: availablePhotos.length,
       unassigned_photos: unassignedPhotos.length,
-      has_selections: selectedPhotoIds.length > 0,
-      from_progress: reportItems.filter(r => r.source === 'progress').length,
-      from_photos: reportItems.filter(r => r.source === 'photo').length,
+      has_selections: selectedPhotoIdSet.size > 0,
+      from_progress: statFromProgress,
+      from_photos: statFromPhotos,
     };
 
     const response = NextResponse.json({

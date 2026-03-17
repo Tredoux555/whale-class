@@ -67,20 +67,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call OpenAI TTS API
-    const ttsResponse = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1',
-        input: cleanText,
-        voice: 'nova', // Friendly, warm female voice
-        response_format: 'mp3',
-      }),
-    });
+    // Call OpenAI TTS API with timeout protection
+    const ttsAbortController = new AbortController();
+    const ttsTimeout = setTimeout(() => ttsAbortController.abort(), 20_000); // 20s timeout
+    let ttsResponse: Response;
+    try {
+      ttsResponse = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'tts-1',
+          input: cleanText,
+          voice: 'nova', // Friendly, warm female voice
+          response_format: 'mp3',
+        }),
+        signal: ttsAbortController.signal,
+      });
+    } catch (fetchErr: unknown) {
+      clearTimeout(ttsTimeout);
+      if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+        console.error('[TTS] OpenAI API timeout (20s)');
+        return NextResponse.json(
+          { success: false, error: 'Speech generation timed out' },
+          { status: 504 }
+        );
+      }
+      throw fetchErr;
+    } finally {
+      clearTimeout(ttsTimeout);
+    }
 
     if (!ttsResponse.ok) {
       console.error('[TTS] OpenAI API error:', ttsResponse.status);

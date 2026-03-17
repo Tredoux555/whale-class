@@ -61,7 +61,7 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
 
   const tabs = [
     { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
-    { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Gallery'}`, href: `/montree/dashboard/${childId}/gallery` },
+    { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
 
   // Don't show loading spinner - render immediately with fallbacks
