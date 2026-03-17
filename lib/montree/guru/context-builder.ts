@@ -69,6 +69,9 @@ export interface ChildContext {
   // ESL context (school-level — detected from school location/name)
   isESL?: boolean;
   l1Language?: string;
+
+  // Per-school Guru personality settings (from montree_schools.settings.guru_personality)
+  schoolGuruPersonality?: Record<string, unknown> | null;
 }
 
 export interface MentalProfile {
@@ -401,6 +404,18 @@ export async function buildChildContext(
     // ESL detection is non-critical
   }
 
+  // Extract per-school Guru personality settings (same school data already fetched for ESL)
+  let schoolGuruPersonality: Record<string, unknown> | null = null;
+  try {
+    const school = (eslResult as Record<string, unknown>)?.school as Record<string, unknown> | null;
+    if (school) {
+      const schoolSettings = (school.settings as Record<string, unknown>) || {};
+      schoolGuruPersonality = (schoolSettings.guru_personality as Record<string, unknown>) || null;
+    }
+  } catch {
+    // Non-critical — Guru works fine without personality settings
+  }
+
   return {
     id: child.id,
     name: child.name.split(' ')[0], // First name only for privacy
@@ -439,6 +454,7 @@ export async function buildChildContext(
     })),
     isESL,
     l1Language,
+    schoolGuruPersonality,
   };
 }
 

@@ -585,6 +585,67 @@ export interface ProactiveContext {
   celebrationContext?: string;
 }
 
+const TONE_LABELS: Record<string, string> = {
+  warm_nurturing: 'Warm, nurturing, and encouraging — validate emotions before giving advice',
+  professional_direct: 'Professional and direct — clear, concise advice without excessive emotional framing',
+  analytical: 'Analytical — data-driven observations, developmental milestones focus, objective language',
+  balanced: 'Balanced — mix warmth with professionalism (default)',
+};
+
+const STYLE_LABELS: Record<string, string> = {
+  formal: 'Formal — complete sentences, professional language, no slang',
+  casual: 'Casual — friendly, conversational, relaxed like texting a colleague',
+  balanced: 'Balanced — professional but approachable (default)',
+};
+
+const AREA_LABELS_FULL: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+
+/**
+ * Build a school-specific personality section for the system prompt.
+ * Returns empty string if no settings configured (backward compatible).
+ */
+function buildSchoolPersonalitySection(settings: Record<string, unknown> | null | undefined): string {
+  if (!settings) return '';
+
+  const parts: string[] = [];
+
+  if (settings.tone && settings.tone !== 'balanced') {
+    parts.push(`- Tone: ${TONE_LABELS[settings.tone as string] || settings.tone}`);
+  }
+  if (settings.communication_style && settings.communication_style !== 'balanced') {
+    parts.push(`- Communication style: ${STYLE_LABELS[settings.communication_style as string] || settings.communication_style}`);
+  }
+  if (settings.age_range_focus) {
+    parts.push(`- Age range focus: ${settings.age_range_focus}`);
+  }
+  if (Array.isArray(settings.focus_areas) && settings.focus_areas.length > 0) {
+    const areaNames = settings.focus_areas.map((a: string) => AREA_LABELS_FULL[a] || a).join(', ');
+    parts.push(`- Emphasis areas: ${areaNames} (weight your recommendations toward these areas)`);
+  }
+  if (settings.philosophy && typeof settings.philosophy === 'string' && settings.philosophy.trim()) {
+    parts.push(`- School philosophy: "${settings.philosophy.trim()}"`);
+  }
+  if (settings.materials_note && typeof settings.materials_note === 'string' && settings.materials_note.trim()) {
+    parts.push(`- Materials available: "${settings.materials_note.trim()}" — do NOT recommend materials the school says they lack`);
+  }
+  if (settings.language_preference && typeof settings.language_preference === 'string' && settings.language_preference.trim()) {
+    parts.push(`- Language preference: ${settings.language_preference.trim()}`);
+  }
+  if (settings.custom_instructions && typeof settings.custom_instructions === 'string' && settings.custom_instructions.trim()) {
+    parts.push(`- Special instructions from the principal: "${settings.custom_instructions.trim()}"`);
+  }
+
+  if (parts.length === 0) return '';
+
+  return `\nSCHOOL-SPECIFIC PERSONALITY:\nThis school's principal has configured the following preferences for you. Adapt your responses to match:\n${parts.join('\n')}\nThe school's philosophy and special instructions take priority over general advice.\n`;
+}
+
 /**
  * Build a conversational prompt for the Guru chat thread.
  * Unlike buildGuruPrompt(), this produces natural conversation — no structured sections.
@@ -599,6 +660,7 @@ export function buildConversationalPrompt(
   guruTier?: 'haiku' | 'sonnet',
   proactive?: ProactiveContext,
   isTeacher?: boolean,
+  schoolGuruPersonality?: Record<string, unknown> | null,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
@@ -727,6 +789,13 @@ export function buildConversationalPrompt(
   // Build the system prompt with all sections
   let systemPrompt = isTeacher ? TEACHER_CONVERSATIONAL_SYSTEM_PROMPT : CONVERSATIONAL_SYSTEM_PROMPT;
   systemPrompt += '\n\n' + modeInstructions;
+
+  // School-specific personality settings (from principal config) — inject early to influence all responses
+  const personalitySection = buildSchoolPersonalitySection(schoolGuruPersonality || childContext.schoolGuruPersonality);
+  if (personalitySection) {
+    systemPrompt += '\n' + personalitySection;
+  }
+
   systemPrompt += '\n\n' + TOOL_USE_INSTRUCTIONS_BASE;
   if (isTeacher) {
     systemPrompt += '\n' + TOOL_USE_INSTRUCTIONS_CLASSROOM;

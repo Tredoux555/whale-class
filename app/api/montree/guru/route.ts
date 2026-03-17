@@ -467,7 +467,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher);
+      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher, childContext!.schoolGuruPersonality);
       guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt
