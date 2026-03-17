@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         )
       `)
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });

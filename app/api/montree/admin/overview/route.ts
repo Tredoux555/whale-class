@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       .from('montree_schools')
       .select('*')
       .eq('id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (schoolError || !school) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       .select('id, name, email, role, last_login')
       .eq('school_id', schoolId)
       .eq('role', 'principal')
-      .single();
+      .maybeSingle();
 
     // Calculate stats (use filtered classrooms)
     const stats = {

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { analyzeWeeklyProgress, WeeklyAnalysisResult } from '@/lib/montree/ai';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // ============================================
 // GET: Retrieve cached analysis
@@ -26,6 +27,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         { success: false, error: 'child_id is required' },
         { status: 400 }
+      );
+    }
+
+    // Verify child belongs to this school
+    const accessCheck = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
       );
     }
 
@@ -87,6 +97,15 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // Verify child belongs to this school
+    const accessCheck = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+    if (!accessCheck.allowed) {
+      return NextResponse.json(
+        { success: false, error: 'Access denied' },
+        { status: 403 }
+      );
+    }
+
     // Check for existing analysis
     if (!force_regenerate) {
       const { data: existing } = await supabase
@@ -94,7 +113,7 @@ export async function POST(request: NextRequest) {
         .select('id, generated_at')
         .eq('child_id', child_id)
         .eq('week_start', week_start)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         return NextResponse.json({
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
       .from('montree_children')
       .select('id, name, date_of_birth, classroom_id')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json(
@@ -157,6 +176,10 @@ export async function POST(request: NextRequest) {
 
     if (progressResult.error) {
       console.error('Error fetching progress:', progressResult.error);
+      return NextResponse.json(
+        { success: false, error: 'Failed to fetch progress data' },
+        { status: 500 }
+      );
     }
 
     // Create a map of notes by work_name for easy lookup
@@ -254,7 +277,7 @@ export async function POST(request: NextRequest) {
         onConflict: 'child_id,week_start',
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (saveError) {
       console.error('Error saving analysis:', saveError.message, saveError.code);

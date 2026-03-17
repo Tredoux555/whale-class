@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET - Check which features are enabled for a classroom
 export async function GET(request: NextRequest) {
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       // Fetch definitions + classroom lookup + classroom features in parallel
       const [defsResult, classroomResult, cfResult] = await Promise.all([
         supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true }),
-        supabase.from('montree_classrooms').select('school_id').eq('id', classroomId).single(),
+        supabase.from('montree_classrooms').select('school_id').eq('id', classroomId).maybeSingle(),
         supabase.from('montree_classroom_features').select('*').eq('classroom_id', classroomId),
       ]);
 
@@ -96,6 +97,9 @@ export async function GET(request: NextRequest) {
 // POST - Toggle a feature on/off for a school or classroom
 export async function POST(request: NextRequest) {
   try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const supabase = getSupabase();
     const body = await request.json();
     const { feature_key, enabled, school_id, classroom_id, enabled_by } = body;
@@ -126,7 +130,7 @@ export async function POST(request: NextRequest) {
           enabled_at: new Date().toISOString(),
         }, { onConflict: 'classroom_id,feature_key' })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Feature toggle error:', error);
@@ -150,7 +154,7 @@ export async function POST(request: NextRequest) {
           enabled_at: new Date().toISOString(),
         }, { onConflict: 'school_id,feature_key' })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Feature toggle error:', error);

@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         id, name, classroom_id, photo_url
       `)
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       .from('montree_classrooms')
       .select('name, school_id')
       .eq('id', child.classroom_id)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       .eq('child_id', child_id)
       .order('generated_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     const lastReportDate = lastReport?.generated_at || null;
 
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       .eq('child_id', child_id)
       .eq('week_start', weekStartStr)
       .eq('report_type', 'teacher')
-      .single();
+      .maybeSingle();
 
     let photos: Array<{ storage_path: string; work_id: string | null; caption: string | null; captured_at: string; url: string; id: string }> = [];
 
@@ -148,17 +148,18 @@ export async function POST(request: NextRequest) {
         photoQuery = photoQuery.gt('captured_at', lastReportDate);
       }
 
-      const { data: photoData } = await photoQuery;
-
-      // Also fetch group photos from junction table
-      const { data: groupPhotos } = await supabase
-        .from('montree_media_children')
-        .select(`
-          media:montree_media (
-            id, storage_path, work_id, caption, captured_at
-          )
-        `)
-        .eq('child_id', child_id);
+      // Fetch direct + group photos in parallel (independent queries)
+      const [{ data: photoData }, { data: groupPhotos }] = await Promise.all([
+        photoQuery,
+        supabase
+          .from('montree_media_children')
+          .select(`
+            media:montree_media (
+              id, storage_path, work_id, caption, captured_at
+            )
+          `)
+          .eq('child_id', child_id),
+      ]);
 
       // Combine and deduplicate
       const photoMap = new Map();

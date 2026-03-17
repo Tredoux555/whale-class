@@ -215,7 +215,7 @@ export const en = {
   'nav.week': 'Week',
   'nav.progress': 'Progress',
   'nav.review': 'Review',
-  'nav.gallery': 'Gallery',
+  'nav.gallery': 'Review',
   'nav.reports': 'Reports',
   'nav.shelf': 'Shelf',
   'nav.portal': 'Portal',
