@@ -18,7 +18,7 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 **Status:** All 7 bugs (3 CRITICAL + 4 HIGH) verified FIXED in code as of Mar 17 audit. Fix comments in source confirm: CRITICAL-001 (AbortController + 45s timeout on Haiku, line 312-346 corrections/route.ts), CRITICAL-002 (AbortController on Sonnet, line 838-858 photo-insight/route.ts), CRITICAL-003 (retry queue lines 405-535 corrections/route.ts), HIGH-001 (error log line 155-158), HIGH-002 (progressUpdateFiredRef line 167 PhotoInsightButton.tsx), HIGH-003 (getEntry fresh reads line 114), HIGH-004 (child_id validation lines 40-45).
 
-**Architecture note:** Haiku is NOT in the main vision pipeline. Every photo goes through Sonnet (~$0.06). Two-tier Haiku/Sonnet router was designed but NEVER built — would cut costs 60-70%.
+**Architecture note:** ✅ Two-tier Haiku→Sonnet vision router NOW BUILT (Mar 17). Haiku tries first (10s timeout, $0.016/photo). If confidence ≥0.80 AND match ≥0.80, accepted. Otherwise escalates to Sonnet ($0.06/photo). Same system prompt + visual ID guide for both models. Expected blended cost: ~$0.03-0.04/photo (vs $0.06 Sonnet-only). 3x3x3x3 hardened: 18 independent audits, 2 issues found and fixed, final CLEAN.
 
 ### Deploy All Local Changes (Priority #1 — URGENT)
 
@@ -102,6 +102,41 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 ## CURRENT STATUS (Mar 17, 2026)
 
 ### Session Work (Mar 17, 2026)
+
+**Two-Tier Haiku→Sonnet Vision Router (3x3x3x3) — COMPLETE, NOT YET DEPLOYED:**
+
+Built the two-tier Haiku→Sonnet vision router for Smart Capture. Haiku tries first (10s timeout, ~$0.016/photo). If confidence ≥0.80 AND curriculum match ≥0.80, Haiku result accepted. Otherwise escalates to Sonnet (~$0.06/photo). Same full system prompt + 262-line visual ID guide for both models. Expected 40-60% Haiku acceptance rate → blended cost ~$0.03-0.04/photo.
+
+**Architecture:**
+- `HAIKU_ACCEPT_CONFIDENCE = 0.80`, `HAIKU_ACCEPT_MATCH = 0.80`, `HAIKU_TIMEOUT_MS = 10_000`
+- Acceptance only skips Sonnet — GREEN/AMBER/RED zone logic unchanged (auto-update still requires 0.95/0.95)
+- `validateToolOutput()` shared function normalizes both models' output
+- `modelUsed` tracked in DB (`montree_guru_interactions.model_used` + `context_snapshot`)
+- `haiku_attempted` + `haiku_accepted` flags in context_snapshot for analytics
+- Defensive null guard before downstream usage (neither model produced result → 500)
+- 3 calibration protection layers: conservative 0.80 acceptance, 0.95 GREEN gate, classroom gate
+
+**3x3x3x3 Audit Results:** 3 cycles × (3 research + 3 build audit agents) = 18 independent audits. 2 issues found and fixed:
+1. Cycle 1: haikuTimeoutHandle declared inside try block → moved before try, clearTimeout in finally
+2. Cycle 2: Uninitialized shared variables → explicit defaults + null guard before downstream use
+Final state: ALL 3 CYCLES CLEAN.
+
+**Files Modified (1):**
+1. `app/api/montree/guru/photo-insight/route.ts` — Two-tier router (Haiku try block + Sonnet fallback), validateToolOutput helper, shared variables with defaults, defensive guard, context_snapshot tracking
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations.
+
+**Gallery-Reports Consolidation — COMPLETE, NOT YET DEPLOYED:**
+
+Consolidated Gallery and Reports tabs into unified flow. Gallery is now the report workspace. Reports tab removed from tab bar. Photo gate removed from send/route.ts. 3-pass audit: 0 bugs.
+
+**Files Modified (4):**
+1. `app/montree/dashboard/[childId]/layout.tsx` — Reports tab removed, 2 tabs only
+2. `app/montree/dashboard/[childId]/gallery/page.tsx` — Report preview/send flow added
+3. `app/montree/dashboard/[childId]/reports/page.tsx` — Redirect stub
+4. `app/api/montree/reports/send/route.ts` — Photo gate removed
+
+**Deploy:** ⚠️ NOT YET PUSHED. No new migrations.
 
 **Reports + Gallery 3x3x3 Audit & Fix — COMPLETE, NOT YET DEPLOYED:**
 

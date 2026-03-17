@@ -1,5 +1,6 @@
 // app/api/montree/guru/photo-insight/route.ts
-// Smart Capture — Sonnet vision analyzes a child's photo
+// Smart Capture — Two-tier Haiku→Sonnet vision router
+// Haiku tries first (4× cheaper). If confident, skip Sonnet. Else escalate.
 // Returns structured data: work name, area, mastery status, brief observation
 // Auto-updates: media tagging (work_id) + progress (teacher can override)
 // "Self-driving car" model: Guru auto-manages, teacher can override anytime via shelf
@@ -98,6 +99,20 @@ const PHOTO_ANALYSIS_TOOL = {
 // Old matchToCurriculum removed — now using matchToCurriculumV2 from work-matching.ts
 // (area-constrained, alias-aware, materials-boosted, top-3 candidates)
 
+// Shared validation for tool_use output from either Haiku or Sonnet
+const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'unknown'];
+const VALID_MASTERY = ['mastered', 'practicing', 'presented', 'unclear'];
+
+function validateToolOutput(rawInput: Record<string, unknown>) {
+  return {
+    work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
+    area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
+    mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
+    confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
+    observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
+  };
+}
+
 // Status rank for upgrade-only protection
 const STATUS_RANK: Record<string, number> = {
   'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
@@ -106,6 +121,18 @@ const STATUS_RANK: Record<string, number> = {
 // Auto-update threshold: GREEN zone only (≥0.95 match AND ≥0.95 confidence)
 // AMBER zone (0.5–0.95) requires teacher confirmation before any progress update
 const AUTO_UPDATE_THRESHOLD = 0.95;
+
+// Haiku-first router: acceptance threshold for skipping Sonnet escalation
+// If Haiku confidence ≥ 0.80 AND matchToCurriculumV2 score ≥ 0.80, accept Haiku result.
+// Haiku-accepted results still go through GREEN/AMBER/RED zone system — acceptance just
+// means "skip Sonnet", NOT "auto-update". Auto-update still requires 0.95/0.95.
+// CALIBRATION NOTE: Haiku confidence may differ from Sonnet's. Mitigated by 3 layers:
+// (1) 0.80 acceptance is conservative — most results land in AMBER for teacher review
+// (2) GREEN zone requires 0.95/0.95 — very high bar even for Haiku
+// (3) Classroom gate — only works already in curriculum get auto-updated
+const HAIKU_ACCEPT_CONFIDENCE = 0.80;
+const HAIKU_ACCEPT_MATCH = 0.80;
+const HAIKU_TIMEOUT_MS = 10_000; // 10s — leaves 35s headroom for Sonnet fallback
 
 export async function POST(request: NextRequest) {
   try {
@@ -833,107 +860,179 @@ IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask
 to confirm (0.7-0.94) than to auto-update incorrectly (0.95+).
 ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}${duplicateContext}`;
 
-    // Call Sonnet with vision + tool_use (45s timeout — fire-and-forget on client, but don't hang server)
-    // AbortController ensures the API call is actually cancelled on timeout (not just ignored)
-    const apiAbortController = new AbortController();
-    const apiPromise = anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: 500,
-      system: systemPrompt,
-      tools: [PHOTO_ANALYSIS_TOOL],
-      tool_choice: { type: 'tool', name: 'tag_photo' },
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'image',
-            source: { type: 'url', url: photoUrl },
-          },
-          {
-            type: 'text',
-            text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level.\n\n${worksContext}`,
-          },
-        ],
-      }],
-    }, { signal: apiAbortController.signal });
+    // Shared user message for both Haiku and Sonnet
+    const userMessageContent = [
+      {
+        type: 'image' as const,
+        source: { type: 'url' as const, url: photoUrl },
+      },
+      {
+        type: 'text' as const,
+        text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level.\n\n${worksContext}`,
+      },
+    ];
 
-    let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutHandle = setTimeout(() => {
-        apiAbortController.abort();
-        reject(new Error('Analysis took too long'));
-      }, 45000);
-    });
+    // ================================================================
+    // TWO-TIER HAIKU→SONNET VISION ROUTER
+    // Try Haiku first (4× cheaper). If confident enough, skip Sonnet.
+    // If Haiku fails/times out/low confidence → fall through to Sonnet.
+    // Same system prompt for both models (visual ID guide is essential).
+    // ================================================================
+    let input: ReturnType<typeof validateToolOutput> | null = null;
+    let matchResult: ReturnType<typeof matchToCurriculumV2> | null = null;
+    let finalWorkName: string = '';
+    let finalArea: string | null = null;
+    let finalWorkKey: string | null = null;
+    let matchScore: number = 0;
+    let modelUsed: string = AI_MODEL; // Default to Sonnet; overwritten if Haiku accepted
+    let haikuAttempted = false;
+    let haikuAccepted = false;
 
-    let message;
+    // === TIER 1: HAIKU (fast, cheap) ===
+    let haikuTimeoutHandle: ReturnType<typeof setTimeout> | undefined;
     try {
-      message = await Promise.race([apiPromise, timeoutPromise]);
-    } catch (raceErr) {
-      clearTimeout(timeoutHandle);
-      // Explicit timeout handling — return 408 instead of falling to generic 500 catch
-      if (raceErr instanceof Error && raceErr.message === 'Analysis took too long') {
-        console.error('[PhotoInsight] Anthropic API timeout after 45s');
-        return NextResponse.json({ success: false, error: 'Analysis took too long' }, { status: 408 });
+      haikuAttempted = true;
+      const haikuAbort = new AbortController();
+
+      const haikuMessage = await Promise.race([
+        anthropic.messages.create({
+          model: HAIKU_MODEL,
+          max_tokens: 500,
+          system: systemPrompt,
+          tools: [PHOTO_ANALYSIS_TOOL],
+          tool_choice: { type: 'tool', name: 'tag_photo' },
+          messages: [{ role: 'user', content: userMessageContent }],
+        }, { signal: haikuAbort.signal }),
+        new Promise<never>((_, reject) => {
+          haikuTimeoutHandle = setTimeout(() => {
+            haikuAbort.abort();
+            reject(new Error('Haiku timeout'));
+          }, HAIKU_TIMEOUT_MS);
+        }),
+      ]);
+
+      clearTimeout(haikuTimeoutHandle);
+
+      const haikuToolBlock = haikuMessage.content.find(b => b.type === 'tool_use');
+      if (haikuToolBlock && haikuToolBlock.type === 'tool_use') {
+        const haikuInput = validateToolOutput(haikuToolBlock.input as Record<string, unknown>);
+        const haikuMatch = matchToCurriculumV2(
+          haikuInput.work_name,
+          haikuInput.area !== 'unknown' ? haikuInput.area : null,
+          curriculum,
+          correctionsMap,
+          haikuInput.observation,
+        );
+
+        // Accept Haiku if BOTH confidence and match score meet threshold
+        // Note: acceptance just skips Sonnet — auto-update still requires 0.95/0.95 (GREEN zone)
+        if (haikuInput.confidence >= HAIKU_ACCEPT_CONFIDENCE && haikuMatch.bestScore >= HAIKU_ACCEPT_MATCH) {
+          input = haikuInput;
+          matchResult = haikuMatch;
+          finalWorkName = haikuMatch.bestMatch?.name || haikuInput.work_name;
+          finalArea = haikuMatch.bestMatch?.area_key || (haikuInput.area !== 'unknown' ? haikuInput.area : null);
+          finalWorkKey = haikuMatch.bestMatch?.work_key || null;
+          matchScore = haikuMatch.bestScore;
+          modelUsed = HAIKU_MODEL;
+          haikuAccepted = true;
+          console.log(`[PhotoInsight] Haiku ACCEPTED: "${finalWorkName}" (confidence: ${haikuInput.confidence.toFixed(2)}, match: ${haikuMatch.bestScore.toFixed(2)})`);
+        } else {
+          console.log(`[PhotoInsight] Haiku REJECTED: "${haikuInput.work_name}" (confidence: ${haikuInput.confidence.toFixed(2)}, match: ${haikuMatch.bestScore.toFixed(2)}) — escalating to Sonnet`);
+        }
+      } else {
+        console.log('[PhotoInsight] Haiku returned no tool_use — escalating to Sonnet');
       }
-      throw raceErr; // Re-throw non-timeout errors to outer catch
+    } catch (haikuErr: unknown) {
+      // Haiku failed or timed out — silently fall through to Sonnet
+      const isTimeout = haikuErr instanceof Error && (haikuErr.message === 'Haiku timeout' || haikuErr.name === 'AbortError');
+      console.log(`[PhotoInsight] Haiku ${isTimeout ? 'TIMED OUT (10s)' : 'FAILED'} — escalating to Sonnet`);
+      // Note: haikuTimeoutHandle cleanup is in the finally block below
     } finally {
-      clearTimeout(timeoutHandle);
+      // Always clean up the Haiku timeout — whether success, rejection, or error
+      // Without this, a timeout rejection leaves the setTimeout handle active
+      clearTimeout(haikuTimeoutHandle);
     }
 
-    // Extract tool use result
-    const toolBlock = message.content.find(b => b.type === 'tool_use');
-    if (!toolBlock || toolBlock.type !== 'tool_use') {
-      // Fallback: try to get text response
-      const textContent = message.content
-        .filter(b => b.type === 'text')
-        .map(b => (b as { type: 'text'; text: string }).text)
-        .join('');
-      return NextResponse.json({
-        success: true,
-        insight: (textContent || 'Unable to analyze photo').slice(0, 200),
-        work_name: null,
-        area: null,
-        mastery_evidence: null,
-        auto_updated: false,
-        needs_confirmation: false,
-        confidence: null,
-        match_score: null,
-        candidates: [],
-        scenario: 'A' as const,
-        in_classroom: false,
-        in_child_shelf: false,
-        classroom_work_id: null,
+    // === TIER 2: SONNET (full power, more expensive) — only if Haiku didn't accept ===
+    if (!haikuAccepted) {
+      const apiAbortController = new AbortController();
+      const apiPromise = anthropic.messages.create({
+        model: AI_MODEL,
+        max_tokens: 500,
+        system: systemPrompt,
+        tools: [PHOTO_ANALYSIS_TOOL],
+        tool_choice: { type: 'tool', name: 'tag_photo' },
+        messages: [{ role: 'user', content: userMessageContent }],
+      }, { signal: apiAbortController.signal });
+
+      let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+          apiAbortController.abort();
+          reject(new Error('Analysis took too long'));
+        }, 45000);
       });
+
+      let message;
+      try {
+        message = await Promise.race([apiPromise, timeoutPromise]);
+      } catch (raceErr) {
+        clearTimeout(timeoutHandle);
+        if (raceErr instanceof Error && raceErr.message === 'Analysis took too long') {
+          console.error('[PhotoInsight] Sonnet API timeout after 45s');
+          return NextResponse.json({ success: false, error: 'Analysis took too long' }, { status: 408 });
+        }
+        throw raceErr;
+      } finally {
+        clearTimeout(timeoutHandle);
+      }
+
+      // Extract tool use result
+      const toolBlock = message.content.find(b => b.type === 'tool_use');
+      if (!toolBlock || toolBlock.type !== 'tool_use') {
+        const textContent = message.content
+          .filter(b => b.type === 'text')
+          .map(b => (b as { type: 'text'; text: string }).text)
+          .join('');
+        return NextResponse.json({
+          success: true,
+          insight: (textContent || 'Unable to analyze photo').slice(0, 200),
+          work_name: null,
+          area: null,
+          mastery_evidence: null,
+          auto_updated: false,
+          needs_confirmation: false,
+          confidence: null,
+          match_score: null,
+          candidates: [],
+          scenario: 'A' as const,
+          in_classroom: false,
+          in_child_shelf: false,
+          classroom_work_id: null,
+        });
+      }
+
+      input = validateToolOutput(toolBlock.input as Record<string, unknown>);
+      matchResult = matchToCurriculumV2(
+        input.work_name,
+        input.area !== 'unknown' ? input.area : null,
+        curriculum,
+        correctionsMap,
+        input.observation,
+      );
+
+      finalWorkName = matchResult.bestMatch?.name || input.work_name;
+      finalArea = matchResult.bestMatch?.area_key || (input.area !== 'unknown' ? input.area : null);
+      finalWorkKey = matchResult.bestMatch?.work_key || null;
+      matchScore = matchResult.bestScore;
+      modelUsed = AI_MODEL;
     }
 
-    // Validate tool input fields
-    const rawInput = toolBlock.input as Record<string, unknown>;
-    // Validate and cap Sonnet's tool output — prevents oversized strings from reaching DB/client
-    const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'unknown'];
-    const VALID_MASTERY = ['mastered', 'practicing', 'presented', 'unclear'];
-    const input = {
-      work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
-      area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
-      mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
-      confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
-      observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
-    };
-
-    // Match to curriculum using V2 (area-constrained, alias-aware, materials-boosted)
-    // correctionsMap already built from step 1 above (shared with prompt context)
-    const matchResult = matchToCurriculumV2(
-      input.work_name,
-      input.area !== 'unknown' ? input.area : null,
-      curriculum,
-      correctionsMap,
-      input.observation,
-    );
-
-    const finalWorkName = matchResult.bestMatch?.name || input.work_name;
-    const finalArea = matchResult.bestMatch?.area_key
-      || (input.area !== 'unknown' ? input.area : null);
-    const finalWorkKey = matchResult.bestMatch?.work_key || null;
-    const matchScore = matchResult.bestScore;
+    // Defensive guard: if neither Haiku nor Sonnet produced a result, bail
+    if (!input || !matchResult) {
+      console.error('[PhotoInsight] Neither Haiku nor Sonnet produced a result');
+      return NextResponse.json({ success: false, error: 'Failed to analyze photo' }, { status: 500 });
+    }
 
     // ========================================================
     // 3 LOOKUPS: Is this work in classroom? On child's shelf? What's the DB work_id?
@@ -1212,7 +1311,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
         question: `photo:${media_id}:${locale}`,
         question_type: 'photo_insight',
         response_insight: insightText,
-        model_used: AI_MODEL,
+        model_used: modelUsed,
         context_snapshot: {
           child_name: childName,
           media_id,
@@ -1221,7 +1320,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
           identified_area: finalArea,
           identified_work_key: finalWorkKey,
           mastery_evidence: masteryEvidence,
-          sonnet_confidence: input.confidence,
+          sonnet_confidence: input.confidence, // Field name kept for backward compat — actually model_confidence
           curriculum_match_score: matchScore,
           auto_updated: autoUpdated,
           needs_confirmation: needsConfirmation,
@@ -1231,6 +1330,9 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
           classroom_work_id: classroomWorkId,
           candidates: matchResult.candidates.map(c => ({ name: c.work.name, area: c.work.area_key, score: c.score })),
           locale,
+          model_used: modelUsed,
+          haiku_attempted: haikuAttempted,
+          haiku_accepted: haikuAccepted,
         },
       });
 
