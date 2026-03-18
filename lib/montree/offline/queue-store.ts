@@ -28,7 +28,23 @@ function openDB(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
 
   dbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    // Guard: IndexedDB may not be available (private browsing, disabled, old browser)
+    if (typeof indexedDB === 'undefined') {
+      dbPromise = null;
+      reject(new Error('Photo storage unavailable — IndexedDB not supported'));
+      return;
+    }
+
+    let request: IDBOpenDBRequest;
+    try {
+      request = indexedDB.open(DB_NAME, DB_VERSION);
+    } catch (err) {
+      // Synchronous exception (Firefox private browsing throws here)
+      console.error('[PHOTO_QUEUE] IndexedDB.open() threw:', err);
+      dbPromise = null;
+      reject(new Error('Photo storage unavailable — are you in private browsing mode?'));
+      return;
+    }
 
     request.onerror = () => {
       console.error('[PHOTO_QUEUE] IndexedDB open failed:', request.error);
@@ -182,17 +198,20 @@ export async function findByContentHash(
 
 export async function getQueueStats(): Promise<PhotoQueueStats> {
   const entries = await getAllEntries();
-  return {
+  // Single-pass: O(N) instead of O(6N) from 6 separate .filter() calls
+  const stats: PhotoQueueStats = {
     total: entries.length,
-    pending: entries.filter(e => e.status === 'pending').length,
-    uploading: entries.filter(e => e.status === 'uploading').length,
-    uploaded: entries.filter(e => e.status === 'uploaded').length,
-    failed: entries.filter(e => e.status === 'failed').length,
-    permanent_failure: entries.filter(e => e.status === 'permanent_failure').length,
-    total_bytes_pending: entries
-      .filter(e => e.status === 'pending' || e.status === 'failed' || e.status === 'uploading')
-      .reduce((sum, e) => sum + e.blob_size_bytes, 0),
+    pending: 0, uploading: 0, uploaded: 0, failed: 0, permanent_failure: 0,
+    total_bytes_pending: 0,
   };
+  for (const e of entries) {
+    if (e.status === 'pending') { stats.pending++; stats.total_bytes_pending += e.blob_size_bytes; }
+    else if (e.status === 'uploading') { stats.uploading++; stats.total_bytes_pending += e.blob_size_bytes; }
+    else if (e.status === 'uploaded') stats.uploaded++;
+    else if (e.status === 'failed') { stats.failed++; stats.total_bytes_pending += e.blob_size_bytes; }
+    else if (e.status === 'permanent_failure') stats.permanent_failure++;
+  }
+  return stats;
 }
 
 export async function getQueueSize(): Promise<number> {

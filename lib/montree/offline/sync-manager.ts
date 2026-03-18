@@ -40,10 +40,19 @@ export type SyncEvent = {
 // ============================================
 
 async function calculateContentHash(blob: Blob): Promise<string> {
-  const buffer = await blob.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  try {
+    // crypto.subtle requires HTTPS (not available over HTTP or in some webviews)
+    if (typeof crypto === 'undefined' || !crypto.subtle) {
+      throw new Error('crypto.subtle not available');
+    }
+    const buffer = await blob.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    // Fallback: size + type + timestamp (not cryptographic, but prevents accidental dupes)
+    return `fallback_${blob.size}_${blob.type}_${Date.now()}`;
+  }
 }
 
 function generateId(): string {
@@ -344,7 +353,8 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       // Auth errors already handled above — don't double-count
       const freshEntry = await getEntry(entry.id);
       if (freshEntry && freshEntry.status === 'uploading') {
-        const newCount = (freshEntry.attempt_count || 0) + 1;
+        const rawCount = typeof freshEntry.attempt_count === 'number' ? freshEntry.attempt_count : 0;
+        const newCount = Math.max(0, rawCount) + 1;
         const errorMsg = err instanceof Error ? err.message : 'Upload failed';
 
         if (newCount >= MAX_RETRIES) {
@@ -374,14 +384,14 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
 async function checkNetworkReachable(): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const timeout = setTimeout(() => controller.abort(), 2000); // 2s — fast fail
     const res = await fetch('/api/montree/health', {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-store',
     });
     clearTimeout(timeout);
-    // MED-001: Accept any response (even 500) as "online" — server is reachable
+    // Accept any response (even 500) as "online" — server is reachable
     return true;
   } catch {
     return false;
