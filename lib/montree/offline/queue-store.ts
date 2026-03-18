@@ -206,6 +206,28 @@ export async function isQueueFull(): Promise<boolean> {
 }
 
 // ============================================
+// ATOMIC OPERATIONS (blob + entry in single transaction)
+// ============================================
+
+/**
+ * Save both blob and entry atomically in a single IndexedDB transaction.
+ * If either fails, both are rolled back. Prevents orphaned blobs.
+ * FIX: CRITICAL-001 — crash between separate saves could orphan blob.
+ */
+export async function saveEntryAndBlob(entry: PhotoQueueEntry, blob: Blob): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_ENTRIES, STORE_BLOBS], 'readwrite');
+    tx.onerror = () => reject(tx.error);
+    tx.oncomplete = () => resolve();
+
+    // Both writes in same transaction — atomic
+    tx.objectStore(STORE_BLOBS).put({ id: entry.id, blob });
+    tx.objectStore(STORE_ENTRIES).put(entry);
+  });
+}
+
+// ============================================
 // BLOB OPERATIONS
 // ============================================
 

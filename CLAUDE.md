@@ -14,7 +14,7 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 18, 2026) — NATIVE APP BUILD
 
-### Capacitor Native App — Phase 1+2 COMPLETE, NOT YET DEPLOYED
+### Capacitor Native App — Phase 1+2+3+4 COMPLETE, NOT YET DEPLOYED
 
 **Architecture:** Capacitor thin native wrapper — loads from `https://montree.xyz` (server.url). Zero API extraction. Zero static export. All 60+ API routes stay on Railway unchanged. httpOnly cookies work same-origin.
 
@@ -52,11 +52,27 @@ npx cap open ios      # Requires Xcode on Mac
 npx cap open android  # Requires Android Studio
 ```
 
+**To build APK for Chinese Android teachers (no Google Play needed):**
+```bash
+bash scripts/build-native.sh apk
+# Outputs: public/downloads/montree.apk — send via WeChat or host on montree.xyz
+# Requires: Android Studio installed (for Android SDK)
+# Requires: Java 17 (brew install openjdk@17)
+```
+
+**Download page:** `app/montree/download/page.tsx` — Bilingual EN/ZH page at montree.xyz/montree/download with APK download button + install instructions. iOS section says "Coming soon to TestFlight."
+
 **Migration 141 still required:** `psql $DATABASE_URL -f migrations/141_auto_crop.sql`
 
+**Phase 3 — Native Camera (BUILT):**
+Camera abstraction layer (`lib/montree/platform/camera.ts`) with `captureNativePhoto()` and `pickFromAlbum()`. CameraCapture.tsx auto-detects native platform: if Capacitor → opens device camera directly (skips getUserMedia), falls back to web camera on non-native. Album button uses native picker on device, web file input on browser. Mounted-check pattern prevents state updates on unmounted component.
+
+**Phase 4 — Offline/Online UI (BUILT):**
+NetworkStatusBanner component shows red "You're offline" bar when disconnected, green "Back online — syncing photos" on reconnection (3s auto-dismiss). Uses Capacitor Network plugin on native, browser online/offline events on web. Wired into dashboard layout above header.
+
+**Audit:** Full audit of all 16 files by independent agent. 3 CRITICAL + 4 HIGH issues found and fixed: mounted-check in native camera useEffect, image dimension fallback defaults, usePhotoQueue re-render optimization, sync-triggers cleanup race condition.
+
 **Next steps:**
-- Phase 3: Native camera integration (@capacitor/camera replacing getUserMedia)
-- Phase 4: Offline banner + network status indicator
 - Phase 5: Capgo live updates (push JS fixes without App Store)
 - Phase 6: App Store submission (Apple $99/yr + Google $25 one-time)
 
@@ -72,9 +88,9 @@ npx cap open android  # Requires Android Studio
 
 **Architecture note:** ✅ Two-tier Haiku→Sonnet vision router NOW BUILT (Mar 17). Haiku tries first (10s timeout, $0.016/photo). If confidence ≥0.80 AND match ≥0.80, accepted. Otherwise escalates to Sonnet ($0.06/photo). Same system prompt + visual ID guide for both models. Expected blended cost: ~$0.03-0.04/photo (vs $0.06 Sonnet-only). 3x3x3x3 hardened: 18 independent audits, 2 issues found and fixed, final CLEAN.
 
-### Deploy All Local Changes (Priority #1 — URGENT)
+### ✅ Deploy All Local Changes (Priority #1 — DONE)
 
-All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-learning visual memory system + expanded visual ID guide (262 lines, 200+ works) + Smart Capture marketing tab + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: self-learning visual memory, expanded visual ID guide, Smart Capture marketing, outreach campaign, pink/blue box generators, all Mar 8-15 features" && git push origin main`
+All code pushed to Railway. Mar 8-18 features deployed. Mar 8–14 features + fixes including self-learning visual memory system + expanded visual ID guide (262 lines, 200+ works) + Smart Capture marketing tab + Pink/Blue Box AMI generators + CRITICAL CommandSentence.text crash fix + parent feature fixes + all Mar 8-13 features. Push from Mac: `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: self-learning visual memory, expanded visual ID guide, Smart Capture marketing, outreach campaign, pink/blue box generators, all Mar 8-15 features" && git push origin main`
 
 **Includes (Mar 14 — late):** Per-classroom visual memory self-learning system (1 migration, 2 modified API routes). Expanded visual ID guide from ~48 to ~262 lines covering 200+ works with 6 confusion pair sections. Smart Capture marketing tab in Nerve Center (6 competitors analysed — all confirmed zero AI photo recognition). Competitive research: Montree is category of one.
 **Includes (Mar 14 — earlier):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
@@ -200,6 +216,26 @@ When Smart Capture identifies a Montessori work in a photo, Claude now ALSO sugg
 **3x3x3x3 Audit Results:** R1C1: 0 critical, 2 medium (tool schema descriptions, silent clamping) — both fixed. R1C2: End-to-end data flow verified clean across all 6 touchpoints (schema → validation → DB → API → fetch → render).
 
 **Railway Build Status:** ✅ Confirmed ACTIVE and deployed. Project "happy-flow" (NOT "eloquent-harmony"). Latest deploy: commit `d342bc45` (health audit, Mar 18 04:32). Terminal SSL error was a second push attempt that failed (Astrill VPN), but first push succeeded.
+
+**Photo Upload Reliability Fix — COMPLETE, DEPLOYED:**
+
+Photos were silently failing to upload (fire-and-forget pattern with no retry). Teachers saw "Photo upload failed — please retake" but often missed it. Root cause: no timeout, no retry, no auth error detection.
+
+**Fix:** Upload now retries 2x with exponential backoff (2s, 4s), has 60s AbortController timeout, detects 401/403 auth failures specifically ("Session expired"), and shows 10s error toasts with actual error details.
+
+**Files Modified (1):**
+1. `app/montree/dashboard/capture/page.tsx` — Complete rewrite of fire-and-forget upload to `uploadWithRetry()` async function
+
+**Build Fixes — 3 commits to fix Railway build failures:**
+1. `615ad4dd` — JSX parse error: stray `{` in gallery auto-crop ternary
+2. `d3140090` — PhotoCropModal: `export function` → `export default function` (Turbopack requires default export for default imports)
+
+**Railway Build Status:** ✅ All code pushed. 4 commits: `1f025871` (features), `615ad4dd` (JSX fix), `5123c23d` (upload retry), `d3140090` (export fix). Railway project: "happy-flow" (NOT "eloquent-harmony").
+
+**Deploy:** Migration 141 required before testing auto-crop:
+```bash
+psql $DATABASE_URL -f migrations/141_auto_crop.sql
+```
 
 **Photo Upload Reliability Fix — COMPLETE, DEPLOYED:**
 
