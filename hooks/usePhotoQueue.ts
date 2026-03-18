@@ -61,16 +61,18 @@ export function usePhotoQueue(childId?: string): UsePhotoQueueReturn {
     refresh();
   }, [refresh]);
 
-  // Listen for sync events to update UI
+  // Listen for sync events to update UI (only refresh on meaningful state changes)
   useEffect(() => {
     const unsubscribe = addSyncListener((event: SyncEvent) => {
       if (event.type === 'sync_start') {
         setSyncing(true);
       } else if (event.type === 'sync_complete') {
         setSyncing(false);
+        refresh(); // Refresh after sync completes
+      } else if (event.type === 'photo_uploaded' || event.type === 'photo_failed') {
+        refresh(); // Refresh on individual photo status changes
       }
-      // Refresh stats/entries on any event
-      refresh();
+      // Skip refresh for 'photo_enqueued' — the enqueue() call below handles that
     });
     return unsubscribe;
   }, [refresh]);

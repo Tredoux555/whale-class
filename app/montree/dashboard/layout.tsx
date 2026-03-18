@@ -4,6 +4,7 @@
 
 import { useEffect } from 'react';
 import DashboardHeader from '@/components/montree/DashboardHeader';
+import NetworkStatusBanner from '@/components/montree/NetworkStatusBanner';
 import { registerSyncTriggers } from '@/lib/montree/offline/sync-triggers';
 // PERF: Removed 2 onboarding API calls that fired on EVERY page navigation.
 // Onboarding guides are HIDDEN (Feb 27) — all renders wrapped with `false &&`.
@@ -20,6 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen">
+      <NetworkStatusBanner />
       <DashboardHeader />
       {children}
     </div>

@@ -34,7 +34,7 @@ export function registerSyncTriggers(): () => void {
           syncQueue().catch(e => console.error('[SYNC_TRIGGER]', e));
         }
       });
-      cleanups.push(() => listener.then(l => l.remove()));
+      cleanups.push(() => listener.then(l => l.remove()).catch(() => {}));
     }).catch(e => console.warn('[SYNC_TRIGGER] Capacitor App not available:', e));
   } else {
     // Web: Listen for tab visibility
@@ -61,7 +61,7 @@ export function registerSyncTriggers(): () => void {
           syncQueue().catch(e => console.error('[SYNC_TRIGGER]', e));
         }
       });
-      cleanups.push(() => listener.then(l => l.remove()));
+      cleanups.push(() => listener.then(l => l.remove()).catch(() => {}));
     }).catch(e => console.warn('[SYNC_TRIGGER] Capacitor Network not available:', e));
   } else {
     // Web: Online/offline events

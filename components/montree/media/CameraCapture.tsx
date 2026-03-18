@@ -8,6 +8,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { compressImage } from '@/lib/montree/cache';
+import { isNativeCameraAvailable, captureNativePhoto, pickFromAlbum } from '@/lib/montree/platform/camera';
 
 // ============================================
 // TYPES
@@ -54,7 +55,131 @@ export default function CameraCapture({
   const albumInputRef = useRef<HTMLInputElement>(null);
 
   // ============================================
-  // ALBUM / PHOTO LIBRARY PICKER
+  // NATIVE CAMERA (Capacitor — iOS/Android)
+  // ============================================
+
+  // On native platforms, use the device camera directly instead of getUserMedia.
+  // This is more reliable, gives native permissions UI, and handles orientation.
+  // Falls through to web camera (getUserMedia) on non-native platforms.
+  useEffect(() => {
+    if (!isNativeCameraAvailable()) return;
+
+    let mounted = true;
+
+    // Native: skip getUserMedia entirely — capture via Capacitor plugin
+    const doNativeCapture = async () => {
+      try {
+        if (!mounted) return;
+        setCameraState('initializing');
+        const photo = await captureNativePhoto({
+          facing: facingMode,
+          quality: 90,
+          targetWidth: 1920,
+          targetHeight: 1080,
+        });
+
+        if (!mounted) return;
+
+        // Compress (same as web path)
+        const compressed = await compressImage(photo.blob);
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(compressed);
+        });
+
+        if (!mounted) return;
+
+        const img = new Image();
+        img.onload = () => {
+          if (!mounted) return;
+          onCapture({
+            type: 'photo',
+            data: {
+              blob: compressed,
+              dataUrl,
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              timestamp: new Date(),
+            },
+          });
+        };
+        img.onerror = () => {
+          if (!mounted) return;
+          onCapture({
+            type: 'photo',
+            data: { blob: compressed, dataUrl, width: 1920, height: 1080, timestamp: new Date() },
+          });
+        };
+        img.src = dataUrl;
+      } catch (err) {
+        if (!mounted) return;
+        // User cancelled the native camera — treat as cancel
+        if (err instanceof Error && err.message.includes('cancelled')) {
+          onCancel();
+          return;
+        }
+        console.error('Native camera error, falling back to web:', err);
+        // Fall through to web camera (don't abort — let the existing useEffect handle it)
+        setCameraState('initializing');
+      }
+    };
+
+    doNativeCapture();
+    return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ============================================
+  // NATIVE ALBUM PICKER (Capacitor)
+  // ============================================
+
+  const handleNativeAlbumPick = useCallback(async () => {
+    if (!isNativeCameraAvailable()) {
+      // Fall back to web file input
+      albumInputRef.current?.click();
+      return;
+    }
+
+    try {
+      const photo = await pickFromAlbum();
+      const compressed = await compressImage(photo.blob);
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(compressed);
+      });
+
+      const img = new Image();
+      img.onload = () => {
+        onCapture({
+          type: 'photo',
+          data: {
+            blob: compressed,
+            dataUrl,
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            timestamp: new Date(),
+          },
+        });
+      };
+      img.onerror = () => {
+        onCapture({
+          type: 'photo',
+          data: { blob: compressed, dataUrl, width: 0, height: 0, timestamp: new Date() },
+        });
+      };
+      img.src = dataUrl;
+    } catch (err) {
+      // User cancelled — do nothing
+      if (err instanceof Error && err.message.includes('cancelled')) return;
+      console.error('Native album error:', err);
+      setError(t('camera.error.captureFailed'));
+    }
+  }, [onCapture, t]);
+
+  // ============================================
+  // ALBUM / PHOTO LIBRARY PICKER (Web fallback)
   // ============================================
 
   const handleAlbumSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -539,7 +664,7 @@ export default function CameraCapture({
               {/* Album / Photo Library button */}
               {!isRecording && captureMode === 'photo' && (
                 <button
-                  onClick={() => albumInputRef.current?.click()}
+                  onClick={handleNativeAlbumPick}
                   className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-full text-white active:scale-90 transition-transform"
                   title={t('camera.album')}
                 >

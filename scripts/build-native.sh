@@ -6,13 +6,10 @@
 # The webDir 'out' only needs a minimal index.html for Capacitor init.
 # All actual pages load from the production server.
 #
-# To run:
-#   cd ~/Desktop/Master\ Brain/ACTIVE/whale
-#   bash scripts/build-native.sh
-#
-# Then:
-#   npx cap open ios      # Opens Xcode
-#   npx cap open android  # Opens Android Studio
+# Usage:
+#   bash scripts/build-native.sh          # Build + sync both platforms
+#   bash scripts/build-native.sh apk      # Build debug APK for Android (no Play Store needed)
+#   bash scripts/build-native.sh ios      # Open in Xcode
 
 set -e
 
@@ -73,13 +70,63 @@ fi
 echo "🔄 Syncing Capacitor..."
 npx cap sync
 
-echo ""
-echo "✅ Build complete!"
-echo ""
-echo "Next steps:"
-echo "  npx cap open ios       # Open in Xcode (build & run on simulator)"
-echo "  npx cap open android   # Open in Android Studio"
-echo ""
-echo "The app loads from https://montree.xyz"
-echo "Native plugins: camera, filesystem, network, push notifications"
-echo "Offline photo queue: saves photos locally, syncs when online"
+# Step 5: Handle build mode
+if [ "$1" = "apk" ]; then
+  echo ""
+  echo "🤖 Building Android APK..."
+  echo ""
+
+  # Build debug APK (no signing required — perfect for direct distribution)
+  cd "$WHALE_DIR/android"
+  ./gradlew assembleDebug
+
+  # Find the APK
+  APK_PATH="$WHALE_DIR/android/app/build/outputs/apk/debug/app-debug.apk"
+
+  if [ -f "$APK_PATH" ]; then
+    # Copy to public folder for easy access
+    mkdir -p "$WHALE_DIR/public/downloads"
+    cp "$APK_PATH" "$WHALE_DIR/public/downloads/montree.apk"
+
+    echo ""
+    echo "✅ APK built successfully!"
+    echo ""
+    echo "📁 APK location: $APK_PATH"
+    echo "📁 Also copied to: public/downloads/montree.apk"
+    echo ""
+    echo "Distribution options:"
+    echo "  1. Send montree.apk via WeChat to teachers"
+    echo "  2. Upload to montree.xyz/downloads/montree.apk"
+    echo "  3. Push to git — Railway will serve it at https://montree.xyz/downloads/montree.apk"
+    echo ""
+    echo "Teachers install by:"
+    echo "  1. Open the APK file"
+    echo "  2. Allow 'Install from unknown sources' when prompted"
+    echo "  3. Tap Install"
+  else
+    echo "❌ APK build failed — check Android Studio for errors"
+    exit 1
+  fi
+
+elif [ "$1" = "ios" ]; then
+  echo ""
+  echo "🍎 Opening Xcode..."
+  open "$WHALE_DIR/ios/App/App.xcworkspace"
+  echo ""
+  echo "In Xcode:"
+  echo "  1. Select an iPhone simulator from the top bar"
+  echo "  2. Click the Play ▶️ button"
+  echo "  3. For TestFlight: Product → Archive → Distribute"
+
+else
+  echo ""
+  echo "✅ Build complete!"
+  echo ""
+  echo "Next steps:"
+  echo "  bash scripts/build-native.sh apk   # Build APK for Android (send via WeChat)"
+  echo "  bash scripts/build-native.sh ios   # Open Xcode for iOS"
+  echo ""
+  echo "The app loads from https://montree.xyz"
+  echo "Native plugins: camera, filesystem, network, push notifications"
+  echo "Offline photo queue: saves photos locally, syncs when online"
+fi
