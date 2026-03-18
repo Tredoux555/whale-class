@@ -47,20 +47,31 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Generate signed URLs for thumbnails
-    const photosWithUrls = await Promise.all(
-      (photos || []).map(async (photo) => {
-        const path = photo.thumbnail_path || photo.storage_path;
-        const { data: urlData } = await supabase.storage
-          .from('montree-media')
-          .createSignedUrl(path, 3600); // 1 hour expiry
+    // Generate signed URLs for thumbnails — BATCH (1 call, not N)
+    const photoList = photos || [];
+    const paths = photoList
+      .map(p => p.thumbnail_path || p.storage_path)
+      .filter(Boolean) as string[];
 
-        return {
-          ...photo,
-          thumbnail_url: urlData?.signedUrl || null
-        };
-      })
-    );
+    let urlMap = new Map<string, string>();
+    if (paths.length > 0) {
+      const { data: signedData } = await supabase.storage
+        .from('montree-media')
+        .createSignedUrls(paths, 3600); // 1 hour expiry, single batch call
+      urlMap = new Map(
+        (signedData || [])
+          .filter(item => item.signedUrl && item.path)
+          .map(item => [item.path!, item.signedUrl!])
+      );
+    }
+
+    const photosWithUrls = photoList.map(photo => {
+      const path = photo.thumbnail_path || photo.storage_path;
+      return {
+        ...photo,
+        thumbnail_url: path ? urlMap.get(path) || null : null,
+      };
+    });
 
     const response = NextResponse.json({
       success: true,
