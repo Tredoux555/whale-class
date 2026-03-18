@@ -12,6 +12,58 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## CURRENT STATUS (Mar 18, 2026) — NATIVE APP BUILD
+
+### Capacitor Native App — Phase 1+2 COMPLETE, NOT YET DEPLOYED
+
+**Architecture:** Capacitor thin native wrapper — loads from `https://montree.xyz` (server.url). Zero API extraction. Zero static export. All 60+ API routes stay on Railway unchanged. httpOnly cookies work same-origin.
+
+**Offline Photo Queue — BUILT (Phase 2):**
+Photos now save to IndexedDB (guaranteed local persistence) before upload. Queue syncs when online. Teachers never lose photos on bad networks.
+
+**Files Created (8):**
+1. `capacitor.config.ts` — Capacitor config with server.url pointing to production
+2. `lib/montree/platform.ts` — Platform detection (isNative, getPlatform, hasNativeCamera)
+3. `lib/montree/offline/types.ts` — Queue types, status enum, constants
+4. `lib/montree/offline/queue-store.ts` — IndexedDB persistence layer (entries + blobs)
+5. `lib/montree/offline/sync-manager.ts` — Core sync engine (enqueue, upload, retry, listeners)
+6. `lib/montree/offline/sync-triggers.ts` — App resume + network change + periodic cleanup
+7. `lib/montree/offline/index.ts` — Barrel exports
+8. `hooks/usePhotoQueue.ts` — React hook for components
+9. `components/montree/media/PhotoQueueBanner.tsx` — Queue status UI for gallery
+10. `app/api/montree/health/route.ts` — Lightweight health check for network ping
+
+**Files Modified (6):**
+1. `app/montree/dashboard/capture/page.tsx` — Fire-and-forget → offline queue (enqueuePhoto + syncQueue)
+2. `app/montree/dashboard/[childId]/gallery/page.tsx` — Added PhotoQueueBanner import + render
+3. `app/montree/dashboard/layout.tsx` — Register sync triggers (app resume, network change)
+4. `lib/montree/i18n/en.ts` — 12 new offline.* keys
+5. `lib/montree/i18n/zh.ts` — 12 matching Chinese keys (perfect parity)
+6. `package.json` — Added @capacitor/camera, network, app, push-notifications, splash-screen, @capgo/capacitor-updater
+7. `.gitignore` — Added /ios/ and /android/
+8. `scripts/build-native.sh` — Rewritten for server.url approach (no static export)
+
+**To test locally:**
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+npm install
+bash scripts/build-native.sh
+npx cap open ios      # Requires Xcode on Mac
+npx cap open android  # Requires Android Studio
+```
+
+**Migration 141 still required:** `psql $DATABASE_URL -f migrations/141_auto_crop.sql`
+
+**Next steps:**
+- Phase 3: Native camera integration (@capacitor/camera replacing getUserMedia)
+- Phase 4: Offline banner + network status indicator
+- Phase 5: Capgo live updates (push JS fixes without App Store)
+- Phase 6: App Store submission (Apple $99/yr + Google $25 one-time)
+
+**Full plan:** `docs/PLAN_MONTREE_NATIVE_APP.md`
+
+---
+
 ## 🔥 NEXT SESSION PRIORITIES
 
 ### ✅ Smart Capture Critical Bugs (Priority #0 — DONE)
