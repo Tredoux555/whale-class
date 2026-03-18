@@ -18,6 +18,7 @@ import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
+import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
@@ -878,6 +879,9 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-4 pb-8">
+
+      {/* Offline Photo Queue Status */}
+      <PhotoQueueBanner childId={childId} />
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (

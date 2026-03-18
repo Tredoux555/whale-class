@@ -828,6 +828,20 @@ export const zh = {
   'gallery.free': '自由',
   'gallery.cropSaving': '保存中...',
 
+  // Offline Photo Queue
+  'offline.photo': '张照片',
+  'offline.uploading': '正在上传',
+  'offline.waitingToUpload': '等待上传',
+  'offline.syncNow': '立即同步',
+  'offline.failedToUpload': '上传失败',
+  'offline.retryAll': '全部重试',
+  'offline.retry': '重试',
+  'offline.photoSaved': '照片已保存到设备',
+  'offline.photosSynced': '张照片已上传',
+  'offline.queueFull': '照片队列已满 — 请等待上传完成',
+  'offline.offline': '您已离线 — 照片已保存到本地',
+  'offline.backOnline': '已恢复在线 — 正在同步照片',
+
   // Phase 4 — Observations
   'observations.title': '观察记录',
   'observations.subtitle': '使用ABC模型跟踪行为',

@@ -1,0 +1,265 @@
+// lib/montree/offline/queue-store.ts
+// Persistent photo queue using IndexedDB (works in both web and Capacitor webview)
+//
+// We use IndexedDB instead of SQLite because:
+// 1. Available in ALL environments (web browser + Capacitor webview)
+// 2. No native plugin dependency (SQLite requires @capacitor-community/sqlite)
+// 3. Supports storing Blobs directly (no base64 conversion needed)
+// 4. Simpler setup — zero native configuration
+// 5. Capacitor webview IndexedDB persists across app restarts
+//
+// Trade-off: Less queryable than SQLite, but for a queue of <200 items it's perfect.
+
+import type { PhotoQueueEntry, PhotoQueueStats, PhotoQueueStatus } from './types';
+import { MAX_QUEUE_SIZE } from './types';
+
+const DB_NAME = 'montree-photo-queue';
+const DB_VERSION = 1;
+const STORE_ENTRIES = 'entries';
+const STORE_BLOBS = 'blobs';
+
+let dbPromise: Promise<IDBDatabase> | null = null;
+
+// ============================================
+// DATABASE INIT
+// ============================================
+
+function openDB(): Promise<IDBDatabase> {
+  if (dbPromise) return dbPromise;
+
+  dbPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onerror = () => {
+      console.error('[PHOTO_QUEUE] IndexedDB open failed:', request.error);
+      dbPromise = null;
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onupgradeneeded = (event) => {
+      const db = (event.target as IDBOpenDBRequest).result;
+
+      // Queue metadata store
+      if (!db.objectStoreNames.contains(STORE_ENTRIES)) {
+        const store = db.createObjectStore(STORE_ENTRIES, { keyPath: 'id' });
+        store.createIndex('status', 'status', { unique: false });
+        store.createIndex('child_id', 'child_id', { unique: false });
+        store.createIndex('school_id', 'school_id', { unique: false });
+        store.createIndex('content_hash', 'content_hash', { unique: false });
+        store.createIndex('created_at', 'created_at', { unique: false });
+      }
+
+      // Blob store (photo data)
+      if (!db.objectStoreNames.contains(STORE_BLOBS)) {
+        db.createObjectStore(STORE_BLOBS, { keyPath: 'id' });
+      }
+    };
+  });
+
+  return dbPromise;
+}
+
+// ============================================
+// ENTRY OPERATIONS
+// ============================================
+
+export async function saveEntry(entry: PhotoQueueEntry): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readwrite');
+    const store = tx.objectStore(STORE_ENTRIES);
+    const request = store.put(entry);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+export async function getEntry(id: string): Promise<PhotoQueueEntry | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readonly');
+    const request = tx.objectStore(STORE_ENTRIES).get(id);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result ?? null);
+  });
+}
+
+export async function deleteEntry(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction([STORE_ENTRIES, STORE_BLOBS], 'readwrite');
+    tx.objectStore(STORE_ENTRIES).delete(id);
+    tx.objectStore(STORE_BLOBS).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export async function updateEntryStatus(
+  id: string,
+  status: PhotoQueueStatus,
+  updates?: Partial<PhotoQueueEntry>
+): Promise<void> {
+  const entry = await getEntry(id);
+  if (!entry) return;
+
+  const updated: PhotoQueueEntry = {
+    ...entry,
+    ...updates,
+    status,
+  };
+
+  await saveEntry(updated);
+}
+
+// ============================================
+// QUERY OPERATIONS
+// ============================================
+
+export async function getPendingEntries(): Promise<PhotoQueueEntry[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readonly');
+    const store = tx.objectStore(STORE_ENTRIES);
+    const request = store.getAll();
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const all = (request.result || []) as PhotoQueueEntry[];
+      // Return entries that should be retried, ordered by creation time
+      const pending = all
+        .filter(e => e.status === 'pending' || e.status === 'failed')
+        .sort((a, b) => a.created_at.localeCompare(b.created_at));
+      resolve(pending);
+    };
+  });
+}
+
+export async function getEntriesForChild(childId: string): Promise<PhotoQueueEntry[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readonly');
+    const index = tx.objectStore(STORE_ENTRIES).index('child_id');
+    const request = index.getAll(IDBKeyRange.only(childId));
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const entries = (request.result || []) as PhotoQueueEntry[];
+      resolve(entries.sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    };
+  });
+}
+
+export async function getAllEntries(): Promise<PhotoQueueEntry[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readonly');
+    const request = tx.objectStore(STORE_ENTRIES).getAll();
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve((request.result || []) as PhotoQueueEntry[]);
+  });
+}
+
+export async function findByContentHash(
+  contentHash: string,
+  childId: string
+): Promise<PhotoQueueEntry | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readonly');
+    const index = tx.objectStore(STORE_ENTRIES).index('content_hash');
+    const request = index.getAll(IDBKeyRange.only(contentHash));
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const matches = (request.result || []) as PhotoQueueEntry[];
+      const match = matches.find(e => e.child_id === childId);
+      resolve(match ?? null);
+    };
+  });
+}
+
+export async function getQueueStats(): Promise<PhotoQueueStats> {
+  const entries = await getAllEntries();
+  return {
+    total: entries.length,
+    pending: entries.filter(e => e.status === 'pending').length,
+    uploading: entries.filter(e => e.status === 'uploading').length,
+    uploaded: entries.filter(e => e.status === 'uploaded').length,
+    failed: entries.filter(e => e.status === 'failed').length,
+    permanent_failure: entries.filter(e => e.status === 'permanent_failure').length,
+    total_bytes_pending: entries
+      .filter(e => e.status === 'pending' || e.status === 'failed' || e.status === 'uploading')
+      .reduce((sum, e) => sum + e.blob_size_bytes, 0),
+  };
+}
+
+export async function getQueueSize(): Promise<number> {
+  const entries = await getAllEntries();
+  return entries.length;
+}
+
+export async function isQueueFull(): Promise<boolean> {
+  const size = await getQueueSize();
+  return size >= MAX_QUEUE_SIZE;
+}
+
+// ============================================
+// BLOB OPERATIONS
+// ============================================
+
+export async function saveBlob(id: string, blob: Blob): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_BLOBS, 'readwrite');
+    const request = tx.objectStore(STORE_BLOBS).put({ id, blob });
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+export async function getBlob(id: string): Promise<Blob | null> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_BLOBS, 'readonly');
+    const request = tx.objectStore(STORE_BLOBS).get(id);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      resolve(request.result?.blob ?? null);
+    };
+  });
+}
+
+export async function deleteBlob(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_BLOBS, 'readwrite');
+    const request = tx.objectStore(STORE_BLOBS).delete(id);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+}
+
+// ============================================
+// CLEANUP
+// ============================================
+
+/**
+ * Remove uploaded entries older than 24 hours
+ * (keeps recently uploaded for gallery merge dedup)
+ */
+export async function cleanupOldEntries(): Promise<number> {
+  const entries = await getAllEntries();
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+  let cleaned = 0;
+
+  for (const entry of entries) {
+    if (entry.status === 'uploaded' && new Date(entry.synced_at || 0).getTime() < cutoff) {
+      await deleteEntry(entry.id);
+      cleaned++;
+    }
+  }
+
+  return cleaned;
+}

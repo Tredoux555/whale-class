@@ -835,6 +835,20 @@ export const en = {
   'gallery.free': 'Free',
   'gallery.cropSaving': 'Saving...',
 
+  // Offline Photo Queue
+  'offline.photo': 'photo',
+  'offline.uploading': 'Uploading',
+  'offline.waitingToUpload': 'waiting to upload',
+  'offline.syncNow': 'Sync now',
+  'offline.failedToUpload': 'failed to upload',
+  'offline.retryAll': 'Retry all',
+  'offline.retry': 'Retry',
+  'offline.photoSaved': 'Photo saved to device',
+  'offline.photosSynced': 'photos uploaded',
+  'offline.queueFull': 'Photo queue full — please wait for uploads to complete',
+  'offline.offline': 'You\'re offline — photos are saved locally',
+  'offline.backOnline': 'Back online — syncing photos',
+
   // Phase 4 — Observations
   'observations.title': 'Observations',
   'observations.subtitle': 'Track behaviors with the ABC model',

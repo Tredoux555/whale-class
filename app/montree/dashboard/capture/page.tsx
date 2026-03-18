@@ -11,6 +11,7 @@ import CameraCapture from '@/components/montree/media/CameraCapture';
 import { compressImage, generateThumbnail } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
 import { startAnalysis } from '@/lib/montree/photo-insight-store';
+import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
 import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 
 // ============================================
@@ -163,13 +164,12 @@ function CaptureContent() {
       return;
     }
 
-    // PHOTOS: Fire-and-forget pattern
-    // Step 1: Compress image + generate thumbnail (needs live DOM — ~200ms, must await)
+    // PHOTOS: Offline-safe queue pattern
+    // Step 1: Compress image (needs live DOM — ~200ms, must await)
     const photo = media.data as CapturedPhoto;
     let compressedBlob: Blob;
     let compressedWidth = photo.width;
     let compressedHeight = photo.height;
-    let thumbnailBlob: Blob | null = null;
 
     try {
       const compressed = await compressImage(photo.blob);
@@ -181,86 +181,32 @@ function CaptureContent() {
       compressedBlob = photo.blob;
     }
 
+    // Step 2: Save to offline queue (guaranteed local persistence — survives network failure)
     try {
-      const thumb = await generateThumbnail(compressedBlob);
-      thumbnailBlob = thumb.blob;
+      await enqueuePhoto(compressedBlob, {
+        child_id: idsToTag[0] || '',
+        child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+        classroom_id: classroomId,
+        school_id: schoolId,
+        work_id: workId || undefined,
+        work_name: workName || undefined,
+        work_area: workArea || undefined,
+        is_class_photo: isClassMode,
+        width: compressedWidth,
+        height: compressedHeight,
+      });
     } catch (err) {
-      console.error('Thumbnail generation failed:', err);
+      console.error('Failed to enqueue photo:', err);
+      toast.error(t('offline.queueFull') || 'Photo queue full', { duration: 5000 });
+      return;
     }
 
-    // Step 2: Build FormData (synchronous, no DOM needed)
-    const formData = new FormData();
-    formData.append('file', compressedBlob, `photo-${Date.now()}.jpg`);
-    if (thumbnailBlob) {
-      formData.append('thumbnail', thumbnailBlob, `thumb-${Date.now()}.jpg`);
-    }
-    formData.append('metadata', JSON.stringify({
-      school_id: schoolId,
-      classroom_id: classroomId || undefined,
-      child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
-      child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-      is_class_photo: isClassMode,
-      media_type: 'photo',
-      captured_at: new Date().toISOString(),
-      work_id: workId || undefined,
-      caption: workName || undefined,
-      tags: workArea ? [workArea] : undefined,
-      width: compressedWidth,
-      height: compressedHeight,
-    }));
-
-    // Step 3: Navigate IMMEDIATELY — don't wait for network
-    toast.success(`${label} saved!`, { duration: 2000 });
+    // Step 3: Navigate IMMEDIATELY — photo is safe locally
+    toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
     navigateAfterCapture(childIds);
 
-    // Step 4: Fire-and-forget upload WITH RETRY (fetch survives page navigation)
-    const uploadWithRetry = async (attempt = 0): Promise<void> => {
-      const MAX_RETRIES = 2;
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-
-        const res = await fetch('/api/montree/media/upload', {
-          method: 'POST',
-          body: formData,
-          signal: controller.signal,
-        });
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          const errorBody = await res.json().catch(() => ({ error: 'Unknown' }));
-          if (res.status === 401 || res.status === 403) {
-            // Auth failure — retry won't help
-            toast.error('Session expired — please log in again', { duration: 10000 });
-            return;
-          }
-          throw new Error(errorBody.error || `Upload failed: ${res.status}`);
-        }
-
-        const result = await res.json();
-        if (result.success && result.media?.id && idsToTag.length > 0) {
-          const currentLocale = localStorage.getItem('montree_lang') || 'en';
-          startAnalysis(result.media.id, idsToTag[0], currentLocale);
-        }
-        if (!result.success) {
-          throw new Error(result.error || 'Upload returned failure');
-        }
-      } catch (err) {
-        const isAbort = err instanceof DOMException && err.name === 'AbortError';
-        const errorMsg = isAbort ? 'Upload timed out' : (err instanceof Error ? err.message : 'Upload failed');
-
-        if (attempt < MAX_RETRIES) {
-          console.warn(`Upload attempt ${attempt + 1} failed (${errorMsg}), retrying in ${(attempt + 1) * 2}s...`);
-          await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
-          return uploadWithRetry(attempt + 1);
-        }
-
-        console.error('Upload failed after all retries:', errorMsg);
-        toast.error(`Photo upload failed: ${errorMsg}`, { duration: 10000 });
-      }
-    };
-
-    uploadWithRetry();
+    // Step 4: Attempt upload in background (non-blocking)
+    syncQueue().catch(e => console.error('[CAPTURE] Background sync failed:', e));
   };
 
   const navigateAfterCapture = (childIds: string[]) => {
