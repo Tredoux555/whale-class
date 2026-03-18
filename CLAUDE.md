@@ -149,11 +149,25 @@ When Smart Capture identifies a Montessori work in a photo, Claude now ALSO sugg
 
 **Railway Build Status:** ✅ Confirmed ACTIVE and deployed. Project "happy-flow" (NOT "eloquent-harmony"). Latest deploy: commit `d342bc45` (health audit, Mar 18 04:32). Terminal SSL error was a second push attempt that failed (Astrill VPN), but first push succeeded.
 
-**Deploy:** ⚠️ NOT YET PUSHED. Migration 141 required before testing auto-crop. Push command:
+**Photo Upload Reliability Fix — COMPLETE, DEPLOYED:**
+
+Photos were silently failing to upload (fire-and-forget pattern with no retry). Teachers saw "Photo upload failed — please retake" but often missed it. Root cause: no timeout, no retry, no auth error detection.
+
+**Fix:** Upload now retries 2x with exponential backoff (2s, 4s), has 60s AbortController timeout, detects 401/403 auth failures specifically ("Session expired"), and shows 10s error toasts with actual error details.
+
+**Files Modified (1):**
+1. `app/montree/dashboard/capture/page.tsx` — Complete rewrite of fire-and-forget upload to `uploadWithRetry()` async function
+
+**Build Fixes — 3 commits to fix Railway build failures:**
+1. `615ad4dd` — JSX parse error: stray `{` in gallery auto-crop ternary
+2. `d3140090` — PhotoCropModal: `export function` → `export default function` (Turbopack requires default export for default imports)
+
+**Railway Build Status:** ✅ All code pushed. 4 commits: `1f025871` (features), `615ad4dd` (JSX fix), `5123c23d` (upload retry), `d3140090` (export fix). Railway project: "happy-flow" (NOT "eloquent-harmony").
+
+**Deploy:** Migration 141 required before testing auto-crop:
 ```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: AI auto-crop in Smart Capture, manual photo crop, WorkWheelPicker auto-focus" && git push origin main
+psql $DATABASE_URL -f migrations/141_auto_crop.sql
 ```
-Then run: `psql $DATABASE_URL -f migrations/141_auto_crop.sql`
 
 ---
 
