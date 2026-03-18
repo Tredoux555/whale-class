@@ -31,6 +31,9 @@ export interface MontreeMedia {
   work_id: string | null;  // Link to curriculum work
   caption: string | null;
   
+  // AI auto-crop suggestion (normalized 0-1 coordinates)
+  auto_crop: { x: number; y: number; width: number; height: number } | null;
+
   // Processing
   sync_status: 'pending' | 'syncing' | 'synced' | 'failed';
   processing_status: 'pending' | 'processing' | 'complete' | 'failed';

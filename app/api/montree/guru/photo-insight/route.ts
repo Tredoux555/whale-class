@@ -91,6 +91,17 @@ const PHOTO_ANALYSIS_TOOL = {
         type: 'string',
         description: 'Brief 1-sentence observation about technique, concentration, or progress. Keep warm and encouraging.',
       },
+      suggested_crop: {
+        type: 'object',
+        description: 'Suggested crop region that nicely frames the child AND the Montessori material together. Use normalized coordinates (0.0 to 1.0) where (0,0) is top-left. Frame with rule-of-thirds composition, include breathing room around subjects. Omit if child or work not clearly visible.',
+        properties: {
+          x: { type: 'number', description: 'Left edge of crop region (0.0 to 1.0)' },
+          y: { type: 'number', description: 'Top edge of crop region (0.0 to 1.0)' },
+          width: { type: 'number', description: 'Width of crop region (0.1 to 1.0, minimum 10% of image)' },
+          height: { type: 'number', description: 'Height of crop region (0.1 to 1.0, minimum 10% of image)' },
+        },
+        required: ['x', 'y', 'width', 'height'],
+      },
     },
     required: ['work_name', 'area', 'mastery_evidence', 'confidence', 'observation'],
   },
@@ -104,12 +115,32 @@ const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', '
 const VALID_MASTERY = ['mastered', 'practicing', 'presented', 'unclear'];
 
 function validateToolOutput(rawInput: Record<string, unknown>) {
+  // Validate suggested_crop if present
+  let suggested_crop: { x: number; y: number; width: number; height: number } | null = null;
+  if (rawInput.suggested_crop && typeof rawInput.suggested_crop === 'object') {
+    const crop = rawInput.suggested_crop as Record<string, unknown>;
+    const x = typeof crop.x === 'number' ? Math.max(0, Math.min(1, crop.x)) : null;
+    const y = typeof crop.y === 'number' ? Math.max(0, Math.min(1, crop.y)) : null;
+    const w = typeof crop.width === 'number' ? Math.max(0.1, Math.min(1, crop.width)) : null;
+    const h = typeof crop.height === 'number' ? Math.max(0.1, Math.min(1, crop.height)) : null;
+    if (x !== null && y !== null && w !== null && h !== null) {
+      // Clamp so crop doesn't exceed image bounds
+      suggested_crop = {
+        x: Math.min(x, 1 - w),
+        y: Math.min(y, 1 - h),
+        width: w,
+        height: h,
+      };
+    }
+  }
+
   return {
     work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
     area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
     mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
     confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
     observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
+    suggested_crop,
   };
 }
 
@@ -583,6 +614,7 @@ CRITICAL RULES:
 3. Focus on the SPECIFIC TOOL/MATERIAL being used — this determines the work name
 4. If unsure, set confidence LOW (below 0.5) — it is far better to be uncertain than wrong
 5. Keep the observation to ONE warm, specific sentence
+6. COMPOSITION: Also suggest a crop that frames the child AND the work material together beautifully. Use normalized 0-1 coordinates. Apply rule-of-thirds. Include breathing room. If the photo is already well-composed or you cannot clearly see both the child and the work, omit suggested_crop.
 
 VISUAL IDENTIFICATION GUIDE — Identify by the PRIMARY TOOL/MATERIAL visible:
 
@@ -1097,21 +1129,29 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
     // Update media record work_id for gallery tagging
     // montree_media has work_id column (not work_name/area) — gallery computes names from curriculum lookup
     // Tag media with work_id (reuse classroomWorkId from earlier lookup — no extra DB query)
+    // Build media update payload — always save auto_crop if present, work_id if matched
+    const mediaUpdatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
     if (classroomWorkId) {
+      mediaUpdatePayload.work_id = classroomWorkId;
+    }
+    if (input.suggested_crop) {
+      mediaUpdatePayload.auto_crop = input.suggested_crop;
+    }
+
+    if (Object.keys(mediaUpdatePayload).length > 1) { // more than just updated_at
       try {
         const { error: mediaUpdateError } = await supabase
           .from('montree_media')
-          .update({
-            work_id: classroomWorkId,
-            updated_at: new Date().toISOString(),
-          })
+          .update(mediaUpdatePayload)
           .eq('id', media_id);
 
         if (mediaUpdateError) {
-          console.error('[PhotoInsight] Failed to update media work_id:', mediaUpdateError);
+          console.error('[PhotoInsight] Failed to update media:', mediaUpdateError);
         }
       } catch (err) {
-        console.error('[PhotoInsight] Media tagging exception:', err);
+        console.error('[PhotoInsight] Media update exception:', err);
       }
     }
 
@@ -1333,6 +1373,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
           model_used: modelUsed,
           haiku_attempted: haikuAttempted,
           haiku_accepted: haikuAccepted,
+          suggested_crop: input.suggested_crop ?? null,
         },
       });
 
@@ -1361,6 +1402,7 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
       in_classroom: inClassroom,
       in_child_shelf: inChildShelf,
       classroom_work_id: classroomWorkId,
+      suggested_crop: input.suggested_crop ?? null,
     });
 
   } catch (error) {

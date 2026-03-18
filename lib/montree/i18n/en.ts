@@ -829,6 +829,11 @@ export const en = {
   'gallery.saveNote': 'Save',
   'gallery.noteSaved': 'Note saved',
   'gallery.noteSaveError': 'Failed to save note',
+  'gallery.crop': 'Crop',
+  'gallery.cropPhoto': 'Crop Photo',
+  'gallery.aspectRatio': 'Aspect Ratio',
+  'gallery.free': 'Free',
+  'gallery.cropSaving': 'Saving...',
 
   // Phase 4 — Observations
   'observations.title': 'Observations',

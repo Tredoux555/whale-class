@@ -28,7 +28,7 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 **Includes (Mar 14 — earlier):** Pink Box AMI generator (~750 lines, 9 print modes), Blue Box AMI generator (~785 lines, 10 print modes), CRITICAL CommandSentence.text crash fix (interface + 28 data entries), parent feature fixes (invite parent button restore, photo lightbox zoom/download, gallery timeline view, report photo consistency + Chinese translation), hub descriptions updated, dead code cleanup.
 **Includes (Mar 8-13):** Guru Speed Optimization (3×3×3×3, 3 files, ~30-50% input token reduction), Guru Timeout Fix (60s hard wall), Guru Context-Aware Routing (4 files, ~30-50% token reduction), Phonics Fast AMI 8-phase restructure (10 files, 9 bugs fixed), 3x3x3x3 Smart Capture hardening (2 FULL ROUNDS, 4 files, 36 audits CLEAN), 401 zombie session fix, album upload, RAZ 4th photo (migration 137), Home Guru 4 fixes, Session recovery pipeline, Guru parity revert, Home Parent rebuild (28 issues fixed), Smart Capture accuracy overhaul (GREEN/AMBER/RED zones), Weekly Review, fire-and-forget store, whole-class Guru fix, FeedbackButton removal, batch parent reports, classroom overview print, guru whole-class mode, 3-cycle audit fixes, 59+ new i18n keys.
 **Full deploy handoff:** `docs/handoffs/HANDOFF_VISUAL_MEMORY_SMART_CAPTURE_MAR14.md`, `docs/handoffs/HANDOFF_PARENT_FIXES_PHONICS_BOXES_MAR14.md`, `docs/handoffs/HANDOFF_PHONICS_IMAGES_MAR13.md`, `docs/handoffs/HANDOFF_GURU_SPEED_OPTIMIZATION_MAR13.md`, `docs/handoffs/HANDOFF_GURU_CONTEXT_ROUTING_MAR13.md`, `docs/handoffs/HANDOFF_PHONICS_FAST_AMI_RESTRUCTURE_MAR13.md`, `docs/handoffs/HANDOFF_3X3X3X3_SMART_CAPTURE_MAR13.md`, `docs/handoffs/HANDOFF_401_FIX_ALBUM_UPLOAD_MAR12.md`, `docs/handoffs/HANDOFF_SESSION_RECOVERY_GURU_PARITY_MAR11.md`, `docs/handoffs/HANDOFF_DEPLOY_ALL_MAR10.md`, `docs/handoffs/HANDOFF_FIRE_AND_FORGET_SMART_CAPTURE_MAR11.md`, `docs/handoffs/HANDOFF_AUDIT_FIXES_MAR11.md`, `docs/handoffs/HANDOFF_SMART_CAPTURE_ACCURACY_MAR11.md`, `docs/handoffs/HANDOFF_HOME_PARENT_REBUILD_MAR11.md`
-**Migrations required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column) AND `psql $DATABASE_URL -f migrations/138_visual_memory.sql` (visual memory table + RPCs + corrections columns)
+**Migrations required:** `psql $DATABASE_URL -f migrations/137_raz_4th_photo.sql` (adds `new_book_signature_photo_url` column) AND `psql $DATABASE_URL -f migrations/138_visual_memory.sql` (visual memory table + RPCs + corrections columns) AND `psql $DATABASE_URL -f migrations/141_auto_crop.sql` (auto_crop JSONB column on montree_media)
 
 ### Rewrite Phonics Image Downloader with Montessori Filters (Priority #2)
 
@@ -99,7 +99,65 @@ All code is local, NOT yet pushed. Mar 8–14 features + fixes including self-le
 
 ---
 
-## CURRENT STATUS (Mar 17, 2026)
+## CURRENT STATUS (Mar 18, 2026)
+
+### Session Work (Mar 18, 2026)
+
+**WorkWheelPicker Auto-Focus — COMPLETE, NOT YET DEPLOYED:**
+
+Search input now auto-focuses when the picker opens so teachers can immediately start typing to find works without tapping the search box first.
+
+**Files Modified (1):**
+1. `components/montree/WorkWheelPicker.tsx` — Added `requestAnimationFrame(() => searchInputRef.current?.focus())` in isOpen useEffect
+
+**Manual Photo Crop Feature — COMPLETE, NOT YET DEPLOYED:**
+
+New gallery crop feature. Teachers can crop any photo directly from the gallery.
+
+**Files Created (2):**
+1. `components/montree/media/PhotoCropModal.tsx` (~500 lines) — Touch/mouse crop UI with aspect ratio presets (Free, 1:1, 4:3, 3:2), rule-of-thirds gridlines, corner/edge handles, canvas-based JPEG crop, i18n wired
+2. `app/api/montree/media/crop/route.ts` (~90 lines) — Crop API: receives cropped blob, overwrites original in Supabase storage (upsert: true), updates dimensions in DB, deletes old thumbnail
+
+**Files Modified (3):**
+1. `app/montree/dashboard/[childId]/gallery/page.tsx` — Import PhotoCropModal, cropPhoto state, handleCropSave function, ✂️ crop button on each photo card, modal JSX
+2. `lib/montree/i18n/en.ts` — 5 new keys (gallery.crop, cropPhoto, aspectRatio, free, cropSaving)
+3. `lib/montree/i18n/zh.ts` — 5 matching Chinese keys (perfect EN/ZH parity)
+
+**AI Auto-Crop via Smart Capture — COMPLETE, NOT YET DEPLOYED (3x3x3x3 methodology):**
+
+When Smart Capture identifies a Montessori work in a photo, Claude now ALSO suggests a crop that nicely frames the child and the material together. Zero additional API cost — the crop coordinates are returned alongside the existing work identification. Non-destructive: original photo preserved, crop is metadata only.
+
+**Architecture:**
+- Extended `tag_photo` tool_use schema with `suggested_crop: { x, y, width, height }` (normalized 0-1 coordinates)
+- Added rule 6 to system prompt: "COMPOSITION: Also suggest a crop that frames the child AND the work material together beautifully"
+- `validateToolOutput()` clamps coordinates to image bounds, enforces 0.1 minimum dimensions
+- Crop saved to `montree_media.auto_crop` JSONB column (non-destructive — original photo untouched)
+- Gallery renders cropped view via CSS `object-position` centered on crop region focal point
+- Teachers see nicely composed thumbnails automatically; full photo accessible in lightbox
+- `suggested_crop` included in API response + cached in `context_snapshot` for analytics
+
+**Files Modified (4):**
+1. `app/api/montree/guru/photo-insight/route.ts` — Tool schema extension (suggested_crop field), validation (clamp, bounds check, 0.1 min), system prompt rule 6, media update saves auto_crop, API response + cache includes suggested_crop
+2. `app/api/montree/media/route.ts` — Added `auto_crop` to SELECT statement
+3. `lib/montree/media/types.ts` — Added `auto_crop` to MontreeMedia interface
+4. `app/montree/dashboard/[childId]/gallery/page.tsx` — Auto-crop CSS rendering via object-position focal point
+
+**Files Created (1):**
+1. `migrations/141_auto_crop.sql` — `ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS auto_crop JSONB DEFAULT NULL`
+
+**3x3x3x3 Audit Results:** R1C1: 0 critical, 2 medium (tool schema descriptions, silent clamping) — both fixed. R1C2: End-to-end data flow verified clean across all 6 touchpoints (schema → validation → DB → API → fetch → render).
+
+**Railway Build Status:** ✅ Confirmed ACTIVE and deployed. Project "happy-flow" (NOT "eloquent-harmony"). Latest deploy: commit `d342bc45` (health audit, Mar 18 04:32). Terminal SSL error was a second push attempt that failed (Astrill VPN), but first push succeeded.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Migration 141 required before testing auto-crop. Push command:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale && git add -A && git commit -m "feat: AI auto-crop in Smart Capture, manual photo crop, WorkWheelPicker auto-focus" && git push origin main
+```
+Then run: `psql $DATABASE_URL -f migrations/141_auto_crop.sql`
+
+---
+
+## PREVIOUS STATUS (Mar 17, 2026)
 
 ### Session Work (Mar 17, 2026)
 

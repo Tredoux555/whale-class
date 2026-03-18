@@ -68,9 +68,16 @@ export default function WorkWheelPicker({
     }
   }, [searchText, works]);
 
-  // Clear search on close
+  // Clear search on close, auto-focus on open
   useEffect(() => {
-    if (!isOpen) setSearchText('');
+    if (!isOpen) {
+      setSearchText('');
+    } else {
+      // Auto-focus search input so user can type immediately
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus();
+      });
+    }
   }, [isOpen]);
 
   // Find initial index based on currentWorkName
