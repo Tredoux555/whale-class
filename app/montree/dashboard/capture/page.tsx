@@ -213,26 +213,54 @@ function CaptureContent() {
     toast.success(`${label} saved!`, { duration: 2000 });
     navigateAfterCapture(childIds);
 
-    // Step 4: Fire-and-forget upload (fetch survives page navigation)
-    fetch('/api/montree/media/upload', { method: 'POST', body: formData })
-      .then(res => { if (!res.ok) throw new Error(`Upload failed: ${res.status}`); return res.json(); })
-      .then(result => {
+    // Step 4: Fire-and-forget upload WITH RETRY (fetch survives page navigation)
+    const uploadWithRetry = async (attempt = 0): Promise<void> => {
+      const MAX_RETRIES = 2;
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+        const res = await fetch('/api/montree/media/upload', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          const errorBody = await res.json().catch(() => ({ error: 'Unknown' }));
+          if (res.status === 401 || res.status === 403) {
+            // Auth failure — retry won't help
+            toast.error('Session expired — please log in again', { duration: 10000 });
+            return;
+          }
+          throw new Error(errorBody.error || `Upload failed: ${res.status}`);
+        }
+
+        const result = await res.json();
         if (result.success && result.media?.id && idsToTag.length > 0) {
-          // Auto-trigger Smart Capture for ALL tagged photos (single + group)
-          // For group photos, analyze once for the first child (cost optimization ~$0.06/call)
-          // Photo is still tagged to all children via metadata child_ids
           const currentLocale = localStorage.getItem('montree_lang') || 'en';
           startAnalysis(result.media.id, idsToTag[0], currentLocale);
         }
         if (!result.success) {
-          console.error('Background upload failed:', result.error);
-          toast.error('Photo upload failed — please retake', { duration: 5000 });
+          throw new Error(result.error || 'Upload returned failure');
         }
-      })
-      .catch(err => {
-        console.error('Background upload error:', err);
-        toast.error('Photo upload failed — please retake', { duration: 5000 });
-      });
+      } catch (err) {
+        const isAbort = err instanceof DOMException && err.name === 'AbortError';
+        const errorMsg = isAbort ? 'Upload timed out' : (err instanceof Error ? err.message : 'Upload failed');
+
+        if (attempt < MAX_RETRIES) {
+          console.warn(`Upload attempt ${attempt + 1} failed (${errorMsg}), retrying in ${(attempt + 1) * 2}s...`);
+          await new Promise(r => setTimeout(r, (attempt + 1) * 2000));
+          return uploadWithRetry(attempt + 1);
+        }
+
+        console.error('Upload failed after all retries:', errorMsg);
+        toast.error(`Photo upload failed: ${errorMsg}`, { duration: 10000 });
+      }
+    };
+
+    uploadWithRetry();
   };
 
   const navigateAfterCapture = (childIds: string[]) => {
