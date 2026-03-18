@@ -15,6 +15,7 @@ import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 import InviteParentModal from '@/components/montree/InviteParentModal';
@@ -132,6 +133,10 @@ export default function GalleryPage() {
   const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+
+  // Crop state
+  const [cropPhoto, setCropPhoto] = useState<{ id: string; url: string } | null>(null);
+  const [isSavingCrop, setIsSavingCrop] = useState(false);
 
   // Photo detail expansion
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
@@ -444,6 +449,41 @@ export default function GalleryPage() {
     }
   };
 
+  const handleCropSave = async (blob: Blob, width: number, height: number) => {
+    if (!cropPhoto) return;
+    setIsSavingCrop(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', blob, 'cropped.jpg');
+      formData.append('media_id', cropPhoto.id);
+      formData.append('width', String(width));
+      formData.append('height', String(height));
+
+      const res = await fetch('/api/montree/media/crop', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error('Failed to save cropped image');
+
+      // Clear the cached image URL so it reloads with the new crop
+      setImageUrls(prev => {
+        const next = { ...prev };
+        delete next[cropPhoto.id];
+        return next;
+      });
+
+      // Refresh gallery to get updated photo
+      fetchPhotos();
+      toast.success(t('gallery.crop'));
+      setCropPhoto(null);
+    } catch {
+      toast.error(t('common.error'));
+    } finally {
+      setIsSavingCrop(false);
+    }
+  };
+
   const handleProgressUpdate = useCallback(() => {
     fetchPhotos();
   }, [fetchPhotos]);
@@ -645,11 +685,25 @@ export default function GalleryPage() {
             className="w-full"
           >
             {url ? (
-              <img
-                src={url}
-                alt={photo.work_name || photo.caption || 'Photo'}
-                className={`w-full object-cover transition-all ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}
-              />
+              {photo.auto_crop ? (
+                <div className={`w-full overflow-hidden ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}>
+                  <img
+                    src={url}
+                    alt={photo.work_name || photo.caption || 'Photo'}
+                    className="w-full h-full"
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: `${(photo.auto_crop.x + photo.auto_crop.width / 2) * 100}% ${(photo.auto_crop.y + photo.auto_crop.height / 2) * 100}%`,
+                    }}
+                  />
+                </div>
+              ) : (
+                <img
+                  src={url}
+                  alt={photo.work_name || photo.caption || 'Photo'}
+                  className={`w-full object-cover transition-all ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}
+                />
+              )}
             ) : (
               <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
                 <div className="w-6 h-6 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
@@ -662,13 +716,22 @@ export default function GalleryPage() {
           </div>
 
           {!selectionMode && (
-            <button
-              onClick={() => setPhotoToDelete(photo)}
-              className="absolute top-2 right-2 w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
-              aria-label="Delete photo"
-            >
-              🗑
-            </button>
+            <div className="absolute top-2 right-2 flex gap-1">
+              <button
+                onClick={() => setCropPhoto({ id: photo.id, url: imageUrls[photo.id] || photo.url })}
+                className="w-8 h-8 bg-black/40 hover:bg-blue-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+                aria-label="Crop photo"
+              >
+                ✂️
+              </button>
+              <button
+                onClick={() => setPhotoToDelete(photo)}
+                className="w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+                aria-label="Delete photo"
+              >
+                🗑
+              </button>
+            </div>
           )}
         </div>
 
@@ -1644,6 +1707,16 @@ export default function GalleryPage() {
           teacherId={session?.teacher?.id}
           isOpen={inviteModalOpen}
           onClose={() => setInviteModalOpen(false)}
+        />
+      )}
+
+      {/* Crop Photo Modal */}
+      {cropPhoto && (
+        <PhotoCropModal
+          imageUrl={cropPhoto.url}
+          isOpen={!!cropPhoto}
+          onClose={() => setCropPhoto(null)}
+          onSave={handleCropSave}
         />
       )}
     </div>

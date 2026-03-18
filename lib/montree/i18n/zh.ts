@@ -822,6 +822,11 @@ export const zh = {
   'gallery.saveNote': '保存',
   'gallery.noteSaved': '笔记已保存',
   'gallery.noteSaveError': '保存笔记失败',
+  'gallery.crop': '裁剪',
+  'gallery.cropPhoto': '裁剪照片',
+  'gallery.aspectRatio': '宽高比',
+  'gallery.free': '自由',
+  'gallery.cropSaving': '保存中...',
 
   // Phase 4 — Observations
   'observations.title': '观察记录',
