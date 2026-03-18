@@ -685,7 +685,7 @@ export default function GalleryPage() {
             className="w-full"
           >
             {url ? (
-              {photo.auto_crop ? (
+              photo.auto_crop ? (
                 <div className={`w-full overflow-hidden ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}>
                   <img
                     src={url}
@@ -703,7 +703,7 @@ export default function GalleryPage() {
                   alt={photo.work_name || photo.caption || 'Photo'}
                   className={`w-full object-cover transition-all ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}
                 />
-              )}
+              )
             ) : (
               <div className="w-full aspect-[4/3] bg-gray-100 flex items-center justify-center">
                 <div className="w-6 h-6 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
