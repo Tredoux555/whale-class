@@ -202,7 +202,7 @@ export default function GalleryPage() {
     fetchPhotosControllerRef.current = controller;
     setLoading(true);
     batchUrlLoadedRef.current = false;
-    fetch(`/api/montree/media?child_id=${childId}&limit=1000`, { signal: controller.signal })
+    fetch(`/api/montree/media?child_id=${childId}&limit=50`, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error('Failed to fetch');
         return r.json();
@@ -224,7 +224,7 @@ export default function GalleryPage() {
     return () => { fetchPhotosControllerRef.current?.abort(); };
   }, [fetchPhotos]);
 
-  // Fetch curriculum for wheel picker (lazy load)
+  // Fetch curriculum for wheel picker (pre-load on mount for instant picker)
   const curriculumLoadedRef = useRef(false);
   const curriculumLoadingRef = useRef(false);
   const loadCurriculum = useCallback(async () => {
@@ -254,6 +254,11 @@ export default function GalleryPage() {
       curriculumLoadingRef.current = false;
     }
   }, []);
+
+  // Pre-load curriculum on mount (background, non-blocking)
+  useEffect(() => {
+    loadCurriculum();
+  }, [loadCurriculum]);
 
   // Batch-load all image URLs
   useEffect(() => {
@@ -691,6 +696,8 @@ export default function GalleryPage() {
                   <img
                     src={url}
                     alt={photo.work_name || photo.caption || 'Photo'}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full"
                     style={{
                       objectFit: 'cover',
@@ -702,6 +709,8 @@ export default function GalleryPage() {
                 <img
                   src={url}
                   alt={photo.work_name || photo.caption || 'Photo'}
+                  loading="lazy"
+                  decoding="async"
                   className={`w-full object-cover transition-all ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}
                 />
               )
@@ -1281,7 +1290,7 @@ export default function GalleryPage() {
               {item.photo_url ? (
                 <div className="relative group">
                   <button onClick={() => { setReportLightboxSrc(item.photo_url!); setReportLightboxOpen(true); }} className="w-full">
-                    <img src={item.photo_url} alt={displayName} className="w-full aspect-[4/3] object-cover" />
+                    <img src={item.photo_url} alt={displayName} loading="lazy" decoding="async" className="w-full aspect-[4/3] object-cover" />
                   </button>
                   {item.photo_caption && (
                     <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-xs font-medium backdrop-blur-sm max-w-[70%] truncate">
@@ -1514,7 +1523,7 @@ export default function GalleryPage() {
                         onClick={() => { setReportLightboxSrc(photo.url); setReportLightboxOpen(true); }}
                         className="aspect-[4/3] rounded-xl overflow-hidden shadow-sm cursor-zoom-in relative group"
                       >
-                        <img src={photo.url} alt={photo.caption || t('reports.learningMoment')} className="w-full h-full object-cover" />
+                        <img src={photo.url} alt={photo.caption || t('reports.learningMoment')} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-[10px] font-medium backdrop-blur-sm">
                           {new Date(photo.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
@@ -1656,7 +1665,7 @@ export default function GalleryPage() {
                                 onClick={() => { setReportLightboxSrc(work.photo_url!); setReportLightboxOpen(true); }}
                                 className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg block cursor-zoom-in"
                               >
-                                <img src={work.photo_url} alt={work.name} className="w-full h-full object-cover" />
+                                <img src={work.photo_url} alt={work.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                               </button>
                               {work.photo_caption && (
                                 <p className="mt-2 px-4 text-sm text-gray-600 italic text-center">{work.photo_caption}</p>

@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, urls });
+    const response = NextResponse.json({ success: true, urls });
+    // Cache signed URLs for 5 min (they're valid for 1 hour)
+    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    return response;
 
   } catch (error) {
     console.error('Media URLs API error:', error);
