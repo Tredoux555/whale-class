@@ -27,7 +27,7 @@ const ASPECT_RATIO_MAP: Record<AspectRatioPreset, number | null> = {
 const HANDLE_SIZE = 10;
 const MIN_CROP_SIZE = 50;
 
-export function PhotoCropModal({
+export default function PhotoCropModal({
   imageUrl,
   isOpen,
   onClose,
