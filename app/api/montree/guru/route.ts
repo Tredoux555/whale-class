@@ -21,8 +21,8 @@ import { processTeacherConversation } from '@/lib/montree/guru/post-conversation
 import type { MessageParam, ToolResultBlockParam, ContentBlockParam } from '@anthropic-ai/sdk/resources/messages';
 
 const MAX_TOOL_ROUNDS = 3; // 3 rounds sufficient with SPEED RULE in prompt (batch tool calls)
-const API_TIMEOUT_MS = 30_000; // 30s per API call (context routing saves 30-50% tokens → faster responses)
-const TOTAL_REQUEST_TIMEOUT_MS = 60_000; // 60s hard wall for entire request (client has 70s)
+const API_TIMEOUT_MS = 45_000; // 45s per API call (was 30s — too aggressive for complex tool-use questions)
+const TOTAL_REQUEST_TIMEOUT_MS = 55_000; // 55s hard wall — must be under Railway's 60s proxy timeout to avoid 504
 
 // Helper: race API call against timeout
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
@@ -88,6 +88,7 @@ function resolveStudentName(
 // ============================================
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  let masterTimeout: ReturnType<typeof setTimeout> | null = null;
 
   try {
     const auth = await verifySchoolRequest(request);
@@ -564,7 +565,7 @@ export async function POST(request: NextRequest) {
       // Master AbortController: cancels ALL in-flight Anthropic API calls when total timeout fires.
       // Without this, withTimeout only rejects the promise — the actual HTTP request keeps running.
       const masterAbort = new AbortController();
-      const masterTimeout = setTimeout(() => masterAbort.abort(), TOTAL_REQUEST_TIMEOUT_MS);
+      masterTimeout = setTimeout(() => masterAbort.abort(), TOTAL_REQUEST_TIMEOUT_MS);
       const requestStart = Date.now();
 
       // ===============================================================
@@ -1100,6 +1101,10 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    // Always clear master timeout to prevent resource leak
+    if (typeof masterTimeout !== 'undefined' && masterTimeout !== null) {
+      clearTimeout(masterTimeout);
+    }
     console.error('[Guru] Error:', error);
 
     // Check for specific error types

@@ -28,6 +28,7 @@ const AREA_LABELS: Record<string, string> = {
 export interface ToolResult {
   success: boolean;
   message: string;
+  detail?: string; // Detailed data for Claude to reason about (never shown to user directly)
 }
 
 // Helper: fetch current settings for read-merge-write pattern
@@ -472,7 +473,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `${AREA_LABELS[area] || area}: ${formatted.length} works found${works.length > 30 ? ` (showing first 30 of ${works.length})` : ''}${category ? ` in category "${category}"` : ''}.\n${JSON.stringify(formatted, null, 1)}`
+        message: `${AREA_LABELS[area] || area}: ${formatted.length} works found${works.length > 30 ? ` (showing first 30 of ${works.length})` : ''}${category ? ` in category "${category}"` : ''}.`,
+        detail: JSON.stringify(formatted, null, 1),
       };
     }
 
@@ -536,7 +538,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `${AREA_LABELS[area] || area} — ${counts.mastered} mastered, ${counts.practicing} practicing, ${counts.presented} presented, ${counts.not_started} not started.\n${JSON.stringify(statusList, null, 1)}`
+        message: `${AREA_LABELS[area] || area} — ${counts.mastered} mastered, ${counts.practicing} practicing, ${counts.presented} presented, ${counts.not_started} not started.`,
+        detail: JSON.stringify(statusList, null, 1),
       };
     }
 
@@ -574,7 +577,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `Found ${matches.length} works matching "${query}"${matches.length > 20 ? ' (showing first 20)' : ''}.\n${JSON.stringify(formatted, null, 1)}`
+        message: `Found ${matches.length} works matching "${query}"${matches.length > 20 ? ' (showing first 20)' : ''}.`,
+        detail: JSON.stringify(formatted, null, 1),
       };
     }
 
@@ -832,7 +836,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `Classroom overview — ${children.length} students:\n${JSON.stringify(summaries, null, 1)}`
+        message: `Classroom overview — ${children.length} students.`,
+        detail: JSON.stringify(summaries, null, 1),
       };
     }
 
@@ -942,7 +947,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups})${customInstructions ? `\nInstructions: ${customInstructions}` : ''}\n\nStudent data:\n${JSON.stringify(studentData, null, 1)}\n\nIMPORTANT GROUPING CONSTRAINT: When forming groups, ensure children in the same group are working on DIFFERENT works. Even if two children are at the same level, avoid putting them on the same work in the same group. Varied works encourage peer teaching and cross-pollination. The "work_names_only" field shows which works each child is currently doing.\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students, show which works they're doing, and explain your reasoning with attention to work diversity within groups.`
+        message: `Grouping data for ${children2.length} students (criteria: ${criteria}, focus: ${focusArea}, groups: ${numGroups}).${customInstructions ? ` Instructions: ${customInstructions}` : ''}`,
+        detail: `Student data:\n${JSON.stringify(studentData, null, 1)}\n\nIMPORTANT GROUPING CONSTRAINT: When forming groups, ensure children in the same group are working on DIFFERENT works. Even if two children are at the same level, avoid putting them on the same work in the same group. Varied works encourage peer teaching and cross-pollination. The "work_names_only" field shows which works each child is currently doing.\n\nPlease analyze this data and create ${numGroups} groups using the "${criteria}" strategy. For each group, list the students, show which works they're doing, and explain your reasoning with attention to work diversity within groups.`,
       };
     }
 
@@ -1152,7 +1158,8 @@ export async function executeTool(
 
       return {
         success: true,
-        message: `Area coverage summary for the past ${summaryDays} days (${dateRange}):\n${JSON.stringify(areaSummaries, null, 1)}\n\nTotal children: ${summaryChildren.length}. Use this data to identify which children need to be guided toward undervisited areas. Consider using group_students to create small groups for targeted area work.`
+        message: `Area coverage summary for the past ${summaryDays} days (${dateRange}). Total children: ${summaryChildren.length}.`,
+        detail: `${JSON.stringify(areaSummaries, null, 1)}\n\nUse this data to identify which children need to be guided toward undervisited areas. Consider using group_students to create small groups for targeted area work.`,
       };
     }
 

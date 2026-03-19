@@ -231,7 +231,11 @@ export default function GalleryPage() {
     if (curriculumLoadedRef.current || curriculumLoadingRef.current) return;
     curriculumLoadingRef.current = true;
     try {
-      const res = await fetch('/api/montree/works/search');
+      const classroomId = session?.classroom?.id;
+      const url = classroomId
+        ? `/api/montree/works/search?classroom_id=${classroomId}`
+        : '/api/montree/works/search';
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to load curriculum');
       const data = await res.json();
       const byArea: Record<string, CurriculumWork[]> = {};
@@ -747,17 +751,30 @@ export default function GalleryPage() {
 
         {/* Work tag + AI Review */}
         <div className="p-3 space-y-2">
-          {/* Work tag */}
+          {/* Work tag — area badge is tappable to change area, work name opens work picker */}
           <div className="flex items-center gap-2">
+            {/* Tappable area badge — opens area picker to change area */}
             <button
-              onClick={() => openWorkPicker(photo)}
-              className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left group/tag"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await loadCurriculum();
+                setAreaPickerPhotoId(photo.id);
+                setShowAreaPicker(true);
+              }}
+              className="flex-shrink-0 hover:scale-110 transition-transform"
+              aria-label={t('gallery.changeArea')}
             >
               {photo.area ? (
                 <AreaBadge area={photo.area} size="sm" />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs">?</div>
               )}
+            </button>
+            {/* Tappable work name — opens work picker within current area */}
+            <button
+              onClick={() => openWorkPicker(photo)}
+              className="flex items-center gap-2 flex-1 min-w-0 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors text-left group/tag"
+            >
               <span className="font-semibold text-gray-800 text-sm truncate flex-1">
                 {photo.work_name || t('gallery.untagged')}
               </span>

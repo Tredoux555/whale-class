@@ -12,7 +12,56 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 18, 2026) — NATIVE APP BUILD
+## CURRENT STATUS (Mar 19, 2026)
+
+### Session Work (Mar 19, 2026)
+
+**Smart Capture CRITICAL Crash Fix — DEPLOYED:**
+
+Smart Capture was completely broken for 2 days (Mar 18-19). 20+ photos across multiple children, ALL untagged. Zero guru_interactions records since Mar 17. Root cause: `TypeError: supabase.rpc(...).catch is not a function` — Supabase JS `.rpc()` returns `PostgrestBuilder` (has `.then()` but NOT `.catch()`). The visual memory `increment_visual_memory_used` RPC call on line 590 crashed EVERY photo-insight request. Fixed: `.catch(...)` → `.then(({ error }) => ...)`.
+
+Also fixed: `effectiveCached.created_at` → `effectiveCached.asked_at` (cache age calculation used wrong column).
+
+Investigation: 10 parallel audit agents, diagnostic route deployed, production API tested with curl. Local `.env.local` had typo in ANTHROPIC_API_KEY (`P02` vs `PO2`) — fixed. Railway production key was correct.
+
+**Two-Pass Describe-Then-Match Architecture — DEPLOYED:**
+
+Replaced single-pass Haiku→Sonnet router with two-pass architecture for Smart Capture accuracy. Research showed vision accuracy degrades with long system prompts (~900 lines). The old approach had Sonnet simultaneously parsing an image AND a 262-line visual ID guide — leading to misidentifications (e.g., "Dressing Frame - Bows" identified as "Metal Insets" with 0.92 confidence).
+
+**New architecture:**
+- Pass 1 (Haiku + image, minimal prompt): "Describe what you physically see" — returns pure visual description
+- Pass 2 (Haiku + text-only, full context): Match description to curriculum using visual ID guide
+- Sonnet fallback if both passes fail
+
+**Results:** Jimmy's bow tying photo went from "Metal Insets" (WRONG) to "Bow Tying Frame" (CORRECT). 10× cheaper (~$0.006 vs $0.06), 3-5× faster (~4-8s vs 10-45s).
+
+**Special Events 6th Area — DEPLOYED:**
+
+Teachers can now tag photos to special events (Cultural Day, Sports Day, etc.) via the gallery's "Choose an area" dialog. Events are implemented as custom curriculum works with `area_key: 'special_events'`. No new tables or migrations needed.
+
+**Files Modified (7) + 1 handoff + CLAUDE.md:**
+1. `app/api/montree/guru/photo-insight/route.ts` — `.rpc().catch()` fix + `asked_at` fix + two-pass architecture
+2. `lib/montree/types.ts` — `special_events` in AREA_CONFIG (🎉, rose) + AREA_ORDER (6 areas)
+3. `lib/montree/i18n/en.ts` — `area.special_events: 'Special Events'`
+4. `lib/montree/i18n/zh.ts` — `area.special_events: '特别活动'`
+5. `app/api/montree/curriculum/route.ts` — `special_events` in DEFAULT_AREAS
+6. `app/api/montree/principal/setup-stream/route.ts` — `special_events` in DEFAULT_AREAS + "6 areas" message
+7. `app/api/montree/reports/generate/route.ts` — `special_events: '🎉'` emoji
+8. `app/montree/dashboard/[childId]/gallery/page.tsx` — `special_events` in PREVIEW_AREA_CONFIG + PREVIEW_AREA_ORDER
+
+**Files Created (2):**
+1. `app/api/montree/debug-insight/route.ts` — Temporary diagnostic route (DELETE next session)
+2. `docs/handoffs/HANDOFF_SMART_CAPTURE_FIX_SPECIAL_EVENTS_MAR19.md`
+
+**Commits:** `7119b9c9` (debug+asked_at), `75b2848a` (error exposure), `4643fddd` (crash fix), `e1cad685` (two-pass), `cb59e9db` (special events)
+
+**Deploy:** ✅ All pushed. No migrations required. Delete debug-insight route next session.
+
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_FIX_SPECIAL_EVENTS_MAR19.md`
+
+---
+
+## PREVIOUS STATUS (Mar 18, 2026) — NATIVE APP BUILD
 
 ### Capacitor Native App — Phase 1+2+3+4 COMPLETE, NOT YET DEPLOYED
 

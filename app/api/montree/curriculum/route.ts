@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { enrichCustomWorkInBackground } from '@/lib/montree/guru/work-enrichment';
 
 // Default area definitions (English only)
 const DEFAULT_AREAS = [
@@ -341,6 +342,15 @@ export async function POST(request: NextRequest) {
     }
 
     const work = data?.[0] || null;
+
+    // Fire-and-forget: auto-generate Sonnet descriptions for custom works
+    // Only triggers when is_custom=true AND enrichment fields are empty
+    if (work && work.is_custom && !work.description && !work.quick_guide && !work.parent_description) {
+      // Don't await — this runs in the background after the response is sent
+      enrichCustomWorkInBackground(work.id, work.name, normalizedAreaKey)
+        .catch(err => console.error('[Curriculum] Enrichment failed:', err instanceof Error ? err.message : err));
+    }
+
     return NextResponse.json({ success: true, work });
 
   } catch (error) {

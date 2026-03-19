@@ -810,6 +810,7 @@ export const zh = {
   'gallery.deletePhotosError': '删除照片失败',
   'gallery.untagged': '未标记',
   'gallery.tapToChange': '点击更改',
+  'gallery.changeArea': '更改领域',
   'gallery.tapToAddDescription': '点击添加描述...',
   'gallery.addDescription': '添加描述...',
   'gallery.descriptionSaved': '描述已保存',
