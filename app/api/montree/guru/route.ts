@@ -6,13 +6,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_ENABLED, AI_MODEL, MAX_TOKENS, getModelForTier } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL, MAX_TOKENS, getModelForTier } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { buildClassroomContext, formatClassroomContextForPrompt, type ClassroomContext } from '@/lib/montree/guru/classroom-context-builder';
 import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge-retriever';
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
 import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS, getToolsForMode } from '@/lib/montree/guru/tool-definitions';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
@@ -93,6 +94,15 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+
+    // Check AI budget
+    const aiBudget = await checkAiBudget(auth.schoolId);
+    if (aiBudget.blocked) {
+      return NextResponse.json(
+        { success: false, error: 'ai_budget_reached', message: 'Monthly AI budget reached. Please switch to manual mode or contact your principal.' },
+        { status: 429 }
+      );
+    }
 
     // Check AI is enabled
     if (!AI_ENABLED || !anthropic) {
@@ -336,6 +346,23 @@ export async function POST(request: NextRequest) {
     // Classify question for selective knowledge injection + observability
     const questionCategory: QuestionCategory = classifyQuestion(question);
 
+    // SMART FILTER: Compute hybrid routing decision early (before prompt building)
+    // so the prompt builder can skip heavy sections when Haiku is the target.
+    // Sonnet-tier users get Haiku for curriculum/general questions (saves ~75% per call).
+    // Psychology/development questions KEEP Sonnet (nuance matters).
+    // Kill switch: set GURU_HYBRID_ROUTING_ENABLED=false on Railway to disable without code deploy.
+    const hybridRoutingEnabled = process.env.GURU_HYBRID_ROUTING_ENABLED !== 'false';
+    const useHaikuForQuestion = hybridRoutingEnabled && guruTier === 'sonnet' &&
+      (questionCategory === 'curriculum' || questionCategory === 'general') &&
+      !image_url; // Vision requests always use the tier's model
+
+    // When hybrid-routing to Haiku, tell the prompt builder to use 'haiku' tier
+    // so it skips expensive psychology knowledge injection (~5,000 tokens)
+    const effectiveTier: 'haiku' | 'sonnet' = useHaikuForQuestion ? 'haiku' : guruTier;
+    if (useHaikuForQuestion) {
+      console.log(`[Guru] Smart Filter: routing ${questionCategory} question to Haiku (tier: ${guruTier})`);
+    }
+
     if (isWholeClassMode) {
       console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
       // Parallelize: classroom context + knowledge retrieval are independent
@@ -468,7 +495,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, guruTier, proactiveForPrompt, isTeacher, childContext!.schoolGuruPersonality);
+      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, effectiveTier, proactiveForPrompt, isTeacher, childContext!.schoolGuruPersonality);
       guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt
@@ -536,9 +563,9 @@ export async function POST(request: NextRequest) {
         { role: 'user' as const, content: userContent },
       ];
 
-      // Select model and token limit based on guru tier
-      const guruModel = getModelForTier(guruTier) || AI_MODEL;
-      const guruMaxTokens = guruTier === 'sonnet' ? 4096 : 3072;
+      // Model selection based on hybrid routing (computed earlier, before prompt building)
+      const guruModel = useHaikuForQuestion ? HAIKU_MODEL : (getModelForTier(guruTier) || AI_MODEL);
+      const guruMaxTokens = guruModel === HAIKU_MODEL ? 3072 : 4096;
 
       // Tools enabled for SETUP, INTAKE, CHECKIN, NORMAL modes
       // REFLECTION = pure conversation, no tools
@@ -634,6 +661,9 @@ export async function POST(request: NextRequest) {
             const finalText = summaryText || 'Done!';
             console.log(`[Guru Stream] Fast-path: forced tool use, ${actionsTaken.length} tools succeeded, skipping second API call. Elapsed: ${Date.now() - requestStart}ms`);
 
+            // Log the initial API call that triggered tool use (fire-and-forget)
+            logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: toolResponse.usage?.input_tokens || 0, outputTokens: toolResponse.usage?.output_tokens || 0 });
+
             const encoder = new TextEncoder();
             const responseStream = new ReadableStream({
               start(controller) {
@@ -688,7 +718,7 @@ export async function POST(request: NextRequest) {
 
             clearTimeout(masterTimeout);
             const { input_tokens = 0, output_tokens = 0 } = nextResponse.usage || {};
-            const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+            const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
             const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
             console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
@@ -737,9 +767,12 @@ export async function POST(request: NextRequest) {
             .join('\n');
 
           const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
-          const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+          const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
           const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
           console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: 0, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+
+          // Log API usage (fire-and-forget)
+          logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: input_tokens, outputTokens: output_tokens });
 
           const encoder = new TextEncoder();
           const responseStream = new ReadableStream({
@@ -778,8 +811,11 @@ export async function POST(request: NextRequest) {
         }
 
         const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
-        const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+        const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
         const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+
+        // Log API usage (fire-and-forget)
+        logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: input_tokens, outputTokens: output_tokens });
 
         const encoder = new TextEncoder();
         const responseStream = new ReadableStream({
@@ -890,6 +926,9 @@ export async function POST(request: NextRequest) {
           const responseText = summaryText || 'Done!';
           console.log(`[Guru] Fast-path (non-stream): forced tool use, ${actionsTaken.length} tools succeeded. Elapsed: ${Date.now() - requestStart}ms`);
 
+          // Log the initial API call that triggered tool use (fire-and-forget)
+          logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: response.usage?.input_tokens || 0, outputTokens: response.usage?.output_tokens || 0 });
+
           saveInteractionAndLearn(supabase, {
             child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
             question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
@@ -961,7 +1000,7 @@ export async function POST(request: NextRequest) {
       if (forceToolUse) {
         console.log(`[Guru] Forced tool_choice=any for shelf update request. Actions: ${actionsTaken.length}`);
       }
-      const costMultiplier = guruTier === 'haiku' ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+      const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
       const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
       console.log(`[Guru] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
@@ -1259,6 +1298,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
         tool_rounds: rounds,
         actions_taken: actionsTaken.length,
         guru_tier: guruTier,
+        hybrid_routed: useHaikuForQuestion,
         est_cost: estCost,
       } : {
         child_name: childContext?.name,
@@ -1272,6 +1312,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
         tool_rounds: rounds,
         actions_taken: actionsTaken.length,
         guru_tier: guruTier,
+        hybrid_routed: useHaikuForQuestion,
         est_cost: estCost,
       },
       response_insight: responseText,

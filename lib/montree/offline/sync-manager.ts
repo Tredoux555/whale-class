@@ -341,8 +341,10 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       synced_at: new Date().toISOString(),
     });
 
-    // Trigger Smart Capture analysis
-    if (result.media?.id && entry.child_id) {
+    // Trigger Smart Capture analysis — SKIP if teacher already tagged the work
+    // When work_id is set, the teacher selected the work from WorkWheelPicker
+    // before taking the photo. No need for AI vision — saves $0.006-0.06 per photo.
+    if (result.media?.id && entry.child_id && !entry.work_id) {
       const locale = typeof localStorage !== 'undefined'
         ? localStorage.getItem('montree_lang') || 'en'
         : 'en';
