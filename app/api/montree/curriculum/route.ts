@@ -13,6 +13,7 @@ const DEFAULT_AREAS = [
   { area_key: 'mathematics', name: 'Mathematics', icon: '🔢', color: '#3B82F6', sequence: 3 },
   { area_key: 'language', name: 'Language', icon: '📚', color: '#EC4899', sequence: 4 },
   { area_key: 'cultural', name: 'Cultural', icon: '🌍', color: '#8B5CF6', sequence: 5 },
+  { area_key: 'special_events', name: 'Special Events', icon: '🎉', color: '#E11D48', sequence: 6 },
 ];
 
 // GET - Fetch curriculum for classroom

@@ -119,6 +119,7 @@ export const en = {
   'area.mathematics': 'Mathematics',
   'area.language': 'Language',
   'area.cultural': 'Cultural',
+  'area.special_events': 'Special Events',
 
   // Progress
   'progress.notStarted': 'Not Started',

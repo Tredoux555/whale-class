@@ -129,9 +129,10 @@ export const AREA_CONFIG: Record<string, {
   mathematics: { name: 'Math', icon: 'M', color: '#3b82f6', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700', border: '#BFDBFE', prefix: 'M' },
   language: { name: 'Language', icon: 'L', color: '#22c55e', gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700', border: '#A7F3D0', prefix: 'L' },
   cultural: { name: 'Cultural', icon: 'C', color: '#f97316', gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', text: 'text-orange-700', border: '#FDE68A', prefix: 'C' },
+  special_events: { name: 'Special Events', icon: '🎉', color: '#e11d48', gradient: 'from-rose-500 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700', border: '#FECDD3', prefix: 'E' },
 };
 
-export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
+export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'] as const;
 
 // ============================================
 // Montree Home Types

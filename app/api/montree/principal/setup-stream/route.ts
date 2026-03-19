@@ -20,6 +20,7 @@ const DEFAULT_AREAS = [
   { area_key: 'mathematics', name: 'Mathematics', name_chinese: '数学', icon: '🔢', color: '#3B82F6', sequence: 3 },
   { area_key: 'language', name: 'Language', name_chinese: '语言', icon: '📚', color: '#EC4899', sequence: 4 },
   { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
+  { area_key: 'special_events', name: 'Special Events', name_chinese: '特别活动', icon: '🎉', color: '#E11D48', sequence: 6 },
 ];
 
 // Brain area mapping removed — using static curriculum exclusively
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
           // Seed curriculum areas
           send('progress', {
             step: 'areas',
-            message: `Setting up 5 curriculum areas for ${classroom.name}...`,
+            message: `Setting up 6 curriculum areas for ${classroom.name}...`,
             emoji: '📋'
           });
 

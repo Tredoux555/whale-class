@@ -1254,8 +1254,9 @@ export default function GalleryPage() {
           math: { emoji: '🔢', label: 'Numbers & Patterns', labelZh: '数学', color: '#3b82f6' },
           language: { emoji: '📚', label: 'Language & Reading', labelZh: '语言', color: '#f59e0b' },
           cultural: { emoji: '🌍', label: 'World & Nature', labelZh: '文化', color: '#22c55e' },
+          special_events: { emoji: '🎉', label: 'Special Events', labelZh: '特别活动', color: '#e11d48' },
         };
-        const PREVIEW_AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+        const PREVIEW_AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'];
         const normalizePreviewArea = (area: string) => area === 'math' ? 'mathematics' : area;
         const getPreviewAreaConf = (area: string) => PREVIEW_AREA_CONFIG[normalizePreviewArea(area)] || PREVIEW_AREA_CONFIG['cultural'];
         const getPreviewAreaLabel = (area: string) => {

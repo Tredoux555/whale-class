@@ -119,6 +119,7 @@ export const zh = {
   'area.mathematics': '数学',
   'area.language': '语言',
   'area.cultural': '文化',
+  'area.special_events': '特别活动',
 
   // Progress
   'progress.notStarted': '未开始',
