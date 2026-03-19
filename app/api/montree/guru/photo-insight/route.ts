@@ -586,8 +586,8 @@ NOTE: These descriptions were learned from previous photos. Use them to help ide
             supabase.rpc('increment_visual_memory_used', {
               p_classroom_id: classroomId,
               p_work_names: memoryNames,
-            }).catch((err) => {
-              console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', err);
+            }).then(({ error: rpcErr }) => {
+              if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
             });
           }
         }
@@ -1407,11 +1407,8 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
 
   } catch (error) {
     console.error('[PhotoInsight] Error:', error);
-    // TEMPORARY: expose error for debugging (revert after fixing)
-    const debugMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-    const debugStack = error instanceof Error ? error.stack?.split('\n').slice(0, 5).join(' | ') : undefined;
     return NextResponse.json(
-      { success: false, error: 'Failed to analyze photo', _debug: debugMsg, _stack: debugStack },
+      { success: false, error: 'Failed to analyze photo' },
       { status: 500 }
     );
   }
