@@ -102,7 +102,7 @@ function getAreaDisplay(area: string, locale: 'en' | 'zh'): { name: string; emoj
   const t = getTranslator(locale);
   const emojis: Record<string, string> = {
     practical_life: '🧹', sensorial: '👁️', mathematics: '🔢',
-    language: '📚', cultural: '🌍',
+    language: '📚', cultural: '🌍', special_events: '🎉',
   };
   const descriptions: Record<string, string> = {
     practical_life: t('report.generate.areaDescription.practical_life' as any, 'Activities for independence and care of self and environment'),
