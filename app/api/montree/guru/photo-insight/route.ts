@@ -1407,8 +1407,11 @@ ${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}
 
   } catch (error) {
     console.error('[PhotoInsight] Error:', error);
+    // TEMPORARY: expose error for debugging (revert after fixing)
+    const debugMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    const debugStack = error instanceof Error ? error.stack?.split('\n').slice(0, 5).join(' | ') : undefined;
     return NextResponse.json(
-      { success: false, error: 'Failed to analyze photo' },
+      { success: false, error: 'Failed to analyze photo', _debug: debugMsg, _stack: debugStack },
       { status: 500 }
     );
   }
