@@ -817,6 +817,7 @@ export const en = {
   'gallery.deletePhotosError': 'Failed to delete photos',
   'gallery.untagged': 'Untagged',
   'gallery.tapToChange': 'tap to change',
+  'gallery.changeArea': 'Change area',
   'gallery.tapToAddDescription': 'Tap to add a description...',
   'gallery.addDescription': 'Add a description...',
   'gallery.descriptionSaved': 'Description saved',

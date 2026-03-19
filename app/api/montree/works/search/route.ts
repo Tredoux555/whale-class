@@ -100,10 +100,16 @@ export async function GET(request: NextRequest) {
             name: w.name,
             chinese_name: w.name_chinese,
             description: w.description,
+            quick_guide: w.quick_guide || null,
+            parent_description: w.parent_description || null,
+            why_it_matters: w.why_it_matters || null,
+            direct_aims: w.direct_aims || [],
+            indirect_aims: w.indirect_aims || [],
             age_range: w.age_range,
             sequence: w.sequence,
             materials: w.materials,
             levels: w.levels,
+            is_custom: w.is_custom || false,
             area: {
               area_key: w.area?.area_key || 'unknown',
               name: w.area?.name || 'Unknown',
@@ -179,14 +185,14 @@ export async function GET(request: NextRequest) {
 
 function getAreaIcon(areaId: string): string {
   const icons: Record<string, string> = {
-    practical_life: '🧹', sensorial: '👁️', mathematics: '🔢', language: '📚', cultural: '🌍'
+    practical_life: '🧹', sensorial: '👁️', mathematics: '🔢', language: '📚', cultural: '🌍', special_events: '🎉'
   };
   return icons[areaId] || '📖';
 }
 
 function getAreaColor(areaId: string): string {
   const colors: Record<string, string> = {
-    practical_life: '#22c55e', sensorial: '#f97316', mathematics: '#3b82f6', language: '#ec4899', cultural: '#8b5cf6'
+    practical_life: '#22c55e', sensorial: '#f97316', mathematics: '#3b82f6', language: '#ec4899', cultural: '#8b5cf6', special_events: '#e11d48'
   };
   return colors[areaId] || '#666';
 }
