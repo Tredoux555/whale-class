@@ -13,6 +13,7 @@ import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 // ================================================================
 // IN-MEMORY RATE LIMITER FALLBACK
@@ -169,6 +170,15 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+
+    // Check AI budget before processing photo
+    const aiBudget = await checkAiBudget(auth.schoolId);
+    if (aiBudget.blocked) {
+      return NextResponse.json(
+        { success: false, error: 'ai_budget_reached', message: 'Monthly AI budget reached.' },
+        { status: 429 }
+      );
+    }
 
     const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
@@ -340,10 +350,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI features are not enabled' }, { status: 503 });
     }
 
-    // Fetch the photo storage path
+    // Fetch the photo storage path + existing work_id (for skip-if-tagged optimization)
     const { data: media } = await supabase
       .from('montree_media')
-      .select('storage_path, media_type, child_id')
+      .select('storage_path, media_type, child_id, work_id')
       .eq('id', media_id)
       .maybeSingle();
 
@@ -355,6 +365,28 @@ export async function POST(request: NextRequest) {
     // media.child_id is NULL for group photos (shared across children) — that's intentionally allowed
     if (media.child_id && media.child_id !== child_id) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
+    // SMART FILTER: Skip AI vision if teacher already tagged this photo with a work
+    // This saves $0.006-0.06 per photo. Teacher-tagged photos don't need AI identification.
+    // PhotoInsightButton can still call this for un-tagged photos or explicit retries.
+    if (media.work_id && !body.force_reanalyze) {
+      console.log(`[PhotoInsight] Skipping AI — photo ${media_id} already tagged with work_id ${media.work_id}`);
+      // Look up work name + area so the store/UI can display what was tagged
+      const { data: taggedWork } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, area')
+        .eq('id', media.work_id)
+        .maybeSingle();
+      return NextResponse.json({
+        success: true,
+        skipped: true,
+        reason: 'already_tagged',
+        work_id: media.work_id,
+        work_name: taggedWork?.name || null,
+        area: taggedWork?.area || null,
+        auto_updated: false,
+      });
     }
 
     // Only process images
@@ -966,6 +998,8 @@ Just describe the physical scene in 2-4 sentences.`,
         }
       }
       console.log(`[PhotoInsight] Pass 1 DESCRIBE: "${visualDescription.slice(0, 120)}..."`);
+      // Log Pass 1 usage
+      logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/describe', model: HAIKU_MODEL, inputTokens: describeMsg.usage?.input_tokens || 0, outputTokens: describeMsg.usage?.output_tokens || 0 });
     } catch (describeErr: unknown) {
       clearTimeout(describeTimeout);
       const isTimeout = describeErr instanceof Error && (describeErr.message?.includes('timeout') || describeErr.name === 'AbortError');
@@ -1038,6 +1072,8 @@ ${worksContext}`,
         modelUsed = HAIKU_MODEL;
         haikuAccepted = true;
         console.log(`[PhotoInsight] Pass 2 MATCH: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
+        // Log Pass 2 usage
+        logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/match', model: HAIKU_MODEL, inputTokens: matchMsg.usage?.input_tokens || 0, outputTokens: matchMsg.usage?.output_tokens || 0 });
       } else {
         console.log('[PhotoInsight] Pass 2 returned no tool_use');
       }
@@ -1089,6 +1125,8 @@ ${worksContext}`,
           modelUsed = AI_MODEL;
           haikuAccepted = false;
           console.log(`[PhotoInsight] Sonnet fallback: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
+          // Log Sonnet fallback usage
+          logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/sonnet', model: AI_MODEL, inputTokens: message.usage?.input_tokens || 0, outputTokens: message.usage?.output_tokens || 0 });
         }
       } catch (sonnetErr) {
         clearTimeout(timeoutHandle);

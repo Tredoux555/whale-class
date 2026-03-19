@@ -12,7 +12,44 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 19, 2026)
+## CURRENT STATUS (Mar 20, 2026)
+
+### Session Work (Mar 20, 2026)
+
+**Smart Filter — API Cost Optimization — COMPLETE, NOT YET DEPLOYED (3x3 build-audit, 3 consecutive CLEAN):**
+
+Two optimizations to reduce Anthropic API costs without sacrificing quality. 10x theory-audit planning cycles followed by 3 build-audit cycles (5 issues found and fixed in cycle 1, 3 consecutive clean passes achieved).
+
+**Phase 1 — Skip-if-Tagged (Smart Capture):**
+When a teacher pre-selects a work from WorkWheelPicker before taking a photo, the `work_id` is saved to `montree_media`. Smart Capture now checks for this and skips AI vision entirely. Two-layer gate: client-side (`sync-manager.ts` skips `startAnalysis` when `entry.work_id` is set) + server-side (`photo-insight/route.ts` returns early with enriched work name + area lookup). `force_reanalyze` body param allows explicit retries.
+
+**Phase 2 — Guru Hybrid Routing:**
+Sonnet-tier users' `curriculum` and `general` questions now route to Haiku ($0.80/$4 per 1M tokens) instead of Sonnet ($3/$15). Psychology/development questions keep Sonnet where nuance matters. Uses existing `question-classifier.ts` (pure regex, zero latency). `effectiveTier` passed to prompt builder skips ~5,000 tokens of psychology knowledge. Vision requests (`image_url`) always use Sonnet. Kill switch: `GURU_HYBRID_ROUTING_ENABLED=false` env var on Railway to disable without code deploy.
+
+**Audit findings fixed (5):**
+- CRITICAL: `costMultiplier` used `guruTier` instead of `guruModel` — Sonnet-tier users routed to Haiku still had Sonnet pricing in cost snapshots (all 4 occurrences fixed)
+- CRITICAL: No runtime kill switch — added `GURU_HYBRID_ROUTING_ENABLED` env var
+- HIGH: `guruMaxTokens` checked positive Sonnet match instead of explicit Haiku check
+- HIGH: Skipped photo-insight response missing `work_name`/`area` — added curriculum work lookup
+- MEDIUM: No diagnostic logging for routing decisions
+
+**Rejected theories (10x audit):** pHash (materials too similar), CLIP embeddings (329 categories too many), batch end-of-day processing (kills workflow), area-scoping visual ID guide (breaks confusion-pair detection), lowering Haiku threshold (silent accuracy degradation), Guru Master cross-school DB (privacy issues).
+
+**Estimated savings:** $100-150/month at scale (250 students). Skip-if-tagged: $4-6/month. Hybrid routing: $3-4/month per active classroom.
+
+**Files Modified (3):**
+1. `lib/montree/offline/sync-manager.ts` — `!entry.work_id` gate on `startAnalysis` (line 347)
+2. `app/api/montree/guru/photo-insight/route.ts` — `work_id` in SELECT + skip-if-tagged early return with curriculum lookup (lines 353-390)
+3. `app/api/montree/guru/route.ts` — `HAIKU_MODEL` import, hybrid routing computation, `effectiveTier`, model selection, 4× `costMultiplier` fix, kill switch, `hybrid_routed` in context_snapshots
+
+**No new files. No migrations. No new env vars required (kill switch is opt-in disable).**
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations required.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md`
+
+---
+
+## PREVIOUS STATUS (Mar 19, 2026)
 
 ### Session Work (Mar 19, 2026)
 
@@ -3379,7 +3416,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md` | **CURRENT** — Reports + Gallery 3x3x3 audit: 10 bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Security, performance, React hooks, rate limiter, AbortController fixes. |
+| `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md` | **CURRENT** — Smart Filter: skip AI for tagged photos + hybrid Haiku/Sonnet Guru routing. 10x theory-audit + 3x build-audit (3 consecutive CLEAN). $100-150/mo savings at scale. |
+| `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md` | Reports + Gallery 3x3x3 audit: 10 bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Security, performance, React hooks, rate limiter, AbortController fixes. |
 | `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
 | `docs/handoffs/HANDOFF_GLOBAL_MONTESSORI_RESEARCH_MAR15.md` | **CURRENT** — Global Montessori school research: Top 50 ranked list, 7 chains (550+ schools), contacts for 17 countries, scoring system, reachability grades. Ready for Excel generation. |
