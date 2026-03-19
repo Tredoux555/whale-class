@@ -3248,4 +3248,39 @@ export const zh = {
   'welcome.openTeacherPortal': '打开教师门户',
   'welcome.adminSetup': '管理员设置',
   'welcome.needHelp': '需要帮助？请发邮件至',
+
+  // 特别活动
+  'events.title': '特别活动',
+  'events.selectEvent': '选择活动',
+  'events.noEvent': '无活动（课程）',
+  'events.createNew': '创建新活动',
+  'events.eventName': '活动名称',
+  'events.eventDate': '活动日期',
+  'events.eventType': '活动类型',
+  'events.created': '活动已创建！',
+  'events.filterByEvent': '按活动筛选',
+
+  // 拍摄 — 全选
+  'capture.selectAll': '全选',
+  'capture.deselectAll': '取消全选',
+  'capture.eventBanner': '正在为活动拍摄：{eventName}',
+
+  // 相册
+  'albums.title': '照片相册',
+  'albums.dateFrom': '从',
+  'albums.dateTo': '到',
+  'albums.includeCurriculum': '课程照片',
+  'albums.includeEvents': '活动照片',
+  'albums.exportPdf': '下载PDF相册',
+  'albums.exportZip': '下载照片',
+  'albums.noPhotos': '此期间没有找到照片',
+  'albums.thisYear': '今年',
+  'albums.thisSemester': '本学期',
+  'albums.thisTerm': '本学段',
+  'albums.custom': '自定义范围',
+  'albums.generating': '正在加载相册...',
+  'albums.photoCount': '{count} 张照片',
+
+  // 报告 — 活动部分
+  'reports.specialEvents': '特别活动',
 } as const;

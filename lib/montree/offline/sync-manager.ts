@@ -72,6 +72,7 @@ export interface EnqueueOptions {
   work_name?: string;
   work_area?: string;
   is_class_photo?: boolean;
+  event_id?: string;
   width: number;
   height: number;
 }
@@ -130,6 +131,7 @@ export async function enqueuePhoto(
     work_name: opts.work_name,
     work_area: opts.work_area,
     is_class_photo: opts.is_class_photo,
+    event_id: opts.event_id,
     created_at: new Date().toISOString(),
   };
 
@@ -278,6 +280,7 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       work_id: entry.work_id || undefined,
       caption: entry.work_name || undefined,
       tags: entry.work_area ? [entry.work_area] : undefined,
+      event_id: entry.event_id || undefined,
       width: entry.width,
       height: entry.height,
     }));

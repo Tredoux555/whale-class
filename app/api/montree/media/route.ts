@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     const classroomId = searchParams.get('classroom_id');
     const childId = searchParams.get('child_id');
     const untaggedOnly = searchParams.get('untagged_only') === 'true';
-    const area = searchParams.get('area');  // New: area filter
+    const area = searchParams.get('area');  // area filter
+    const eventId = searchParams.get('event_id');  // event filter
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -128,6 +129,10 @@ export async function GET(request: NextRequest) {
       query = query.is('child_id', null);
     }
 
+    if (eventId) {
+      query = query.eq('event_id', eventId);
+    }
+
     query = query.range(offset, offset + limit - 1);
 
     const { data: media, error, count } = await query;
@@ -193,7 +198,7 @@ export async function PATCH(request: NextRequest) {
     const supabase = getSupabase();
     const body = await request.json();
 
-    const { id, caption, child_id, work_id, tags, parent_visible } = body;
+    const { id, caption, child_id, work_id, event_id, tags, parent_visible } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
@@ -206,6 +211,7 @@ export async function PATCH(request: NextRequest) {
     if (caption !== undefined) updateData.caption = caption;
     if (child_id !== undefined) updateData.child_id = child_id;
     if (work_id !== undefined) updateData.work_id = work_id;
+    if (event_id !== undefined) updateData.event_id = event_id;
     if (tags !== undefined) updateData.tags = tags;
     if (typeof parent_visible === 'boolean') updateData.parent_visible = parent_visible;
 

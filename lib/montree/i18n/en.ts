@@ -3247,6 +3247,41 @@ export const en = {
   'welcome.openTeacherPortal': 'Open Teacher Portal',
   'welcome.adminSetup': 'Admin Setup',
   'welcome.needHelp': 'Need help? Email us at',
+
+  // Special Events
+  'events.title': 'Special Events',
+  'events.selectEvent': 'Select Event',
+  'events.noEvent': 'No Event (Curriculum)',
+  'events.createNew': 'Create New Event',
+  'events.eventName': 'Event Name',
+  'events.eventDate': 'Event Date',
+  'events.eventType': 'Event Type',
+  'events.created': 'Event created!',
+  'events.filterByEvent': 'Filter by Event',
+
+  // Capture — Select All
+  'capture.selectAll': 'Select All',
+  'capture.deselectAll': 'Deselect All',
+  'capture.eventBanner': 'Capturing for: {eventName}',
+
+  // Albums
+  'albums.title': 'Photo Albums',
+  'albums.dateFrom': 'From',
+  'albums.dateTo': 'To',
+  'albums.includeCurriculum': 'Curriculum Photos',
+  'albums.includeEvents': 'Event Photos',
+  'albums.exportPdf': 'Download PDF Album',
+  'albums.exportZip': 'Download Photos',
+  'albums.noPhotos': 'No photos found for this period',
+  'albums.thisYear': 'This Year',
+  'albums.thisSemester': 'This Semester',
+  'albums.thisTerm': 'This Term',
+  'albums.custom': 'Custom Range',
+  'albums.generating': 'Loading album...',
+  'albums.photoCount': '{count} photos',
+
+  // Reports — Events section
+  'reports.specialEvents': 'Special Events',
 } as const;
 
 export type TranslationKey = keyof typeof en;

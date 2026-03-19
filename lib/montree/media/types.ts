@@ -29,6 +29,7 @@ export interface MontreeMedia {
   // Content
   tags: string[];  // ["practical_life", "concentration"]
   work_id: string | null;  // Link to curriculum work
+  event_id: string | null;  // Link to special event (Cultural Day, etc.)
   caption: string | null;
   
   // AI auto-crop suggestion (normalized 0-1 coordinates)
@@ -38,6 +39,22 @@ export interface MontreeMedia {
   sync_status: 'pending' | 'syncing' | 'synced' | 'failed';
   processing_status: 'pending' | 'processing' | 'complete' | 'failed';
   
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================
+// SPECIAL EVENTS
+// ============================================
+
+export interface MontreeEvent {
+  id: string;
+  school_id: string;
+  name: string;
+  description: string | null;
+  event_date: string;          // ISO date string (YYYY-MM-DD)
+  event_type: string;          // 'special' | 'cultural' | 'sports' | 'celebration' | etc.
+  created_by: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -131,6 +148,7 @@ export interface UploadMediaRequest {
   captured_by: string;
   captured_at: string;
   work_id?: string;
+  event_id?: string;  // Link to special event
   caption?: string;
   tags?: string[];
 }
@@ -153,6 +171,7 @@ export interface MediaFilters {
   child_id?: string;
   classroom_id?: string;
   work_id?: string;
+  event_id?: string;
   area?: string;
   date_from?: string;
   date_to?: string;

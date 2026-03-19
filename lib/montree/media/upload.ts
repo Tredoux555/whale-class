@@ -23,6 +23,7 @@ export interface UploadOptions {
   child_ids?: string[];  // For group photos
   is_class_photo?: boolean;  // Class photo - shared with ALL parents
   work_id?: string;
+  event_id?: string;  // Link to special event
   caption?: string;
   tags?: string[];
   onProgress?: (progress: UploadProgress) => void;
@@ -127,6 +128,7 @@ export async function uploadPhoto(
       media_type: 'photo',
       captured_at: new Date().toISOString(),
       work_id: options.work_id,
+      event_id: options.event_id,
       caption: options.caption,
       tags: options.tags,
       width: compressed.width,
@@ -236,6 +238,7 @@ export async function uploadVideo(
       media_type: 'video',
       captured_at: new Date().toISOString(),
       work_id: options.work_id,
+      event_id: options.event_id,
       caption: options.caption,
       tags: options.tags,
       duration: duration,

@@ -41,6 +41,7 @@ export interface PhotoQueueEntry {
   work_name?: string;
   work_area?: string;
   is_class_photo?: boolean;
+  event_id?: string;           // Special event link
 
   // Timestamps
   created_at: string;          // ISO timestamp — when photo was captured
