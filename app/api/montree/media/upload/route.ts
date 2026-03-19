@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
     }
 
-    const { school_id, classroom_id, child_id, child_ids, work_id, caption, tags, width, height, media_type, duration } = metadata;
+    const { school_id, classroom_id, child_id, child_ids, work_id, event_id, caption, tags, width, height, media_type, duration } = metadata;
 
     if (!school_id) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
@@ -123,6 +123,7 @@ export async function POST(request: NextRequest) {
       duration_seconds: media_type === 'video' ? (duration || null) : null,
       captured_at: metadata.captured_at || new Date().toISOString(),
       work_id: work_id || null,
+      event_id: event_id || null,
       caption: caption || null,
       tags: tags || [],
       sync_status: 'synced',

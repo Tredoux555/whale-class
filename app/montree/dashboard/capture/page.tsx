@@ -12,7 +12,8 @@ import { compressImage, generateThumbnail } from '@/lib/montree/media/compressio
 import { uploadVideo } from '@/lib/montree/media/upload';
 import { startAnalysis } from '@/lib/montree/photo-insight-store';
 import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
-import type { MontreeChild, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
+import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
+import EventPicker from '@/components/montree/media/EventPicker';
 
 // ============================================
 // TYPES
@@ -66,6 +67,8 @@ function CaptureContent() {
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
+  const [selectedEvent, setSelectedEvent] = useState<MontreeEvent | null>(null);
+  const [showEventPicker, setShowEventPicker] = useState(false);
 
   // ============================================
   // INIT: Session + Children + Work lookup
@@ -149,6 +152,7 @@ function CaptureContent() {
           work_id: workId || undefined,
           caption: workName || undefined,
           tags: workArea ? [workArea] : undefined,
+          event_id: selectedEvent?.id || undefined,
         });
         if (result.success) {
           toast.success(`${label} saved!`, { duration: 2000 });
@@ -192,6 +196,7 @@ function CaptureContent() {
         work_name: workName || undefined,
         work_area: workArea || undefined,
         is_class_photo: isClassMode,
+        event_id: selectedEvent?.id || undefined,
         width: compressedWidth,
         height: compressedHeight,
       });
@@ -329,14 +334,55 @@ function CaptureContent() {
         </div>
       )}
 
+      {/* Event banner (if event selected) */}
+      {selectedEvent && (
+        <div className="relative z-10 mx-4 mt-12 mb-2 px-4 py-3 bg-amber-500/20 border border-amber-400/30 rounded-xl flex items-center gap-3">
+          <span className="text-xl">🎉</span>
+          <div className="flex-1">
+            <span className="text-amber-300 font-medium text-sm">
+              {t('capture.eventBanner').replace('{eventName}', selectedEvent.name)}
+            </span>
+          </div>
+          <button onClick={() => setShowEventPicker(true)} className="text-amber-400 text-xs underline">
+            {t('common.change') || 'Change'}
+          </button>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="relative z-10 px-4 pt-12 pb-3">
+      <div className={`relative z-10 px-4 ${selectedEvent ? 'pb-3' : 'pt-12 pb-3'}`}>
         <h2 className="text-white text-xl font-bold text-center">
           {t('capture.whoIsThis')}
         </h2>
         <p className="text-white/60 text-sm text-center mt-1">
           {t('capture.tagChildHint')}
         </p>
+      </div>
+
+      {/* Select All + Event picker row */}
+      <div className="relative z-10 px-4 py-2 flex items-center justify-between">
+        <button
+          onClick={() => {
+            if (selectedChildIds.length === children.length) {
+              setSelectedChildIds([]);
+            } else {
+              setSelectedChildIds(children.map(c => c.id));
+            }
+          }}
+          className="text-sm font-medium text-emerald-400 active:text-emerald-300"
+        >
+          {selectedChildIds.length === children.length && children.length > 0
+            ? t('capture.deselectAll')
+            : t('capture.selectAll')}
+        </button>
+        {!selectedEvent && (
+          <button
+            onClick={() => setShowEventPicker(true)}
+            className="text-sm font-medium text-amber-400 active:text-amber-300 flex items-center gap-1"
+          >
+            🎉 {t('events.selectEvent')}
+          </button>
+        )}
       </div>
 
       {/* Child grid */}
@@ -414,6 +460,16 @@ function CaptureContent() {
           {t('capture.skipTagging')}
         </button>
       </div>
+
+      {/* Event Picker Modal */}
+      {showEventPicker && (
+        <EventPicker
+          schoolId={schoolId}
+          selectedEventId={selectedEvent?.id || null}
+          onSelect={(event) => setSelectedEvent(event)}
+          onClose={() => setShowEventPicker(false)}
+        />
+      )}
     </div>
   );
 }
