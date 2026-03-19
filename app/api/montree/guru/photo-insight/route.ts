@@ -206,11 +206,11 @@ export async function POST(request: NextRequest) {
     // Check for cached insight (use maybeSingle to handle 0 or 2+ rows gracefully)
     const { data: cached } = await supabase
       .from('montree_guru_interactions')
-      .select('response_insight, context_snapshot, created_at')
+      .select('response_insight, context_snapshot, asked_at')
       .eq('child_id', child_id)
       .eq('question_type', 'photo_insight')
       .eq('question', `photo:${media_id}:${locale}`)
-      .order('created_at', { ascending: false })
+      .order('asked_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -220,11 +220,11 @@ export async function POST(request: NextRequest) {
       try {
         const { data } = await supabase
           .from('montree_guru_interactions')
-          .select('response_insight, context_snapshot, created_at')
+          .select('response_insight, context_snapshot, asked_at')
           .eq('child_id', child_id)
           .eq('question_type', 'photo_insight')
           .eq('question', `photo:${media_id}`)
-          .order('created_at', { ascending: false })
+          .order('asked_at', { ascending: false })
           .limit(1)
           .maybeSingle();
         return data;
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
       //   Teacher may have added the work to classroom since original analysis
       // - Scenario B/C: classroom/shelf status may have changed (always re-check)
       // - Scenario D: work may have been REMOVED from classroom/shelf (re-check if cache > 5 min old)
-      const cacheAgeMs = effectiveCached.created_at ? Date.now() - new Date(effectiveCached.created_at).getTime() : Infinity;
+      const cacheAgeMs = effectiveCached.asked_at ? Date.now() - new Date(effectiveCached.asked_at).getTime() : Infinity;
 
       // Scenario A cache bust: skip cached result → fall through to fresh Sonnet analysis
       const shouldBustCache = freshScenario === 'A' && cacheAgeMs > 5 * 60 * 1000;
@@ -488,9 +488,9 @@ export async function POST(request: NextRequest) {
         .select('context_snapshot')
         .eq('child_id', child_id)
         .eq('question_type', 'photo_insight')
-        .gte('created_at', fiveMinAgo)
+        .gte('asked_at', fiveMinAgo)
         .not('question', 'like', `photo:${media_id}%`)
-        .order('created_at', { ascending: false })
+        .order('asked_at', { ascending: false })
         .limit(1),
 
       // 4. Visual memory — per-classroom learned descriptions of what works look like
