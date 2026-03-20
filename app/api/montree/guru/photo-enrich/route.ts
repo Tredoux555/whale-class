@@ -274,11 +274,13 @@ Suggest a crop if it would nicely frame the child and material together.`;
         scenario = 'D'; // All good
       }
 
-      // Auto-update: GREEN zone only (≥0.95 confidence AND ≥0.95 CLIP confidence AND in_classroom)
+      // Auto-update: GREEN zone only (Haiku ≥0.95 AND CLIP ≥0.80 AND in_classroom)
+      // CLIP models rarely exceed 0.85 — using 0.95 would make auto-updates never fire
+      const CLIP_GREEN_THRESHOLD = 0.80;
       let auto_updated = false;
       let needs_confirmation = false;
 
-      if (confidence_final >= AUTO_UPDATE_THRESHOLD && clip_confidence >= AUTO_UPDATE_THRESHOLD && in_classroom) {
+      if (confidence_final >= AUTO_UPDATE_THRESHOLD && clip_confidence >= CLIP_GREEN_THRESHOLD && in_classroom) {
         // GREEN zone: auto-update progress (upgrade-only protection)
         const { data: currentProgress } = await supabase
           .from('montree_child_progress')
