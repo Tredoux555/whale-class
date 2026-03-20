@@ -4,6 +4,7 @@
 
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { getSupabase } from '@/lib/supabase-client';
+import { logApiUsage } from '@/lib/montree/api-usage';
 
 export interface WorkEnrichmentResult {
   description: string;
@@ -32,8 +33,16 @@ const AREA_CONTEXT: Record<string, string> = {
 export async function generateWorkEnrichment(
   workName: string,
   areaKey: string,
+  schoolIdOrOptions?: string | { retries?: number; timeoutMs?: number },
   options: { retries?: number; timeoutMs?: number } = {}
 ): Promise<WorkEnrichmentResult> {
+  // Handle overloaded signature: schoolId (string) or options (object)
+  let schoolId: string | undefined;
+  if (typeof schoolIdOrOptions === 'string') {
+    schoolId = schoolIdOrOptions;
+  } else if (schoolIdOrOptions) {
+    options = schoolIdOrOptions;
+  }
   if (!anthropic) {
     throw new Error('Anthropic API not configured');
   }
@@ -94,6 +103,11 @@ JSON structure required:
           messages: [{ role: 'user', content: userPrompt }],
         }, { signal: controller.signal });
 
+        // Log enrichment usage
+        if (schoolId) {
+          logApiUsage({ schoolId, endpoint: 'work-enrichment', model: AI_MODEL, inputTokens: response.usage?.input_tokens || 0, outputTokens: response.usage?.output_tokens || 0 });
+        }
+
         const content = response.content[0];
         if (content.type !== 'text') {
           throw new Error('Unexpected response type from Sonnet');
@@ -151,9 +165,10 @@ export async function enrichCustomWorkInBackground(
   workId: string,
   workName: string,
   areaKey: string,
+  schoolId?: string,
 ): Promise<void> {
   try {
-    const enrichment = await generateWorkEnrichment(workName, areaKey);
+    const enrichment = await generateWorkEnrichment(workName, areaKey, schoolId);
 
     const supabase = getSupabase();
     const { error } = await supabase
