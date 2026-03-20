@@ -93,6 +93,58 @@ Per-school API cost tracking. Fire-and-forget logging on every AI call (Guru, ph
 
 **Deploy:** ⚠️ Run `psql $DATABASE_URL -f migrations/142_api_usage_metering.sql` after deploy (code safe without it).
 
+**Smart Capture Debiasing (10x10x10x10 Audit) — COMPLETE, DEPLOYED:**
+
+Sandpaper Letters was being misidentified as "Grammar Boxes" — twice on same child (Austin). Root cause: child's shelf works (`focusWorksContext`) and recent progress (`worksContext` — 30 works) were injected into identification prompts, biasing Haiku toward works on the child's shelf. When Grammar Boxes was on Austin's shelf, Haiku matched "textured letter boards" → "Grammar Boxes" instead of "Sandpaper Letters".
+
+**Fix — Complete prompt debiasing:**
+- Removed `worksContext` from Pass 2 user message (was 30 recent works from `montree_child_progress`)
+- Removed `worksContext` from Sonnet fallback user message
+- Removed `focusWorksContext` from system prompt (was child's current shelf works)
+- All identification now runs on PURE visual evidence — photo + curriculum + visual ID guide only
+- Post-identification `inChildShelf` checks still work (query runs but result not injected into prompts)
+- Added explicit instruction: "Identify based ONLY on the physical materials described"
+
+**CLIP resilience improvements (3):**
+1. **Cross-area fallback** — When within-area confidence < 0.70, searches ALL 329 works globally. Prevents cascade failure where Stage 1 picks wrong area and correct work is never found.
+2. **Visual memory boost safety** — Minimum base confidence of 0.60 required before applying +0.15 boost. Prevents weak matches from false-positive-ing past 0.75 threshold.
+3. **Init retry with TTL** — 5-minute cooldown, max 3 retry attempts before permanent failure. Replaces permanent first-failure cache. `resetInitError()` exported for orchestrator to clear cached errors.
+
+**10x10x10x10 methodology:** 5 waves of parallel research agents (8+ agents total), covering: bias analysis, CLIP failure modes, confidence calibration, init resilience, prompt injection patterns. Dedicated verification agent confirmed zero bugs post-edit.
+
+**Files Modified (4):**
+1. `app/api/montree/guru/photo-insight/route.ts` — 5 edits: removed worksContext variable, removed focusWorksContext from system prompt + processing block, debiased Pass 2 user message, debiased Sonnet fallback message
+2. `lib/montree/classifier/clip-classifier.ts` — 3 edits: cross-area fallback (45 lines), visual memory boost minimum (0.60), resetInitError export
+3. `lib/montree/classifier/classify-orchestrator.ts` — 3 edits: resetInitError import, init retry state tracking (5 vars + 2 constants), TTL-based retry logic with atomic lock
+4. `lib/montree/classifier/index.ts` — Added resetInitError to barrel exports
+
+**Deploy:** ✅ PUSHED (commit `d0c9cdea`). Railway deploy `454dae34` — Active, Online.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_DEBIASING_MAR20.md`
+
+**Smart Capture Debiasing Round 2 — Visual Memory Bias + Color Tablets Fix — SAVED, NOT YET PUSHED (ENOSPC):**
+
+Color Tablets (rigid wooden squares matched by COLOR) were being misidentified as "Fabric Matching" (soft cloth swatches matched by TEXTURE) — same structural bias pattern as Sandpaper Letters → Grammar Boxes. Third bias source discovered: `visualMemoryContext` for standard works was injecting "learned" descriptions from possibly-wrong prior identifications, reinforcing errors.
+
+**Fix — Three changes to `app/api/montree/guru/photo-insight/route.ts`:**
+1. **Visual memory debiasing** — Standard work memories REMOVED from identification prompts entirely. Only CUSTOM work memories (not in standard curriculum) are injected. Standard works already have descriptions in the 262-line visual ID guide. Fire-and-forget RPC narrowed to custom memories only.
+2. **Color Tablets vs Fabric Matching confusion pair** — Added #1 confusion pair to Sensorial section: "COLOR BOX (rigid WOODEN/PLASTIC painted squares matched by COLOR) vs FABRIC MATCHING (soft CLOTH swatches matched by TEXTURE)." Strengthened both work descriptions with material composition details and catch-all identification rules.
+3. **Pass 1 prompt strengthened** — "MATERIAL COMPOSITION" is now #1 priority focus. Asks "What are the objects MADE OF? wood, metal, fabric/cloth, plastic?" and "Are pieces RIGID or SOFT?" Ensures the critical distinguishing feature (material type) is captured in Pass 1 and available to Pass 2.
+
+**All 3 bias sources now removed:**
+| Bias Source | Round Removed |
+|---|---|
+| `worksContext` (child progress) | Round 1 (commit d0c9cdea) |
+| `focusWorksContext` (child shelf) | Round 1 (commit d0c9cdea) |
+| `visualMemoryContext` (standard works) | Round 2 (not yet pushed) |
+
+**Deploy:** ⚠️ NOT YET PUSHED — VM disk full (ENOSPC). Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add app/api/montree/guru/photo-insight/route.ts docs/handoffs/HANDOFF_SMART_CAPTURE_DEBIASING_MAR20.md CLAUDE.md
+git commit -m "fix: deepen Smart Capture debiasing — remove visual memory bias + Color Tablets confusion pair + material composition in Pass 1"
+git push origin main
+```
+
 ---
 
 ## PREVIOUS STATUS (Mar 19, 2026)
