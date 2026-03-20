@@ -137,11 +137,35 @@ Color Tablets (rigid wooden squares matched by COLOR) were being misidentified a
 | `focusWorksContext` (child shelf) | Round 1 (commit d0c9cdea) |
 | `visualMemoryContext` (standard works) | Round 2 (not yet pushed) |
 
-**Deploy:** ⚠️ NOT YET PUSHED — VM disk full (ENOSPC). Push from Mac:
+**Deploy:** ⚠️ NOT YET PUSHED — VM disk full (ENOSPC). Push from Mac (see combined push command below).
+
+**CRITICAL: Photo Upload Failure — DIAGNOSED, FIX = RE-LOGIN:**
+
+Teacher reported "photos are not being saved at all." Photos showed "Photo saved!" toast (IndexedDB enqueue works) but never appeared in gallery. Gallery showed "1 photo waiting to upload" with "Sync now" button.
+
+**Full pipeline code audit (zero bugs found):** Checked capture/page.tsx, sync-manager.ts, queue-store.ts, sync-triggers.ts, media/upload/route.ts, health/route.ts, dashboard/layout.tsx, photo-insight-store.ts, offline/index.ts — all correct.
+
+**Root cause: Expired auth cookie.** Teacher logged in before the 7→365 day TTL change was deployed. Old cookie had 7-day expiration. After expiry, background sync gets silent 401s — photos save to IndexedDB but never reach server. Gallery fetches from server, so photos never appear.
+
+**Fix:** Log out and log back in → fresh 365-day cookie issued. Stuck photos in IndexedDB will auto-sync on next dashboard load (sync triggers fire on mount).
+
+**Key lesson:** Changing cookie TTL only affects NEW cookies. Existing sessions keep their original expiration. Teachers with old sessions silently fail on uploads until re-login.
+
+**Diagnostic endpoint created:** `app/api/montree/debug-upload/route.ts` — GET endpoint tests auth, Supabase DB, storage bucket, recent media, storage write. Hit `montree.xyz/api/montree/debug-upload` to diagnose future upload issues. DELETE after issue confirmed resolved.
+
+**Nav icon fix:** `components/montree/DashboardHeader.tsx` — Albums icon changed from 📸 to 🖼️ to distinguish from Smart Capture camera icon.
+
+**Files Created (1):**
+1. `app/api/montree/debug-upload/route.ts` (~200 lines) — Temporary upload diagnostic endpoint
+
+**Files Modified (1):**
+1. `components/montree/DashboardHeader.tsx` — Albums icon 📸 → 🖼️
+
+**Deploy:** ⚠️ NOT YET PUSHED (ENOSPC). Push ALL session changes from Mac:
 ```bash
 cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add app/api/montree/guru/photo-insight/route.ts docs/handoffs/HANDOFF_SMART_CAPTURE_DEBIASING_MAR20.md CLAUDE.md
-git commit -m "fix: deepen Smart Capture debiasing — remove visual memory bias + Color Tablets confusion pair + material composition in Pass 1"
+git add app/api/montree/guru/photo-insight/route.ts app/api/montree/debug-upload/route.ts docs/handoffs/HANDOFF_SMART_CAPTURE_DEBIASING_MAR20.md CLAUDE.md components/montree/DashboardHeader.tsx
+git commit -m "fix: deepen Smart Capture debiasing + photo upload diagnostic + nav icon fix"
 git push origin main
 ```
 

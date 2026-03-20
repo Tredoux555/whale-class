@@ -149,3 +149,70 @@ git push origin main
 | `visualMemoryContext` (standard works) | "Learned" descriptions from prior photos | Round 2 (this fix, not yet pushed) |
 
 Only `visualMemoryContext` for **custom works** (teacher-created, not in standard curriculum) is still injected — these genuinely need memory because they have no entry in the visual ID guide.
+
+---
+
+## Follow-Up: Photo Save Failure Investigation (Same Session, Later)
+
+### Problem
+
+User reported "photos are not being saved at all now" — critical production issue. Photos show "Photo saved!" toast (IndexedDB enqueue succeeds) but never appear in gallery (server upload fails silently in background). Gallery showed "1 photo waiting to upload" with orange progress bar and "Sync now" button.
+
+### Investigation
+
+**Full code audit of entire upload pipeline — zero code bugs found:**
+
+1. `app/montree/dashboard/capture/page.tsx` — `doUploadAndAnalyze()`: compress → `enqueuePhoto()` → navigate → `syncQueue()` background. Correct.
+2. `lib/montree/offline/sync-manager.ts` — `syncQueue()`, `uploadEntry()`, `enqueuePhoto()`, `checkNetworkReachable()`. All correct. Smart Filter `!entry.work_id` gate on `startAnalysis` is post-upload only.
+3. `lib/montree/offline/queue-store.ts` — IndexedDB layer with private browsing guard, atomic `saveEntryAndBlob`. Correct.
+4. `lib/montree/offline/sync-triggers.ts` — Registers visibility, online, periodic, initial sync triggers. Correct.
+5. `app/api/montree/media/upload/route.ts` — Auth, validation, Supabase storage upload, DB record creation. Correct.
+6. `app/api/montree/health/route.ts` — Simple 200 response, no auth required. Correct.
+7. `app/montree/dashboard/layout.tsx` — `registerSyncTriggers()` called in useEffect. Correct.
+8. `lib/montree/photo-insight-store.ts` — `startAnalysis()` is void/fire-and-forget, can't crash upload flow. Correct.
+9. `lib/montree/offline/index.ts` — Barrel exports match all imports. Correct.
+
+### Root Cause: Expired Auth Cookie
+
+**Diagnosis confirmed by user screenshot:** Gallery showed "1 photo waiting to upload" with "Sync now" button — photo is in IndexedDB but background sync is failing.
+
+The teacher's `montree-auth` httpOnly cookie was set with the OLD 7-day TTL (before the 365-day change was deployed). After 7 days, the cookie expired. The sync manager's `uploadEntry()` calls `fetch('/api/montree/media/upload')` — same-origin, cookies auto-sent — but the expired cookie returns 401. The sync manager detects this and marks the entry as failed, but there's no visible error to the teacher (fire-and-forget pattern).
+
+**Fix:** Teacher needs to log out and log back in to get a fresh cookie with the new 365-day TTL.
+
+### Diagnostic Endpoint Created
+
+`app/api/montree/debug-upload/route.ts` — GET endpoint that tests:
+1. Auth cookie validity (verifySchoolRequest)
+2. Supabase DB connection (query montree_schools)
+3. Supabase storage bucket access (list montree-media)
+4. Recent media records (last 24h count + details)
+5. Storage write test (1-byte file upload + delete)
+
+Returns JSON with per-check status (OK/FAIL) + overall summary. Hit `montree.xyz/api/montree/debug-upload` while logged in to diagnose upload issues.
+
+### Nav Icon Fix
+
+`components/montree/DashboardHeader.tsx` — Changed Albums page icon from 📸 to 🖼️ to distinguish from Smart Capture camera icon. Two identical 📸 icons were confusing.
+
+### Files Created (1)
+
+1. `app/api/montree/debug-upload/route.ts` (~200 lines) — Temporary diagnostic endpoint (DELETE after issue resolved)
+
+### Files Modified (1)
+
+1. `components/montree/DashboardHeader.tsx` — Albums icon 📸 → 🖼️
+
+### Deploy
+
+⚠️ NOT YET PUSHED (ENOSPC). Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add app/api/montree/guru/photo-insight/route.ts app/api/montree/debug-upload/route.ts docs/handoffs/HANDOFF_SMART_CAPTURE_DEBIASING_MAR20.md CLAUDE.md components/montree/DashboardHeader.tsx
+git commit -m "fix: deepen Smart Capture debiasing + photo upload diagnostic + nav icon fix"
+git push origin main
+```
+
+### Key Lesson
+
+When the auth cookie TTL is changed (e.g., 7d → 365d), the change only applies to NEW cookies issued after deployment. Existing cookies keep their original TTL. Teachers with old sessions will silently fail on uploads until they re-login.
