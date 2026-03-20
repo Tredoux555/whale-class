@@ -16,7 +16,39 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Session Work (Mar 20, 2026)
 
-**Smart Filter — API Cost Optimization — COMPLETE, NOT YET DEPLOYED (3x3 build-audit, 3 consecutive CLEAN):**
+**CLIP/SigLIP Visual Classifier — COMPLETE, PUSHED, AWAITING LIVE TEST (3 commits, 3 deep audit passes):**
+
+Near-zero-cost photo identification using SigLIP ViT-B/16 (ONNX Runtime, CPU inference). Replaces $0.06/photo Sonnet calls with $0.00 CLIP + $0.0006 slim Haiku enrichment for confident matches. Three-tier: CLIP ($0.00, ~150ms) → slim Haiku ($0.0006, ~2-3s) → full two-pass fallback ($0.006, unchanged). Estimated 80-90% cost reduction on photo identification at scale.
+
+**Architecture:**
+- Two-stage classification: area first (5 classes) → work within area (50-80 classes per area)
+- Pre-computed text embeddings for all 329 works + 5 areas using enriched visual descriptions
+- 156/329 works have rich visual descriptions; remaining use curriculum description fallback
+- Visual memory boost (0.15 confidence) for classroom-learned works
+- GREEN zone: CLIP ≥ 0.80 AND Haiku ≥ 0.95 → auto-update progress + auto-add to shelf
+- AMBER zone: CLIP ≥ 0.50 AND Haiku ≥ 0.50 → needs teacher confirmation
+- Kill switches: `CLIP_CLASSIFIER_ENABLED=false` (instant disable), `CLIP_CANARY_PERCENT=10` (rollout %)
+- Any failure gracefully falls through to existing two-pass Haiku→Sonnet pipeline
+
+**Files Created (4):**
+1. `lib/montree/classifier/clip-classifier.ts` (~438 lines) — SigLIP model loading, two-stage classification, cosine similarity, timeouts, resource cleanup
+2. `lib/montree/classifier/work-signatures.ts` (~1,781 lines) — 156 enriched visual descriptions + 5 area descriptions + helper functions + stats
+3. `lib/montree/classifier/classify-orchestrator.ts` (~181 lines) — Kill switch, canary rollout, init lock, routing decisions
+4. `lib/montree/classifier/index.ts` (31 lines) — Barrel exports (20 symbols)
+
+**Files Modified (2):**
+1. `app/api/montree/guru/photo-insight/route.ts` — TIER 0 CLIP section (lines 395-655): tryClassify call, slim Haiku prompt (800 tokens), CLIP_GREEN_THRESHOLD=0.80, auto-add-to-shelf, fire-and-forget DB writes, 15-field context_snapshot
+2. `app/api/montree/guru/photo-enrich/route.ts` (~369 lines) — Slim Haiku enrichment endpoint, CLIP_GREEN_THRESHOLD=0.80 (fixed from 0.95), interaction save fire-and-forget (fixed from await)
+
+**Dependencies:** `@xenova/transformers` added to package.json (ONNX Runtime for SigLIP)
+
+**Deep audit (3 passes, 15 issues found and fixed):** AREA_SIGNATURES export, fire-and-forget .catch(), CLIP_GREEN_THRESHOLD 0.80 (was 0.95), auto-add-to-shelf, kill switch case-insensitive, race condition init lock, resource cleanup, area threshold 0.3→0.5, embedding dimension check, photo-enrich threshold + await fix.
+
+**Deploy:** ✅ PUSHED (3 commits). Set `CLIP_CANARY_PERCENT=10` on Railway for initial rollout. Monitor `[CLIP]` log entries.
+**Monday live test:** 4 teachers, same login code, same classroom — works fine (stateless JWT).
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_CLASSIFIER_MAR20.md`
+
+**Smart Filter — API Cost Optimization — COMPLETE, PUSHED (3x3 build-audit, 3 consecutive CLEAN):**
 
 Two optimizations to reduce Anthropic API costs without sacrificing quality. 10x theory-audit planning cycles followed by 3 build-audit cycles (5 issues found and fixed in cycle 1, 3 consecutive clean passes achieved).
 
@@ -33,8 +65,6 @@ Sonnet-tier users' `curriculum` and `general` questions now route to Haiku ($0.8
 - HIGH: Skipped photo-insight response missing `work_name`/`area` — added curriculum work lookup
 - MEDIUM: No diagnostic logging for routing decisions
 
-**Rejected theories (10x audit):** pHash (materials too similar), CLIP embeddings (329 categories too many), batch end-of-day processing (kills workflow), area-scoping visual ID guide (breaks confusion-pair detection), lowering Haiku threshold (silent accuracy degradation), Guru Master cross-school DB (privacy issues).
-
 **Estimated savings:** $100-150/month at scale (250 students). Skip-if-tagged: $4-6/month. Hybrid routing: $3-4/month per active classroom.
 
 **Files Modified (3):**
@@ -43,6 +73,7 @@ Sonnet-tier users' `curriculum` and `general` questions now route to Haiku ($0.8
 3. `app/api/montree/guru/route.ts` — `HAIKU_MODEL` import, hybrid routing computation, `effectiveTier`, model selection, 4× `costMultiplier` fix, kill switch, `hybrid_routed` in context_snapshots
 
 **No new files. No migrations. No new env vars required (kill switch is opt-in disable).**
+**Handoff:** `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md`
 
 **API Usage Metering System — COMPLETE, NOT YET DEPLOYED:**
 
@@ -56,12 +87,11 @@ Per-school API cost tracking. Fire-and-forget logging on every AI call (Guru, ph
 
 **Files Modified (4) — added logApiUsage import:**
 1. `app/api/montree/guru/route.ts` (also has Smart Filter changes)
-2. `app/api/montree/guru/photo-insight/route.ts` (also has Smart Filter changes)
+2. `app/api/montree/guru/photo-insight/route.ts` (also has Smart Filter + CLIP changes)
 3. `app/api/montree/guru/corrections/route.ts`
 4. `app/api/montree/tts/route.ts`
 
-**Deploy:** ⚠️ NOT YET PUSHED. Run `psql $DATABASE_URL -f migrations/142_api_usage_metering.sql` after deploy (code safe without it).
-**Handoff:** `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md`
+**Deploy:** ⚠️ Run `psql $DATABASE_URL -f migrations/142_api_usage_metering.sql` after deploy (code safe without it).
 
 ---
 
