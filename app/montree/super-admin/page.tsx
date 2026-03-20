@@ -325,6 +325,12 @@ export default function SuperAdminPage() {
               📚 Community Library
             </Link>
             <Link
+              href="/montree/super-admin/api-usage"
+              className="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 text-sm"
+            >
+              📊 API Usage
+            </Link>
+            <Link
               href="/montree/super-admin/marketing"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 text-sm"
             >

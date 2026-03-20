@@ -39,12 +39,28 @@ Sonnet-tier users' `curriculum` and `general` questions now route to Haiku ($0.8
 
 **Files Modified (3):**
 1. `lib/montree/offline/sync-manager.ts` — `!entry.work_id` gate on `startAnalysis` (line 347)
-2. `app/api/montree/guru/photo-insight/route.ts` — `work_id` in SELECT + skip-if-tagged early return with curriculum lookup (lines 353-390)
+2. `app/api/montree/guru/photo-insight/route.ts` — `work_id` in SELECT (line 356) + skip-if-tagged early return with curriculum lookup (lines 370-390)
 3. `app/api/montree/guru/route.ts` — `HAIKU_MODEL` import, hybrid routing computation, `effectiveTier`, model selection, 4× `costMultiplier` fix, kill switch, `hybrid_routed` in context_snapshots
 
 **No new files. No migrations. No new env vars required (kill switch is opt-in disable).**
 
-**Deploy:** ⚠️ NOT YET PUSHED. No migrations required.
+**API Usage Metering System — COMPLETE, NOT YET DEPLOYED:**
+
+Per-school API cost tracking. Fire-and-forget logging on every AI call (Guru, photo-insight, corrections, TTS). Budget enforcement with 30s in-memory cache (fails open). Super-admin dashboard link. Code is safe without migration (logging silently no-ops).
+
+**Files Created (4):**
+1. `lib/montree/api-usage.ts` — logApiUsage (fire-and-forget) + checkAiBudget (30s cache, fails open)
+2. `migrations/142_api_usage_metering.sql` — montree_api_usage table + budget columns + 2 RPCs
+3. `app/api/montree/admin/ai-budget/route.ts` — GET/PATCH budget for schools
+4. `lib/montree/guru/work-enrichment.ts` — Auto-generate descriptions for custom works
+
+**Files Modified (4) — added logApiUsage import:**
+1. `app/api/montree/guru/route.ts` (also has Smart Filter changes)
+2. `app/api/montree/guru/photo-insight/route.ts` (also has Smart Filter changes)
+3. `app/api/montree/guru/corrections/route.ts`
+4. `app/api/montree/tts/route.ts`
+
+**Deploy:** ⚠️ NOT YET PUSHED. Run `psql $DATABASE_URL -f migrations/142_api_usage_metering.sql` after deploy (code safe without it).
 **Handoff:** `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md`
 
 ---

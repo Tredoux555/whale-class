@@ -106,13 +106,22 @@ Uses existing `lib/montree/guru/question-classifier.ts` (pure regex, zero latenc
 
 ---
 
-## Files Modified (3)
+## Smart Filter Files Modified (3)
 
 1. **`lib/montree/offline/sync-manager.ts`** — 1 edit: `!entry.work_id` gate on `startAnalysis` call (line 347)
 2. **`app/api/montree/guru/photo-insight/route.ts`** — 2 edits: `work_id` in SELECT (line 356), skip-if-tagged early return with curriculum lookup (lines 370-390)
 3. **`app/api/montree/guru/route.ts`** — 6 edits: `HAIKU_MODEL` import (line 9), hybrid routing computation (lines 349-364), `effectiveTier` passed to prompt builder, model selection (line 567), 4× `costMultiplier` fix (lines 721/770/814/1003), `hybrid_routed` in context_snapshots (lines 1301/1315)
 
-**No new files. No migrations. No new env vars required** (kill switch is opt-in disable).
+## API Metering Files (must be included — routes import from api-usage.ts)
+
+4. **`lib/montree/api-usage.ts`** — NEW: fire-and-forget usage logging + budget enforcement with 30s cache
+5. **`migrations/142_api_usage_metering.sql`** — NEW: `montree_api_usage` table + budget columns on schools + 2 RPCs
+6. **`app/api/montree/admin/ai-budget/route.ts`** — NEW: GET/PATCH budget status for schools
+7. **`lib/montree/guru/work-enrichment.ts`** — NEW: auto-generate descriptions for custom works (imports logApiUsage)
+8. **`app/api/montree/tts/route.ts`** — MODIFIED: added logApiUsage import
+9. **`app/api/montree/guru/corrections/route.ts`** — MODIFIED: added logApiUsage import
+
+**No new env vars required** (kill switch is opt-in disable). Migration 142 should be run but code is safe without it (logging silently no-ops, budget check fails open).
 
 ---
 
@@ -131,26 +140,37 @@ Uses existing `lib/montree/guru/question-classifier.ts` (pure regex, zero latenc
 
 ## Deploy
 
-No migrations required. No new env vars required (kill switch defaults to enabled).
-
 Push from Mac:
 ```bash
 cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add lib/montree/offline/sync-manager.ts app/api/montree/guru/photo-insight/route.ts app/api/montree/guru/route.ts
-git commit -m "feat: Smart Filter — skip AI for tagged photos + hybrid Haiku/Sonnet Guru routing"
+git add \
+  lib/montree/offline/sync-manager.ts \
+  app/api/montree/guru/photo-insight/route.ts \
+  app/api/montree/guru/route.ts \
+  lib/montree/api-usage.ts \
+  migrations/142_api_usage_metering.sql \
+  app/api/montree/admin/ai-budget/route.ts \
+  lib/montree/guru/work-enrichment.ts \
+  app/api/montree/tts/route.ts \
+  app/api/montree/guru/corrections/route.ts \
+  app/montree/super-admin/page.tsx \
+  docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md \
+  CLAUDE.md
+git commit -m "feat: Smart Filter cost optimization + API usage metering"
 git push origin main
 ```
 
-**To disable hybrid routing (emergency):**
+**After deploy — run migration 142:**
 ```bash
-# On Railway, set environment variable:
-GURU_HYBRID_ROUTING_ENABLED=false
-# Takes effect on next request, no redeploy needed
+psql $DATABASE_URL -f migrations/142_api_usage_metering.sql
 ```
+Code is safe WITHOUT the migration (logging silently no-ops, budget check fails open). But metering won't actually track anything until the table exists.
+
+**To disable hybrid routing (emergency):**
+On Railway, set environment variable `GURU_HYBRID_ROUTING_ENABLED` to `false`. Takes effect on next request, no redeploy needed.
 
 ---
 
-## Also Pending (from previous sessions)
+## Also Pending
 
-- **API Metering System** — Built but handoff deferred by user. Migration 142 still needs running.
 - **Delete debug-insight route** — `app/api/montree/debug-insight/route.ts` (temporary from Mar 19 investigation)

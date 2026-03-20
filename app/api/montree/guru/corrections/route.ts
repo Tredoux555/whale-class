@@ -4,6 +4,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { logApiUsage } from '@/lib/montree/api-usage';
 
 // POST /api/montree/guru/corrections — Record a teacher correction for self-learning
 // Called when teacher changes work_id in PhotoEditModal (correcting Smart Capture)
@@ -236,6 +237,8 @@ export async function POST(request: NextRequest) {
           mediaId: media_id || null,
           isCustom: corrected_work_id ? String(corrected_work_id).startsWith('custom_') : false,
           source: 'correction',
+          schoolId: auth.schoolId,
+          teacherId: auth.userId,
         }).catch((err) => {
           console.error('[Corrections] Visual memory generation failed (non-fatal):', err);
         })
@@ -288,6 +291,8 @@ async function generateAndStoreVisualMemory({
   mediaId,
   isCustom,
   source,
+  schoolId,
+  teacherId,
 }: {
   supabase: ReturnType<typeof getSupabase>;
   classroomId: string;
@@ -298,6 +303,8 @@ async function generateAndStoreVisualMemory({
   mediaId: string | null;
   isCustom: boolean;
   source: 'correction' | 'first_capture' | 'teacher_manual';
+  schoolId: string;
+  teacherId: string;
 }) {
   if (!anthropic) return;
 
@@ -347,6 +354,9 @@ async function generateAndStoreVisualMemory({
 
   // LOW-004: Log Haiku latency for monitoring degradation
   console.log(`[VisualMemory] Correction Haiku latency: ${Date.now() - haikuStartMs}ms for "${workName}"`);
+
+  // Log corrections Haiku usage
+  logApiUsage({ schoolId, classroomId, teacherId, endpoint: 'corrections/vision', model: HAIKU_MODEL, inputTokens: message.usage?.input_tokens || 0, outputTokens: message.usage?.output_tokens || 0 });
 
   // Extract text response
   let visualDescription = '';

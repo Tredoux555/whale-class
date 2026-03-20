@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { logApiUsage } from '@/lib/montree/api-usage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -110,6 +111,9 @@ export async function POST(request: NextRequest) {
 
     // Stream the audio response back
     const audioBuffer = await ttsResponse.arrayBuffer();
+
+    // Log TTS usage (inputTokens = character count for TTS pricing)
+    logApiUsage({ schoolId: auth.schoolId, classroomId: undefined, teacherId: auth.userId, endpoint: 'tts', model: 'tts-1', inputTokens: cleanText.length, outputTokens: 0 });
 
     return new NextResponse(audioBuffer, {
       status: 200,
