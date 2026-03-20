@@ -3284,6 +3284,12 @@ export const en = {
 
   // Reports — Events section
   'reports.specialEvents': 'Special Events',
+
+  // AI Budget
+  'aiBudget.label': 'AI',
+  'aiBudget.budgetReached': 'Monthly AI budget reached. Please switch to manual mode or contact your principal.',
+  'aiBudget.warningHigh': 'AI usage is high this month',
+  'aiBudget.loading': 'Loading AI budget...',
 } as const;
 
 export type TranslationKey = keyof typeof en;

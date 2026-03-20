@@ -3285,4 +3285,10 @@ export const zh = {
 
   // 报告 — 活动部分
   'reports.specialEvents': '特别活动',
+
+  // AI 预算
+  'aiBudget.label': 'AI',
+  'aiBudget.budgetReached': '本月AI预算已用完。请切换到手动模式或联系校长。',
+  'aiBudget.warningHigh': '本月AI使用量较高',
+  'aiBudget.loading': '正在加载AI预算...',
 } as const;

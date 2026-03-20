@@ -26,6 +26,7 @@ export default function DashboardHeader() {
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
   const [razTrackerEnabled, setRazTrackerEnabled] = useState(false);
+  const [aiBudget, setAiBudget] = useState<{ spent: number; budget: number; percentage: number } | null>(null);
 
   // Student search state
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -71,6 +72,25 @@ export default function DashboardHeader() {
           setVoiceObsEnabled(voice);
           setRazTrackerEnabled(raz);
           try { sessionStorage.setItem(cacheKey, JSON.stringify({ voice, raz, ts: Date.now() })); } catch {}
+        })
+        .catch(() => {});
+
+      // Fetch AI budget for pill display (teachers only, 60s cache)
+      const budgetCacheKey = `montree_ai_budget_${sess.school.id}`;
+      try {
+        const budgetCached = sessionStorage.getItem(budgetCacheKey);
+        if (budgetCached) {
+          const { data: bd, ts } = JSON.parse(budgetCached);
+          if (Date.now() - ts < 60_000) { setAiBudget(bd); return; }
+        }
+      } catch {}
+      montreeApi(`/api/montree/admin/ai-budget?school_id=${sess.school.id}`)
+        .then((res) => res.ok ? res.json() : null)
+        .then((data) => {
+          if (!data?.summary) return;
+          const bd = { spent: Number(data.summary.spent) || 0, budget: Number(data.summary.budget) || 50, percentage: Number(data.summary.percentage) || 0 };
+          setAiBudget(bd);
+          try { sessionStorage.setItem(budgetCacheKey, JSON.stringify({ data: bd, ts: Date.now() })); } catch {}
         })
         .catch(() => {});
     }
@@ -221,6 +241,20 @@ export default function DashboardHeader() {
             userName={session.teacher.name || 'Teacher'}
             data-tutorial="inbox-button"
           />
+          {/* AI Budget pill — teachers only */}
+          {aiBudget && !isHome && (
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 whitespace-nowrap ${
+                aiBudget.percentage >= 100 ? 'bg-red-500/90 text-white' :
+                aiBudget.percentage >= 80 ? 'bg-orange-400/90 text-white' :
+                aiBudget.percentage >= 60 ? 'bg-yellow-400/90 text-gray-900' :
+                'bg-white/20 text-white'
+              }`}
+              title={`${t('aiBudget.label')}: $${aiBudget.spent.toFixed(2)} / $${aiBudget.budget.toFixed(0)}`}
+            >
+              {t('aiBudget.label')}: ${aiBudget.spent.toFixed(2)}
+            </span>
+          )}
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}
             className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm flex-shrink-0 whitespace-nowrap"

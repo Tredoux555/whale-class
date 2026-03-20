@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
     // Only triggers when is_custom=true AND enrichment fields are empty
     if (work && work.is_custom && !work.description && !work.quick_guide && !work.parent_description) {
       // Don't await — this runs in the background after the response is sent
-      enrichCustomWorkInBackground(work.id, work.name, normalizedAreaKey)
+      enrichCustomWorkInBackground(work.id, work.name, normalizedAreaKey, auth.schoolId)
         .catch(err => console.error('[Curriculum] Enrichment failed:', err instanceof Error ? err.message : err));
     }
 
