@@ -152,7 +152,7 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
 
 // Status rank for upgrade-only protection
 const STATUS_RANK: Record<string, number> = {
-  'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
+  'not_started': 0, 'unclear': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
 };
 
 // Auto-update threshold: GREEN zone only (≥0.95 match AND ≥0.95 confidence)
