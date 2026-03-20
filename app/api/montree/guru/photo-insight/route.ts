@@ -851,28 +851,28 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
           }
         }
 
-        const sections: string[] = [];
+        // DEBIASED (Mar 20, 2026): Only inject CUSTOM work memories into identification prompts.
+        // Standard work memories are REMOVED — they were a bias vector identical to the
+        // worksContext/focusWorksContext bias that caused Sandpaper Letters → Grammar Boxes.
+        // Standard works already have comprehensive descriptions in the visual ID guide.
+        // Injecting "learned" descriptions from possibly-wrong prior identifications just
+        // reinforces errors (e.g., wrong "Fabric Matching" description steers future photos wrong).
+        // Custom works still need memory injection because they're NOT in the visual ID guide.
         if (customMemories.length > 0) {
-          sections.push(`CUSTOM WORKS in this classroom (teacher-created — NOT in standard curriculum):\n${customMemories.join('\n')}`);
-        }
-        if (standardMemories.length > 0) {
-          sections.push(`Learned material descriptions (from previous photos in this classroom):\n${standardMemories.join('\n')}`);
-        }
+          visualMemoryContext = `\n\nCUSTOM WORKS in this classroom (teacher-created — NOT in standard curriculum):\n${customMemories.join('\n')}
+NOTE: These are custom works unique to this classroom. Use these descriptions to identify them. For ALL standard Montessori works, use ONLY the visual identification guide above.`;
 
-        if (sections.length > 0) {
-          visualMemoryContext = `\n\nCLASSROOM VISUAL MEMORY (what materials look like in THIS specific classroom):\n${sections.join('\n\n')}
-NOTE: These descriptions were learned from previous photos. Use them to help identify materials, especially custom works that are NOT in the standard curriculum guide above.`;
-
-          // Fire-and-forget: increment times_used for all injected memories
-          // This tracks which descriptions are actually being used in prompts
+          // Fire-and-forget: increment times_used for CUSTOM memories only (the ones actually injected)
           if (classroomId) {
-            const memoryNames = memories.map((m: { work_name: string }) => m.work_name);
-            supabase.rpc('increment_visual_memory_used', {
-              p_classroom_id: classroomId,
-              p_work_names: memoryNames,
-            }).then(({ error: rpcErr }) => {
-              if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
-            });
+            const customNames = memories.filter((m: { is_custom: boolean }) => m.is_custom).map((m: { work_name: string }) => m.work_name);
+            if (customNames.length > 0) {
+              supabase.rpc('increment_visual_memory_used', {
+                p_classroom_id: classroomId,
+                p_work_names: customNames,
+              }).then(({ error: rpcErr }) => {
+                if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
+              });
+            }
           }
         }
       }
@@ -974,10 +974,11 @@ VISUAL — DIMENSION (graduated materials, usually natural wood or painted):
   → Multiple blocks mixed together → "Cylinder Blocks Combined"
 - Colored cylinders WITHOUT knobs (yellow/red/green/blue boxes) → "Knobless Cylinders"
 
-VISUAL — COLOR:
+VISUAL — COLOR (Color Tablets are small WOODEN or PLASTIC rectangles with painted colors — NOT fabric):
 - Small box with 6 color tablets (3 pairs: red, yellow, blue) → "Color Box 1 (Primary Colors)"
-- Medium box with 22 color tablets (11 pairs) → "Color Box 2 (Secondary Colors)"
-- Large box with 63 color tablets (9 colors × 7 shades) → "Color Box 3 (Color Gradations)"
+- Medium box with 22 color tablets (11 pairs of different colors) → "Color Box 2 (Secondary Colors)"
+- Large box with 63 color tablets (9 colors × 7 graded shades, arranged lightest to darkest) → "Color Box 3 (Color Gradations)"
+- If you see colored SQUARES or RECTANGLES being matched/paired by COLOR on a mat → this is a "Color Box" (NOT Fabric Matching)
 
 VISUAL — FORM (geometric shapes):
 - Cabinet with drawers of flat geometric shape insets → "Geometric Cabinet"
@@ -990,7 +991,7 @@ VISUAL — FORM (geometric shapes):
 TACTILE/BARIC/THERMIC:
 - Boards with rough/smooth sandpaper sections → "Touch Boards"
 - Small tablets with varying sandpaper grades in box → "Touch Tablets (Rough and Smooth)"
-- Fabric swatches in box being matched → "Fabric Matching"
+- FABRIC swatches (soft, foldable CLOTH pieces — NOT rigid colored squares) in box, matched by TEXTURE with eyes closed → "Fabric Matching" (child feels texture, NOT looking at color)
 - Three sets of wooden tablets of different weights → "Baric Tablets"
 - Tablets of different materials (metal, wood, cork, felt) → "Thermic Tablets"
 - Metal bottles being compared → "Thermic Bottles"
@@ -1006,6 +1007,7 @@ STEREOGNOSTIC:
 - Blindfolded child sorting objects into containers → "Sorting Objects Stereognostically"
 
 ⚠️ SENSORIAL CONFUSION PAIRS:
+- COLOR BOX / COLOR TABLETS (rigid WOODEN/PLASTIC painted squares matched by COLOR — child LOOKS at colors) vs FABRIC MATCHING (soft CLOTH/FABRIC swatches matched by TEXTURE — child FEELS with eyes closed). If pieces are rigid colored squares → COLOR BOX. If pieces are soft foldable fabric → FABRIC MATCHING. This is the #1 most confused pair.
 - RED RODS (all red, Sensorial) vs NUMBER RODS (red AND blue alternating, Mathematics) — check for blue sections!
 - CYLINDER BLOCKS (knobbed, in wooden block) vs KNOBLESS CYLINDERS (no knobs, colored, free-standing)
 - BINOMIAL CUBE (smaller, 8 pieces) vs TRINOMIAL CUBE (larger, 27 pieces)
@@ -1221,13 +1223,14 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
         system: `You are observing a Montessori classroom photo. Describe ONLY what you physically see.
 
 Focus on:
-1. MATERIALS: What objects/tools are on the table or mat? (shape, color, size, material — wood/metal/fabric/plastic/paper)
-2. HANDS: What is the child doing with their hands? (threading, tracing, stacking, sorting, pouring, writing, etc.)
-3. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, etc.)
-4. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips?
+1. MATERIAL COMPOSITION: What are the objects MADE OF? Be very specific: wood, metal, fabric/cloth, plastic, paper/cardboard, sandpaper, glass, ceramic? Are pieces RIGID (hard, stiff) or SOFT (foldable, flexible)?
+2. OBJECTS: What objects/tools are on the table or mat? (shape, color, size, quantity)
+3. HANDS: What is the child doing with their hands? (threading, tracing, stacking, sorting, pouring, writing, matching, feeling/touching with eyes closed, etc.)
+4. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, in pairs, in a sequence, etc.)
+5. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips? If colored pieces, specify: are they hard/rigid TABLETS or soft FABRIC swatches?
 
 Be specific and factual. Do NOT guess the name of the activity. Do NOT say "Montessori work" or name any work.
-Just describe the physical scene in 2-4 sentences.`,
+Just describe the physical scene in 2-4 sentences. ALWAYS state what the pieces are MADE OF.`,
         messages: [{
           role: 'user',
           content: [
