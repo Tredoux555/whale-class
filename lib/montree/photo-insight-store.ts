@@ -243,7 +243,7 @@ function runAnalysisFetch(
   montreeApi('/api/montree/guru/photo-insight', {
     method: 'POST',
     body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
-    timeout: CLIENT_TIMEOUT_MS + 5000,
+    timeout: CLIENT_TIMEOUT_MS - 100, // Slightly less than store setTimeout so store's handler fires first
     signal: controller.signal,
   })
     .then(async (res) => {
@@ -472,6 +472,11 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
     }
   }
   for (const key of keysToEvict) {
+    const retryTimeout = retryTimeouts.get(key);
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+      retryTimeouts.delete(key);
+    }
     entries.delete(key);
     changed = true;
   }
@@ -481,6 +486,11 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
     const sorted = [...entries.entries()].sort((a, b) => a[1].startTime - b[1].startTime);
     const toRemove = sorted.slice(0, entries.size - MAX_ENTRIES);
     for (const [key] of toRemove) {
+      const retryTimeout = retryTimeouts.get(key);
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+        retryTimeouts.delete(key);
+      }
       entries.delete(key);
       changed = true;
     }

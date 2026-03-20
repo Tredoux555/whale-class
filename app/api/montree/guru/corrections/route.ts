@@ -113,14 +113,14 @@ export async function POST(request: NextRequest) {
           supabase
             .from('montree_guru_interactions')
             .select('context_snapshot')
-            .eq('question', `photo:${media_id}:en`)
+            .eq('question', `photo:${media_id}:${child_id}:en`)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
           supabase
             .from('montree_guru_interactions')
             .select('context_snapshot')
-            .eq('question', `photo:${media_id}:zh`)
+            .eq('question', `photo:${media_id}:${child_id}:zh`)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle(),
@@ -159,6 +159,23 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Record the correction (now with photo_url)
+    // IDEMPOTENCY: Check for existing correction with same media_id + corrected_work_name
+    // Prevents duplicate records on teacher retries (which poison EMA accuracy)
+    if (media_id && corrected_work_name) {
+      const { data: existingCorrection } = await supabase
+        .from('montree_guru_corrections')
+        .select('id')
+        .eq('media_id', media_id)
+        .eq('corrected_work_name', corrected_work_name)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingCorrection) {
+        console.log(`[Corrections] Duplicate correction for media ${media_id} → "${corrected_work_name}" — returning existing`);
+        return NextResponse.json({ success: true, correction_id: existingCorrection.id, deduplicated: true });
+      }
+    }
+
     const { data: correction, error: corrError } = await supabase
       .from('montree_guru_corrections')
       .insert({

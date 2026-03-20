@@ -37,11 +37,15 @@ function inMemoryRateLimit(ip: string): boolean {
   }
   recent.push(now);
   inMemoryRateLimitMap.set(ip, recent);
-  // Periodic cleanup: if map grows beyond 1000 IPs, evict oldest entries
-  if (inMemoryRateLimitMap.size > 1000) {
-    const keys = [...inMemoryRateLimitMap.keys()];
-    for (let i = 0; i < 200; i++) {
-      inMemoryRateLimitMap.delete(keys[i]);
+  // Periodic cleanup: every 100th request, evict entries older than 60 minutes
+  if (recent.length % 100 === 0 || inMemoryRateLimitMap.size > 1000) {
+    for (const [key, timestamps] of inMemoryRateLimitMap) {
+      const validTimestamps = timestamps.filter(ts => now - ts < IN_MEMORY_RATE_WINDOW_MS);
+      if (validTimestamps.length === 0) {
+        inMemoryRateLimitMap.delete(key);
+      } else {
+        inMemoryRateLimitMap.set(key, validTimestamps);
+      }
     }
   }
   return true;
@@ -140,7 +144,7 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
     work_name: typeof rawInput.work_name === 'string' ? rawInput.work_name.trim().slice(0, 255) : '',
     area: typeof rawInput.area === 'string' && VALID_AREAS.includes(rawInput.area) ? rawInput.area : 'unknown',
     mastery_evidence: typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence) ? rawInput.mastery_evidence : 'unclear',
-    confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
+    confidence: typeof rawInput.confidence === 'number' && !isNaN(rawInput.confidence) ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
     observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
     suggested_crop,
   };
@@ -168,7 +172,18 @@ const HAIKU_ACCEPT_MATCH = 0.80;
 const HAIKU_TIMEOUT_MS = 10_000; // 10s — leaves 35s headroom for Sonnet fallback
 
 export async function POST(request: NextRequest) {
+  // Route-level timeout: 45s hard wall. If anything hangs, we bail with 504.
+  // Individual sub-operations (CLIP, Haiku, Sonnet) have their own shorter timeouts.
+  const ROUTE_TIMEOUT_MS = 45_000;
+  const routeAbort = new AbortController();
+  const routeTimeout = setTimeout(() => routeAbort.abort(), ROUTE_TIMEOUT_MS);
+
   try {
+    // Check if route has already timed out before starting work
+    if (routeAbort.signal.aborted) {
+      return NextResponse.json({ success: false, error: 'Request timed out' }, { status: 504 });
+    }
+
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
@@ -211,7 +226,7 @@ export async function POST(request: NextRequest) {
       .select('response_insight, context_snapshot, asked_at')
       .eq('child_id', child_id)
       .eq('question_type', 'photo_insight')
-      .eq('question', `photo:${media_id}:${locale}`)
+      .eq('question', `photo:${media_id}:${child_id}:${locale}`)
       .order('asked_at', { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -225,7 +240,7 @@ export async function POST(request: NextRequest) {
           .select('response_insight, context_snapshot, asked_at')
           .eq('child_id', child_id)
           .eq('question_type', 'photo_insight')
-          .eq('question', `photo:${media_id}`)
+          .eq('question', `photo:${media_id}:${child_id}`)
           .order('asked_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -333,6 +348,7 @@ export async function POST(request: NextRequest) {
           in_classroom: freshInClassroom,
           in_child_shelf: freshInChildShelf,
           classroom_work_id: freshClassroomWorkId,
+          suggested_crop: snapshot.suggested_crop ?? null,
         });
       }
       // If shouldBustCache is true, we fall through to fresh Sonnet analysis below
@@ -378,6 +394,16 @@ export async function POST(request: NextRequest) {
         work_name: taggedWork?.name || null,
         area: taggedWork?.area || null,
         auto_updated: false,
+        scenario: 'D',
+        in_classroom: true,
+        in_child_shelf: false,
+        classroom_work_id: media.work_id,
+        confidence: 1.0,
+        match_score: 1.0,
+        needs_confirmation: false,
+        candidates: [],
+        mastery_evidence: null,
+        insight: taggedWork?.name ? `${taggedWork.name} (pre-tagged)` : 'Photo saved',
       });
     }
 
@@ -587,7 +613,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             supabase.from('montree_guru_interactions').insert({
               child_id,
               question_type: 'photo_insight',
-              question: `photo:${media_id}:${locale}`,
+              question: `photo:${media_id}:${child_id}:${locale}`,
               response_insight: slimInput.observation,
               mode: 'clip_enriched',
               model_used: HAIKU_MODEL,
@@ -595,9 +621,9 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
                 classification_method: 'clip_enriched',
                 clip_model: 'siglip-base-patch16-224',
                 clip_confidence: clipConfidence,
-                clip_area_confidence: clipDecision.clipResult!.area_confidence,
-                clip_runner_up: clipDecision.clipResult!.runner_up || null,
-                clip_classification_ms: clipDecision.clipResult!.classification_ms,
+                clip_area_confidence: clipDecision.clipResult?.area_confidence ?? null,
+                clip_runner_up: clipDecision.clipResult?.runner_up ?? null,
+                clip_classification_ms: clipDecision.clipResult?.classification_ms ?? null,
                 haiku_confidence: slimInput.confidence,
                 identified_work_name: clipWorkName,
                 identified_area: clipAreaKey,
@@ -626,8 +652,8 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
               needs_confirmation: needsConfirmation,
               confidence: slimInput.confidence,
               match_score: clipConfidence,
-              candidates: clipDecision.clipResult!.runner_up
-                ? [{ name: clipDecision.clipResult!.runner_up.work_name, area: clipDecision.clipResult!.runner_up.work_key, score: clipDecision.clipResult!.runner_up.confidence }]
+              candidates: clipDecision.clipResult?.runner_up
+                ? [{ name: clipDecision.clipResult.runner_up.work_name, area: clipAreaKey, score: clipDecision.clipResult.runner_up.confidence }]
                 : [],
               scenario,
               in_classroom: inClassroom,
@@ -640,7 +666,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             });
           }
         } catch (slimErr) {
-          // slimTimeout already cleared in success path (clearTimeout is idempotent)
+          clearTimeout(slimTimeout);
           console.error('[PhotoInsight] Slim enrichment failed — falling through to two-pass:', slimErr);
           // Fall through to normal two-pass below
         }
@@ -775,7 +801,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
         .eq('child_id', child_id)
         .eq('question_type', 'photo_insight')
         .gte('asked_at', fiveMinAgo)
-        .not('question', 'like', `photo:${media_id}%`)
+        .not('question', 'like', `photo:${media_id}:${child_id}%`)
         .order('asked_at', { ascending: false })
         .limit(1),
 
@@ -871,6 +897,8 @@ NOTE: These are custom works unique to this classroom. Use these descriptions to
                 p_work_names: customNames,
               }).then(({ error: rpcErr }) => {
                 if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
+              }).catch((err) => {
+                console.error('[VisualMemory] increment_visual_memory_used RPC rejection (non-fatal):', err);
               });
             }
           }
@@ -1355,7 +1383,7 @@ Match this description to the correct Montessori work. Use the visual identifica
 
         timeoutHandle = setTimeout(() => {
           apiAbortController.abort();
-        }, 45000);
+        }, 40000);
 
         const message = await apiPromise;
         clearTimeout(timeoutHandle);
@@ -1406,7 +1434,7 @@ Match this description to the correct Montessori work. Use the visual identifica
           .from('montree_classroom_curriculum_works')
           .select('id')
           .eq('classroom_id', classroomId)
-          .eq('name', finalWorkName)
+          .ilike('name', finalWorkName)
           .eq('is_active', true)
           .limit(1)
           .maybeSingle(),
@@ -1588,7 +1616,7 @@ Match this description to the correct Montessori work. Use the visual identifica
             }
             // Add timeout to first-capture Haiku call (same pattern as corrections)
             const fcAbort = new AbortController();
-            const fcTimeout = setTimeout(() => fcAbort.abort(), 45000);
+            const fcTimeout = setTimeout(() => fcAbort.abort(), 40000);
             const startMs = Date.now();
             return anthropic!.messages.create({
               model: HAIKU_MODEL,
@@ -1631,7 +1659,7 @@ Match this description to the correct Montessori work. Use the visual identifica
               }
             }).catch((err) => {
               if (fcAbort.signal.aborted) {
-                console.error('[VisualMemory] First-capture Haiku timed out after 45s — skipping');
+                console.error('[VisualMemory] First-capture Haiku timed out after 40s — skipping');
                 return;
               }
               throw err; // Re-throw non-timeout errors to outer catch
@@ -1673,7 +1701,7 @@ Match this description to the correct Montessori work. Use the visual identifica
       .insert({
         child_id,
         classroom_id: classroomId,
-        question: `photo:${media_id}:${locale}`,
+        question: `photo:${media_id}:${child_id}:${locale}`,
         question_type: 'photo_insight',
         response_insight: insightText,
         model_used: modelUsed,
@@ -1739,10 +1767,20 @@ Match this description to the correct Montessori work. Use the visual identifica
     });
 
   } catch (error) {
+    // Distinguish timeout from other errors
+    if (routeAbort.signal.aborted) {
+      console.error(`[PhotoInsight] Route timed out after ${ROUTE_TIMEOUT_MS}ms`);
+      return NextResponse.json(
+        { success: false, error: 'Analysis timed out — please try again' },
+        { status: 504 }
+      );
+    }
     console.error('[PhotoInsight] Error:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to analyze photo' },
       { status: 500 }
     );
+  } finally {
+    clearTimeout(routeTimeout);
   }
 }
