@@ -276,6 +276,8 @@ export default function GuruChatThread({
           if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
             onGuruLimitReached?.();
             toast.error(t('guru.limitReachedUpgrade'));
+          } else if (data.error === 'ai_budget_reached') {
+            toast.error(t('aiBudget.budgetReached'), { duration: 8000 });
           } else {
             toast.error(data.error || t('guru.failedResponse'));
           }
@@ -393,6 +395,8 @@ export default function GuruChatThread({
         } else if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
           onGuruLimitReached?.();
           toast.error(t('guru.limitReachedUpgrade'));
+        } else if (data.error === 'ai_budget_reached') {
+          toast.error(t('aiBudget.budgetReached'), { duration: 8000 });
         } else {
           toast.error(data.error || t('guru.failedResponse'));
         }

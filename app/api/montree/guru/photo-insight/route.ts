@@ -13,6 +13,7 @@ import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
 // ================================================================
@@ -390,6 +391,248 @@ export async function POST(request: NextRequest) {
     if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
       return NextResponse.json({ success: false, error: 'Photo URL not accessible' }, { status: 400 });
     }
+
+    // ================================================================
+    // TIER 0: CLIP CLASSIFICATION (free, ~150ms)
+    // Try CLIP first. If confident, use slim Haiku enrichment (~$0.0006)
+    // instead of full two-pass (~$0.006). Falls through gracefully on failure.
+    // ================================================================
+    let clipDecision: ClassifyDecision | null = null;
+    try {
+      clipDecision = await tryClassify(photoUrl, null, undefined);
+      if (clipDecision.action === 'slim_enrich' && clipDecision.clipResult) {
+        console.log(`[PhotoInsight] CLIP identified: "${clipDecision.clipResult.work_name}" — using slim enrichment`);
+
+        // Slim path: minimal DB queries (just child name + age + classroom check)
+        const [clipChildResult, clipClassroomLookup] = await Promise.all([
+          supabase.from('montree_children').select('name, age, classroom_id').eq('id', child_id).maybeSingle(),
+          // Look up work in classroom curriculum
+          supabase.from('montree_classroom_curriculum_works')
+            .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
+            .eq('name', clipDecision.clipResult.work_name)
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        const clipChild = clipChildResult.data;
+        const clipClassroomId = clipChild?.classroom_id;
+        const clipChildName = clipChild?.name?.split(' ')[0] || 'This child';
+        const clipChildAge = clipChild?.age ?? 4;
+
+        // Get work materials from curriculum for slim prompt
+        let clipMaterials: string[] = [];
+        try {
+          const allWorks = loadAllCurriculumWorks();
+          const workRecord = allWorks.find(w => w.work_key === clipDecision!.clipResult!.work_key);
+          clipMaterials = workRecord?.materials?.slice(0, 3) || [];
+        } catch { /* non-fatal */ }
+
+        const clipWorkName = clipDecision.clipResult.work_name;
+        const clipAreaKey = clipDecision.clipResult.area_key;
+        const clipConfidence = clipDecision.clipResult.confidence;
+
+        // SLIM Haiku enrichment (~800 tokens vs ~4000)
+        const langInstruction = locale === 'zh' ? 'Write the observation in Simplified Chinese.' : 'Write the observation in English.';
+        const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) working with ${clipWorkName} in the ${clipAreaKey.replace(/_/g, ' ')} area.
+Materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.
+${langInstruction}
+
+Assess their mastery level based on visible evidence:
+- "mastered": completed correctly, independently, with precision
+- "practicing": actively working, trying different approaches, some errors
+- "presented": appears to be first exposure to the work
+- "unclear": cannot determine from the photo
+
+Write ONE warm observation sentence. Suggest a crop if useful.`;
+
+        const slimAbort = new AbortController();
+        const slimTimeout = setTimeout(() => slimAbort.abort(), 15000);
+
+        try {
+          const slimResponse = await anthropic.messages.create({
+            model: HAIKU_MODEL,
+            max_tokens: 256,
+            system: slimPrompt,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'url', url: photoUrl } },
+                { type: 'text', text: 'Assess this child\'s mastery.' },
+              ],
+            }],
+            tools: [{
+              name: 'assess_mastery' as const,
+              description: 'Assess mastery level from photo.',
+              input_schema: {
+                type: 'object' as const,
+                properties: {
+                  mastery_evidence: { type: 'string', enum: ['mastered', 'practicing', 'presented', 'unclear'] },
+                  confidence: { type: 'number', description: '0.0-1.0' },
+                  observation: { type: 'string' },
+                  suggested_crop: {
+                    type: 'object',
+                    properties: { x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' } },
+                    required: ['x', 'y', 'width', 'height'],
+                  },
+                },
+                required: ['mastery_evidence', 'confidence', 'observation'],
+              },
+            }],
+            tool_choice: { type: 'tool', name: 'assess_mastery' },
+          }, { signal: slimAbort.signal });
+
+          clearTimeout(slimTimeout);
+
+          const slimToolBlock = slimResponse.content.find(b => b.type === 'tool_use');
+          if (slimToolBlock && slimToolBlock.type === 'tool_use') {
+            const slimInput = validateToolOutput({
+              work_name: clipWorkName,
+              area: clipAreaKey,
+              ...(slimToolBlock.input as Record<string, unknown>),
+            });
+
+            // Classroom + shelf lookups
+            const classroomWorkId = clipClassroomLookup.data?.id || null;
+            const inClassroom = !!classroomWorkId;
+
+            let inChildShelf = false;
+            if (child_id) {
+              const { data: shelfData } = await supabase
+                .from('montree_child_focus_works')
+                .select('id')
+                .eq('child_id', child_id)
+                .eq('work_name', clipWorkName)
+                .limit(1)
+                .maybeSingle();
+              inChildShelf = !!shelfData?.id;
+            }
+
+            // Scenario determination
+            let scenario: 'A' | 'B' | 'C' | 'D';
+            if (!inClassroom) scenario = 'B';
+            else if (!inChildShelf) scenario = 'C';
+            else scenario = 'D';
+
+            // GREEN/AMBER/RED zone with CLIP confidence factored in
+            const validStatuses = ['mastered', 'practicing', 'presented'];
+            const slimMastery = validStatuses.includes(slimInput.mastery_evidence) ? slimInput.mastery_evidence : null;
+            const shouldAutoUpdate = (
+              clipConfidence >= AUTO_UPDATE_THRESHOLD &&
+              slimInput.confidence >= AUTO_UPDATE_THRESHOLD &&
+              slimMastery !== null &&
+              inClassroom
+            );
+            const needsConfirmation = !shouldAutoUpdate && clipConfidence >= 0.5 && slimInput.confidence >= 0.5;
+            let autoUpdated = false;
+
+            // Tag media
+            const mediaUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
+            if (classroomWorkId) mediaUpdate.work_id = classroomWorkId;
+            if (slimInput.suggested_crop) mediaUpdate.auto_crop = slimInput.suggested_crop;
+            if (Object.keys(mediaUpdate).length > 1) {
+              supabase.from('montree_media').update(mediaUpdate).eq('id', media_id)
+                .then(({ error }) => { if (error) console.error('[PhotoInsight/CLIP] Media update error:', error); })
+                .catch((err) => console.error('[PhotoInsight/CLIP] Media update promise rejected:', err));
+            }
+
+            // Auto-update progress (GREEN zone, upgrade-only)
+            if (shouldAutoUpdate && slimMastery) {
+              try {
+                const { data: existing } = await supabase
+                  .from('montree_child_progress')
+                  .select('status')
+                  .eq('child_id', child_id)
+                  .eq('work_name', clipWorkName)
+                  .maybeSingle();
+                const currentRank = STATUS_RANK[existing?.status || 'not_started'] || 0;
+                const newRank = STATUS_RANK[slimMastery] || 0;
+                if (newRank > currentRank) {
+                  await supabase.from('montree_child_progress').upsert({
+                    child_id,
+                    work_name: clipWorkName,
+                    area: clipAreaKey,
+                    status: slimMastery,
+                    updated_at: new Date().toISOString(),
+                    notes: `[Smart Capture CLIP] ${slimInput.observation}`,
+                  }, { onConflict: 'child_id,work_name' });
+                  autoUpdated = true;
+                }
+              } catch (err) {
+                console.error('[PhotoInsight/CLIP] Progress update error:', err);
+              }
+            }
+
+            // Save interaction (analytics + cache)
+            supabase.from('montree_guru_interactions').insert({
+              child_id,
+              question_type: 'photo_insight',
+              question: `photo:${media_id}:${locale}`,
+              response_insight: slimInput.observation,
+              mode: 'clip_enriched',
+              model_used: HAIKU_MODEL,
+              context_snapshot: {
+                classification_method: 'clip_enriched',
+                clip_model: 'siglip-base-patch16-224',
+                clip_confidence: clipConfidence,
+                clip_area_confidence: clipDecision.clipResult!.area_confidence,
+                clip_runner_up: clipDecision.clipResult!.runner_up || null,
+                clip_classification_ms: clipDecision.clipResult!.classification_ms,
+                haiku_confidence: slimInput.confidence,
+                identified_work_name: clipWorkName,
+                identified_area: clipAreaKey,
+                mastery_evidence: slimMastery,
+                curriculum_match_score: clipConfidence, // CLIP score IS the match score
+                scenario,
+                in_classroom: inClassroom,
+                in_child_shelf: inChildShelf,
+                needs_confirmation: needsConfirmation,
+                auto_updated: autoUpdated,
+                suggested_crop: slimInput.suggested_crop,
+              },
+            }).then(({ error }) => {
+              if (error) console.error('[PhotoInsight/CLIP] Interaction save error:', error);
+            }).catch((err) => console.error('[PhotoInsight/CLIP] Interaction save promise rejected:', err));
+
+            console.log(`[PhotoInsight] CLIP+SlimHaiku complete: "${clipWorkName}" (clip: ${clipConfidence.toFixed(2)}, haiku: ${slimInput.confidence.toFixed(2)}, scenario: ${scenario})`);
+
+            return NextResponse.json({
+              success: true,
+              insight: slimInput.observation,
+              work_name: clipWorkName,
+              area: clipAreaKey,
+              mastery_evidence: slimMastery,
+              auto_updated: autoUpdated,
+              needs_confirmation: needsConfirmation,
+              confidence: slimInput.confidence,
+              match_score: clipConfidence,
+              candidates: clipDecision.clipResult!.runner_up
+                ? [{ name: clipDecision.clipResult!.runner_up.work_name, area: clipDecision.clipResult!.runner_up.work_key, score: clipDecision.clipResult!.runner_up.confidence }]
+                : [],
+              scenario,
+              in_classroom: inClassroom,
+              in_child_shelf: inChildShelf,
+              classroom_work_id: classroomWorkId,
+              suggested_crop: slimInput.suggested_crop,
+              classification_method: 'clip_enriched',
+            }, {
+              headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
+            });
+          }
+        } catch (slimErr) {
+          // slimTimeout already cleared in success path (clearTimeout is idempotent)
+          console.error('[PhotoInsight] Slim enrichment failed — falling through to two-pass:', slimErr);
+          // Fall through to normal two-pass below
+        }
+      }
+    } catch (clipErr) {
+      console.error('[PhotoInsight] CLIP orchestration error — falling through:', clipErr);
+      // Non-fatal: fall through to existing two-pass
+    }
+    // ================================================================
+    // END TIER 0 — If we reach here, CLIP didn't produce a confident result
+    // Continue with the existing two-pass Haiku describe→match pipeline
+    // ================================================================
 
     // Parallel queries: child context + current works (single child query, no duplicate)
     const [childResult, worksResult] = await Promise.all([
@@ -1438,6 +1681,12 @@ ${worksContext}`,
           visual_description: visualDescription.slice(0, 500),
           two_pass: true,
           suggested_crop: input.suggested_crop ?? null,
+          // CLIP diagnostic data (present when CLIP was attempted but fell through)
+          clip_attempted: !!clipDecision,
+          clip_action: clipDecision?.action ?? null,
+          clip_reason: clipDecision?.reason ?? null,
+          clip_confidence: clipDecision?.clipResult?.confidence ?? null,
+          clip_work_name: clipDecision?.clipResult?.work_name ?? null,
         },
       });
 
