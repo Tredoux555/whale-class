@@ -13,7 +13,7 @@ import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
 import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS, getToolsForMode } from '@/lib/montree/guru/tool-definitions';
-import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+// import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
@@ -94,15 +94,6 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
-
-    // Check AI budget
-    const aiBudget = await checkAiBudget(auth.schoolId);
-    if (aiBudget.blocked) {
-      return NextResponse.json(
-        { success: false, error: 'ai_budget_reached', message: 'Monthly AI budget reached. Please switch to manual mode or contact your principal.' },
-        { status: 429 }
-      );
-    }
 
     // Check AI is enabled
     if (!AI_ENABLED || !anthropic) {
@@ -661,9 +652,6 @@ export async function POST(request: NextRequest) {
             const finalText = summaryText || 'Done!';
             console.log(`[Guru Stream] Fast-path: forced tool use, ${actionsTaken.length} tools succeeded, skipping second API call. Elapsed: ${Date.now() - requestStart}ms`);
 
-            // Log the initial API call that triggered tool use (fire-and-forget)
-            logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: toolResponse.usage?.input_tokens || 0, outputTokens: toolResponse.usage?.output_tokens || 0 });
-
             const encoder = new TextEncoder();
             const responseStream = new ReadableStream({
               start(controller) {
@@ -771,9 +759,6 @@ export async function POST(request: NextRequest) {
           const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
           console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: 0, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
-          // Log API usage (fire-and-forget)
-          logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: input_tokens, outputTokens: output_tokens });
-
           const encoder = new TextEncoder();
           const responseStream = new ReadableStream({
             start(controller) {
@@ -813,9 +798,6 @@ export async function POST(request: NextRequest) {
         const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
         const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
         const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
-
-        // Log API usage (fire-and-forget)
-        logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: input_tokens, outputTokens: output_tokens });
 
         const encoder = new TextEncoder();
         const responseStream = new ReadableStream({
@@ -925,9 +907,6 @@ export async function POST(request: NextRequest) {
           const summaryText = actionsTaken.map(a => a.message).filter(Boolean).join('\n\n');
           const responseText = summaryText || 'Done!';
           console.log(`[Guru] Fast-path (non-stream): forced tool use, ${actionsTaken.length} tools succeeded. Elapsed: ${Date.now() - requestStart}ms`);
-
-          // Log the initial API call that triggered tool use (fire-and-forget)
-          logApiUsage({ schoolId: auth.schoolId, classroomId: classroom_id, teacherId: teacher_id || auth.userId, endpoint: 'guru/chat', model: guruModel, inputTokens: response.usage?.input_tokens || 0, outputTokens: response.usage?.output_tokens || 0 });
 
           saveInteractionAndLearn(supabase, {
             child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,

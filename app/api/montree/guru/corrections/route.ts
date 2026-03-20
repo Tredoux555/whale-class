@@ -4,7 +4,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { logApiUsage } from '@/lib/montree/api-usage';
+// import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 // POST /api/montree/guru/corrections — Record a teacher correction for self-learning
 // Called when teacher changes work_id in PhotoEditModal (correcting Smart Capture)
@@ -355,8 +355,7 @@ async function generateAndStoreVisualMemory({
   // LOW-004: Log Haiku latency for monitoring degradation
   console.log(`[VisualMemory] Correction Haiku latency: ${Date.now() - haikuStartMs}ms for "${workName}"`);
 
-  // Log corrections Haiku usage
-  logApiUsage({ schoolId, classroomId, teacherId, endpoint: 'corrections/vision', model: HAIKU_MODEL, inputTokens: message.usage?.input_tokens || 0, outputTokens: message.usage?.output_tokens || 0 });
+  // logApiUsage deferred — metering system not yet deployed
 
   // Extract text response
   let visualDescription = '';
