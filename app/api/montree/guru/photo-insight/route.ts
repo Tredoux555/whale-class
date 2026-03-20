@@ -1076,7 +1076,7 @@ ORAL LANGUAGE:
 
 WRITING PREPARATION:
 - Pink metal geometric frames + colored pencils + traced designs → "Metal Insets"
-- Rough textured letters on pink/blue boards (child tracing with fingers) → "Sandpaper Letters"
+- Individual LETTERS on pink (vowel) or blue (consonant) boards stored in a wooden box, child tracing the rough/textured letter surface with fingertips → "Sandpaper Letters" (NOT Grammar Boxes — Grammar Boxes contain WORD CARDS and SENTENCE STRIPS, not individual letters)
 - Tray of colored sand, child writing with finger → "Sand Tray Writing"
 - Child writing on chalkboard/whiteboard → "Chalkboard Writing"
 - Box of loose letters (blue consonants, red vowels) spelling words → "Moveable Alphabet"
@@ -1099,7 +1099,7 @@ GRAMMAR (identify by GRAMMAR SYMBOL if visible):
 - Medium dark blue triangle + describing game → "Introduction to the Adjective"
 - Large red circle symbol + action cards → "Introduction to the Verb"
 - Small orange circle → "Introduction to the Adverb"
-- Colored boxes with sentence cards → "Grammar Boxes" (specify number if visible)
+- Colored compartment BOXES with WORD CARDS and SENTENCE STRIPS inside (NOT individual letters on boards) → "Grammar Boxes" (specify number if visible)
 - Sentence analysis charts with arrows → "Sentence Analysis"
 
 ⚠️ LANGUAGE CONFUSION PAIRS:
@@ -1108,6 +1108,7 @@ GRAMMAR (identify by GRAMMAR SYMBOL if visible):
 - MOVEABLE ALPHABET (loose letters building words) vs SANDPAPER LETTERS (tracing on boards)
 - CLASSIFIED CARDS (vocabulary, oral) vs PINK/BLUE/GREEN SERIES (reading, phonetic progression)
 - METAL INSETS (geometric frames for pencil control) vs GEOMETRIC CABINET (Sensorial shape matching)
+- SANDPAPER LETTERS (individual raised LETTERS on pink/blue BOARDS in a wooden box — child TRACES letters) vs GRAMMAR BOXES (colored compartment BOXES with WORD CARDS and SENTENCE STRIPS — grammar analysis, NOT letter tracing). If you see individual letters on colored boards → it is ALWAYS Sandpaper Letters, NEVER Grammar Boxes.
 
 === CULTURAL ===
 
@@ -1223,7 +1224,7 @@ Focus on:
 1. MATERIALS: What objects/tools are on the table or mat? (shape, color, size, material — wood/metal/fabric/plastic/paper)
 2. HANDS: What is the child doing with their hands? (threading, tracing, stacking, sorting, pouring, writing, etc.)
 3. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, etc.)
-4. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters?
+4. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips?
 
 Be specific and factual. Do NOT guess the name of the activity. Do NOT say "Montessori work" or name any work.
 Just describe the physical scene in 2-4 sentences.`,
