@@ -333,7 +333,8 @@ Suggest a crop if it would nicely frame the child and material together.`;
         needs_confirmation,
       };
 
-      await supabase.from('montree_guru_interactions').insert({
+      // Fire-and-forget: don't block the response on analytics insert
+      supabase.from('montree_guru_interactions').insert({
         child_id,
         question_type: 'photo_enrich',
         question: `photo-enrich:${media_id}:${locale}`,
@@ -341,7 +342,9 @@ Suggest a crop if it would nicely frame the child and material together.`;
         mode: 'enrich',
         context_snapshot,
         model_used: HAIKU_MODEL,
-      });
+      }).then(({ error }) => {
+        if (error) console.error('[PhotoEnrich] Interaction save error:', error);
+      }).catch((err) => console.error('[PhotoEnrich] Interaction save rejected:', err));
 
       return NextResponse.json({
         success: true,
