@@ -60,6 +60,11 @@ let initializationError: Error | null = null;
 // ============================================================
 
 function cosineSimilarity(a: Float32Array, b: Float32Array): number {
+  if (a.length !== b.length) {
+    console.warn(`[CLIP] Embedding dimension mismatch: ${a.length} vs ${b.length}`);
+    return 0;
+  }
+
   let dot = 0;
   let normA = 0;
   let normB = 0;
@@ -297,8 +302,8 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
       }
     }
 
-    if (bestAreaConfidence < 0.3) {
-      // Area confidence too low — skip work classification
+    if (bestAreaConfidence < 0.5) {
+      // Area confidence too low — barely better than random (5 areas = 20% baseline)
       console.log(`[CLIP] Area confidence too low: ${bestAreaConfidence.toFixed(3)}`);
       return null;
     }

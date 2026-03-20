@@ -22,8 +22,9 @@ import {
   type VisualMemory,
 } from './clip-classifier';
 
-// Kill switch: set CLIP_CLASSIFIER_ENABLED=false on Railway to disable without code deploy
-const CLIP_ENABLED = process.env.CLIP_CLASSIFIER_ENABLED !== 'false';
+// Kill switch: set CLIP_CLASSIFIER_ENABLED=false (or FALSE, 0, no) on Railway to disable
+const CLIP_ENABLED_RAW = (process.env.CLIP_CLASSIFIER_ENABLED || 'true').toLowerCase();
+const CLIP_ENABLED = CLIP_ENABLED_RAW !== 'false' && CLIP_ENABLED_RAW !== '0' && CLIP_ENABLED_RAW !== 'no';
 
 // Confidence thresholds
 const CLIP_CONFIDENT = 0.75;    // Above this: use slim enrichment (skip full two-pass)
@@ -31,7 +32,8 @@ const CLIP_VERY_CONFIDENT = 0.90; // Above this: skip enrichment entirely for si
 
 // Canary rollout: percentage of requests that try CLIP (0-100)
 // Start at 100% (CLIP failure is graceful — always falls back to two-pass)
-const CANARY_PERCENT = parseInt(process.env.CLIP_CANARY_PERCENT || '100', 10);
+const rawCanary = parseInt(process.env.CLIP_CANARY_PERCENT || '100', 10);
+const CANARY_PERCENT = Number.isNaN(rawCanary) ? 100 : Math.max(0, Math.min(100, rawCanary));
 
 // Track initialization attempts to prevent retry storms
 let initAttempted = false;
@@ -67,8 +69,9 @@ export async function tryClassify(
     return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'clip_disabled' };
   }
 
-  // Canary rollout check
-  if (CANARY_PERCENT < 100 && Math.random() * 100 > CANARY_PERCENT) {
+  // Canary rollout: CANARY_PERCENT=10 means try CLIP on ~10% of requests
+  // Math.random()*100 > 10 → true ~90% → skip → CLIP tries ~10%
+  if (Math.random() * 100 > CANARY_PERCENT) {
     return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'canary_skip' };
   }
 

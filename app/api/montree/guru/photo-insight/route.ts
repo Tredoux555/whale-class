@@ -515,11 +515,13 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             else scenario = 'D';
 
             // GREEN/AMBER/RED zone with CLIP confidence factored in
+            // CLIP models are calibrated differently than Sonnet — 0.80 CLIP ≈ 0.95 Sonnet
+            const CLIP_GREEN_THRESHOLD = 0.80; // CLIP confidence needed for GREEN zone auto-update
             const validStatuses = ['mastered', 'practicing', 'presented'];
             const slimMastery = validStatuses.includes(slimInput.mastery_evidence) ? slimInput.mastery_evidence : null;
             const shouldAutoUpdate = (
-              clipConfidence >= AUTO_UPDATE_THRESHOLD &&
-              slimInput.confidence >= AUTO_UPDATE_THRESHOLD &&
+              clipConfidence >= CLIP_GREEN_THRESHOLD &&
+              slimInput.confidence >= AUTO_UPDATE_THRESHOLD && // Haiku still needs 0.95
               slimMastery !== null &&
               inClassroom
             );
@@ -560,6 +562,24 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
                 }
               } catch (err) {
                 console.error('[PhotoInsight/CLIP] Progress update error:', err);
+              }
+            }
+
+            // GREEN zone: Auto-add to shelf if work is in classroom but NOT on shelf
+            if (shouldAutoUpdate && inClassroom && !inChildShelf && clipWorkName && clipAreaKey && classroomWorkId) {
+              try {
+                await supabase.from('montree_child_focus_works').upsert({
+                  child_id,
+                  work_name: clipWorkName,
+                  area: clipAreaKey,
+                  work_id: classroomWorkId,
+                  status: slimMastery || 'presented',
+                  source: 'smart_capture_clip',
+                }, { onConflict: 'child_id,work_name' });
+                inChildShelf = true;
+                console.log(`[PhotoInsight/CLIP] Auto-added "${clipWorkName}" to shelf for child ${child_id}`);
+              } catch (err) {
+                console.error('[PhotoInsight/CLIP] Auto-add to shelf error:', err);
               }
             }
 

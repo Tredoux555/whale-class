@@ -14,8 +14,10 @@ export {
 export {
   WORK_SIGNATURES,
   AREA_SIGNATURES,
+  WORK_SIGNATURES_STATS,
   getSignaturesByArea,
   getSignatureByKey,
+  getWorkKeysForArea,
   getConfusionPairsForWork,
   type WorkSignature,
 } from './work-signatures';

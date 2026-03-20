@@ -309,9 +309,11 @@ Suggest a crop if it would nicely frame the child and material together.`;
         needs_confirmation = true; // AMBER zone
       }
 
-      // Tag media with work_id
+      // Tag media with work_id (fire-and-forget — never block the response)
       if (classroom_work_id) {
-        await supabase.from('montree_media').update({ work_id: classroom_work_id }).eq('id', media_id);
+        supabase.from('montree_media').update({ work_id: classroom_work_id }).eq('id', media_id)
+          .then(({ error }) => { if (error) console.error('[PhotoEnrich] Media tag error:', error); })
+          .catch((err) => console.error('[PhotoEnrich] Media tag rejected:', err));
       }
 
       // Save interaction (for analytics + caching)
