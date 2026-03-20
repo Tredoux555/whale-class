@@ -12,7 +12,63 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 20, 2026)
+## CURRENT STATUS (Mar 21, 2026)
+
+### Session Work (Mar 21, 2026)
+
+**Smart Capture 20x Overhaul — ALL 5 ROUNDS COMPLETE, 3 CONSECUTIVE CLEAN:**
+
+Full 5-round methodology applied to Smart Capture system: 20x AUDIT → 20x PLAN → 20x BUILD-AUDIT-FIX → 10x HEALTH CHECK → 10x FINAL AUDIT. 67 issues found in audit, 31 total fixes applied across 5 files, 28 independent audit agents in final round achieved 3 consecutive CLEAN passes.
+
+**31 fixes across 5 files:**
+
+**`app/api/montree/guru/photo-insight/route.ts` — 14 edits:**
+- Route-level 45s AbortController + clearTimeout in finally
+- Safe `clipResult?.` with `?? null` (was forced `clipResult!`)
+- Fixed candidates area field to use `clipAreaKey`
+- Added `clearTimeout(slimTimeout)` in slim catch
+- Skip-if-tagged: added all 12 required response fields
+- Rate limit map: timestamp-based eviction every 100th request
+- Cache keys: all 5 instances now include child_id
+- Case-insensitive work lookup (`.ilike()`)
+- `suggested_crop` added to cache hit response
+- NaN check on confidence validation (`!isNaN()`)
+- Sonnet fallback timeout reduced from 45s → 40s
+- First-capture timeout reduced from 45s → 40s
+- RPC `.catch()` handler on `increment_visual_memory_used`
+- Log message updated "45s" → "40s"
+
+**`app/api/montree/guru/photo-enrich/route.ts` — 4 edits:**
+- Route-level 40s AbortController + clearTimeout in finally
+- Progress upsert wrapped in try-catch
+- STATUS_RANK: added `'unclear': 0`
+- Response field `confidence_final` → `confidence`
+
+**`app/api/montree/guru/corrections/route.ts` — 2 edits:**
+- Idempotency dedup check before insert
+- Cache key queries: `photo:${media_id}:en` → `photo:${media_id}:${child_id}:en` (both locales)
+
+**`lib/montree/classifier/clip-classifier.ts` — 4 edits:**
+- Init re-entrance guard with `doInit` wrapper + `.finally()` cleanup
+- Pipeline mutex: `pipelineQueue` promise chaining for ONNX serialization
+- 60s init timeout with `Promise.race` + `clearTimeout` in finally
+- Removed dead `CLIP_HIGH_CONFIDENCE` constant
+
+**`lib/montree/photo-insight-store.ts` — 2 edits:**
+- montreeApi timeout: `CLIENT_TIMEOUT_MS + 5000` → `CLIENT_TIMEOUT_MS - 100`
+- `evictStale()`: cleanup retryTimeouts when evicting entries (both time-based and size-based)
+
+**Audit methodology:**
+- Round 3 BUILD: 17 fixes applied, then 5 parallel audit agents found 4 more issues (all fixed)
+- Round 4 HEALTH CHECK: 10 parallel agents examining timeout chains, cache consistency, error handling, concurrency, data flow, memory, security, performance, edge cases, wiring. 7 actionable fixes applied.
+- Round 5 FINAL AUDIT: 28 parallel agents across 3 cycles. Cycle 1: 2 minor fixes. Cycles 2-3: ALL CLEAN. 3 consecutive clean passes achieved.
+
+**Deploy:** ⚠️ NOT YET PUSHED (VM disk full, ENOSPC). Push from Mac.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_20X_BUILD_MAR21.md`
+
+---
+
+## PREVIOUS STATUS (Mar 20, 2026)
 
 ### Session Work (Mar 20, 2026)
 

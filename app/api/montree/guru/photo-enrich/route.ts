@@ -50,6 +50,7 @@ const PHOTO_ENRICH_TOOL = {
 const VALID_MASTERY = ['mastered', 'practicing', 'presented', 'unclear'];
 const STATUS_RANK: Record<string, number> = {
   'not_started': 0,
+  'unclear': 0,
   'presented': 1,
   'practicing': 2,
   'mastered': 3,
@@ -98,6 +99,11 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
 }
 
 export async function POST(request: NextRequest) {
+  // Route-level timeout: 40s hard wall
+  const ROUTE_TIMEOUT_MS = 40_000;
+  const routeAbort = new AbortController();
+  const routeTimeout = setTimeout(() => routeAbort.abort(), ROUTE_TIMEOUT_MS);
+
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
@@ -294,18 +300,28 @@ Suggest a crop if it would nicely frame the child and material together.`;
         const newRank = STATUS_RANK[mastery_evidence] || currentRank;
 
         if (newRank > currentRank) {
-          await supabase
-            .from('montree_child_progress')
-            .upsert(
-              {
-                child_id,
-                work_name,
-                status: mastery_evidence,
-                area: area_key,
-              },
-              { onConflict: 'child_id,work_name' }
-            );
-          auto_updated = true;
+          try {
+            const { error: progressError } = await supabase
+              .from('montree_child_progress')
+              .upsert(
+                {
+                  child_id,
+                  work_name,
+                  status: mastery_evidence,
+                  area: area_key,
+                  updated_at: new Date().toISOString(),
+                  notes: `[Smart Capture CLIP Enrich] ${validated.observation}`,
+                },
+                { onConflict: 'child_id,work_name' }
+              );
+            if (!progressError) {
+              auto_updated = true;
+            } else {
+              console.error('[PhotoEnrich] Progress upsert error:', progressError);
+            }
+          } catch (progressErr) {
+            console.error('[PhotoEnrich] Progress upsert exception:', progressErr);
+          }
         }
       } else if (confidence_final >= 0.5 && clip_confidence >= 0.5 && in_classroom) {
         needs_confirmation = true; // AMBER zone
@@ -354,7 +370,7 @@ Suggest a crop if it would nicely frame the child and material together.`;
         mastery_evidence,
         auto_updated,
         needs_confirmation,
-        confidence_final,
+        confidence: confidence_final,
         clip_confidence,
         scenario,
         in_classroom,
@@ -367,7 +383,13 @@ Suggest a crop if it would nicely frame the child and material together.`;
       abortController.abort();
     }
   } catch (error) {
+    if (routeAbort.signal.aborted) {
+      console.error(`[PhotoEnrich] Route timed out after ${ROUTE_TIMEOUT_MS}ms`);
+      return NextResponse.json({ success: false, error: 'Enrichment timed out' }, { status: 504 });
+    }
     console.error('[PhotoEnrich] Error:', error);
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  } finally {
+    clearTimeout(routeTimeout);
   }
 }

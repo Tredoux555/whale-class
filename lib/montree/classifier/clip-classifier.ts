@@ -15,7 +15,6 @@ import { getSignatureByKey, AREA_SIGNATURES } from '@/lib/montree/classifier/wor
 
 const CLIP_MODEL = 'Xenova/siglip-base-patch16-224';
 const CLIP_CONFIDENCE_THRESHOLD = 0.75; // Below this, fall back to Haiku vision
-const CLIP_HIGH_CONFIDENCE = 0.90; // Above this, skip enrichment (GREEN zone)
 const VISUAL_MEMORY_BOOST = 0.15; // Confidence boost for works with visual memory
 const VISUAL_MEMORY_BOOST_CAP = 0.99; // Cap boosted confidence at this value
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB max image download
@@ -54,6 +53,10 @@ let areaEmbeddings: Map<string, Float32Array> = new Map(); // area_key -> embedd
 let worksByArea: Map<string, CurriculumWork[]> = new Map(); // area_key -> works
 let initialized = false;
 let initializationError: Error | null = null;
+let initInProgress: Promise<void> | null = null; // Re-entrance guard for initClassifier
+
+// Pipeline mutex: serializes concurrent classifyImage calls to prevent ONNX state corruption
+let pipelineQueue: Promise<ClassifyResult | null> = Promise.resolve(null);
 
 // ============================================================
 // Helper: Cosine similarity
@@ -152,99 +155,128 @@ export async function initClassifier(): Promise<void> {
     throw initializationError;
   }
 
-  const startTime = Date.now();
-  console.log('[CLIP] Initializing SigLIP classifier...');
-
-  try {
-    // Load curriculum data
-    const areas = loadCurriculumAreas();
-    const allWorks = loadAllCurriculumWorks();
-
-    if (!areas.length || !allWorks.length) {
-      throw new Error(`No curriculum data loaded (${areas.length} areas, ${allWorks.length} works)`);
-    }
-
-    // Group works by area for stage 2 classification
-    for (const area of areas) {
-      const areaWorks = allWorks.filter(w => w.area_key === area.area_key);
-      worksByArea.set(area.area_key, areaWorks);
-    }
-
-    console.log(`[CLIP] Loaded ${allWorks.length} works across ${areas.length} areas`);
-
-    // Load transformers module
-    const transformers = await getTransformersModule();
-    const { pipeline: createPipeline } = transformers;
-
-    // Initialize the feature-extraction pipeline for embeddings
-    console.log(`[CLIP] Loading model: ${CLIP_MODEL}`);
-    pipeline = await createPipeline('feature-extraction', CLIP_MODEL);
-    console.log('[CLIP] Model loaded successfully');
-
-    // Pre-compute text embeddings for areas using rich AREA_SIGNATURES descriptions
-    console.log('[CLIP] Pre-computing area embeddings...');
-    for (const area of areas) {
-      const richDescription = AREA_SIGNATURES[area.area_key] || `A Montessori ${area.name} work or material`;
-      const areaEmbedding = await pipeline(richDescription, {
-        pooling: 'mean',
-        normalize: true,
-      });
-      if (!areaEmbedding?.data) {
-        console.warn(`[CLIP] Failed to compute area embedding for ${area.area_key} — skipping`);
-        continue;
-      }
-      areaEmbeddings.set(area.area_key, new Float32Array(areaEmbedding.data));
-    }
-    console.log(`[CLIP] Pre-computed ${areaEmbeddings.size} area embeddings`);
-
-    // Pre-compute text embeddings for works
-    // Prefer rich visual descriptions from work-signatures, fall back to curriculum descriptions
-    console.log('[CLIP] Pre-computing work embeddings...');
-    let embeddingCount = 0;
-    let richCount = 0;
-    for (const work of allWorks) {
-      const signature = getSignatureByKey(work.work_key);
-      let prompt: string;
-      if (signature) {
-        // Rich visual description — describes what's VISIBLE in a photo
-        prompt = `${signature.name}. ${signature.visual_description}`.slice(0, 256);
-        richCount++;
-      } else {
-        // Fallback to curriculum description — pedagogical but still useful
-        prompt = `${work.name}. ${work.description || work.materials?.join(', ') || ''}`.slice(0, 256);
-      }
-      const embedding = await pipeline(prompt, {
-        pooling: 'mean',
-        normalize: true,
-      });
-      if (!embedding?.data) {
-        console.warn(`[CLIP] Failed to compute embedding for ${work.work_key} — skipping`);
-        continue;
-      }
-      textEmbeddings.set(work.work_key, new Float32Array(embedding.data));
-      embeddingCount++;
-
-      // Log progress every 50 works
-      if (embeddingCount % 50 === 0) {
-        console.log(`[CLIP] Computed ${embeddingCount}/${allWorks.length} work embeddings`);
-      }
-    }
-    console.log(`[CLIP] Pre-computed ${embeddingCount} work embeddings (${richCount} with rich visual descriptions)`);
-
-    initialized = true;
-    const elapsed = Date.now() - startTime;
-    console.log(`[CLIP] Initialization complete (${elapsed}ms)`);
-  } catch (error) {
-    // Cleanup partial state to prevent memory leak
-    pipeline = null;
-    textEmbeddings.clear();
-    areaEmbeddings.clear();
-    worksByArea.clear();
-    initialized = false;
-    initializationError = error instanceof Error ? error : new Error(String(error));
-    console.error('[CLIP] Initialization failed:', initializationError.message);
-    throw initializationError;
+  // Re-entrance guard: if another call is already initializing, wait for it
+  if (initInProgress) {
+    console.log('[CLIP] Init already in progress — waiting...');
+    return initInProgress;
   }
+
+  const INIT_TIMEOUT_MS = 60_000; // 60s hard wall for model loading
+
+  const doInit = async () => {
+    const startTime = Date.now();
+    console.log('[CLIP] Initializing SigLIP classifier...');
+
+    // Wrap entire init in a timeout to prevent hanging on model download
+    let initTimeoutHandle: ReturnType<typeof setTimeout>;
+    const initTimeoutPromise = new Promise<never>((_, reject) => {
+      initTimeoutHandle = setTimeout(() => reject(new Error(`CLIP initialization timed out after ${INIT_TIMEOUT_MS}ms`)), INIT_TIMEOUT_MS);
+    });
+
+    const initWork = async () => {
+      // Load curriculum data
+      const areas = loadCurriculumAreas();
+      const allWorks = loadAllCurriculumWorks();
+
+      if (!areas.length || !allWorks.length) {
+        throw new Error(`No curriculum data loaded (${areas.length} areas, ${allWorks.length} works)`);
+      }
+
+      // Group works by area for stage 2 classification
+      for (const area of areas) {
+        const areaWorks = allWorks.filter(w => w.area_key === area.area_key);
+        worksByArea.set(area.area_key, areaWorks);
+      }
+
+      console.log(`[CLIP] Loaded ${allWorks.length} works across ${areas.length} areas`);
+
+      // Load transformers module
+      const transformers = await getTransformersModule();
+      const { pipeline: createPipeline } = transformers;
+
+      // Initialize the feature-extraction pipeline for embeddings
+      console.log(`[CLIP] Loading model: ${CLIP_MODEL}`);
+      pipeline = await createPipeline('feature-extraction', CLIP_MODEL);
+      console.log('[CLIP] Model loaded successfully');
+
+      // Pre-compute text embeddings for areas using rich AREA_SIGNATURES descriptions
+      console.log('[CLIP] Pre-computing area embeddings...');
+      for (const area of areas) {
+        const richDescription = AREA_SIGNATURES[area.area_key] || `A Montessori ${area.name} work or material`;
+        const areaEmbedding = await pipeline(richDescription, {
+          pooling: 'mean',
+          normalize: true,
+        });
+        if (!areaEmbedding?.data) {
+          console.warn(`[CLIP] Failed to compute area embedding for ${area.area_key} — skipping`);
+          continue;
+        }
+        areaEmbeddings.set(area.area_key, new Float32Array(areaEmbedding.data));
+      }
+      console.log(`[CLIP] Pre-computed ${areaEmbeddings.size} area embeddings`);
+
+      // Pre-compute text embeddings for works
+      // Prefer rich visual descriptions from work-signatures, fall back to curriculum descriptions
+      console.log('[CLIP] Pre-computing work embeddings...');
+      let embeddingCount = 0;
+      let richCount = 0;
+      for (const work of allWorks) {
+        const signature = getSignatureByKey(work.work_key);
+        let prompt: string;
+        if (signature) {
+          // Rich visual description — describes what's VISIBLE in a photo
+          prompt = `${signature.name}. ${signature.visual_description}`.slice(0, 256);
+          richCount++;
+        } else {
+          // Fallback to curriculum description — pedagogical but still useful
+          prompt = `${work.name}. ${work.description || work.materials?.join(', ') || ''}`.slice(0, 256);
+        }
+        const embedding = await pipeline(prompt, {
+          pooling: 'mean',
+          normalize: true,
+        });
+        if (!embedding?.data) {
+          console.warn(`[CLIP] Failed to compute embedding for ${work.work_key} — skipping`);
+          continue;
+        }
+        textEmbeddings.set(work.work_key, new Float32Array(embedding.data));
+        embeddingCount++;
+
+        // Log progress every 50 works
+        if (embeddingCount % 50 === 0) {
+          console.log(`[CLIP] Computed ${embeddingCount}/${allWorks.length} work embeddings`);
+        }
+      }
+      console.log(`[CLIP] Pre-computed ${embeddingCount} work embeddings (${richCount} with rich visual descriptions)`);
+
+      initialized = true;
+      const elapsed = Date.now() - startTime;
+      console.log(`[CLIP] Initialization complete (${elapsed}ms)`);
+    };
+
+    try {
+      await Promise.race([initWork(), initTimeoutPromise]);
+    } catch (error) {
+      // Cleanup partial state to prevent memory leak
+      pipeline = null;
+      textEmbeddings.clear();
+      areaEmbeddings.clear();
+      worksByArea.clear();
+      initialized = false;
+      initializationError = error instanceof Error ? error : new Error(String(error));
+      console.error('[CLIP] Initialization failed:', initializationError.message);
+      throw initializationError;
+    } finally {
+      clearTimeout(initTimeoutHandle!);
+    }
+  };
+
+  // Assign to initInProgress so concurrent callers wait on the same promise
+  initInProgress = doInit().finally(() => {
+    initInProgress = null; // Clear guard whether success or failure
+  });
+
+  return initInProgress;
 }
 
 // ============================================================
@@ -257,18 +289,34 @@ export async function classifyImage(imageUrl: string): Promise<ClassifyResult | 
     return null;
   }
 
-  const startTime = Date.now();
+  // Pipeline mutex: serialize concurrent classifyImage calls to prevent ONNX state corruption.
+  // Each call chains onto the previous promise so only one inference runs at a time.
+  const result = new Promise<ClassifyResult | null>((resolve) => {
+    pipelineQueue = pipelineQueue.then(async () => {
+      const startTime = Date.now();
 
-  // Wrap entire classification in a timeout to prevent runaway inference
-  const timeoutPromise = new Promise<null>((resolve) => {
-    setTimeout(() => {
-      console.warn(`[CLIP] Classification timed out after ${CLASSIFICATION_TIMEOUT_MS}ms`);
+      // Wrap entire classification in a timeout to prevent runaway inference
+      const timeoutPromise = new Promise<null>((res) => {
+        setTimeout(() => {
+          console.warn(`[CLIP] Classification timed out after ${CLASSIFICATION_TIMEOUT_MS}ms`);
+          res(null);
+        }, CLASSIFICATION_TIMEOUT_MS);
+      });
+
+      const classificationResult = await Promise.race([
+        classifyImageInternal(imageUrl, startTime),
+        timeoutPromise,
+      ]);
+      resolve(classificationResult);
+      return classificationResult;
+    }).catch((err) => {
+      console.error('[CLIP] Pipeline queue error:', err);
       resolve(null);
-    }, CLASSIFICATION_TIMEOUT_MS);
+      return null;
+    });
   });
 
-  const classificationPromise = classifyImageInternal(imageUrl, startTime);
-  return Promise.race([classificationPromise, timeoutPromise]);
+  return result;
 }
 
 async function classifyImageInternal(imageUrl: string, startTime: number): Promise<ClassifyResult | null> {
