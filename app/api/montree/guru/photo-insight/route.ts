@@ -666,10 +666,9 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
     const childName = child?.name?.split(' ')[0] || 'This child';
     const childAge = child?.age ?? 4;
 
-    // Build works context for Sonnet
-    const worksContext = currentWorks && currentWorks.length > 0
-      ? `Child's recent work progress (for background only — identify based on what you SEE, not this list):\n${currentWorks.map(w => `- ${w.work_name} (${w.area}, ${w.status})`).join('\n')}`
-      : 'No current works tracked yet.';
+    // worksContext REMOVED — injecting child's progress/shelf into identification prompt
+    // biased both Haiku and Sonnet toward works on the child's shelf, causing misidentification
+    // (e.g., "Sandpaper Letters" misidentified as "Grammar Boxes" because Grammar Boxes was on shelf)
 
     // Load curriculum for matching (static 329 + classroom custom works)
     // IMPORTANT: Clone the array — loadAllCurriculumWorks() returns a cached reference.
@@ -744,7 +743,8 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
 
     let correctionsContext = '';
     const correctionsMap = new Map<string, string>(); // lowercase original → corrected (for matchToCurriculumV2)
-    let focusWorksContext = '';
+    // focusWorksContext REMOVED from identification prompt — it biased Haiku toward shelf works
+    // The focus works query is still run because focusWorks data is used for inChildShelf checks below
     let duplicateContext = '';
     let visualMemoryContext = '';
 
@@ -813,15 +813,13 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
       }
     }
 
-    // Process focus works result
-    if (focusWorksResult.status === 'fulfilled') {
-      const focusWorks = focusWorksResult.value?.data;
-      if (focusWorks && focusWorks.length > 0) {
-        focusWorksContext = `\n\nCHILD'S CURRENT SHELF (for context only — do NOT bias your identification):
-${focusWorks.map((w: { work_name: string; area: string; status: string }, i: number) => `${i + 1}. ${sanitizeForPrompt(w.work_name, 100)} (${sanitizeForPrompt(w.area, 30)}, status: ${sanitizeForPrompt(w.status, 20)})`).join('\n')}
-NOTE: These are works on the child's shelf. The photo may or may not show one of these. Identify based on what you SEE in the photo, not what is on the shelf.`;
-      }
-    }
+    // Focus works query result intentionally UNUSED for identification prompt.
+    // REMOVED: focusWorksContext biased Haiku toward shelf works (e.g., "Sandpaper Letters" photo
+    // was misidentified as "Grammar Boxes" because Grammar Boxes was on the child's shelf).
+    // The focus works query still runs in the Promise.allSettled above (low cost, parallel)
+    // but its result is NOT injected into any prompt. inChildShelf checks are done via
+    // direct DB lookups after identification (lines ~1402-1433).
+    // focusWorksResult intentionally ignored here.
 
     // Process duplicate check result
     if (duplicateResult.status === 'fulfilled') {
@@ -1176,7 +1174,7 @@ CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences
 - Below 0.5 : Cannot reliably identify — describe what you see, no matching attempted
 IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask the teacher
 to confirm (0.7-0.94) than to auto-update incorrectly (0.95+).
-${curriculumHint}${visualMemoryContext}${focusWorksContext}${correctionsContext}${duplicateContext}`;
+${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
 
     // ================================================================
     // TWO-PASS DESCRIBE-THEN-MATCH ARCHITECTURE
@@ -1294,9 +1292,7 @@ ${systemPrompt.slice(systemPrompt.indexOf('VISUAL IDENTIFICATION GUIDE'))}`,
 
 Child: ${childName}, age ${childAge}
 
-Match this description to the correct Montessori work. Use the visual identification guide in your instructions.
-
-${worksContext}`,
+Match this description to the correct Montessori work. Use the visual identification guide in your instructions. Identify based ONLY on the physical materials described — do not guess based on the child's age or any other context.`,
         }],
       }, { signal: matchAbort.signal });
 
@@ -1349,7 +1345,7 @@ ${worksContext}`,
           tool_choice: { type: 'tool', name: 'tag_photo' },
           messages: [{ role: 'user', content: [
             { type: 'image' as const, source: { type: 'url' as const, url: photoUrl } },
-            { type: 'text' as const, text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level.\n\n${worksContext}` },
+            { type: 'text' as const, text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and tag it with the Montessori work, area, and mastery level. Identify based ONLY on the materials visible in the photo.` },
           ] }],
         }, { signal: apiAbortController.signal });
 

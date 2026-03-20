@@ -18,6 +18,7 @@ import {
   classifyImageWithMemory,
   isClassifierReady,
   initClassifier,
+  resetInitError,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';
@@ -35,10 +36,14 @@ const CLIP_VERY_CONFIDENT = 0.90; // Above this: skip enrichment entirely for si
 const rawCanary = parseInt(process.env.CLIP_CANARY_PERCENT || '100', 10);
 const CANARY_PERCENT = Number.isNaN(rawCanary) ? 100 : Math.max(0, Math.min(100, rawCanary));
 
-// Track initialization attempts to prevent retry storms
+// Track initialization attempts with retry logic
 let initAttempted = false;
 let initFailed = false;
+let initFailedAt = 0; // Timestamp of last failure
+let initAttemptCount = 0; // Number of failed attempts
 let initPromise: Promise<void> | null = null; // Serializes concurrent init attempts
+const INIT_RETRY_TTL_MS = 5 * 60 * 1000; // Retry after 5 minutes
+const INIT_MAX_ATTEMPTS = 3; // Max retry attempts before permanent failure
 
 export interface ClassifyDecision {
   /** Whether CLIP produced a confident result */
@@ -75,16 +80,39 @@ export async function tryClassify(
     return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'canary_skip' };
   }
 
-  // Try lazy initialization (once, serialized via Promise lock)
-  if (!isClassifierReady() && !initFailed) {
-    if (!initPromise) {
-      initAttempted = true;
-      initPromise = initClassifier().catch((err) => {
-        initFailed = true;
-        initPromise = null; // Allow potential retry if env changes
-        console.error('[ClassifyOrchestrator] CLIP initialization failed (will use two-pass):', err);
-      });
+  // Try lazy initialization (serialized via Promise lock, with TTL-based retry)
+  if (!isClassifierReady()) {
+    // Check if permanently failed (max attempts exceeded)
+    if (initFailed && initAttemptCount >= INIT_MAX_ATTEMPTS) {
+      return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'init_permanently_failed' };
     }
+
+    // Check if recently failed (within TTL)
+    if (initFailed && (Date.now() - initFailedAt) < INIT_RETRY_TTL_MS) {
+      return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'init_failed_cooldown' };
+    }
+
+    // Reset failure state for retry (TTL expired)
+    if (initFailed) {
+      console.log(`[ClassifyOrchestrator] Init retry (attempt ${initAttemptCount + 1}/${INIT_MAX_ATTEMPTS})`);
+      initFailed = false;
+      resetInitError(); // Clear cached error in clip-classifier so initClassifier() can retry
+    }
+
+    // Atomic init lock: use ||= to prevent double-init race condition
+    initPromise ||= (async () => {
+      initAttempted = true;
+      try {
+        await initClassifier();
+      } catch (err) {
+        initFailed = true;
+        initFailedAt = Date.now();
+        initAttemptCount++;
+        initPromise = null; // Allow retry after TTL
+        console.error(`[ClassifyOrchestrator] CLIP init failed (attempt ${initAttemptCount}/${INIT_MAX_ATTEMPTS}):`, err);
+      }
+    })();
+
     try {
       await initPromise;
     } catch {

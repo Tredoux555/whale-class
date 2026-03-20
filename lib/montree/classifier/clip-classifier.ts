@@ -338,6 +338,52 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
       }
     }
 
+    // Cross-area fallback: if within-area confidence is low, search ALL 329 works
+    // This prevents cascade lock-in where wrong area classification excludes the correct work
+    const CROSS_AREA_FALLBACK_THRESHOLD = 0.70;
+    if (bestWorkConfidence < CROSS_AREA_FALLBACK_THRESHOLD) {
+      console.log(`[CLIP] Within-area confidence ${bestWorkConfidence.toFixed(3)} < ${CROSS_AREA_FALLBACK_THRESHOLD} — searching ALL works`);
+
+      let globalBestWork: CurriculumWork | null = null;
+      let globalBestConfidence = 0;
+      let globalRunnerUp: CurriculumWork | null = null;
+      let globalRunnerUpConfidence = 0;
+      let globalBestAreaKey = bestAreaKey;
+
+      for (const [areaKey, areaWorksForSearch] of worksByArea) {
+        for (const work of areaWorksForSearch) {
+          const workVec = textEmbeddings.get(work.work_key);
+          if (!workVec) continue;
+          const similarity = cosineSimilarity(imageVec, workVec);
+          if (similarity > globalBestConfidence) {
+            if (globalBestWork) {
+              globalRunnerUp = globalBestWork;
+              globalRunnerUpConfidence = globalBestConfidence;
+            }
+            globalBestWork = work;
+            globalBestConfidence = similarity;
+            globalBestAreaKey = areaKey;
+          } else if (similarity > globalRunnerUpConfidence) {
+            globalRunnerUp = work;
+            globalRunnerUpConfidence = similarity;
+          }
+        }
+      }
+
+      // Use global result if it's better than area-restricted result
+      if (globalBestWork && globalBestConfidence > bestWorkConfidence) {
+        console.log(`[CLIP] Cross-area fallback found: "${globalBestWork.name}" (${globalBestAreaKey}) at ${globalBestConfidence.toFixed(3)} vs area-restricted "${bestWork?.name}" at ${bestWorkConfidence.toFixed(3)}`);
+        bestWork = globalBestWork;
+        bestWorkConfidence = globalBestConfidence;
+        bestAreaKey = globalBestAreaKey;
+        bestAreaConfidence = areaEmbeddings.has(globalBestAreaKey)
+          ? cosineSimilarity(imageVec, areaEmbeddings.get(globalBestAreaKey)!)
+          : bestAreaConfidence;
+        runnerUpWork = globalRunnerUp;
+        runnerUpConfidence = globalRunnerUpConfidence;
+      }
+    }
+
     if (!bestWork || bestWorkConfidence < CLIP_CONFIDENCE_THRESHOLD) {
       console.log(`[CLIP] Work confidence below threshold: ${bestWorkConfidence.toFixed(3)} < ${CLIP_CONFIDENCE_THRESHOLD}`);
       return null;
@@ -394,19 +440,30 @@ export async function classifyImageWithMemory(
   }
 
   // Boost confidence if the matched work has visual memory
+  // SAFETY: Only apply boost if base confidence is already meaningful (>= 0.60)
+  // This prevents a weak match (e.g., 0.50) from being boosted above the threshold (0.75)
+  // which would cause a false positive identification
+  const VISUAL_MEMORY_MIN_BASE = 0.60;
   if (memoryMap.has(result.work_key)) {
-    const memory = memoryMap.get(result.work_key)!;
-    const boostedConfidence = Math.min(result.confidence + VISUAL_MEMORY_BOOST, VISUAL_MEMORY_BOOST_CAP);
-    console.log(
-      `[CLIP] Visual memory boost applied: ${result.confidence.toFixed(3)} -> ${boostedConfidence.toFixed(3)} for ${result.work_key}`
-    );
-    result.confidence = boostedConfidence;
+    if (result.confidence >= VISUAL_MEMORY_MIN_BASE) {
+      const boostedConfidence = Math.min(result.confidence + VISUAL_MEMORY_BOOST, VISUAL_MEMORY_BOOST_CAP);
+      console.log(
+        `[CLIP] Visual memory boost applied: ${result.confidence.toFixed(3)} -> ${boostedConfidence.toFixed(3)} for ${result.work_key}`
+      );
+      result.confidence = boostedConfidence;
+    } else {
+      console.log(
+        `[CLIP] Visual memory boost SKIPPED: base confidence ${result.confidence.toFixed(3)} < ${VISUAL_MEMORY_MIN_BASE} for ${result.work_key}`
+      );
+    }
   }
 
-  // Optionally boost runner-up as well
+  // Optionally boost runner-up as well (same safety check)
   if (result.runner_up && memoryMap.has(result.runner_up.work_key)) {
-    const boostedConfidence = Math.min(result.runner_up.confidence + VISUAL_MEMORY_BOOST, VISUAL_MEMORY_BOOST_CAP);
-    result.runner_up.confidence = boostedConfidence;
+    if (result.runner_up.confidence >= VISUAL_MEMORY_MIN_BASE) {
+      const boostedConfidence = Math.min(result.runner_up.confidence + VISUAL_MEMORY_BOOST, VISUAL_MEMORY_BOOST_CAP);
+      result.runner_up.confidence = boostedConfidence;
+    }
   }
 
   return result;
@@ -434,4 +491,12 @@ export function getClassifierStats(): {
     model: CLIP_MODEL,
     error: initializationError?.message,
   };
+}
+
+/**
+ * Reset initialization error to allow retries.
+ * Called by the orchestrator when its TTL-based retry kicks in.
+ */
+export function resetInitError(): void {
+  initializationError = null;
 }

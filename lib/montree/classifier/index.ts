@@ -7,6 +7,7 @@ export {
   classifyImageWithMemory,
   isClassifierReady,
   getClassifierStats,
+  resetInitError,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';
