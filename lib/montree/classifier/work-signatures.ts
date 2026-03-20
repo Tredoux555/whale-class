@@ -452,8 +452,8 @@ const SENSORIAL_SIGNATURES: WorkSignature[] = [
     area_key: "sensorial",
     category: "Visual Sense - Color",
     visual_description:
-      "A child matching primary color tablets: a wooden box containing six color tablets (red, yellow, blue) in three matching pairs. Simple primary colors only.",
-    key_materials: ["Wooden box", "Six color tablets", "Red, yellow, blue"],
+      "Rigid flat WOODEN or PLASTIC painted color tablets, smooth glossy surface, bright saturated solid colors (red, yellow, blue). Small rectangular HARD pieces with visible paint coating, NOT fabric. Child LOOKING at colors to match pairs visually.",
+    key_materials: ["Rigid painted wooden tablets", "Glossy smooth hard surface", "Bright solid colors red yellow blue"],
     confusion_pairs: ["se_color_box_2", "se_color_box_3"],
     difficulty: "easy",
   },
@@ -463,8 +463,8 @@ const SENSORIAL_SIGNATURES: WorkSignature[] = [
     area_key: "sensorial",
     category: "Visual Sense - Color",
     visual_description:
-      "A child matching secondary color tablets: a larger wooden box containing 22 color tablets (11 pairs) including orange, green, purple, brown, pink, white, gray, black.",
-    key_materials: ["Wooden box", "22 color tablets", "Secondary colors"],
+      "Rigid flat WOODEN or PLASTIC painted color tablets, smooth glossy surface, many different solid colors (orange, green, purple, brown, pink, white, gray, black). HARD rectangular pieces with painted surface, NOT fabric. Child LOOKING at colors to match pairs visually.",
+    key_materials: ["Rigid painted wooden tablets", "Glossy smooth hard surface", "Many solid colors"],
     confusion_pairs: ["se_color_box_1", "se_color_box_3"],
     difficulty: "medium",
   },
@@ -474,8 +474,8 @@ const SENSORIAL_SIGNATURES: WorkSignature[] = [
     area_key: "sensorial",
     category: "Visual Sense - Color",
     visual_description:
-      "A child grading color tablets from light to dark: a large wooden box containing 63 color tablets (9 colors × 7 shades each). Shows gradations from pale to deep colors.",
-    key_materials: ["Large wooden box", "63 color tablets", "Color gradations"],
+      "Many rigid flat WOODEN or PLASTIC painted color tablets arranged in rows from light to dark, smooth glossy surface, gradations of the same color from pale to deep. HARD rectangular pieces with painted surface, NOT fabric. Child arranging colors in gradient order.",
+    key_materials: ["Rigid painted wooden tablets", "Glossy smooth hard surface", "Color gradations light to dark"],
     confusion_pairs: ["se_color_box_1", "se_color_box_2"],
     difficulty: "hard",
   },
@@ -595,8 +595,8 @@ const SENSORIAL_SIGNATURES: WorkSignature[] = [
     area_key: "sensorial",
     category: "Tactile Sense",
     visual_description:
-      "A child matching pairs of different fabric swatches (silk, linen, cotton, wool) by feel, stored in a wooden box with compartments.",
-    key_materials: ["Fabric swatches", "Wooden box"],
+      "Soft foldable CLOTH or FABRIC swatches, visible textile weave texture, muted natural colors. SOFT flexible pieces that drape and fold, NOT rigid painted tablets. Child FEELING texture with fingertips, often with eyes closed or blindfolded. Materials include silk, linen, cotton, wool — identified by TOUCH not sight.",
+    key_materials: ["Soft cloth fabric swatches", "Visible textile weave texture", "Foldable flexible material"],
     difficulty: "medium",
   },
   {
