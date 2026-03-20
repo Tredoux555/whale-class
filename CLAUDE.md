@@ -63,8 +63,14 @@ Full 5-round methodology applied to Smart Capture system: 20x AUDIT → 20x PLAN
 - Round 4 HEALTH CHECK: 10 parallel agents examining timeout chains, cache consistency, error handling, concurrency, data flow, memory, security, performance, edge cases, wiring. 7 actionable fixes applied.
 - Round 5 FINAL AUDIT: 28 parallel agents across 3 cycles. Cycle 1: 2 minor fixes. Cycles 2-3: ALL CLEAN. 3 consecutive clean passes achieved.
 
+**CLIP Embedding Rewrite (Color Tablets vs Fabric Matching):**
+Rewrote 4 work descriptions in `lib/montree/classifier/work-signatures.ts` to maximize visual distinction. Color Box 1/2/3 now emphasize "rigid, painted, wooden, glossy, hard, LOOKING at colors." Fabric Matching now emphasizes "soft, cloth, textile weave, foldable, FEELING with eyes closed." Same approach needed for all 329 works — see Priority #0 in NEXT SESSION PRIORITIES.
+
+**Deep Audit (6 parallel agents):**
+Verified all 32 fixes across 5 files. Found 1 additional issue: STATUS_RANK in photo-insight missing `'unclear': 0` (photo-enrich had it) — fixed. Final count: 32 fixes + 4 CLIP description rewrites.
+
 **Deploy:** ⚠️ NOT YET PUSHED (VM disk full, ENOSPC). Push from Mac.
-**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_20X_BUILD_MAR21.md`
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_20X_BUILD_MAR21.md`, `docs/handoffs/HANDOFF_CLIP_ENRICHMENT_MAR21.md`
 
 ---
 
@@ -356,6 +362,31 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 ---
 
 ## 🔥 NEXT SESSION PRIORITIES
+
+### CLIP Signature Full Enrichment (Priority #0 — NEXT SESSION)
+
+**Status:** NOT STARTED. Start fresh chat for maximum context budget.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_ENRICHMENT_MAR21.md`
+
+**The problem:** CLIP text embeddings are too generic → works get confused (Color Tablets → Fabric Matching). Only 156/329 works have CLIP entries. Descriptions need to be photo-specific, material-first, and anti-confusion.
+
+**Three tasks:**
+1. **Rewrite all 156 existing descriptions** — Make photo-specific (what a camera sees from 1-2m), material-first, with anti-confusion ("NOT fabric"). Use 5 parallel agents (one per area). (~2-3 hrs)
+2. **Add CLIP signatures for remaining ~173 works** — Compare work-signatures.ts against 5 curriculum JSON files, write entries for every missing work. (~2-3 hrs)
+3. **Custom work Sonnet-analysis** — On first photo of a custom work, use Sonnet (not Haiku) one time to generate CLIP-optimized visual description, store in visual_memory with confidence 1.0. Code change in photo-insight/route.ts first-capture chain (~30 min)
+
+**File:** `lib/montree/classifier/work-signatures.ts` (currently 156 entries, ~1,781 lines)
+**Curriculum JSONs:** `lib/curriculum/data/{practical_life,sensorial,mathematics,language,cultural}.json`
+
+**Approach:** Use 5 parallel agents (one per Montessori area). Each reads curriculum JSON + existing entries, writes detailed descriptions for ALL works in that area. Assemble into final file.
+
+**This session's proof it works:** Rewrote Color Box 1/2/3 + Fabric Matching descriptions to maximize visual distinction. Same approach needed for all 329 works.
+
+### ✅ Smart Capture 20x Overhaul (Priority #0 — DONE, Mar 21)
+
+**Status:** ALL 5 ROUNDS COMPLETE. 32 fixes across 6 files. 28 independent audit agents achieved 3 consecutive CLEAN passes. Deep audit found 1 additional fix (STATUS_RANK consistency). CLIP embeddings rewritten for Color Tablets vs Fabric Matching confusion pair.
+**Deploy:** ⚠️ NOT YET PUSHED (VM disk full, ENOSPC). Push from Mac (see push command in handoff).
+**Handoff:** `docs/handoffs/HANDOFF_SMART_CAPTURE_20X_BUILD_MAR21.md`
 
 ### ✅ Smart Capture Critical Bugs (Priority #0 — DONE)
 
