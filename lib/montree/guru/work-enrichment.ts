@@ -4,7 +4,7 @@
 
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { getSupabase } from '@/lib/supabase-client';
-import { logApiUsage } from '@/lib/montree/api-usage';
+// import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 export interface WorkEnrichmentResult {
   description: string;
@@ -103,10 +103,7 @@ JSON structure required:
           messages: [{ role: 'user', content: userPrompt }],
         }, { signal: controller.signal });
 
-        // Log enrichment usage
-        if (schoolId) {
-          logApiUsage({ schoolId, endpoint: 'work-enrichment', model: AI_MODEL, inputTokens: response.usage?.input_tokens || 0, outputTokens: response.usage?.output_tokens || 0 });
-        }
+        // logApiUsage deferred — metering system not yet deployed
 
         const content = response.content[0];
         if (content.type !== 'text') {

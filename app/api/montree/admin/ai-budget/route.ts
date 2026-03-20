@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { clearBudgetCache } from '@/lib/montree/api-usage';
+// import { clearBudgetCache } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 // GET — Fetch current usage + budget
 export async function GET(request: NextRequest) {
@@ -124,8 +124,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update budget' }, { status: 500 });
     }
 
-    // Clear cached budget for this school
-    clearBudgetCache(auth.schoolId);
+    // clearBudgetCache deferred — metering system not yet deployed
 
     return NextResponse.json({ success: true, updated: updates });
 

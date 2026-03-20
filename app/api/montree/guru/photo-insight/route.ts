@@ -13,7 +13,7 @@ import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+// import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
 // ================================================================
 // IN-MEMORY RATE LIMITER FALLBACK
@@ -170,15 +170,6 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
-
-    // Check AI budget before processing photo
-    const aiBudget = await checkAiBudget(auth.schoolId);
-    if (aiBudget.blocked) {
-      return NextResponse.json(
-        { success: false, error: 'ai_budget_reached', message: 'Monthly AI budget reached.' },
-        { status: 429 }
-      );
-    }
 
     const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for') || 'unknown';
@@ -998,8 +989,7 @@ Just describe the physical scene in 2-4 sentences.`,
         }
       }
       console.log(`[PhotoInsight] Pass 1 DESCRIBE: "${visualDescription.slice(0, 120)}..."`);
-      // Log Pass 1 usage
-      logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/describe', model: HAIKU_MODEL, inputTokens: describeMsg.usage?.input_tokens || 0, outputTokens: describeMsg.usage?.output_tokens || 0 });
+      // logApiUsage deferred — metering system not yet deployed
     } catch (describeErr: unknown) {
       clearTimeout(describeTimeout);
       const isTimeout = describeErr instanceof Error && (describeErr.message?.includes('timeout') || describeErr.name === 'AbortError');
@@ -1072,8 +1062,7 @@ ${worksContext}`,
         modelUsed = HAIKU_MODEL;
         haikuAccepted = true;
         console.log(`[PhotoInsight] Pass 2 MATCH: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
-        // Log Pass 2 usage
-        logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/match', model: HAIKU_MODEL, inputTokens: matchMsg.usage?.input_tokens || 0, outputTokens: matchMsg.usage?.output_tokens || 0 });
+        // logApiUsage deferred — metering system not yet deployed
       } else {
         console.log('[PhotoInsight] Pass 2 returned no tool_use');
       }
@@ -1125,8 +1114,7 @@ ${worksContext}`,
           modelUsed = AI_MODEL;
           haikuAccepted = false;
           console.log(`[PhotoInsight] Sonnet fallback: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
-          // Log Sonnet fallback usage
-          logApiUsage({ schoolId: auth.schoolId, classroomId: auth.classroomId, teacherId: auth.userId, endpoint: 'photo-insight/sonnet', model: AI_MODEL, inputTokens: message.usage?.input_tokens || 0, outputTokens: message.usage?.output_tokens || 0 });
+          // logApiUsage deferred — metering system not yet deployed
         }
       } catch (sonnetErr) {
         clearTimeout(timeoutHandle);
