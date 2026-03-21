@@ -14,6 +14,39 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 21, 2026)
 
+### Session Work (Mar 21, 2026 — Late Continuation)
+
+**CLIP Signatures Full Enrichment (Priority #0) — COMPLETE + DEPLOYED:**
+
+Completed the cornerstone task: rewrote ALL 270 Montessori work visual descriptions across 5 area-split signature files for the CLIP/SigLIP zero-cost classifier ($0.00 classification tier).
+
+**Architecture — 5 area-split files replacing monolithic work-signatures.ts:**
+- `signatures-practical-life.ts` — 83 works (~850 lines)
+- `signatures-sensorial.ts` — 35 works (~461 lines, + sensorialSignatureMap)
+- `signatures-mathematics.ts` — 57 works (~592 lines)
+- `signatures-language.ts` — 45 works (~432 lines)
+- `signatures-cultural.ts` — 50 works (~611 lines)
+- `work-signatures.ts` — barrel file importing all 5, re-exports combined array + helpers (156 lines)
+
+**Description quality standard (all 270 works):**
+- Material-first: exact composition (wood, metal, plastic, fabric, beads, sandpaper)
+- Photo-specific: what a phone camera sees from 1-2 meters, not conceptual
+- Anti-confusion: explicit "NOT X which has Y" for similar-looking materials
+- Action verbs: what child's hands are DOING
+- Dimensions: approximate sizes in inches/centimeters
+- 85 apostrophes across all files, all properly escaped with `\'`
+
+**Railway Build Fix:** Initial push had unescaped `males' croaking` in signatures-cultural.ts:314 causing Turbopack parse error. Comprehensive audit of all 5 files confirmed 85 apostrophes all escaped. Cowork VM files didn't sync to Mac — forced writes via Edit tool triggered sync. Second push succeeded.
+
+**Audit results:**
+- Work counts: 83+35+57+45+50 = 270 (matches curriculum JSONs exactly)
+- All work_keys match curriculum JSON IDs (zero orphans, zero missing)
+- Structure: proper imports, exports, `];` closings in all files
+- Barrel file: all 5 imports, spread into WORK_SIGNATURES, helpers + stats intact
+
+**Deploy:** ✅ PUSHED (two pushes — first failed on apostrophe, second succeeded).
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_SIGNATURES_FULL_ENRICHMENT_MAR21.md`
+
 ### Session Work (Mar 21, 2026)
 
 **Smart Capture 20x Overhaul — ALL 5 ROUNDS COMPLETE, 3 CONSECUTIVE CLEAN:**
@@ -422,32 +455,72 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES
+## 🔥 NEXT SESSION PRIORITIES — MONDAY LIVE TEST (Mar 23, 2026)
 
-### CLIP Signature Full Enrichment (Priority #0 — NEXT SESSION)
+### ⚠️ CONTEXT: Hostile Tester Scenario
+System goes live Monday Mar 23 with a tester who wants it to fail. Every misidentification, slow upload, or UI glitch will be used as evidence. Strategy: maximize CLIP accuracy with lean schema upgrade + ensure bulletproof reliability.
 
-**Status:** NOT STARTED. Start fresh chat for maximum context budget.
-**Handoff:** `docs/handoffs/HANDOFF_CLIP_ENRICHMENT_NEXT_SESSION.md` (updated handoff with correct 270 work count + completed audit status)
+### 🔴 Priority #0: CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions (3-4 hours)
 
-**The problem:** CLIP text embeddings are too generic → works get confused (Color Tablets → Fabric Matching). All 270 works have CLIP entries but only 156 have enriched descriptions — the rest use generic curriculum descriptions. ALL need photo-specific, material-first, anti-confusion rewrites.
+**Status:** PLANNED. This is the single highest-impact accuracy improvement before Monday.
 
-**⚠️ THIS IS THE ABSOLUTE CORNERSTONE OF THE ENTIRE SMART CAPTURE SYSTEM. Do NOT skimp on descriptions. Every single one of the 270 works must have an INCREDIBLY detailed, clearly distinguishing visual description. Deep-dive each work individually — research what it looks like, what materials it's made of, what makes it visually unique. Spare no effort. The entire $0.00 CLIP classification tier depends on description quality.**
+**What:** Upgrade `WorkSignature` interface with two new high-value fields:
+1. `confusion_pairs`: from `string[]` → `ConfusionPair[]` with `reason` + `differentiation` text
+2. `negative_descriptions: string[]` — "NOT X" statements for CLIP negative embeddings
 
-**⚠️ WORK COUNT: The curriculum has exactly 270 works (PL=83, SE=35, MA=57, LA=45, CU=50), NOT 329. The "329" number was wrong — it came from the community library DB which had extra/duplicate entries. Source of truth = 5 curriculum JSON files.**
+**Why:** Current confusion_pairs tells classifier "these look similar" but not HOW to tell them apart. The classifier doesn't even USE the field. Negative descriptions actively suppress false positives via negative CLIP embeddings.
 
-**Remaining task:**
+**Schema:**
+```typescript
+interface ConfusionPair {
+  work_key: string;
+  reason: string;           // why they look similar
+  differentiation: string;  // how to tell them apart — CAPS on distinguishing word
+}
+```
 
-### Task 1: CLIP Signature Full Enrichment (DO THIS FIRST)
-Write detailed, photo-specific visual descriptions for ALL 270 works in the system. Rewrite all 270 from scratch with the same quality standard. Use 5 parallel agents (one per Montessori area). Each agent reads the curriculum JSON for their area and writes entries for EVERY work. Plus build custom work Sonnet-analysis feature (NOT Opus — Sonnet is sufficient for material descriptions at 5x lower cost; the bottleneck is the prompt not model intelligence).
+**Implementation steps:**
+1. Update `WorkSignature` interface in work-signatures.ts (~10 min)
+2. Update all 5 area signature files with structured pairs + negatives (~2 hours, 5 parallel agents)
+3. Update clip-classifier.ts: compute negative embeddings at init, subtract weighted penalty during scoring, inject differentiation into Haiku prompt (~1 hour)
+4. Audit all 5 areas for cross-area confusion pairs (most dangerous — wrong area = correct work never found)
+5. Build verification (tsc, apostrophe check, Railway build)
 
-**Quality standard for EVERY description:**
-- Deep-dive each work: research what it physically looks like in a real classroom photo
-- Material-first: lead with exact material composition (wood, metal, plastic, fabric, paper, beads, rods)
-- Photo-specific: describe what a phone camera sees from 1-2 meters away, NOT what the work IS conceptually
-- Anti-confusion: explicitly state what it is NOT — call out confusion pairs by material difference
-- Action verbs: what the child's hands are DOING (stacking, pouring, tracing, threading, matching)
-- Distinguishing features: color, size, shape, texture, arrangement, container type
-- NEVER generic — "A child matching pairs" could be 10 different works. Instead: "Rigid wooden painted tablets on a tray, child visually comparing saturated colors side by side"
+**Files to modify:** work-signatures.ts, signatures-*.ts (5), clip-classifier.ts, photo-insight/route.ts
+**Estimated accuracy improvement:** 15-25% reduction in misclassifications on hard works
+**Full plan:** `docs/handoffs/HANDOFF_CLIP_SIGNATURES_FULL_ENRICHMENT_MAR21.md` → "NEXT SESSION PLAN" section
+
+### 🟡 Priority #1: Push ALL Unpushed Code (5 minutes)
+
+Run push command from Mac terminal. Mar 21 continuation session changes (7 audit fixes + upload streamlining) still need push.
+
+### 🟡 Priority #2: End-to-End Smoke Test (1 hour)
+
+Before Monday, manually test full pipeline:
+- Smart Capture: photo → CLIP → Haiku → tag → gallery
+- Upload reliability: 5 rapid photos, all appear in gallery within 30s
+- Teacher corrections: tap wrong → pick correct → saves
+- GREEN zone auto-update + AMBER zone confirm/reject buttons
+- Verify `[CLIP]` entries in Railway logs
+
+### 🟢 Priority #3: Misclassification Data Collection (30 min setup)
+
+Add tracking fields to `context_snapshot` so Monday produces actionable data:
+- `negative_penalty_applied`, `confusion_pair_matched`, `differentiation_injected`
+- After Monday: query corrections table → find worst performers → target those works with richer descriptions
+
+### AFTER MONDAY: Data-Driven Refinement (deferred)
+
+Week 1-2: collect data. Week 2-3: pull worst performers, write targeted richer descriptions (view_descriptions, physical_attributes) ONLY for the 20-30 works that actually get confused. NOT all 270.
+
+---
+
+### ✅ COMPLETED PRIORITIES (for reference)
+
+### ✅ CLIP Signature Full Enrichment (Priority #0 — DONE, Mar 21 late continuation)
+
+**Status:** COMPLETE + DEPLOYED. All 270 works rewritten across 5 area-split signature files. 85 apostrophes escaped. Railway build fix applied (unescaped `males'` in cultural file). Cowork VM sync issue resolved via forced writes.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_SIGNATURES_FULL_ENRICHMENT_MAR21.md`
 
 ### ✅ Task 2: Streamline Upload System (DONE — Mar 21 continuation)
 Parallel upload pool (3 concurrent), smallest-first ordering, real-time progress events with ETA/speed, PhotoQueueBanner shows live progress. Files: sync-manager.ts, usePhotoQueue.ts, PhotoQueueBanner.tsx.
@@ -457,13 +530,6 @@ Parallel upload pool (3 concurrent), smallest-first ordering, real-time progress
 
 ### ✅ Task 4: Push ALL Code (DONE — Mar 21 continuation)
 Mar 21 session changes pushed. Continuation session changes need push from Mac (see push command in Session Work continuation section).
-
-**File:** `lib/montree/classifier/work-signatures.ts` (currently 270 entries, ~1,781 lines — all 270 have entries but only 156 are enriched)
-**Curriculum JSONs:** `lib/curriculum/data/{practical_life,sensorial,mathematics,language,cultural}.json`
-
-**Approach:** Use 5 parallel agents (one per Montessori area). Each reads curriculum JSON + existing entries, deep-dives each work for maximum visual detail, writes entries for ALL works in that area. Assemble into final file.
-
-**This session's proof it works:** Rewrote Color Box 1/2/3 + Fabric Matching descriptions to maximize visual distinction. Same approach needed for all 270 works.
 
 ### ✅ Smart Capture 20x Overhaul (Priority #0 — DONE, Mar 21)
 
