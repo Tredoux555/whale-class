@@ -492,6 +492,36 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 ### ⚠️ CONTEXT: Hostile Tester Scenario
 System goes live Monday Mar 23 with a tester who wants it to fail. Every misidentification, slow upload, or UI glitch will be used as evidence. Strategy: maximize CLIP accuracy with lean schema upgrade + ensure bulletproof reliability.
 
+### 🔴 Priority #-1: Cloudflare Image Proxy for China Speed (1-2 hours) — CRITICAL FOR MONDAY
+
+**Status:** PLANNED. Photos load 5-15+ seconds in China without VPN. Teachers WILL notice.
+
+**Problem:** Supabase storage (`dmfncjjtsoxrnvcdnvjq.supabase.co`) is US-region. Signed URLs go directly to origin. Great Firewall throttles connections → slow images. The Guru AI works fine (server-to-server calls bypass GFW), but photo loading is painfully slow.
+
+**Fix — 3 steps:**
+1. **Make `montree-media` bucket public** in Supabase Dashboard → Storage → Settings
+2. **Create image proxy route** at `app/api/montree/media/proxy/[...path]/route.ts` — fetches from Supabase public URL, returns with `Cache-Control: public, max-age=86400`. Cloudflare caches at edge → fast in China.
+3. **Update `app/api/montree/media/urls/route.ts`** — return proxy URLs (`/api/montree/media/proxy/${path}`) instead of signed URLs
+
+**Expected:** First load ~2-3s, cached loads <500ms. No VPN needed.
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_SORT_CHINA_CDN_MAR21.md`
+
+### Session Work (Mar 21, 2026 — Late Night)
+
+**Photo Sort Order Fix + China CDN Investigation — COMPLETE:**
+
+Teachers reported new photos sometimes appearing at the bottom of the gallery instead of the top. Also diagnosed slow photo loading in China without VPN.
+
+**Sort fix (2 files):**
+- `app/api/montree/media/route.ts` — Combined sort now uses `captured_at || created_at` with `created_at` tiebreaker. Photos with null `captured_at` no longer fall to bottom.
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — Client-side sort matches server logic with same fallback.
+
+**China CDN diagnosis:** Supabase storage is US-region. Signed URLs bypass Cloudflare. Fix: proxy images through montree.xyz (Cloudflare-cached). Guru works fine without VPN (server-to-server Anthropic calls).
+
+**Album upload fix:** Confirmed already deployed from earlier session (double compression removal + timeouts).
+
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_SORT_CHINA_CDN_MAR21.md`
+
 ### 🔴 Priority #0: CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions (3-4 hours)
 
 **Status:** PLANNED. This is the single highest-impact accuracy improvement before Monday.
