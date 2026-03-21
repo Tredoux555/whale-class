@@ -11,6 +11,7 @@
 
 import type { WorkSignature } from './work-signatures';
 
+// 35 Sensorial works - CLIP visual descriptions (escaped apostrophes verified)
 export const SENSORIAL_SIGNATURES: WorkSignature[] = [
   // ============================================================================
   // VISUAL SENSE - DIMENSION (Cylinders & Building Blocks)

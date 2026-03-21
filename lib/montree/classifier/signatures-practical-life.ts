@@ -1,5 +1,6 @@
 import type { WorkSignature } from './work-signatures';
 
+// 83 Practical Life works - CLIP visual descriptions (escaped apostrophes verified)
 export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
   // --- Preliminary Exercises ---
   {

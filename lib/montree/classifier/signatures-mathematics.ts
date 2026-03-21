@@ -1,5 +1,6 @@
 import type { WorkSignature } from './work-signatures';
 
+// 57 Mathematics works - CLIP visual descriptions (escaped apostrophes verified)
 export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
   // === Introduction to Numbers (1-10) ===
   {
