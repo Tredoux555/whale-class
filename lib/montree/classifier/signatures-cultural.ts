@@ -153,7 +153,7 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'CHART or CARD SET showing UNIVERSAL HUMAN NEEDS categorized into groups. Often displays 4-5 main categories with ILLUSTRATIONS and LABELS: (1) PHYSICAL/MATERIAL needs (food, water, shelter, clothing, sleep), (2) SAFETY needs (protection, rules), (3) SOCIAL needs (family, friends, community), (4) EMOTIONAL/SPIRITUAL needs (art, music, love, meaning). Large laminated cards with PICTURES showing children/families demonstrating each need. NOT a fact card (comprehensive chart showing multiple needs, not single concept). NOT Maslow's pyramid (though related, typically simplified visual format).',
+      'CHART or CARD SET showing UNIVERSAL HUMAN NEEDS categorized into groups. Often displays 4-5 main categories with ILLUSTRATIONS and LABELS: (1) PHYSICAL/MATERIAL needs (food, water, shelter, clothing, sleep), (2) SAFETY needs (protection, rules), (3) SOCIAL needs (family, friends, community), (4) EMOTIONAL/SPIRITUAL needs (art, music, love, meaning). Large laminated cards with PICTURES showing children/families demonstrating each need. NOT a fact card (comprehensive chart showing multiple needs, not single concept). NOT Maslow\'s pyramid (though related, typically simplified visual format).',
     key_materials: ['Cardstock cards', 'Illustrations/photos', 'Lamination', 'Labels'],
     confusion_pairs: [],
     difficulty: 'medium'
