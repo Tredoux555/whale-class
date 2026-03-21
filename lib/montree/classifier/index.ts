@@ -8,6 +8,7 @@ export {
   isClassifierReady,
   getClassifierStats,
   resetInitError,
+  getConfusionDifferentiation,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';

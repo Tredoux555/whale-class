@@ -14,6 +14,7 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
+import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier';
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
 // ================================================================
@@ -462,8 +463,20 @@ export async function POST(request: NextRequest) {
 
         // SLIM Haiku enrichment (~800 tokens vs ~4000)
         const langInstruction = locale === 'zh' ? 'Write the observation in Simplified Chinese.' : 'Write the observation in English.';
+
+        // Inject confusion pair differentiation if CLIP detected a near-miss
+        let differentiationNote = '';
+        const confusionPairKey = clipDecision.clipResult?.confusion_pair_matched;
+        if (confusionPairKey) {
+          const diffText = getConfusionDifferentiation(clipDecision.clipResult!.work_key, confusionPairKey);
+          if (diffText) {
+            const confusedWorkName = clipDecision.clipResult?.runner_up?.work_name || confusionPairKey;
+            differentiationNote = `\nIMPORTANT: This work is often confused with "${confusedWorkName}". Key difference: ${diffText}\nVerify the identification matches what you see in the photo.`;
+          }
+        }
+
         const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) working with ${clipWorkName} in the ${clipAreaKey.replace(/_/g, ' ')} area.
-Materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.
+Materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.${differentiationNote}
 ${langInstruction}
 
 Assess their mastery level based on visible evidence:
@@ -627,6 +640,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
                 classification_method: 'clip_enriched',
                 clip_model: 'siglip-base-patch16-224',
                 clip_confidence: clipConfidence,
+                clip_raw_confidence: clipDecision.clipResult?.raw_confidence ?? clipConfidence,
                 clip_area_confidence: clipDecision.clipResult?.area_confidence ?? null,
                 clip_runner_up: clipDecision.clipResult?.runner_up ?? null,
                 clip_classification_ms: clipDecision.clipResult?.classification_ms ?? null,
@@ -641,6 +655,10 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
                 needs_confirmation: needsConfirmation,
                 auto_updated: autoUpdated,
                 suggested_crop: slimInput.suggested_crop,
+                // Misclassification tracking fields (Step 5)
+                negative_penalty_applied: clipDecision.clipResult?.negative_penalty_applied ?? false,
+                confusion_pair_matched: clipDecision.clipResult?.confusion_pair_matched ?? null,
+                differentiation_injected: !!differentiationNote,
               },
             }).then(({ error }) => {
               if (error) console.error('[PhotoInsight/CLIP] Interaction save error:', error);
@@ -1772,7 +1790,12 @@ Match this description to the correct Montessori work. Use the visual identifica
           clip_action: clipDecision?.action ?? null,
           clip_reason: clipDecision?.reason ?? null,
           clip_confidence: clipDecision?.clipResult?.confidence ?? null,
+          clip_raw_confidence: clipDecision?.clipResult?.raw_confidence ?? null,
           clip_work_name: clipDecision?.clipResult?.work_name ?? null,
+          // Misclassification tracking (Step 5 — also in two-pass fallback for diagnostic completeness)
+          negative_penalty_applied: clipDecision?.clipResult?.negative_penalty_applied ?? false,
+          confusion_pair_matched: clipDecision?.clipResult?.confusion_pair_matched ?? null,
+          differentiation_injected: false, // CLIP not used in two-pass fallback path
         },
       });
 
