@@ -8,8 +8,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'Spherical GLOBE with CONTRASTING TEXTURES: rough SANDPAPER on BROWN continental areas, SMOOTH POLISHED surface on BLUE water regions. Child\'s hands STROKING and FEELING the textured differences. NOT a colored globe (lacks vibrant color paint). NOT a flat map (is three-dimensional sphere).',
-    key_materials: ['Wooden or plastic sphere', 'Sandpaper coating', 'Smooth finish'],
+      'Spherical GLOBE with CONTRASTING TACTILE TEXTURES: rough SANDPAPER material on BROWN continental masses representing land, SMOOTH POLISHED finish on BLUE painted regions representing water. Child\'s hands STROKING across the sphere, fingers FEELING the dramatic texture contrast between land and water. Typically resting on a wooden stand. NOT a colored smooth globe (texture is the key distinguishing feature - this one is ROUGH on land). NOT a flat map (three-dimensional sphere). NOT a puzzle (pieces are not removable).',
+    key_materials: ['Wooden sphere', 'Sandpaper coating on continents', 'Smooth finish on water', 'Stand', 'Brown and blue paint'],
     confusion_pairs: ['cu_globe_continents'],
     difficulty: 'easy'
   },
@@ -20,8 +20,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'Spherical globe with DISTINCT COLOR-CODED CONTINENTS: North America (one color), South America (different color), Europe, Africa, Asia, Australia all in different VIBRANT PAINT COLORS on SMOOTH surface. Child POINTING at and NAMING colored regions. NOT sandpaper globe (has smooth painted surface, not textured). NOT a puzzle (continents NOT removable).',
-    key_materials: ['Wooden sphere', 'Smooth surface', 'Paint in 7 continent colors'],
+      'Spherical globe with SEVEN DISTINCTLY COLORED CONTINENTS painted in SMOOTH, VIBRANT PAINT: North America (one bright color), South America (contrasting color), Europe (different color), Africa (distinct color), Asia (prominent color), Australia (small color), Antarctica (often white). Child POINTING at each colored region and NAMING continents. Smooth painted surface (NOT textured like sandpaper globe). NOT a textured sandpaper globe (smooth painted only). NOT a puzzle (continents are painted on, not removable).',
+    key_materials: ['Wooden sphere', 'Smooth surface', 'Paint in 7 distinct continent colors'],
     confusion_pairs: ['cu_globe_land_water'],
     difficulty: 'easy'
   },
@@ -32,8 +32,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'FLAT WOODEN PUZZLE with 7 REMOVABLE CONTINENT PIECES, each continent a different COLOR. Wood PUZZLE FRAME with INLAID BASE showing ocean. Child LIFTING and PLACING continent-shaped pieces back into frame using KNOBS (round wooden handles on top of each piece). NOT a globe (flat, not spherical). NOT country maps (shows only continents, not individual countries).',
-    key_materials: ['Wooden frame', 'Wood puzzle pieces', 'Wooden knobs', 'Paint colors'],
+      'FLAT WOODEN PUZZLE consisting of SEVEN REMOVABLE CONTINENT-SHAPED PIECES, each a different COLOR. Wooden rectangular frame/base showing ocean background. Each continent piece has a WOODEN KNOB (round handle) on top for easy grasping and lifting. Child REMOVING all continent pieces from the frame, then REINSERTING them back into their shaped recesses using the knobs. Puzzle sits on a low table at child\'s eye level. NOT a globe (flat, not spherical). NOT country-level maps (shows only continent outlines, no individual countries). NOT just loose cards (rigid wooden construction).',
+    key_materials: ['Wooden frame base', 'Wooden continent pieces', 'Wooden knobs', 'Paint in continent colors'],
     confusion_pairs: ['cu_puzzle_maps_continents'],
     difficulty: 'easy'
   },
@@ -44,8 +44,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'SET OF 6 SEPARATE WOODEN PUZZLE MAPS (one per continent, NOT world). Each map shows INDIVIDUAL COUNTRIES as removable WOODEN PIECES with KNOBS, color-coded. North America frame shows USA, Canada, Mexico as distinct pieces. Child SORTING and ASSEMBLING each continent separately, then placing back. Maps typically in wooden boxes stacked. NOT world puzzle (each is single continent zoom). NOT flat flat colored cards (puzzle pieces are 3D wooden with knobs).',
-    key_materials: ['6 wooden puzzle frames', 'Country-shaped pieces', 'Wooden knobs', 'Painted colors'],
+      'SET OF SIX SEPARATE WOODEN PUZZLE MAPS, each showing ONE CONTINENT with its INDIVIDUAL COUNTRY PIECES. North America frame contains USA, Canada, Mexico as distinct removable pieces. Each continent puzzle in its own wooden box. Each country/region piece has a WOODEN KNOB for handling. Child SELECTING and ASSEMBLING one continent at a time, placing country-shaped pieces into the continent frame. Colors distinguish countries within each continent. NOT the world puzzle (each map is zoomed into a single continent, showing country detail). NOT a single flat map (6 separate puzzle boxes).',
+    key_materials: ['6 wooden puzzle frames', 'Wooden country-shaped pieces', 'Wooden knobs', 'Paint colors for countries', 'Wooden boxes for storage'],
     confusion_pairs: ['cu_puzzle_map_world'],
     difficulty: 'medium'
   },
@@ -56,8 +56,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'COLLECTION OF MINIATURE FLAGS (2-3 inches tall) IN FLAG STANDS. Wooden or plastic STANDS with FABRIC FLAGS showing national colors and patterns (stripes, crosses, symbols). Flags include all continents. Child INSERTING flags into stands, MATCHING to country outlines on map, or DISPLAYING on shelf. NOT laminated flag cards (these are 3D fabric flags in stands). NOT flag puzzle (no puzzle fitting, just display/matching).',
-    key_materials: ['Flag stands (wood/plastic)', 'Fabric flags', 'Paint'],
+      'COLLECTION OF MINIATURE FLAGS (2-3 inches tall) IN WOODEN or PLASTIC STANDS, representing countries from all continents. Flags are FABRIC with COLORS and PATTERNS: stripes (French flag - blue/white/red), crosses (Swiss flag - white cross), symbols (Chinese flag - yellow stars). Child INSERTING flags into stands, MATCHING flags to country outlines on a large world map, or DISPLAYING flags in sequence on a shelf. Flags are SMALL and PORTABLE. NOT laminated flat flag cards (these are 3D fabric flags mounted in stands). NOT a flag puzzle game (just matching/display activity).',
+    key_materials: ['Flag stands (wood or plastic)', 'Fabric flags', 'Paint or fabric printing'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -68,8 +68,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      'SET OF 4 3D CERAMIC or WOODEN TRAYS showing LANDFORM PAIRS in miniature. Each pair demonstrates complementary forms: (1) ISLAND (brown land protruding from blue water) and LAKE (blue water surrounded by brown land), (2) PENINSULA (land extending into water) and GULF (water extending into land), (3) ISTHMUS (narrow land strip connecting two lands) and STRAIT (narrow water channel), (4) CAPE (pointed land extending into sea) and BAY (curved water indenting coastline). Child OBSERVING, TRACING, and NAMING each pair. NOT flat diagrams (these are 3D tactile models). NOT animal habitats (shows only water/land forms, no vegetation).',
-    key_materials: ['Ceramic or wooden trays', 'Blue and brown paint/glaze'],
+      'SET OF 3-4 3D CERAMIC or CAST POTTERY TRAYS, each showing a PAIR OF COMPLEMENTARY LANDFORMS in miniature: (1) ISLAND (brown clay land surrounded on all sides by BLUE WATER) paired with LAKE (BLUE WATER completely surrounded by brown LAND), (2) PENINSULA (brown land extending into blue water on three sides) paired with GULF (blue water extending into brown land), (3) ISTHMUS (very narrow brown strip connecting two land masses) paired with STRAIT (narrow blue water channel separating two land masses), (4) CAPE (pointed brown projection extending into blue water) paired with BAY (curved blue indentation into brown coastline). Child TRACING fingers along the forms, OBSERVING the land-water relationships. NOT flat diagrams or cards (three-dimensional tactile models). NOT simple blue/brown coloring only (specific landform shapes are crucial).',
+    key_materials: ['Ceramic or cast pottery trays (4 pairs)', 'Blue and brown glaze or paint', 'Smooth surfaces'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -80,8 +80,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Geography',
     visual_description:
-      '3D MODEL of the solar system with SPHERES representing SUN (large yellow/orange), and 8 PLANETARY SPHERES in graduated sizes and colors: Mercury (gray, tiny), Venus (yellow), Earth (blue-green), Mars (red), Jupiter (orange-brown with bands), Saturn (tan with visible ring), Uranus (light blue), Neptune (deep blue). Typically mounted on frame showing orbital paths or arranged on shelves. Child ARRANGING planets in correct order, LEARNING sizes and colors. NOT flat star chart (three-dimensional spheres). NOT just the Earth and moon (includes all 8 planets and sun).',
-    key_materials: ['Wooden or plastic spheres', 'Paint in planet colors', 'Frame or base'],
+      '3D MODEL showing the SOLAR SYSTEM with SPHERES of different sizes and colors: SUN (large yellow-orange sphere, biggest), and EIGHT PLANETS in graduated sizes - Mercury (tiny gray), Venus (yellow), Earth (blue-green with visible continents), Mars (red), Jupiter (large orange-brown with atmospheric bands/stripes), Saturn (tan with visible RINGS extending outward), Uranus (light blue), Neptune (deep blue). Planets often arranged in orbital order on a frame or shelf display. Child ARRANGING planets by size and order, LEARNING colors and relative positions. NOT a flat star chart or poster (three-dimensional spheres). NOT just Earth and moon (includes full solar system with all 8 planets and sun).',
+    key_materials: ['Wooden or plastic spheres in multiple sizes', 'Paint in planet colors', 'Rings for Saturn (wire or painted)', 'Frame or base for display'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -93,8 +93,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'LARGE WALL CALENDAR or STANDING CALENDAR with MOVABLE CARDS for DAYS, MONTHS, DATES. Wooden FRAME holding separate card sets. Cards display DAY NAMES (Monday-Sunday), MONTH NAMES (January-December), DATE NUMBERS (1-31), and often SEASON or WEATHER indication. Child ADVANCING cards each day, POINTING to current day/month/date. NOT a printed calendar (cards are individually movable). NOT a clock (shows dates/days, not hours).',
-    key_materials: ['Wooden frame', 'Cardstock cards', 'Paint/print'],
+      'LARGE STANDALONE CALENDAR (2-3 feet wide) with MOVABLE SEPARATE CARD SETS displayed on wooden frame or stand. Includes: DAY-OF-WEEK CARDS (Monday through Sunday) on one rail, MONTH CARD (current month name) on another rail, DATE CARDS (1-31) on a third rail, and often WEATHER or SEASON indicators (sun card, rain card, snow card) on a fourth section. All cards are THICK CARDSTOCK with LARGE PRINTED or HAND-WRITTEN text. Child ADVANCING cards each morning, POINTING to current day/date/month, NAMING the weather. NOT a printed paper calendar (cards are individually movable on rails). NOT a clock (shows calendar dates and days, not time of day). Card movement is HORIZONTAL SLIDING on rails.',
+    key_materials: ['Wooden frame or stand', 'Thick cardstock cards', 'Paint or print on cards', 'Sliding rails or card holders'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -105,8 +105,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'RITUAL SETUP with SMALL GLOBE on CENTER TABLE, surrounding CARDS representing 12 MONTHS arranged in CIRCLE around globe, and LIT CANDLE (sun). Child or teacher HOLDING globe, WALKING around the circle one revolution per year of life, while PASSING the candle (sun) on each lap, STOPPING at birth month. Not a game (ceremonial experience). NOT a puzzle (cards arranged in fixed circle). NOT a game board (ritual, not competitive).',
-    key_materials: ['Small globe', 'Month cards', 'Candle (or safe light)', 'Cards showing zodiac or seasonal symbols'],
+      'CEREMONIAL SETUP consisting of: SMALL GLOBE placed in CENTER of table, TWELVE MONTH CARDS arranged in a CIRCLE around the globe (January through December), a LIT CANDLE or SAFE LIGHT SOURCE representing the sun. Child or teacher HOLDING the globe, WALKING around the circle of month cards in a complete revolution for EACH YEAR of the child\'s life. The candle/sun is PASSED on each lap, with the walker STOPPING at the child\'s birth month. This is a RITUAL EXPERIENCE, not a competitive game. NOT a puzzle (cards are stationary in circle). NOT a game board (ceremonial walking activity).',
+    key_materials: ['Small globe', 'Twelve month cards', 'Candle or safe light (sun representation)', 'Cards with month names and symbols'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -117,8 +117,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'PAPER or CARDBOARD STRIP laid out horizontally showing CHILD\'S LIFE EVENTS in CHRONOLOGICAL ORDER. Events marked with PHOTOGRAPHS or DRAWINGS, TEXT LABELS, and DATES. Might include: birth (with photo/picture), learning to walk, starting preschool, first pet, etc. Child ARRANGING or CREATING this sequence. NOT a calendar (shows specific events, not days). NOT a random scrapbook (events in STRICT TIME ORDER).',
-    key_materials: ['Paper/cardboard strip', 'Photos or drawings', 'Text labels', 'Paint/markers'],
+      'LONG HORIZONTAL PAPER or CARDBOARD STRIP (3-6 feet) laid out linearly showing CHILD\'S LIFE EVENTS in STRICT CHRONOLOGICAL ORDER from left to right. Events marked with: PHOTOGRAPHS of the child, ILLUSTRATIONS or DRAWINGS, TEXT LABELS describing the event, and DATES or AGES. Typical events include: BIRTH (photo/illustration), LEARNING TO WALK (photo), FIRST BIRTHDAY, STARTING PRESCHOOL, FIRST PET, FAMILY TRIPS, LOSING FIRST TOOTH, etc. Events progress in clear TIME SEQUENCE. Child ARRANGING cards or CREATING this timeline by GLUING photos and writing labels. NOT a random scrapbook (events are in STRICT CHRONOLOGICAL ORDER). NOT a calendar (shows specific life events, not daily dates).',
+    key_materials: ['Long paper or cardboard strip', 'Photographs or drawings', 'Text labels', 'Glue', 'Paint or markers'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -129,8 +129,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'LARGE LEARNING CLOCK (8-12 inches diameter) with MOVABLE HOUR AND MINUTE HANDS (typically RED for hour, BLUE for minute). Face shows NUMBERS 1-12 around edge, and often COLORED RINGS or SECTIONS marking hours, half-hours, and quarter-hours. Wood or plastic construction. Child ADJUSTING hands to show times called out, or READING time shown. NOT a puzzle (hands are movable, not puzzle pieces). NOT an analog watch (large classroom-size, not wrist-worn).',
-    key_materials: ['Wood or plastic face', 'Movable clock hands', 'Numbers and markers', 'Fastener for hands'],
+      'LARGE LEARNING CLOCK (8-12 inches in diameter) with MOVABLE HOUR and MINUTE HANDS that child can physically ROTATE. Face displays NUMBERS 1-12 around the perimeter in LARGE TEXT. Hands are typically TWO DIFFERENT COLORS (red for hour hand, blue for minute hand) and different LENGTHS (minute hand longer). Face often includes COLOR-CODED RINGS or SECTIONS marking quarter-hours and half-hours. Wooden or plastic construction. Child MOVING hands manually to match times called out (e.g., "3 o\'clock"), or READING the time shown by the current hand positions. NOT a puzzle (hands rotate freely, not puzzle pieces). NOT a wristwatch (large table-top size for classroom use).',
+    key_materials: ['Wood or plastic clock face', 'Two movable clock hands', 'Numbers 1-12', 'Colored rings or section markers', 'Central fastener/pivot'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -141,8 +141,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'LONG HORIZONTAL TIMELINE (often 10-20 feet when unrolled) showing GEOLOGICAL AND BIOLOGICAL HISTORY of Earth. Displays eras (Precambrian, Paleozoic, Mesozoic, Cenozoic) with ILLUSTRATED CARDS or DRAWINGS showing PREHISTORIC CREATURES (dinosaurs, early mammals, early humans). Timeline uses COLOR BANDS for each era and shows RELATIVE TIME PROPORTIONS (Mesozoic era much longer than Cenozoic, represented by length). Child UNROLLING and STUDYING the sequence. NOT a calendar (geological timescale, not human history). NOT animal figurines (illustrations/cards, though sometimes small figurines placed on timeline).',
-    key_materials: ['Paper or fabric strip', 'Illustrated cards', 'Color bands', 'Labels'],
+      'VERY LONG HORIZONTAL TIMELINE (10-30 feet when fully unrolled, often stored on a roll or in segments). Shows GEOLOGICAL AND BIOLOGICAL HISTORY of Earth across MILLIONS OF YEARS. Timeline displays MAJOR ERAS with COLOR-CODED BANDS: Precambrian (often gray), Paleozoic (green), Mesozoic (brown/tan), Cenozoic (warm colors). Includes ILLUSTRATED CARDS or DRAWINGS showing PREHISTORIC CREATURES representing each era: early bacteria, trilobites, fish, amphibians, dinosaurs (T-Rex, Triceratops, flying pterosaurs), early mammals, early humans. TIME PROPORTIONS are represented by PHYSICAL LENGTH (Mesozoic era significantly longer than Cenozoic, shown by much longer band). Child UNROLLING the timeline and STUDYING the progression of life. NOT a calendar (geological timescale spanning millions of years, not human history). NOT just dinosaurs (includes all life eras including modern).',
+    key_materials: ['Long paper or fabric roll', 'Illustrated cards or drawings', 'Color bands for each era', 'Labels with era names', 'Card box for storage'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -153,8 +153,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'History and Time',
     visual_description:
-      'CHART or CARD SET showing UNIVERSAL HUMAN NEEDS categorized into groups. Often displays 4-5 main categories with ILLUSTRATIONS and LABELS: (1) PHYSICAL/MATERIAL needs (food, water, shelter, clothing, sleep), (2) SAFETY needs (protection, rules), (3) SOCIAL needs (family, friends, community), (4) EMOTIONAL/SPIRITUAL needs (art, music, love, meaning). Large laminated cards with PICTURES showing children/families demonstrating each need. NOT a fact card (comprehensive chart showing multiple needs, not single concept). NOT Maslow\'s pyramid (though related, typically simplified visual format).',
-    key_materials: ['Cardstock cards', 'Illustrations/photos', 'Lamination', 'Labels'],
+      'CHART or COMPREHENSIVE SET OF CARDS showing UNIVERSAL HUMAN NEEDS organized into 4-5 main categories with ILLUSTRATIONS and DESCRIPTIVE LABELS. Categories typically include: (1) PHYSICAL/MATERIAL NEEDS - PHOTOS of food, water, shelter/house, clothing, sleep/bed (2) SAFETY NEEDS - illustration of rules, protection, secure environment (3) SOCIAL/BELONGING NEEDS - PHOTOS of family, friends, community, playing together (4) EMOTIONAL/SPIRITUAL NEEDS - PHOTOS of art projects, music, love/hugging, play. Large LAMINATED CARDS with COLORFUL ILLUSTRATIONS and READABLE TEXT. Helps children understand that ALL humans share these basic needs regardless of culture. NOT a single-concept fact card (comprehensive chart showing multiple need categories). NOT Maslow\'s pyramid (though related concept, typically presented as simple visual chart/cards).',
+    key_materials: ['Thick cardstock or foam board cards', 'Illustrations/photographs', 'Lamination', 'Labels and descriptive text'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -166,8 +166,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'SET OF CLASSIFICATION CARDS (20-30 cards) showing OBJECTS divided into two categories. LIVING category displays: animals (bird, butterfly, cat), plants (tree, flower, grass). NON-LIVING category displays: rock, water, chair, book, pencil, car. Cards are LAMINATED or PRINTED with COLOR PHOTOS or ILLUSTRATIONS. Child SORTING cards into two piles, or MATCHING to category mats. NOT complex (simple binary living/non-living). NOT taxonomy (no subcategories like animal/plant). NOT puzzle (loose cards, not jigsaw pieces).',
-    key_materials: ['Cardstock cards', 'Photos or illustrations', 'Lamination', 'Category mats'],
+      'SET OF 20-30 CLASSIFICATION CARDS showing OBJECTS divided into two clear groups. LIVING category displays LAMINATED COLOR PHOTOS or ILLUSTRATIONS: animal (bird, butterfly, dog, fish), plants (tree, flower, grass, cactus). NON-LIVING category shows: rock, water, chair, pencil, book, car, desk, shoe. Each card has a SINGLE LARGE IMAGE and simple LABEL TEXT. Child SORTING cards into two separate piles on a mat, or MATCHING cards under category headings (Living / Non-Living). This is BINARY classification - no middle category. NOT complex taxonomy (no subcategories). NOT puzzle pieces (loose cards).',
+    key_materials: ['Laminated cardstock cards', 'Color photographs or illustrations', 'Category labels and mats'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -178,8 +178,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'SET OF CLASSIFICATION CARDS (30-40 cards) dividing living things into PLANTS and ANIMALS. PLANT category shows: trees, flowers, grass, cactus, fern, lily pad. ANIMAL category shows: mammal (cat, dog, horse), bird (chicken, parrot), fish, insect, reptile. Cards LAMINATED with COLOR PHOTOS or HAND-DRAWN ILLUSTRATIONS. Child SORTING into two piles, or MATCHING under plant/animal headings. NOT subcategories (no fish vs mammal distinction yet, just plant vs animal). NOT overlapping (no debate - clear categorization).',
-    key_materials: ['Cardstock cards', 'Illustrations/photos', 'Lamination', 'Category mats'],
+      'SET OF 30-40 CLASSIFICATION CARDS dividing LIVING THINGS into PLANTS and ANIMALS. PLANT category shows LAMINATED PHOTOS or ILLUSTRATIONS: flowering plant, grass, cactus, fern, tree, lily pad, mushroom. ANIMAL category shows: dog (mammal), bird (parrot/chicken), fish with fins, insect (butterfly/ant), reptile (turtle), amphibian (frog). Each card has a CLEAR IMAGE and LABEL. Child SORTING into two piles under "Plants" and "Animals" headers, or MATCHING cards to category mats. Distinctions are CLEAR-CUT - no ambiguous organisms at this level. NOT including microorganisms or fungi complexity (stays simple plant vs animal). NOT subcategories yet (no fish vs mammal distinction).',
+    key_materials: ['Laminated cardstock cards', 'Color photographs or illustrations', 'Category label cards and mats'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -190,8 +190,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'WOODEN PUZZLE SHOWING COMPLETE PLANT ANATOMY with 4-5 REMOVABLE PIECES: ROOT (underground, brown, branching), STEM (green vertical), LEAF (flat green), FLOWER (colorful petals and center). Each piece has LABEL underneath or separately. Puzzle base shows soil layer (brown) and above-ground layer with SUN illustration. Typically includes COLORED LABELS (nomenclature cards) with matching colors. Child REMOVING and REPLACING pieces, NAMING parts. NOT flower puzzle alone (includes root, stem, leaf, flower). NOT realistic herbarium (simplified diagrammatic puzzle).',
-    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint', 'Labels and nomenclature cards'],
+      'WOODEN PUZZLE showing a COMPLETE PLANT with 4-6 REMOVABLE PIECES. Puzzle is DIAGRAMMATIC showing: ROOT (brown, underground section with branching root hairs), STEM (green vertical section), LEAF (flat green piece with veins), FLOWER (colorful petals around center). Puzzle base/background shows TWO LAYERS - brown SOIL layer at bottom with roots, and green ABOVE-GROUND section with SUN illustration. Each removable piece SLOTS INTO a recess. LABELED TEXT underneath each piece or COLOR-CODED NOMENCLATURE CARDS (with matching colors) for each plant part. Child REMOVING and REPLACING pieces, NAMING each part, and UNDERSTANDING the plant structure. NOT just a flower puzzle (includes roots, stem, leaves, and flower together). NOT a realistic herbarium (simplified diagram/schematic puzzle).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint', 'Labels and color-coded nomenclature cards'],
     confusion_pairs: ['cu_parts_flower', 'cu_parts_leaf', 'cu_parts_root', 'cu_parts_seed'],
     difficulty: 'easy'
   },
@@ -202,8 +202,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'WOODEN PUZZLE SHOWING FLOWER CROSS-SECTION with 4-6 REMOVABLE PIECES: PETAL (colorful outer circle), SEPAL (green beneath petals), STAMEN (male reproductive, yellow stamens in center), PISTIL (female reproductive, center), and sometimes RECEPTACLE (base). Each part LABELED with COLOR-CODED NOMENCLATURE CARDS. Puzzle shows SIDE VIEW and sometimes CROSS-SECTION. Child IDENTIFYING and REPLACING pieces. NOT whole plant (focuses on flower only). NOT botanical (simplified diagram, not anatomically complex).',
-    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a FLOWER IN CROSS-SECTION or SIDE VIEW with 5-7 REMOVABLE PIECES revealing flower anatomy: PETAL (colorful outer circle of petals, removable as one or separate pieces), SEPAL (green leaves beneath petals, often removable), STAMEN (male reproductive parts, yellow stamens visible in center), PISTIL (female reproductive part, center structure), and RECEPTACLE (the base structure holding parts). Puzzle shows INTERNAL STRUCTURE - cross-section view revealing layers. Each part is COLOR-CODED with MATCHING NOMENCLATURE CARDS. Child IDENTIFYING and REPLACING pieces, learning reproductive plant structures. NOT a whole plant puzzle (focuses only on flower structure, not roots/stem/leaves). NOT realistic botanical specimen (simplified diagram).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in flower colors', 'Color-coded nomenclature cards'],
     confusion_pairs: ['cu_parts_plant'],
     difficulty: 'medium'
   },
@@ -214,8 +214,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'WOODEN PUZZLE SHOWING LEAF STRUCTURE with 3-4 REMOVABLE PIECES: BLADE (flat green), PETIOLE (stem attaching blade), VEINS (visible lines in blade, sometimes removable), and STIPULE (small bases at petiole). Large LEAF OUTLINE showing internal structure. COLOR-CODED LABELS with nomenclature cards matching each part. Child IDENTIFYING veins, understanding leaf attachment. Often displayed on yellow or green background to highlight the leaf. NOT flower (leaf only, no petals or reproductive parts). NOT leaf shape sorting (parts of structure, not types of leaves).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing LEAF STRUCTURE in DIAGRAMMATIC form with 4-5 REMOVABLE PIECES: BLADE (large flat green section - the main part of leaf), PETIOLE (thin stem attaching blade to branch), VEINS (visible lines running through blade - sometimes shown as separate removable pieces), MIDRIB (central vein), and sometimes STIPULE (small leaf-like base structures). Puzzle shows a LARGE LEAF OUTLINE, typically on a yellow or light green background for contrast. VISIBLE INTERNAL VEIN NETWORK shown in darker color. Child IDENTIFYING veins, understanding how leaves attach to stems. COLOR-CODED LABELS match nomenclature cards for each part. NOT a flower (leaf structure only, no petals or reproductive parts). NOT leaf shape sorting (focuses on internal structure of a single leaf type).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint', 'Color-coded nomenclature cards'],
     confusion_pairs: ['cu_parts_plant'],
     difficulty: 'medium'
   },
@@ -226,8 +226,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'WOODEN PUZZLE SHOWING ROOT SYSTEM with 3-4 REMOVABLE PIECES showing ROOT TYPES: TAPROOT (single large central root, like carrot), FIBROUS ROOTS (many thin spreading roots), and ROOT HAIRS (tiny absorption structures). Puzzle shows underground perspective with SOIL layer. May include ROOT CAP (protective tip). COLOR-CODED with nomenclature cards. Child COMPARING taproot vs fibrous, understanding absorption. NOT bulb (shows root systems, not bulb storage). NOT flower or leaf.',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing ROOT SYSTEM STRUCTURES with 3-4 REMOVABLE PIECES showing two main ROOT TYPES: TAPROOT (single large central root like a carrot with smaller side roots), and FIBROUS ROOT SYSTEM (many thin spreading roots with no large central root, like grass). Puzzle shows UNDERGROUND perspective with BROWN SOIL section. May include ROOT CAP (protective tip) and ROOT HAIRS (tiny absorption structures visible on roots). COLOR-CODED LABELS with nomenclature cards. Child COMPARING the two root types, understanding how different plants absorb water and nutrients. NOT a bulb or corm (shows root systems specifically, not underground storage structures). NOT flower or leaf parts.',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Brown and root-colored paint', 'Nomenclature cards'],
     confusion_pairs: ['cu_parts_plant'],
     difficulty: 'medium'
   },
@@ -238,8 +238,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'WOODEN PUZZLE SHOWING SEED CROSS-SECTION with 3-4 REMOVABLE PIECES: SEED COAT (protective outer layer, brown or tan), EMBRYO (tiny plant inside), and COTYLEDON or COTYLEDONS (seed leaves that store food). Often shows MONOCOT (one cotyledon - like corn) and DICOT (two cotyledons - like bean) examples. Large SEED CUTAWAY showing internal structure. Includes real seeds for comparison. COLOR-CODED nomenclature. NOT flower (seed interior, not reproductive parts). NOT seedling (shows inside seed, not sprouted).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint', 'Real seeds for comparison', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a SEED IN CROSS-SECTION with 3-4 REMOVABLE PIECES revealing seed anatomy: SEED COAT (protective outer layer, typically brown or tan colored), EMBRYO (tiny plant inside, visible as small green structure), and COTYLEDON(S) - seed leaves that store food (one cotyledon in monocots like corn, two in dicots like beans). Puzzle shows SIDE VIEW of seed cross-section, often displaying BOTH monocot and dicot examples side by side. Large CUTAWAY illustration showing internal structure. Includes REAL SEEDS nearby for comparison and tactile exploration. COLOR-CODED nomenclature cards for each part. Child COMPARING monocot vs dicot seeds, understanding seed structure and germination readiness. NOT a flower or fruit (seed interior structures only). NOT a sprouted seedling (shows inside dormant seed).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint', 'Real seeds for comparison', 'Color-coded nomenclature cards'],
     confusion_pairs: ['cu_parts_plant'],
     difficulty: 'medium'
   },
@@ -250,8 +250,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'SEQUENCE OF ILLUSTRATED CARDS or DRAWINGS showing plant growth stages: (1) SEED (whole seed, dormant), (2) GERMINATION (root emerging), (3) SEEDLING (roots and tiny leaves), (4) YOUNG PLANT (leaves and stem), (5) MATURE PLANT (full growth, flowering), (6) FLOWERING (flowers visible), (7) SEED FORMATION (fruits developing), (8) DISPERSAL (seeds released). Cards are LAMINATED or in CARD BOX, often COLOR-ILLUSTRATED. Child ARRANGING in correct sequence. May include actual planting materials for hands-on growing. NOT food cycle (plant growth only, not predation). NOT seasons (focuses on growth stages).',
-    key_materials: ['Illustrated cards', 'Lamination', 'Card box', 'Optional: seeds, soil, containers'],
+      'SEQUENCE OF 6-8 ILLUSTRATED CARDS or DRAWINGS showing complete plant growth stages in order: (1) SEED (whole seed, dormant, resting), (2) GERMINATION (root emerging from seed coat), (3) SEEDLING (small roots established, tiny leaves emerging), (4) YOUNG PLANT (roots growing deeper, multiple leaves visible, stem strengthening), (5) MATURE VEGETATIVE PLANT (full plant with many leaves, ready to flower), (6) FLOWERING STAGE (flowers visible, reproductive organs active), (7) SEED FORMATION (flowers fade, fruits/seed pods developing), (8) SEED DISPERSAL (mature seeds released, ready to spread). Cards are LAMINATED or in a CARD BOX set. Typically COLORFUL HAND-DRAWN or PHOTO ILLUSTRATIONS. Child ARRANGING cards in correct sequential order. Activity may include ACTUAL PLANTING MATERIALS (seeds, soil, pots, water) for hands-on growing observation. NOT a food crop cycle (shows plant growth structure only, not nutrition/consumption). NOT seasonal cycle (shows life stages, not calendar seasons).',
+    key_materials: ['Illustrated cards (6-8)', 'Lamination or card box', 'Optional: seeds, soil, containers, water for growing'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -262,8 +262,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Botany',
     visual_description:
-      'SET OF SCIENTIFIC EXPERIMENT MATERIALS showing plant needs through CONTROLLED EXPERIMENTS. Common setups: (1) WATER EXPERIMENT - identical plants, one watered, one dry (demonstrating water need), (2) LIGHT EXPERIMENT - identical plants, one in light, one in darkness (demonstrating light need), (3) SOIL EXPERIMENT - plants in good soil vs sand (demonstrating nutrition). Materials include: small pots, soil, seeds, water containers, labels, and OBSERVATION CHART for recording growth over days/weeks. Child SETTING UP, PREDICTING, OBSERVING, and RECORDING. NOT classroom display (hands-on experimental setup requiring ongoing observation and data collection).',
-    key_materials: ['Pots or containers', 'Soil and sand', 'Seeds', 'Water', 'Labels', 'Recording chart'],
+      'SET OF SCIENTIFIC EXPERIMENT MATERIALS for hands-on plant science exploration. Typically includes 2-3 CONTROLLED EXPERIMENTS demonstrating plant NEEDS: (1) WATER EXPERIMENT - two identical small potted plants placed side by side, one WATERED REGULARLY, one LEFT DRY, with OBSERVATION CHART showing growth differences over weeks, (2) LIGHT EXPERIMENT - two identical plants, one in BRIGHT LIGHT, one in DARKNESS or low light, showing how light affects growth, (3) SOIL EXPERIMENT - same seeds planted in GOOD SOIL vs SAND vs CLAY showing how soil quality affects growth. Materials include: small pots/containers, soil and other media, seeds, water containers, OBSERVATION CHART or JOURNAL for recording plant heights/colors over time (days/weeks). Child SETTING UP the experiment, PREDICTING outcomes, OBSERVING daily changes, RECORDING measurements and drawings. NOT a classroom display (requires ongoing active observation and data collection). NOT a completed demo (child participates in setup and monitoring).',
+    key_materials: ['Pots or containers (multiple)', 'Soil, sand, clay media', 'Seeds', 'Water containers', 'Observation/recording chart', 'Measuring tools'],
     confusion_pairs: [],
     difficulty: 'hard'
   },
@@ -275,8 +275,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'SET OF CLASSIFICATION CARDS (20-30) dividing animals by presence of BACKBONE. VERTEBRATE category shows: mammal (dog, horse), bird (chicken), fish (with fins and scales), reptile (turtle), amphibian (frog). INVERTEBRATE category shows: insect (butterfly, ant), spider (8 legs), worm, snail, jellyfish, crab. Cards LAMINATED with COLOR PHOTOS or ILLUSTRATIONS highlighting SPINE or LACK of spine. Child SORTING into two groups. NOT taxonomy (simple binary backbone/no backbone). NOT body part identification (focuses only on skeletal feature).',
-    key_materials: ['Cardstock cards', 'Photos or illustrations', 'Lamination', 'Category labels'],
+      'SET OF 20-30 CLASSIFICATION CARDS showing animals divided by BACKBONE presence. VERTEBRATE category shows LAMINATED PHOTOS or ILLUSTRATIONS with VISIBLE SPINE/BACKBONE highlighted: mammal (dog, horse, cat with visible spine), bird (chicken with neck vertebrae visible), fish (with backbone along center), reptile (turtle with shell housing spine), amphibian (frog with vertebral column visible). INVERTEBRATE category shows animals WITHOUT backbones: insect (butterfly, ant with segmented body), spider (8 legs, no spine), worm (segmented, no spine), snail (shell but no spine), jellyfish (gelatinous, no skeleton), crab (external shell, no internal spine). Cards often HIGHLIGHT the presence or ABSENCE of spine with colored outlines. Child SORTING animals into two groups. NOT detailed taxonomy (simple binary: has backbone / no backbone). NOT body part identification beyond skeletal feature.',
+    key_materials: ['Laminated cardstock cards', 'Color photographs or illustrations', 'Lamination', 'Category label cards'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -287,8 +287,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'SET OF CLASSIFICATION CARDS dividing VERTEBRATES into 5 CLASSES: (1) FISH - scales, fins, gills, cold-blooded (illustrations of salmon, goldfish, shark), (2) AMPHIBIANS - moist skin, metamorphosis, cold-blooded (frog, salamander, newt), (3) REPTILES - dry scales, cold-blooded, lay eggs (turtle, snake, lizard), (4) BIRDS - feathers, warm-blooded, lay eggs (parrot, chicken, eagle), (5) MAMMALS - fur, warm-blooded, produce milk (cat, dog, horse, whale). Cards show DISTINGUISHING FEATURES clearly illustrated. Child SORTING animals by class, LEARNING characteristics. NOT order within classes (just 5 main vertebrate classes).',
-    key_materials: ['Cardstock cards', 'Illustrations/photos', 'Lamination', 'Class label cards'],
+      'SET OF CLASSIFICATION CARDS dividing VERTEBRATE ANIMALS into FIVE MAIN CLASSES, each with DISTINCTIVE CHARACTERISTICS clearly illustrated: (1) FISH - ILLUSTRATIONS showing scales, fins, gills (goldfish, salmon, shark), body adapted for water, cold-blooded, (2) AMPHIBIANS - PHOTOS showing moist smooth skin, legs for land, gills/lungs, metamorphosis (frog, salamander, newt), (3) REPTILES - ILLUSTRATIONS showing dry scaly skin, cold-blooded, lay eggs (turtle, snake, lizard, crocodile), (4) BIRDS - PHOTOS showing FEATHERS, beaks, wings, warm-blooded, lay eggs (parrot, chicken, eagle, penguin), (5) MAMMALS - PHOTOS showing FUR or hair, warm-blooded, produce milk from mammary glands (cat, dog, horse, whale, human). Each class card shows 2-4 example animals. DISTINGUISHING FEATURES are labeled clearly. Child SORTING animals by class, LEARNING vertebrate classification. NOT order/genus within classes (just 5 main vertebrate classes). Cards make distinctions OBVIOUS through illustrations.',
+    key_materials: ['Cardstock cards', 'Color illustrations/photographs', 'Lamination', 'Class label cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -299,8 +299,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'WOODEN PUZZLE showing FISH ANATOMY with REMOVABLE PARTS: DORSAL FIN (top), TAIL FIN (caudal fin, rear), PECTORAL FINS (side fins), GILL COVER (operculum), SCALES (body covering), LATERAL LINE (sensing organ). Puzzle shows SIDE VIEW of realistic fish. Each part COLOR-CODED with matching nomenclature cards. Often blue background suggesting water. Child IDENTIFYING fins, gills, and body structure. NOT fish skeleton (shows exterior features, not bones). NOT whole ecosystem (single fish anatomy).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a FISH (typically a simple fish shape like goldfish or salmon) with 5-7 REMOVABLE PIECES revealing fish anatomy: HEAD (including mouth and gills), BODY (main torso section), DORSAL FIN (back fin), PECTORAL FINS (side fins for steering), TAIL FIN (caudal fin for propulsion), GILL COVERS (operculum), SCALES (visible on body with texture). Puzzle shows SIDE VIEW of fish. Each part LABELED with COLOR-CODED NOMENCLATURE CARDS matching the fish piece colors. Background often shows water (blue) for context. Child IDENTIFYING fins and understanding their function in water movement. NOT a flower or mammal (fish-specific anatomy). NOT overly complex (simplified diagrammatic puzzle).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in fish colors', 'Nomenclature cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -311,8 +311,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'WOODEN PUZZLE showing AMPHIBIAN ANATOMY (frog) with REMOVABLE PARTS: HEAD (with eyes, mouth, nostrils), FRONT LEGS (4 digits), HIND LEGS (5 digits, webbed), BODY, TAIL (if tadpole variant shown). Puzzle shows TOP VIEW and SIDE VIEW options. Color typically green with yellow/tan underside. COLOR-CODED nomenclature. Child LEARNING amphibian adaptations (webbed feet, moist skin indication). NOT tadpole (adult frog form). NOT skeleton (shows body parts and external features).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint in frog colors', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a FROG (toad or tree frog) with 5-7 REMOVABLE PIECES revealing amphibian anatomy: HEAD (large, with two prominent EYES on top), MOUTH (wide mouth for catching insects), BODY (squat torso), FRONT LEGS (shorter, with four digits), BACK LEGS (much longer and muscular, with webbed feet for jumping/swimming), and sometimes THROAT SAC (for males' croaking). Puzzle shows DORSAL VIEW (top-down perspective showing the frog from above). Background may show lily pad or water environment. COLOR-CODED NOMENCLATURE CARDS for each part. Child UNDERSTANDING amphibian structure, comparing to fish and other animals. NOT a fish (no fins, has legs and eyes adapted for air). NOT a mammal (smooth wet skin, metamorphosis, cold-blooded).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in amphibian colors', 'Nomenclature cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -323,8 +323,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'WOODEN PUZZLE showing REPTILE ANATOMY (turtle/tortoise) with REMOVABLE PARTS: SHELL (carapace, upper), PLASTRON (underside shell), HEAD (with eyes, mouth, nostrils), FRONT LEGS (4 toes), HIND LEGS (4 toes), TAIL. Puzzle often shows TOP VIEW highlighting shell pattern. Brown and tan colors typical. COLOR-CODED nomenclature. Child UNDERSTANDING shell as defining turtle characteristic, leg structure. NOT terrapin/aquatic turtle (typically shows land tortoise form). NOT empty shell display (anatomical parts labeled).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint in browns/tans', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a TURTLE or TORTOISE with 5-6 REMOVABLE PIECES revealing reptile anatomy: SHELL (carapace, the large protective dome covering the back), PLASTRON (ventral shell on underside, removable as a piece), HEAD (with eyes, nostrils, mouth), FOUR LEGS (stubby reptilian limbs), and TAIL (extending from rear of shell). Puzzle shows DORSAL AND VENTRAL VIEWS (top and bottom perspectives). Shell pieces may show detailed scute patterns (hexagonal sections). COLOR-CODED LABELS with nomenclature cards. Background may show rocks or water. Child UNDERSTANDING the protective shell structure unique to reptiles. NOT a mammal (no fur, cold-blooded). NOT an amphibian (scaly protected shell, not moist skin).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in reptile colors', 'Nomenclature cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -335,8 +335,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'WOODEN PUZZLE showing BIRD ANATOMY with REMOVABLE PARTS: BEAK (upper and lower), HEAD (with eye), WING (showing feather structure), TAIL FEATHERS (long feathers at rear), BODY, LEG, FOOT (with toes). Puzzle shows SIDE VIEW of typical bird (not specific species). Colors include brown, tan, white for plumage. COLOR-CODED nomenclature highlighting FEATHERS as distinguishing feature. Child LEARNING bird characteristics, feather types. NOT skeleton (external anatomy). NOT specific bird species detail (generic bird form).',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint in bird colors', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a BIRD (typically a generic bird shape like a chicken, parrot, or generic songbird) with 6-8 REMOVABLE PIECES revealing avian anatomy: HEAD (with beak, eyes, ears), BEAK (pointed, hard), BODY (covered in feathers), FEATHERS (specifically wing feathers and tail feathers as distinct pieces), WINGS (with visible feather arrangement), TAIL (fanned tail feathers, removable), LEGS (scaled bird legs with talons/claws), and sometimes COMB or CREST (on head of some birds). Puzzle shows SIDE VIEW with clear feather structure visible. COLOR-CODED NOMENCLATURE CARDS. Background may show sky or perch. Child IDENTIFYING unique bird features (feathers, beak, wings for flight). NOT a mammal (feathers, not fur; beak, not teeth). NOT a reptile (feathers distinguish from scaled reptiles).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in bird colors', 'Nomenclature cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -347,8 +347,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'WOODEN PUZZLE showing MAMMAL ANATOMY (horse) with REMOVABLE PARTS: HEAD (ears, eyes, nostrils, mouth), NECK, MANE (hair on neck), BODY, LEGS (4, with HOOVES at base), TAIL. Puzzle shows SIDE VIEW of horse in profile. Brown or tan colors typical. COLOR-CODED nomenclature. Child LEARNING mammal characteristics (fur, hooves, limbs). Emphasizes MANE and TAIL as distinctive features. NOT skeleton (external body parts). NOT detailed saddle/tack elements.',
-    key_materials: ['Wooden puzzle base', 'Wooden pieces', 'Paint in horse colors', 'Nomenclature cards'],
+      'WOODEN PUZZLE showing a HORSE with 7-9 REMOVABLE PIECES revealing mammal anatomy: HEAD (with ears, eyes, nostrils), MANE (long hair on neck, often removable as separate piece), NECK (muscular), BODY (barrel chest and hindquarters), FRONT LEGS (two legs with hooves), BACK LEGS (two legs with hooves), TAIL (long flowing horse tail, often removable), and HOOVES (at end of each leg). Puzzle shows SIDE VIEW of horse. Clearly shows FUR texture and MANE detail. COLOR-CODED NOMENCLATURE CARDS. Background may show pasture or stable. Child IDENTIFYING mammalian features (fur, four legs, hooves). NOT a reptile or amphibian (fur-covered, warm-blooded). NOT a bird (hooves, mane, no wings).',
+    key_materials: ['Wooden puzzle base', 'Wooden puzzle pieces', 'Paint in horse colors/brown', 'Nomenclature cards'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -359,8 +359,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'SET OF HABITAT CARDS or DIORAMA-STYLE DISPLAYS showing DIFFERENT ENVIRONMENTS and ANIMALS living there. FOREST habitat shows trees, woodland animals (deer, squirrel, bird). OCEAN habitat shows water, marine animals (fish, dolphin, shark). DESERT habitat shows sand, desert animals (camel, lizard). ARCTIC habitat shows ice/snow, arctic animals (polar bear, seal). GRASSLAND habitat shows grass, grazing animals (zebra, lion). Cards LAMINATED or DIORAMA BOXES with 3D elements. Child MATCHING animal figurines to correct habitat. NOT animal identification alone (geography/ecology focus).',
-    key_materials: ['Habitat cards or diorama boxes', 'Background illustrations', 'Optional: animal figurines', 'Labels'],
+      'SET OF HABITAT CLASSIFICATION CARDS showing WHERE different animals LIVE. Typically includes 5-8 major habitat types with ILLUSTRATED CARDS or PHOTOS: (1) FOREST - dense trees, undergrowth, showing animals (deer, bear, squirrel, bird, insect), (2) GRASSLAND/SAVANNA - open field with grass, showing animals (zebra, lion, antelope, bird), (3) DESERT - sandy, sparse vegetation, showing animals (camel, lizard, scorpion, vulture), (4) OCEAN - water environment, showing animals (fish, whale, jellyfish, shark, sea turtle), (5) ARCTIC/ICE - snow and ice, showing animals (polar bear, penguin, seal, arctic fox), (6) JUNGLE/RAINFOREST - dense vegetation, wet, showing animals (monkey, jaguar, parrot, snake, insect), (7) MOUNTAIN - high elevation, showing animals (eagle, mountain goat, bear). Child MATCHING animal cards to habitat cards, or SORTING animals by where they live. NOT ecosystem food chain (focuses on habitat/home, not predator-prey).',
+    key_materials: ['Cardstock habitat cards', 'Illustrated photographs', 'Lamination', 'Animal cards for matching'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -371,8 +371,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'SET OF CONTINENT MATS or MAPS with ANIMAL FIGURINES to place geographically. North America mat shows bear, moose, bald eagle, cougar. South America mat shows jaguar, macaw, llama, anaconda. Africa mat shows lion, elephant, zebra, giraffe. Asia mat shows tiger, panda, elephant, cobra. Europe mat shows fox, boar, eagle. Australia mat shows kangaroo, koala, platypus. Child PLACING figurines on correct continent, LEARNING geographic animal distribution. NOT animal encyclopedia (focuses on geographic placement). NOT habitat detail (simple continental categorization).',
-    key_materials: ['Continent mats or maps', 'Small animal figurines', 'Labels'],
+      'SET OF ANIMAL FIGURINES or CARDS matched with CONTINENT MAPS or MAT sections. Typically shows 5-7 CONTINENT MATS (North America, South America, Europe, Africa, Asia, Australia, Antarctica) with REPRESENTATIVE ANIMALS for each: North America (moose, bald eagle, grizzly bear, mountain lion), South America (jaguar, anaconda, macaw, sloth, piranha), Europe (wolf, red fox, boar, eagle owl), Africa (lion, zebra, giraffe, hippopotamus, elephant, leopard), Asia (tiger, panda, elephant, rhinoceros, orangutan), Australia (kangaroo, koala, platypus, kookaburra), Antarctica (penguin, seal, whale). Child PLACING animal figurines or cards onto the correct continent mat, understanding geographic distribution of species. NOT food chain or ecosystem (focuses on animal geographic range). NOT detailed taxonomy (shows representative animals per continent).',
+    key_materials: ['Continent mats or cards', 'Animal figurines or illustrations', 'Identification labels'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -383,8 +383,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Zoology',
     visual_description:
-      'SEQUENCE OF ILLUSTRATED CARDS showing METAMORPHOSIS and GROWTH CYCLES for multiple animals. BUTTERFLY cycle: (1) EGG (tiny), (2) LARVA/CATERPILLAR (green, eating), (3) PUPA/CHRYSALIS (hanging), (4) ADULT BUTTERFLY (winged, colorful). FROG cycle: (1) EGGS (cluster in water), (2) TADPOLE (swimming, tail, gills), (3) TADPOLE WITH LEGS (transitional), (4) ADULT FROG. CHICKEN cycle: (1) EGG, (2) CHICK (fluffy yellow), (3) GROWING CHICKEN (feathering), (4) ADULT CHICKEN. Cards LAMINATED with COLOR ILLUSTRATIONS. Child ARRANGING stages in order. NOT animal parts (shows complete life progression). NOT single animal (multiple life cycle examples).',
-    key_materials: ['Illustrated cards', 'Lamination', 'Card storage box', 'Labels for each stage'],
+      'SET OF LIFE CYCLE SEQUENCE CARDS showing METAMORPHOSIS and GROWTH STAGES of different animals, typically 2-4 different species: (1) BUTTERFLY LIFE CYCLE - ILLUSTRATED CARDS showing EGG (tiny on leaf), LARVA/CATERPILLAR (green worm-like, eating leaf), PUPA/CHRYSALIS (hanging protective case), and ADULT BUTTERFLY (winged insect), (2) FROG LIFE CYCLE - ILLUSTRATIONS showing EGGS (clustered in water), TADPOLE (fish-like, swimming with tail), TADPOLE WITH LEGS (tail reducing, legs growing), and ADULT FROG (no tail, four legs), (3) CHICKEN LIFE CYCLE - EGG, CHICK (fluffy), JUVENILE CHICKEN, ADULT HEN/ROOSTER. Cards are LAMINATED or in CARD BOXES. Each card shows CLEAR STAGES in sequence. Child ARRANGING cards in correct ORDER, understanding METAMORPHOSIS and GROWTH. NOT plant cycles (animal metamorphosis specifically). NOT continuous growth (shows distinct stages/transformations).',
+    key_materials: ['Illustrated life cycle cards (2-4 sets)', 'Lamination or card boxes', 'Labels showing stage names'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -396,8 +396,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'WATER BASIN (large bowl or tray) with COLLECTION OF VARIOUS OBJECTS for testing: WOOD (floats), STONE (sinks), CORK (floats), METAL BOLT (sinks), SPONGE (floats), RUBBER (floats or sinks depending), GLASS (sinks). Objects visible in water, some FLOATING on surface, some RESTING on bottom. Child PLACING objects, PREDICTING sink/float before testing, OBSERVING results. Clear water shows contrast. NOT science equipment (common classroom objects). NOT boat testing (individual objects, not floating vessels).',
-    key_materials: ['Water basin/bowl', 'Various test objects (wood, metal, cork, stone, sponge)', 'Clear water', 'Towels'],
+      'HANDS-ON DENSITY EXPLORATION ACTIVITY with a LARGE WATER BASIN (shallow tub or table), and a COLLECTION OF VARIOUS OBJECTS with different DENSITIES: ITEMS THAT FLOAT - cork, wood block, foam, plastic cup, feather, sponge, rubber duck; ITEMS THAT SINK - rock, metal washer, glass marble, ceramic tile, plastic toy, rubber toy. Child PREDICTING which objects will float or sink, then PLACING them in water one by one to TEST predictions. Some objects are SURPRISING (solid plastic might float, certain wood might sink depending on density and water saturation). Often accompanied by a PREDICTION CHART where child marks predictions before testing. NOT a game with winners (scientific exploration activity). NOT food safety (uses non-toxic objects only).',
+    key_materials: ['Water basin or large tub', 'Collection of objects in various materials', 'Prediction chart', 'Water', 'Towel for drying'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -408,8 +408,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'COLLECTION OF TEST OBJECTS and MAGNET(S). Objects include: METAL (iron nail, steel paperclip - ATTRACTS), NON-METAL (plastic, wood, rubber, cork - NO ATTRACT), ALUMINUM (looks metal but does NOT attract), COPPER (looks metal but does NOT attract). Child HOLDING MAGNET and TESTING objects, OBSERVING which attract, SORTING into two groups. Magnet typically visible U-SHAPE or BAR MAGNET. Often objects STUCK to magnet surface. NOT electromagnet (simple permanent magnet). NOT motor (magnetism exploration, not mechanics).',
-    key_materials: ['Magnet(s)', 'Metal objects', 'Non-metal objects', 'Sorting tray or labels'],
+      'HANDS-ON MAGNETISM EXPLORATION with MAGNETS and a COLLECTION OF OBJECTS, some ferromagnetic (attracted to magnets) and some non-magnetic. MAGNETIC OBJECTS include: metal washer, paper clip, iron nail, metal screw, metal spoon, metal fork, metal bolt. NON-MAGNETIC OBJECTS include: plastic fork, rubber eraser, wooden block, paper, glass marble, ceramic tile, aluminum foil, stone. Child USING a MAGNET to TEST each object, PREDICTING which ones the magnet will attract before testing, SORTING objects into two groups (Magnetic / Non-Magnetic). Often accompanied by a CHART for recording results. Child discovers that NOT all metal is magnetic (aluminum, stainless steel often not magnetic). NOT a magnet science lesson (hands-on discovery through experimentation). NOT electromagnetic (simple permanent magnets).',
+    key_materials: ['Magnets (permanent, handheld)', 'Collection of objects (metal, plastic, wood, ceramic)', 'Prediction/results chart'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -420,10 +420,10 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'DEMONSTRATION OR HANDS-ON MATERIALS showing three states: SOLID (ice cube, wood block, rock - HARD, SHAPE), LIQUID (water in glass - FLOWS, takes shape of container), GAS (steam from boiling water, or balloons showing air is gas - INVISIBLE or VISIBLE as movement). Often includes ILLUSTRATION CARDS showing molecular structure differences. Child OBSERVING transformations (ice melting to water, water heating to steam). Illustrated cards show SOLID particles tightly packed, LIQUID particles loose, GAS particles far apart. NOT chemical reaction (physical state changes only). NOT energy focus (though heating/cooling may be involved).',
-    key_materials: ['Ice or solid', 'Water', 'Heat source for steam', 'Illustration cards', 'Optional: balloons or containers'],
+      'HANDS-ON EXPLORATION of SOLID, LIQUID, and GAS states of matter. Activities include: (1) SOLID demonstration - WOODEN BLOCK, ROCK, ICE CUBE (hard, holds shape, volume fixed), child HANDLING and OBSERVING, (2) LIQUID demonstration - WATER in container (takes shape of container, volume constant, flows), child POURING water, OBSERVING behavior, (3) GAS demonstration - STEAM from warm water (invisible gas, takes all available space), or WATER VAPOR observation. Often includes PHASE CHANGE activities: MELTING ice (solid to liquid), EVAPORATING water (liquid to gas using heat). Child IDENTIFYING objects as solid, liquid, or gas. May include ILLUSTRATION CARDS showing examples: solid (pen, book, shoe), liquid (water, milk, juice), gas (air, steam, oxygen). NOT phase changes only (focuses on properties of each state). NOT chemical reactions (physical state changes only).',
+    key_materials: ['Ice cubes', 'Water containers', 'Heat source (warm water)', 'Examples of solids', 'State of matter cards', 'Chart showing three states'],
     confusion_pairs: [],
-    difficulty: 'medium'
+    difficulty: 'easy'
   },
 
   {
@@ -432,8 +432,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'PRIMARY COLOR PAINT or DYE in three containers (RED, YELLOW, BLUE) with MIXING TRAYS or CUPS. Child COMBINING two primary colors to create SECONDARY colors: RED+YELLOW=ORANGE, YELLOW+BLUE=GREEN, RED+BLUE=PURPLE. Mixing materials visible: color changes obvious in water or paint. Often includes ILLUSTRATION CARD showing color wheel with primary (outer triangle) and secondary (between). NOT food coloring activity (paint or opaque dyes are typical). NOT color sorting (focuses on CREATION of new colors).',
-    key_materials: ['Primary color paints/dyes', 'Mixing containers/trays', 'Brushes or droppers', 'Color wheel card'],
+      'HANDS-ON COLOR THEORY exploration with PRIMARY COLORS and COLOR MIXING. Setup includes: THREE PRIMARY COLORS - RED, YELLOW, BLUE (in liquid paint or water-based dyes in clear containers). Child COMBINING primary colors to create SECONDARY COLORS: RED + YELLOW = ORANGE, YELLOW + BLUE = GREEN, RED + BLUE = PURPLE. Activities include MIXING paints in shallow trays or cups, OBSERVING the color change, RECORDING results on a COLOR MIXING CHART. Optional WHITE and BLACK for tints and shades. Often includes TISSUE PAPER or CELLOPHANE overlays showing color mixing by light transmission. Child creating a color wheel. NOT complex color theory (stays with primary and secondary colors). NOT painting as art (focuses on scientific color observation).',
+    key_materials: ['Primary color paints or dyes', 'Mixing trays or cups', 'Brushes or stirrers', 'White paper or chart', 'Color mixing wheel template'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -444,10 +444,10 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'SET OF SIMPLE MACHINE EXAMPLES OR DEMONSTRATIONS. (1) LEVER: wooden plank BALANCED on fulcrum, used to LIFT weight, SHOWING mechanical advantage. (2) PULLEY: rope over fixed wheel lifting load, SHOWING force change. (3) INCLINED PLANE: ramp allowing object to move up with LESS effort than vertical lift. Often includes LABELED DIAGRAMS showing how each machine works. Child EXPERIMENTING with load, OBSERVING effort reduction. NOT complex machines (focuses on 3-5 fundamental simple machine types). NOT puzzle (working demonstrations).',
-    key_materials: ['Wooden lever and fulcrum', 'Pulley and rope', 'Inclined plane/ramp', 'Weights or loads', 'Diagram labels'],
+      'SET OF DEMONSTRATION MATERIALS or MODELS showing BASIC MECHANICAL PRINCIPLES. Typically includes 3-5 simple machines: (1) LEVER - wooden rod resting on fulcrum (block), child LIFTING weight on one end, OBSERVING mechanical advantage, (2) PULLEY - rope through fixed block, child PULLING rope to LIFT object, DISCOVERING how pulley changes direction of force, (3) INCLINED PLANE - ramp at angle, child ROLLING or SLIDING objects down, comparing effort needed vs pushing straight up, (4) WHEEL AND AXLE - wooden wheel on axle, child TURNING wheel and OBSERVING how axle turns (or vice versa), (5) SCREW - demonstrating rotational motion converting to linear (optional, age-dependent). Each machine has ADJUSTABLE DIFFICULTY (fulcrum position on lever, angle of ramp). NOT complex engineering (simple basic principles only).',
+    key_materials: ['Lever equipment', 'Pulley setup', 'Inclined plane/ramp', 'Wheel and axle demonstration', 'Weight or objects to move', 'Labels showing each machine'],
     confusion_pairs: [],
-    difficulty: 'hard'
+    difficulty: 'medium'
   },
 
   {
@@ -456,8 +456,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'OUTDOOR OBSERVATION KIT including MAGNIFYING GLASS, NATURE JOURNAL (blank or with drawing prompts), PENCILS, and optional collection containers. Child WALKING outside, FINDING natural objects (leaves, rocks, insects, flowers), OBSERVING details through MAGNIFICATION, DRAWING or WRITING observations in journal. Often includes FIELD GUIDE or identification charts. Emphasizes careful observation and recording. NOT classroom experiment (outdoor exploration). NOT collecting (focused on observation, not accumulation of specimens).',
-    key_materials: ['Magnifying glass', 'Nature journal', 'Pencils', 'Optional: field guide', 'Optional: collection container'],
+      'OUTDOOR OBSERVATION and EXPLORATION activity encouraging close nature observation. Materials include: MAGNIFYING GLASS for detailed observation, NATURE JOURNAL (blank pages or structured observation guide) for DRAWING and RECORDING observations, COLLECTION BAG or BASKET. Child GOING on NATURE WALK outdoors, OBSERVING: plants (leaves, flowers, bark texture), insects (bugs, worms, spiders), small animals (birds, squirrels), rocks, soil, water features. Child COLLECTING natural items (leaves, smooth stones, interesting sticks, feathers) and BRINGING them indoors for closer examination. Child SKETCHING observations in journal, DESCRIBING colors, textures, patterns. NOT structured curriculum (free exploration and observation). NOT collection without observation (focus is on LOOKING CLOSELY and RECORDING).',
+    key_materials: ['Magnifying glass', 'Nature journal', 'Pencils/markers', 'Collection bag', 'Field guides (optional)'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -468,8 +468,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Physical Science',
     visual_description:
-      'WEATHER TRACKING MATERIALS including WEATHER CHART (paper or laminated board with columns for Date, Temperature, Condition), THERMOMETER (large classroom thermometer showing both Celsius and Fahrenheit), SYMBOL CARDS (sun, cloud, rain, snow icons for daily weather), and PENCILS or MARKERS for recording. Child OBSERVING sky each day, READING thermometer, RECORDING temperature and weather in chart. Chart may show week or month of observations. Developing DATA over time. NOT weather prediction (observation and recording, not forecasting).',
-    key_materials: ['Weather chart (paper or laminated)', 'Thermometer', 'Weather symbol cards', 'Markers or pencils', 'Optional: barometer or rain gauge'],
+      'DAILY WEATHER OBSERVATION and RECORDING activity. Materials include: LARGE WEATHER CHART or BOARD mounted on wall, with MOVABLE CARDS or ICONS showing WEATHER CONDITIONS (sun, cloud, rain, snow, wind), THERMOMETER for reading temperature and RECORDING daily highs/lows on a TEMPERATURE GRAPH, WIND DIRECTION indicator (wind vane or simple pointer), PRECIPITATION GAUGE for measuring rainfall. Child OBSERVING weather conditions each day, MOVING weather icon card to TODAY\'S position, READING and RECORDING temperature, DESCRIBING conditions in journal. Often accompanied by WEATHER SYMBOLS showing different conditions (sunny, partly cloudy, rainy, stormy, snowy). Child may also OBSERVE and DISCUSS seasonal patterns. NOT detailed meteorology (simple daily observation and recording). NOT climate science (weather in current season).',
+    key_materials: ['Weather chart/board', 'Weather icon cards', 'Thermometer', 'Temperature recording graph', 'Precipitation gauge', 'Wind vane', 'Weather observation journal'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -481,8 +481,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'DRAWING MATERIALS collection: PENCILS (HB, B, 2B for shading), COLORED PENCILS, ERASERS, PAPER (white and colored). Often includes SKETCHBOOK or PAPER PAD. Child SITTING at table with pencil, creating marks on paper - lines, shapes, free drawing, or guided drawing following steps. Simple materials visible. Paper shows PENCIL MARKS in various shades. NOT painting (no liquid paint or water). NOT collage (no cutting or pasting). NOT sculpture (two-dimensional marks on surface).',
-    key_materials: ['Pencils and colored pencils', 'Eraser', 'Paper/sketchbook', 'Sharpener', 'Optional: ruler or guide'],
+      'CREATIVE DRAWING ACTIVITY with various DRAWING MATERIALS and PAPER. Materials include: PENCILS (wood pencils, colored pencils), CRAYONS (in color sets), MARKERS, ERASERS, and PAPER (white drawing paper, colored paper). Child DRAWING freely on paper, EXPLORING mark-making, LINE QUALITY, and COMPOSITION. Activity may include GUIDED DRAWING LESSONS (step-by-step drawings of objects like tree, house, animal) or purely FREE DRAWING. Child experimenting with different pressures, line weights, and media combinations. Art is displayed on walls, in portfolios, or in sketchbooks. NOT structured art production (focus on process and exploration, not product). NOT copying or tracing (freehand drawing emphasis).',
+    key_materials: ['Drawing pencils', 'Colored pencils', 'Crayons', 'Markers', 'Erasers', 'Drawing paper (white/colored)', 'Pencil sharpener'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -493,8 +493,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'PAINTING SETUP with EASEL or table holding PAPER or CANVAS, PAINT in multiple colors (watercolor or acrylic), BRUSHES in various sizes, WATER CONTAINER for rinsing, PALETTE for mixing, APRON to protect clothing. Child PAINTING with BRUSH strokes, colors MIXING on paper or palette, WET PAINT visible. Often creates ABSTRACT or REPRESENTATIONAL designs. Paper may show MULTIPLE COLOR LAYERS. NOT drawing (wet paint, not dry pencil). NOT print-making (direct painting, not stamping). NOT sculpture (two-dimensional final work).',
-    key_materials: ['Easel or table', 'Paper or canvas', 'Watercolor or acrylic paints', 'Brushes', 'Water container', 'Palette', 'Apron'],
+      'CREATIVE PAINTING ACTIVITY with PAINT MEDIA and BRUSHES. Setup includes: EASEL or TABLE for working surface, WATERCOLOR PAINTS or TEMPERA/ACRYLIC PAINTS in colors, PAINTBRUSHES (multiple sizes), WATER CONTAINERS for rinsing, PAPER or CANVAS, PALETTE for mixing colors, PAPER TOWELS. Child PAINTING freely on paper, EXPERIMENTING with colors, BRUSHWORK TECHNIQUES, and COMPOSITION. Activities may include: FREE PAINTING (child\'s choice of subject), GUIDED PAINTING LESSONS (specific technique like wet-on-wet, dry brush), COLOR EXPLORATION. Child OBSERVING how colors MIX on paper, how brush size affects line quality. NOT structured art assignment (process-oriented exploration). NOT copying artwork (original creation).',
+    key_materials: ['Easel or table', 'Watercolor or tempera paints', 'Paintbrushes (various sizes)', 'Water containers', 'Paper or canvas', 'Palette', 'Paper towels', 'Apron'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -505,8 +505,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'PAPER COLLAGE MATERIALS: COLORED PAPER (construction paper, magazine pages), SCISSORS, GLUE STICK or PASTE, GLUE BRUSH, and BASE PAPER. Child CUTTING colored paper into shapes or collecting pieces, ARRANGING on base paper, GLUING pieces to create composition. Finished work shows OVERLAPPING PAPER PIECES in various colors and shapes, some RAISED edges visible. Composition shows BALANCE or DESIGN. NOT painting (no paint/brushes, paper-based). NOT drawing (no pencil marks, assembled pieces). NOT sculpture (flat two-dimensional final work).',
-    key_materials: ['Colored paper sheets', 'Scissors', 'Glue stick or paste', 'Glue brush', 'Base paper', 'Optional: magazines'],
+      'CUT AND PASTE ARTWORK using PAPER MATERIALS and ADHESIVES. Materials include: COLORED PAPER (various colors), TISSUE PAPER, MAGAZINES for cutting images, SCISSORS (child-safe), GLUE STICK or LIQUID GLUE, and BACKING PAPER. Child SELECTING, CUTTING, and ARRANGING paper pieces to create COMPOSITION. Activities include: FREE COLLAGE (child\'s artistic choice), THEMED COLLAGE (cut images from magazines about a topic), PAPER TEARING (for fine motor work), COLOR COLLAGE (experimenting with color combinations). Child EXPERIMENTING with COMPOSITION, BALANCE, and COLOR ARRANGEMENT before GLUING. Art shows OVERLAPPING pieces, LAYERING, and SPATIAL RELATIONSHIPS. NOT structured template (child makes artistic choices about composition).',
+    key_materials: ['Colored paper', 'Tissue paper', 'Magazines', 'Child-safe scissors', 'Glue stick or liquid glue', 'Backing paper', 'Optional: stamps, stickers, natural materials'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -517,8 +517,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'CLAY or PLAYDOUGH with TOOLS for sculpting. Materials: soft CLAY (red, tan, white) or PLAYDOUGH (multiple bright colors), HANDS of child, and optional WOODEN SCULPTING TOOLS (rolling tool, shaping tool, cutting tool). Child ROLLING, SQUEEZING, PINCHING, STRETCHING the clay, creating THREE-DIMENSIONAL SHAPES - balls, snakes, pots, figures. Finished work shows handprints, indentations, and molded forms. Material is SOFT, MALLEABLE. NOT drawing (three-dimensional, not marks on paper). NOT painting (not liquid/wet). NOT carving (additive, not subtractive).',
-    key_materials: ['Clay or playdough', 'Hands', 'Optional: sculpting tools', 'Work surface', 'Optional: oven for hardening clay'],
+      '3D SCULPTURAL WORK with CLAY or PLAYDOUGH MATERIALS. Materials include: CLAY (natural clay - air-dry or kiln-fired) or PLAYDOUGH (salt dough, modeling compound), SCULPTING TOOLS (wooden tools, plastic tools, natural sticks), and WORK SURFACE. Child MANIPULATING material with hands and tools to create 3D FORMS: PINCHING, COILING, ROLLING, BUILDING. Creations may include: abstract shapes, recognizable objects (animals, houses, people), functional items (bowls, beads). Child EXPLORING texture, BALANCE, and SPATIAL RELATIONSHIPS. Activity STRENGTHENS hand muscles. NOT structured pottery instruction (free exploration and creation). NOT mold-based (hand-sculpted forms).',
+    key_materials: ['Clay or playdough', 'Sculpting tools', 'Work board', 'Water for adhesion', 'Kiln (if air-dry clay)', 'Storage containers'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -529,8 +529,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'PRINTMAKING MATERIALS: STAMPS (foam, rubber, carved shapes), INK or INK PAD (color), PAPER, and optional ROLLER for applying ink evenly. Child PRESSING stamp into ink, PLACING on paper, PRESSING DOWN firmly, LIFTING to reveal PRINTED IMAGE. Multiple stamped impressions visible on paper, showing PATTERN or DESIGN. Prints may be REPEATED motifs or VARIED positions. NOT painting (no brushes, ink is applied via stamp). NOT drawing (no pencil/crayon). NOT collage (no cutting/pasting of paper).',
-    key_materials: ['Stamps (foam, rubber, or carved)', 'Ink pads or liquid ink', 'Paper', 'Optional: ink roller', 'Optional: carved blocks for advanced'],
+      'PRINT CREATION USING STAMPS, BLOCKS, and INKING. Materials include: RUBBER STAMPS (geometric shapes, letters, pictures), FOAM or WOODEN STAMPS, INK PADS or PAINT, STAMPING SURFACE (sponge or felt pad for ink absorption), and PAPER. Child PRESSING stamps into ink pads, then STAMPING onto paper to create PRINTS. Activities may include: FREE STAMPING (random placement), PATTERN CREATION (repeating stamps), PICTURE MAKING (combining stamps into scene). Optional advanced: CARVING stamps from erasers or linoleum (age-appropriate). Child EXPERIMENTING with PRESSURE, PATTERN, and COLOR (using multiple ink colors). Prints show CLEAR IMPRESSIONS and REPETITION. NOT painting (uses stamps, not brushes). NOT drawing (ink transfer, not line-making).',
+    key_materials: ['Rubber stamps', 'Foam or wooden stamps', 'Ink pads or paint', 'Ink pad base/felt', 'Paper', 'Optional: carving tools, linoleum blocks (older children)'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -541,8 +541,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Art',
     visual_description:
-      'COLLECTION OF FAMOUS ARTWORK REPRODUCTIONS (prints or cards) with ARTIST CARDS and INFORMATION. Materials: high-quality COLOR REPRODUCTIONS of paintings (e.g., Monet water lilies, Van Gogh starry night, Picasso portrait), CARDS with artist name, dates, birthplace, style description, and artwork title. Child VIEWING reproductions, READING artist cards, DISCUSSING artwork, learning ART HISTORY and ARTISTIC STYLES. Cards may show ARTIST PORTRAIT and BIOGRAPHY. NOT original art (reproductions for education). NOT art making (appreciation/learning, not creating).',
-    key_materials: ['High-quality art reproductions', 'Artist cards with information', 'Display setup', 'Optional: picture frames'],
+      'STUDY OF FAMOUS ARTWORK and ARTISTS. Materials include: HIGH-QUALITY ART PRINTS of famous paintings/sculptures, ARTIST CARDS with biography information (name, birth/death, nationality, style), and DISCUSSION GUIDE. Child OBSERVING artwork closely, DISCUSSING: colors, composition, subject matter, artist\'s style, time period, cultural context. Activities include: ARTIST STUDY (learning about Van Gogh, Picasso, Monet, etc.), MOVEMENT STUDY (impressionism, cubism, abstract), TECHNIQUE OBSERVATION (brushwork, use of color, perspective). Optional: CREATING ARTWORK IN STYLE OF artist studied (after observation and appreciation). NOT art history lecture (child-led observation and discussion). NOT copying artwork (appreciation first, then optional creation).',
+    key_materials: ['Art prints (high quality)', 'Artist biography cards', 'Discussion guide', 'Art books', 'Optional: materials for creating art inspired by famous works'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -554,8 +554,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Music',
     visual_description:
-      'SINGING ACTIVITY with SONG CARDS or SONG BOOK. Materials: PRINTED OR ILLUSTRATED SONG CARDS showing simple songs (nursery rhymes, children\'s folk songs), LYRICS printed clearly, often with SIMPLE ILLUSTRATIONS. Teacher or child SINGING while GROUP LISTENS and JOINS. May include optional PICTURE CARDS showing song content (animal songs with animal illustrations). Singing is ACOUSTIC, voices only (no instruments). NOT instrumental (voices only). NOT silent activity (vocal expression).',
-    key_materials: ['Song cards', 'Optional: song book', 'Optional: illustration cards', 'Voices'],
+      'GROUP SINGING ACTIVITY with SONGS and SONG CARDS. Materials include: LAMINATED SONG CARDS with LYRICS printed in LARGE TEXT, ILLUSTRATIONS for each song, and optional MUSICAL NOTATION. Child SINGING together in a group, with teacher LEADING or GUIDING. Songs typically include: SIMPLE CHILDREN\'S SONGS (twinkle twinkle, row row row your boat, old macdonald), SEASONAL SONGS, and CULTURAL SONGS. Child LEARNING to MATCH PITCH, FOLLOW RHYTHM, and CONTROL breathing/volume. Activities include: UNISON SINGING (all singing same melody), ECHO SINGING (teacher sings phrase, child echoes), CANON/ROUND (different groups singing same song offset). Optional GUITAR or PIANO accompaniment. NOT performance (group singing for participation and joy). NOT music notation instruction (singing prioritized).',
+    key_materials: ['Song cards with lyrics', 'Illustrations', 'Optional: musical notation', 'Optional: guitar or keyboard', 'Music teacher (optional)'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -566,8 +566,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Music',
     visual_description:
-      'PERCUSSION INSTRUMENTS collection for exploring rhythm: DRUM (hand-played), TAMBOURINE (shaking produces jingling sound), MARACAS (wooden handles with seeds/beads inside), RHYTHM STICKS or CLAVES (wooden sticks clacked together), BELL or GONG (struck), WOODBLOCK (wooden struck). Child PLAYING instruments, CREATING sounds, EXPERIMENTING with RHYTHM, or FOLLOWING teacher\'s pattern. Instruments visible, producing SOUND. NOT pitched instruments (no melody, rhythm only). NOT silent (creates clear percussion sounds).',
-    key_materials: ['Rhythm drums', 'Tambourine', 'Maracas', 'Rhythm sticks', 'Bells or chimes', 'Woodblock', 'Optional: rhythm cards'],
+      'PERCUSSION INSTRUMENT EXPLORATION and RHYTHM-MAKING. Materials include: RHYTHM INSTRUMENTS - tambourine (jingling metal discs), triangle (ringing bell-like tone), woodblock (wooden percussion), maracas (shaking instruments), drums (hand-struck), bells (pitch-varying), cymbals (crashing), rhythm sticks (striking each other). Child EXPLORING each instrument, DISCOVERING its sound, and PLAYING freely. Activities include: FREE EXPLORATION (making different sounds), PATTERN CREATION (repeating rhythm patterns), FOLLOWING SONGS (keeping beat or rhythm to music). Optional: PLAYING ALONG with recorded music, CREATING rhythmic compositions, UNDERSTANDING beat vs. rhythm concepts. NOT music notation (focus on ear and participation). NOT structured rhythm reading (exploration first).',
+    key_materials: ['Percussion instruments (8-10 types)', 'Instrument storage box', 'Optional: recorded music', 'Optional: rhythm cards showing patterns'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -578,8 +578,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Music',
     visual_description:
-      'MUSIC PLAYER (recording or live music) with CHILDREN MOVING their BODIES to the SOUND. Child DANCING, MOVING arms, WALKING, SWAYING, STRETCHING in response to MUSIC. Space is OPEN for movement, floor visible. Children may have SCARVES or RIBBONS in hands creating flowing lines. Movement is FREE or STRUCTURED (following teacher). NOT seated (full-body movement). NOT instrument playing (kinesthetic response to sound).',
-    key_materials: ['Music player or live musician', 'Music recordings', 'Open space', 'Optional: scarves or ribbons', 'Optional: props'],
+      'FREE MOVEMENT and DANCE ACTIVITY to RECORDED MUSIC. Setup includes: OPEN MOVEMENT SPACE (gymnasium or large classroom), MUSIC PLAYER, and VARIETY OF MUSIC (instrumental, cultural music, songs). Child MOVING FREELY to music: JUMPING, SPINNING, SWAYING, RUNNING, DANCING, using FULL BODY EXPRESSION. Activities include: FREE MOVEMENT (child moves however inspired), GUIDED IMAGERY (teacher describes scene and child moves to match), EMOTION DANCING (moving to show happy, sad, slow, fast), CULTURAL DANCES (learning traditional movements). Optional: SCARVES or RIBBONS for props, LIGHTS/PROJECTIONS for atmosphere. Child DEVELOPING body awareness, COORDINATION, and EXPRESSION. NOT structured dance class (free creative movement). NOT choreography (child-directed).',
+    key_materials: ['Music player', 'Recorded music (variety)', 'Open space', 'Optional: scarves, ribbons, props', 'Optional: lighting effects'],
     confusion_pairs: [],
     difficulty: 'easy'
   },
@@ -590,8 +590,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Music',
     visual_description:
-      'SET OF 13 WOODEN-HANDLED BELLS mounted on WOODEN BASE or arranged in ROWS. Each bell produces a SPECIFIC PITCH (C-D-E-F-G-A-B-C octave, and sometimes chromatic tones). Bells are IDENTICAL in appearance (child learns pitch by LISTENING, not visual cues). Child STRIKING each bell with MALLET, LISTENING to pitch, MATCHING pairs (identical pitches), or ARRANGING in PITCH ORDER from LOW to HIGH. Bells make CLEAR RINGING SOUND. Base is typically TAN or NATURAL WOOD color. Bells are SHINY BRASS or METAL. NOT xylophone (tuned percussion, not bells). NOT random percussion (specifically tuned pitches).',
-    key_materials: ['13 tuned bells with wooden handles', 'Wooden base or carrier', 'Mallets', 'Optional: pitch labels for reference'],
+      'PITCH DISCRIMINATION and MUSICAL TRAINING using MONTESSORI BELLS (a set of 8-13 tuned bells). SET includes: WOODEN STAND holding bells, each bell MOUNTED on wooden frame, WOODEN MALLETS for striking. Bells are TUNED to MUSICAL NOTES (typically C major scale, matching piano keys). Bells are typically COLOR-CODED for visual aid (red bells for white keys/do-re-mi-fa-sol-la-ti-do, blue bells for black keys). Child STRIKING bells with mallets, LISTENING to pitches, MATCHING SOUNDS, and PLAYING melodies. Activities include: MATCHING PAIRS (striking same note twice to find match), PITCH GRADING (arranging bells from lowest to highest note), SIMPLE MELODIES (playing twinkle twinkle or mary had a lamb). Children DEVELOPING EAR, understanding PITCH and MELODY. NOT complex music theory (focuses on listening and matching).',
+    key_materials: ['Montessori bells (8-13 bells)', 'Wooden stand', 'Wooden mallets', 'Color coding', 'Storage tray'],
     confusion_pairs: [],
     difficulty: 'medium'
   },
@@ -602,8 +602,8 @@ export const CULTURAL_SIGNATURES: WorkSignature[] = [
     area_key: 'cultural',
     category: 'Music',
     visual_description:
-      'RECORDED CLASSICAL MUSIC with COMPOSER CARDS and LISTENING GUIDE. Materials: high-quality MUSIC RECORDINGS (e.g., Mozart, Beethoven, Bach, Debussy), CARDS with COMPOSER PORTRAIT, biography, dates, place of birth, and MUSIC PIECE TITLE and description. Child LISTENING to RECORDING while VIEWING cards, LEARNING composer names, RECOGNIZING different STYLES (Classical, Romantic, etc.). May include INSTRUMENT IDENTIFICATION cards showing which instruments play in each piece. NOT live performance (recorded music). NOT music making (appreciation/learning, not instrument playing).',
-    key_materials: ['Music player', 'Classical music recordings', 'Composer cards with portraits', 'Biographical information', 'Optional: movement guides for listening'],
+      'LISTENING TO AND STUDYING CLASSICAL MUSIC and COMPOSERS. Materials include: RECORDED CLASSICAL MUSIC (pieces by famous composers), COMPOSER CARDS with BIOGRAPHY and PORTRAIT, and LISTENING GUIDE. Child LISTENING to ORCHESTRAL MUSIC, symphonies, or concertos, IDENTIFYING INSTRUMENTS, FOLLOWING MELODIES, and DISCUSSING emotional responses. Activities include: COMPOSER STUDY (learning about Bach, Mozart, Beethoven, Chopin), IDENTIFYING INSTRUMENTS (recognizing violin, piano, flute, drums in music), MOVEMENT to MUSIC (interpreting music through movement), FOLLOWING MUSICAL FORM (recognizing when melody repeats or changes). Optional: ATTENDING LIVE PERFORMANCE or CONCERT. NOT music theory instruction (appreciation and listening prioritized). NOT performance (listening and responding).',
+    key_materials: ['Recorded classical music', 'Composer biography cards', 'Listening guide/worksheets', 'Instrument identification cards', 'Music player with speakers'],
     confusion_pairs: [],
     difficulty: 'medium'
   }
