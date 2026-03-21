@@ -175,17 +175,27 @@ function CaptureContent() {
     let compressedWidth = photo.width;
     let compressedHeight = photo.height;
 
+    console.log('[CAPTURE] Starting compression. Blob size:', photo.blob.size, 'type:', photo.blob.type, 'dimensions:', photo.width, 'x', photo.height);
+
     try {
-      const compressed = await compressImage(photo.blob);
+      // Add 10s timeout to compression to prevent silent hangs on mobile
+      const compressed = await Promise.race([
+        compressImage(photo.blob),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Compression timed out after 10s')), 10_000)
+        ),
+      ]);
       compressedBlob = compressed.blob;
       compressedWidth = compressed.width;
       compressedHeight = compressed.height;
+      console.log('[CAPTURE] Compression complete. New size:', compressedBlob.size, 'dimensions:', compressedWidth, 'x', compressedHeight);
     } catch (err) {
-      console.error('Compression failed, using original:', err);
+      console.error('[CAPTURE] Compression failed, using original:', err);
       compressedBlob = photo.blob;
     }
 
     // Step 2: Save to offline queue (guaranteed local persistence — survives network failure)
+    console.log('[CAPTURE] Enqueueing photo. child_id:', idsToTag[0] || '(none)', 'school_id:', schoolId, 'blob size:', compressedBlob.size);
     try {
       await enqueuePhoto(compressedBlob, {
         child_id: idsToTag[0] || '',
@@ -207,6 +217,7 @@ function CaptureContent() {
     }
 
     // Step 3: Navigate IMMEDIATELY — photo is safe locally
+    console.log('[CAPTURE] Photo enqueued successfully, showing toast and navigating');
     toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
     navigateAfterCapture(childIds);
 
@@ -229,6 +240,7 @@ function CaptureContent() {
   // ============================================
 
   const handleMediaCapture = (media: CapturedMedia) => {
+    console.log('[CAPTURE] handleMediaCapture called. type:', media.type, 'preSelectedChildId:', preSelectedChildId, 'isClassMode:', isClassMode, 'children:', children.length);
     // If child is pre-selected or class mode, skip tagging — upload directly
     if (preSelectedChildId || isClassMode) {
       doUploadAndAnalyze(media, preSelectedChildId ? [preSelectedChildId] : []);
