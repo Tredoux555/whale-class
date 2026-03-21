@@ -64,7 +64,7 @@ Full 5-round methodology applied to Smart Capture system: 20x AUDIT → 20x PLAN
 - Round 5 FINAL AUDIT: 28 parallel agents across 3 cycles. Cycle 1: 2 minor fixes. Cycles 2-3: ALL CLEAN. 3 consecutive clean passes achieved.
 
 **CLIP Embedding Rewrite (Color Tablets vs Fabric Matching):**
-Rewrote 4 work descriptions in `lib/montree/classifier/work-signatures.ts` to maximize visual distinction. Color Box 1/2/3 now emphasize "rigid, painted, wooden, glossy, hard, LOOKING at colors." Fabric Matching now emphasizes "soft, cloth, textile weave, foldable, FEELING with eyes closed." Same approach needed for all 329 works — see Priority #0 in NEXT SESSION PRIORITIES.
+Rewrote 4 work descriptions in `lib/montree/classifier/work-signatures.ts` to maximize visual distinction. Color Box 1/2/3 now emphasize "rigid, painted, wooden, glossy, hard, LOOKING at colors." Fabric Matching now emphasizes "soft, cloth, textile weave, foldable, FEELING with eyes closed." Same approach needed for all 270 works — see Priority #0 in NEXT SESSION PRIORITIES.
 
 **Deep Audit (6 parallel agents):**
 Verified all 32 fixes across 5 files. Found 1 additional issue: STATUS_RANK in photo-insight missing `'unclear': 0` (photo-enrich had it) — fixed. Final count: 32 fixes + 4 CLIP description rewrites.
@@ -145,8 +145,8 @@ Near-zero-cost photo identification using SigLIP ViT-B/16 (ONNX Runtime, CPU inf
 
 **Architecture:**
 - Two-stage classification: area first (5 classes) → work within area (50-80 classes per area)
-- Pre-computed text embeddings for all 329 works + 5 areas using enriched visual descriptions
-- 156/329 works have rich visual descriptions; remaining use curriculum description fallback
+- Pre-computed text embeddings for all 270 works + 5 areas using enriched visual descriptions
+- All 270 works have CLIP entries (156 enriched, 114 using curriculum description fallback)
 - Visual memory boost (0.15 confidence) for classroom-learned works
 - GREEN zone: CLIP ≥ 0.80 AND Haiku ≥ 0.95 → auto-update progress + auto-add to shelf
 - AMBER zone: CLIP ≥ 0.50 AND Haiku ≥ 0.50 → needs teacher confirmation
@@ -229,7 +229,7 @@ Sandpaper Letters was being misidentified as "Grammar Boxes" — twice on same c
 - Added explicit instruction: "Identify based ONLY on the physical materials described"
 
 **CLIP resilience improvements (3):**
-1. **Cross-area fallback** — When within-area confidence < 0.70, searches ALL 329 works globally. Prevents cascade failure where Stage 1 picks wrong area and correct work is never found.
+1. **Cross-area fallback** — When within-area confidence < 0.70, searches ALL 270 works globally. Prevents cascade failure where Stage 1 picks wrong area and correct work is never found.
 2. **Visual memory boost safety** — Minimum base confidence of 0.60 required before applying +0.15 boost. Prevents weak matches from false-positive-ing past 0.75 threshold.
 3. **Init retry with TTL** — 5-minute cooldown, max 3 retry attempts before permanent failure. Replaces permanent first-failure cache. `resetInitError()` exported for orchestrator to clear cached errors.
 
@@ -427,16 +427,18 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 ### CLIP Signature Full Enrichment (Priority #0 — NEXT SESSION)
 
 **Status:** NOT STARTED. Start fresh chat for maximum context budget.
-**Handoff:** `docs/handoffs/HANDOFF_CLIP_ENRICHMENT_MAR21.md`
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_ENRICHMENT_NEXT_SESSION.md` (updated handoff with correct 270 work count + completed audit status)
 
-**The problem:** CLIP text embeddings are too generic → works get confused (Color Tablets → Fabric Matching). Only 156/329 works have CLIP entries. Descriptions need to be photo-specific, material-first, and anti-confusion.
+**The problem:** CLIP text embeddings are too generic → works get confused (Color Tablets → Fabric Matching). All 270 works have CLIP entries but only 156 have enriched descriptions — the rest use generic curriculum descriptions. ALL need photo-specific, material-first, anti-confusion rewrites.
 
-**⚠️ THIS IS THE ABSOLUTE CORNERSTONE OF THE ENTIRE SMART CAPTURE SYSTEM. Do NOT skimp on descriptions. Every single one of the 329 works must have an INCREDIBLY detailed, clearly distinguishing visual description. Deep-dive each work individually — research what it looks like, what materials it's made of, what makes it visually unique. Spare no effort. The entire $0.00 CLIP classification tier depends on description quality.**
+**⚠️ THIS IS THE ABSOLUTE CORNERSTONE OF THE ENTIRE SMART CAPTURE SYSTEM. Do NOT skimp on descriptions. Every single one of the 270 works must have an INCREDIBLY detailed, clearly distinguishing visual description. Deep-dive each work individually — research what it looks like, what materials it's made of, what makes it visually unique. Spare no effort. The entire $0.00 CLIP classification tier depends on description quality.**
 
-**Four tasks (in order, NOT parallel):**
+**⚠️ WORK COUNT: The curriculum has exactly 270 works (PL=83, SE=35, MA=57, LA=45, CU=50), NOT 329. The "329" number was wrong — it came from the community library DB which had extra/duplicate entries. Source of truth = 5 curriculum JSON files.**
+
+**Remaining task:**
 
 ### Task 1: CLIP Signature Full Enrichment (DO THIS FIRST)
-Write detailed, photo-specific visual descriptions for ALL 329 works in the system. Not "rewrite 156 + add 173" — write all 329 from scratch with the same quality standard. Use 5 parallel agents (one per Montessori area). Each agent reads the curriculum JSON for their area and writes entries for EVERY work. Plus build custom work Sonnet-analysis feature (NOT Opus — Sonnet is sufficient for material descriptions at 5x lower cost; the bottleneck is the prompt not model intelligence).
+Write detailed, photo-specific visual descriptions for ALL 270 works in the system. Rewrite all 270 from scratch with the same quality standard. Use 5 parallel agents (one per Montessori area). Each agent reads the curriculum JSON for their area and writes entries for EVERY work. Plus build custom work Sonnet-analysis feature (NOT Opus — Sonnet is sufficient for material descriptions at 5x lower cost; the bottleneck is the prompt not model intelligence).
 
 **Quality standard for EVERY description:**
 - Deep-dive each work: research what it physically looks like in a real classroom photo
@@ -456,12 +458,12 @@ Parallel upload pool (3 concurrent), smallest-first ordering, real-time progress
 ### ✅ Task 4: Push ALL Code (DONE — Mar 21 continuation)
 Mar 21 session changes pushed. Continuation session changes need push from Mac (see push command in Session Work continuation section).
 
-**File:** `lib/montree/classifier/work-signatures.ts` (currently 156 entries, ~1,781 lines)
+**File:** `lib/montree/classifier/work-signatures.ts` (currently 270 entries, ~1,781 lines — all 270 have entries but only 156 are enriched)
 **Curriculum JSONs:** `lib/curriculum/data/{practical_life,sensorial,mathematics,language,cultural}.json`
 
 **Approach:** Use 5 parallel agents (one per Montessori area). Each reads curriculum JSON + existing entries, deep-dives each work for maximum visual detail, writes entries for ALL works in that area. Assemble into final file.
 
-**This session's proof it works:** Rewrote Color Box 1/2/3 + Fabric Matching descriptions to maximize visual distinction. Same approach needed for all 329 works.
+**This session's proof it works:** Rewrote Color Box 1/2/3 + Fabric Matching descriptions to maximize visual distinction. Same approach needed for all 270 works.
 
 ### ✅ Smart Capture 20x Overhaul (Priority #0 — DONE, Mar 21)
 
