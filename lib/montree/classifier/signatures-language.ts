@@ -1,5 +1,6 @@
 import type { WorkSignature } from './work-signatures';
 
+// 45 Language works - CLIP visual descriptions (escaped apostrophes verified)
 export const LANGUAGE_SIGNATURES: WorkSignature[] = [
   // ===== ORAL LANGUAGE DEVELOPMENT =====
   {

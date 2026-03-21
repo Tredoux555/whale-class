@@ -1,5 +1,6 @@
 import type { WorkSignature } from './work-signatures';
 
+// 50 Cultural works - CLIP visual descriptions (escaped apostrophes verified)
 export const CULTURAL_SIGNATURES: WorkSignature[] = [
   // ==================== GEOGRAPHY ====================
   {
