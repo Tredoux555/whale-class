@@ -14,6 +14,38 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 21, 2026)
 
+### Session Work (Mar 21, 2026 — Album Upload Fix)
+
+**Album Photo Upload Silent Failure — DIAGNOSED + FIXED, NOT YET PUSHED:**
+
+Teachers reported album photo uploads silently failing — camera photos worked perfectly but album picks produced no toast, no error, no feedback. Photos saved to IndexedDB but never appeared in gallery.
+
+**Root cause: Double compression causing silent async hangs.** Album photos went through TWO compression steps: first `compressImage()` from `cache.ts` (in CameraCapture.tsx), then `compressImage()` from `compression.ts` (in capture/page.tsx). Camera photos only went through the second. If the first compression's `canvas.toBlob()` hung on certain mobile devices/file formats (HEIC, etc.), the entire flow froze with no timeout, no catch, no toast.
+
+**Fix (2 files modified):**
+
+**`components/montree/media/CameraCapture.tsx` — 4 changes:**
+- Removed pre-compression from album handler — `processAlbumFile()` now just reads file + gets dimensions (FileReader + Image.onload). No canvas, no compression.
+- Added 15s `Promise.race` timeout around `processAlbumFile` to prevent silent hangs
+- Reordered `processAlbumFile` before `handleAlbumSelect` for correct hook dependency ordering
+- Renamed import `compressImage as compressCacheImage` — only used in native Capacitor paths (lines 84, 146)
+
+**`app/montree/dashboard/capture/page.tsx` — 2 changes:**
+- Added 10s `Promise.race` timeout around `compressImage()` call — on timeout/error, falls back to original blob
+- Added diagnostic `[CAPTURE]` and `[ALBUM]` prefixed console.log at every pipeline step for future debugging
+
+**Audit:** Full audit CLEAN. Type safety verified (File extends Blob), native paths untouched, timer leak safe (standard Promise.race pattern), error handling surfaces errors via toast.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add components/montree/media/CameraCapture.tsx app/montree/dashboard/capture/page.tsx CLAUDE.md docs/handoffs/HANDOFF_ALBUM_UPLOAD_FIX_MAR21.md
+git commit -m "fix: album photo upload silent failure — remove double compression + add timeouts"
+git push origin main
+```
+
+**Handoff:** `docs/handoffs/HANDOFF_ALBUM_UPLOAD_FIX_MAR21.md`
+
 ### Session Work (Mar 21, 2026 — Late Continuation)
 
 **CLIP Signatures Full Enrichment (Priority #0) — COMPLETE + DEPLOYED:**
