@@ -7,7 +7,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
-import { compressImage } from '@/lib/montree/cache';
+import { compressImage as compressCacheImage } from '@/lib/montree/cache';
 import { isNativeCameraAvailable, captureNativePhoto, pickFromAlbum } from '@/lib/montree/platform/camera';
 
 // ============================================
@@ -81,7 +81,7 @@ export default function CameraCapture({
         if (!mounted) return;
 
         // Compress (same as web path)
-        const compressed = await compressImage(photo.blob);
+        const compressed = await compressCacheImage(photo.blob);
         const dataUrl = await new Promise<string>((resolve) => {
           const reader = new FileReader();
           reader.onload = () => resolve(reader.result as string);
@@ -143,7 +143,7 @@ export default function CameraCapture({
 
     try {
       const photo = await pickFromAlbum();
-      const compressed = await compressImage(photo.blob);
+      const compressed = await compressCacheImage(photo.blob);
       const dataUrl = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
@@ -182,51 +182,69 @@ export default function CameraCapture({
   // ALBUM / PHOTO LIBRARY PICKER (Web fallback)
   // ============================================
 
+  /**
+   * Process an album file into a CapturedPhoto.
+   * Skip pre-compression here — capture/page.tsx handles compression via compression.ts.
+   * This avoids the double-compression hang that caused silent failures on some devices.
+   */
+  const processAlbumFile = useCallback(async (file: File): Promise<CapturedPhoto> => {
+    // Read the file as a data URL for preview
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to read album photo'));
+      reader.readAsDataURL(file);
+    });
+
+    console.log('[ALBUM] DataURL created, length:', dataUrl.length);
+
+    // Get dimensions by loading into an Image element
+    const { width, height } = await new Promise<{ width: number; height: number }>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = () => {
+        console.warn('[ALBUM] Failed to read image dimensions, using defaults');
+        resolve({ width: 1920, height: 1080 });
+      };
+      img.src = dataUrl;
+    });
+
+    console.log('[ALBUM] Dimensions resolved:', width, 'x', height);
+
+    return {
+      blob: file,
+      dataUrl,
+      width,
+      height,
+      timestamp: new Date(),
+    };
+  }, []);
+
   const handleAlbumSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      // Compress the image (reuse existing compressImage from cache.ts)
-      const compressed = await compressImage(file);
-      const dataUrl = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.readAsDataURL(compressed);
-      });
+    // Reset the input immediately so the same file can be selected again
+    if (albumInputRef.current) albumInputRef.current.value = '';
 
-      // Create a CapturedPhoto from the album file
-      const img = new Image();
-      img.onload = () => {
-        const photo: CapturedPhoto = {
-          blob: compressed,
-          dataUrl,
-          width: img.naturalWidth,
-          height: img.naturalHeight,
-          timestamp: new Date(),
-        };
-        onCapture({ type: 'photo', data: photo });
-      };
-      img.onerror = () => {
-        // Fallback: use without dimensions
-        const photo: CapturedPhoto = {
-          blob: compressed,
-          dataUrl,
-          width: 0,
-          height: 0,
-          timestamp: new Date(),
-        };
-        onCapture({ type: 'photo', data: photo });
-      };
-      img.src = dataUrl;
+    console.log('[ALBUM] File selected:', file.name, file.type, file.size, 'bytes');
+
+    try {
+      // Wrap entire flow in a 15s timeout to prevent silent hangs
+      const photo = await Promise.race([
+        processAlbumFile(file),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Album photo processing timed out')), 15_000)
+        ),
+      ]);
+
+      console.log('[ALBUM] Photo processed, calling onCapture. Dimensions:', photo.width, 'x', photo.height);
+      onCapture({ type: 'photo', data: photo });
     } catch (err) {
-      console.error('Album pick error:', err);
+      console.error('[ALBUM] Album pick error:', err);
       setError(t('camera.error.captureFailed'));
     }
-
-    // Reset the input so the same file can be selected again
-    if (albumInputRef.current) albumInputRef.current.value = '';
-  }, [onCapture, t]);
+  }, [onCapture, t, processAlbumFile]);
 
   // ============================================
   // CAMERA INITIALIZATION
