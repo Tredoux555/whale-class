@@ -1,16 +1,16 @@
 // /api/montree/media/url/route.ts
-// Generate signed URL for media file
+// Generate proxy URL for a single media file
+// Now returns Cloudflare-cached proxy URL instead of Supabase signed URL
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const supabase = getSupabase();
     const { searchParams } = new URL(request.url);
     const path = searchParams.get('path');
 
@@ -18,19 +18,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'path required' }, { status: 400 });
     }
 
-    // Generate signed URL (1 hour expiry) - no transforms (requires Pro plan)
-    const { data, error } = await supabase.storage
-      .from('montree-media')
-      .createSignedUrl(path, 3600);
-
-    if (error) {
-      console.error('Failed to create signed URL:', error);
-      return NextResponse.json({ error: 'Failed to generate URL' }, { status: 500 });
-    }
-
+    // Generate proxy URL (instant, no Supabase call needed)
     return NextResponse.json({
       success: true,
-      url: data.signedUrl
+      url: getProxyUrl(path)
     });
 
   } catch (error) {

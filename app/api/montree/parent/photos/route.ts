@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 
 export async function GET(request: NextRequest) {
@@ -47,29 +48,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Generate signed URLs for thumbnails — BATCH (1 call, not N)
+    // Generate proxy URLs for thumbnails (Cloudflare-cached, no Supabase call needed)
     const photoList = photos || [];
-    const paths = photoList
-      .map(p => p.thumbnail_path || p.storage_path)
-      .filter(Boolean) as string[];
-
-    let urlMap = new Map<string, string>();
-    if (paths.length > 0) {
-      const { data: signedData } = await supabase.storage
-        .from('montree-media')
-        .createSignedUrls(paths, 3600); // 1 hour expiry, single batch call
-      urlMap = new Map(
-        (signedData || [])
-          .filter(item => item.signedUrl && item.path)
-          .map(item => [item.path!, item.signedUrl!])
-      );
-    }
 
     const photosWithUrls = photoList.map(photo => {
       const path = photo.thumbnail_path || photo.storage_path;
       return {
         ...photo,
-        thumbnail_url: path ? urlMap.get(path) || null : null,
+        thumbnail_url: path ? getProxyUrl(path) : null,
       };
     });
 
