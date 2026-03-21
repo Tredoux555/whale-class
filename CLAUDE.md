@@ -370,15 +370,45 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 
 **The problem:** CLIP text embeddings are too generic → works get confused (Color Tablets → Fabric Matching). Only 156/329 works have CLIP entries. Descriptions need to be photo-specific, material-first, and anti-confusion.
 
-**Three tasks:**
-1. **Rewrite all 156 existing descriptions** — Make photo-specific (what a camera sees from 1-2m), material-first, with anti-confusion ("NOT fabric"). Use 5 parallel agents (one per area). (~2-3 hrs)
-2. **Add CLIP signatures for remaining ~173 works** — Compare work-signatures.ts against 5 curriculum JSON files, write entries for every missing work. (~2-3 hrs)
-3. **Custom work Sonnet-analysis** — On first photo of a custom work, use Sonnet (not Haiku) one time to generate CLIP-optimized visual description, store in visual_memory with confidence 1.0. Code change in photo-insight/route.ts first-capture chain (~30 min)
+**⚠️ THIS IS THE ABSOLUTE CORNERSTONE OF THE ENTIRE SMART CAPTURE SYSTEM. Do NOT skimp on descriptions. Every single one of the 329 works must have an INCREDIBLY detailed, clearly distinguishing visual description. Deep-dive each work individually — research what it looks like, what materials it's made of, what makes it visually unique. Spare no effort. The entire $0.00 CLIP classification tier depends on description quality.**
+
+**Four tasks (in order, NOT parallel):**
+
+### Task 1: CLIP Signature Full Enrichment (DO THIS FIRST)
+Write detailed, photo-specific visual descriptions for ALL 329 works in the system. Not "rewrite 156 + add 173" — write all 329 from scratch with the same quality standard. Use 5 parallel agents (one per Montessori area). Each agent reads the curriculum JSON for their area and writes entries for EVERY work. Plus build custom work Sonnet-analysis feature (NOT Opus — Sonnet is sufficient for material descriptions at 5x lower cost; the bottleneck is the prompt not model intelligence).
+
+**Quality standard for EVERY description:**
+- Deep-dive each work: research what it physically looks like in a real classroom photo
+- Material-first: lead with exact material composition (wood, metal, plastic, fabric, paper, beads, rods)
+- Photo-specific: describe what a phone camera sees from 1-2 meters away, NOT what the work IS conceptually
+- Anti-confusion: explicitly state what it is NOT — call out confusion pairs by material difference
+- Action verbs: what the child's hands are DOING (stacking, pouring, tracing, threading, matching)
+- Distinguishing features: color, size, shape, texture, arrangement, container type
+- NEVER generic — "A child matching pairs" could be 10 different works. Instead: "Rigid wooden painted tablets on a tray, child visually comparing saturated colors side by side"
+
+### Task 2: Streamline Upload System (DO THIS SECOND, after CLIP is done)
+Current upload flow is glitchy and slow. Diagnose and fix:
+- Background sync feels slow (5-15s network upload, but no progress feedback)
+- Sequential uploads (one at a time) — should be parallel (3-4 concurrent)
+- No upload progress indicator for teachers (just "Photo saved!" then silence)
+- Gallery shows "1 photo waiting to upload" with no ETA
+- Test the full flow: capture → compress → enqueue → upload → AI analysis → gallery display
+- Files: `lib/montree/offline/sync-manager.ts`, `app/montree/dashboard/capture/page.tsx`, `components/montree/media/PhotoQueueBanner.tsx`
+
+### Task 3: 10x Deep Audit Health Check Fix Cycle (THIRD)
+Full 10-round audit-fix loop on the ENTIRE Smart Capture pipeline end-to-end:
+- Round 1-10: Fresh parallel audit agents each round examining different angles
+- Fix all issues found each round
+- Re-audit until 3 consecutive clean passes
+- Scope: ALL Smart Capture files (photo-insight, photo-enrich, corrections, clip-classifier, photo-insight-store, sync-manager, capture page, gallery page)
+
+### Task 4: Push ALL Code
+Push everything from Mar 21 session (32 fixes + CLIP rewrites) plus all new session work.
 
 **File:** `lib/montree/classifier/work-signatures.ts` (currently 156 entries, ~1,781 lines)
 **Curriculum JSONs:** `lib/curriculum/data/{practical_life,sensorial,mathematics,language,cultural}.json`
 
-**Approach:** Use 5 parallel agents (one per Montessori area). Each reads curriculum JSON + existing entries, writes detailed descriptions for ALL works in that area. Assemble into final file.
+**Approach:** Use 5 parallel agents (one per Montessori area). Each reads curriculum JSON + existing entries, deep-dives each work for maximum visual detail, writes entries for ALL works in that area. Assemble into final file.
 
 **This session's proof it works:** Rewrote Color Box 1/2/3 + Fabric Matching descriptions to maximize visual distinction. Same approach needed for all 329 works.
 
