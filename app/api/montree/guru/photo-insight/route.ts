@@ -14,7 +14,7 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
-import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier';
+// import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier'; // TEMP: commented out — function exists locally but not yet pushed to git. Re-enable after pushing clip-classifier.ts with confusion pair support.
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
 // ================================================================
@@ -465,14 +465,12 @@ export async function POST(request: NextRequest) {
         const langInstruction = locale === 'zh' ? 'Write the observation in Simplified Chinese.' : 'Write the observation in English.';
 
         // Inject confusion pair differentiation if CLIP detected a near-miss
+        // TEMP: getConfusionDifferentiation not yet pushed — using inline fallback
         let differentiationNote = '';
         const confusionPairKey = clipDecision.clipResult?.confusion_pair_matched;
         if (confusionPairKey) {
-          const diffText = getConfusionDifferentiation(clipDecision.clipResult!.work_key, confusionPairKey);
-          if (diffText) {
-            const confusedWorkName = clipDecision.clipResult?.runner_up?.work_name || confusionPairKey;
-            differentiationNote = `\nIMPORTANT: This work is often confused with "${confusedWorkName}". Key difference: ${diffText}\nVerify the identification matches what you see in the photo.`;
-          }
+          const confusedWorkName = clipDecision.clipResult?.runner_up?.work_name || confusionPairKey;
+          differentiationNote = `\nIMPORTANT: This work is often confused with "${confusedWorkName}". Verify the identification matches what you see in the photo.`;
         }
 
         const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) working with ${clipWorkName} in the ${clipAreaKey.replace(/_/g, ' ')} area.
