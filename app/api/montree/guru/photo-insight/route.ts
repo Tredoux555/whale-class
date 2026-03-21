@@ -175,6 +175,7 @@ export async function POST(request: NextRequest) {
   // Route-level timeout: 45s hard wall. If anything hangs, we bail with 504.
   // Individual sub-operations (CLIP, Haiku, Sonnet) have their own shorter timeouts.
   const ROUTE_TIMEOUT_MS = 45_000;
+  const routeStart = Date.now();
   const routeAbort = new AbortController();
   const routeTimeout = setTimeout(() => routeAbort.abort(), ROUTE_TIMEOUT_MS);
 
@@ -404,6 +405,7 @@ export async function POST(request: NextRequest) {
         candidates: [],
         mastery_evidence: null,
         insight: taggedWork?.name ? `${taggedWork.name} (pre-tagged)` : 'Photo saved',
+        suggested_crop: null,
       });
     }
 
@@ -474,6 +476,9 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
 
         const slimAbort = new AbortController();
         const slimTimeout = setTimeout(() => slimAbort.abort(), 15000);
+        // Chain route-level abort to this sub-operation
+        const onRouteAbort = () => slimAbort.abort();
+        routeAbort.signal.addEventListener('abort', onRouteAbort, { once: true });
 
         try {
           const slimResponse = await anthropic.messages.create({
@@ -509,6 +514,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
           }, { signal: slimAbort.signal });
 
           clearTimeout(slimTimeout);
+          routeAbort.signal.removeEventListener('abort', onRouteAbort);
 
           const slimToolBlock = slimResponse.content.find(b => b.type === 'tool_use');
           if (slimToolBlock && slimToolBlock.type === 'tool_use') {
@@ -660,6 +666,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
               in_child_shelf: inChildShelf,
               classroom_work_id: classroomWorkId,
               suggested_crop: slimInput.suggested_crop,
+              clip_confidence: clipConfidence,
               classification_method: 'clip_enriched',
             }, {
               headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
@@ -667,6 +674,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
           }
         } catch (slimErr) {
           clearTimeout(slimTimeout);
+          routeAbort.signal.removeEventListener('abort', onRouteAbort);
           console.error('[PhotoInsight] Slim enrichment failed — falling through to two-pass:', slimErr);
           // Fall through to normal two-pass below
         }
@@ -1243,8 +1251,15 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
     const describeAbort = new AbortController();
     let describeTimeout: ReturnType<typeof setTimeout> | undefined;
     let visualDescription = '';
+    // Chain route-level abort to this sub-operation
+    const onRouteAbortDescribe = () => describeAbort.abort();
+    routeAbort.signal.addEventListener('abort', onRouteAbortDescribe, { once: true });
 
     try {
+      describeTimeout = setTimeout(() => {
+        describeAbort.abort();
+      }, 15000); // 15s timeout for description
+
       const describePromise = anthropic.messages.create({
         model: HAIKU_MODEL,
         max_tokens: 300,
@@ -1268,12 +1283,9 @@ Just describe the physical scene in 2-4 sentences. ALWAYS state what the pieces 
         }],
       }, { signal: describeAbort.signal });
 
-      describeTimeout = setTimeout(() => {
-        describeAbort.abort();
-      }, 15000); // 15s timeout for description
-
       const describeMsg = await describePromise;
       clearTimeout(describeTimeout);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortDescribe);
 
       for (const block of describeMsg.content) {
         if (block.type === 'text') {
@@ -1285,6 +1297,7 @@ Just describe the physical scene in 2-4 sentences. ALWAYS state what the pieces 
       // logApiUsage deferred — metering system not yet deployed
     } catch (describeErr: unknown) {
       clearTimeout(describeTimeout);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortDescribe);
       const isTimeout = describeErr instanceof Error && (describeErr.message?.includes('timeout') || describeErr.name === 'AbortError');
       console.error(`[PhotoInsight] Pass 1 ${isTimeout ? 'TIMED OUT' : 'FAILED'}:`, describeErr);
       // Fall through — Pass 2 will use empty description, which means lower confidence
@@ -1298,8 +1311,15 @@ Just describe the physical scene in 2-4 sentences. ALWAYS state what the pieces 
     // Full visual ID guide + corrections + visual memory — but NO image to distract attention
     const matchAbort = new AbortController();
     let matchTimeout: ReturnType<typeof setTimeout> | undefined;
+    // Chain route-level abort to this sub-operation
+    const onRouteAbortMatch = () => matchAbort.abort();
+    routeAbort.signal.addEventListener('abort', onRouteAbortMatch, { once: true });
 
     try {
+      matchTimeout = setTimeout(() => {
+        matchAbort.abort();
+      }, 15000); // 15s timeout for matching
+
       const matchPromise = anthropic.messages.create({
         model: HAIKU_MODEL,
         max_tokens: 500,
@@ -1328,12 +1348,9 @@ Match this description to the correct Montessori work. Use the visual identifica
         }],
       }, { signal: matchAbort.signal });
 
-      matchTimeout = setTimeout(() => {
-        matchAbort.abort();
-      }, 15000); // 15s timeout for matching
-
       const matchMsg = await matchPromise;
       clearTimeout(matchTimeout);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortMatch);
 
       const toolBlock = matchMsg.content.find(b => b.type === 'tool_use');
       if (toolBlock && toolBlock.type === 'tool_use') {
@@ -1359,6 +1376,7 @@ Match this description to the correct Montessori work. Use the visual identifica
       }
     } catch (matchErr: unknown) {
       clearTimeout(matchTimeout);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortMatch);
       console.error('[PhotoInsight] Pass 2 MATCH failed:', matchErr);
     }
 
@@ -1367,8 +1385,21 @@ Match this description to the correct Montessori work. Use the visual identifica
       console.log('[PhotoInsight] Two-pass failed — falling back to single-pass Sonnet');
       const apiAbortController = new AbortController();
       let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+      // Chain route-level abort to Sonnet fallback
+      const onRouteAbortSonnet = () => apiAbortController.abort();
+      routeAbort.signal.addEventListener('abort', onRouteAbortSonnet, { once: true });
 
       try {
+        // Dynamic timeout: use remaining route time minus 3s safety margin, capped at 40s
+        const elapsed = Date.now() - routeStart;
+        const remainingMs = Math.max(5000, ROUTE_TIMEOUT_MS - elapsed - 3000);
+        const sonnetTimeout = Math.min(remainingMs, 40000);
+        console.log(`[PhotoInsight] Sonnet fallback timeout: ${sonnetTimeout}ms (${elapsed}ms elapsed)`);
+
+        timeoutHandle = setTimeout(() => {
+          apiAbortController.abort();
+        }, sonnetTimeout);
+
         const apiPromise = anthropic.messages.create({
           model: AI_MODEL,
           max_tokens: 500,
@@ -1381,12 +1412,9 @@ Match this description to the correct Montessori work. Use the visual identifica
           ] }],
         }, { signal: apiAbortController.signal });
 
-        timeoutHandle = setTimeout(() => {
-          apiAbortController.abort();
-        }, 40000);
-
         const message = await apiPromise;
         clearTimeout(timeoutHandle);
+        routeAbort.signal.removeEventListener('abort', onRouteAbortSonnet);
 
         const toolBlock = message.content.find(b => b.type === 'tool_use');
         if (toolBlock && toolBlock.type === 'tool_use') {
@@ -1409,6 +1437,7 @@ Match this description to the correct Montessori work. Use the visual identifica
         }
       } catch (sonnetErr) {
         clearTimeout(timeoutHandle);
+        routeAbort.signal.removeEventListener('abort', onRouteAbortSonnet);
         console.error('[PhotoInsight] Sonnet fallback failed:', sonnetErr);
       }
     }
@@ -1617,6 +1646,9 @@ Match this description to the correct Montessori work. Use the visual identifica
             // Add timeout to first-capture Haiku call (same pattern as corrections)
             const fcAbort = new AbortController();
             const fcTimeout = setTimeout(() => fcAbort.abort(), 40000);
+            // Chain route-level abort to first-capture call
+            const onRouteAbortFC = () => fcAbort.abort();
+            routeAbort.signal.addEventListener('abort', onRouteAbortFC, { once: true });
             const startMs = Date.now();
             return anthropic!.messages.create({
               model: HAIKU_MODEL,
@@ -1662,14 +1694,20 @@ Match this description to the correct Montessori work. Use the visual identifica
                 console.error('[VisualMemory] First-capture Haiku timed out after 40s — skipping');
                 return;
               }
-              throw err; // Re-throw non-timeout errors to outer catch
+              // Log but don't re-throw: this is fire-and-forget, re-throwing causes unhandled rejection
+              console.error('[VisualMemory] First-capture Haiku failed (non-fatal):', err);
             }).finally(() => {
               clearTimeout(fcTimeout);
+              routeAbort.signal.removeEventListener('abort', onRouteAbortFC);
             });
           }
         })
         .catch((err) => {
           console.error('[VisualMemory] First-capture check error (non-fatal):', err);
+        })
+        .catch((err) => {
+          // Failsafe: catch errors from the catch handler itself to prevent unhandled rejections
+          console.error('[VisualMemory] First-capture failsafe catch:', err);
         });
     }
 

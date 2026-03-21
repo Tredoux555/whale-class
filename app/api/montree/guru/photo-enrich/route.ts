@@ -92,7 +92,7 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
       typeof rawInput.mastery_evidence === 'string' && VALID_MASTERY.includes(rawInput.mastery_evidence)
         ? rawInput.mastery_evidence
         : 'unclear',
-    confidence: typeof rawInput.confidence === 'number' ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
+    confidence: typeof rawInput.confidence === 'number' && !isNaN(rawInput.confidence) ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
     observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
     suggested_crop,
   };
@@ -203,6 +203,9 @@ Suggest a crop if it would nicely frame the child and material together.`;
 
     const abortController = new AbortController();
     const timeoutHandle = setTimeout(() => abortController.abort(), 15_000);
+    // Chain route-level abort to Haiku call
+    const onRouteAbortHaiku = () => abortController.abort();
+    routeAbort.signal.addEventListener('abort', onRouteAbortHaiku, { once: true });
 
     try {
       const response = await anthropic.messages.create(
@@ -235,6 +238,7 @@ Suggest a crop if it would nicely frame the child and material together.`;
       );
 
       clearTimeout(timeoutHandle);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortHaiku);
 
       // Extract tool use result
       const toolBlock = response.content.find(block => block.type === 'tool_use');
@@ -246,28 +250,30 @@ Suggest a crop if it would nicely frame the child and material together.`;
       const confidence_final = validated.confidence;
       const mastery_evidence = validated.mastery_evidence;
 
-      // Determine scenario: work already identified, check if in classroom curriculum
-      const { data: classroomWork } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select('id, name')
-        .eq('classroom_id', access.classroomId)
-        .eq('name', work_name)
-        .eq('is_active', true)
-        .limit(1)
-        .maybeSingle();
+      // Determine scenario: work already identified, check if in classroom curriculum + shelf
+      // Parallelized: these two queries are independent
+      const [classroomResult, shelfResult] = await Promise.all([
+        supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id, name')
+          .eq('classroom_id', access.classroomId)
+          .eq('name', work_name)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('montree_child_focus_works')
+          .select('id')
+          .eq('child_id', child_id)
+          .eq('work_name', work_name)
+          .limit(1)
+          .maybeSingle(),
+      ]);
 
+      const classroomWork = classroomResult.data;
+      const shelfWork = shelfResult.data;
       const in_classroom = !!classroomWork?.id;
       const classroom_work_id = classroomWork?.id || null;
-
-      // Check if on child's focus shelf
-      const { data: shelfWork } = await supabase
-        .from('montree_child_focus_works')
-        .select('id')
-        .eq('child_id', child_id)
-        .eq('work_name', work_name)
-        .limit(1)
-        .maybeSingle();
-
       const in_child_shelf = !!shelfWork?.id;
 
       // Scenario logic: work is already known (not A)
@@ -353,7 +359,7 @@ Suggest a crop if it would nicely frame the child and material together.`;
       supabase.from('montree_guru_interactions').insert({
         child_id,
         question_type: 'photo_enrich',
-        question: `photo-enrich:${media_id}:${locale}`,
+        question: `photo-enrich:${media_id}:${child_id}:${locale}`,
         response_insight: validated.observation,
         mode: 'enrich',
         context_snapshot,
@@ -380,6 +386,7 @@ Suggest a crop if it would nicely frame the child and material together.`;
       });
     } finally {
       clearTimeout(timeoutHandle);
+      routeAbort.signal.removeEventListener('abort', onRouteAbortHaiku);
       abortController.abort();
     }
   } catch (error) {

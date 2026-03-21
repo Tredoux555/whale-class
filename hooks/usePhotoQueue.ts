@@ -2,17 +2,19 @@
 // React hook for the offline photo queue
 //
 // Usage:
-//   const { stats, entries, enqueue, sync, retry } = usePhotoQueue(childId);
+//   const { stats, entries, enqueue, sync, retry, syncing, progress } = usePhotoQueue(childId);
 //   // stats.pending = number of photos waiting to upload
 //   // entries = queue entries for this child (for gallery merge)
 //   // enqueue(blob, opts) = save photo locally
 //   // sync() = trigger upload of all pending
 //   // retry(id) = retry a permanently failed photo
+//   // progress = real-time upload progress (ETA, speed, counts)
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { PhotoQueueEntry, PhotoQueueStats, SyncEvent } from '@/lib/montree/offline';
+import type { PhotoQueueEntry, PhotoQueueStats, UploadProgress } from '@/lib/montree/offline';
+import type { SyncEvent } from '@/lib/montree/offline';
 import {
   enqueuePhoto,
   syncQueue,
@@ -36,12 +38,15 @@ interface UsePhotoQueueReturn {
   retry: (id: string) => Promise<void>;
   /** Whether a sync is currently in progress */
   syncing: boolean;
+  /** Real-time upload progress (null when not syncing) */
+  progress: UploadProgress | null;
 }
 
 export function usePhotoQueue(childId?: string): UsePhotoQueueReturn {
   const [stats, setStats] = useState<PhotoQueueStats | null>(null);
   const [entries, setEntries] = useState<PhotoQueueEntry[]>([]);
   const [syncing, setSyncing] = useState(false);
+  const [progress, setProgress] = useState<UploadProgress | null>(null);
 
   // Load initial stats and entries
   const refresh = useCallback(async () => {
@@ -61,18 +66,24 @@ export function usePhotoQueue(childId?: string): UsePhotoQueueReturn {
     refresh();
   }, [refresh]);
 
-  // Listen for sync events to update UI (only refresh on meaningful state changes)
+  // Listen for sync events to update UI
   useEffect(() => {
     const unsubscribe = addSyncListener((event: SyncEvent) => {
       if (event.type === 'sync_start') {
         setSyncing(true);
+        setProgress(null);
       } else if (event.type === 'sync_complete') {
         setSyncing(false);
-        refresh(); // Refresh after sync completes
+        setProgress(null);
+        refresh();
+      } else if (event.type === 'upload_progress' && event.progress) {
+        // Real-time progress updates — no full refresh needed
+        setProgress(event.progress);
       } else if (event.type === 'photo_uploaded' || event.type === 'photo_failed') {
-        refresh(); // Refresh on individual photo status changes
+        refresh();
       }
       // Skip refresh for 'photo_enqueued' — the enqueue() call below handles that
+      // Skip refresh for 'photo_uploading' — progress events handle counts
     });
     return unsubscribe;
   }, [refresh]);
@@ -93,5 +104,5 @@ export function usePhotoQueue(childId?: string): UsePhotoQueueReturn {
     await refresh();
   }, [refresh]);
 
-  return { stats, entries, enqueue, sync, retry, syncing };
+  return { stats, entries, enqueue, sync, retry, syncing, progress };
 }
