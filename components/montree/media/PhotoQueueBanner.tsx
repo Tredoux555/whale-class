@@ -1,5 +1,5 @@
 // components/montree/media/PhotoQueueBanner.tsx
-// Shows upload queue status in gallery: pending count, progress, retry button
+// Shows upload queue status in gallery: progress bar, ETA, per-photo counts, retry button
 'use client';
 
 import { usePhotoQueue } from '@/hooks/usePhotoQueue';
@@ -9,18 +9,41 @@ interface PhotoQueueBannerProps {
   childId?: string;
 }
 
+function formatETA(seconds: number | null): string {
+  if (seconds === null || seconds <= 0) return '';
+  if (seconds < 60) return `~${seconds}s`;
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return secs > 0 ? `~${mins}m ${secs}s` : `~${mins}m`;
+}
+
+function formatSpeed(bytesPerSecond: number): string {
+  if (bytesPerSecond <= 0) return '';
+  if (bytesPerSecond > 1024 * 1024) {
+    return `${(bytesPerSecond / 1024 / 1024).toFixed(1)} MB/s`;
+  }
+  return `${Math.round(bytesPerSecond / 1024)} KB/s`;
+}
+
 export default function PhotoQueueBanner({ childId }: PhotoQueueBannerProps) {
   const { t } = useI18n();
-  const { stats, sync, syncing } = usePhotoQueue(childId);
+  const { stats, sync, syncing, progress } = usePhotoQueue(childId);
 
   if (!stats) return null;
 
   const pendingCount = stats.pending + stats.uploading + stats.failed;
   if (pendingCount === 0 && stats.permanent_failure === 0) return null;
 
-  const totalActive = pendingCount + stats.uploaded;
-  const progressPct = totalActive > 0 ? Math.round((stats.uploaded / totalActive) * 100) : 0;
   const pendingMB = (stats.total_bytes_pending / 1024 / 1024).toFixed(1);
+
+  // Use real-time progress when available, fall back to stats
+  const progressPct = progress
+    ? (progress.total > 0 ? Math.round((progress.completed / progress.total) * 100) : 0)
+    : (pendingCount > 0 ? 0 : 100);
+
+  const etaStr = progress ? formatETA(progress.etaSeconds) : '';
+  const speedStr = progress ? formatSpeed(progress.bytesPerSecond) : '';
+  const showProgressDetail = syncing && progress && progress.total > 0;
 
   return (
     <div className="mx-4 mb-3">
@@ -32,35 +55,50 @@ export default function PhotoQueueBanner({ childId }: PhotoQueueBannerProps) {
               {syncing ? (
                 <div className="animate-spin h-4 w-4 border-2 border-amber-500 border-t-transparent rounded-full" />
               ) : (
-                <span className="text-amber-600 text-sm">📷</span>
+                <span className="text-amber-600 text-sm">{'\u{1F4F7}'}</span>
               )}
               <span className="text-sm font-medium text-amber-800">
-                {syncing
-                  ? `${t('offline.uploading') || 'Uploading'} ${stats.uploading} ${t('offline.photo') || 'photo'}${stats.uploading !== 1 ? 's' : ''}...`
-                  : `${pendingCount} ${t('offline.photo') || 'photo'}${pendingCount !== 1 ? 's' : ''} ${t('offline.waitingToUpload') || 'waiting to upload'}`
+                {showProgressDetail
+                  ? `${t('offline.uploading') || 'Uploading'} ${progress.completed}/${progress.total}...`
+                  : syncing
+                    ? `${t('offline.uploading') || 'Uploading'} ${stats.uploading} ${t('offline.photo') || 'photo'}${stats.uploading !== 1 ? 's' : ''}...`
+                    : `${pendingCount} ${t('offline.photo') || 'photo'}${pendingCount !== 1 ? 's' : ''} ${t('offline.waitingToUpload') || 'waiting to upload'}`
                 }
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-amber-600">{pendingMB} MB</span>
+              {showProgressDetail && etaStr && (
+                <span className="text-xs text-amber-600">{etaStr}</span>
+              )}
+              {showProgressDetail && speedStr && (
+                <span className="text-xs text-amber-500">{speedStr}</span>
+              )}
               {!syncing && (
-                <button
-                  onClick={() => sync()}
-                  className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded hover:bg-amber-200 transition-colors"
-                >
-                  {t('offline.syncNow') || 'Sync now'}
-                </button>
+                <>
+                  <span className="text-xs text-amber-600">{pendingMB} MB</span>
+                  <button
+                    onClick={() => sync()}
+                    className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded hover:bg-amber-200 transition-colors"
+                  >
+                    {t('offline.syncNow') || 'Sync now'}
+                  </button>
+                </>
               )}
             </div>
           </div>
 
           {/* Progress bar */}
-          {totalActive > 0 && (
-            <div className="bg-white rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                style={{ width: `${progressPct}%` }}
-              />
+          <div className="bg-white rounded-full h-1.5 overflow-hidden">
+            <div
+              className="h-full bg-amber-500 rounded-full transition-all duration-300"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+
+          {/* Per-photo counts when syncing */}
+          {showProgressDetail && progress.failed > 0 && (
+            <div className="mt-1 text-xs text-amber-600">
+              {progress.uploaded} {t('offline.uploaded') || 'uploaded'}, {progress.failed} {t('offline.failedShort') || 'failed'}
             </div>
           )}
         </div>

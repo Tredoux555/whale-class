@@ -10,7 +10,7 @@
 //   HIGH-001: Auth 401 stops sync loop immediately (no wasted retries)
 //   MED-002: Always mark failed/permanent_failure on ANY error path
 
-import type { PhotoQueueEntry, SyncResult } from './types';
+import type { PhotoQueueEntry, SyncResult, UploadProgress } from './types';
 import { MAX_RETRIES } from './types';
 import {
   saveEntryAndBlob, getEntry, getBlob, deleteBlob,
@@ -26,13 +26,15 @@ import { startAnalysis } from '@/lib/montree/photo-insight-store';
 let syncInProgress = false;
 let syncStartedAt = 0; // Timestamp for timeout detection (CRITICAL-004)
 const SYNC_TIMEOUT_MS = 90_000; // 90s max sync duration
+const MAX_CONCURRENT_UPLOADS = 3; // Parallel upload slots
 
 const syncListeners = new Set<(stats: SyncEvent) => void>();
 
 export type SyncEvent = {
-  type: 'sync_start' | 'sync_complete' | 'photo_uploaded' | 'photo_failed' | 'photo_enqueued';
+  type: 'sync_start' | 'sync_complete' | 'photo_uploading' | 'photo_uploaded' | 'photo_failed' | 'photo_enqueued' | 'upload_progress';
   entry?: PhotoQueueEntry;
   result?: SyncResult;
+  progress?: UploadProgress;
 };
 
 // ============================================
@@ -204,34 +206,84 @@ export async function syncQueue(): Promise<SyncResult> {
     let uploaded = 0;
     let failed = 0;
     let authFailed = false;
+    let nextIndex = 0;
+    const total = pending.length;
 
-    // Sequential upload (preserves order, avoids overwhelming server)
-    for (const entry of pending) {
-      // CRITICAL-004: Check sync timeout mid-loop
-      if (Date.now() - syncStartedAt > SYNC_TIMEOUT_MS) {
-        console.warn('[PHOTO_QUEUE] Sync timeout reached, stopping');
-        break;
+    // Rolling speed tracker for ETA calculation
+    const uploadTimestamps: { time: number; bytes: number }[] = [];
+
+    function emitProgress() {
+      // Calculate rolling bytes/sec from last 10 uploads
+      let bytesPerSecond = 0;
+      if (uploadTimestamps.length >= 2) {
+        const window = uploadTimestamps.slice(-10);
+        const totalBytes = window.reduce((sum, t) => sum + t.bytes, 0);
+        const elapsed = (window[window.length - 1].time - window[0].time) / 1000;
+        if (elapsed > 0) bytesPerSecond = totalBytes / elapsed;
       }
 
-      // HIGH-001: If auth failed, stop trying (all subsequent will fail too)
-      if (authFailed) {
-        break;
-      }
+      // Estimate remaining time
+      const remaining = total - (uploaded + failed);
+      const avgBytesPerPhoto = total > 0
+        ? pending.reduce((sum, e) => sum + e.blob_size_bytes, 0) / total
+        : 0;
+      const etaSeconds = bytesPerSecond > 0
+        ? Math.round((remaining * avgBytesPerPhoto) / bytesPerSecond)
+        : null;
 
-      try {
-        await uploadEntry(entry);
-        uploaded++;
-        notifyListeners({ type: 'photo_uploaded', entry });
-      } catch (err) {
-        failed++;
-        // HIGH-001: Detect auth failure, stop entire sync loop
-        if (err instanceof Error && err.message === 'AUTH_EXPIRED') {
-          authFailed = true;
+      const progress: UploadProgress = {
+        total,
+        completed: uploaded + failed,
+        inFlight: Math.min(MAX_CONCURRENT_UPLOADS, total - (uploaded + failed)),
+        uploaded,
+        failed,
+        etaSeconds,
+        bytesPerSecond,
+      };
+      notifyListeners({ type: 'upload_progress', progress });
+    }
+
+    // Parallel upload pool: up to MAX_CONCURRENT_UPLOADS at once
+    async function processNext(): Promise<void> {
+      while (nextIndex < total) {
+        // CRITICAL-004: Check sync timeout
+        if (Date.now() - syncStartedAt > SYNC_TIMEOUT_MS) {
+          console.warn('[PHOTO_QUEUE] Sync timeout reached, stopping');
+          return;
         }
-        console.error(`[PHOTO_QUEUE] Upload failed for ${entry.id}:`, err);
-        notifyListeners({ type: 'photo_failed', entry });
+
+        // HIGH-001: If auth failed, stop trying (all subsequent will fail too)
+        if (authFailed) return;
+
+        const entry = pending[nextIndex++];
+        if (!entry) return;
+
+        notifyListeners({ type: 'photo_uploading', entry });
+
+        try {
+          await uploadEntry(entry);
+          uploaded++;
+          uploadTimestamps.push({ time: Date.now(), bytes: entry.blob_size_bytes });
+          notifyListeners({ type: 'photo_uploaded', entry });
+        } catch (err) {
+          failed++;
+          if (err instanceof Error && err.message === 'AUTH_EXPIRED') {
+            authFailed = true;
+          }
+          console.error(`[PHOTO_QUEUE] Upload failed for ${entry.id}:`, err);
+          notifyListeners({ type: 'photo_failed', entry });
+        }
+
+        emitProgress();
       }
     }
+
+    // Launch concurrent workers
+    const workers = Array.from(
+      { length: Math.min(MAX_CONCURRENT_UPLOADS, total) },
+      () => processNext()
+    );
+    await Promise.all(workers);
 
     const result: SyncResult = {
       uploaded,

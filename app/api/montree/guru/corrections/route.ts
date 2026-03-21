@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     const rateResult = await checkRateLimit(supabase, ip, '/api/montree/guru/corrections', 30, 60);
     if (!rateResult.allowed) {
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+      return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
     }
 
     const body = await request.json();
@@ -39,21 +39,21 @@ export async function POST(request: NextRequest) {
 
     // HIGH-004 fix: Validate required fields upfront — null child_id skips access check + breaks learning loop
     if (!child_id || typeof child_id !== 'string') {
-      return NextResponse.json({ error: 'child_id is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'child_id is required' }, { status: 400 });
     }
     if (!media_id || typeof media_id !== 'string') {
-      return NextResponse.json({ error: 'media_id is required' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'media_id is required' }, { status: 400 });
     }
 
     if (!original_work_id && !original_work_name) {
-      return NextResponse.json({ error: 'Missing original identification' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'Missing original identification' }, { status: 400 });
     }
 
     // Security: verify child belongs to school
     if (auth.schoolId) {
       const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
       if (!access.allowed) {
-        return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
       }
     }
 
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     const classroomId = auth.classroomId;
 
     if (!classroomId) {
-      return NextResponse.json({ error: 'No classroom found' }, { status: 400 });
+      return NextResponse.json({ success: false, error: 'No classroom found' }, { status: 400 });
     }
 
     // CONFIRM path: teacher says "yes, the identification was correct"
@@ -138,11 +138,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Fallback: try to get photo URL directly from media table if both locales failed
+        // Security: filter by child_id to prevent cross-school photo URL extraction
         if (!photoUrl) {
           const { data: media } = await supabase
             .from('montree_media')
             .select('file_url')
             .eq('id', media_id)
+            .eq('child_id', child_id)
             .maybeSingle();
           if (media?.file_url) {
             photoUrl = media.file_url;
@@ -198,7 +200,7 @@ export async function POST(request: NextRequest) {
 
     if (corrError) {
       console.error('[Corrections] Insert error:', corrError);
-      return NextResponse.json({ error: 'Failed to record correction' }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'Failed to record correction' }, { status: 500 });
     }
 
     // 3. Update accuracy EMA — mark the original as incorrect
@@ -288,7 +290,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('[Corrections] Error:', error);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal error' }, { status: 500 });
   }
 }
 
@@ -391,8 +393,23 @@ async function generateAndStoreVisualMemory({
   // Cap at 500 chars to keep prompt injection reasonable
   visualDescription = visualDescription.slice(0, 500);
 
-  // Upsert into visual memory — if a description already exists for this work+classroom,
-  // update it (newer corrections have better photos/context)
+  // Upsert into visual memory — only if new confidence >= existing confidence
+  // Prevents lower-quality first_capture (0.7) from overwriting higher-quality correction (0.9)
+  const newConfidence = source === 'correction' ? 0.9 : 0.7;
+
+  // Check existing confidence before overwriting
+  const { data: existingMemory } = await supabase
+    .from('montree_visual_memory')
+    .select('description_confidence')
+    .eq('classroom_id', classroomId)
+    .eq('work_name', workName)
+    .maybeSingle();
+
+  if (existingMemory && typeof existingMemory.description_confidence === 'number' && existingMemory.description_confidence > newConfidence) {
+    console.log(`[VisualMemory] Skipping upsert: existing confidence ${existingMemory.description_confidence} > new ${newConfidence} for "${workName}"`);
+    return;
+  }
+
   const { error: upsertError } = await supabase
     .from('montree_visual_memory')
     .upsert({
@@ -405,7 +422,7 @@ async function generateAndStoreVisualMemory({
       source,
       source_media_id: mediaId,
       photo_url: photoUrl,
-      description_confidence: source === 'correction' ? 0.9 : 0.7, // corrections are higher quality
+      description_confidence: newConfidence,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'classroom_id,work_name' });
 
@@ -424,7 +441,7 @@ async function generateAndStoreVisualMemory({
       .eq('classroom_id', classroomId)
       .order('created_at', { ascending: false })
       .limit(1)
-      .catch(() => {}); // Non-fatal
+      .catch((err: unknown) => { console.error('[VisualMemory] Correction record update error (non-fatal):', err); });
   }
 }
 
