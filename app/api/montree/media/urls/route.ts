@@ -1,16 +1,16 @@
 // /api/montree/media/urls/route.ts
-// Batch generate signed URLs for multiple media files (reduces N requests to 1)
+// Batch generate proxy URLs for multiple media files (reduces N requests to 1)
+// Now returns Cloudflare-cached proxy URLs instead of Supabase signed URLs
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { getProxyUrls } from '@/lib/montree/media/proxy-url';
 
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    const supabase = getSupabase();
     const body = await request.json();
     const { paths } = body;
 
@@ -21,27 +21,12 @@ export async function POST(request: NextRequest) {
     // Cap at 500 to prevent abuse while supporting large galleries
     const cappedPaths = paths.slice(0, 500);
 
-    // Supabase batch signed URL generation (1 call for all paths)
-    const { data, error } = await supabase.storage
-      .from('montree-media')
-      .createSignedUrls(cappedPaths, 3600);
-
-    if (error) {
-      console.error('Failed to create signed URLs:', error);
-      return NextResponse.json({ error: 'Failed to generate URLs' }, { status: 500 });
-    }
-
-    // Build path→url map
-    const urls: Record<string, string> = {};
-    for (const item of data || []) {
-      if (item.signedUrl && item.path) {
-        urls[item.path] = item.signedUrl;
-      }
-    }
+    // Generate proxy URLs (instant, no Supabase call needed)
+    const urls = getProxyUrls(cappedPaths);
 
     const response = NextResponse.json({ success: true, urls });
-    // Cache signed URLs for 5 min (they're valid for 1 hour)
-    response.headers.set('Cache-Control', 'private, max-age=300, stale-while-revalidate=600');
+    // Proxy URLs are stable (no expiry) — cache aggressively
+    response.headers.set('Cache-Control', 'private, max-age=3600, stale-while-revalidate=7200');
     return response;
 
   } catch (error) {

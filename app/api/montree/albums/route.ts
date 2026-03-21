@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // POST - Query photos for album generation
 export async function POST(request: NextRequest) {
@@ -154,23 +155,14 @@ export async function POST(request: NextRequest) {
       a.date.localeCompare(b.date)
     );
 
-    // Get signed URLs for thumbnails
+    // Get proxy URLs for thumbnails (Cloudflare-cached, no Supabase call needed)
     const allPaths = allMedia
       .map(m => (m.thumbnail_path || m.storage_path) as string)
       .filter(Boolean);
 
-    let urlMap: Record<string, string> = {};
-    if (allPaths.length > 0) {
-      const { data: signedData } = await supabase.storage
-        .from('montree-media')
-        .createSignedUrls(allPaths, 3600);
-      if (signedData) {
-        for (const item of signedData) {
-          if (item.signedUrl) {
-            urlMap[item.path || ''] = item.signedUrl;
-          }
-        }
-      }
+    const urlMap: Record<string, string> = {};
+    for (const path of allPaths) {
+      urlMap[path] = getProxyUrl(path);
     }
 
     return NextResponse.json({
