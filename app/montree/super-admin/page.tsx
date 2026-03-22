@@ -473,10 +473,14 @@ export default function SuperAdminPage() {
             setEditingSchool={setEditingSchool}
             onUpdateStatus={leadOps.updateSchoolStatus}
             onDeleteSchool={leadOps.deleteSchool}
+            onBatchDelete={leadOps.batchDeleteSchools}
             onLoginAs={leadOps.loginAsSchool}
             trialSchools={trialSchools}
             freeSchools={freeSchools}
             paidSchools={paidSchools}
+            batchDeleting={leadOps.batchDeleting}
+            batchDeleteProgress={leadOps.batchDeleteProgress}
+            onClearBatchProgress={leadOps.clearBatchDeleteProgress}
           />
         )}
 
