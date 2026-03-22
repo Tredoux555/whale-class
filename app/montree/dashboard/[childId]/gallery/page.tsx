@@ -844,7 +844,7 @@ export default function GalleryPage() {
                     const blobUrl = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = blobUrl;
-                    a.download = `${(photo.work_name || 'photo').replace(/[^a-zA-Z0-9]/g, '_')}_${formatDate(photo.captured_at)}.jpg`;
+                    a.download = `${(photo.work_name || 'photo').replace(/[^a-zA-Z0-9]/g, '_')}_${formatDate(photo.captured_at).replace(/[^a-zA-Z0-9]/g, '_')}.jpg`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);

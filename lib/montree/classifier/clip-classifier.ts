@@ -18,8 +18,6 @@ const CLIP_MODEL = 'Xenova/siglip-base-patch16-224';
 const CLIP_CONFIDENCE_THRESHOLD = 0.75; // Below this, fall back to Haiku vision
 const VISUAL_MEMORY_BOOST = 0.15; // Confidence boost for works with visual memory
 const VISUAL_MEMORY_BOOST_CAP = 0.99; // Cap boosted confidence at this value
-const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB max image download
-const IMAGE_DOWNLOAD_TIMEOUT_MS = 10_000; // 10s timeout for image download
 const CLASSIFICATION_TIMEOUT_MS = 30_000; // 30s max for entire classification
 const NEGATIVE_EMBEDDING_WEIGHT = 0.3; // Weight for negative embedding penalty (conservative)
 
@@ -92,32 +90,8 @@ function cosineSimilarity(a: Float32Array, b: Float32Array): number {
   return dot / (normA * normB);
 }
 
-// ============================================================
-// Helper: Download image as buffer
-// ============================================================
-
-async function downloadImageAsBuffer(imageUrl: string): Promise<Buffer> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), IMAGE_DOWNLOAD_TIMEOUT_MS);
-  try {
-    const response = await fetch(imageUrl, { signal: controller.signal });
-    if (!response.ok) {
-      throw new Error(`Failed to download image: ${response.statusText}`);
-    }
-    // Check Content-Length header if available
-    const contentLength = response.headers.get('content-length');
-    if (contentLength && parseInt(contentLength, 10) > MAX_IMAGE_SIZE_BYTES) {
-      throw new Error(`Image too large: ${contentLength} bytes (max ${MAX_IMAGE_SIZE_BYTES})`);
-    }
-    const buffer = Buffer.from(await response.arrayBuffer());
-    if (buffer.length > MAX_IMAGE_SIZE_BYTES) {
-      throw new Error(`Image too large: ${buffer.length} bytes (max ${MAX_IMAGE_SIZE_BYTES})`);
-    }
-    return buffer;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+// NOTE: downloadImageAsBuffer() removed — no longer needed after switching to RawImage.fromURL()
+// which handles image download, decode, and tensor creation in one step.
 
 // ============================================================
 // Helper: Load dynamic module
