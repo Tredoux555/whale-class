@@ -389,10 +389,10 @@ const AUTO_UPDATE_THRESHOLD = 0.85;
 // Haiku-first router: acceptance threshold for skipping Sonnet escalation
 // If Haiku confidence ≥ 0.80 AND matchToCurriculumV2 score ≥ 0.80, accept Haiku result.
 // Haiku-accepted results still go through GREEN/AMBER/RED zone system — acceptance just
-// means "skip Sonnet", NOT "auto-update". Auto-update still requires 0.95/0.95.
+// means "skip Sonnet", NOT "auto-update". Auto-update requires 0.85/0.85 (AUTO_UPDATE_THRESHOLD).
 // CALIBRATION NOTE: Haiku confidence may differ from Sonnet's. Mitigated by 3 layers:
 // (1) 0.80 acceptance is conservative — most results land in AMBER for teacher review
-// (2) GREEN zone requires 0.95/0.95 — very high bar even for Haiku
+// (2) GREEN zone requires 0.85/0.85 — confident identifications auto-update progress
 // (3) Classroom gate — only works already in curriculum get auto-updated
 const HAIKU_ACCEPT_CONFIDENCE = 0.80;
 const HAIKU_ACCEPT_MATCH = 0.80;
@@ -839,13 +839,13 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             else scenario = 'D';
 
             // GREEN/AMBER/RED zone with CLIP confidence factored in
-            // CLIP models are calibrated differently than Sonnet — 0.80 CLIP ≈ 0.95 Sonnet
+            // CLIP models are calibrated differently than Haiku — 0.80 CLIP ≈ 0.85 Haiku
             const CLIP_GREEN_THRESHOLD = 0.80; // CLIP confidence needed for GREEN zone auto-update
             const validStatuses = ['mastered', 'practicing', 'presented'];
             const slimMastery = validStatuses.includes(slimInput.mastery_evidence) ? slimInput.mastery_evidence : null;
             const shouldAutoUpdate = (
               clipConfidence >= CLIP_GREEN_THRESHOLD &&
-              slimInput.confidence >= AUTO_UPDATE_THRESHOLD && // Haiku still needs 0.95
+              slimInput.confidence >= AUTO_UPDATE_THRESHOLD && // Haiku needs 0.85 (AUTO_UPDATE_THRESHOLD)
               slimMastery !== null &&
               inClassroom
             );
@@ -1506,15 +1506,15 @@ ART & MUSIC:
 - LAND AND WATER FORMS (clay trays with water) vs "Sink and Float" (objects in water basin)
 
 CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences):
-- 0.95+ : ONLY use when the material is unmistakable and you are CERTAIN of the exact work name
+- 0.85+ : ONLY use when the material is unmistakable and you are CERTAIN of the exact work name
   → The system will AUTOMATICALLY update the child's progress record (no teacher review)
   → False positives at this level corrupt educational records — be conservative
-- 0.7-0.94 : Likely match but some ambiguity (partially visible materials, angle obscures key features)
+- 0.75-0.84 : Likely match but some ambiguity (partially visible materials, angle obscures key features)
   → Teacher will be asked to confirm before any update happens
-- 0.5-0.69 : Best guess based on limited visual evidence — requires teacher confirmation
+- 0.5-0.74 : Best guess based on limited visual evidence — requires teacher confirmation
 - Below 0.5 : Cannot reliably identify — describe what you see, no matching attempted
 IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask the teacher
-to confirm (0.7-0.94) than to auto-update incorrectly (0.95+).
+to confirm (0.75-0.84) than to auto-update incorrectly (0.85+).
 ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
 
     // ================================================================
@@ -1800,8 +1800,8 @@ Match this description to the correct Montessori work. Use the visual identifica
       ? input.mastery_evidence
       : null;
 
-    // GREEN zone auto-update: BOTH match score AND Sonnet confidence must be ≥ 0.95
-    // AMBER zone (0.5–0.95): tagged but requires teacher confirmation before progress update
+    // GREEN zone auto-update: BOTH match score AND confidence must be ≥ AUTO_UPDATE_THRESHOLD (0.85)
+    // AMBER zone (0.75–0.84): tagged but requires teacher confirmation before progress update
     // RED zone (<0.5): scenario A (unknown work)
     const shouldAutoUpdate = (
       matchScore >= AUTO_UPDATE_THRESHOLD &&
@@ -1895,7 +1895,7 @@ Match this description to the correct Montessori work. Use the visual identifica
 
     // GREEN zone: Auto-add to child's shelf if work is in classroom but NOT on shelf
     // This completes the "self-driving car" model: photo → identify → update progress → add to shelf
-    // Only fires when confidence is GREEN (≥0.95) to avoid polluting the shelf with misidentifications
+    // Only fires when confidence is GREEN (≥0.85 AUTO_UPDATE_THRESHOLD) to avoid polluting the shelf with misidentifications
     if (shouldAutoUpdate && inClassroom && !inChildShelf && finalWorkName && finalArea && classroomWorkId) {
       try {
         const { error: shelfError } = await supabase
