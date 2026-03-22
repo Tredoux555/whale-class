@@ -236,6 +236,21 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
 
+    // Derive school_id from classroom (required for data integrity)
+    const { data: classroomData, error: classroomError } = await supabase
+      .from('montree_classrooms')
+      .select('school_id')
+      .eq('id', classroomId)
+      .single();
+
+    if (classroomError || !classroomData?.school_id) {
+      return NextResponse.json(
+        { success: false, created: 0, errors: ['Classroom not found or missing school'], children: [] },
+        { status: 404 }
+      );
+    }
+    const schoolId = classroomData.school_id;
+
     // Fetch curriculum data (non-fatal: students can still be created without progress)
     let areaMap: Record<string, string> = {};
     let works: Array<{ id: string; work_key: string; name: string; name_chinese: string | null; area_id: string; sequence: number }> = [];
@@ -266,6 +281,7 @@ export async function POST(request: NextRequest) {
         const childRecord: Record<string, any> = {
           id: childId,
           classroom_id: classroomId,
+          school_id: schoolId,
           name: student.name.trim(),
           age: student.age ? Math.round(student.age) : null,
           notes: student.notes ?? null,

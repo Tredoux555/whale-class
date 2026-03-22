@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 export async function GET() {
   const supabase = getSupabase();
@@ -33,9 +33,8 @@ const ALLOWED_FIELDS = [
 export async function PATCH(request: NextRequest) {
   const supabase = getSupabase();
 
-  // Phase 9: Timing-safe password verification
-  const password = request.headers.get('x-super-admin-password');
-  const { valid } = verifySuperAdminPassword(password);
+  // Verify super admin (JWT token or password fallback)
+  const { valid } = await verifySuperAdminAuth(request.headers);
   if (!valid) {
     return NextResponse.json(
       { error: 'Unauthorized' },

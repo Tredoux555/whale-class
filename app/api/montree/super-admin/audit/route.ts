@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 function getClientIP(request: NextRequest): string {
@@ -19,12 +19,15 @@ export async function POST(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || 'unknown';
 
   try {
-    const { action, details, timestamp, password } = await request.json();
+    const { action, details, timestamp } = await request.json();
 
-    // Phase 9: Require super-admin auth for audit writes
-    const { valid } = verifySuperAdminPassword(password);
-    if (!valid) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    // Allow login-related audit events without auth (they happen before/during auth)
+    const AUTH_EXEMPT_ACTIONS = ['login_failed', 'login_success', 'session_timeout'];
+    if (!AUTH_EXEMPT_ACTIONS.includes(action)) {
+      const { valid } = await verifySuperAdminAuth(request.headers);
+      if (!valid) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     // Log to database
@@ -74,11 +77,9 @@ export async function GET(request: NextRequest) {
     console.error('[Audit] Rate limit check failed (non-blocking):', e);
   }
 
-  // Phase 9: Require super-admin auth for audit reads
-  const password = request.headers.get('x-super-admin-password') ||
-    new URL(request.url).searchParams.get('password');
-  const { valid } = verifySuperAdminPassword(password);
-  if (!valid) {
+  // Phase 9→10: Require super-admin auth for audit reads (JWT token or password fallback)
+  const { valid: getValid } = await verifySuperAdminAuth(request.headers);
+  if (!getValid) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

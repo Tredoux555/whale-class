@@ -88,7 +88,8 @@ export default function SchoolsTab({
         s.name.toLowerCase().includes(q) ||
         (s.owner_name || '').toLowerCase().includes(q) ||
         (s.owner_email || '').toLowerCase().includes(q) ||
-        (s.slug || '').toLowerCase().includes(q)
+        (s.slug || '').toLowerCase().includes(q) ||
+        (s.login_codes || []).some(code => code.toLowerCase().includes(q))
       );
     }
 
@@ -201,7 +202,7 @@ export default function SchoolsTab({
           type="text"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search schools, owners..."
+          placeholder="Search schools, owners, login codes..."
           className="flex-1 min-w-[200px] px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:border-emerald-500 outline-none text-sm"
         />
         <div className="flex gap-1">
@@ -395,6 +396,9 @@ export default function SchoolsTab({
                           <div>
                             <p className="font-medium text-white text-sm">{school.name}</p>
                             <p className="text-slate-500 text-xs">{school.owner_name || school.owner_email || '-'}</p>
+                            {(school.login_codes || []).length > 0 && (
+                              <p className="text-slate-600 text-xs font-mono mt-0.5">{(school.login_codes || []).join(', ')}</p>
+                            )}
                           </div>
                         </div>
                       </td>

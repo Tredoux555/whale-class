@@ -4,9 +4,16 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { timingSafeEqual } from 'crypto';
+import { SignJWT } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { checkRateLimit } from '@/lib/rate-limiter';
+
+function getSuperAdminSecret(): Uint8Array {
+  const secret = process.env.SUPER_ADMIN_PASSWORD || process.env.ADMIN_SECRET;
+  if (!secret) throw new Error('SUPER_ADMIN_PASSWORD or ADMIN_SECRET required');
+  return new TextEncoder().encode(secret);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -95,7 +102,15 @@ export async function POST(req: NextRequest) {
       console.error('[SuperAdminAuth] Audit log failed:', e);
     }
 
-    return NextResponse.json({ authenticated: true });
+    // Issue JWT session token (1 hour). Client-side 15-min inactivity timeout
+    // is the real session control — JWT just needs to outlast an active session.
+    const token = await new SignJWT({ role: 'super_admin', ip })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('1h')
+      .sign(getSuperAdminSecret());
+
+    return NextResponse.json({ authenticated: true, token });
   } catch (e) {
     console.error('[SuperAdminAuth] Unexpected error:', e);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -27,8 +27,30 @@ const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 export default function SuperAdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
+  const [saToken, setSaToken] = useState('');
   const [error, setError] = useState('');
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
+
+  // Restore session from sessionStorage on mount (JWT token, not password)
+  useEffect(() => {
+    try {
+      const savedToken = sessionStorage.getItem('sa_session');
+      const savedTs = sessionStorage.getItem('sa_session_ts');
+      if (savedToken && savedTs) {
+        const elapsed = Date.now() - parseInt(savedTs, 10);
+        if (elapsed < SESSION_TIMEOUT_MS) {
+          setSaToken(savedToken);
+          setAuthenticated(true);
+          setLastActivity(Date.now());
+        } else {
+          sessionStorage.removeItem('sa_session');
+          sessionStorage.removeItem('sa_session_ts');
+        }
+      }
+    } catch {
+      // sessionStorage not available
+    }
+  }, []);
   const [sessionWarning, setSessionWarning] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('schools');
   const [editingSchool, setEditingSchool] = useState<string | null>(null);
@@ -47,23 +69,26 @@ export default function SuperAdminPage() {
     try {
       await fetch('/api/montree/super-admin/audit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, details, timestamp: new Date().toISOString(), password }),
+        headers: {
+          'Content-Type': 'application/json',
+          ...(saToken ? { 'x-super-admin-token': saToken } : {}),
+        },
+        body: JSON.stringify({ action, details, timestamp: new Date().toISOString() }),
       });
     } catch (e) {
       // Audit log failed
     }
-  }, [password]);
+  }, [saToken]);
 
-  // Use custom hooks
+  // Use custom hooks — pass JWT token (not password)
   const adminData = useAdminData({
-    password,
+    password: saToken,
     logAction,
     authenticated
   });
 
   const leadOps = useLeadOperations({
-    password,
+    password: saToken,
     leads: adminData.leads,
     setLeads: adminData.setLeads,
     schools: adminData.schools,
@@ -84,6 +109,7 @@ export default function SuperAdminPage() {
         logAction('session_timeout');
         setAuthenticated(false);
         setSessionWarning(false);
+        try { sessionStorage.removeItem('sa_session'); sessionStorage.removeItem('sa_session_ts'); } catch { /* */ }
         alert('Session expired for security. Please login again.');
       } else if (elapsed > SESSION_TIMEOUT_MS - 60000) {
         setSessionWarning(true);
@@ -97,6 +123,7 @@ export default function SuperAdminPage() {
   const trackActivity = useCallback(() => {
     setLastActivity(Date.now());
     setSessionWarning(false);
+    try { sessionStorage.setItem('sa_session_ts', Date.now().toString()); } catch { /* */ }
   }, []);
 
   useEffect(() => {
@@ -108,6 +135,15 @@ export default function SuperAdminPage() {
       window.removeEventListener('keydown', trackActivity);
     };
   }, [authenticated, trackActivity]);
+
+  // Fetch data when authenticated (covers both login and session restore)
+  useEffect(() => {
+    if (!authenticated || !saToken) return;
+    adminData.fetchSchools();
+    adminData.fetchFeedback();
+    adminData.fetchLeads();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated]);
 
   // Fetch onboarding settings
   useEffect(() => {
@@ -137,12 +173,17 @@ export default function SuperAdminPage() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        const token = data.token || '';
+        setSaToken(token);
         setAuthenticated(true);
         setLastActivity(Date.now());
-        await logAction('login_success');
-        adminData.fetchSchools();
-        adminData.fetchFeedback();
-        adminData.fetchLeads();
+        setPassword(''); // Clear password from memory
+        try {
+          sessionStorage.setItem('sa_session', token);
+          sessionStorage.setItem('sa_session_ts', Date.now().toString());
+        } catch { /* sessionStorage not available */ }
+        // Note: logAction and fetch calls will pick up saToken via hooks on next render
       } else if (res.status === 429) {
         setError('Too many attempts. Please try again later.');
       } else {
@@ -162,7 +203,7 @@ export default function SuperAdminPage() {
     setDmNewMsg('');
     try {
       const res = await fetch(`/api/montree/dm?conversation_id=${conversationId}&reader_type=admin`, {
-        headers: { 'x-super-admin-password': password }
+        headers: { 'x-super-admin-token': saToken }
       });
       if (!res.ok) return;
       const data = await res.json();
@@ -172,7 +213,7 @@ export default function SuperAdminPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': saToken
         },
         body: JSON.stringify({ conversation_id: conversationId, reader_type: 'admin' })
       });
@@ -190,7 +231,7 @@ export default function SuperAdminPage() {
     } catch (err) {
       console.error('Failed to open DM:', err);
     }
-  }, [password, adminData]);
+  }, [saToken, adminData]);
 
   const sendDm = async () => {
     if (!dmOpenFor || !dmNewMsg.trim() || dmSending) return;
@@ -200,7 +241,7 @@ export default function SuperAdminPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': saToken
         },
         body: JSON.stringify({
           conversation_id: dmOpenFor,
@@ -227,7 +268,7 @@ export default function SuperAdminPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': saToken
         },
         body: JSON.stringify({ feedback_id: feedbackId, is_read: true })
       });
@@ -249,7 +290,7 @@ export default function SuperAdminPage() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password,
+          'x-super-admin-token': saToken,
         },
         body: JSON.stringify({ [field]: enabled }),
       });

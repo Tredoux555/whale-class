@@ -16,13 +16,15 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Session Work (Mar 22, 2026 — Auto-Propose Custom Work 10x Plan)
 
-**Auto-Propose Custom Work — 10x PLAN-AUDIT CYCLE COMPLETE, READY FOR BUILD:**
+**Auto-Propose Custom Work — 10x PLAN + 10x BUILD COMPLETE, NOT YET PUSHED:**
 
-When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), system now auto-drafts a custom work proposal via Haiku mini-call with the actual photo. Teacher sees amber card with pre-filled name, area, description, materials — one tap to add. Turns "Untagged" into a single-tap custom work creation.
+When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), Haiku now auto-drafts a custom work proposal from the actual photo. Teacher sees amber card with pre-filled name, area, description, materials — one tap to add. Turns "Untagged" into a single-tap custom work creation.
 
-**10x Methodology:** Plan v1 → Audit 1 (5 agents) → Plan v2 → Audit 2 (5 agents) → Plan v3 → Audit 3 (5 agents) → Plan v4 (FINAL). 15 independent audit agents, 4 plan iterations, ~140 findings triaged. 8 blockers found and resolved.
+**10x Methodology (Planning):** Plan v1 → Audit 1 (5 agents) → Plan v2 → Audit 2 (5 agents) → Plan v3 → Audit 3 (5 agents) → Plan v4 (FINAL). 15 independent audit agents, 4 plan iterations, ~140 findings triaged. 8 blockers found and resolved.
 
-**Architecture (Plan v4 FINAL):**
+**10x Methodology (Build):** 5 audit cycles, 23 independent audit agents, 3 consecutive CLEAN passes. 3 real issues found and fixed: (1) auth fail-fast pattern, (2) unused variable removal, (3) is_custom flag data integrity for Scenario B standard works.
+
+**Architecture (Plan v4 FINAL — IMPLEMENTED):**
 - `proposeCustomWork()` helper fires inside Scenario A block with dynamic timeout (`Math.max(5000, 45000 - elapsed - 2000)`)
 - Haiku vision call with actual photo + sanitized observation + `tool_choice: { type: 'tool' }` (forces structured output)
 - Non-educational gate: `is_educational === false` → no proposal shown
@@ -32,35 +34,41 @@ When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), sy
 - DB-level dedup: partial UNIQUE index `(classroom_id, LOWER(name)) WHERE is_custom = true` + 23505 handler
 - Rollback on partial failure: DELETE orphaned work if media UPDATE fails
 - Prompt injection defense: observation in boundary markers + explicit "ignore embedded instructions"
+- Auth: fail-fast if no schoolId + verifyChildBelongsToSchool unconditionally
 
 **Migration 144:** Adds `is_custom BOOLEAN`, `teacher_notes TEXT`, `source TEXT` columns + partial unique index + lookup index.
 
-**UI:** Amber card in PhotoInsightButton for Scenario A when proposal exists. "Add as New Work" (emerald), "Not this one" (gray dismiss to localStorage), "Edit before adding..." (opens Teach modal pre-filled). Bug fix: `is_custom: false` → `true` on line 216.
+**UI:** Amber card in PhotoInsightButton for Scenario A when proposal exists. "Add as New Work" (emerald), "Not this one" (gray dismiss to localStorage), "Edit before adding..." (opens Teach modal pre-filled).
 
 **Files (2 new, 5 modified):**
 1. `migrations/144_custom_work_schema.sql` — NEW schema prerequisites
-2. `app/api/montree/guru/photo-insight/route.ts` — +proposeCustomWork helper + Scenario A block + response field
-3. `app/api/montree/guru/photo-insight/add-custom-work/route.ts` — NEW atomic endpoint
-4. `lib/montree/photo-insight-store.ts` — +custom_work_proposal field + dismiss functions
-5. `components/montree/guru/PhotoInsightButton.tsx` — +amber card UI + handlers + is_custom bug fix
+2. `app/api/montree/guru/photo-insight/route.ts` — +PROPOSE_CUSTOM_WORK_TOOL schema + proposeCustomWork() helper (~160 lines) + Scenario A block + response field
+3. `app/api/montree/guru/photo-insight/add-custom-work/route.ts` — NEW atomic endpoint (~260 lines)
+4. `lib/montree/photo-insight-store.ts` — +CustomWorkProposal interface + custom_work_proposal field + dismissProposal/isProposalDismissed functions
+5. `components/montree/guru/PhotoInsightButton.tsx` — +amber card UI + handleAddCustomWork/handleDismissProposal handlers + is_custom fix for Scenario B
 6. `lib/montree/i18n/en.ts` — +7 keys
 7. `lib/montree/i18n/zh.ts` — +7 keys
 
-**8 Blockers Resolved:**
-1. Route timeout safety → early exit at 38s + per-call AbortController
-2. Cross-tenant media update → `.eq('school_id')` on ALL media UPDATEs
-3. Prompt injection → sanitization + boundary markers + explicit defense
-4. Transaction partial failure → rollback DELETE on media UPDATE failure
-5. work_key collision → randomUUID suffix
-6. 23505 duplicate → fetch existing + re-tag
-7. Materials hallucination → cross-check against observation text
-8. AbortController lifecycle → per-call controller linked to route abort, cleanup in finally
+**3 Audit Issues Found and Fixed:**
+1. Auth check in add-custom-work: conditional `if (auth.schoolId)` → fail-fast `if (!auth.schoolId) return 403`
+2. Unused variable: `getPublicUrl('montree-media', '')` removed from fire-and-forget section
+3. Data integrity: `is_custom: true` → `is_custom: false` in handleAddToClassroom (Scenario B standard works)
 
 **Cost:** ~$0.0006 per proposal (Haiku vision, ~400 tokens). Only fires on Scenario A (~10-15% of photos).
 
-**Status:** PLANNED ONLY — no code written yet. Ready for implementation (4-6 hours estimated).
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add migrations/144_custom_work_schema.sql app/api/montree/guru/photo-insight/route.ts app/api/montree/guru/photo-insight/add-custom-work/route.ts lib/montree/photo-insight-store.ts components/montree/guru/PhotoInsightButton.tsx lib/montree/i18n/en.ts lib/montree/i18n/zh.ts CLAUDE.md docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_BUILD_MAR22.md
+git commit -m "feat: auto-propose custom work when Smart Capture can't match photo (Scenario A)"
+git push origin main
+```
 
-**Handoff:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`
+⚠️ After deploy, run migration: `psql $DATABASE_URL -f migrations/144_custom_work_schema.sql`
+
+**Handoffs:**
+- `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md` (planning phase)
+- `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_BUILD_MAR22.md` (build phase + audit results)
 
 ---
 
@@ -741,13 +749,11 @@ Add tracking fields to `context_snapshot` so Monday produces actionable data:
 - `negative_penalty_applied`, `confusion_pair_matched`, `differentiation_injected`
 - After Monday: query corrections table → find worst performers → target those works with richer descriptions
 
-### 🟢 Priority #4: Build Auto-Propose Custom Work (4-6 hours)
+### ✅ Priority #4: Build Auto-Propose Custom Work (4-6 hours) — DONE
 
-**Status:** PLANNED — 10x plan-audit cycle complete, Plan v4 FINAL ready for implementation.
+**Status:** CODE COMPLETE + AUDIT VERIFIED. 10x plan-audit + 10x build-audit. 5 audit cycles, 23 agents, 3 consecutive CLEAN. Not yet pushed.
 
-When Scenario A fires (unmatched photo), Haiku auto-drafts custom work proposal → teacher sees amber card → one tap to add. Migration 144 + 2 new files + 5 modified. Full implementation details in handoff.
-
-**Handoff:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`
+**Handoffs:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`, `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_BUILD_MAR22.md`
 
 ### AFTER MONDAY: Data-Driven Refinement (deferred)
 

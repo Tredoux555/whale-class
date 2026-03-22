@@ -3,7 +3,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 // Cost model constants (per interaction, approximate)
 const COST_PER_INTERACTION: Record<string, number> = {
@@ -27,10 +28,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Auth
-    const { searchParams } = new URL(request.url);
-    const password = request.headers.get('x-super-admin-password') || searchParams.get('password');
-    const { valid } = verifySuperAdminPassword(password);
+    // Auth — JWT token preferred, password header as fallback (no query param)
+    const { valid } = await verifySuperAdminAuth(request.headers);
     if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -46,11 +45,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch schools' }, { status: 500 });
     }
 
-    // 2. Fetch counts (classrooms, teachers, children) — all in parallel
-    const [classroomRes, teacherRes, childrenRes] = await Promise.all([
+    // 2. Fetch counts (classrooms, teachers, children) + teacher login codes — all in parallel
+    const [classroomRes, teacherRes, childrenRes, teacherCodesRes] = await Promise.all([
       supabase.from('montree_classrooms').select('school_id'),
       supabase.from('montree_teachers').select('school_id'),
-      supabase.from('montree_children').select('school_id'),
+      supabase.from('montree_children').select('school_id').not('school_id', 'is', null),
+      supabase.from('montree_teachers').select('school_id, login_code').not('login_code', 'is', null),
     ]);
 
     // Build count maps (O(N) instead of O(N²))
@@ -65,6 +65,13 @@ export async function GET(request: NextRequest) {
     const childCountMap: Record<string, number> = {};
     (childrenRes.data || []).forEach(s => {
       childCountMap[s.school_id] = (childCountMap[s.school_id] || 0) + 1;
+    });
+    const loginCodeMap: Record<string, string[]> = {};
+    (teacherCodesRes.data || []).forEach(t => {
+      if (!loginCodeMap[t.school_id]) loginCodeMap[t.school_id] = [];
+      if (t.login_code && !loginCodeMap[t.school_id].includes(t.login_code)) {
+        loginCodeMap[t.school_id].push(t.login_code);
+      }
     });
 
     // 3. Fetch last activity — guru interactions (most reliable activity signal)
@@ -141,6 +148,7 @@ export async function GET(request: NextRequest) {
         last_active_at: lastActiveAt,
         estimated_monthly_cost: Math.round((costMap[school.id] || 0) * 100) / 100,
         interaction_count_30d: interactionCountMap[school.id] || 0,
+        login_codes: loginCodeMap[school.id] || [],
       };
     });
 
@@ -157,16 +165,28 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    const body = await request.json();
-    const { schoolId, subscription_tier, subscription_status, password } = body;
-
-    const { valid: patchPasswordValid } = verifySuperAdminPassword(password);
+    // Auth — JWT token preferred, password in body as fallback
+    const { valid: patchPasswordValid } = await verifySuperAdminAuth(request.headers);
     if (!patchPasswordValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const body = await request.json();
+    const { schoolId, subscription_tier, subscription_status } = body;
+
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
+    }
+
+    // Tier validation
+    const VALID_TIERS = ['trial', 'free', 'basic', 'standard', 'premium'];
+    if (subscription_tier && !VALID_TIERS.includes(subscription_tier)) {
+      return NextResponse.json({ error: 'Invalid subscription tier' }, { status: 400 });
+    }
+
+    const VALID_STATUSES = ['trialing', 'active', 'canceled', 'past_due', 'inactive'];
+    if (subscription_status && !VALID_STATUSES.includes(subscription_status)) {
+      return NextResponse.json({ error: 'Invalid subscription status' }, { status: 400 });
     }
 
     const updateData: Record<string, unknown> = {};
@@ -198,15 +218,30 @@ export async function PATCH(request: NextRequest) {
 }
 
 // DELETE - Batch delete schools and all their data
-// NO rate limit — super admin controls cleanup
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    const password = request.headers.get('x-super-admin-password');
-    const { valid: deletePasswordValid } = verifySuperAdminPassword(password);
+    // Auth — JWT token preferred
+    const { valid: deletePasswordValid } = await verifySuperAdminAuth(request.headers);
     if (!deletePasswordValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limit: max 5 deletes per 15 minutes
+    try {
+      const ip = getClientIP(request.headers);
+      const { allowed, retryAfterSeconds } = await checkRateLimit(
+        supabase, ip, '/api/montree/super-admin/schools/DELETE', 5, 15
+      );
+      if (!allowed) {
+        return NextResponse.json(
+          { error: 'Too many delete requests. Try again later.' },
+          { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+        );
+      }
+    } catch {
+      // Rate limit check failed (non-blocking)
     }
 
     // Accept body with schoolIds array OR single schoolId in query
@@ -294,6 +329,8 @@ export async function DELETE(request: NextRequest) {
  * Order matters — delete leaf tables first, then parent tables.
  */
 async function cascadeDeleteSchool(supabase: ReturnType<typeof getSupabase>, schoolId: string) {
+  if (!schoolId) throw new Error('schoolId required for cascade delete');
+
   // Step 1: Get all child IDs for this school
   const { data: children } = await supabase
     .from('montree_children')
@@ -317,6 +354,7 @@ async function cascadeDeleteSchool(supabase: ReturnType<typeof getSupabase>, sch
 
     for (let i = 0; i < childIds.length; i += 500) {
       const chunk = childIds.slice(i, i + 500);
+      if (chunk.length === 0) continue;
       for (const table of childLinkedTables) {
         await supabase.from(table).delete().in('child_id', chunk).then(({ error }) => {
           if (error) console.warn(`[cascade] ${table} child_id delete warning:`, error.message);
@@ -327,6 +365,7 @@ async function cascadeDeleteSchool(supabase: ReturnType<typeof getSupabase>, sch
     // Media table — also has child_id
     for (let i = 0; i < childIds.length; i += 500) {
       const chunk = childIds.slice(i, i + 500);
+      if (chunk.length === 0) continue;
       await supabase.from('montree_media').delete().in('child_id', chunk).then(({ error }) => {
         if (error) console.warn('[cascade] montree_media delete warning:', error.message);
       });
