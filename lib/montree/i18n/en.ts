@@ -850,6 +850,8 @@ export const en = {
   'offline.queueFull': 'Photo queue full — please wait for uploads to complete',
   'offline.offline': 'You\'re offline — photos are saved locally',
   'offline.backOnline': 'Back online — syncing photos',
+  'offline.uploaded': 'uploaded',
+  'offline.failedShort': 'failed',
 
   // Phase 4 — Observations
   'observations.title': 'Observations',
@@ -2726,6 +2728,13 @@ export const en = {
   'photoInsight.networkError': 'Connection failed — tap to retry',
   'photoInsight.sessionExpired': 'Session expired — please refresh',
   'photoInsight.documented': 'Documented',
+  'photoInsight.suggestedWork': 'Suggested custom work:',
+  'photoInsight.addAsNewWork': 'Add as New Work',
+  'photoInsight.notThisOne': 'Not this one',
+  'photoInsight.editBeforeAdding': 'Edit before adding...',
+  'photoInsight.customWorkAdded': 'Custom work added!',
+  'photoInsight.customWorkFailed': 'Failed to add work',
+  'photoInsight.photoAlreadyTagged': 'Photo is already tagged',
 
   // Report status translations
   'reportStatus.mastered': 'Mastered',

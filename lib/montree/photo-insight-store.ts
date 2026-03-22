@@ -15,6 +15,15 @@ interface CandidateWork {
   score: number;
 }
 
+export interface CustomWorkProposal {
+  name: string;
+  area: string;
+  description: string;
+  materials: string[];
+  why_it_matters: string;
+  proposal_confidence: number;
+}
+
 export interface PhotoInsightResult {
   insight: string;
   work_name: string | null;
@@ -29,6 +38,7 @@ export interface PhotoInsightResult {
   in_classroom?: boolean;
   in_child_shelf?: boolean;
   classroom_work_id?: string | null;
+  custom_work_proposal?: CustomWorkProposal | null;
 }
 
 export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected' | 'retrying';
@@ -299,6 +309,7 @@ function runAnalysisFetch(
         in_classroom: (data.in_classroom as boolean) ?? false,
         in_child_shelf: (data.in_child_shelf as boolean) ?? false,
         classroom_work_id: (data.classroom_work_id as string) ?? null,
+        custom_work_proposal: data.custom_work_proposal ? data.custom_work_proposal as CustomWorkProposal : null,
       };
 
       // Final guard: entry may have been deleted while parsing response
@@ -497,4 +508,42 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
   }
 
   if (changed) notify();
+}
+
+// ============================================================
+// PROPOSAL DISMISS TRACKING (localStorage — survives navigation)
+// ============================================================
+
+const DISMISS_KEY = 'montree_dismissed_proposals';
+const MAX_DISMISSALS = 100;
+
+/** Dismiss a custom work proposal so it doesn't reappear */
+export function dismissProposal(mediaId: string, childId: string): void {
+  try {
+    const raw = localStorage.getItem(DISMISS_KEY);
+    const dismissed: string[] = raw ? JSON.parse(raw) : [];
+    const key = `${mediaId}:${childId}`;
+    if (!dismissed.includes(key)) {
+      dismissed.push(key);
+      // Cap at MAX_DISMISSALS to prevent unbounded growth — remove oldest first
+      while (dismissed.length > MAX_DISMISSALS) {
+        dismissed.shift();
+      }
+      localStorage.setItem(DISMISS_KEY, JSON.stringify(dismissed));
+    }
+  } catch {
+    // localStorage unavailable (private browsing, etc.) — dismiss won't persist
+  }
+}
+
+/** Check if a proposal has been dismissed */
+export function isProposalDismissed(mediaId: string, childId: string): boolean {
+  try {
+    const raw = localStorage.getItem(DISMISS_KEY);
+    if (!raw) return false;
+    const dismissed: string[] = JSON.parse(raw);
+    return dismissed.includes(`${mediaId}:${childId}`);
+  } catch {
+    return false;
+  }
 }

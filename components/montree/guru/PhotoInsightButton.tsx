@@ -17,7 +17,10 @@ import {
   resetEntry,
   confirmEntry,
   rejectEntry,
+  dismissProposal,
+  isProposalDismissed,
   type PhotoInsightResult,
+  type CustomWorkProposal,
 } from '@/lib/montree/photo-insight-store';
 
 interface PhotoInsightButtonProps {
@@ -76,6 +79,7 @@ export default function PhotoInsightButton({
       setCtaDone(false);
       setCtaError(null);
       setCtaLoading(false);
+      progressUpdateFiredRef.current = null;
     }
   }, [mediaId]);
 
@@ -312,6 +316,67 @@ export default function PhotoInsightButton({
     }
   }, [mediaId, childId, onTeachWork]);
 
+  // State for proposal dismiss (triggers re-render so amber card hides)
+  const [proposalDismissed, setProposalDismissed] = useState(() => isProposalDismissed(mediaId, childId));
+
+  // CTA: Add custom work from proposal (Scenario A amber card)
+  const handleAddCustomWork = useCallback(async () => {
+    const freshResult = getEntry(mediaId, childId)?.result;
+    const proposal = freshResult?.custom_work_proposal;
+    if (!proposal || ctaLoading) return;
+    setCtaLoading(true);
+    try {
+      const res = await montreeApi(`/api/montree/guru/photo-insight/add-custom-work`, {
+        method: 'POST',
+        body: JSON.stringify({
+          media_id: mediaId,
+          child_id: childId,
+          name: proposal.name,
+          area: proposal.area,
+          description: proposal.description,
+          materials: proposal.materials,
+          why_it_matters: proposal.why_it_matters,
+        }),
+      });
+      if (!mountedRef.current) return;
+      if (res.ok) {
+        setCtaDone(true);
+        // Trigger shelf refresh
+        if (onProgressUpdate && progressUpdateFiredRef.current !== storeKey) {
+          try {
+            onProgressUpdate();
+            progressUpdateFiredRef.current = storeKey;
+          } catch (cbErr) { console.error('[PhotoInsight] onProgressUpdate threw:', cbErr); }
+        }
+      } else if (res.status === 409) {
+        // Photo already tagged
+        setCtaError(t('photoInsight.photoAlreadyTagged'));
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
+      } else {
+        console.error('[PhotoInsight] Add custom work failed:', res.status);
+        setCtaError(t('photoInsight.customWorkFailed'));
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
+      }
+    } catch (err) {
+      console.error('[PhotoInsight] Add custom work error:', err);
+      if (mountedRef.current) {
+        setCtaError(t('photoInsight.customWorkFailed'));
+        if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+        errorTimerRef.current = setTimeout(() => { if (mountedRef.current) setCtaError(null); }, 4000);
+      }
+    } finally {
+      if (mountedRef.current) setCtaLoading(false);
+    }
+  }, [mediaId, childId, ctaLoading, onProgressUpdate, storeKey, t]);
+
+  // CTA: Dismiss proposal — hides amber card, shows fallback (candidates + teach button)
+  const handleDismissProposal = useCallback(() => {
+    dismissProposal(mediaId, childId);
+    setProposalDismissed(true);
+  }, [mediaId, childId]);
+
   const statusInfo = result?.mastery_evidence
     ? STATUS_LABELS[result.mastery_evidence]
     : null;
@@ -431,61 +496,114 @@ export default function PhotoInsightButton({
             </p>
           )}
 
-          {/* Scenario A: Suggestion pills (top candidates) + Teach Guru fallback */}
+          {/* Scenario A: Amber proposal card OR fallback (candidates + teach button) */}
           {!ctaDone && result.scenario === 'A' && (
             <div className="space-y-1.5">
-              {result.candidates && result.candidates.length > 0 && (
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">{t('photoInsight.didYouMean')}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {result.candidates.map((c) => (
-                      <button
-                        key={`${c.name}-${c.area}`}
-                        onClick={async () => {
-                          // Record soft correction: original was wrong, this candidate was right
-                          // Read fresh from store for consistency (avoid stale closure on result)
-                          const freshRes = getEntry(mediaId, childId)?.result;
-                          if (classroomId && freshRes?.work_name) {
-                            try {
-                              await montreeApi(`/api/montree/guru/corrections`, {
-                                method: 'POST',
-                                body: JSON.stringify({
-                                  child_id: childId,
-                                  media_id: mediaId,
-                                  original_work_name: freshRes.work_name,
-                                  original_area: freshRes.area,
-                                  corrected_work_name: c.name,
-                                  corrected_area: c.area,
-                                  correction_type: 'candidate_selection',
-                                }),
-                              });
-                            } catch (err) {
-                              console.error('[PhotoInsight] Soft correction error (non-fatal):', err);
-                            }
-                          }
-                          // Guard: only fire callback if still mounted
-                          if (!mountedRef.current) return;
-                          if (onTeachWork) {
-                            onTeachWork({ workName: c.name, area: c.area, mediaId });
-                          }
-                        }}
-                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-colors"
-                      >
-                        <AreaBadge area={c.area} size="xs" />
-                        <span>{c.name}</span>
-                      </button>
-                    ))}
+              {/* Show amber proposal card when proposal exists and not dismissed */}
+              {result.custom_work_proposal && !proposalDismissed ? (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 p-2.5 space-y-2">
+                  <p className="text-xs font-medium text-amber-800">{t('photoInsight.suggestedWork')}</p>
+                  <div>
+                    <p className="text-sm font-bold text-amber-900">{result.custom_work_proposal.name}</p>
+                    <p className="text-xs text-amber-700 mt-0.5">{result.custom_work_proposal.description}</p>
+                    {result.custom_work_proposal.materials.length > 0 && (
+                      <p className="text-xs text-amber-600 mt-0.5">
+                        📦 {result.custom_work_proposal.materials.join(', ')}
+                      </p>
+                    )}
                   </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={handleAddCustomWork}
+                      disabled={ctaLoading}
+                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    >
+                      {ctaLoading ? (
+                        <span className="animate-spin">⏳</span>
+                      ) : (
+                        <span>✅</span>
+                      )}
+                      <span>{t('photoInsight.addAsNewWork')}</span>
+                    </button>
+                    <button
+                      onClick={handleDismissProposal}
+                      className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200 border border-gray-200 transition-colors"
+                    >
+                      <span>{t('photoInsight.notThisOne')}</span>
+                    </button>
+                  </div>
+                  {onTeachWork && (
+                    <button
+                      onClick={() => {
+                        // Open Teach modal pre-filled with proposal data
+                        if (onTeachWork && result.custom_work_proposal) {
+                          onTeachWork({
+                            workName: result.custom_work_proposal.name,
+                            area: result.custom_work_proposal.area,
+                            mediaId,
+                          });
+                        }
+                      }}
+                      className="text-xs text-amber-600 hover:text-amber-700 underline"
+                    >
+                      {t('photoInsight.editBeforeAdding')}
+                    </button>
+                  )}
                 </div>
-              )}
-              {onTeachWork && (
-                <button
-                  onClick={handleTeachWork}
-                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
-                >
-                  <span>📚</span>
-                  <span>{t('photoInsight.teachGuruWork')}</span>
-                </button>
+              ) : (
+                /* Fallback: original Scenario A UI — candidates + teach button */
+                <>
+                  {result.candidates && result.candidates.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">{t('photoInsight.didYouMean')}</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {result.candidates.map((c) => (
+                          <button
+                            key={`${c.name}-${c.area}`}
+                            onClick={async () => {
+                              const freshRes = getEntry(mediaId, childId)?.result;
+                              if (classroomId && freshRes?.work_name) {
+                                try {
+                                  await montreeApi(`/api/montree/guru/corrections`, {
+                                    method: 'POST',
+                                    body: JSON.stringify({
+                                      child_id: childId,
+                                      media_id: mediaId,
+                                      original_work_name: freshRes.work_name,
+                                      original_area: freshRes.area,
+                                      corrected_work_name: c.name,
+                                      corrected_area: c.area,
+                                      correction_type: 'candidate_selection',
+                                    }),
+                                  });
+                                } catch (err) {
+                                  console.error('[PhotoInsight] Soft correction error (non-fatal):', err);
+                                }
+                              }
+                              if (!mountedRef.current) return;
+                              if (onTeachWork) {
+                                onTeachWork({ workName: c.name, area: c.area, mediaId });
+                              }
+                            }}
+                            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200 transition-colors"
+                          >
+                            <AreaBadge area={c.area} size="xs" />
+                            <span>{c.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {onTeachWork && (
+                    <button
+                      onClick={handleTeachWork}
+                      className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-colors"
+                    >
+                      <span>📚</span>
+                      <span>{t('photoInsight.teachGuruWork')}</span>
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}

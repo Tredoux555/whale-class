@@ -843,6 +843,8 @@ export const zh = {
   'offline.queueFull': '照片队列已满 — 请等待上传完成',
   'offline.offline': '您已离线 — 照片已保存到本地',
   'offline.backOnline': '已恢复在线 — 正在同步照片',
+  'offline.uploaded': '已上传',
+  'offline.failedShort': '失败',
 
   // Phase 4 — Observations
   'observations.title': '观察记录',
@@ -2727,6 +2729,13 @@ export const zh = {
   'photoInsight.networkError': '连接失败 — 点击重试',
   'photoInsight.sessionExpired': '会话已过期 — 请刷新页面',
   'photoInsight.documented': '已记录',
+  'photoInsight.suggestedWork': '建议的自定义工作：',
+  'photoInsight.addAsNewWork': '添加为新工作',
+  'photoInsight.notThisOne': '不是这个',
+  'photoInsight.editBeforeAdding': '添加前编辑...',
+  'photoInsight.customWorkAdded': '自定义工作已添加！',
+  'photoInsight.customWorkFailed': '添加工作失败',
+  'photoInsight.photoAlreadyTagged': '照片已标记',
 
   // Report status translations
   'reportStatus.mastered': '已掌握',
