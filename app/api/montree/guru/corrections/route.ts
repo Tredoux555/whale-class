@@ -203,6 +203,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Failed to record correction' }, { status: 500 });
     }
 
+    // 2b. Update montree_media.work_id so reports/gallery show the corrected work
+    if (media_id && (corrected_work_id || corrected_work_name)) {
+      let resolvedWorkId = corrected_work_id || null;
+
+      // If no work_id provided, look it up from classroom curriculum by name
+      if (!resolvedWorkId && corrected_work_name?.trim() && classroomId) {
+        // Escape SQL wildcards in the work name to prevent unintended matches
+        const safeName = corrected_work_name.trim().replace(/[%_]/g, '\\$&');
+        const { data: workRow } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('id')
+          .eq('classroom_id', classroomId)
+          .ilike('name', safeName)
+          .limit(1)
+          .maybeSingle();
+        if (workRow?.id) {
+          resolvedWorkId = workRow.id;
+        }
+      }
+
+      if (resolvedWorkId) {
+        // Filter by both id AND child_id to prevent cross-child media updates
+        const { error: mediaUpdateErr } = await supabase
+          .from('montree_media')
+          .update({ work_id: resolvedWorkId })
+          .eq('id', media_id)
+          .eq('child_id', child_id);
+
+        if (mediaUpdateErr) {
+          console.error('[Corrections] Failed to update media work_id (non-fatal):', mediaUpdateErr);
+        } else {
+          console.log(`[Corrections] Updated media ${media_id} work_id → ${resolvedWorkId}`);
+        }
+      } else {
+        console.warn(`[Corrections] Could not resolve work_id for "${corrected_work_name}" — media.work_id not updated`);
+      }
+    }
+
     // 3. Update accuracy EMA — mark the original as incorrect
     // 4. If corrected to a different work, mark the corrected work as correct
     // 5. Generate visual description + store in visual memory

@@ -829,6 +829,10 @@ export const zh = {
   'gallery.aspectRatio': '宽高比',
   'gallery.free': '自由',
   'gallery.cropSaving': '保存中...',
+  'gallery.tagSpecialEvent': '标记特别活动',
+  'gallery.removeFromReport': '从报告中移除',
+  'gallery.excludedFromReport': '已从报告中移除',
+  'gallery.restoredToReport': '已恢复到报告',
 
   // Offline Photo Queue
   'offline.photo': '张照片',

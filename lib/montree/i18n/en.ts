@@ -836,6 +836,10 @@ export const en = {
   'gallery.aspectRatio': 'Aspect Ratio',
   'gallery.free': 'Free',
   'gallery.cropSaving': 'Saving...',
+  'gallery.tagSpecialEvent': 'Tag Special Event',
+  'gallery.removeFromReport': 'Remove from report',
+  'gallery.excludedFromReport': 'Removed from report',
+  'gallery.restoredToReport': 'Restored to report',
 
   // Offline Photo Queue
   'offline.photo': 'photo',

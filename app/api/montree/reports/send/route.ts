@@ -20,8 +20,10 @@ export async function POST(request: NextRequest) {
     );
 
     const body = await request.json();
-    const { child_id, locale: requestLocale } = body;
+    const { child_id, locale: requestLocale, excluded_works } = body;
     const locale = (requestLocale as 'en' | 'zh') || getLocaleFromRequest(request.url);
+    // excluded_works: string[] of work names the teacher chose to hide from the report
+    const excludedSet = new Set<string>(Array.isArray(excluded_works) ? excluded_works : []);
     const t = getTranslator(locale);
 
     if (!child_id) {
@@ -81,7 +83,8 @@ export async function POST(request: NextRequest) {
     }
 
     const { data: progress } = await progressQuery;
-    const works = progress || [];
+    // Filter out works the teacher excluded from the report
+    const works = (progress || []).filter(w => !excludedSet.has(w.work_name));
 
     // First, check if there's a draft report with selected photos
     // The photos route creates a draft with week_start as the key
