@@ -30,7 +30,7 @@ Full 10x deep-dive audit → 10x plan-audit → 10x build → 5 audit cycles (3 
 
 3. **Pass context to tryClassify** (line 459): `tryClassify(photoUrl, preChildClassroomId, preVisualMemories)` — was `(photoUrl, null, undefined)`.
 
-4. **Case-insensitive + classroom-scoped + escaped work lookup** (lines 465-485): SQL wildcard escaping (`%` → `\%`, `_` → `\_`), `.ilike()` for case-insensitive matching, classroom_id filter when available.
+4. **Case-insensitive + classroom-scoped + escaped work lookup — BOTH paths** (lines 465-485 CLIP path, lines 1534-1550 two-pass path): SQL wildcard escaping (`%` → `\%`, `_` → `\_`), `.ilike()` for case-insensitive matching, classroom_id filter when available. Applied to BOTH the CLIP tier path AND the two-pass fallback path.
 
 5. **Verification slim prompt** (lines 516-529): Haiku now receives "Our image classifier SUGGESTS this might be X. FIRST: Verify if the classifier suggestion matches what you actually see."
 
@@ -48,8 +48,11 @@ Full 10x deep-dive audit → 10x plan-audit → 10x build → 5 audit cycles (3 
 - **10x Plan-Audit**: 10 parallel plan agents designing fixes, cross-validated
 - **10x Build**: All 8 fixes applied in one pass
 - **Audit Cycle 1**: Found 2 issues (validateToolOutput missing new fields, .ilike() escaping) — fixed
-- **Audit Cycle 2**: Mixed results (2A CLEAN, 2B found 4 issues) — triaged: 1 real (VisualMemory confidence), 3 false positives
-- **Audit Cycles 3-4-5**: 3 consecutive CLEAN passes (9 independent agents total, 0 issues found)
+- **Audit Cycle 2**: Mixed results (2A CLEAN, 2B found 4 issues) — triaged: 1 real (VisualMemory confidence mapping), 3 false positives
+- **Audit Cycle 3**: CLEAN after VisualMemory confidence fix
+- **Audit Cycles 4-5**: Found 1 MEDIUM issue — two-pass fallback path at line 1546 used `.ilike()` without SQL wildcard escaping (CLIP path had it, two-pass didn't). Fixed with same escaping pattern.
+- **Audit Cycles 6-7-8**: 3 consecutive CLEAN passes (7 independent agents total, 0 issues found). 1 false positive triaged (getNegativeDescriptions barrel export — pre-existing, direct import works).
+- **Total**: 8 audit cycles, 15+ independent agents, 4 real issues found and fixed, 3 consecutive CLEAN achieved
 
 ## What Changed for Teachers
 

@@ -18,15 +18,16 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 **CLIP Photo Recognition Accuracy — 10x DEEP DIVE + FIX, NOT YET PUSHED:**
 
-Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive audit → 10x plan-audit → 10x build → 5 audit cycles (3 consecutive CLEAN passes, 15 parallel audit agents total).
+Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive audit → 10x plan-audit → 10x build → 8 audit cycles (3 consecutive CLEAN passes, 15+ parallel audit agents total).
 
-**8 fixes across 2 files:**
+**8 fixes across 2 files + 1 additional fix found during audit:**
 
-**`app/api/montree/guru/photo-insight/route.ts` — 7 changes:**
+**`app/api/montree/guru/photo-insight/route.ts` — 8 changes:**
 - Added `import type { VisualMemory } from '@/lib/montree/classifier'`
 - Pre-fetch child's `classroom_id` + visual memories from `montree_visual_memory` BEFORE CLIP runs (was hardcoded null)
 - Pass `preChildClassroomId` + `preVisualMemories` to `tryClassify()` (was `null, undefined`)
-- Case-insensitive + classroom-scoped + SQL-escaped work lookup (`.ilike()` replacing `.eq()`)
+- Case-insensitive + classroom-scoped + SQL-escaped work lookup (`.ilike()` replacing `.eq()`) — CLIP path
+- Case-insensitive + SQL-escaped work lookup in two-pass fallback path (found in audit cycle 4-5)
 - Rewrite slim Haiku prompt from "assume CLIP correct" → "VERIFY if the classifier suggestion matches"
 - Added `work_verified` (boolean) + `actual_work_name` (string) to tool schema + `validateToolOutput()`
 - Haiku override detection: if `work_verified === false`, throws `CLIP_OVERRIDE_BY_HAIKU` → falls to full two-pass
@@ -42,14 +43,17 @@ Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive
 5. classroomId hardcoded null → no visual memory boost possible
 6. Visual memories never passed to CLIP pipeline
 7. VisualMemory type mismatch (missing `confidence` field from DB query)
+8. Two-pass fallback path missing SQL wildcard escaping on `.ilike()` (found in audit)
 
 **Railway Build Fix Needed:** Commit `2c4afe87` fails with `Export getNegativeDescriptions doesn't exist in target module` at `clip-classifier.ts:14`. The pushed `work-signatures.ts` is stale — missing `getNegativeDescriptions` function (exists locally at line 162). Need to include `work-signatures.ts` in next push.
+
+**Audit:** 8 audit cycles total (10x build + continuation session audits). 4 real issues found and fixed: (1) validateToolOutput missing new fields, (2) VisualMemory confidence field mapping, (3) CLIP path .ilike() escaping, (4) two-pass path .ilike() escaping. 3 consecutive CLEAN passes achieved (cycles 6-7-8, 7 independent agents, 0 issues).
 
 **Deploy:** ⚠️ NOT YET PUSHED. Push from Mac (MUST include work-signatures.ts to fix build):
 ```bash
 cd ~/Desktop/Master\ Brain/ACTIVE/whale
 git add app/api/montree/guru/photo-insight/route.ts lib/montree/classifier/clip-classifier.ts lib/montree/classifier/work-signatures.ts CLAUDE.md docs/handoffs/HANDOFF_CLIP_ACCURACY_10X_FIX_MAR22.md
-git commit -m "fix: CLIP recognition accuracy — 8 fixes + build fix (include work-signatures.ts)"
+git commit -m "fix: CLIP recognition accuracy — 9 fixes + build fix (include work-signatures.ts)"
 git push origin main
 ```
 
