@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { School, Lead } from '@/components/montree/super-admin/types';
 
@@ -198,9 +198,13 @@ export function useLeadOperations({
     }
 
     try {
-      const res = await fetch(`/api/montree/super-admin/schools?schoolId=${school.id}`, {
+      const res = await fetch('/api/montree/super-admin/schools', {
         method: 'DELETE',
-        headers: { 'x-super-admin-password': password },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-password': password,
+        },
+        body: JSON.stringify({ schoolIds: [school.id] }),
       });
 
       if (!res.ok) {
@@ -215,6 +219,65 @@ export function useLeadOperations({
       alert('Failed to delete school: ' + (err instanceof Error ? err.message : 'Unknown error'));
     }
   }, [password, setSchools]);
+
+  const [batchDeleting, setBatchDeleting] = useState(false);
+  const [batchDeleteProgress, setBatchDeleteProgress] = useState<{
+    completed: number;
+    total: number;
+    results: Array<{ name: string; success: boolean }>;
+  } | null>(null);
+
+  const batchDeleteSchools = useCallback(async (schoolIds: string[]) => {
+    if (schoolIds.length === 0) return;
+
+    setBatchDeleting(true);
+    setBatchDeleteProgress({ completed: 0, total: schoolIds.length, results: [] });
+
+    try {
+      const res = await fetch('/api/montree/super-admin/schools', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-password': password,
+        },
+        body: JSON.stringify({ schoolIds }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Batch delete failed');
+      }
+
+      const data = await res.json();
+      const results = (data.results || []) as Array<{ schoolId: string; name: string; success: boolean; error?: string }>;
+
+      setBatchDeleteProgress({
+        completed: results.length,
+        total: schoolIds.length,
+        results: results.map(r => ({ name: r.name, success: r.success })),
+      });
+
+      // Remove successfully deleted schools from state
+      const deletedIds = new Set(results.filter(r => r.success).map(r => r.schoolId));
+      setSchools(prev => prev.filter(s => !deletedIds.has(s.id)));
+
+      const failed = results.filter(r => !r.success);
+      if (failed.length > 0) {
+        alert(`Deleted ${data.deleted}/${schoolIds.length}. ${failed.length} failed:\n${failed.map(f => `• ${f.name}: ${f.error || 'Unknown error'}`).join('\n')}`);
+      } else {
+        alert(`✅ Successfully deleted ${data.deleted} school${data.deleted !== 1 ? 's' : ''}`);
+      }
+    } catch (err) {
+      console.error('Batch delete failed:', err);
+      alert('Batch delete failed: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    } finally {
+      setBatchDeleting(false);
+    }
+  }, [password, setSchools]);
+
+  const clearBatchDeleteProgress = useCallback(() => {
+    setBatchDeleteProgress(null);
+  }, []);
 
   const loginAsSchool = useCallback(async (schoolId: string) => {
     try {
@@ -249,6 +312,10 @@ export function useLeadOperations({
     provisionSchool,
     updateSchoolStatus,
     deleteSchool,
+    batchDeleteSchools,
+    batchDeleting,
+    batchDeleteProgress,
+    clearBatchDeleteProgress,
     loginAsSchool
   };
 }
