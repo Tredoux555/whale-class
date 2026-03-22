@@ -6,12 +6,13 @@
  * 1. Area classification (5 classes: practical_life, sensorial, mathematics, language, cultural)
  * 2. Work classification within the identified area (50-80 classes)
  *
- * Pre-computed text embeddings for all 329 works + 5 areas
- * Uses cosine similarity for matching
+ * Pre-computed text embeddings for all 270 works + 5 areas + negative embeddings
+ * Uses cosine similarity with negative embedding penalty for disambiguation
  */
 
 import { loadCurriculumAreas, loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
-import { getSignatureByKey, AREA_SIGNATURES } from '@/lib/montree/classifier/work-signatures';
+import { getSignatureByKey, getConfusionPairsForWork, getNegativeDescriptions, AREA_SIGNATURES } from '@/lib/montree/classifier/work-signatures';
+import type { ConfusionPair } from '@/lib/montree/classifier/work-signatures';
 
 const CLIP_MODEL = 'Xenova/siglip-base-patch16-224';
 const CLIP_CONFIDENCE_THRESHOLD = 0.75; // Below this, fall back to Haiku vision
@@ -20,13 +21,17 @@ const VISUAL_MEMORY_BOOST_CAP = 0.99; // Cap boosted confidence at this value
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB max image download
 const IMAGE_DOWNLOAD_TIMEOUT_MS = 10_000; // 10s timeout for image download
 const CLASSIFICATION_TIMEOUT_MS = 30_000; // 30s max for entire classification
+const NEGATIVE_EMBEDDING_WEIGHT = 0.3; // Weight for negative embedding penalty (conservative)
 
 export interface ClassifyResult {
   work_key: string;
   work_name: string;
   area_key: string;
-  confidence: number; // 0-1 cosine similarity
+  confidence: number; // 0-1 cosine similarity (after negative penalty)
+  raw_confidence: number; // Pre-penalty cosine similarity
   area_confidence: number; // Area-level confidence
+  negative_penalty_applied: boolean; // Whether negative embedding penalty was applied
+  confusion_pair_matched: string | null; // work_key of matched confusion pair, or null
   runner_up?: {
     work_key: string;
     work_name: string;
@@ -49,6 +54,8 @@ export interface VisualMemory {
 
 let pipeline: any = null;
 let textEmbeddings: Map<string, Float32Array> = new Map(); // work_key -> embedding
+let negativeEmbeddings: Map<string, Float32Array[]> = new Map(); // work_key -> array of negative embeddings
+let confusionPairMap: Map<string, ConfusionPair[]> = new Map(); // work_key -> confusion pairs (cached)
 let areaEmbeddings: Map<string, Float32Array> = new Map(); // area_key -> embedding
 let worksByArea: Map<string, CurriculumWork[]> = new Map(); // area_key -> works
 let initialized = false;
@@ -225,11 +232,13 @@ export async function initClassifier(): Promise<void> {
         let prompt: string;
         if (signature) {
           // Rich visual description — describes what's VISIBLE in a photo
-          prompt = `${signature.name}. ${signature.visual_description}`.slice(0, 256);
+          // 512 chars preserves ~90% of visual descriptions (256 was losing ~60% of critical disambiguation text)
+          prompt = `${signature.name}. ${signature.visual_description}`.slice(0, 512);
           richCount++;
         } else {
           // Fallback to curriculum description — pedagogical but still useful
-          prompt = `${work.name}. ${work.description || work.materials?.join(', ') || ''}`.slice(0, 256);
+          // 512 chars preserves ~90% of visual descriptions (256 was losing ~60% of critical disambiguation text)
+          prompt = `${work.name}. ${work.description || work.materials?.join(', ') || ''}`.slice(0, 512);
         }
         const embedding = await pipeline(prompt, {
           pooling: 'mean',
@@ -249,6 +258,35 @@ export async function initClassifier(): Promise<void> {
       }
       console.log(`[CLIP] Pre-computed ${embeddingCount} work embeddings (${richCount} with rich visual descriptions)`);
 
+      // Pre-compute negative embeddings for disambiguation
+      console.log('[CLIP] Pre-computing negative embeddings...');
+      let negativeCount = 0;
+      for (const work of allWorks) {
+        const negDescs = getNegativeDescriptions(work.work_key);
+        if (negDescs.length === 0) continue;
+
+        const negEmbeds: Float32Array[] = [];
+        for (const desc of negDescs) {
+          try {
+            const negEmbed = await pipeline(desc, { pooling: 'mean', normalize: true });
+            if (negEmbed?.data) {
+              negEmbeds.push(new Float32Array(negEmbed.data));
+              negativeCount++;
+            }
+          } catch { /* skip individual negative embedding failures */ }
+        }
+        if (negEmbeds.length > 0) {
+          negativeEmbeddings.set(work.work_key, negEmbeds);
+        }
+
+        // Cache confusion pairs for this work
+        const pairs = getConfusionPairsForWork(work.work_key);
+        if (pairs.length > 0) {
+          confusionPairMap.set(work.work_key, pairs);
+        }
+      }
+      console.log(`[CLIP] Pre-computed ${negativeCount} negative embeddings across ${negativeEmbeddings.size} works`);
+
       initialized = true;
       const elapsed = Date.now() - startTime;
       console.log(`[CLIP] Initialization complete (${elapsed}ms)`);
@@ -260,6 +298,8 @@ export async function initClassifier(): Promise<void> {
       // Cleanup partial state to prevent memory leak
       pipeline = null;
       textEmbeddings.clear();
+      negativeEmbeddings.clear();
+      confusionPairMap.clear();
       areaEmbeddings.clear();
       worksByArea.clear();
       initialized = false;
@@ -432,6 +472,42 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
       }
     }
 
+    // ================================================================
+    // NEGATIVE EMBEDDING PENALTY
+    // For the top match, check if the image is ALSO similar to what this
+    // work is NOT. If so, subtract a weighted penalty to suppress false positives.
+    // ================================================================
+    const rawConfidence = bestWorkConfidence;
+    let negativePenaltyApplied = false;
+    let confusionPairMatched: string | null = null;
+
+    if (bestWork) {
+      const negEmbeds = negativeEmbeddings.get(bestWork.work_key);
+      if (negEmbeds && negEmbeds.length > 0) {
+        let maxNegSimilarity = 0;
+        for (const negVec of negEmbeds) {
+          const negSim = cosineSimilarity(imageVec, negVec);
+          if (negSim > maxNegSimilarity) maxNegSimilarity = negSim;
+        }
+        if (maxNegSimilarity > 0.3) { // Only penalize if negative match is meaningful
+          const penalty = maxNegSimilarity * NEGATIVE_EMBEDDING_WEIGHT;
+          bestWorkConfidence = Math.max(0, bestWorkConfidence - penalty);
+          negativePenaltyApplied = true;
+          console.log(`[CLIP] Negative penalty: ${rawConfidence.toFixed(3)} - ${penalty.toFixed(3)} = ${bestWorkConfidence.toFixed(3)} for ${bestWork.work_key}`);
+        }
+      }
+
+      // Check if runner-up is a known confusion pair — useful for Haiku differentiation
+      const pairs = confusionPairMap.get(bestWork.work_key);
+      if (pairs && runnerUpWork) {
+        const matchedPair = pairs.find(p => p.work_key === runnerUpWork!.work_key);
+        if (matchedPair) {
+          confusionPairMatched = runnerUpWork.work_key;
+          console.log(`[CLIP] Confusion pair detected: ${bestWork.work_key} vs ${runnerUpWork.work_key}`);
+        }
+      }
+    }
+
     if (!bestWork || bestWorkConfidence < CLIP_CONFIDENCE_THRESHOLD) {
       console.log(`[CLIP] Work confidence below threshold: ${bestWorkConfidence.toFixed(3)} < ${CLIP_CONFIDENCE_THRESHOLD}`);
       return null;
@@ -439,7 +515,7 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
 
     const classificationMs = Date.now() - startTime;
     console.log(
-      `[CLIP] Classification complete: ${bestWork.work_key} (${bestWorkConfidence.toFixed(3)}) in ${classificationMs}ms`
+      `[CLIP] Classification complete: ${bestWork.work_key} (raw: ${rawConfidence.toFixed(3)}, final: ${bestWorkConfidence.toFixed(3)}) in ${classificationMs}ms`
     );
 
     const result: ClassifyResult = {
@@ -447,7 +523,10 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
       work_name: bestWork.name,
       area_key: bestAreaKey,
       confidence: bestWorkConfidence,
+      raw_confidence: rawConfidence,
       area_confidence: bestAreaConfidence,
+      negative_penalty_applied: negativePenaltyApplied,
+      confusion_pair_matched: confusionPairMatched,
       classification_ms: classificationMs,
       model_used: 'clip',
     };
@@ -530,15 +609,30 @@ export function getClassifierStats(): {
   works_loaded: number;
   model: string;
   areas_loaded: number;
+  negative_embeddings_loaded: number;
+  confusion_pairs_loaded: number;
   error?: string;
 } {
   return {
     initialized,
     works_loaded: textEmbeddings.size,
     areas_loaded: areaEmbeddings.size,
+    negative_embeddings_loaded: negativeEmbeddings.size,
+    confusion_pairs_loaded: confusionPairMap.size,
     model: CLIP_MODEL,
     error: initializationError?.message,
   };
+}
+
+/**
+ * Get the confusion pair differentiation text for a work pair.
+ * Used by photo-insight to inject into Haiku disambiguation prompt.
+ */
+export function getConfusionDifferentiation(workKey: string, confusedWithKey: string): string | null {
+  const pairs = confusionPairMap.get(workKey);
+  if (!pairs) return null;
+  const pair = pairs.find(p => p.work_key === confusedWithKey);
+  return pair?.differentiation || null;
 }
 
 /**

@@ -14,6 +14,7 @@ import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curri
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
+import type { VisualMemory } from '@/lib/montree/classifier';
 // import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier'; // TEMP: commented out — function exists locally but not yet pushed to git. Re-enable after pushing clip-classifier.ts with confusion pair support.
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
@@ -148,6 +149,9 @@ function validateToolOutput(rawInput: Record<string, unknown>) {
     confidence: typeof rawInput.confidence === 'number' && !isNaN(rawInput.confidence) ? Math.max(0, Math.min(1, rawInput.confidence)) : 0,
     observation: typeof rawInput.observation === 'string' ? rawInput.observation.trim().slice(0, 500) : '',
     suggested_crop,
+    // Slim enrichment verification fields (Haiku can override CLIP identification)
+    work_verified: typeof rawInput.work_verified === 'boolean' ? rawInput.work_verified : true, // Default: trust CLIP
+    actual_work_name: typeof rawInput.actual_work_name === 'string' ? rawInput.actual_work_name.trim().slice(0, 255) : '',
   };
 }
 
@@ -421,6 +425,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Photo URL not accessible' }, { status: 400 });
     }
 
+    // Pre-fetch child's classroom_id for CLIP visual memory + downstream classroom lookups
+    let preChildClassroomId: string | null = null;
+    let preVisualMemories: VisualMemory[] = [];
+    try {
+      const { data: preChild } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', child_id)
+        .maybeSingle();
+      preChildClassroomId = preChild?.classroom_id || null;
+
+      // Fetch visual memories for this classroom (used by CLIP visual memory boost)
+      if (preChildClassroomId) {
+        const { data: memories } = await supabase
+          .from('montree_visual_memory')
+          .select('work_name, work_key, visual_description, description_confidence')
+          .eq('classroom_id', preChildClassroomId)
+          .gt('times_used', 0);
+        // Map description_confidence → confidence to match VisualMemory interface
+        preVisualMemories = (memories || []).map(m => ({
+          work_name: m.work_name,
+          work_key: m.work_key,
+          visual_description: m.visual_description,
+          confidence: m.description_confidence ?? 0.5,
+        }));
+      }
+    } catch {
+      // Non-fatal — CLIP still works without classroom context
+      console.warn('[PhotoInsight] Failed to pre-fetch classroom/visual memory for CLIP');
+    }
+
     // ================================================================
     // TIER 0: CLIP CLASSIFICATION (free, ~150ms)
     // Try CLIP first. If confident, use slim Haiku enrichment (~$0.0006)
@@ -428,20 +463,32 @@ export async function POST(request: NextRequest) {
     // ================================================================
     let clipDecision: ClassifyDecision | null = null;
     try {
-      clipDecision = await tryClassify(photoUrl, null, undefined);
+      clipDecision = await tryClassify(photoUrl, preChildClassroomId, preVisualMemories);
       if (clipDecision.action === 'slim_enrich' && clipDecision.clipResult) {
         console.log(`[PhotoInsight] CLIP identified: "${clipDecision.clipResult.work_name}" — using slim enrichment`);
 
         // Slim path: minimal DB queries (just child name + age + classroom check)
+        // Escape SQL wildcards in work name for .ilike() safety
+        const clipWorkNameEscaped = clipDecision.clipResult.work_name
+          .replace(/%/g, '\\%')
+          .replace(/_/g, '\\_');
         const [clipChildResult, clipClassroomLookup] = await Promise.all([
           supabase.from('montree_children').select('name, age, classroom_id').eq('id', child_id).maybeSingle(),
-          // Look up work in classroom curriculum
-          supabase.from('montree_classroom_curriculum_works')
-            .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
-            .eq('name', clipDecision.clipResult.work_name)
-            .eq('is_active', true)
-            .limit(1)
-            .maybeSingle(),
+          // Look up work in THIS classroom's curriculum (case-insensitive, classroom-scoped)
+          preChildClassroomId
+            ? supabase.from('montree_classroom_curriculum_works')
+                .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key, classroom_id)')
+                .ilike('name', clipWorkNameEscaped)
+                .eq('montree_classroom_curriculum_areas.classroom_id', preChildClassroomId)
+                .eq('is_active', true)
+                .limit(1)
+                .maybeSingle()
+            : supabase.from('montree_classroom_curriculum_works')
+                .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
+                .ilike('name', clipWorkNameEscaped)
+                .eq('is_active', true)
+                .limit(1)
+                .maybeSingle(),
         ]);
 
         const clipChild = clipChildResult.data;
@@ -473,11 +520,14 @@ export async function POST(request: NextRequest) {
           differentiationNote = `\nIMPORTANT: This work is often confused with "${confusedWorkName}". Verify the identification matches what you see in the photo.`;
         }
 
-        const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) working with ${clipWorkName} in the ${clipAreaKey.replace(/_/g, ' ')} area.
-Materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.${differentiationNote}
+        const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) in a Montessori classroom.
+Our image classifier suggests this might be "${clipWorkName}" in the ${clipAreaKey.replace(/_/g, ' ')} area.
+Expected materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.${differentiationNote}
 ${langInstruction}
 
-Assess their mastery level based on visible evidence:
+FIRST: Verify if the classifier suggestion matches what you actually see. If the materials/activity clearly DON'T match "${clipWorkName}", set work_verified to false and suggest what the actual work might be.
+
+Then assess mastery level:
 - "mastered": completed correctly, independently, with precision
 - "practicing": actively working, trying different approaches, some errors
 - "presented": appears to be first exposure to the work
@@ -512,6 +562,8 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
                   mastery_evidence: { type: 'string', enum: ['mastered', 'practicing', 'presented', 'unclear'] },
                   confidence: { type: 'number', description: '0.0-1.0' },
                   observation: { type: 'string' },
+                  work_verified: { type: 'boolean', description: 'True if the photo matches the suggested work, false if it looks like a different work' },
+                  actual_work_name: { type: 'string', description: 'If work_verified is false, what work does this actually look like?' },
                   suggested_crop: {
                     type: 'object',
                     properties: { x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' } },
@@ -534,6 +586,13 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
               area: clipAreaKey,
               ...(slimToolBlock.input as Record<string, unknown>),
             });
+
+            // If Haiku disagrees with CLIP identification, fall through to full two-pass
+            if (slimInput.work_verified === false) {
+              console.log(`[PhotoInsight/CLIP] Haiku overrode CLIP: "${clipWorkName}" → "${slimInput.actual_work_name || 'unknown'}". Falling to two-pass.`);
+              // Don't use slim result — fall through to full two-pass pipeline below
+              throw new Error('CLIP_OVERRIDE_BY_HAIKU');
+            }
 
             // Classroom + shelf lookups
             const classroomWorkId = clipClassroomLookup.data?.id || null;
@@ -691,8 +750,13 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
         } catch (slimErr) {
           clearTimeout(slimTimeout);
           routeAbort.signal.removeEventListener('abort', onRouteAbort);
-          console.error('[PhotoInsight] Slim enrichment failed — falling through to two-pass:', slimErr);
-          // Fall through to normal two-pass below
+          const errMsg = slimErr instanceof Error ? slimErr.message : String(slimErr);
+          if (errMsg === 'CLIP_OVERRIDE_BY_HAIKU') {
+            console.log('[PhotoInsight] CLIP identification overridden by Haiku — using full two-pass pipeline');
+          } else {
+            console.error('[PhotoInsight] CLIP slim enrichment failed, falling back to two-pass:', errMsg);
+          }
+          // Fall through to two-pass pipeline below
         }
       }
     } catch (clipErr) {
