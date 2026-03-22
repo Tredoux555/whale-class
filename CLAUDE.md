@@ -12,7 +12,52 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 21, 2026)
+## CURRENT STATUS (Mar 22, 2026)
+
+### Session Work (Mar 22, 2026 — CLIP Recognition Accuracy 10x Fix)
+
+**CLIP Photo Recognition Accuracy — 10x DEEP DIVE + FIX, NOT YET PUSHED:**
+
+Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive audit → 10x plan-audit → 10x build → 5 audit cycles (3 consecutive CLEAN passes, 15 parallel audit agents total).
+
+**8 fixes across 2 files:**
+
+**`app/api/montree/guru/photo-insight/route.ts` — 7 changes:**
+- Added `import type { VisualMemory } from '@/lib/montree/classifier'`
+- Pre-fetch child's `classroom_id` + visual memories from `montree_visual_memory` BEFORE CLIP runs (was hardcoded null)
+- Pass `preChildClassroomId` + `preVisualMemories` to `tryClassify()` (was `null, undefined`)
+- Case-insensitive + classroom-scoped + SQL-escaped work lookup (`.ilike()` replacing `.eq()`)
+- Rewrite slim Haiku prompt from "assume CLIP correct" → "VERIFY if the classifier suggestion matches"
+- Added `work_verified` (boolean) + `actual_work_name` (string) to tool schema + `validateToolOutput()`
+- Haiku override detection: if `work_verified === false`, throws `CLIP_OVERRIDE_BY_HAIKU` → falls to full two-pass
+
+**`lib/montree/classifier/clip-classifier.ts` — 1 change:**
+- Text embedding truncation increased from 256 → 512 chars (preserves ~90% of visual descriptions vs ~40% before)
+
+**Root causes (priority order):**
+1. 256-char truncation losing ~60% of disambiguation text in descriptions
+2. Case-sensitive `.eq()` work lookup failing on case variations
+3. Work lookup not scoped to classroom (cross-school pollution)
+4. Slim prompt pre-decided CLIP identification as fact (Haiku couldn't disagree)
+5. classroomId hardcoded null → no visual memory boost possible
+6. Visual memories never passed to CLIP pipeline
+7. VisualMemory type mismatch (missing `confidence` field from DB query)
+
+**Railway Build Fix Needed:** Commit `2c4afe87` fails with `Export getNegativeDescriptions doesn't exist in target module` at `clip-classifier.ts:14`. The pushed `work-signatures.ts` is stale — missing `getNegativeDescriptions` function (exists locally at line 162). Need to include `work-signatures.ts` in next push.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac (MUST include work-signatures.ts to fix build):
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add app/api/montree/guru/photo-insight/route.ts lib/montree/classifier/clip-classifier.ts lib/montree/classifier/work-signatures.ts CLAUDE.md docs/handoffs/HANDOFF_CLIP_ACCURACY_10X_FIX_MAR22.md
+git commit -m "fix: CLIP recognition accuracy — 8 fixes + build fix (include work-signatures.ts)"
+git push origin main
+```
+
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_ACCURACY_10X_FIX_MAR22.md`
+
+---
+
+## PREVIOUS STATUS (Mar 21, 2026)
 
 ### Session Work (Mar 21, 2026 — Album Upload Fix)
 

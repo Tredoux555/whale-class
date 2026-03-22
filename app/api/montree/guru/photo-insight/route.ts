@@ -1531,6 +1531,10 @@ Match this description to the correct Montessori work. Use the visual identifica
     // ========================================================
     // 3 LOOKUPS: Is this work in classroom? On child's shelf? What's the DB work_id?
     // ========================================================
+    // Escape SQL wildcards for .ilike() safety (same pattern as CLIP path)
+    const finalWorkNameEscaped = finalWorkName
+      .replace(/%/g, '\\%')
+      .replace(/_/g, '\\_');
     let inClassroom = false;
     let inChildShelf = false;
     let classroomWorkId: string | null = null;
@@ -1543,7 +1547,7 @@ Match this description to the correct Montessori work. Use the visual identifica
           .from('montree_classroom_curriculum_works')
           .select('id')
           .eq('classroom_id', classroomId)
-          .ilike('name', finalWorkName)
+          .ilike('name', finalWorkNameEscaped)
           .eq('is_active', true)
           .limit(1)
           .maybeSingle(),

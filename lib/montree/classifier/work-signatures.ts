@@ -14,6 +14,19 @@
  * Coverage: PL=83, SE=35, MA=57, LA=45, CU=50 = 270 total
  */
 
+/**
+ * Structured confusion pair with disambiguation info for CLIP negative scoring
+ * and Haiku differentiation injection.
+ */
+export interface ConfusionPair {
+  /** work_key of the similar-looking material */
+  work_key: string;
+  /** Why they look similar visually (for debugging/documentation) */
+  reason: string;
+  /** How to visually distinguish them — CAPS on the distinguishing word. Injected into Haiku prompt. */
+  differentiation: string;
+}
+
 export interface WorkSignature {
   /** Unique work identifier from curriculum JSON (e.g., "pl_carrying_mat") */
   work_key: string;
@@ -37,8 +50,11 @@ export interface WorkSignature {
   /** Primary visual identifiers / key materials visible in photos */
   key_materials: string[];
 
-  /** work_keys of similar-looking materials that could cause confusion */
-  confusion_pairs?: string[];
+  /** Structured confusion pairs with reason + differentiation for disambiguation */
+  confusion_pairs: ConfusionPair[];
+
+  /** "NOT X" statements for CLIP negative embeddings — suppress false positives */
+  negative_descriptions: string[];
 
   /** How hard it is to visually identify from photo alone */
   difficulty: "easy" | "medium" | "hard";
@@ -118,16 +134,34 @@ export function getWorkKeysForArea(area_key: string): string[] {
 }
 
 /**
- * Get all confusion pairs for a work, resolved to actual signatures.
+ * Get all confusion pairs for a work as structured ConfusionPair objects.
  */
 export function getConfusionPairsForWork(
   work_key: string
-): WorkSignature[] | undefined {
+): ConfusionPair[] {
   const sig = getSignatureByKey(work_key);
-  if (!sig?.confusion_pairs) return undefined;
-  return sig.confusion_pairs
-    .map((key) => getSignatureByKey(key))
+  if (!sig?.confusion_pairs || sig.confusion_pairs.length === 0) return [];
+  return sig.confusion_pairs;
+}
+
+/**
+ * Get confusion pairs resolved to actual WorkSignature objects (for embedding lookup).
+ */
+export function getConfusionPairSignatures(
+  work_key: string
+): WorkSignature[] {
+  const pairs = getConfusionPairsForWork(work_key);
+  return pairs
+    .map((pair) => getSignatureByKey(pair.work_key))
     .filter((s): s is WorkSignature => s !== undefined);
+}
+
+/**
+ * Get negative descriptions for a work (for CLIP negative embedding computation).
+ */
+export function getNegativeDescriptions(work_key: string): string[] {
+  const sig = getSignatureByKey(work_key);
+  return sig?.negative_descriptions || [];
 }
 
 /**
@@ -149,6 +183,9 @@ export const WORK_SIGNATURES_STATS = {
   },
   works_with_confusion_pairs: WORK_SIGNATURES.filter(
     (s) => s.confusion_pairs && s.confusion_pairs.length > 0
+  ).length,
+  works_with_negative_descriptions: WORK_SIGNATURES.filter(
+    (s) => s.negative_descriptions && s.negative_descriptions.length > 0
   ).length,
 };
 
