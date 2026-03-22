@@ -70,6 +70,32 @@ export interface SyncResult {
   needs_auth?: boolean;
 }
 
+export type SyncEventType =
+  | 'sync_start'
+  | 'sync_complete'
+  | 'photo_uploading'   // NEW: upload started for a specific photo
+  | 'photo_uploaded'
+  | 'photo_failed'
+  | 'photo_enqueued'
+  | 'upload_progress';  // NEW: batch progress update
+
+export interface UploadProgress {
+  /** Total photos in this sync batch */
+  total: number;
+  /** Photos finished (uploaded + failed) */
+  completed: number;
+  /** Currently uploading (in flight) */
+  inFlight: number;
+  /** Successfully uploaded this batch */
+  uploaded: number;
+  /** Failed this batch */
+  failed: number;
+  /** Estimated seconds remaining (null if unknown) */
+  etaSeconds: number | null;
+  /** Upload speed in bytes/sec (rolling average) */
+  bytesPerSecond: number;
+}
+
 export const MAX_RETRIES = 5;
 export const MAX_QUEUE_SIZE = 200;
 export const RETRY_BASE_DELAY_MS = 2000; // 2s, 4s, 8s, 16s, 32s

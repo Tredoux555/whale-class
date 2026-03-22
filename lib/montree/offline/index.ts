@@ -1,7 +1,7 @@
 // lib/montree/offline/index.ts
 // Barrel exports for the offline photo queue system
 
-export type { PhotoQueueEntry, PhotoQueueStats, SyncResult, SyncEvent } from './types';
+export type { PhotoQueueEntry, PhotoQueueStats, SyncResult, UploadProgress } from './types';
 export { MAX_RETRIES, MAX_QUEUE_SIZE } from './types';
 
 export {
@@ -11,7 +11,7 @@ export {
   isSyncing,
   addSyncListener,
 } from './sync-manager';
-export type { EnqueueOptions } from './sync-manager';
+export type { EnqueueOptions, SyncEvent } from './sync-manager';
 
 export {
   getQueueStats,

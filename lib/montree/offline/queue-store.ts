@@ -115,21 +115,39 @@ export async function deleteEntry(id: string): Promise<void> {
   });
 }
 
+/**
+ * Update entry status atomically in a single IndexedDB transaction.
+ * FIX: Previous implementation used read-then-write across 2 separate transactions,
+ * which could lose data if another write happened between the read and write.
+ * Now performs read + modify + write within the SAME readwrite transaction.
+ */
 export async function updateEntryStatus(
   id: string,
   status: PhotoQueueStatus,
   updates?: Partial<PhotoQueueEntry>
 ): Promise<void> {
-  const entry = await getEntry(id);
-  if (!entry) return;
-
-  const updated: PhotoQueueEntry = {
-    ...entry,
-    ...updates,
-    status,
-  };
-
-  await saveEntry(updated);
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_ENTRIES, 'readwrite');
+    const store = tx.objectStore(STORE_ENTRIES);
+    const getReq = store.get(id);
+    getReq.onerror = () => reject(getReq.error);
+    getReq.onsuccess = () => {
+      const entry = getReq.result as PhotoQueueEntry | undefined;
+      if (!entry) {
+        resolve(); // Entry already deleted — nothing to update
+        return;
+      }
+      const updated: PhotoQueueEntry = {
+        ...entry,
+        ...updates,
+        status,
+      };
+      const putReq = store.put(updated);
+      putReq.onerror = () => reject(putReq.error);
+      putReq.onsuccess = () => resolve();
+    };
+  });
 }
 
 // ============================================

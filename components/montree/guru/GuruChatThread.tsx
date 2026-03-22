@@ -38,7 +38,7 @@ export default function GuruChatThread({
   isWholeClassMode = false,
   onGuruLimitReached,
 }: GuruChatThreadProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [state, setState] = useState<'loading' | 'onboarding' | 'chat'>('loading');
   const [concerns, setConcerns] = useState<string[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -263,6 +263,7 @@ export default function GuruChatThread({
           classroom_id: classroomId || undefined,
           conversational: true,
           stream: true, // Request SSE streaming response
+          locale,
           ...(imageUrl ? { image_url: imageUrl } : {}),
         }),
         signal: controller.signal,

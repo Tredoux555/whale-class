@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
         workName: p.work_name,
         chineseName: p.work_name ? getChineseNameForWork(p.work_name) || undefined : undefined,
         workArea: p.area,
-        observation: p.notes || `Working on ${p.work_name}`,
-        developmentalNote: p.status === 'mastered' ? 'Mastered this skill!' : undefined,
+        observation: p.notes || (locale === 'zh' ? `正在学习${p.work_name}` : `Working on ${p.work_name}`),
+        developmentalNote: p.status === 'mastered' ? (locale === 'zh' ? '已掌握此技能！' : 'Mastered this skill!') : undefined,
         homeExtension: getHomeExtension(p.area, t),
       }));
 
@@ -84,10 +84,14 @@ export async function GET(request: NextRequest) {
       childName: child.name,
       weekStart: startDate,
       weekEnd: endDate,
-      summary: `${child.name} had a productive week exploring ${highlights.length} different activities across various curriculum areas.`,
+      summary: locale === 'zh'
+        ? `${child.name}度过了充实的一周，探索了${highlights.length}个不同课程领域的活动。`
+        : `${child.name} had a productive week exploring ${highlights.length} different activities across various curriculum areas.`,
       highlights,
-      parentMessage: `Thank you for being part of ${child.name}'s learning journey. We're seeing wonderful growth!`,
-      teacherName: 'Your Montessori Team',
+      parentMessage: locale === 'zh'
+        ? `感谢您参与${child.name}的学习旅程。我们看到了美好的成长！`
+        : `Thank you for being part of ${child.name}'s learning journey. We're seeing wonderful growth!`,
+      teacherName: locale === 'zh' ? '您的蒙特梭利团队' : 'Your Montessori Team',
       generatedAt: new Date().toISOString(),
     };
 

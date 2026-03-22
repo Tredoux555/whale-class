@@ -661,6 +661,7 @@ export function buildConversationalPrompt(
   proactive?: ProactiveContext,
   isTeacher?: boolean,
   schoolGuruPersonality?: Record<string, unknown> | null,
+  locale?: string,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
@@ -881,6 +882,11 @@ export function buildConversationalPrompt(
   }
 
   // First message gets a special greeting instruction
+  // Add Chinese language instruction if locale is zh
+  if (locale === 'zh') {
+    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal. This includes all greetings, advice, observations, tool call descriptions, and closing remarks. The parent speaks Chinese.';
+  }
+
   let userPrompt: string;
   if (isFirstMessage) {
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\n${formattedKnowledge}\n\nThis is your FIRST conversation with this parent about ${childName}. Start with a warm, personal greeting that shows you know something about their child (reference their age, current works, or concerns). Then address their message naturally.\n\nPARENT'S MESSAGE:\n${question}`;
@@ -900,6 +906,7 @@ export function buildGreetingPrompt(
   childContext: ChildContext,
   savedConcerns: string[],
   proactive?: ProactiveContext,
+  locale?: string,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const childName = childContext.name?.split(' ')[0] || 'your child';
@@ -945,6 +952,11 @@ export function buildGreetingPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent just finished setting up their concerns (${concernNames || 'none specified'}). Write a SHORT, warm opening greeting (2-3 sentences max) that:\n1. Welcomes them by referencing ${childName} by name\n2. Acknowledges their concerns naturally (don't list them — weave them in)\n3. Invites them to ask anything\n\nKeep it brief and warm — this is just a greeting, not a full response. Like a friend saying "Hey! I'm here for you."`;
   }
 
+  // Add Chinese language instruction if locale is zh
+  if (locale === 'zh') {
+    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
+  }
+
   // Determine the mode for this greeting (mirrors buildConversationalPrompt logic)
   let mode: GuruMode;
   if (proactive?.shelfEmpty) {
@@ -967,6 +979,7 @@ export function buildFollowUpPrompt(
   lastQuestion: string,
   daysSinceLastChat: number,
   proactive?: ProactiveContext,
+  locale?: string,
 ): ConversationalPromptParts {
   const formattedContext = formatContextForPrompt(childContext);
   const childName = childContext.name?.split(' ')[0] || 'your child';
@@ -992,6 +1005,11 @@ export function buildFollowUpPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent is back after ${daysSinceLastChat} days. Their last question was: "${lastQuestion}"\n\nWrite a SHORT follow-up greeting (2-3 sentences) for ${childName}'s parent that:\n1. Celebrates their child's recent achievements\n2. Welcomes them back warmly\n3. References their last conversation naturally\n\nLead with celebration, then the follow-up.`;
   } else {
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent is back after ${daysSinceLastChat} days. Their last question was: "${lastQuestion}"\n\nWrite a SHORT follow-up greeting (2 sentences max) for ${childName}'s parent:\n1. Welcome them back warmly\n2. Ask about how things went since last time (reference their last question naturally)\n\nKeep it brief — just a friendly check-in, not a full response.`;
+  }
+
+  // Add Chinese language instruction if locale is zh
+  if (locale === 'zh') {
+    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
   }
 
   // Determine mode for follow-up greeting
@@ -1060,16 +1078,21 @@ export function buildClassroomModePrompt(
   question: string,
   classroomContext: ClassroomContext,
   knowledge: KnowledgeResult,
+  locale?: string,
 ): ConversationalPromptParts {
   const formattedClassroom = formatClassroomContextForPrompt(classroomContext);
   const formattedKnowledge = formatKnowledgeForPrompt(knowledge);
 
-  const systemPrompt = `${CLASSROOM_MODE_SYSTEM_PROMPT}
+  let systemPrompt = `${CLASSROOM_MODE_SYSTEM_PROMPT}
 
 ${formattedClassroom}
 
 MONTESSORI KNOWLEDGE:
 ${formattedKnowledge}`;
+
+  if (locale === 'zh') {
+    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
+  }
 
   const userPrompt = question;
 

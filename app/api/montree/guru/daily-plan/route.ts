@@ -174,6 +174,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
+    const locale = searchParams.get('locale') || 'en';
 
     if (!childId) {
       return NextResponse.json({ success: false, error: 'child_id is required' }, { status: 400 });
@@ -245,10 +246,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
+    const systemWithLocale = locale === 'zh'
+      ? system + '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE plan in Simplified Chinese (中文). Use warm, natural Chinese. All headers, instructions, and content must be in Chinese.'
+      : system;
+
     const message = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 2000,
-      system,
+      system: systemWithLocale,
       messages: [{ role: 'user', content: user }],
     });
 

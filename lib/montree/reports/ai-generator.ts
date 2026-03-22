@@ -109,7 +109,7 @@ export async function enhanceReportWithAI(input: EnhanceInput): Promise<EnhanceR
     });
 
     // Build prompts
-    const systemPrompt = buildSystemPrompt();
+    const systemPrompt = buildSystemPrompt(input.locale);
     const userPrompt = buildUserPrompt(input);
 
     // Call Claude API
@@ -196,7 +196,13 @@ export async function enhanceReportWithAI(input: EnhanceInput): Promise<EnhanceR
 // PROMPT BUILDERS
 // ============================================
 
-function buildSystemPrompt(): string {
+function buildSystemPrompt(locale?: string): string {
+  const isZh = locale === 'zh';
+
+  const languageInstruction = isZh
+    ? `\n- Write your ENTIRE response in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal. All field values in the JSON must be in Chinese.`
+    : '';
+
   return `You are a warm, observant Montessori teacher writing a weekly report for parents.
 
 Your writing style is:
@@ -204,7 +210,7 @@ Your writing style is:
 - Observational, describing what you actually SAW the child do
 - Positive but authentic (not generic praise)
 - Educational but accessible (no jargon)
-- Encouraging for parents to extend learning at home
+- Encouraging for parents to extend learning at home${languageInstruction}
 
 IMPORTANT GUIDELINES:
 1. Focus on OBSERVABLE actions ("carefully placed", "showed concentration", "chose to work with")
@@ -217,23 +223,23 @@ IMPORTANT GUIDELINES:
 OUTPUT FORMAT:
 You must respond with valid JSON only, no additional text or markdown formatting. Use this exact structure:
 {
-  "summary": "A 2-3 sentence warm overview of the child's week",
+  "summary": "${isZh ? '2-3句温馨的本周概述' : 'A 2-3 sentence warm overview of the child\'s week'}",
   "highlights": [
     {
       "media_id": "COPY THE EXACT media_id from the input",
-      "observation": "What the child did, in warm observational language",
-      "developmental_note": "Why this matters developmentally",
-      "home_extension": "A simple activity parents can try at home"
+      "observation": "${isZh ? '用温暖的观察性语言描述孩子做了什么' : 'What the child did, in warm observational language'}",
+      "developmental_note": "${isZh ? '这在发展方面为什么重要' : 'Why this matters developmentally'}",
+      "home_extension": "${isZh ? '家长可以在家尝试的简单活动' : 'A simple activity parents can try at home'}"
     }
   ],
-  "parent_message": "A warm closing message thanking parents",
-  "milestones": ["Any notable milestones observed this week"]
+  "parent_message": "${isZh ? '温暖的致谢家长的结束语' : 'A warm closing message thanking parents'}",
+  "milestones": ["${isZh ? '本周观察到的显著里程碑' : 'Any notable milestones observed this week'}"]
 }
 
-CRITICAL: 
+CRITICAL:
 - Return ONLY the JSON object, no markdown code blocks
 - Include ALL activities from the input in your highlights array
-- Copy media_id values EXACTLY as provided`;
+- Copy media_id values EXACTLY as provided${isZh ? '\n- ALL text content MUST be in Simplified Chinese (中文)' : ''}`;
 }
 
 function buildUserPrompt(input: EnhanceInput): string {
@@ -406,15 +412,20 @@ function mergeWithOriginal(
 // ============================================
 
 function generateSummaryOnlyReport(input: EnhanceInput): EnhanceResult {
-  const { child } = input;
+  const { child, locale } = input;
+  const isZh = locale === 'zh';
   const p = child.gender === 'they' ? 'their' : child.gender === 'he' ? 'his' : 'her';
 
   return {
     success: true,
     content: {
       ...input.report,
-      summary: `This week, ${child.name} continued ${p} learning journey in the classroom, exploring various activities with curiosity and focus.`,
-      parent_message: `Thank you for being part of ${child.name}'s Montessori experience. We look forward to sharing more of ${p} progress next week!`,
+      summary: isZh
+        ? `这一周，${child.name}在教室里继续探索各种活动，充满好奇心和专注力。`
+        : `This week, ${child.name} continued ${p} learning journey in the classroom, exploring various activities with curiosity and focus.`,
+      parent_message: isZh
+        ? `感谢您参与${child.name}的蒙特梭利学习之旅。我们期待下周与您分享更多进步！`
+        : `Thank you for being part of ${child.name}'s Montessori experience. We look forward to sharing more of ${p} progress next week!`,
       generated_with_ai: true,
       ai_model: 'fallback-no-highlights',
       generation_timestamp: new Date().toISOString(),

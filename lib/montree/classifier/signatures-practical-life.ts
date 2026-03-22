@@ -1,4 +1,4 @@
-import type { WorkSignature } from './work-signatures';
+import type { WorkSignature, ConfusionPair } from './work-signatures';
 
 // 83 Practical Life works - CLIP visual descriptions (escaped apostrophes verified)
 export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
@@ -101,6 +101,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'SMALL CLOTH OR LINEN NAPKIN (approximately 12x12 inches, white or pastel colored, smooth linen or cotton material with visible tight weave and slight texture from the fabric). Child holds the napkin by two adjacent corners and folds it PRECISELY IN HALF, bringing one corner directly to meet the opposite corner. All edges ALIGN PERFECTLY. The child then folds the resulting rectangle in half again, creating a smaller square. Each crease is pressed firmly and clearly visible. The fold is then executed diagonally by bringing corner to corner at an angle. All folds result in PERFECT ALIGNMENT of all edges and corners. Not a single wrinkle is visible on the surface. NOT crumpled, NOT messy, NOT imprecise. Progressive difficulty shows increasingly complex folding patterns.',
     key_materials: ['Small napkins', 'Linen or cotton cloths', 'Fine textiles', 'Approximately 12x12 inches', 'Neutral or pastel colors'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT laundry folding (small napkins not clothing)',
+      'NOT rolling (folding creates creases)',
+      'NOT table setting (napkins are small)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -110,7 +115,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Preliminary Exercises',
     visual_description: 'REAL CLOTHING ITEMS laid flat on a work surface or in a LAUNDRY BASKET (washcloths, small towels, lightweight t-shirts, simple pants, or undergarments in various colors and fabrics visible). Child picks up one item, holds it flat with both hands, and folds it methodically into organized RECTANGLES or SQUARES following a consistent pattern. For a washcloth (8x12 inches), the child might fold it twice to create a compact square. For a t-shirt, the child folds the sides inward, then folds the item in thirds. For pants, the child folds the legs together, then folds the overall item. Each finished folded piece is placed in a NEAT STACK or BASKET, creating an organized arrangement. The progression moves from simple items (washcloths) to more complex items (t-shirts with sleeves). The items are organized and ready to store, demonstrating care of belongings.',
     key_materials: ['Real clothing items', 'Washcloths', 'Towels', 'T-shirts', 'Pants', 'Undergarments', 'Laundry basket'],
-    confusion_pairs: ['pl_folding_cloth'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_folding_cloth',
+        reason: 'Both involve folding cloth-like materials',
+        differentiation: 'Folding laundry folds REAL CLOTHING ITEMS (t-shirts, pants, washcloths), folding cloths folds SMALL NAPKINS only',
+      },
+    ],
+    negative_descriptions: [
+      'NOT napkin folding (real clothing items)',
+      'NOT table setting (folding laundry not for meals)',
+      'NOT rolling (creates folded rectangles)',
+    ],
     difficulty: 'medium',
   },
 
@@ -123,6 +139,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'TWO CERAMIC OR WOODEN BOWLS positioned side by side on a WORK TRAY (one on the left filled with objects, one on the right empty). The LEFT BOWL contains LARGE DRY OBJECTS visible inside: COTTON BALLS (white, fluffy, 1-2 inches in diameter), colorful POMPOMS (2-3 inches across, soft texture), or WOODEN EGGS (painted, approximately 2-3 inches long, smooth finish). Child uses BARE HANDS with no tools, reaching into the left bowl, grasping ONE object firmly with fingers and thumb, LIFTING it out, and TRANSFERRING it to the right empty bowl. The child repeats this action many times. Some objects are successfully transferred while others fall back into the first bowl during the process. NOT using any tools whatsoever. NOT water involved. Pure hand-to-hand dry transfer activity.',
     key_materials: ['Two ceramic or wooden bowls', 'Cotton balls', 'Pompoms', 'Wooden eggs', 'Work tray', 'Large dry objects'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT spooning (no spoon used)',
+      'NOT tonging (no tongs used)',
+      'NOT water transfer (dry objects only)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -132,7 +153,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO CERAMIC OR WOODEN BOWLS on a WOODEN TRAY, positioned approximately 6-8 inches apart. The LEFT BOWL is FILLED with DRY GRANULAR MATERIAL visible 2-3 inches deep: BROWN OR WHITE RICE (small grains, clearly visible as individual items), DRIED LENTILS (small round legumes, tan or brown colored), or DRIED BEANS (larger than rice, various colors). A LARGE METAL SPOON (approximately 8-10 inches long with a wooden or metal handle, clearly visible round bowl end) sits in the filled bowl. Child grasps the spoon handle with one hand, SCOOPS the spoon DEEPLY INTO the material to fill the bowl end with approximately 10-20 individual grains or beans visible. Child LIFTS the spoon carefully, holding it level, and TRANSFERS it to the right empty bowl. The child TILTS the spoon to pour the contents into the second bowl. Some grains fall back into the first bowl during transfer. Progressive difficulty moves from large spoons with large grains to progressively smaller spoons with finer materials.',
     key_materials: ['Two ceramic or wooden bowls', 'Metal spoon', 'Rice', 'Beans', 'Lentils', 'Work tray', 'Dry granular materials'],
-    confusion_pairs: ['pl_dry_transfer_hand'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_dry_transfer_hand',
+        reason: 'Both transfer dry granular materials between bowls',
+        differentiation: 'Spooning uses a SPOON tool, hand transfer uses BARE HANDS only',
+      },
+    ],
+    negative_descriptions: [
+      'NOT hand transfer (no tool used)',
+      'NOT pouring (no pitcher)',
+      'NOT tonging (uses spoon not tongs)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -142,7 +174,23 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO BOWLS on a WORK TRAY containing TRANSFER OBJECTS (cotton balls, large pompoms, or small wooden balls). A PAIR OF METAL TONGS with a SPRING-LOADED MECHANISM and visible PIVOT POINT in the center (approximately 6-8 inches long, with two handles spreading open when pressure is released and closing firmly when squeezed). Child holds the tongs with a PINCER GRIP on the handles, SQUEEZES the handles together to open the tongs wide, revealing the two metal tips/pincers spread approximately 2 inches apart. Child positions the open tongs over a LARGE OBJECT (cotton ball or pompom approximately 1.5-2 inches across). Child then RELEASES the squeeze slightly to let the tongs grip the object. Child LIFTS the tongs vertically, the object held firmly between the metal tips. Child transfers the object to the second bowl and RELEASES the tongs by squeezing again to drop the object. NOT using bare hands. Objects must fit between the tong tips. Progressive difficulty moves from large salad tongs with large pompoms to progressively smaller sugar tongs.',
     key_materials: ['Two bowls', 'Metal tongs', 'Spring-loaded mechanism', 'Cotton balls', 'Pompoms', 'Work tray', 'Large transfer objects'],
-    confusion_pairs: ['pl_dry_transfer_hand'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_dry_transfer_hand',
+        reason: 'Both transfer objects between bowls',
+        differentiation: 'Tonging uses METAL TONGS with spring mechanism, hand uses BARE HANDS',
+      },
+      {
+        work_key: 'pl_tweezers',
+        reason: 'Both use gripping tools to transfer objects',
+        differentiation: 'Tongs have LARGE spring-loaded handles and LARGE bowl-shaped pincers, tweezers have FINE POINTED TIPS for tiny objects',
+      },
+    ],
+    negative_descriptions: [
+      'NOT tweezers (tongs are much larger)',
+      'NOT hand transfer (has metal tool)',
+      'NOT pouring (uses tongs not pitcher)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -152,7 +200,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO SMALL CERAMIC BOWLS on a WORK TRAY, positioned close together (approximately 4-6 inches apart). The LEFT BOWL contains VERY SMALL OBJECTS visible inside: GLASS BEADS (approximately 0.5 inches in diameter, clear or colored, shiny surface), SEEDS (small dark seeds approximately 0.25 inches), or TINY POMPOMS (approximately 0.5 inches across, soft texture). A PAIR OF METAL TWEEZERS with FINE POINTED TIPS and a PINCHING MECHANISM (approximately 4-5 inches long, slender metal construction, tips visible coming to sharp points). Child grasps the tweezers using a THREE-FINGER PINCH GRIP (thumb, index, and middle finger), holding the tweezers lightly. Child precisely positions the tweezers over a TINY OBJECT, SQUEEZES the tweezers to grip the object firmly between the pointed tips. Child LIFTS the tweezers vertically, the tiny object held delicately between the tips. Child transfers to the right empty bowl and RELEASES the tweezers by relaxing the squeeze to drop the object. Objects easily drop or are lost if grip is imprecise. EXTREME FINE MOTOR PRECISION required. NOT dropping. Each transfer is slow and deliberate.',
     key_materials: ['Two small ceramic bowls', 'Metal tweezers', 'Fine pointed tips', 'Glass beads', 'Seeds', 'Small pompoms', 'Work tray', 'Tiny objects'],
-    confusion_pairs: ['pl_tonging'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_tonging',
+        reason: 'Both use gripping tools to transfer objects',
+        differentiation: 'Tweezers have FINE POINTED TIPS for TINY objects, tongs have LARGE spring-loaded pincers for LARGE objects',
+      },
+    ],
+    negative_descriptions: [
+      'NOT tongs (tweezers are much smaller)',
+      'NOT chopsticks (tweezers have pointed metal tips)',
+      'NOT hand transfer (has metal tool)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -162,7 +221,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO BOWLS on a WORK TRAY containing VARIOUS TRANSFER OBJECTS ranging from LARGER ITEMS (pompoms, felt balls) to progressively SMALLER ITEMS. A PAIR OF WOODEN CHOPSTICKS (two separate sticks, each approximately 8-10 inches long, natural wood finish with slight texture, either CONNECTED WITH A TRAINING BRIDGE at the top creating a spring-like mechanism, OR remaining separate). Child holds the chopsticks with a PINCHER MOTION, positioning them like tongs between thumb and fingers. When using training chopsticks, the bridge provides automatic return to open position when pressure is released. Child positions the chopsticks over an OBJECT, SQUEEZES the chopsticks together to grip the object between the wooden ends. Child LIFTS the chopsticks, the object held firmly in the grip. Child transfers to a second bowl and RELEASES the squeeze to drop the object. This is a CULTURAL TOOL used in Asian dining. Progressive difficulty moves from training chopsticks with connector to regular separate chopsticks that require complete manual control.',
     key_materials: ['Two bowls', 'Wooden chopsticks', 'Training chopsticks with bridge (optional)', 'Various sized objects', 'Work tray', 'Natural wood construction'],
-    confusion_pairs: ['pl_tweezers'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_tweezers',
+        reason: 'Both use gripping tools to transfer objects',
+        differentiation: 'Chopsticks are WOODEN with SEPARATE or bridge-connected sticks, tweezers are METAL with POINTED FINE TIPS',
+      },
+    ],
+    negative_descriptions: [
+      'NOT tweezers (chopsticks are wooden)',
+      'NOT tongs (chopsticks are separate wood sticks)',
+      'NOT cutlery (used for grasping not eating)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -172,7 +242,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO METAL PITCHERS positioned on a WOODEN TRAY (traditional style with HANDLES and SPOUT visible, approximately 4-6 inches tall, shiny metal surface, clearly holding liquid/materials inside). The FIRST PITCHER is FILLED with DRIED GRANULAR MATERIALS visible inside: BROWN OR WHITE RICE (showing individual grains), DRIED LENTILS (small round legumes), DRIED BEANS (larger varieties), or SAND (fine granules). The materials are visible approximately 2-3 inches deep in the pitcher. Child grasps the HANDLE of the full pitcher with one hand, supporting the BODY of the pitcher with the other hand. Child TIPS THE PITCHER at a CONTROLLED ANGLE (approximately 45 degrees) over the second pitcher or over containers positioned below. The MATERIAL FLOWS in a steady stream from the SPOUT into the receiving container below. Wrist control is CRITICAL for maintaining a smooth, consistent pour with no splashing. Some spillage is expected and normal as the child learns. NOT wet water. NOT colored liquids. Pure dry transfer via pouring motion.',
     key_materials: ['Two metal pitchers', 'Metal handles and spouts', 'Dried grains', 'Rice', 'Sand', 'Beans', 'Work tray', 'Containers'],
-    confusion_pairs: ['pl_pouring_water'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_pouring_water',
+        reason: 'Both use pitchers to pour from one container to another',
+        differentiation: 'Pouring dry materials uses DRIED GRANULAR MATERIALS like rice and beans, pouring water uses CLEAR LIQUID WATER only',
+      },
+    ],
+    negative_descriptions: [
+      'NOT water pouring (dry granular material not liquid)',
+      'NOT sponging (pours with pitcher not sponge)',
+      'NOT spooning (pours not scoops)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -182,7 +263,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'A CLEAR METAL OR CERAMIC PITCHER positioned on a WORK TRAY (traditional pitcher style with VISIBLE HANDLE and SPOUT, approximately 4-6 inches tall, FILLED with CLEAR WATER visible inside through the transparent sides, liquid level clearly visible approximately HALF FULL). Several CLEAR GLASSES or SMALL BOWLS are positioned nearby on the tray (approximately 3-4 inches tall, smooth ceramic or glass construction, empty or partially filled). Child grasps the HANDLE of the pitcher firmly with one hand, supporting the BODY with the other hand. Child positions the pitcher over the first glass at a PRECISE ANGLE (approximately 45-50 degrees), maintaining this angle steadily. WATER FLOWS from the SPOUT into the glass in a smooth, controlled stream. Child pours water into multiple glasses, attempting to fill each glass EQUALLY. The liquid level in each glass becomes visible. Refined wrist control is demonstrated throughout. No splashing or spilling. Child may practice pouring equal amounts, developing fine motor precision and bilateral coordination.',
     key_materials: ['Metal or ceramic pitcher', 'Clear water', 'Clear glasses', 'Small bowls', 'Work tray', 'Visible water level'],
-    confusion_pairs: ['pl_pouring_dry'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_pouring_dry',
+        reason: 'Both use pitchers to pour from one container to another',
+        differentiation: 'Pouring water uses CLEAR LIQUID WATER, pouring dry uses DRIED GRANULAR MATERIALS like rice and beans',
+      },
+    ],
+    negative_descriptions: [
+      'NOT dry pouring (liquid water not granular)',
+      'NOT sponging (pours with pitcher not sponge)',
+      'NOT basting (water poured into glasses not applied with eyedropper)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -192,7 +284,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO BOWLS on a WOODEN TRAY (one filled with WATER visible at approximately 2-3 inches deep, one empty). A NATURAL SPONGE (yellow or tan colored, rectangular shape approximately 3x3 inches, clearly showing spongy porous texture with visible PORES and AIR HOLES covering the entire surface, soft and compressible). Child holds the sponge by one corner with one hand, positions it OVER the water-filled bowl. Child SQUEEZES the sponge with a FIRM GRIP, compressing it, then IMMERSES the sponge into the water. The sponge ABSORBS WATER rapidly, the porous structure filling with liquid visible in the texture change. Child LIFTS the sponge (now heavy with absorbed water), and carefully positions it over the second bowl. Child SQUEEZES THE SPONGE FIRMLY, and WATER FLOWS out of the pores back into the second empty bowl. The process is repeated multiple times. Water transfers via sponge absorption and release mechanism. NOT pouring with a pitcher. NOT using hands. Pure water transfer through the sponge material.',
     key_materials: ['Two bowls', 'Natural sponge', 'Porous sponge texture', 'Water', 'Work tray', 'Yellow or tan colored sponge'],
-    confusion_pairs: ['pl_pouring_water'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_pouring_water',
+        reason: 'Both transfer water between containers',
+        differentiation: 'Sponging uses a NATURAL SPONGE with POROUS TEXTURE, pouring water uses a PITCHER with a SPOUT',
+      },
+    ],
+    negative_descriptions: [
+      'NOT pouring (sponge transfers water not pitcher)',
+      'NOT basting (no eyedropper)',
+      'NOT dropper (no small dropper)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -202,7 +305,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'TWO BOWLS on a WORK TRAY, one FILLED with WATER visible inside (approximately 2-3 inches deep), one EMPTY. A RUBBER TURKEY BASTER (approximately 4 inches tall, with a BULBOUS SQUEEZE TOP made of flexible rubber, reddish or clear colored, connected to a THIN TRANSPARENT STEM approximately 0.5 inches in diameter extending downward). Child grasps the BULBOUS TOP with one hand. Child SQUEEZES the bulbous top firmly, compressing it completely. While maintaining the squeeze, child immerses the STEM into the water in the first bowl. Child RELEASES THE SQUEEZE, and the bulbous top EXPANDS, creating SUCTION that FILLS the stem and interior with water (water visible inside the stem and bulb changing color/transparency). Child LIFTS the baster out of the water (now full of water, visibly heavier). Child positions the STEM over the second empty bowl. Child SQUEEZES the bulbous top again, FORCING the water out of the stem into the second bowl. The process is repeated. Requires bilateral coordination and precise squeeze-release mechanics.',
     key_materials: ['Two bowls', 'Turkey baster', 'Rubber bulb', 'Transparent stem', 'Water', 'Work tray', 'Flexible rubber material'],
-    confusion_pairs: ['pl_dropper'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_dropper',
+        reason: 'Both use rubber bulbs to transfer water',
+        differentiation: 'Turkey baster has a LARGE BULBOUS TOP and THICK TRANSPARENT STEM for larger water transfers, dropper has a SMALL RUBBER BULB and FINE TIP for single DROPS',
+      },
+    ],
+    negative_descriptions: [
+      'NOT dropper (turkey baster much larger)',
+      'NOT sponging (bulb-based not sponge-based)',
+      'NOT pouring (drops water via squeeze not pours from spout)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -212,7 +326,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Transfer Activities',
     visual_description: 'A SMALL GLASS OR PLASTIC EYE DROPPER (approximately 2-3 inches tall, with a RUBBER BULB at the top end approximately 0.75 inches in diameter, connected to a THIN STEM approximately 2 inches long coming to a fine TIP end, capable of holding approximately 0.5 milliliters of liquid). CONTAINERS positioned nearby: a SMALL CERAMIC BOWL or CUP, an ICE CUBE TRAY with visible 12 SQUARE COMPARTMENTS (each approximately 0.75 inches square), small MUFFIN TINS, or other containers with small individual spaces. The DROPPER is FILLED with COLORED WATER (bright blue or red, clearly visible through the glass/plastic, filling the rubber bulb). Child grasps the dropper with thumb and forefinger positioned ON THE RUBBER BULB. Child SQUEEZES the bulb, compressing it slightly. Child positions the STEM TIP over the first small container in the ice cube tray. Child RELEASES the squeeze gradually, and ONE SINGLE DROP of colored water falls from the tip into the compartment below. Child repeats, placing ONE DROP at a time into each compartment. FINE MOTOR PRECISION required. NOT squirting or spraying. Progressive difficulty with progressively smaller containers.',
     key_materials: ['Eye dropper', 'Rubber bulb', 'Glass or plastic stem', 'Ice cube tray', 'Small containers', 'Colored water', 'Fine tip', 'Approximately 12 compartments'],
-    confusion_pairs: ['pl_basting'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_basting',
+        reason: 'Both use rubber bulbs to transfer water',
+        differentiation: 'Dropper has a SMALL RUBBER BULB and FINE TIP for single DROP precision, turkey baster has a LARGE BULB and THICK STEM for larger transfers',
+      },
+    ],
+    negative_descriptions: [
+      'NOT turkey baster (dropper much smaller)',
+      'NOT sponging (bulb-based not sponge-based)',
+      'NOT pouring (drops single drops not continuous stream)',
+    ],
     difficulty: 'hard',
   },
 
@@ -224,7 +349,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding TWO FABRIC PANELS positioned approximately 6-8 inches apart (approximately 18x18 inches overall). Each panel is CANVAS or FELT in neutral color (beige, tan, or gray). The fabric is sewn or attached to the frame edges creating a FLAT SURFACE. VELCRO FASTENERS cover the facing surfaces: one panel has the FUZZY/SOFT SIDE (typically white colored, visible soft texture), the opposite panel has the ROUGH/HOOK SIDE (typically black colored, visible rough prickly texture). When panels are pressed together, they STICK firmly. Child grasps one panel by the edges and PULLS it away from the other panel (rough scratching sound heard as velcro separates). The two panels separate visibly, breaking the fastener connection. Child then PRESSES both panels together firmly (sticky clicking sound heard as velcro fasteners re-engage). The panels come together and STICK firmly. The easiest dressing skill, demonstrating self-adhesion without buttons, snaps, or zippers.',
     key_materials: ['Wooden frame', 'Fabric panels', 'Canvas or felt', 'Velcro strips', 'Fuzzy side', 'Rough hook side', 'Neutral colors'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_snaps',
+        reason: 'Both are simple fabric frame fastening systems',
+        differentiation: 'Velcro has FUZZY SOFT and ROUGH HOOK SIDES that stick together, snaps have visible METAL DOME-SHAPED fasteners',
+      },
+    ],
+    negative_descriptions: [
+      'NOT snaps (velcro is fuzzy/rough not metal)',
+      'NOT buttons (velcro self-fastens not threaded)',
+      'NOT hook-and-eye (velcro has large strips not small hooks)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -234,7 +370,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL (approximately 18x18 inches, canvas or felt in neutral or striped color, clearly visible weave). The panel is fitted with METAL SNAP FASTENERS (typically 4-6 pairs of snaps, each approximately 0.5 inches in diameter, shiny silver metallic color, clearly visible dome-shaped caps). The snaps are positioned in a vertical line or pattern with approximately 2-3 inches spacing between pairs. Each pair consists of a MALE SNAP (with a protruding center post) and a FEMALE SNAP (with a concave depression). The two snap parts are positioned facing each other across approximately 0.5-1 inch gap. Child grasps one side of the fabric and PRESSES DOWN the two snap halves toward each other. A METALLIC CLICKING SOUND occurs as the male post slides into the female depression and locks. Child then PRESSES UP or PRIES the snap open using fingernails or a small tool. The male snap POP UP audibly as it releases from the female snap. NOT velcro (no fuzzy or hook texture). NOT buttons (no holes — snaps are self-fastening metal domes).',
     key_materials: ['Wooden frame', 'Fabric panel', 'Metal snap fasteners', 'Striped or solid fabric', 'Four to six snap pairs', 'Silver metallic snaps'],
-    confusion_pairs: ['pl_frame_velcro'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_velcro',
+        reason: 'Both are simple fabric frame fastening systems',
+        differentiation: 'Snaps have visible METAL DOME FASTENERS, velcro has FUZZY SOFT and ROUGH HOOK SIDES',
+      },
+    ],
+    negative_descriptions: [
+      'NOT velcro (snaps are metal not fuzzy)',
+      'NOT buttons (snaps self-fasten with metal click)',
+      'NOT safety pins (snaps are dome-shaped not pointed)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -244,7 +391,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL (approximately 18x18 inches, canvas or felt). The fabric is divided into TWO HALVES that face each other across approximately 1-inch gap. One panel edge is sewn with VERY LARGE BUTTONS (1.5-2 inches in diameter, wooden or plastic construction, smooth finish, clearly visible with 2-4 HOLES per button that are large and easy to see). The opposite panel edge has corresponding BUTTONHOLES (vertical slits approximately 0.5-1 inch long, precisely matching button size). Child grasps a button between thumb and fingers and PUSHES it through the corresponding buttonhole on the opposite panel. The button slides through the hole and emerges on the opposite side. Child then pulls the fabric panels apart, and the button separates from the hole. For closing, child inserts the button into the buttonhole from the opposite direction and pulls through. Requires BILATERAL COORDINATION. NOT small buttons. Large size makes this work visually distinct from other dressing frames.',
     key_materials: ['Wooden frame', 'Fabric panel', 'Oversized buttons', 'Two-hole to four-hole buttons', 'Buttonholes', 'Canvas or felt', 'Approximately 1.5-2 inch buttons'],
-    confusion_pairs: ['pl_frame_small_buttons'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_small_buttons',
+        reason: 'Both use buttons threaded through buttonholes',
+        differentiation: 'Large buttons frame has VERY LARGE BUTTONS (1.5-2 inches) with LARGE HOLES, small buttons has SMALL BUTTONS (0.5-0.75 inches) with SMALL PRECISE HOLES',
+      },
+    ],
+    negative_descriptions: [
+      'NOT small buttons (these are oversized)',
+      'NOT snaps (buttons are threaded not fastened)',
+      'NOT hook-and-eye (buttons larger and threaded)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -254,7 +412,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL (approximately 18x18 inches, canvas or felt in neutral color). The fabric is divided with TWO HALVES facing each other. One panel edge is sewn with SMALL BUTTONS (0.5-0.75 inches in diameter, wooden or plastic, smooth finish, with 2-4 HOLES per button but the holes are SMALL and challenging to see). The opposite panel has corresponding BUTTONHOLES (precise vertical slits approximately 0.25-0.5 inches long, fitted tightly to button size). Child must manipulate the small button using THUMB AND FOREFINGER in a precise three-finger grip. Child positions the button in front of the buttonhole on the opposite panel. Child PUSHES the button through the small hole, requiring focused concentration and hand-eye coordination. The button emerges on the other side. Child pulls the panels apart to separate. For closing, child inserts the button and pushes through again. Requires FINE MOTOR PRECISION and patience. Progressive advancement from large buttons.',
     key_materials: ['Wooden frame', 'Fabric panel', 'Small buttons', 'Buttonholes', 'Canvas or felt', 'Approximately 0.5-0.75 inch buttons', 'Small button holes'],
-    confusion_pairs: ['pl_frame_large_buttons'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_large_buttons',
+        reason: 'Both use buttons threaded through buttonholes',
+        differentiation: 'Small buttons frame has SMALL BUTTONS (0.5-0.75 inches) requiring FINE MOTOR PRECISION, large buttons has LARGE OVERSIZED BUTTONS easy to handle',
+      },
+    ],
+    negative_descriptions: [
+      'NOT large buttons (these are small)',
+      'NOT snaps (buttons are threaded not metal)',
+      'NOT hook-and-eye (buttons are threaded not hooked)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -264,7 +433,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL with a FULL-LENGTH METAL ZIPPER installed down the center (approximately 12-14 inches long, shiny metallic appearance, METAL TEETH clearly visible on both sides of the opening creating a track, METAL SLIDER at the top end with a visible PULL TAB typically made of metal or plastic). The zipper is oriented vertically on the frame. The two sides of the panel are fully separated by the unzipped zipper, with each side approximately 9 inches wide. Child grasps the METAL SLIDER PULL TAB between thumb and forefinger. Child PULLS the slider UPWARD along the track in one smooth motion. As the slider moves upward, the METAL TEETH on both sides interlock, and the two fabric panels are PULLED TOGETHER. The zipper CLOSES completely at the top. Child then PULLS the slider DOWNWARD in the opposite direction. As the slider moves down, the INTERLOCKING TEETH SEPARATE, and the two panels SEPARATE widely. The fabric panels open. Requires BILATERAL COORDINATION with both hands managing the pull action and panel manipulation. NOT buttons, snaps, or hooks. Distinct metallic zipper mechanism.',
     key_materials: ['Wooden frame', 'Fabric panel', 'Metal zipper', 'Metal teeth', 'Metal slider', 'Pull tab', 'Approximately 12-14 inches'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_lacing',
+        reason: 'Both connect two fabric panels together',
+        differentiation: 'Zipper uses INTERLOCKING METAL TEETH with a SLIDER, lacing uses CORD or FABRIC laced through HOLES in a CRISSCROSS pattern',
+      },
+    ],
+    negative_descriptions: [
+      'NOT lacing (zipper is metal teeth not cord)',
+      'NOT buttons (zipper is interlocking teeth)',
+      'NOT velcro (zipper is metal not fuzzy)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -274,7 +454,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL with HOOK AND EYE FASTENERS (approximately 3-5 pairs visible, spaced 2-3 inches apart). Each pair consists of a METAL HOOK (approximately 0.5 inches long, shaped like an open hook with a curved end), positioned on one side of the fabric, and a small METAL LOOP or EYE (approximately 0.25 inches in diameter, circular opening) positioned on the opposite panel side. The metallic construction is clearly visible, typically shiny silver metal. Child grasps one fabric panel and LIFTS it toward the other panel. Child positions the METAL HOOK from one side directly above the corresponding METAL EYE on the opposite panel. Child LOWERS the hook so the curved end ENTERS the small eye loop. The hook and eye are now FASTENED together. To unfasten, child PULLS the panels apart, and the hook SEPARATES from the eye. The small metal hardware is clearly visible. Requires FINE DEXTERITY and precise alignment. NOT buttons, snaps, or hook-and-loop fasteners.',
     key_materials: ['Wooden frame', 'Fabric panel', 'Metal hooks', 'Metal eyes', 'Loop fasteners', 'Three to five pairs', 'Shiny silver metal', 'Fine hardware'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_safety_pins',
+        reason: 'Both use small metal hardware to fasten fabric panels',
+        differentiation: 'Hook-and-eye uses METAL HOOKS that LOOP into SMALL EYES, safety pins use POINTED TIPS with COILED SPRING CLASPS',
+      },
+    ],
+    negative_descriptions: [
+      'NOT safety pins (hooks are curved not pointed)',
+      'NOT snaps (hooks are looped not dome-shaped)',
+      'NOT buttons (hooks catch eyes not threaded)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -284,7 +475,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL with a PLASTIC OR METAL BUCKLE FASTENER installed horizontally (approximately 1-2 inches wide, typically rectangular or square shaped, shiny plastic or metallic surface, clearly visible PRONGS or SNAP MECHANISM). A FABRIC STRAP approximately 2-3 inches wide and 8-10 inches long extends from one side of the frame and is LEFT UNATTACHED. Child grasps the fabric panel and the unattached strap. Child THREADS the END OF THE STRAP through or under the BUCKLE opening. Child then PULLS the strap to TIGHTEN the connection. The buckle fastening mechanism engages, holding the strap in place through tension and the buckle mechanism. Child can unfasten by relaxing the tension and sliding the strap back through the buckle. Requires understanding of buckle mechanics and HAND-OVER-HAND COORDINATION. NOT buttons or snaps. Real buckle hardware used in clothing and accessories.',
     key_materials: ['Wooden frame', 'Fabric panel', 'Plastic or metal buckle', 'Fabric strap', 'Prongs or snap mechanism', 'Approximately 1-2 inch buckle'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_tying_shoes',
+        reason: 'Both close footwear and clothing with straps',
+        differentiation: 'Buckle frame uses a PLASTIC OR METAL BUCKLE that THREADS a STRAP, shoe tying uses FABRIC LACES with BOW KNOTS',
+      },
+    ],
+    negative_descriptions: [
+      'NOT lacing (buckle threads a strap not laces)',
+      'NOT hook-and-eye (buckle is larger hardware)',
+      'NOT safety pins (buckle mechanism is not pointed)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -294,7 +496,23 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN FRAME holding a FABRIC PANEL with PRE-DRILLED HOLES (~0.25 inches in diameter, evenly spaced approximately 0.75-1 inch apart, arranged in TWO VERTICAL COLUMNS with approximately 8-10 holes per column). A FABRIC LACE or CORD (approximately 0.5 inches wide, typically made of cotton or synthetic material, approximately 18-24 inches long, with a PLASTIC AGLET or stiffened end for easy threading). Child holds the laced cord with the aglet end and THREADS it through the first hole in the left column from the back side of the frame. Child pulls the cord partially through. Child then THREADS the cord diagonally across to the first hole on the right column and pulls through from the back. Child continues this CROSSOVER LACING pattern up both columns, creating a crisscross webbing of cord visible on the front of the panel. Once all holes are laced, child PULLS the cord ends to TIGHTEN the connection. The crisscross lacing pattern becomes visible with the cord weaving in and out of holes. Progressive difficulty increases from large holes to small holes.',
     key_materials: ['Wooden frame', 'Fabric with pre-drilled holes', 'Lacing cord or fabric strip', 'Plastic aglet', 'Approximately 0.25 inch holes', 'Approximately 8-10 holes per column'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_zipper',
+        reason: 'Both connect two fabric panels together',
+        differentiation: 'Lacing uses CORD or FABRIC laced through HOLES in a CRISSCROSS pattern, zipper uses INTERLOCKING METAL TEETH',
+      },
+      {
+        work_key: 'pl_frame_bow_tying',
+        reason: 'Both use lacing techniques and create visual patterns',
+        differentiation: 'Lacing frame uses CORD threaded through PRE-DRILLED HOLES, bow tying uses WIDE RIBBONS tied into BOW KNOTS',
+      },
+    ],
+    negative_descriptions: [
+      'NOT zipper (lacing uses cord not metal)',
+      'NOT buckle (lacing threads through holes not a buckle)',
+      'NOT bow tying (uses cord through holes not ribbon bows)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -304,7 +522,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN DRESSING FRAME with TWO FABRIC FLAPS positioned approximately 0.5 inches apart, facing each other. The flaps are fastened together using METAL SAFETY PINS (approximately 2 inches long, shiny silver metal, clearly visible COILED SPRING mechanism along the length, POINTED TIP at one end, CLASP mechanism at the other end that locks over the pointed tip). Approximately 4-6 safety pins are installed in a vertical line. Child reaches down and grasps the FIRST SAFETY PIN. Child PRESSES the CLASP mechanism with thumb and forefinger, opening it. The POINTED TIP becomes exposed and visible. Child carefully THREADS the sharp pin point through the opposite fabric flap WITHOUT PRICKING their finger. Child guides the point through and OUT THE OPPOSITE SIDE. Child then RELEASES the clasp, and it SNAPS SHUT, locking the pointed end underneath the clasp. This fastens the two flaps together. Child repeats for all pins. Unfastening requires pressing each clasp open and sliding the pin out. Requires PRECISE FINE MOTOR CONTROL and AWARENESS of the sharp pointed tip. Safety must be maintained throughout. NOT buttons or snaps. Visible spring mechanism is the key identifier.',
     key_materials: ['Wooden dressing frame', 'Metal safety pins', 'Fabric flaps', 'Spring clasp mechanism', 'Approximately 2 inch pins', 'Four to six pins', 'Pointed tip', 'Shiny metal construction'],
-    confusion_pairs: ['pl_frame_hook_eye'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_hook_eye',
+        reason: 'Both use small metal hardware to fasten fabric panels',
+        differentiation: 'Safety pins have POINTED TIPS with SPRING CLASP mechanisms, hook-and-eye have METAL HOOKS that LOOP into EYES',
+      },
+    ],
+    negative_descriptions: [
+      'NOT hook-and-eye (safety pins are pointed not hooked)',
+      'NOT snaps (safety pins have spring clasp)',
+      'NOT buttons (safety pins have pointed tips)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -314,7 +543,23 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN DRESSING FRAME with TWO FABRIC FLAPS positioned facing each other, connected by approximately 4-5 WIDE RIBBON STRIPS (each approximately 1 inch wide, often in contrasting colors or patterns — red, blue, yellow, or patterned, approximately 12-14 inches long when spread out). Each pair of ribbons hangs loosely. Child takes the first pair of ribbons from the top of the frame. Child crosses the right ribbon OVER the left ribbon near their ends. Child loops the right ribbon back under and through, creating a SIMPLE OVERHAND KNOT. Child then creates TWO LOOPS by folding each ribbon end into a LOOP or BUNNY EAR shape. Child crosses the right loop over the left loop and PULLS the loops tight, completing a BOW KNOT. The finished bow is visible with two ear-shaped loops and two trailing ends visible. Child tightens the bow by pulling the loops. Child repeats this entire sequence for each pair of ribbons down the frame, creating a column of neatly tied bows. Finished frame shows approximately 4-5 bows arranged vertically. This is the MOST ADVANCED dressing frame, requiring bilateral hand coordination, understanding of knot mechanics, and sustained concentration.',
     key_materials: ['Wooden dressing frame', 'Wide fabric ribbons', 'Fabric flaps', 'Contrasting colors', 'Approximately 1 inch wide ribbons', 'Four to five ribbon pairs'],
-    confusion_pairs: ['pl_frame_lacing', 'pl_tying_shoes'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_lacing',
+        reason: 'Both use lacing techniques and create visual patterns',
+        differentiation: 'Bow tying uses WIDE RIBBONS tied into BOW KNOTS, lacing uses CORD threaded through PRE-DRILLED HOLES',
+      },
+      {
+        work_key: 'pl_tying_shoes',
+        reason: 'Both involve tying bows with laces or ribbons',
+        differentiation: 'Dressing frame uses WIDE FABRIC RIBBONS pre-attached, shoe tying uses THIN SHOE LACES threaded through shoe eyelets',
+      },
+    ],
+    negative_descriptions: [
+      'NOT lacing (uses wide ribbons not cord)',
+      'NOT shoe tying (ribbons are wider and pre-attached)',
+      'NOT buckle (bow tying creates knots)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -324,7 +569,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A COMPLETE SHOE CARE KIT arranged on a WOODEN TRAY or CLOTH SURFACE (approximately 18x12 inches). The kit includes: a REAL SHOE (leather or faux leather, typically dark brown or black, visible stitching and shoe structure, well-worn with visible creases), a ROUND METAL TIN OF SHOE POLISH (approximately 2-3 inches in diameter, shiny metal container with a colored label, wax polish visible inside when opened), ONE OR TWO BRUSHES (a STIFF BRISTLE APPLICATOR BRUSH approximately 2-3 inches wide with visible bristles, and a SOFT BUFFING BRUSH approximately 3-4 inches wide with dense soft bristles), a POLISHING CLOTH (soft cotton rag, cream or white colored, approximately 6x6 inches), and NEWSPAPER spread underneath to protect the surface from stains. Child opens the polish tin, revealing the dark wax inside with visible scent. Child uses the stiff brush to apply polish to the entire shoe surface in circular motions. Polish becomes visible on the brush bristles. Once fully coated, child uses the soft buffing brush to buff the shoe in circular motions until SHINE develops. Final step: child uses the cloth to buff to final shine. NOT a dressing frame. Uses actual shoe and real polish products. Distinct smell of shoe wax is characteristic.',
     key_materials: ['Real shoe', 'Shoe polish tin', 'Stiff bristle brush', 'Soft buffing brush', 'Polishing cloth', 'Newspaper', 'Tray or cloth', 'Leather or faux leather shoe'],
-    confusion_pairs: ['pl_polishing_metal'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_polishing_metal',
+        reason: 'Both involve polishing with similar brush and polish techniques',
+        differentiation: 'Shoe polishing uses a REAL SHOE and WAX POLISH in a TIN for leather/faux leather, metal polishing uses METAL OBJECTS with METAL POLISH',
+      },
+    ],
+    negative_descriptions: [
+      'NOT metal polishing (shoe polish not metal polish)',
+      'NOT shoe tying (polishing care not fastening)',
+      'NOT brushing (polishing uses polish not just brushes)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -334,7 +590,23 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Dressing Frames',
     visual_description: 'A WOODEN STAND or FRAME with THREE LONG STRANDS of THICK MATERIAL attached at the TOP (approximately 12-18 inches long each, visible distinctive colors — typically red, yellow, and blue, or white, black, and gray). The material is RIBBON, ROPE, or YARN, approximately 0.5-0.75 inches wide for clear visibility. The three strands hang freely with weight pulling them downward. Child positions the three strands SIDE BY SIDE with left strand, middle strand, and right strand clearly visible. Child crosses the RIGHT STRAND OVER THE MIDDLE STRAND, so the right strand now occupies the middle position. Child then crosses the LEFT STRAND OVER THE NEW MIDDLE STRAND. Child repeats this alternating pattern: right-over-middle, then left-over-middle, continuously. As the child braids, a WOVEN PATTERN emerges visible as three-strand diagonal weaving creating interlocking textured design moving downward from the starting point. The braid becomes longer and more distinct with each repetition. NOT bow tying (three strands woven, not two tied). NOT lacing (strands interweave freely without holes). Three-strand interlocking pattern is the distinctive visual identifier.',
     key_materials: ['Wooden braiding frame', 'Three colored ribbons or cords', 'Thick woven materials', 'Mounting clips', 'Contrasting colors', 'Approximately 12-18 inches long'],
-    confusion_pairs: ['pl_frame_bow_tying', 'pl_weaving'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_frame_bow_tying',
+        reason: 'Both manipulate ribbons/cords with hands',
+        differentiation: 'Braiding uses THREE STRANDS woven in an interlocking pattern, bow tying uses TWO PAIRS OF RIBBONS tied into KNOTS',
+      },
+      {
+        work_key: 'pl_weaving',
+        reason: 'Both create woven patterns from strands',
+        differentiation: 'Braiding uses THREE HANGING STRANDS interwoven freely, weaving uses VERTICAL WARP and HORIZONTAL WEFT through LOOM HOLES',
+      },
+    ],
+    negative_descriptions: [
+      'NOT bow tying (three strands woven not ribbons knotted)',
+      'NOT weaving (braiding is three strands not loom-based)',
+      'NOT lacing (strands interweave freely without holes)',
+    ],
     difficulty: 'hard',
   },
 
@@ -347,6 +619,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'A BATHROOM OR CLASSROOM SINK with RUNNING WATER clearly visible flowing from the FAUCET, a DISPENSER with SOAP (bar or liquid pump-style visible), and a CLOTH TOWEL or PAPER TOWEL DISPENSER. Child approaches the sink and TURNS ON the faucet with one hand (water flows immediately). Child cups their HANDS together, filling them with COOL RUNNING WATER. Child applies SOAP (either rubbing a bar on hands or dispensing liquid soap), creating VISIBLE LATHER with bubbles covering the entire hand surface and between fingers. Child RUBS HANDS TOGETHER vigorously for approximately 10-20 seconds, working the soap into all areas including under fingernails, between fingers, and on wrists. SOAP BUBBLES are clearly visible covering hands completely. Child places hands back under RUNNING WATER, RINSING thoroughly. Water washes away all visible soap bubbles. Child repeats the rinsing until no soap remains. Child TURNS OFF the faucet. Child DRIES HANDS thoroughly on towel or with paper towels by rubbing and patting. Complete hand-washing sequence demonstrated. Proper hygiene practice.',
     key_materials: ['Bathroom sink', 'Running water', 'Soap (bar or liquid)', 'Towel or paper towels', 'Faucet', 'Water temperature control'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT washing dishes (hands not objects)',
+      'NOT washing table (personal care not environmental)',
+      'NOT brushing teeth (using soap and water not toothbrush)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -357,6 +634,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD AT A BATHROOM SINK with VISIBLE MIRROR (reflecting the child\'s face). TOOTHBRUSH positioned nearby (small child-sized brush with colored bristles visible, handle approximately 5-6 inches long). TUBE OF TOOTHPASTE (typically colored with visible packaging, approximately 5-6 inches long). SMALL CUP for rinsing (plastic or ceramic, approximately 4-6 inches tall). Child squeezes a PEA-SIZED AMOUNT of toothpaste onto the BRISTLES of the toothbrush (visible white or colored paste on bristles). Child brings the brush toward mouth and BRUSHES TEETH using various motions: CIRCULAR MOTIONS on the sides of teeth, UP AND DOWN motions on the front of teeth, and gentle motions along the gum line. Child continues brushing for approximately 1-2 minutes, working all areas of mouth. Visible brushing action is seen in the mirror reflection. Child removes the brush from mouth and FILLS the cup with water. Child RINSES the mouth by taking water into mouth and SPITTING it back into the sink. Child repeats rinsing 2-3 times. Child may brush tongue. Complete tooth brushing sequence. Healthy hygiene habit.',
     key_materials: ['Toothbrush', 'Toothpaste', 'Bathroom sink', 'Cup for rinsing', 'Mirror', 'Water', 'Small-sized brush'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT washing hands (toothbrush not soap)',
+      'NOT washing face (mouth care not whole face)',
+      'NOT using handkerchief (toothbrush not cloth)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -367,6 +649,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD AT A BATHROOM SINK with RUNNING WATER from the FAUCET, a DISPENSER with SOAP, and a CLOTH TOWEL. Child TURNS ON the faucet, cupping hands to fill them with COOL RUNNING WATER. Child applies SOAP (bar or liquid) to hands, creating VISIBLE LATHER and bubbles. Child brings soap-filled hands toward face and RUBS the soap on face using CIRCULAR MOTIONS, covering all areas: both CHEEKS, FOREHEAD, CHIN, NOSE, and around MOUTH and EYES. Soap bubbles and lather are visible on entire face. Child continues the circular motions for approximately 15-20 seconds, ensuring all facial skin is covered. Child then cups hands and fills them with CLEAN RUNNING WATER. Child RINSES the face by splashing water on face multiple times, washing away all visible soap. Child may repeat the rinsing to ensure complete soap removal. Child DRIES the face thoroughly with a SOFT CLOTH TOWEL by gentle patting motions. The child\'s face becomes clean and refreshed. Care of self hygiene.',
     key_materials: ['Bathroom sink', 'Running water', 'Soap (bar or liquid)', 'Cloth towel', 'Faucet', 'Mirror'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT washing hands (whole face not hands)',
+      'NOT brushing teeth (soap not toothbrush)',
+      'NOT washing dishes (personal care not objects)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -377,6 +664,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD holding a TISSUE (white or colored, rectangular approximately 4x4 inches, soft paper material) or CLOTH HANDKERCHIEF positioned directly IN FRONT OF their NOSE. Child brings the tissue to nose, positioning it to cover both nostrils. Child CLOSES ONE NOSTRIL with a FINGER, pressing gently on the side of the nose to seal one nostril completely. Child then BLOWS AIR OUT THROUGH THE OPEN NOSTRIL in one forceful breath. The tissue ABSORBS the expelled material. Child then opens the first nostril and CLOSES the OTHER NOSTRIL. Child BLOWS out through the second nostril with equal force. Child completes the sequence cleanly and properly. Child disposes of the used tissue in a trash bin or folds the handkerchief appropriately. Proper nose-blowing technique is demonstrated. Sanitary practice without mess.',
     key_materials: ['Tissue or handkerchief', 'Cloth material', 'Trash bin'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT using handkerchief (tissue not cloth)',
+      'NOT brushing teeth (nose care not mouth)',
+      'NOT washing hands (nose care personal)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -387,6 +679,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD holding a COMB or BRUSH (wooden or plastic with visible teeth/bristles, approximately 5-6 inches long) and looking INTO A MIRROR (approximately 12x12 inches, reflecting the child\'s face and hair clearly). Child positions the comb at the TOP of the head near the scalp. Child makes SMOOTH DOWNWARD STROKES from scalp to hair ends, pulling the comb slowly through the hair. The comb teeth separate tangled hair strands, and matted or messy areas become smooth. Child works through the hair methodically, combing one section at a time, moving around the entire head. Both LONG HAIR (flowing past shoulders) and SHORT HAIR (above shoulders) can be shown. Visible tangles disappear as the child combs. The mirror shows the results of combing with the child\'s hair becoming progressively neater and organized. Care of appearance. The child\'s hair becomes smooth, shiny, and well-groomed.',
     key_materials: ['Comb or brush', 'Mirror', 'Various hair types', 'Wooden or plastic comb', 'Approximately 5-6 inches'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT brushing (combing not brushing teeth)',
+      'NOT dusting (hair care not furniture)',
+      'NOT washing (combing not water-based)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -397,6 +694,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD holding a CLOTH HANDKERCHIEF (woven fabric, approximately 12x12 inches when unfolded, typically white or pastel colored, soft cotton or linen material with visible weave). Child may initially hold the handkerchief UNFOLDED. When needed, child brings the handkerchief to NOSE or FACE. Child BLOWS GENTLY into the handkerchief. Child then FOLDS the handkerchief neatly to conceal the used portion. Child PLACES THE FOLDED HANDKERCHIEF into a POCKET or HOLDS it appropriately until it can be washed. Sanitary practice using cloth material instead of paper tissues. Demonstrates care and hygiene before the era of disposable tissues. The handkerchief is reusable and washable.',
     key_materials: ['Cloth handkerchief', 'Cotton or linen material', 'Approximately 12x12 inches', 'Woven fabric', 'Neutral colors'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT tissue (cloth handkerchief reusable)',
+      'NOT napkin (handkerchief for nose)',
+      'NOT folding cloth (napkins smaller)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -407,6 +709,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD PERFORMING several simple independent clothing care tasks in sequence: (1) PUTTING ON SHOES by standing on one foot, using both hands to push feet into shoes (without fastening laces yet), spreading the shoe opening with fingers to accommodate the foot; (2) STRAIGHTENING A SHIRT OR SWEATER by reaching down and pulling the fabric downward to smooth any bunching or wrinkles; (3) TUCKING IN SHIRT by pulling the shirt tail out from the waistband, tucking it neatly back in with both hands; (4) ROLLING UP SLEEVES by folding one sleeve upward and rolling it toward the shoulder multiple times, repeating on the other side. Each task demonstrates independent dressing ability. Clothing becomes properly arranged and comfortable. Care of self and belongings.',
     key_materials: ['Clothing items', 'Shoes', 'Shirt or sweater', 'Sleeves', 'Various sized clothing'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT folding laundry (simple care not folding)',
+      'NOT tying shoes (arranging not fastening)',
+      'NOT dressing frame (simple tasks not complex fasteners)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -429,6 +736,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a CHILD-SIZED BROOM with a SHORT HANDLE (approximately 2.5-3 feet tall, lightweight wooden handle, clearly sized for child use). The BRISTLES are visible at the bottom end (natural fiber or synthetic, approximately 3-4 inches wide, stiff enough to push debris but soft enough for fine sweeping). A DUSTPAN is positioned nearby (metal or plastic, approximately 8-10 inches wide, with a flat bottom and raised edge). Child stands with feet shoulder-width apart, holding the broom handle with BOTH HANDS at approximately waist height. Child SWEEPS the FLOOR using broad sweeping motions from right to left (or left to right), pushing the broom forward with firm pressure. The bristles move across the floor surface, gathering ACCUMULATED DUST and DEBRIS (visible small pieces moving together). Child continues sweeping, creating a PILE of collected dust and debris in one area. Once gathered, child positions the dustpan next to the pile. Child sweeps the collected material INTO the dustpan using a forward pushing motion. Debris collects in the dustpan. Child carries the dustpan to a trash bin and dumps the contents. The floor becomes clean and visible. Care of classroom environment.',
     key_materials: ['Child-sized broom', 'Bristles', 'Broom handle', 'Dustpan', 'Classroom floor', 'Approximately 2.5-3 feet tall'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT mopping (dry broom not wet mop)',
+      'NOT scrubbing (gentle sweeping not vigorous brushing)',
+      'NOT vacuuming (broom bristles not vacuum suction)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -439,6 +751,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a SOFT CLOTH or DUST CLOTH (cotton material, approximately 8x8 inches, flexible and absorbent). Child approaches a FURNITURE SURFACE such as a wooden shelf, table, or bookcase. Child places the cloth on the surface and WIPES in CIRCULAR or LINEAR MOTIONS, moving the cloth back and forth. As the child wipes, visible DUST PARTICLES collect on the cloth surface (dust becomes visible as a gray or white coating on the cloth). Child continues wiping entire surfaces, working methodically across shelves and furniture areas. Child may wipe pictures on walls, window ledges, or other horizontal surfaces. The cloth accumulates more visible dust coating. Once the surface is clean (no more dust visible), child takes the cloth to a trash bin and TAPS IT OVER the bin, dislodging collected dust. Surfaces become clean and shiny in appearance. Cloth shows the accumulated dust collected from the work. Care of materials and environment cleanliness.',
     key_materials: ['Soft cloth or dust cloth', 'Cotton material', 'Furniture surfaces', 'Shelves', 'Approximately 8x8 inches'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT polishing (dusting removes dust not adds polish)',
+      'NOT wiping table (dusting is dry dust removal)',
+      'NOT washing (dusting uses no water)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -449,6 +766,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LOW CLASSROOM WINDOW (positioned at height child can comfortably reach, approximately 3-4 feet tall and 2-3 feet wide). A BUCKET containing CLEAR WATER (positioned on a low table nearby, approximately 2-3 gallons capacity, filled approximately halfway). A SOFT CLOTH or SPONGE (approximately 6x6 inches, light colored so visible water absorption). Optional SQUEEGEE (approximately 8-10 inches wide, rubber blade visible). Child dips the cloth into the water, saturating it with water. Child wrings out excess water so the cloth is damp but not dripping. Child applies the cloth to the glass surface and WIPES using CIRCULAR or LINEAR MOTIONS, moving back and forth. The glass begins to show streaks of water. Child continues the wiping motion until the entire glass surface is wet and visible water streaks cover the surface. If using a squeegee, child positions it at the top of the window and PULLS DOWNWARD in one smooth motion, removing water in a visible stream down the glass. The glass becomes clear and transparent. Water drips down the window frame. Child may repeat this process multiple times. The window becomes clean and visible through. Care of classroom.',
     key_materials: ['Classroom window', 'Bucket with water', 'Cloth or sponge', 'Squeegee (optional)', 'Clear water', 'Appropriate height window'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT dusting (window cleaning uses water not dry cloth)',
+      'NOT washing hands (water for glass not personal hygiene)',
+      'NOT mopping (vertical glass surface not floor)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -458,7 +780,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Care of Environment',
     visual_description: 'CHILD HOLDING a CHILD-SIZED MOP (approximately 3-4 feet tall, with a WOODEN HANDLE and STRANDS or CLOTH at the bottom end for wet cleaning, or a MOP HEAD of loosely braided fabric strands approximately 4-6 inches wide). A BUCKET positioned nearby (approximately 2-3 gallons capacity, FILLED with WATER, visible liquid level). The mop strands are DRY initially. Child dips the mop HEAD into the water, saturating all strands or cloth completely. Water is visible absorbed into the strands (darker colored when wet). Child WRINGS OUT excess water by twisting the mop head or using a built-in wringer mechanism if present (visible water streaming back into the bucket). The mop is now DAMP with controlled moisture level. Child positions the mop on the FLOOR and PUSHES it forward using long SWEEPING STROKES. The wet mop strands leave visible WET STREAKS on the floor surface. The floor becomes wet and shiny. Child continues mopping the entire area methodically. The wet floor shows visible moisture and possible reflection of lights. Care of classroom environment through wet cleaning.',
     key_materials: ['Child-sized mop', 'Mop handle', 'String or cloth mop head', 'Bucket with water', 'Mop wringer (optional)', 'Classroom floor'],
-    confusion_pairs: ['pl_sweeping'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_sweeping',
+        reason: 'Both clean the floor using sweeping motions',
+        differentiation: 'Mopping uses a WET MOP HEAD with WATER for wet cleaning, sweeping uses a DRY BROOM with BRISTLES for dry debris',
+      },
+    ],
+    negative_descriptions: [
+      'NOT sweeping (mop is wet not dry)',
+      'NOT scrubbing (mopping is gentle water not vigorous stiff bristles)',
+      'NOT washing (mopping uses mop not soap and water)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -468,7 +801,23 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Care of Environment',
     visual_description: 'CHILD HOLDING a SCRUB BRUSH (stiff natural fiber or synthetic bristles, wooden handle approximately 5-6 inches long, approximately 3-4 inches wide, bristles visibly stiff and firm). A BUCKET containing WATER positioned nearby (approximately 1-2 gallons capacity). The child dips the scrub brush into the water, saturating the bristles. Child WRINGS OUT excess water. Child positions the brush on a FLOOR SURFACE or on another area needing scrubbing. Child applies FIRM PRESSURE and performs VIGOROUS SCRUBBING MOTIONS: back-and-forth motions or circular motions. The stiff bristles PUSH FIRMLY against the surface. Stubborn dirt and grime become loosened and dislodged visible. The surface shows visible wetness and scrubbing action. Child continues the scrubbing motions across the entire area needing cleaning. The floor or surface becomes progressively cleaner as dirt is removed. The bristles show visible collection of loosened debris. This is MORE VIGOROUS than sweeping or regular mopping, using stiff bristles and firm pressure for deep cleaning.',
     key_materials: ['Scrub brush', 'Stiff bristles', 'Wooden handle', 'Bucket with water', 'Floor or surface to scrub', 'Approximately 5-6 inch handle'],
-    confusion_pairs: ['pl_sweeping'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_sweeping',
+        reason: 'Both clean the floor using directional motions',
+        differentiation: 'Scrubbing uses STIFF BRISTLES with VIGOROUS circular motions and FIRM PRESSURE, sweeping uses gentle forward pushing motions with dry broom',
+      },
+      {
+        work_key: 'pl_mopping',
+        reason: 'Both involve water and floor cleaning',
+        differentiation: 'Scrubbing uses STIFF BRISTLES and VIGOROUS PRESSURE for deep cleaning, mopping uses soft WET MOP STRANDS with gentle pushing',
+      },
+    ],
+    negative_descriptions: [
+      'NOT sweeping (scrub brush has stiff bristles not soft broom)',
+      'NOT mopping (scrubbing is vigorous pressure not gentle)',
+      'NOT washing (scrubbing uses brush not water only)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -478,7 +827,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Care of Environment',
     visual_description: 'CHILD WITH a CONTAINER OF METAL POLISH (cream or liquid formula, silver or tan colored, with visible polish substance inside), a SOFT CLOTH (approximately 8x8 inches, light colored for visibility), and a METAL OBJECT to polish (bell, picture frame, serving tray, silverware, or utensils made of metal visible with some tarnish or dullness). Child opens the polish container and applies a SMALL AMOUNT of polish to the cloth with a finger or applicator. Child positions the cloth on the metal object surface. Child RUBS the metal in CIRCULAR MOTIONS, applying polish in a thin even layer. The metal surface becomes coated with polish visible as a thin layer. Child continues rubbing for approximately 30-60 seconds. The METAL SURFACE BEGINS TO SHINE and become reflective, visible change from dull to glossy appearance. The cloth shows visible polish residue and metal tarnish collected on the surface. The metal becomes increasingly shiny with continued polishing. The reflective quality increases. Child may buff with a clean portion of cloth for final shine. The polished metal becomes bright and mirror-like. Care of materials and environment beautification.',
     key_materials: ['Metal polish (cream or liquid)', 'Soft cloth', 'Metal objects', 'Bell', 'Silverware', 'Serving tray', 'Approximately 8x8 inch cloth'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'pl_shoe_polishing',
+        reason: 'Both involve polishing with similar circular motions and polish products',
+        differentiation: 'Metal polishing uses METAL OBJECTS with METAL POLISH in cream or liquid form, shoe polishing uses a REAL SHOE with WAX POLISH in a TIN',
+      },
+    ],
+    negative_descriptions: [
+      'NOT shoe polishing (metal polish not shoe wax)',
+      'NOT dusting (polishing includes product not just cloth)',
+      'NOT painting (polishing restores shine not adds color)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -489,6 +849,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a WATERING CAN (metal or plastic, approximately 1-2 liters capacity, with a HANDLE and a SPOUT or ROSE HEAD visible at the end, designed to distribute water gently). A CLASSROOM PLANT or POTTED FLOWER visible in a POT (ceramic or plastic, approximately 6-8 inches in diameter, with visible SOIL inside, plant with green leaves or flowers). The watering can is FILLED with WATER visible through the container sides or opening. Child walks toward the plant carefully, holding the watering can. Child positions the SPOUT over the soil area at the base of the plant. Child TILTS the watering can, and WATER FLOWS from the spout onto the soil surface. Water is visible soaking into the soil, darkening the soil color visible. Child pours until the soil appears thoroughly moistened (water may collect briefly on the soil surface before soaking in). The soil moisture becomes visible as a dark brown or darker color compared to dry soil. Child may pour until water drains from the bottom of the pot. Child ceases pouring once adequate water is provided. The plant becomes watered and cared for. Care of living things in the environment.',
     key_materials: ['Watering can', 'Metal or plastic construction', 'Plant', 'Pot with soil', 'Water', 'Approximately 1-2 liters capacity'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT washing plants (watering provides hydration not cleaning)',
+      'NOT pouring water (watering uses spout and rose head)',
+      'NOT mopping (plants not floor surface)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -499,6 +864,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD AT A WORK TABLE with a VASE (ceramic or glass, approximately 6-8 inches tall, clear or opaque, narrow or wide opening depending on arrangement style) FILLED WITH WATER visible at an appropriate level. FRESH CUT FLOWERS visible nearby (mixed varieties with visible stems, various colors — roses, tulips, daisies, or mixed garden flowers, some with green leaves attached to stems). A PAIR OF SCISSORS (child-safe or regular scissors, clearly visible). Child picks up one flower and EXAMINES the stem. Child TRIMS the stem at an ANGLE using scissors, cutting approximately 0.5 inches off the bottom of the stem at a 45-degree angle. Child REMOVES any leaves that would sit BELOW the water line on the stem (preventing leaf rot). Child INSERTS the trimmed flower into the vase, positioning it at appropriate height. Child repeats with additional flowers, gradually building an ARRANGEMENT. Flowers are positioned varying heights and angles (tallest in center, shorter at edges). Visible colors and flower types mix in the arrangement creating an attractive display. The completed arrangement shows organized, beautiful flowers ready for display. Care of beauty in the environment.',
     key_materials: ['Vase', 'Water', 'Fresh flowers', 'Scissors', 'Flower stems', 'Green foliage', 'Various flower types'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT watering plants (flowers are cut not growing)',
+      'NOT painting (arranging is artistic not adding color)',
+      'NOT care of plants (flowers are already picked)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -509,6 +879,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD STANDING IN FRONT OF A WOODEN CLASSROOM SHELF (approximately 3-4 feet tall, with multiple shelves approximately 12 inches apart, each shelf approximately 24-30 inches wide). The shelves are ORGANIZED with WORK MATERIALS placed in DESIGNATED LOCATIONS (containers, baskets, wooden trays, frames, etc. all neatly arranged in specific spots). The child has COMPLETED a work activity and is now returning the MATERIALS to their correct shelf location. Child CARRIES the work materials (holding a wooden tray, a small basket, or a frame appropriately). Child walks toward the correct shelf location. Child carefully PLACES the materials back in the EXACT ORIGINAL POSITION on the shelf, aligning them properly so they fit neatly with adjacent materials. The shelf remains ORGANIZED and NEAT after replacement. This demonstrates the Montessori principle of returning work to proper location. Order and care of environment.',
     key_materials: ['Classroom shelf', 'Wooden construction', 'Work materials', 'Containers', 'Baskets', 'Trays', 'Frames'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT organizing materials (replacing is returning not sorting)',
+      'NOT cleaning shelf (replacing is orderly placement)',
+      'NOT care of materials (replacing is final step after work)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -519,6 +894,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD SYSTEMATICALLY SORTING AND ORGANIZING LOOSE WORK MATERIALS scattered on a work surface or in containers. Materials include: BUTTONS of various sizes and colors, BEADS in different styles, POMPOMS in rainbow colors, SEEDS in small bags, and other small objects. Child uses BASKETS, WOODEN CONTAINERS, or SMALL BOXES to GROUP materials by TYPE (all buttons in one container, all beads in another, all pompoms in a third). The child may use DIVIDERS or separate COMPARTMENTS to create organization. The materials are progressively SORTED and ORGANIZED into an ORDERED ARRANGEMENT on a shelf or in containers. Each material type has a designated location. The classroom environment becomes ORDERLY and FUNCTIONAL with materials accessible and organized by category. Child understands organization systems and creates a more functional workspace. Care of environment and materials organization.',
     key_materials: ['Work materials', 'Buttons', 'Beads', 'Pompoms', 'Seeds', 'Containers', 'Baskets', 'Shelf space'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT replacing materials (organizing is sorting not placing back)',
+      'NOT counting objects (organizing is categorizing)',
+      'NOT creative work (organizing is functional care)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -529,6 +909,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD GATHERING TRASH and WASTE MATERIALS from the classroom or work table. TRASH BASKET or BIN positioned in a convenient location (plastic or metal construction, approximately 8-10 inches in diameter, 12-14 inches tall, visible opening at the top). WASTE MATERIALS visible: crumpled paper, scraps, paper bits, food waste, dried flowers, broken materials, etc. Child walks around the classroom or table systematically, COLLECTING waste into their hands or a carrying basket. Child approaches the trash basket and DROPS the collected waste INSIDE the opening. Waste falls into the basket. Child may empty the trash basket into a larger COMMUNAL BIN when it becomes full. The classroom becomes CLEAN and ORGANIZED. Care of environment hygiene and waste management.',
     key_materials: ['Trash basket', 'Trash bin', 'Waste materials', 'Paper scraps', 'Plastic or metal container'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT recycling (trash is all waste not sorted)',
+      'NOT composting (trash is general waste not organic)',
+      'NOT cleaning (trash management is waste collection)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -539,6 +924,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD PLACING ORGANIC WASTE materials into a COMPOST CONTAINER or BIN. ORGANIC MATERIALS visible: FOOD SCRAPS (vegetable peels, fruit scraps, coffee grounds, eggshells), PLANT MATERIAL (dead flowers, leaves, grass clippings), PAPER (shredded paper, cardboard). A COMPOST BIN or BARREL positioned in a designated area (approximately 12-16 inches in diameter, various heights, typically dark colored or natural wood construction, OPEN CONTAINER or with a REMOVABLE LID). Child holds organic waste and positions it over the compost bin opening. Child DEPOSITS the waste into the bin. Materials accumulate and DECOMPOSE over time (breakdown visible as materials darken and break down into soil-like material). Child understands the DECOMPOSITION PROCESS and natural RECYCLING of organic materials. Care of environment through sustainable composting practice.',
     key_materials: ['Compost bin', 'Organic waste', 'Food scraps', 'Plant material', 'Paper', 'Vegetable peels', 'Compost barrel'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT trash management (composting is organic waste only)',
+      'NOT recycling (composting decomposes naturally)',
+      'NOT food preparation (composting is waste from prep)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -549,6 +939,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD SORTING RECYCLABLE MATERIALS into SEPARATE CONTAINERS or BINS by material type. RECYCLABLE MATERIALS visible: PAPER (newspapers, magazines, cardboard), PLASTIC (bottles, containers, bags), GLASS (bottles, jars), METAL (aluminum cans, tin cans, metal containers). Multiple RECYCLING BINS positioned side by side (each approximately 8-10 inches in diameter, tall containers, each BIN LABELED with SYMBOLS or COLORS identifying the material type: blue for paper, yellow for plastic, green for glass, red for metal). Child picks up individual items one at a time. Child IDENTIFIES the material type (looking at the material construction and label). Child PLACES the item into the CORRECT CORRESPONDING BIN. Paper goes to paper bin, plastic to plastic, glass to glass, metal to metal. Child continues sorting until all materials are properly organized. The bins become FILLED with properly sorted recyclable materials ready for recycling processing. Environmental responsibility and care of planet.',
     key_materials: ['Recycling bins', 'Recyclable materials', 'Paper', 'Plastic', 'Glass', 'Metal', 'Labeled containers'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT composting (recycling is sorting not decomposing)',
+      'NOT trash management (recycling involves sorting)',
+      'NOT waste collection (recycling uses separate bins)',
+    ],
     difficulty: 'medium',
   },
 
@@ -561,6 +956,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD GREETING ANOTHER PERSON (teacher or peer) using proper social protocol. Child approaches the person at a COMFORTABLE DISTANCE (approximately 1-2 feet away, close enough for conversation but respecting personal space). Child looks directly at the person\'s face making CLEAR EYE CONTACT. Child speaks clearly saying "Good morning," "Hello," or other appropriate greeting using a PLEASANT TONE OF VOICE. As the greeting is spoken, child may SMILE WARMLY. Child may EXTEND ONE HAND in a HANDSHAKE, offering their hand and GRASPING the other person\'s hand firmly but gently (visible hand contact, palm-to-palm meeting). The handshake lasts approximately 2-3 seconds with a gentle pump motion. Both people SMILE at each other. The greeting is GENUINE and WARM, demonstrating respect and friendliness. Social skills and community building are evident.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT introductions (greetings are initial interactions)',
+      'NOT handshake only (greetings include spoken word)',
+      'NOT formal ceremony (greetings are simple and warm)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -571,6 +971,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD INTRODUCING THEMSELVES or INTRODUCING TWO PEOPLE to each other using proper protocol. When introducing oneself: Child makes EYE CONTACT with the other person. Child says their NAME clearly: "My name is [name]" or "I\'m [name]." Child speaks with confidence and pleasant tone. When introducing two people: Child stands between the two people. Child turns toward the first person and says the second person\'s name. Child turns toward the second person and says the first person\'s name. All three people make EYE CONTACT with each other. The two being introduced may SHAKE HANDS. This creates a new social connection. Child demonstrates SOCIAL CONFIDENCE and AWARENESS, facilitating community building and connection.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT greetings (introductions add names)',
+      'NOT thank you (introductions focus on identity)',
+      'NOT formal ceremony (introductions build connections)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -581,6 +986,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD USING POLITE WORDS in appropriate social contexts. When REQUESTING something: Child says "Please" before or after the request: "May I have a pencil, please?" OR "Could you help me, please?" when asking for assistance. The word is spoken clearly and respectfully. When RECEIVING something: Child looks at the giver and says "Thank you" clearly and warmly. The giver responds with "You\'re welcome" or similar response. Child then says "You\'re welcome" if they gave something to someone else. The interaction shows MUTUAL RESPECT and COURTESY. Repeated throughout the day in various contexts. Child demonstrates consistent use of polite words demonstrating SOCIAL AWARENESS and gratitude.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT asking politely (saying please is requesting)',
+      'NOT saying thank you (please is making request)',
+      'NOT gratitude alone (thank you requires response)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -591,6 +1001,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD SAYING "Excuse me" in appropriate situations. When NEEDING TO PASS someone: Child approaches politely and says "Excuse me" clearly. Child WAITS for acknowledgment and response from the person. Child MOVES PAST respectfully once the person acknowledges them. When ACCIDENTALLY BUMPING someone: Child says "Excuse me" immediately. Child makes EYE CONTACT and may add "I\'m sorry" if appropriate. When GENTLY INTERRUPTING: Child says "Excuse me" to get attention before speaking. The word is spoken politely and respectfully. Other people ACKNOWLEDGE the child\'s courtesy and respond positively. The interaction demonstrates AWARENESS OF OTHERS\' SPACE and COURTESY. Child learns to respect others\' personal boundaries.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT interrupting (excuse me precedes interruption)',
+      'NOT walking around (excuse me for passing)',
+      'NOT apologizing (excuse me is preventative)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -601,6 +1016,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD NEEDING TO INTERRUPT an adult who is occupied or speaking. Child APPROACHES the adult respectfully (not running, walking normally). Child PLACES A HAND GENTLY on the adult\'s shoulder, arm, or nearby surface to gain attention (visible light touch, NOT grabbing or pulling). Child WAITS QUIETLY without making noise, without talking, without interrupting. Child maintains PATIENT SILENCE. The adult continues speaking or working briefly. The adult FINISHES their current activity and ACKNOWLEDGES the child by looking at them and asking "What do you need?" Child then SPEAKS their request clearly. The interaction demonstrates PATIENCE and RESPECT for others\' time and focus. NOT shouting, NOT demanding, NOT interrupting impatiently. Child learns appropriate timing for communication.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT asking for help (interrupting to communicate)',
+      'NOT demanding attention (quiet waiting)',
+      'NOT speaking out of turn (patient approach)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -611,6 +1031,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD OFFERING HELP to another person appropriately. Child observes someone struggling with a task or needing help. Child approaches and ASKS: "Can I help you?" or "Would you like help?" using a RESPECTFUL TONE. The other person either ACCEPTS the offer ("Yes, please") or POLITELY DECLINES ("No thank you, I\'ve got it"). If ACCEPTED: Child helps with the task appropriately, following any instruction from the person being helped. If DECLINED: Child responds positively with "OK" or "Alright," WITHOUT INSISTING or becoming upset. Child walks away respectfully. The interaction demonstrates HELPFULNESS, RESPECT FOR OTHERS\' AUTONOMY, and understanding that help should be offered, not forced. Community spirit and consideration.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT forcing help (respecting autonomy)',
+      'NOT pushy assistance (asking first)',
+      'NOT unsolicited help (offering not deciding)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -621,6 +1046,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD APOLOGIZING SINCERELY when making a mistake or accidentally hurting someone. Child makes clear EYE CONTACT with the person. Child says "I\'m sorry" in a GENUINE, SINCERE TONE (not rushed or insincere). Child EXPLAINS what they did wrong: "I\'m sorry I knocked over your blocks" or "I\'m sorry I took your pencil without asking." Child may offer to MAKE AMENDS: "Can I help you rebuild?" or "Let me help fix this." The other person LISTENS and ACCEPTS the apology. The person responds with understanding. Child demonstrates RESPONSIBILITY, EMPATHY, and willingness to correct mistakes. The interaction repairs relationships and builds trust. Taking responsibility for actions.',
     key_materials: [],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT excusing mistakes (apology acknowledges wrongdoing)',
+      'NOT just words (apology requires sincerity)',
+      'NOT blame shifting (apology takes responsibility)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -631,6 +1061,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD EATING AT A TABLE demonstrating proper DINING ETIQUETTE. Child sits at the table with proper POSTURE (upright, elbows on table allowed in some traditions, back straight). UTENSILS are visible on the table: FORK on the left, KNIFE on the right with blade facing inward, SPOON on the right. PLATE positioned in center, NAPKIN folded on the lap or beside the plate. Child picks up appropriate UTENSIL for the food being eaten (fork for salad, spoon for soup). Child lifts food to mouth and CHEWS with MOUTH CLOSED (no visible chewing motion with mouth open). Child takes reasonable-sized bites. When swallowing, child speaks quietly if engaging in conversation, AT APPROPRIATE VOLUME (not shouting, not with mouth full). Child PASSES food to others politely: "Please pass the bread" or "Could you pass the butter?" Child makes EYE CONTACT with dinner companions. The mealtime demonstrates refined dining grace and consideration for others.',
     key_materials: ['Table', 'Utensils', 'Plate', 'Food', 'Napkin', 'Cup', 'Place setting'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT setting the table (eating with proper etiquette)',
+      'NOT food preparation (dining grace not cooking)',
+      'NOT just eating (polite social dining)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -641,6 +1076,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD ARRANGING A COMPLETE PLACE SETTING for one person at a dining table. Starting with an EMPTY TABLE SPACE approximately 18-24 inches wide. Child positions a PLACEMAT (rectangular cloth or paper, approximately 18x12 inches, typically in neutral color). Child CENTERS a PLATE on the placemat (approximately 10-12 inches in diameter, clean plate). Child places FORK on the LEFT side of the plate (approximately 1-2 inches away, handle up, tines pointing up). Child places KNIFE on the RIGHT side of the plate (approximately 1-2 inches away, blade facing toward plate, handle pointing toward edge). Child places SPOON on the RIGHT side OUTSIDE the knife (approximately 1-2 inches away). Child positions a NAPKIN (folded neatly into a rectangle or triangle) either on the plate or to the LEFT of the fork. Child positions a CUP or GLASS above the knife (approximately 2-3 inches away, at approximately the 2 o\'clock position). A BREAD PLATE may be positioned to the upper left. Once complete, the place setting is SYMMETRICAL and ORGANIZED with all pieces in proper position. Template may show correct placement as a reference. Demonstrates care and respect for dining environment.',
     key_materials: ['Placemat', 'Plate', 'Fork', 'Knife', 'Spoon', 'Napkin', 'Cup', 'Template (optional)', 'Bread plate (optional)'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT eating (arranging place not consuming)',
+      'NOT clearing table (setting is preparation)',
+      'NOT cooking (arranging utensils and plates)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -651,6 +1091,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WATCHING ANOTHER CHILD OR ADULT work without INTERFERING. The working person has spread a WORK MAT on the floor or table with their materials arranged on it. The observing child STANDS or SITS at an APPROPRIATE DISTANCE (approximately 3-5 feet away, close enough to see clearly but not too close to intrude). The observing child\'s EYES are attentive and focused on the working person\'s activity. The observing child DOES NOT TOUCH any materials, DOES NOT TALK, and DOES NOT MAKE NOISE. The observing child maintains COMPLETE SILENCE and STILLNESS. The working person\'s CONCENTRATION is RESPECTED and PROTECTED. Learning occurs through careful observation. The observing child learns the work sequence, technique, and process by watching. This is valued learning in the Montessori environment. Respect, focus, and community learning.',
     key_materials: ['Work mat', 'Working person', 'Materials on mat'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT walking around work (observing stays still)',
+      'NOT interrupting (silence and attention)',
+      'NOT joining in (watching without interfering)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -661,6 +1106,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WALKING THROUGH THE CLASSROOM while another child is actively working on their WORK MAT. The working child\'s materials are spread on a mat on the floor or table, clearly marking their workspace. The walking child AVOIDS stepping on or near the work mat. Child WALKS CAREFULLY AROUND the edges of the mat, taking a wider path than necessary rather than walking across the work surface or stepping on the mat edges. Child maintains awareness of the working child\'s space. The working child\'s materials and concentration are RESPECTED and PROTECTED. This demonstrates community awareness and CARE FOR OTHERS\' WORK and SPACE. The classroom functions smoothly with multiple children respecting each other\'s working areas.',
     key_materials: ['Work mat', 'Classroom floor'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT observing (walking requires movement)',
+      'NOT avoiding work (awareness of others)',
+      'NOT careful stepping (mindful navigation)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -671,6 +1121,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WAITING PATIENTLY for a WORK MATERIAL or resource that another child is currently using. The first child has the material and is actively working with it. The waiting child OBSERVES from an APPROPRIATE DISTANCE without making demands. Child DOES NOT GRAB the material, DOES NOT INTERRUPT the working child. Child WAITS QUIETLY and PATIENTLY, possibly observing the work being done. When the first child FINISHES their work, they OFFER the material to the waiting child or SET IT DOWN on the shelf. The second child picks up the material and BEGINS their work. If requested, the first child WILLINGLY GIVES UP the material when done. The interaction demonstrates PATIENCE, RESPECT FOR OTHERS\' TURN, and understanding of community living where materials are SHARED RESOURCES. Cooperation and patience are demonstrated.',
     key_materials: ['Work material', 'Two or more children'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT grabbing (patient waiting for turns)',
+      'NOT demanding (quiet observation)',
+      'NOT rushing others (respecting work time)',
+    ],
     difficulty: 'easy',
   },
 
@@ -683,6 +1138,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD AT A CLASSROOM SINK with RUNNING WATER, a COLANDER (metal or plastic perforated strainer, approximately 8-10 inches in diameter, clearly visible holes allowing water to drain), FRESH PRODUCE visible (whole carrots, apples, lettuce, broccoli, or other vegetables, unwashed with visible dirt). Child picks up produce and places it in the colander. Child TURNS ON the faucet, causing RUNNING WATER to flow into the colander containing the produce. Water washes over and through the vegetables. Child RUBS the produce gently with hands or a vegetable brush, removing visible DIRT and DEBRIS (dirt visible coming off in the water, water becoming cloudy or brown). Child RUBS ALL SURFACES of the produce. Child CONTINUES rinsing under running water until water runs clear. Produce becomes CLEAN and BRIGHT in appearance. Water drains through the colander holes. Once clean, child removes produce to a TOWEL or RACK to dry. Food safety and independence in food preparation.',
     key_materials: ['Colander', 'Running water', 'Fresh produce', 'Towel or drying rack', 'Vegetable brush (optional)', 'Kitchen sink'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT peeling (washing removes dirt not skin)',
+      'NOT cutting (washing is pre-preparation)',
+      'NOT cooking (washing is cleaning only)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -693,6 +1153,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH a SPREADING KNIFE (blunt butter knife or child-safe spreading implement, approximately 6-8 inches long, flat blade without sharp edges), BREAD or CRACKERS (slice of soft bread or cracker sheet, approximately 4x4 inches, visible texture), and SPREAD (butter visible in a container, jam in a jar, peanut butter in a dish, or other spread). Child positions the bread on a small PLATE or CUTTING BOARD. Child dips the knife into the spread, collecting a small amount on the FLAT BLADE (visible spread coating the blade). Child positions the knife on the bread surface. Child PRESSES the spread onto the bread and MOVES the knife in HORIZONTAL STROKES, spreading the substance across the bread surface in an EVEN LAYER. Child works methodically, covering all areas of the bread. The spread becomes distributed across the bread surface with no holes visible. Bread does not TEAR from the pressure. The spread is distributed evenly and smoothly. Fine motor control and food preparation skill.',
     key_materials: ['Spreading knife', 'Bread or crackers', 'Spread (butter, jam, peanut butter)', 'Plate', 'Cutting board'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT cutting (spreading applies product not separating)',
+      'NOT preparing ingredients (spreading is finishing)',
+      'NOT pouring (spreading uses knife not pour)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -702,7 +1167,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Food Preparation',
     visual_description: 'CHILD PEELING SOFT PRODUCE using only HANDS, no tools required. BANANA: Child holds banana and PEELS back the yellow skin from the stem end, using thumb to separate peel from flesh, PEELING away strips of skin. The soft white banana flesh becomes exposed and visible. Child discards peel. HARD-BOILED EGG: Child taps the egg gently on a hard surface, CRACKING the shell all over. Child PEELS away the shell fragments from the cooked egg, revealing the white inner layer, then peels that off to expose the pale yellow yolk. ORANGE: Child PEELS back the thick orange skin from the top using fingers and thumb, removing large pieces of peel, gradually exposing the segments. Child separates individual segments and peels back white pith. Food becomes ready to eat with minimal tool use. Hand-to-food interaction is direct and tactile. Developing independence in food preparation.',
     key_materials: ['Bananas', 'Hard-boiled eggs', 'Oranges', 'Bowl for peels', 'Plate'],
-    confusion_pairs: ['pl_peeling_tool'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_peeling_tool',
+        reason: 'Both remove peel from food to expose edible interior',
+        differentiation: 'Hand peeling uses FINGERS only with soft foods, peeler uses TOOL with firmer vegetables',
+      },
+    ],
+    negative_descriptions: [
+      'NOT using tool (hand peeling only)',
+      'NOT cutting (peeling removes skin not portions)',
+      'NOT washing (peeling exposes interior)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -712,7 +1188,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Food Preparation',
     visual_description: 'CHILD USING a VEGETABLE PEELER (sharp blade mounted on a wooden or plastic handle, approximately 4-5 inches long total, SHARP METAL BLADE visible at one end, designed to remove thin peels). FRESH VEGETABLES positioned on a CUTTING BOARD (carrot, cucumber, potato, or zucchini, whole vegetable approximately 6-8 inches long, visible skin). Child holds the peeler in one hand with a firm grip on the handle. Child holds the vegetable in the other hand over the cutting board. Child positions the peeler blade against the vegetable skin at the STEM or TOP end. Child pulls the peeler firmly DOWNWARD from stem to tip, removing a thin PEEL STRIP (approximately 0.25 inches wide) visible coming off. Child ROTATES the vegetable and repeats, creating another peel strip. Child continues around the entire vegetable, peeling all sides. PEEL STRIPS fall into a COMPOST BIN or waste container. Once all visible skin is removed, the vegetable becomes clean and ready. Tool use and food preparation.',
     key_materials: ['Vegetable peeler', 'Vegetables (carrots, cucumbers, potatoes)', 'Cutting board', 'Compost bin'],
-    confusion_pairs: ['pl_peeling_easy'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_peeling_easy',
+        reason: 'Both remove peel from food to expose edible interior',
+        differentiation: 'Tool peeling uses SHARP PEELER on firm vegetables, hand peeling uses FINGERS only with soft fruits',
+      },
+    ],
+    negative_descriptions: [
+      'NOT hand peeling (requires tool)',
+      'NOT cutting (peeling removes thin strips)',
+      'NOT washing (peeling uses blade)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -722,7 +1209,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Food Preparation',
     visual_description: 'CHILD WITH a CHILD-SAFE KNIFE (blunt blade, wooden handle approximately 6-8 inches total length, smooth finished handle, clearly safe but still effective for cutting), a CUTTING BOARD (wood or plastic, approximately 8x10 inches), and SOFT FOOD (banana visible, cheese in block form, cucumber sliced, or other soft easily-cut foods). Child positions the food on the cutting board. Child grasps the handle of the knife with one hand firmly. Child places the other hand on the food (using a "claw grip" with fingers curled under for safety). Child positions the blade on the food surface and PRESSES DOWN with moderate force, MOVING the blade THROUGH the food. The blade CUTS through the soft food creating a VISIBLE SEPARATION into two pieces. Pieces are separated. Child repeats the cutting motion, creating slices or chunks. Food becomes PORTIONED into manageable pieces. Fine motor skill and food preparation. Safe knife handling for children.',
     key_materials: ['Child-safe knife', 'Cutting board', 'Soft foods (banana, cheese, cucumber)', 'Plate'],
-    confusion_pairs: ['pl_cutting_hard'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_cutting_hard',
+        reason: 'Both use knives to separate food into pieces',
+        differentiation: 'Soft cutting uses BLUNT CHILD-SAFE KNIFE on easily cut foods, hard cutting uses SHARP KITCHEN KNIFE with firm pressure',
+      },
+    ],
+    negative_descriptions: [
+      'NOT hard food cutting (soft foods only)',
+      'NOT using sharp knife (blunt safe knife)',
+      'NOT peeling (cutting separates portions)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -732,7 +1230,18 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     category: 'Food Preparation',
     visual_description: 'CHILD WITH a REAL KITCHEN KNIFE (sharpened blade approximately 6-8 inches long, metal construction, wooden or plastic handle, clearly more effective than child-safe knives), a CUTTING BOARD (wood or plastic, approximately 10x12 inches, sturdy and flat), and FIRMER FOODS (whole apple, carrot, celery stalk, or other foods requiring more cutting force). Child positions the food securely on the cutting board. Child grasps the knife handle firmly with one hand. Child positions the other hand in a CLAW GRIP with fingers curled under palm side down, holding the food stable. Child positions the blade on the food surface. Child PRESSES DOWN with FIRM PRESSURE, moving the blade THROUGH the firmer food. The food RESISTS initially, then the blade CUTS through, separating the food. Visible separation occurs. Child continues cutting, creating slices. Advanced knife skills with bilateral coordination demonstrated. Safe hand positioning is critical throughout.',
     key_materials: ['Sharp kitchen knife', 'Cutting board', 'Apples', 'Carrots', 'Celery', 'Plate'],
-    confusion_pairs: ['pl_cutting_soft'],
+    confusion_pairs: [
+      {
+        work_key: 'pl_cutting_soft',
+        reason: 'Both use knives to separate food into pieces',
+        differentiation: 'Hard cutting uses SHARP KITCHEN KNIFE with firm pressure on tough foods, soft cutting uses BLUNT SAFE KNIFE on easily cut foods',
+      },
+    ],
+    negative_descriptions: [
+      'NOT soft food cutting (harder vegetables)',
+      'NOT child-safe knife (sharp kitchen knife)',
+      'NOT peeling (cutting separates not removes skin)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -743,6 +1252,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH a FOUR-SIDED GRATER (metal construction, approximately 4 inches tall, rectangular shape, FOUR DIFFERENT SHARP GRATING SURFACES visible: coarse, medium, fine, and slicer), CHEESE BLOCK or VEGETABLES (hard cheese like cheddar or vegetables like carrots or zucchini, approximately 3x3 inches, firm texture), and a BOWL positioned DIRECTLY UNDERNEATH the grater opening (approximately 6 inches in diameter, ready to catch shredded pieces). Child grasps the grater handle or side firmly with one hand. Child holds the cheese block in the other hand, positioning it against one of the GRATING SURFACES (typically medium or fine for cheese). Child applies firm downward pressure and RUBS the cheese against the surface in VERTICAL STROKES. The sharp surface SHREDS the cheese, creating thin SHREDDED PIECES that fall through into the bowl below. Visible shredded cheese accumulates in the bowl. Child continues until the cheese is mostly shredded (avoiding grating fingers at the end). The bowl fills with shredded cheese ready for use. Hand position safety is critical.',
     key_materials: ['Grater', 'Cheese or vegetables', 'Bowl', 'Four-sided grater'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT cutting (grating shreds not slices)',
+      'NOT peeling (grating removes via shredding)',
+      'NOT mashing (grating creates thin strands)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -753,6 +1267,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a HAND JUICER (metal or plastic construction, approximately 6 inches long total, TWO HANDLES extending from a central chamber, hand-squeezed mechanism). A CITRUS FRUIT cut in half (orange, lemon, or lime, halved so interior flesh is exposed, approximately 3-4 inches in diameter). Child positions the FRUIT HALF inside the juicer chamber with the flesh side facing downward against the internal reaming cone. Child grasps both HANDLES firmly. Child SQUEEZES the handles together, applying firm hand pressure. The internal mechanism PRESSES and GRINDS the fruit flesh against the reaming cone. FRESH JUICE is visible flowing out of the juicer opening into a GLASS or CONTAINER positioned below (juice visible as orange or yellow liquid collecting). Child continues squeezing until maximum juice is extracted (visible juice flow slows). Child releases the handles. The glass becomes FILLED with fresh juice (visible liquid level rising). Nutrition and independence in beverage preparation.',
     key_materials: ['Hand juicer', 'Citrus fruits (oranges, lemons)', 'Glass', 'Strainer (optional)', 'Pitcher'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT squeezing by hand (uses juicer tool)',
+      'NOT cutting fruit (pressing extracts juice)',
+      'NOT peeling (juicing presses interior)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -763,6 +1282,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a RAW EGG (brown or white, approximately 2 inches long, visible smooth shell). A BOWL positioned at a comfortable working height (ceramic or glass, approximately 4-6 inches in diameter, interior visible). Small DISH positioned nearby for shell pieces. Child holds the egg gently in one hand. Child positions the EGG against a HARD EDGE or SURFACE (the rim of the bowl, countertop edge, or a dedicated cracking surface). Child applies MODERATE PRESSURE, TAPPING the egg against the surface. The shell CRACKS, visible cracks appear in the shell surface. Child positions the egg OVER the bowl. Using both thumbs and fingers, child PULLS the shell apart carefully, creating a widening gap. The SHELL HALVES separate. EGG CONTENTS (clear viscous egg white and yellow yolk) FLOW from the broken shell into the bowl below. The shell pieces fall to the side. Visible separation of shell and contents. Child discards shell pieces carefully. Food becomes ready for cooking. Food preparation skill.',
     key_materials: ['Eggs', 'Bowl', 'Small dish for shells', 'Cracking surface'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT cooking (cracking is separation only)',
+      'NOT boiling (raw egg cracking)',
+      'NOT peeling (cracking opens shell)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -773,6 +1297,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD PREPARING a COMPLETE SIMPLE SNACK INDEPENDENTLY using multiple skills in sequence. Child might gather MATERIALS: crackers, cheese block, knife, cutting board, plate, and spreading knife. Child CUTS cheese slices and SPREADS topping (butter, jam, or peanut butter) onto crackers creating simple open-faced snacks. Alternative: Child ARRANGES FRUIT on a plate: washing grapes in colander, cutting apple with child-safe knife, arranging apple slices and grapes on plate in attractive arrangement. Alternative: Child combines skills: spreading crackers with hummus, arranging vegetable sticks (cut with supervision) with ranch dip in bowl, creating complete balanced snack. Throughout the sequence: Child GATHERS appropriate tools and materials, SEQUENCES the steps logically, EXECUTES each step with proper technique, CLEANS workspace afterward, ARRANGES snack attractively on plate. Child demonstrates INDEPENDENCE, PLANNING, EXECUTION, and PRIDE in completing a self-made snack. Self-sufficiency and confidence in food preparation.',
     key_materials: ['Various snack ingredients', 'Utensils', 'Cutting board', 'Plate', 'Colander', 'Knife', 'Spreading knife'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT single task (combining multiple skills)',
+      'NOT cooking (preparation and assembly)',
+      'NOT serving others (personal snack)',
+    ],
     difficulty: 'hard',
   },
 
@@ -785,6 +1314,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH WOODEN BEADS (various sizes from 0.5 inches to 1 inch in diameter, multiple colors visible — red, blue, yellow, green, natural wood, clearly visible HOLES through the center of each bead, smooth finished surface). CORD or STRING (approximately 12-18 inches long, may be cotton string, yarn, or specialized beading cord, ONE END STIFFENED with a PLASTIC AGLET or waxed to create a SHARP POINT for easy threading). CONTAINER of beads positioned nearby. Child picks up one bead from the container. Child holds the bead in one hand, positioning the HOLE opening toward the cord. Child guides the STIFF END of the cord toward the bead hole. Child THREADS the cord THROUGH the hole, pushing firmly until the cord emerges on the opposite side. The bead SLIDES along the cord. Child continues adding beads, threading each one carefully. The cord progressively FILLS with beads in a linear arrangement. Child repeats until the cord is mostly full of beads. Hand-eye coordination and fine motor control demonstrated.',
     key_materials: ['Beads', 'String or cord', 'Aglet', 'Container', 'Wooden or plastic beads'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT sewing cards (beads not card lacing)',
+      'NOT button sewing (beads thread on cord)',
+      'NOT weaving (linear stringing)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -795,6 +1329,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH THICK CARDBOARD CARDS (approximately 6x6 inches, colorful with printed designs or pictures visible, PRE-PUNCHED HOLES arranged in decorative patterns, holes approximately 0.25 inches in diameter, spaced approximately 0.75-1 inch apart, arranged in crisscross or outline patterns). LACING CORD or YARN (approximately 18-24 inches long, thick and visible, with a PLASTIC AGLET or stiffened end for easy threading, bright colored yarn or cord). Child picks up the card and examines the hole pattern. Child holds the cord with the aglet end forward. Child THREADS the cord through the first hole from the BACK of the card, pulling it through so the cord is partially engaged. Child THREADS the cord diagonally across the front to the next hole in the crisscross pattern. Child pulls the cord through. Child continues this CRISSCROSS LACING PATTERN, threading through holes in alternating diagonal directions. The cord creates a VISIBLE WEB PATTERN across the front of the card with the cord threaded through sequential holes. Progressive patterns emerge as the lacing progresses. Fine motor coordination and bilateral hand skills.',
     key_materials: ['Sewing cards', 'Pre-punched holes', 'Lacing cord or yarn', 'Plastic aglet', 'Cardboard cards'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT threading beads (card has pattern)',
+      'NOT running stitch (no needle needed)',
+      'NOT real sewing (cards are prepared)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -805,6 +1344,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD HOLDING a PAPER PUNCH (hand-operated tool, metal and plastic construction, approximately 2-3 inches tall, with two HANDLES extending downward, a PUNCH MECHANISM visible at the top consisting of a metal or plastic punch, chamber for hole collection visible below). PAPER positioned nearby (white or colored paper, various sheets approximately 8.5x11 inches or smaller). Child positions the paper on a HARD SURFACE or DIRECTLY in the punch chamber. Child positions the punch where desired, typically on the EDGE of the paper or at a marked location. Child holds the punch steady with one hand. Child SQUEEZES the handles together with the other hand applying firm downward pressure. The PUNCH MECHANISM activates, creating a MECHANICAL ACTION. A HOLE APPEARS in the paper (approximately 0.25-0.5 inches in diameter, circular, clean-edged). The PAPER DISC falls into the collection chamber below. Child may repeat, creating additional holes in the paper. Fine motor strength and coordination demonstrated. Paper becomes hole-punched for binding or threading.',
     key_materials: ['Paper punch', 'Paper', 'Colored or white sheets'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT sewing (punching creates holes only)',
+      'NOT cutting (punch is mechanical)',
+      'NOT threading (holes are preparation)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -815,6 +1359,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH an EMBROIDERY HOOP (wooden, approximately 6-8 inches in diameter, two overlapping rings that tighten together to hold fabric taut, screw mechanism visible). BURLAP or LOOSE-WEAVE FABRIC (approximately 8x8 inches, cream or tan colored, visible grid structure of threads, holes between weaves visible). Fabric is SECURED TIGHTLY in the hoop with the screw mechanism. BLUNT NEEDLE (approximately 2-3 inches long, smooth metal, round eye for threading, NO sharp point). EMBROIDERY THREAD or YARN (colored, approximately 18 inches long, threaded through the needle eye, both ends visible). Child holds the hoop with one hand, positioning the fabric surface toward the light for visibility. Child positions the needle OVER the fabric, inserting it THROUGH one of the grid openings in the weave. Child PULLS the needle through, creating tension in the thread. Child reinserts the needle INTO the next adjacent opening, creating a STITCH (the thread visible as a small LINE across the fabric, approximately 0.5 inches long). Child pulls thread through. Child repeats, creating a LINE OF STITCHES moving in one direction. Multiple stitches create a visible THREAD LINE on the fabric. Stitches are relatively uniform in size. Basic sewing skill and artistic expression.',
     key_materials: ['Burlap or loose-weave fabric', 'Embroidery hoop', 'Blunt needle', 'Embroidery thread or yarn', 'Wooden hoop'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT cross stitch (straight line stitches)',
+      'NOT button sewing (loose weave grid)',
+      'NOT simple threading (creates line pattern)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -825,6 +1374,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH AIDA CLOTH (specialty counted cross-stitch fabric, approximately 6x6 inches, white or cream colored, VISIBLE GRID STRUCTURE with regular square openings throughout, each opening clearly defined). EMBROIDERY HOOP (wooden, approximately 6-8 inches, with screw mechanism for securing fabric). Fabric is secured TIGHTLY in the hoop with the grid fully visible. BLUNT NEEDLE (approximately 2-3 inches, smooth metal). COLORED EMBROIDERY THREAD or FLOSS (multiple colors available, approximately 18 inches lengths). Child threads the needle with desired color. Child positions the needle at one grid square. Child creates an X-SHAPED STITCH by: (1) inserting the needle diagonally DOWN-RIGHT from one corner to opposite corner; (2) pulling thread through; (3) inserting needle DIAGONALLY UP-LEFT back over the same area completing an X shape. The needle emerges at the adjacent grid square. Child repeats, creating the next X-STITCH. Multiple X-STITCHES in rows create a PATTERN or PICTURE visible as the work progresses. Colored X-stitches combine to form designs. Advanced stitching skill requiring precision and planning.',
     key_materials: ['Aida cloth', 'Embroidery hoop', 'Blunt needle', 'Colored thread or floss', 'Visible grid squares'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT running stitch (X-shaped stitches)',
+      'NOT simple line (creates patterns)',
+      'NOT loose weave (counted grid)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -835,6 +1389,11 @@ export const PRACTICAL_LIFE_SIGNATURES: WorkSignature[] = [
     visual_description: 'CHILD WITH FABRIC (approximately 6x6 inches, firmly positioned on a flat surface or held in hand), BUTTON (2-hole or 4-hole button, typically 0.75-1 inch in diameter, clearly visible HOLES in the center — either two holes opposite each other OR four holes in a square pattern, plastic or shell construction), NEEDLE (approximately 2 inches long, metal, appropriate sized eye for thread), THREAD (approximately 12-18 inches long, preferably matching button color, both ends visible). SCISSORS for cutting. Child threads the needle, creating a loop with both ends pulled tight (needle threaded with doubled thread). Child positions the fabric and PLACES the button on the fabric surface. Child inserts the needle THROUGH one hole in the button FROM BELOW the fabric, pulling thread upward through the hole. Child inserts the needle DOWN THROUGH the adjacent hole, pulling thread to the back of the fabric. Child repeats this motion (thread going UP through one hole, DOWN through another) multiple times (typically 4-8 times for security). All thread passes through the button holes and under the fabric. After final pass, child TIES a secure KNOT on the back side of the fabric. Child cuts excess thread with scissors. The button is now FIRMLY ATTACHED to the fabric. Fine motor precision and strength demonstrated.',
     key_materials: ['Fabric', 'Buttons', 'Needle', 'Thread', 'Scissors', '2-hole or 4-hole buttons'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT running stitch (attaches button)',
+      'NOT cross stitch (pragmatic fastening)',
+      'NOT decorative (functional repair)',
+    ],
     difficulty: 'hard',
   },
   {
