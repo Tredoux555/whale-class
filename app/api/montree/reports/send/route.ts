@@ -240,7 +240,8 @@ export async function POST(request: NextRequest) {
       const desc = dbDescriptions.get(workNameLower);
       const photo = photosByWorkName.get(workNameLower);
 
-      // Include ALL works in report — not just photo-captured ones
+      // Only include works that have photos — reports are photo-centric
+      if (!photo?.url) continue;
       progressWorks.push({
         name: w.work_name,
         chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,

@@ -32,12 +32,36 @@ const AREA_DESCRIPTIONS: Record<string, { description: string; why_it_matters: s
   },
 };
 
+const AREA_DESCRIPTIONS_ZH: Record<string, { description: string; why_it_matters: string }> = {
+  'practical_life': {
+    description: '您的孩子正在通过教室里的实际生活活动发展独立性和协调能力。',
+    why_it_matters: '日常生活练习培养自信心、专注力和为未来所有学习做好准备的精细动作技能。'
+  },
+  'sensorial': {
+    description: '您的孩子正在通过精心设计的感官教具来完善感官能力，学习观察和分类周围的世界。',
+    why_it_matters: '感官训练培养支撑阅读、数学和科学观察的感知能力。'
+  },
+  'mathematics': {
+    description: '您的孩子正在通过动手操作的教具探索数学概念，让抽象的想法变得具体而有意义。',
+    why_it_matters: '具体的数学教具建立深刻、持久的理解，远远超越死记硬背。'
+  },
+  'language': {
+    description: '您的孩子正在通过培养词汇、阅读和写作基础的活动来提升语言能力。',
+    why_it_matters: '扎实的语言能力为各个领域的学习打开大门，并支持自信的自我表达。'
+  },
+  'cultural': {
+    description: '您的孩子正在通过文化学习——地理、科学、历史、艺术和音乐——探索世界，培养好奇心和全球意识。',
+    why_it_matters: '文化活动培养对世界的好奇心，帮助孩子理解自己在其中的位置。'
+  },
+};
+
 // Safe description matching - only matches when confident
 // Uses DB descriptions first, then area-based generic as fallback
 function findBestDescription(
   workName: string,
   descriptions: Map<string, { description: string; why_it_matters: string; originalName: string }>,
-  area?: string
+  area?: string,
+  locale?: string
 ): { description: string; why_it_matters: string } | null {
   const workNameLower = workName.toLowerCase().trim();
 
@@ -105,7 +129,8 @@ function findBestDescription(
   // 5. Area-based generic fallback - uses the KNOWN area from progress data
   //    This is always correct because the area comes from the actual data, not guessing
   if (area) {
-    const areaDesc = AREA_DESCRIPTIONS[area];
+    const areaDescs = locale === 'zh' ? AREA_DESCRIPTIONS_ZH : AREA_DESCRIPTIONS;
+    const areaDesc = areaDescs[area];
     if (areaDesc) return areaDesc;
   }
 
@@ -121,6 +146,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
+    const locale = searchParams.get('locale') || 'en';
 
     if (!childId) {
       return NextResponse.json({ error: 'child_id required' }, { status: 400 });
@@ -422,19 +448,20 @@ export async function GET(request: NextRequest) {
       return null;
     }
 
-    // First: Add ALL works from progress (with or without photos)
+    // First: Add works from progress that have matching photos (photo-centric reports)
     for (const p of progress || []) {
       const workNameLower = (p.work_name || '').toLowerCase().trim();
       const workId = workNameToId.get(workNameLower);
       const workInfo = workId ? workIdToInfo.get(workId) : null;
 
-      // Find best matching photo (may be null — that's OK now)
+      // Find best matching photo — skip if no photo (reports are photo-centric)
       const photo = findPhotoForWork(workId, workNameLower);
-      if (photo) claimedPhotoIds.add(photo.id);
+      if (!photo) continue; // No photo = not in report
+      claimedPhotoIds.add(photo.id);
 
       // Get description - pass the area from progress data for safe fallback
       const progressArea = p.area || workInfo?.area || 'practical_life';
-      const desc = findBestDescription(p.work_name || '', dbDescriptions, progressArea);
+      const desc = findBestDescription(p.work_name || '', dbDescriptions, progressArea, locale);
 
       reportItems.push({
         work_id: workId || null,
@@ -517,7 +544,8 @@ export async function GET(request: NextRequest) {
     for (const p of allPhotos) {
       if (p.is_selected) selectedPhotos.push(p);
       else availablePhotos.push(p);
-      if (p.url && !claimedPhotoIds.has(p.id)) unassignedPhotos.push(p);
+      // Only include unassigned photos that have some meaningful content (work name or caption)
+      if (p.url && !claimedPhotoIds.has(p.id) && (p.work_name || p.caption)) unassignedPhotos.push(p);
     }
 
     // Count stats in a single pass (O(N) instead of 8× O(N))

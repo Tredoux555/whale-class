@@ -676,7 +676,7 @@ export default function GalleryPage() {
   const handleOpenReportPreview = useCallback(async () => {
     setPreviewSelectedArea(null);
     setPreviewExpandedCard(null);
-    setExcludedWorks(new Set()); // Clear stale exclusions from previous preview
+    // Don't reset exclusions — teacher's delete choices should persist across reopens
     await fetchReportPreview();
     setShowReportPreview(true);
   }, [fetchReportPreview]);

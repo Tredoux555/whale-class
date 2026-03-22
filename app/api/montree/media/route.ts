@@ -82,10 +82,15 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // Sort by captured_at descending (string compare — ISO dates sort lexicographically)
-      const allMedia = Array.from(mediaMap.values()).sort((a, b) =>
-        (b.captured_at || '').localeCompare(a.captured_at || '')
-      );
+      // Sort by captured_at descending, fallback to created_at (ensures newest always on top)
+      const allMedia = Array.from(mediaMap.values()).sort((a, b) => {
+        const dateA = a.captured_at || a.created_at || '';
+        const dateB = b.captured_at || b.created_at || '';
+        const cmp = dateB.localeCompare(dateA);
+        // Tiebreaker: if captured_at is identical, sort by created_at (DB insert order)
+        if (cmp !== 0) return cmp;
+        return (b.created_at || '').localeCompare(a.created_at || '');
+      });
 
       // Apply pagination
       const paginatedMedia = allMedia.slice(offset, offset + limit);

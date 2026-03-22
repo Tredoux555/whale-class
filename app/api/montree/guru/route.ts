@@ -44,6 +44,7 @@ export interface GuruRequest {
   conversational?: boolean; // true = WhatsApp-style chat for homeschool parents
   image_url?: string; // optional image for vision analysis
   stream?: boolean; // true = SSE streaming response (token by token)
+  locale?: string; // 'en' | 'zh' — AI responds in this language
 }
 
 export interface GuruResponse {
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request
     const body: GuruRequest = await request.json();
-    let { child_id, question, classroom_id, teacher_id, role, conversational, image_url, stream: streamRequested } = body;
+    let { child_id, question, classroom_id, teacher_id, role, conversational, image_url, stream: streamRequested, locale } = body;
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -426,7 +427,7 @@ export async function POST(request: NextRequest) {
 
     if (isWholeClassMode) {
       // Whole-class mode: build classroom-specific prompt
-      const classroomPrompt = buildClassroomModePrompt(question, classroomContext!, knowledge);
+      const classroomPrompt = buildClassroomModePrompt(question, classroomContext!, knowledge, locale);
       guruMode = 'NORMAL';
       systemPrompt = classroomPrompt.systemPrompt;
       userPrompt = classroomPrompt.userPrompt;
@@ -486,7 +487,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, effectiveTier, proactiveForPrompt, isTeacher, childContext!.schoolGuruPersonality);
+      const convPrompt = buildConversationalPrompt(question, childContext!, knowledge, savedConcerns, isFirstMessage, childSettings, effectiveTier, proactiveForPrompt, isTeacher, childContext!.schoolGuruPersonality, locale);
       guruMode = convPrompt.mode;
       systemPrompt = convPrompt.systemPrompt;
       // Inject self-learning intelligence into system prompt

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { work_name, child_id, child_age } = body;
+    const { work_name, child_id, child_age, locale } = body;
 
     if (!work_name) {
       return NextResponse.json({ success: false, error: 'work_name is required' }, { status: 400 });
@@ -161,10 +161,14 @@ Generate a complete, step-by-step presentation guide for this work. The parent i
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
+    const systemWithLocale = locale === 'zh'
+      ? system + '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE guide in Simplified Chinese (中文). Use warm, natural Chinese. All headers, instructions, and content must be in Chinese.'
+      : system;
+
     const message = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 2500,
-      system,
+      system: systemWithLocale,
       messages: [{ role: 'user', content: userPrompt }],
     });
 

@@ -1,4 +1,4 @@
-import type { WorkSignature } from './work-signatures';
+import type { WorkSignature, ConfusionPair } from './work-signatures';
 
 // 57 Mathematics works - CLIP visual descriptions (escaped apostrophes verified)
 export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
@@ -10,7 +10,16 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'Ten WOODEN RODS of progressively increasing lengths arranged in a CLEAR DESCENDING STAIRCASE PATTERN on a natural woven mat or light wood table. Each rod is painted with UNIFORM, BOLD ALTERNATING RED and BLUE SEGMENTS — NOT solid red like Red Rods — creating distinct visual rhythm. The shortest rod measures approximately 10cm (1 unit), while the longest reaches nearly 1 meter (10 units). Each colored segment represents one unit length. A child\'s small hands are TOUCHING, COMPARING, or ARRANGING the rods, sometimes holding them vertically to feel the height difference, or walking their fingers along the segments counting each color band.',
     key_materials: ['ten wooden rods', 'alternating red and blue painted segments', 'graduated from 10cm to 1 meter', 'unit-length segments', 'natural mat or table base', 'clear staircase arrangement'],
-    confusion_pairs: ['se_red_rods', 'ma_short_bead_stair'],
+    confusion_pairs: [
+      { work_key: 'se_red_rods', reason: 'Both are painted rods in descending staircase pattern', differentiation: 'RED RODS are solid red throughout; NUMBER RODS have alternating RED-AND-BLUE segments' },
+      { work_key: 'ma_short_bead_stair', reason: 'Both show gradual progression in size from short to long', differentiation: 'NUMBER RODS are solid wooden rods; BEAD STAIR has individual colored beads threaded on wire' },
+    ],
+    negative_descriptions: [
+      'NOT a set of identical objects',
+      'NOT a single wooden rod (this is ten rods)',
+      'NOT painted with one solid color (alternating red and blue segments)',
+      'NOT beads on a wire (these are solid wooden rods)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -20,7 +29,16 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'Individual SMOOTH TAN or CREAM-COLORED WOODEN TILES (approximately 10cm × 7cm), each displaying a single NUMERAL from 0 through 9 in ROUGH, TACTILE SANDPAPER material adhered to the wooden surface. The sandpaper creates a DISTINCTLY TEXTURED appearance — darker, slightly rougher than the smooth wood background — allowing both visual and tactile recognition. A child\'s index and middle finger are TRACING the sandpaper numeral in the correct directional sequence (top to bottom, left to right), building motor memory and muscle control. The tactile feedback of the rough sandpaper against fingertips helps establish the shape and form of each number through multi-sensory learning.',
     key_materials: ['tan or cream wooden tiles', 'sandpaper numerals 0-9', 'rough tactile texture', 'smooth wood background', 'correct tracing direction', 'index finger tracing'],
-    confusion_pairs: ['la_sandpaper_letters', 'ma_large_numeral_cards'],
+    confusion_pairs: [
+      { work_key: 'la_sandpaper_letters', reason: 'Both use sandpaper on wooden tiles with tactile tracing', differentiation: 'SANDPAPER NUMERALS show 0-9 NUMBERS; SANDPAPER LETTERS show A-Z ALPHABET LETTERS' },
+      { work_key: 'ma_large_numeral_cards', reason: 'Both display numerals 0-9 for matching and learning', differentiation: 'SANDPAPER NUMERALS are tactile sandpaper on tiles for TRACING; NUMERAL CARDS are smooth printed cards for VISUAL matching' },
+    ],
+    negative_descriptions: [
+      'NOT alphabet letters (this is numerals 0-9)',
+      'NOT smooth printed cards (these have ROUGH SANDPAPER texture)',
+      'NOT metal or plastic (these are wooden tiles)',
+      'NOT depicting quantities (only symbol shapes)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -30,7 +48,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'The GRADUATED NUMBER RODS are ARRANGED in their descending STAIRCASE PATTERN on the left side of a prepared mat, while SMALL PRINTED NUMERAL CARDS (1-10) are POSITIONED alongside each rod in a careful LINEAR ALIGNMENT on the right. This creates a DIRECT VISUAL CORRESPONDENCE: the 1-unit rod (shortest, ~10cm) beside numeral card "1"; the 2-unit rod beside "2"; continuing upward to the 10-unit rod (~1 meter) beside "10". A child is HOLDING, PLACING, or POINTING to numeral cards, matching each card to its corresponding rod by length, discovering the symbolic representation of quantity.',
     key_materials: ['number rods in staircase arrangement', 'printed numeral cards 1-10', 'one-to-one correspondence alignment', 'visual matching', 'prepared mat with clear sections'],
-    confusion_pairs: ['ma_number_rods', 'ma_sandpaper_numerals'],
+    confusion_pairs: [
+      { work_key: 'ma_number_rods', reason: 'Both use number rods in staircase arrangement', differentiation: 'NUMBER RODS with NUMERALS adds PRINTED NUMERAL CARDS beside each rod; RODS ALONE has no cards' },
+      { work_key: 'ma_sandpaper_numerals', reason: 'Both show numerals 1-10', differentiation: 'This work has WOODEN RODS for sensorial learning; SANDPAPER NUMERALS are tactile tiles only' },
+    ],
+    negative_descriptions: [
+      'NOT rods alone without numeral cards',
+      'NOT sandpaper numerals (this includes both rods and printed cards)',
+      'NOT a single quantity representation (shows both concrete and symbolic)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -40,7 +66,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'A NATURAL WOODEN BOX (approximately 50cm × 15cm × 8cm) is DIVIDED by THIN WOODEN VERTICAL PARTITIONS into TEN EQUAL COMPARTMENTS arranged in a row. Each compartment is LABELED at the top with a BLACK PRINTED NUMERAL from 0 to 9 in sequential order. The compartments contain THIN WOODEN SPINDLES (smooth dowels, resembling oversized toothpicks, each ~15cm long, ~5mm diameter, natural pale wood color). A child is CAREFULLY COUNTING spindles from a basket and PLACING the EXACT QUANTITY into each numbered section: ZERO spindles in the "0" compartment (deliberately empty, teaching the concept of nothing), ONE spindle in "1", TWO in "2", continuing through NINE in "9". Some spindles may be BUNDLED together with SMALL RED RUBBER BANDS in groups of five to introduce early grouping and place value concepts. From 1-2 meters away, the work appears as a long wooden box with uneven distribution of thin wooden sticks.',
     key_materials: ['wooden box with 10 compartments', 'thin wooden spindles or dowels', 'numeral labels 0-9 on top', 'red rubber bands for bundling', '0-9 organization system', 'clear compartment divisions'],
-    confusion_pairs: ['ma_cards_counters'],
+    confusion_pairs: [
+      { work_key: 'ma_cards_counters', reason: 'Both organize quantities 0-9 in a visual system', differentiation: 'SPINDLE BOX has thin WOODEN DOWELS bundled in COMPARTMENTS; CARDS AND COUNTERS has PRINTED CARDS with RED DISC TOKENS arranged in ROWS' },
+    ],
+    negative_descriptions: [
+      'NOT loose beads (these are thin wooden spindles/dowels)',
+      'NOT colored bead bars (spindles are individual, not multi-beaded chains)',
+      'NOT open-ended (this is a contained compartmentalized box)',
+      'NOT showing odd/even visual patterns (only quantity in compartments)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -50,7 +84,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'PRINTED NUMERAL CARDS displaying 1 through 10 are ARRANGED in a clear HORIZONTAL ROW on a PREPARED MAT. Below each numeral card, SMALL RED CIRCULAR COUNTER DISCS (solid plastic or wood tokens, uniform in size, approximately 1-2cm diameter) are PLACED in quantities that EXACTLY MATCH the numeral above. The child is ARRANGING counters in NEAT, ORGANIZED ROWS beneath each number, discovering visual PATTERNS: odd-numbered rows (1, 3, 5, 7, 9) display an UNPAIRED COUNTER in the center, while even-numbered rows (2, 4, 6, 8, 10) form PERFECT PAIRS with no center odd-one-out. This concrete exploration reveals fundamental concepts about odd and even numbers through visual arrangement and tactile manipulation of the counters.',
     key_materials: ['printed numeral cards 1-10', 'red circular counter discs', 'organized rows of counters', 'prepared mat', 'odd and even pattern discovery'],
-    confusion_pairs: ['ma_spindle_box'],
+    confusion_pairs: [
+      { work_key: 'ma_spindle_box', reason: 'Both organize quantities 1-9 (or 0-9) in visual systems', differentiation: 'CARDS AND COUNTERS displays RED DISC TOKENS in ROWS beneath printed cards; SPINDLE BOX uses WOODEN DOWELS inside a compartmented BOX' },
+    ],
+    negative_descriptions: [
+      'NOT wooden spindles or dowels in a box',
+      'NOT single quantity representation (shows 1-10 side-by-side)',
+      'NOT showing place value (this focuses on odd/even patterns)',
+      'NOT beads on wire (these are individual round tokens)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -61,6 +103,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'An ADULT or GUIDE displays a NUMERAL CARD to the child for 3-5 seconds, showing a specific number (e.g., "7"), then TURNS THE CARD FACE-DOWN or HIDES IT behind their hand. The child must MENTALLY RETAIN that number and FETCH or SELECT the CORRESPONDING QUANTITY of SMALL LOOSE OBJECTS from a NEARBY BASKET — seashells, polished stones, wooden beads, buttons, or pebbles. The child ARRANGES the collected objects on the mat in a CLEAR GROUP, demonstrating counting accuracy entirely FROM MEMORY, without visual reference to the original card. This exercise strengthens number recognition, memory retention, and counting accuracy while building confidence in quantity representation.',
     key_materials: ['numeral cards 1-10', 'small counting objects (shells, beads, stones, buttons)', 'woven basket for storage', 'prepared mat for display', 'memory-based retrieval system'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT visible numeral cards during retrieval (cards are hidden during memory phase)',
+      'NOT pre-arranged quantities on mat (child fetches objects from basket)',
+      'NOT a written or tactile symbol activity',
+      'NOT showing completed arrangement from above (focuses on memory task, not pattern)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -71,6 +119,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'WOODEN PUZZLE BOARDS or LAMINATED CARD SETS feature NUMERALS on one side (or printed numerals) with CORRESPONDING QUANTITIES displayed through DOTS, DOTS, DASHES, or SMALL PICTORIAL OBJECTS (circles, stars, shapes). Puzzle pieces or cards must be MATCHED or FITTED TOGETHER to reinforce the CONNECTION between NUMERAL SYMBOLS and their PHYSICAL QUANTITIES. A child is SELECTING puzzle pieces or ALIGNING matching cards, INSERTING them into corresponding slots or PAIRING them side-by-side, discovering that "5" always equals five individual objects, whether arranged as dots, items, or any other representation. The tactile fitting mechanism (slots, tabs, or puzzle edges) provides immediate feedback when matches are correct.',
     key_materials: ['wooden puzzle boards or card sets', 'numeral and quantity matching', 'dot or pictorial representations', 'puzzle pieces with slots or tabs', 'assembly or pairing format', 'self-correcting mechanism'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT sandpaper numerals (these are smooth printed or carved puzzles)',
+      'NOT loose objects (puzzle pieces fit into slots or join together)',
+      'NOT an open-ended activity (self-correcting mechanism prevents wrong fits)',
+      'NOT a single-representation system (shows both numbers and quantities)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -80,7 +134,16 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Introduction to Numbers (1-10)',
     visual_description: 'Nine COLORED BEAD BARS (multiple spherical beads THREADED together on a single wire or wooden rod) are ARRANGED in a PERFECT STAIRCASE PATTERN, DESCENDING from left to right in order of increasing height. Each bead bar has a DISTINCT, VIBRANT COLOR to strengthen visual differentiation: the 1-bar is RED (1 bead), the 2-bar is BRIGHT GREEN (2 beads), the 3-bar is PINK (3 beads), the 4-bar is YELLOW (4 beads), the 5-bar is LIGHT BLUE (5 beads), the 6-bar is PURPLE (6 beads), the 7-bar is WHITE (7 beads), the 8-bar is BROWN (8 beads), and the 9-bar is DARK BLUE or NAVY (9 beads). A child is RUNNING THEIR FINGERS along each bar, COUNTING aloud the individual beads on each bar, or ARRANGING the bars into the correct staircase sequence. The visual STAIRCASE PATTERN combined with COLOR VARIATION creates an unmistakable, easily-recognized sensorial and mathematical impression.',
     key_materials: ['colored bead bars 1-9', 'one distinct color per quantity', 'staircase arrangement descending left to right', 'beads threaded on wire or rod', 'clear visual color differentiation', 'approximately 7cm to 60cm progression'],
-    confusion_pairs: ['se_bead_bars', 'ma_number_rods'],
+    confusion_pairs: [
+      { work_key: 'se_bead_bars', reason: 'Both use colored beads threaded on wire in a staircase', differentiation: 'SHORT BEAD STAIR has 9 bars (1-9) for MATHEMATICS; SENSORIAL BEAD BARS have longer chains for sensorial exploration' },
+      { work_key: 'ma_number_rods', reason: 'Both show size progression in a staircase pattern', differentiation: 'BEAD STAIR has INDIVIDUAL COLORED BEADS on wire; NUMBER RODS are solid WOODEN RODS with alternating RED-AND-BLUE segments' },
+    ],
+    negative_descriptions: [
+      'NOT a single continuous chain (each bar is separate)',
+      'NOT solid wooden rods (these are beads threaded on wire)',
+      'NOT a tool for measuring length (beads represent quantity, not linear measurement)',
+      'NOT long chains (short stair goes 1-9 only)',
+    ],
     difficulty: 'easy',
   },
 
@@ -93,6 +156,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'FOUR DISTINCT GOLDEN-COLORED BEAD FORMS are DISPLAYED TOGETHER on a PREPARED WOODEN TRAY or MAT, arranged clearly from smallest to largest for immediate visual comparison: (1) UNIT BEADS — TINY INDIVIDUAL SPHERES (~7mm diameter) each representing ONE, (2) TEN-BARS or TEN-RODS — GOLDEN BEADS (10 individual beads) STRUNG together on a wire creating a LINEAR rod (~7cm long) representing TEN, (3) HUNDRED-SQUARES — 100 BEADS arranged in a FLAT 10×10 SQUARE GRID (approximately 7cm × 7cm), creating a DENSE, DISTINCT RECTANGULAR FORM representing ONE HUNDRED, (4) THOUSAND-CUBES — 1000 BEADS packed into a LARGE CUBIC FORM (approximately 7cm × 7cm × 7cm) representing ONE THOUSAND. A child is TOUCHING, LIFTING, and EXAMINING each material form, discovering through tactile and visual exploration the dramatic size and weight differences that embody place value hierarchy. The beads glisten with a warm GOLDEN or YELLOW COLOR throughout, unifying the system visually while the STRUCTURAL DIFFERENCES (individual, linear, grid, cubic) create instant perceptual understanding of decimal progression.',
     key_materials: ['golden unit beads (~7mm)', 'golden ten-bars (10-bead rods)', 'golden hundred-squares (10×10 grid)', 'golden thousand-cubes (10×10×10)', 'wooden tray or prepared mat', 'warm golden color throughout'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT all the same size (four distinctly different sizes: unit, bar, square, cube)',
+      'NOT loose beads only (shows four structural forms)',
+      'NOT colored beads (all are GOLDEN/YELLOW colored)',
+      'NOT a work in progress (shows the complete four-part system)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -103,6 +172,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'MULTIPLE GOLDEN BEAD MATERIALS in all four PLACE VALUE CATEGORIES (units, tens, hundreds, thousands) are DISPLAYED on WOODEN TRAYS or inside WOVEN BASKETS organized by denomination for easy access. The child is FETCHING or REQUESTING SPECIFIC QUANTITIES — verbally asking the guide or reading problem cards that instruct "Bring me 2,345" — and RETRIEVING the EXACT MATERIALS: 2 thousand-cubes, 3 hundred-squares, 4 ten-bars, and 5 unit beads. The child ARRANGES these materials on the tray in PROPER ORDER from left to right (largest place values first), organizing them into a CLEAR VISUAL REPRESENTATION of the quantity. This exercise develops place value understanding, oral language development, and the foundational concepts of the decimal system through concrete manipulation of REAL, TANGIBLE MATERIALS representing powers of ten.',
     key_materials: ['golden beads (all place values)', 'wooden trays or woven baskets', 'organized by denomination', 'problem cards or verbal requests', 'left-to-right ordering system'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a single quantity representation (shows multiple quantities in separate trays)',
+      'NOT completed quantities on display (child is actively retrieving materials)',
+      'NOT showing addition or subtraction (only place value retrieval)',
+      'NOT showing patterns (focuses on specific quantity requests)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -112,7 +187,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Decimal System',
     visual_description: 'COLOR-CODED CARD SETS are displayed and MANIPULATED to build multi-digit numbers: GREEN CARDS showing UNITS (1-9) with single GREEN digits, BLUE CARDS showing TENS (10-90) with BLUE numerals in 10-unit increments, RED CARDS showing HUNDREDS (100-900) with RED numerals in 100-unit increments, and GREEN CARDS again showing THOUSANDS (1000-9000, often printed on LARGER CARDS). These cards are SUPERIMPOSED or STACKED with PRECISE OFFSET, creating a VISUAL LAYERING EFFECT where each place value is visible in its corresponding COLOR and POSITION. To build the number 3,452, the child CAREFULLY STACKS a "3000" GREEN card (bottom/back), then a "400" RED card (offset to show), then a "50" BLUE card (offset further), then a "2" GREEN card (visible on top). The color-coding and STACKED ARRANGEMENT make place value relationships immediately visible and tactilely manipulable.',
     key_materials: ['green unit cards 1-9', 'blue tens cards 10-90', 'red hundreds cards 100-900', 'green thousands cards 1000-9000', 'stacked/superimposed arrangement', 'color-coded place values'],
-    confusion_pairs: ['ma_sandpaper_numerals'],
+    confusion_pairs: [
+      { work_key: 'ma_sandpaper_numerals', reason: 'Both display numerals for learning number forms', differentiation: 'LARGE NUMERAL CARDS are COLOR-CODED by place value and STACKED to build multi-digit numbers; SANDPAPER NUMERALS are individual tactile tiles for single-digit tracing' },
+    ],
+    negative_descriptions: [
+      'NOT sandpaper or tactile materials (these are smooth printed cards)',
+      'NOT showing individual single digits only (these build multi-digit numbers)',
+      'NOT a set of identical cards (color-coding and size vary by place value)',
+      'NOT for counting objects (purely symbolic representation)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -123,6 +206,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A GUIDE or PROBLEM CARD presents a SPECIFIC MULTI-DIGIT NUMBER to the child (e.g., "Make 2,345"). The child ACTIVELY GATHERS and ASSEMBLES the CORRESPONDING GOLDEN BEAD MATERIALS on a WOODEN TRAY: 2 THOUSAND-CUBES (heavy, cubic, largest items), 3 HUNDRED-SQUARES (flat, grid-like), 4 TEN-BARS (linear, rod-like), and 5 UNIT BEADS (tiny, individual). The child ARRANGES these materials in STRICT LEFT-TO-RIGHT ORDER (following place value convention, thousands→tens→units), creating a PHYSICAL, CONCRETE REPRESENTATION of the abstract number. NUMERAL LABEL CARDS or PRINTED PROBLEM SHEETS may be placed alongside the completed arrangement, showing the written "2,345" next to the physical materials it represents. This bridges concrete and abstract understanding of number magnitude and place value structure.',
     key_materials: ['golden beads (all place values)', 'wooden tray with place value sections', 'numeral labels or problem cards', 'left-to-right ordering', 'concrete quantity assembly'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT symbolic cards alone (includes concrete GOLDEN BEAD materials)',
+      'NOT showing an operation like addition or subtraction (single quantity only)',
+      'NOT randomly arranged beads (organized by place value in sections)',
+      'NOT a completed arrangement without problem card reference',
+    ],
     difficulty: 'medium',
   },
   {
@@ -133,6 +222,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'LARGE NUMERAL CARDS in their PLACE VALUE COLORS are CAREFULLY SUPERIMPOSED with PRECISE OFFSET alignment to BUILD multi-digit numbers in PURELY SYMBOLIC FORM. The child is LAYERING green (thousands), red (hundreds), blue (tens), and green (units) CARDS with EXACT POSITIONING so each place value digit remains VISIBLE and READABLE despite the STACKING. To create "4,326", the child PLACES a "4000" card as the BASE (back), OFFSETS a "300" card (leaving the 4 visible), OFFSETS a "20" card further (leaving both 4 and 3 visible), and PLACES a "6" card on TOP (revealing 4-3-2-6 in sequence). This exercise develops understanding that WRITTEN NUMBERS are BUILT from individual PLACE VALUE DIGITS, each representing a quantity in a specific position, while the STACKING MECHANISM emphasizes the HIERARCHICAL STRUCTURE of place value.',
     key_materials: ['large numeral cards (color-coded by place value)', 'superimposed stacking arrangement', 'precise offset alignment', 'place value hierarchy visualization'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT concrete golden beads (purely PRINTED CARDS and symbols)',
+      'NOT loose, flat cards (these are STACKED and offset)',
+      'NOT a single-digit system (shows multi-digit numbers)',
+      'NOT one-color cards (COLOR-CODED by place value: green, blue, red)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -143,6 +238,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'Two IDENTICAL REPRESENTATIONS of a SINGLE QUANTITY are DISPLAYED SIDE-BY-SIDE on a PREPARED MAT to create a DIRECT VISUAL AND CONCEPTUAL BRIDGE between concrete and abstract: On one side, ACTUAL GOLDEN BEAD MATERIALS show the quantity visually (e.g., 2 thousand-cubes, 3 hundred-squares, 4 ten-bars, 5 unit beads representing 2,345). On the other side, SUPERIMPOSED LARGE NUMERAL CARDS display the SAME QUANTITY in purely SYMBOLIC FORM ("2,345" built from color-coded place value cards). A child is STUDYING BOTH REPRESENTATIONS, touching the beads while observing the corresponding numerals, discovering that THE SAME QUANTITY can be EXPRESSED in TWO WAYS — physical/concrete and written/symbolic. This correlation exercise develops the critical understanding that SYMBOLS represent REAL QUANTITIES and reinforces place value mastery by requiring children to move fluidly between manipulative and abstract representations.',
     key_materials: ['golden beads showing quantity', 'large numeral cards showing symbol', 'side-by-side comparison layout', 'prepared mat with divided sections', 'quantity-symbol correspondence'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT showing only concrete beads (side-by-side with symbolic cards)',
+      'NOT showing only cards (concrete quantity visible on one side)',
+      'NOT showing multiple different quantities (ONE quantity shown two ways)',
+      'NOT an operational activity (shows correspondence, not addition/subtraction)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -153,6 +254,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'GOLDEN BEAD MATERIALS in all four PLACE VALUE CATEGORIES are ARRANGED on a WOODEN TRAY or MAT. A DICE is ROLLED or a NUMERAL CARD is REVEALED to determine how many UNIT BEADS the child must TAKE and ADD to the arrangement. As UNIT BEADS ACCUMULATE, the child PERFORMS EXCHANGES: whenever TEN UNIT BEADS are GATHERED, the child EXCHANGES them for ONE TEN-BAR (removing 10 units, adding 1 ten). As TEN-BARS ACCUMULATE, the child EXCHANGES ten of them for ONE HUNDRED-SQUARE. This process continues with each exchange, teaching the DECIMAL SYSTEM\'S FUNDAMENTAL LOGIC: ten ones equal one ten, ten tens equal one hundred, ten hundreds equal one thousand. A child might roll a "7", add 7 unit beads. Then roll "6", add 6 more units (totaling 13), exchange 10 for a ten-bar, and retain 3 units. The REPEATED EXCHANGES create a visceral understanding of WHY the decimal system WORKS — each place value is exactly ten times the previous one.',
     key_materials: ['golden beads (all categories)', 'dice or numeral cards', 'wooden tray with place value sections', 'exchange mechanism', 'repeated rolling and exchanging'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a single completed quantity (beads are actively being added and exchanged)',
+      'NOT a static display (involves repeated rolling and action)',
+      'NOT teaching numerals or symbols (focuses on place value exchange logic)',
+      'NOT showing multiple different starting quantities (single accumulation)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -163,6 +270,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'TWO QUANTITIES are INDEPENDENTLY BUILT with GOLDEN BEAD MATERIALS on SEPARATE SECTIONS of a large WOODEN TRAY or MAT (e.g., quantity 2,345 on the LEFT, quantity 1,234 on the RIGHT). The child is COMBINING ALL MATERIALS: gathering the thousand-cubes from both quantities together, the hundred-squares together, the ten-bars together, and the unit beads together. This creates a SINGLE PILE of MIXED MATERIALS. The child then PERFORMS SYSTEMATIC EXCHANGES: first, EXCHANGES 10 UNIT BEADS for a TEN-BAR (until fewer than 10 units remain), then EXCHANGES 10 TEN-BARS for a HUNDRED-SQUARE (until fewer than 10 tens remain), and continues up through place values. The FINAL ORGANIZED RESULT shows the SUM (3,579) in PROPER PLACE VALUE ARRANGEMENT. The child may RECORD the operation numerically ("2,345 + 1,234 = 3,579"), comparing the concrete result to the abstract written equation. This demonstrates WHY ADDITION WORKS at each place value level and reveals the concept of carrying/regrouping in a concrete, manipulable form.',
     key_materials: ['golden beads (all place values)', 'wooden tray with separate quantity sections', 'two starting quantities', 'exchange mechanism', 'combined result arrangement', 'numeral recording cards'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a single starting quantity (two separate quantities being combined)',
+      'NOT subtraction (adding quantities together)',
+      'NOT multiplication or division (simple combining, not grouping or distribution)',
+      'NOT showing just beads without operation process (actively exchanging and combining)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -173,6 +286,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'The child STARTS with an INITIAL GOLDEN BEAD QUANTITY assembled on a TRAY (e.g., 3,456: three thousand-cubes, four hundred-squares, five ten-bars, six unit beads). A PROBLEM CARD or GUIDE indicates a QUANTITY TO REMOVE (e.g., "Take away 1,234"). The child SUBTRACTS by REMOVING the SPECIFIED MATERIALS. CRITICAL CHALLENGE: when there AREN\'T ENOUGH materials in a specific place value (e.g., removing 5 tens when only 2 ten-bars exist), the child PERFORMS REVERSE EXCHANGES: "BREAKING" ONE HUNDRED-SQUARE into TEN TEN-BARS, or BREAKING a TEN-BAR into TEN UNIT BEADS. This reverse exchange mechanism is the INVERSE of the addition exchanges, teaching the LOGIC behind borrowing/regrouping in subtraction. The REMAINING MATERIALS show the DIFFERENCE (2,222). The child may record numerically to compare: "3,456 - 1,234 = 2,222". The tactile experience of BREAKING and EXCHANGING makes borrowing concrete and logically necessary, not arbitrary.',
     key_materials: ['golden beads (all place values)', 'wooden tray', 'starting quantity', 'quantity to remove (problem card)', 'reverse exchange mechanism', 'remaining difference arrangement'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition (subtracting/removing quantities)',
+      'NOT showing both starting quantities (starts with one, removes a portion)',
+      'NOT multiplication or division (no grouping or distribution)',
+      'NOT showing only the final result (process of removal and exchange visible)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -183,6 +302,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A PROBLEM CARD PRESENTS a MULTIPLICATION like "25 × 3". The child FIRST BUILDS the MULTIPLICAND quantity ONE TIME with GOLDEN BEADS (25: two ten-bars + five unit beads). The child then BUILDS THIS SAME QUANTITY THREE MORE TIMES on the TRAY, creating THREE IDENTICAL PILES of 25 beads arranged in SEPARATE SECTIONS. The child COMBINES ALL PILES, bringing together all thousands, hundreds, tens, and units. EXCHANGES are performed (10 units→1 ten, 10 tens→1 hundred) until the FINAL ORGANIZED RESULT shows 75 (seven ten-bars + five unit beads). The REPETITION OF THE QUANTITY demonstrates multiplication\'s fundamental meaning: "three groups of 25" (or 25 taken 3 times). The CONCRETE, MANIPULABLE REPRESENTATION reveals why 25 × 3 = 75, and the EXCHANGE PROCESS reinforces place value understanding throughout the operation.',
     key_materials: ['golden beads (all place values)', 'wooden tray with multiple quantity sections', 'multiplicand quantity', 'multiplier factor (number of repetitions)', 'exchange mechanism', 'final product arrangement'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition (groups of the same quantity repeated)',
+      'NOT showing a single quantity (multiple identical groups arranged)',
+      'NOT division (no distribution among divisor markers)',
+      'NOT a random arrangement (organized groups showing multiplication concept)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -193,6 +318,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A QUANTITY OF GOLDEN BEADS is ARRANGED on a TRAY (e.g., 75 beads: seven ten-bars + five units). Small WOODEN SKITTLES (bowling pins) or DIVIDER MARKERS are PLACED in a ROW to represent the DIVISOR (e.g., 3 skittles for dividing by 3). The child DISTRIBUTES the GOLDEN BEADS EQUALLY among the SKITTLES using a SYSTEMATIC METHOD: starting with LARGER DENOMINATIONS (hundred-squares if present, then ten-bars), placing ONE UNIT in each skittle group before advancing, then BREAKING (reverse exchange) larger denominations as needed to continue distribution. For example, dividing 75 by 3: place 2 ten-bars in each of 3 groups (using 6 ten-bars, 1 remains), BREAK the remaining ten-bar into 10 unit beads, combine with the 5 existing units (15 total), distribute 5 unit beads to each group. RESULT: each group contains 2 ten-bars + 5 unit beads = 25 (the quotient). The HANDS-ON DISTRIBUTION reveals why division WORKS and demonstrates the QUOTIENT as the size of each equal share.',
     key_materials: ['golden beads (all place values)', 'wooden tray', 'dividend quantity', 'wooden skittles or dividers (divisor)', 'distribution mechanism', 'equal share arrangement per skittle', 'reverse exchange for continuation'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multiplication (distributing equally, not grouping)',
+      'NOT addition or subtraction (no combining or removing single operations)',
+      'NOT showing a single result (showing multiple equal shares per skittle)',
+      'NOT random bead arrangement (organized distribution into equal groups)',
+    ],
     difficulty: 'medium',
   },
 
@@ -205,6 +336,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A NARROW WOODEN BOARD (approximately 30cm × 10cm) displays a FIXED GOLDEN TEN-BAR mounted in a PERMANENT SLOT on the LEFT SIDE, representing the unchanging "10" in all teen numbers. On the RIGHT SIDE, TEN VERTICAL COLUMNS are LABELED with NUMERALS 1-9 at the top. COLORED BEAD BARS (1-bar red, 2-bar green, 3-bar pink, etc., up to 9-bar navy) are INSERTED one at a time INTO THE COLUMNS alongside the fixed ten-bar to DEMONSTRATE the teen numbers: 1-bar creates 11, 2-bar creates 12, continuing to 9-bar creating 19. A child is SELECTING, INSERTING, or REMOVING colored bead bars from columns, READING the teen numbers aloud (eleven, twelve, thirteen... nineteen), and discovering the PATTERN that 10 + any number 1-9 creates the teens.',
     key_materials: ['wooden board with ten-bar slot', 'fixed golden ten-bar', 'colored bead bars 1-9', 'vertical columns for units', 'numeral labels 1-9 on top', 'teen number 11-19 concept'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT showing numbers 1-9 only (shows teen numbers 11-19)',
+      'NOT only printed numeral cards (includes concrete bead bars)',
+      'NOT a bead-only activity (fixed ten-bar on the board)',
+      'NOT showing quantities larger than 19 (limited to teens only)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -215,6 +352,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A SIMILAR WOODEN BOARD (approximately 30cm × 10cm) displays VERTICAL COLUMNS labeled for teen numbers 11-19, but WITHOUT PHYSICAL BEAD BARS. Instead, PRINTED NUMERAL CARDS or WOODEN NUMERAL TILES displaying the teen numbers (11, 12, 13... 19) are PLACED or INSERTED into the columns. A child is READING the NUMERAL SYMBOLS, MATCHING teen number tiles to their CORRECT COLUMN, or PLACING them in NUMERICAL ORDER. This represents the TRANSITION from concrete BEAD REPRESENTATIONS (Board A) to ABSTRACT NUMERAL SYMBOLS (Board B), requiring the child to RECOGNIZE and ASSOCIATE teen numerals with their place in the sequence. The board SUPPORTS INDEPENDENT READING and NUMERAL MATCHING PRACTICE for children who have already internalized the teen concept through material manipulation.',
     key_materials: ['wooden board with numeral columns', 'numeral cards or tiles (11-19)', 'column structure for teen numbers', 'abstract symbol focus', 'visual column layout'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT concrete beads or bars (purely PRINTED NUMERAL CARDS)',
+      'NOT showing 1-9 or numbers above 19 (teen numbers 11-19 only)',
+      'NOT a matching activity (numerals displayed in structured format)',
+      'NOT showing place value with gold/green color coding (abstract symbol focus)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -225,6 +368,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LARGE WOODEN BOARD is DIVIDED into TEN VERTICAL COLUMNS, each LABELED at the TOP with a DECADES NUMERAL: 10, 20, 30, 40, 50, 60, 70, 80, 90. GOLDEN TEN-BARS are INSERTED into each column in INCREASING QUANTITIES: ONE ten-bar in the "10" column, TWO in the "20" column, THREE in the "30" column, CONTINUING UP to NINE in the "90" column. From far away, the child SEES a VISUAL STAIRCASE of increasing QUANTITIES of identical GOLDEN RODS, creating an immediate perceptual understanding of skip-counting by tens. A child is PLACING ten-bars, COUNTING them aloud (ten, twenty, thirty... ninety), discovering that EACH COLUMN ADDS ONE MORE TEN-BAR, and recognizing the SKIP-COUNTING PATTERN that structures our base-ten system. The VISUAL STAIRCASE PATTERN mirrors the GRADUATED LENGTH of the Number Rods but uses SEPARATE OBJECTS rather than single graduated rods.',
     key_materials: ['large wooden board with ten columns', 'golden ten-bars (1-9 per column)', 'place value labels (10-90) on top', 'visual staircase arrangement', 'skip-counting by tens pattern'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT showing all place values (tens only, 10-90)',
+      'NOT abstract symbols alone (concrete GOLDEN TEN-BARS visible)',
+      'NOT a bead stair (organized in COLUMNS showing multiples of ten)',
+      'NOT showing individual units (only ten-bar multiples)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -235,6 +384,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A VERY LARGE WOODEN BOARD displays a GRID or MATRIX structure showing ALL NUMBERS from 11 to 99 (the complete "after-tens" range). Small GRID CELLS are FILLED with GOLDEN TEN-BARS and COLORED BEAD BARS arranged to represent each number: to show 47, a child PLACES FOUR GOLDEN TEN-BARS in the appropriate cell location, PLUS a GREEN BEAD BAR (representing 7 units), creating a PHYSICAL 47. The child REFERENCES the BOARD LAYOUT to build numbers, DISCOVERING PATTERNS in the arrangement: how teen numbers progress, how numbers increase by 10 when moving down columns, how the units cycle through 1-9 repeatedly. From a distance, the board DISPLAYS a COMPLEX MATRIX of MIXED COLORED BEAD MATERIALS in organized arrangement. A child is ACTIVELY BUILDING multi-digit numbers using materials, matching the physical quantity to a position on the board, or READING numbers from the board and CREATING them with materials.',
     key_materials: ['large wooden board (11-99 grid)', 'golden ten-bars (multiple per cell)', 'colored bead bars 1-9', 'grid cell arrangement', 'visual number matrix layout', 'quantity-position correspondence'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT showing 1-9 or numbers above 99 (11-99 grid only)',
+      'NOT a bead chain (organized in GRID showing all teen and tens)',
+      'NOT showing units only (combination of TENS and UNITS)',
+      'NOT an abstract card-only activity (concrete beads in grid)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -244,7 +399,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Teens and Tens',
     visual_description: 'A WOODEN BOARD is DIVIDED into ONE HUNDRED EQUAL SQUARE CELLS arranged in a PERFECT 10×10 GRID. NUMERALS 1-100 are PRINTED or CARVED into the board in sequential order: 1 in top-left, 2 next to it, continuing across to 10, then 11-20 on the next row, down to 100 in the bottom-right corner. SMALL NUMBERED WOODEN TILES, PLASTIC DISCS, or PRINTED CARDS displaying individual numbers are PLACED into cells in sequence, or PATTERN-MARKING TOKENS (colored discs, markers, or flags) are PLACED on specific numbers to highlight patterns. A child might PLACE tiles 1-100 in order (numerical sequencing practice), or MARK every 2nd number (even number pattern), every 5th number (pattern discovery), every 10th number (rows), or IDENTIFY prime numbers by elimination. The VISUAL PATTERNS EMERGE: columns reveal TENS patterns, rows reveal ONES patterns (1,11,21,31...), diagonals create INTERESTING SEQUENCES. From a distance, completed patterns appear as DISTINCTIVE VISUAL DESIGNS on the 10×10 grid.',
     key_materials: ['wooden 100-square grid board', 'numbered tiles 1-100 or discs', 'pattern marking tokens (optional)', '10×10 grid arrangement', 'place value column structure', 'visual pattern discovery'],
-    confusion_pairs: ['ma_hundred_chain'],
+    confusion_pairs: [
+      { work_key: 'ma_hundred_chain', reason: 'Both represent 100 in sequence using beads or tiles', differentiation: 'HUNDRED BOARD is a flat 10×10 GRID showing all numbers simultaneously; HUNDRED CHAIN is a LINEAR string of beads that can be laid out' },
+    ],
+    negative_descriptions: [
+      'NOT showing numbers beyond 100 (1-100 only)',
+      'NOT a flexible chain (fixed square GRID format)',
+      'NOT a bead activity (NUMBERED TILES or discs on board)',
+      'NOT showing fewer than 100 (complete 10×10 grid)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -254,7 +417,16 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Teens and Tens',
     visual_description: 'TEN GOLDEN TEN-BARS are CONNECTED END-TO-END in a SINGLE LINEAR CHAIN creating a CONTINUOUS STRING of exactly 100 GOLDEN BEADS laid out HORIZONTALLY across the classroom floor or on a very long table. This creates a VISUALLY STRIKING, DIMENSIONAL representation of 100 as a LINEAR QUANTITY. PRINTED ARROW LABEL CARDS marking INTERVALS (1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100) are PLACED at regular positions along the chain. A child is WALKING ALONGSIDE the chain, TOUCHING and COUNTING the beads (often in groups of ten by ten-bar), discovering that THIS MUCH MATERIAL equals one hundred. The LINEAR PRESENTATION emphasizes the MAGNITUDE of 100 in a way that flat boards cannot — children can physically EXPERIENCE the length, FEEL the weight of the beads, and INTERNALIZE the SIZE of hundred through full-body exploration. The GOLDEN COLOR unifies all beads, while the BEAD CONNECTIONS create visible TEN-UNIT SEGMENTS.',
     key_materials: ['hundred chain (100 beads in 10 ten-bars)', 'arrow label cards 1-100', 'linear ground or table layout', 'visible ten-bar segments', 'connectors joining bars'],
-    confusion_pairs: ['ma_thousand_chain', 'ma_hundred_board'],
+    confusion_pairs: [
+      { work_key: 'ma_thousand_chain', reason: 'Both are long bead chains representing place value progressions', differentiation: 'HUNDRED CHAIN has 100 beads forming ten 10-BEAD BARS; THOUSAND CHAIN has 1000 beads in hundred 10-BEAD BARS coiled in storage' },
+      { work_key: 'ma_hundred_board', reason: 'Both represent 100 items in sequence', differentiation: 'HUNDRED CHAIN is a LINEAR, flexible BEAD STRING; HUNDRED BOARD is a fixed flat 10×10 GRID' },
+    ],
+    negative_descriptions: [
+      'NOT beads only (visible TEN-BAR SEGMENTS connected together)',
+      'NOT a flat grid (laid out LINEARLY on ground or table)',
+      'NOT thousand-length (100 beads only, not 1000)',
+      'NOT showing higher denominations than hundreds',
+    ],
     difficulty: 'easy',
   },
   {
@@ -264,7 +436,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Teens and Tens',
     visual_description: 'A DRAMATICALLY LONG CHAIN of 1,000 GOLDEN BEADS (formed from ONE HUNDRED connected TEN-BARS) is LAID OUT in a LARGE COIL, LOOP, or SPIRAL across the CLASSROOM FLOOR, or STORED in COILED BUNDLES in a large STORAGE CONTAINER for display and exploration. This physical chain is EXTRAORDINARILY LONG — typically requiring the entire classroom length or creating a large circular spiral. PRINTED ARROW LABEL CARDS mark MAJOR INTERVALS (100, 200, 300, 400, 500, 600, 700, 800, 900, 1,000) placed at regular positions along the chain to create checkpoints. A child is WALKING alongside or AROUND the chain, physically TRAVERSING its ENTIRE LENGTH, TOUCHING segments, COUNTING by hundreds (100, 200, 300... 1,000), and EXPERIENCING the IMMENSE MAGNITUDE of one thousand through spatial, kinesthetic, and visual exploration. The SHEER LENGTH and VISIBLE COILING create a visceral sense of SCALE that numerical symbols alone cannot convey. This material often produces a "WOW!" response from children as they comprehend the physical reality of one thousand.',
     key_materials: ['thousand chain (1000 beads in 100 ten-bars)', 'arrow label cards at 100-unit intervals', 'large ground, loop, or spiral layout', 'storage container for coiling', 'visible ten-bar and hundred-bar segments'],
-    confusion_pairs: ['ma_hundred_chain'],
+    confusion_pairs: [
+      { work_key: 'ma_hundred_chain', reason: 'Both are long bead chains representing place value progressions', differentiation: 'THOUSAND CHAIN has 1000 beads organized in HUNDRED 10-BEAD BARS; HUNDRED CHAIN has 100 beads in just TEN 10-BEAD BARS' },
+    ],
+    negative_descriptions: [
+      'NOT a flat grid or board (COILED or looped for storage)',
+      'NOT showing just hundreds (1000 beads = THOUSAND)',
+      'NOT hundred-length (must have 1000 individual beads)',
+      'NOT organized as individual beads (visible TEN-BAR and HUNDRED-BAR segments)',
+    ],
     difficulty: 'medium',
   },
 
@@ -276,7 +456,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Linear Counting (Bead Chains)',
     visual_description: 'NINE COLORED BEAD CHAINS representing PERFECT SQUARE NUMBERS are ARRANGED in a DESCENDING STAIRCASE PATTERN on the floor or a very long table. Each chain has a DIFFERENT, VIBRANT COLOR: the 1-chain (1 bead = 1² = 1, often RED), the 2-chain (4 beads = 2² = 4, often ORANGE), the 3-chain (9 beads = 3² = 9, often YELLOW), 4-chain (16 beads = GREEN), 5-chain (25 beads = LIGHT BLUE), 6-chain (36 beads = PURPLE), 7-chain (49 beads = BROWN), 8-chain (64 beads = PINK), 9-chain (81 beads = DARK BLUE), and 10-chain (100 beads = GOLD or SILVER). The STAIRCASE ARRANGEMENT immediately VISUALIZES the PROGRESSION: each chain visibly LONGER than the previous. PRINTED ARROW LABEL CARDS show the SQUARE VALUES (1, 4, 9, 16, 25, 36, 49, 64, 81, 100) and MATHEMATICAL NOTATION (1², 2², 3², etc.). A child is HANDLING chains, COUNTING chains by tens to understand magnitude, arranging chains in sequence, or ARRANGING square chains into an ACTUAL SQUARE PATTERN (the 4-chain arranged in 2×2, the 9-chain in 3×3, etc.) to discover the GEOMETRIC meaning of "square" numbers.',
     key_materials: ['colored bead chains 1²-10²', 'distinct color per square', 'arrow label cards with square notation', 'staircase arrangement', 'linear chains showing progression', 'square pattern formation option'],
-    confusion_pairs: ['ma_long_chains'],
+    confusion_pairs: [
+      { work_key: 'ma_long_chains', reason: 'Both use colored bead chains showing mathematical progressions', differentiation: 'SHORT CHAINS are SQUARED NUMBERS (1-100 beads) shown in linear arrangement; LONG CHAINS are CUBIC NUMBERS (1-1000 beads) requiring coiling' },
+    ],
+    negative_descriptions: [
+      'NOT cubic numbers (SQUARED NUMBERS only, 1² through 10²)',
+      'NOT all one color (DISTINCT COLOR for each square)',
+      'NOT formless chains (organized in STAIRCASE showing progression)',
+      'NOT more than 100 beads in longest chain (10² = 100)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -286,7 +474,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Linear Counting (Bead Chains)',
     visual_description: 'NINE COLORED BEAD CHAINS representing PERFECT CUBE NUMBERS are ARRANGED to show: the 1-chain (1 bead = 1³ = 1), 2-chain (8 beads = 2³ = 8), 3-chain (27 beads = 3³ = 27), 4-chain (64 beads = 4³ = 64), 5-chain (125 beads = 5³ = 125), 6-chain (216 beads = 6³ = 216), 7-chain (343 beads = 7³ = 343), 8-chain (512 beads = 8³ = 512), 9-chain (729 beads = 9³ = 729), and 10-chain (1,000 beads = 10³ = 1,000). These chains are DRAMATICALLY LONGER than the square chains — the 10-chain is IDENTICAL to the thousand chain. Each chain has a DISTINCT COLOR throughout. Because these chains are SO LONG, they are typically COILED, BUNDLED, or STORED in LARGE WOVEN BASKETS or PLASTIC CONTAINERS near the classroom, displayed for observation rather than always laid out. PRINTED ARROW LABEL CARDS show CUBIC VALUES and MATHEMATICAL NOTATION (1³, 2³, 3³, etc.). A child is EXPLORING cube numbers, COMPARING chain lengths, UNWINDING chains to examine length progression, or arranging SHORT chains into ACTUAL CUBE PATTERNS (the 2-chain in 2×2×2, the 3-chain in 3×3×3) to visualize geometric meaning.',
     key_materials: ['colored bead chains 1³-10³', 'distinct color per cube', 'arrow label cards with cubic notation', 'storage containers for long chains', 'coiled or bundled arrangement', 'dramatic length increase progression'],
-    confusion_pairs: ['ma_short_chains'],
+    confusion_pairs: [
+      { work_key: 'ma_short_chains', reason: 'Both use colored bead chains showing mathematical progressions', differentiation: 'LONG CHAINS are CUBIC NUMBERS (1-1000 beads) requiring storage and COILING; SHORT CHAINS are SQUARED NUMBERS (1-100) arranged linearly' },
+    ],
+    negative_descriptions: [
+      'NOT squared numbers (CUBIC NUMBERS only, 1³ through 10³)',
+      'NOT displayed flat or fully extended (stored COILED in containers)',
+      'NOT a single size (chains range from 1 bead to 1000 beads)',
+      'NOT organized in visible staircase (too long for full display)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -297,6 +493,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LARGE WOODEN CABINET (often 1.5 meters tall, 1 meter wide, with 8-12 DRAWERS and COMPARTMENTS) serves as the COMPREHENSIVE STORAGE and ORGANIZATIONAL SYSTEM for the entire golden bead system and related materials. Multiple SHALLOW DRAWERS are LABELED and ORGANIZED by DENOMINATION: UNIT BEADS in one drawer (thousands of individual golden beads), TEN-BARS organized in rows (hundreds of ten-bars), HUNDRED-SQUARES stacked carefully (dozens of 10×10 grids), THOUSAND-CUBES arranged (10-12 large cubes). Additional DRAWERS house COLORED BEAD BARS (1-9 sets organized by type), COLORED BEAD CHAINS (short chains for squares, long chains for cubes coiled inside, hundred chain coiled, thousand chain in large container). LABEL TABS or CARDS on each drawer clearly indicate CONTENTS and QUANTITIES. A child is LEARNING the ORGANIZATION SYSTEM, FETCHING materials from specific drawers when needed for exercises, DISCOVERING the SYSTEMATIC ARRANGEMENT that makes the entire decimal system accessible. The cabinet represents COMPLETE ORGANIZATION and reveals the SCOPE of materials available for mathematical exploration.',
     key_materials: ['large wooden cabinet (8-12 drawers)', 'golden beads (all categories)', 'colored bead bars (complete sets)', 'short and long bead chains (coiled)', 'compartmentalized drawer system', 'label tabs for identification', 'organized storage arrangement'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a display of active work (this is a STORAGE cabinet)',
+      'NOT showing a single work or activity (contains complete material sets)',
+      'NOT an open arrangement (materials stored in CLOSED DRAWERS)',
+      'NOT showing only one type of bead material (multiple categories organized)',
+    ],
     difficulty: 'medium',
   },
 
@@ -309,6 +511,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'COLORED BEAD BARS (in various colors: red, green, pink, yellow, white, brown, blue, etc.) are LAID OUT in a LONG LINEAR SNAKE PATTERN on a MAT or table, creating a visually STRIKING continuous chain of beads in COLOR SEQUENCE rather than a staircase. Alongside this "snake," a BLACK AND WHITE BEAD STAIR (alternating black and white beads representing quantities 1-10) runs PARALLEL, serving as a RUNNING TOTAL counter. A child is CONTINUOUSLY COMBINING adjacent colored bead bars in the snake by PERFORMING EXCHANGES: whenever the child observes MORE THAN 10 BEADS in a section, the child TRADES 10 bead units for 1 GOLDEN TEN-BAR (moving units to the black/white stair counter). This process continues along the entire snake, consolidating groups, exchanging to golden tens, and tracking the RUNNING TOTAL. By the end, the snake is REDUCED TO a FINAL TOTAL of GOLDEN TEN-BARS and remaining unit beads, revealing the SUM of all the colored bars. The VISUAL SNAKE PATTERN and PARALLEL BLACK-WHITE COUNTER create a DYNAMIC, engaging experience of ADDITION FACTS and PLACE VALUE EXCHANGES.',
     key_materials: ['colored bead bars (assorted colors)', 'black and white bead stair (1-10)', 'golden ten-bars for exchange', 'long mat for snake layout', 'linear arrangement', 'running total counter mechanism'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT subtraction (adding colored bars together)',
+      'NOT multiplication or division (sequential addition)',
+      'NOT a fixed staircase (EXTENDED LINEAR snake pattern on mat)',
+      'NOT showing only single-digit bars (can show large sums with exchanges)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -319,6 +527,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'COLORED BEAD BARS (various colors) are ARRANGED in a SEQUENTIAL PATTERN on a mat. GRAY or NEUTRAL-COLORED BEAD BARS OF MATCHING LENGTHS are PLACED DIRECTLY ALONGSIDE or BENEATH each colored bar, representing the quantity being SUBTRACTED. A child is WORKING ACROSS multiple bar combinations in SEQUENCE, REMOVING the gray bars from the colored bars by moving them aside, discovering the DIFFERENCE for each subtraction pair. For example, a RED 8-BAR sits above a GRAY 3-BAR; the child SEES that 8 - 3 = 5 (five RED beads remain). The sequence might present RED 9-BAR with GRAY 4-BAR, THEN GREEN 7-BAR with GRAY 5-BAR, creating a CONTINUOUS PRACTICE of subtraction facts. The physical ACT of MOVING gray bars away and COUNTING remaining beads reinforces the MEANING of subtraction (what remains after removal). The SEQUENTIAL ARRANGEMENT creates a FLOWING practice experience that systematically covers many subtraction combinations.',
     key_materials: ['colored bead bars (various colors)', 'gray bead bars (matching lengths)', 'black and white bead stair (optional)', 'sequential arrangement on mat', 'subtraction combination pairs'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition (subtracting/removing pairs)',
+      'NOT using only colored bars (GRAY BARS paired against colored bars)',
+      'NOT a staircase (SEQUENTIAL pairs showing subtraction)',
+      'NOT multiplication or division (pair-by-pair subtraction combinations)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -328,7 +542,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Memorization of Math Facts',
     visual_description: 'A WOODEN BOARD (approximately 40cm × 40cm) displays a FIXED RED STRIP on the LEFT SIDE showing NUMERALS 1-9 in vertical or horizontal sequence (representing the first addend). On the RIGHT SIDE, a SERIES of SLIDING BLUE STRIPS (each showing numerals 1-9) can MOVE HORIZONTALLY ACROSS the board in PARALLEL TRACKS (representing the second addend). The child SLIDES each blue strip to align with a RED NUMERAL, showing different ADDITION COMBINATIONS: blue strip "1" aligned with red "1" shows 1+1, then the same blue "1" aligned with red "2" shows 1+2, continuing through 1+9. The child then SLIDES the blue "2" strip through all positions (2+1, 2+2... 2+9), then blue "3", etc. PRINTED ANSWER TABLES or ANSWER CARDS are provided separately. The child is SLIDING strips, OBSERVING the NUMERICAL SEQUENCE created, and optionally RECORDING or READING the ANSWERS from a chart. The SLIDING MECHANISM creates a SYSTEMATIC, EFFICIENT review of all 81 ADDITION FACTS (1+1 through 9+9) in an orderly, repeatable sequence.',
     key_materials: ['wooden board', 'fixed red strip (addends 1-9)', 'sliding blue strips (addends 1-9)', 'addition tables or answer cards', 'horizontal sliding mechanism', 'track or groove system'],
-    confusion_pairs: ['ma_subtraction_strip_board'],
+    confusion_pairs: [
+      { work_key: 'ma_subtraction_strip_board', reason: 'Both use wooden boards with color-coded strips and sliding mechanics', differentiation: 'ADDITION STRIP BOARD has RED fixed strip and BLUE sliding strips; SUBTRACTION STRIP BOARD configuration reversed for different operation' },
+    ],
+    negative_descriptions: [
+      'NOT subtraction (finding SUMS through addition)',
+      'NOT beads or manipulatives (PRINTED STRIPS and cards)',
+      'NOT a static display (SLIDING MECHANISM for changing addends)',
+      'NOT showing single-digit answers only (sums can reach 18)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -339,6 +561,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A SERIES of PROGRESSIVE CHARTS (typically 6 charts numbered 1-6) showing ADDITION FACTS with INCREASING ABSTRACTION. CHART 1 displays a COMPLETE ADDITION TABLE (1+1 through 9+9, or sometimes 1-10) with ALL ANSWERS completely FILLED IN and clearly VISIBLE. The child is READING answers by POINTING with their FINGER to specific cells (multi-sensory learning). CHART 2 is IDENTICAL to Chart 1 but with SOME ANSWERS REMOVED (blank spaces where answers should be). The child is FILLING BLANKS or READING filled answers. CHART 3 has EVEN MORE BLANKS. CHARTS 4-6 show ONLY EQUATIONS (1+1=___, 1+2=___, etc.) with NO ANSWER shown anywhere. The child is READING equations and ANSWERING orally or writing answers from memory. This PROGRESSION removes support gradually, moving from complete dependence on visual reference (Chart 1) to COMPLETE MENTAL RECALL (Chart 6). The PHYSICAL ACT OF FINGER-POINTING through charts creates a kinesthetic memory component strengthening fact retention.',
     key_materials: ['addition charts 1-6', 'progressive abstraction from complete to blank', 'finger-pointing for tactile memory', 'organized table format', 'repeated exposure to fact patterns'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a mechanical tool (a memorization/study chart)',
+      'NOT a single complete chart (PROGRESSIVE series from filled to blank)',
+      'NOT showing multiplication or subtraction facts (addition ONLY)',
+      'NOT showing facts beyond 6+6 (limited memorization scope)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -348,7 +576,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Memorization of Math Facts',
     visual_description: 'A WOODEN BOARD (approximately 40cm × 40cm) SIMILAR to the Addition Strip Board displays a FIXED MINUEND STRIP on the LEFT showing NUMERALS 1-18 or higher (the starting number in subtraction). On the RIGHT, SLIDING SUBTRAHEND STRIPS show NUMERALS 1-9 that MOVE HORIZONTALLY across the board in parallel tracks. The child SLIDES a subtrahend strip under the fixed minuend strip to show SUBTRACTION COMBINATIONS: sliding "1" under starting position shows 1-1=0, 1-blank (impossible), etc. Sliding under "5" shows 5-1=4. The child SYSTEMATICALLY works through all combinations (1-1, 2-1, 3-1... 9-1, then 1-2, 2-2, 3-2... etc., where possible). PRINTED ANSWER TABLES are provided for reference or checking. The SLIDING MECHANISM creates a SYSTEMATIC review of SUBTRACTION FACTS, with the child OBSERVING that SUBTRACTION only works when minuend ≥ subtrahend. The VISIBLE SLIDING PROCESS makes the RELATIONSHIP between minuend, subtrahend, and difference concrete and manipulable.',
     key_materials: ['wooden board', 'fixed minuend strip (1-18)', 'sliding subtrahend strips (1-9)', 'subtraction tables or answer cards', 'horizontal sliding mechanism', 'track or groove system'],
-    confusion_pairs: ['ma_addition_strip_board'],
+    confusion_pairs: [
+      { work_key: 'ma_addition_strip_board', reason: 'Both use wooden boards with color-coded strips and sliding mechanics', differentiation: 'SUBTRACTION STRIP BOARD removes amounts (MINUEND 1-18 from SUBTRAHEND); ADDITION STRIP BOARD adds amounts (fixed addend + sliding addend)' },
+    ],
+    negative_descriptions: [
+      'NOT addition (finding DIFFERENCES through subtraction)',
+      'NOT beads or manipulatives (PRINTED STRIPS and cards)',
+      'NOT showing only single-digit minuends (goes up to 18)',
+      'NOT a static tool (SLIDING MECHANISM for changing subtrahends)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -359,6 +595,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A SERIES of PROGRESSIVE SUBTRACTION CHARTS (typically 4-5 charts) showing SUBTRACTION FACTS with INCREASING ABSTRACTION. CHART 1 displays a COMPLETE SUBTRACTION TABLE with ALL ANSWERS filled in (e.g., 2-1=1, 2-2=0, 3-1=2, 3-2=1, etc.). The child is POINTING and READING all answers with support. CHART 2 has SOME BLANK SPACES where answers should appear. CHART 3 has MORE BLANKS. CHART 4 is COMPLETELY BLANK showing only equations (9-1=___, 9-2=___, etc.) with no answers anywhere. The child must PROVIDE answers entirely from MENTAL RECALL. The PROGRESSIVE REMOVAL of visual support mirrors the Addition Charts sequence, gradually building independence and automaticity in subtraction fact recall. The CONSISTENT USE of FINGER-POINTING and VISUAL LAYOUT strengthens memory through multi-sensory pathways. Many classrooms display these charts permanently, allowing children REPEATED REVIEW during multiple classroom visits.',
     key_materials: ['subtraction charts 1-4 or 1-5', 'progressive abstraction to blank', 'finger-pointing and memory aids', 'organized table format', 'repeated exposure to subtraction facts'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition facts (subtraction ONLY)',
+      'NOT a mechanical tool (a memorization study chart)',
+      'NOT showing larger minuends (limited to facts with subtrahends 1-4 or 1-5)',
+      'NOT a completed single chart (PROGRESSIVE series from filled to blank)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -369,6 +611,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A WOODEN BOARD displays 9 VERTICAL COLUMNS and multiple HORIZONTAL ROWS (creating a grid or array pattern). RED BEADS or RED TOKENS are PLACED in ROWS to create VISUAL ARRAYS showing MULTIPLICATION COMBINATIONS. To show 3 × 4 (three groups of four), the child PLACES 4 red beads in each of 3 horizontal rows. A COLORED DISC or MARKER (often RED or CONTRASTING COLOR) HIGHLIGHTS or "MARKS" the CURRENT COMBINATION being explored. The child COUNTS TOTAL BEADS (12 in the 3×4 example), discovering that 3 × 4 = 12. By MOVING the marker or RESETTING the board, the child EXPLORES the NEXT COMBINATION (e.g., 3 × 5 = 15). The VISUAL ARRAY is CRUCIAL — the child SEES the GROUPS and their QUANTITIES, making multiplication\'s MEANING (repeated groups) CONCRETE and VISUAL. The SYSTEMATIC PROGRESSION through all 81 MULTIPLICATION FACTS (1×1 through 9×9, with commutative pairs) creates COMPLETE COVERAGE of multiplication facts through HANDS-ON DISCOVERY.',
     key_materials: ['wooden board with 9 columns', 'red beads or tokens (numerous)', 'numeral cards or labels', 'colored disc or marker for tracking', 'array arrangement system', 'visual grouping display'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition or subtraction (multiplication of a fixed multiplier)',
+      'NOT a single quantity (showing GROUPS in COLUMNS for skip-counting)',
+      'NOT golden beads (RED BEADS or tokens on the board)',
+      'NOT a strip or sliding mechanism (fixed COLUMN LAYOUT)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -379,6 +627,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A SERIES of PROGRESSIVE MULTIPLICATION CHARTS (typically 5 charts) showing MULTIPLICATION FACTS with INCREASING ABSTRACTION from COMPLETE to BLANK. CHART 1 displays a COMPLETE 9×9 MULTIPLICATION TABLE with ALL PRODUCTS filled in (1×1=1, 1×2=2... 9×9=81). The child is POINTING and READING answers. CHART 2 has SOME PRODUCTS REMOVED (blank spaces). CHART 3 has MORE BLANKS. CHART 4 has MOST BLANKS with only a few answers shown. CHART 5 is COMPLETELY BLANK showing only equations (1×1=___, 1×2=___, etc.) with NO ANSWER provided anywhere. This PROGRESSION removes visual scaffolding gradually, moving from COMPLETE REFERENCE (Chart 1) to TOTAL MENTAL RECALL (Chart 5). The ORGANIZED TABLE FORMAT and SYSTEMATIC FINGER-POINTING create KINESTHETIC memory. Children typically work through these charts MULTIPLE TIMES over weeks or months, achieving AUTOMATICITY and FLUENCY in multiplication facts through repeated exposure with decreasing support.',
     key_materials: ['multiplication charts 1-5', 'complete to blank progression', 'finger-pointing for tactile memory', 'organized 9×9 table format', 'systematic fact coverage', 'repeated exposure across time'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition or subtraction facts (multiplication facts 1-5)',
+      'NOT a single complete chart (PROGRESSIVE series from complete to blank)',
+      'NOT a mechanical board with beads (memorization study chart)',
+      'NOT a 9×9 complete multiplication table (limited scope 1-5)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -389,6 +643,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A WOODEN BOARD displays a GRID structure with ROWS and COLUMNS arranged for DIVISION FACT EXPLORATION. GREEN BEADS or TOKENS are DISTRIBUTED EQUALLY among GREEN SKITTLES (small wooden pins or markers positioned on the board, each representing a DIVISOR). To show 12 ÷ 3, the child PLACES 12 green beads on the board and DISTRIBUTES them equally among 3 skittles (4 beads per skittle). The child COUNTS the beads in ONE SKITTLE GROUP (4) to discover the QUOTIENT. By CHANGING the number of skittles, the child EXPLORES different DIVISORS: 12 ÷ 4 uses 4 skittles (3 beads per skittle), 12 ÷ 6 uses 6 skittles (2 beads per skittle). The SYSTEMATIC placement of beads and counting reinforces the MEANING of division (sharing equally). NUMERAL CARDS record facts discovered (12 ÷ 3 = 4). The HANDS-ON DISTRIBUTION process makes division LOGICAL and CONCRETE, not abstract.',
     key_materials: ['wooden board with grid structure', 'green beads (numerous)', 'green skittles (divisor markers)', 'numeral cards or recording', 'distribution mechanism', 'quotient counting system'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multiplication (distributing quantities equally)',
+      'NOT addition or subtraction (equal sharing through division)',
+      'NOT golden beads (GREEN BEADS on the board)',
+      'NOT showing quantities larger than 9 groups (divisor markers set limits)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -399,6 +659,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A SERIES of PROGRESSIVE DIVISION CHARTS (typically 3-4 charts) showing DIVISION FACTS with INCREASING ABSTRACTION. CHART 1 displays a COMPLETE DIVISION TABLE with ALL QUOTIENTS filled in (e.g., 1÷1=1, 2÷1=2, 2÷2=1, 3÷1=3, 3÷2=1r1, 3÷3=1, etc.). The child POINTS and READS answers. CHART 2 has SOME QUOTIENTS REMOVED (blank spaces). CHART 3 is MOSTLY BLANK. CHART 4 (if present) is COMPLETELY BLANK showing only division equations (6÷2=___, 9÷3=___, etc.) requiring MENTAL RECALL of answers. This PROGRESSION moves from REFERENCE (Chart 1) to MEMORY (Chart 4). Unlike multiplication and division facts involving more limited facts due to division not being truly commutative (6÷2 ≠ 2÷6), division charts typically EXCLUDE impossible divisions (divisor > dividend). The SYSTEMATIC FINGER-POINTING and REPEATED REVIEW build DIVISION FACT AUTOMATICITY through KINESTHETIC and VISUAL learning pathways.',
     key_materials: ['division charts 1-3 or 1-4', 'progressive abstraction to blank', 'finger-pointing memory aids', 'division fact table format', 'systematic fact coverage'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multiplication facts (division ONLY)',
+      'NOT a mechanical board with beads (memorization study chart)',
+      'NOT a single complete chart (PROGRESSIVE series from filled to blank)',
+      'NOT showing all divisors 1-9 (limited scope 1-3 or 1-4)',
+    ],
     difficulty: 'medium',
   },
 
@@ -411,6 +677,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A WOODEN BOX or CABINET contains COMPLETE COLORED STAMP SETS representing the DECIMAL SYSTEM: GOLD UNIT STAMPS (small square raised symbols, each representing 1), GREEN TENS STAMPS (rectangular bars representing 10), BLUE HUNDREDS STAMPS (larger rectangles representing 100), RED THOUSANDS STAMPS (large cube-shaped stamps representing 1,000). Each stamp features a RAISED NUMERAL or SYMBOL on its surface and a FLAT WOODEN HANDLE for gripping. A child is SELECTING appropriate stamps to REPRESENT numbers, ARRANGING them on a tray to show quantities, and PERFORMING ALL FOUR ARITHMETIC OPERATIONS: to add 234 + 156, the child PLACES stamps showing 234 on one side and 156 on another, then COMBINES them, performing EXCHANGES (10 ones → 1 ten, 10 tens → 1 hundred) as needed. The TRANSITION from concrete beads to FLAT STAMPS requires INCREASED ABSTRACTION — stamps are less tangible than beads but MORE SYMBOLIC. WOODEN SKITTLES are used for DIVISION. The STAMP GAME marks a CRITICAL BRIDGE between manipulative materials and fully abstract numeral computation.',
     key_materials: ['wooden box with stamp sets', 'gold unit stamps (1s)', 'green tens stamps (10s)', 'blue hundreds stamps (100s)', 'red thousands stamps (1000s)', 'wooden handles on stamps', 'wooden skittles for division', 'exchange mechanism'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT golden beads (WOODEN STAMPS with printed place values)',
+      'NOT only for addition (can represent all four operations)',
+      'NOT showing quantities smaller than tens (STAMP denominations cover all place values)',
+      'NOT a static display (child stamps and arranges materials on paper)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -421,6 +693,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A child is DRAWING or PLACING DOTS on SPECIAL DOT PAPER that has COLOR-CODED SECTIONS or COLUMNS representing place values. The child is CREATING COLORED DOTS in specific patterns: GOLD DOTS or MARKERS for unit quantities, GREEN DOTS for tens, BLUE DOTS for hundreds, RED DOTS for thousands. To represent 234, the child might DRAW 2 RED DOTS (hundreds), 3 GREEN DOTS (tens), and 4 GOLD DOTS (units), either in SEPARATE COLUMNS or AREAS. The child PERFORMS ARITHMETIC OPERATIONS with dots, gradually TRANSITIONING from CONCRETE DOTS to WRITTEN NUMERALS. For example, when 10 GOLD DOTS accumulate, the child "EXCHANGES" by DRAWING 1 GREEN DOT and ERASING 10 GOLD DOTS. This visual-motor activity creates a SYMBOLIC BRIDGE between CONCRETE BEADS (Stamp Game) and COMPLETELY ABSTRACT NUMERALS (pencil-and-paper arithmetic). The ACT OF DRAWING creates kinesthetic memory, while the COLOR-CODING maintains place value visual support. Over TIME, children require FEWER dots, eventually abandoning dots entirely and WRITING NUMERALS directly.',
     key_materials: ['dotted paper with place value sections', 'colored pencils (gold, green, blue, red)', 'work cards or problem sheets', 'gradual transition from dots to numerals', 'exchange mechanism (dot counting)', 'visual place value reinforcement'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT concrete bead materials (PENCIL-BASED activity)',
+      'NOT showing all operations equally (can focus on addition or subtraction)',
+      'NOT a completed work (child is DRAWING dots and numerals)',
+      'NOT printed numerals only (progressive TRANSITION from DOTS to NUMERALS)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -430,7 +708,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Passage to Abstraction',
     visual_description: 'An ABACUS-STYLE WOODEN FRAME stands upright with 4 HORIZONTAL WIRES mounted parallel on a STURDY WOODEN BASE (approximately 30cm tall). BEADS (usually 10 per wire) SLIDE freely left and right along each wire. Starting from the BOTTOM WIRE upward: BOTTOM (units) wire has 10 BEADS, 2nd wire (tens) has 10 BEADS, 3rd wire (hundreds) has 10 BEADS, TOP (thousands) wire has 10 BEADS. To form a number like 3,452, the child SLIDES 3 beads rightward on the thousands wire, 4 beads on the hundreds wire, 5 beads on the tens wire, and 2 beads on the units wire. The VISUAL APPEARANCE immediately shows the VALUE through BEAD POSITIONING. The child PERFORMS ALL FOUR OPERATIONS by SLIDING beads: addition means sliding more beads right (grouping), subtraction means sliding beads left or performing "reversal exchanges" (breaking a ten when necessary). The SMALL BEAD FRAME introduces the ABACUS as an ORGANIZATIONAL SYSTEM for computation. The SLIDING MECHANISM is more ABSTRACT than physical bead manipulation but more concrete than pure numerals.',
     key_materials: ['wooden abacus frame (4 wires)', 'beads on wires (10 per wire)', 'left/right sliding mechanism', 'wooden base stand', 'clear visual place value representation'],
-    confusion_pairs: ['ma_large_bead_frame'],
+    confusion_pairs: [
+      { work_key: 'ma_large_bead_frame', reason: 'Both are abacus-style frames for representing place value', differentiation: 'SMALL BEAD FRAME has 4 WIRES (thousands to ones); LARGE BEAD FRAME has 7 WIRES (extends to millions)' },
+    ],
+    negative_descriptions: [
+      'NOT showing more than four place values (4 wires only)',
+      'NOT individual beads scattered (beads on WIRES with SLIDING mechanism)',
+      'NOT golden beads (colored or natural BEADS on wooden abacus)',
+      'NOT flexible layout (fixed frame structure)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -440,7 +726,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     category: 'Passage to Abstraction',
     visual_description: 'An EXTENDED ABACUS-STYLE FRAME with 7 HORIZONTAL WIRES mounted on a WOODEN BASE (often quite tall, 40-50cm). Starting from BOTTOM upward: units (ones), tens, hundreds, thousands, TEN-THOUSANDS, HUNDRED-THOUSANDS, MILLIONS. Each wire has 10 BEADS that SLIDE left and right. The child is BUILDING VERY LARGE NUMBERS by SLIDING beads: to form 3,456,789, the child POSITIONS beads showing each place value in sequence. The EXTENDED RANGE (up to millions) allows exploration of LARGE QUANTITIES and EXTENDED PLACE VALUE UNDERSTANDING. The child is PERFORMING COMPLEX OPERATIONS with large numbers using this frame. The VISUAL SYSTEM (bead positions representing quantities) makes large number manipulation LOGICAL and LEARNABLE. The progression from SMALL BEAD FRAME (4 wires, thousands) to LARGE BEAD FRAME (7 wires, millions) demonstrates EXPANDABILITY of the place value system. Both frames work identically mechanically but LARGE FRAME provides EXTENDED RANGE for advanced work.',
     key_materials: ['wooden abacus frame (7 wires)', 'beads on wires (10 per wire)', 'left/right sliding mechanism', 'tall wooden base', 'extended place value visualization (to millions)'],
-    confusion_pairs: ['ma_small_bead_frame'],
+    confusion_pairs: [
+      { work_key: 'ma_small_bead_frame', reason: 'Both are abacus-style frames for representing place value', differentiation: 'LARGE BEAD FRAME has 7 WIRES (millions down to ones); SMALL BEAD FRAME has only 4 WIRES (thousands to ones)' },
+    ],
+    negative_descriptions: [
+      'NOT showing just thousands to ones (extends to MILLIONS with 7 wires)',
+      'NOT individual loose beads (beads mounted on WIRES)',
+      'NOT a compact structure (TALL wooden BASE for extended display)',
+      'NOT flexible or collapsible (fixed FRAME structure)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -451,6 +745,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LARGE WOODEN BOARD displays a 9×9 CHECKERBOARD GRID of ALTERNATING COLORED SQUARES (often alternating light and dark wood, or two colors like red and black). The board has COLORED COLUMN HEADERS showing PLACE VALUES (units, tens, hundreds, thousands visible as column groupings). COLORED BEAD BARS and GOLDEN BEADS are PLACED in specific squares to show MULTI-DIGIT MULTIPLICATION PROBLEMS. For example, to multiply 23 × 45: the child PLACES the MULTIPLICAND (23) along the left edge, the MULTIPLIER (45) along the top edge, then FILLS IN the GRID SQUARES with appropriate bead materials. The GRID STRUCTURE naturally creates PARTIAL PRODUCTS: the 20 × 40 area (8 hundred-squares), the 20 × 5 area (10 ten-bars), the 3 × 40 area (12 ten-bars), the 3 × 5 area (15 units). All partial products are VISIBLE and ORGANIZED in COLOR-CODED COLUMNS. The child COMBINES partial products (performing exchanges as needed) to find the FINAL PRODUCT (1,035). The CHECKERBOARD LAYOUT makes the DISTRIBUTIVE PROPERTY and MULTI-DIGIT MULTIPLICATION LOGIC VISIBLE and CONCRETE through bead arrangement.',
     key_materials: ['wooden checkerboard (9×9 grid)', 'colored bead bars (complete sets)', 'golden beads (numerous)', 'number tiles or labels', 'color-coded columns for partial products', 'place value organization'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT simple addition or subtraction (multiplication of multi-digit numbers)',
+      'NOT showing a single quantity (multiple PARTIAL PRODUCTS in separate columns)',
+      'NOT using single-digit factors (can multiply two-digit or three-digit numbers)',
+      'NOT a bead chain or simple staircase (complex GRID with organized product breakdown)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -461,6 +761,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A WOODEN RACK or FRAME holds MULTIPLE UPRIGHT GLASS TEST TUBES or CLEAR PLASTIC TUBES in a row (typically 9-10 tubes). BEADS are PLACED INSIDE the tubes. To perform DIVISION, the child DISTRIBUTES the DIVIDEND BEADS EQUALLY among TUBES (with EACH TUBE representing a DIVISOR UNIT marked by WOODEN SKITTLES). For division 648 ÷ 8: the child places 648 beads (perhaps as 6 hundred-squares, 4 ten-bars, 8 units) and distributes them equally among 8 tubes. Starting with LARGER DENOMINATIONS: the child places HUNDRED-SQUARES in tubes as evenly as possible, then BREAKS remaining hundreds (reverse exchange) into TEN-BARS, continues distribution, breaks remaining tens into UNITS, distributes units. When complete, EACH TUBE contains an EQUAL QUANTITY representing the QUOTIENT (81 beads per tube = quotient of 81). The VERTICAL TUBE ARRANGEMENT is KINESTHETICALLY ENGAGING — the child is actively MOVING beads between tubes, DISCOVERING equal distribution visually, and EXPERIENCING division\'s true meaning (sharing equally). The TRANSPARENT TUBES allow VISUAL CONFIRMATION of equal shares.',
     key_materials: ['racks with test tubes (9-10 tubes)', 'beads (various denominations)', 'wooden skittles (divisor markers)', 'problem cards or work sheets', 'equal distribution mechanism', 'transparent tube visualization'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multiplication (dividing quantities into equal shares)',
+      'NOT golden bead cabinet or display (TRANSPARENT TEST TUBES for visible distribution)',
+      'NOT a board or grid activity (TUBE-BASED distribution system)',
+      'NOT addition or subtraction (equal sharing through division)',
+    ],
     difficulty: 'hard',
   },
 
@@ -473,6 +779,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A COMPREHENSIVE SET OF CIRCULAR INSET MATERIALS displays the concepts of FRACTIONS through precision-fitting METAL or PLASTIC PIECES. The collection includes: ONE WHOLE CIRCLE (complete unbroken circle in a frame), TWO HALVES (two identical semi-circular pieces fitting together to form the whole), THREE THIRDS (three identical pieces forming the whole), FOUR FOURTHS, FIVE FIFTHS, SIX SIXTHS, SEVEN SEVENTHS, EIGHT EIGHTHS, NINE NINTHS, TEN TENTHS — each fraction has DISTINCT COLOR to aid visual differentiation (halves might be LIGHT BLUE, thirds LIGHT GREEN, fourths YELLOW, etc.). Each fractional piece FITS PRECISELY into a METAL FRAME or matched indentation, and MULTIPLE FRACTIONAL PIECES fit together exactly to form the COMPLETE CIRCLE. A child is FITTING pieces together or REMOVING pieces, physically DISCOVERING equivalences: 2 halves = 1 whole, 3 thirds = 1 whole, 2 fourths + 1 fourth = 3 fourths. The TANGIBLE FITTING MECHANISM and DISTINCT COLORS make fraction concepts CONCRETE and DIRECTLY VERIFIABLE through manipulation.',
     key_materials: ['circular insets (1/1 through 1/10)', 'metal or plastic frames', 'distinct color per fraction', 'precision-fitting mechanism', 'complete circle frame', 'fractional piece sets'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT beads or stamps (precision METAL or PLASTIC INSET pieces)',
+      'NOT showing all fractions equally (emphasizes halves, thirds, quarters primarily)',
+      'NOT a flat grid or board (CIRCULAR GEOMETRIC PIECES)',
+      'NOT abstract numerals (concrete VISUAL fractional DIVISIONS)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -483,6 +795,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A child is USING FRACTION INSETS to ADD FRACTIONS through CONCRETE MATERIAL MANIPULATION. Problem cards present ADDITION EQUATIONS (e.g., "1/4 + 1/4"). The child SELECTS two FOURTH pieces from the fraction inset set, PLACES them together, and OBSERVES that they FIT EXACTLY into ONE HALF FRAME, discovering that 1/4 + 1/4 = 1/2. Another problem: 1/3 + 1/3 = the child PLACES two THIRD pieces together and observes they form a larger portion (2/3) of the circle. The child DISCOVERS COMMON DENOMINATORS through MATERIAL FITTING: to add 1/4 + 1/6, the child finds which pieces fit into the same remaining space (discovering the LCD is 12). The TANGIBLE FITTING and VISUAL COLOR-CODING make fraction addition LOGICAL: you COMBINE pieces, and the RESULT is IMMEDIATELY VISIBLE. Over time, the child TRANSITIONS from MATERIAL FITTING to WRITING EQUATIONS with increasing understanding of WHY the procedures work.',
     key_materials: ['fraction insets', 'problem cards', 'paper for recording equations', 'fitting and combination mechanism', 'visual fraction comparison'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a display of insets alone (active combining and measuring activity)',
+      'NOT subtraction or multiplication (adding fractions)',
+      'NOT beads or abstract materials (precision METAL/PLASTIC INSETS)',
+      'NOT showing wholes only (demonstrates PARTIAL quantities)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -493,6 +811,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A child is USING FRACTION INSETS to SUBTRACT FRACTIONS through REMOVAL and COMPARISON. Problem cards present SUBTRACTION (e.g., "1 whole − 1/4 = ?"). The child PLACES the WHOLE CIRCLE into the frame, then REMOVES or DISPLACES a FOURTH piece, observing that THREE FOURTHS remain (3/4). Another problem: 1/2 − 1/4 — the child starts with a HALF piece, attempts to remove a FOURTH piece, discovers it PARTIALLY FITS, and uses smaller fraction pieces to determine the difference. The child might use EIGHTHS pieces to show that 1/2 = 4/8, so 4/8 − 2/8 = 2/8 = 1/4. The PHYSICAL REMOVAL of fractional pieces makes subtraction\'s MEANING (what remains after taking away) CONCRETE and VERIFIABLE. The MATERIAL fitting provides IMMEDIATE FEEDBACK confirming correct answers. This concrete exploration builds understanding that subtraction REVERSES addition, essential for fraction fluency.',
     key_materials: ['fraction insets', 'problem cards', 'paper for recording', 'removal and comparison mechanism', 'visual remainder discovery'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition (subtracting fractional parts)',
+      'NOT multiplication or division of fractions (subtraction ONLY)',
+      'NOT a static inset display (child is REMOVING pieces and COMPARING)',
+      'NOT showing whole quantities only (demonstrates PARTIAL removals)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -503,6 +827,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A child is MULTIPLYING FRACTIONS using FRACTION INSETS through COMPOSITION and NESTED PIECES. Problem cards present MULTIPLICATION (e.g., "1/2 × 1/4"). The child selects a HALF piece, then asks "What is 1/4 OF this half?" The child PLACES a FOURTH piece and OBSERVES whether it FITS into the half (discovering 1/4 fits into the half 2 times, so 1/4 of 1/2 is 1/8). Another example: 1/3 × 1/2 — the child FINDS what portion of 1/3 equals 1/2 (discovering 1/6). The MATERIAL FITTING shows the PRODUCT — the OVERLAPPING REGION or NESTED PIECE represents the RESULT. This CONCRETE demonstration reveals why "1/2 × 1/4 = 1/8" — you\'re literally TAKING A FRACTION of a fraction. The VISUAL and TACTILE discovery of "a fraction of a fraction" builds profound understanding that multiplication of fractions produces SMALLER QUANTITIES (unlike multiplication of whole numbers).',
     key_materials: ['fraction insets', 'problem cards', 'paper for recording', 'nested or overlapping pieces', 'visual product discovery'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT addition or subtraction (multiplying fractional parts)',
+      'NOT division of fractions (multiplication ONLY)',
+      'NOT a single piece display (child OVERLAPPING multiple pieces for products)',
+      'NOT showing simple addition arrangements (NESTED PIECES for multiplication)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -513,6 +843,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A child is DIVIDING FRACTIONS using FRACTION INSETS to DISCOVER "How many times does one fraction fit into another?" Problem cards present DIVISION (e.g., "1/2 ÷ 1/4"). The child PLACES a HALF piece and asks "How many FOURTHS fit into this half?" By COMPARING pieces, the child DISCOVERS that TWO FOURTHS fit exactly into the half (2/4 = 1/2), so 1/2 ÷ 1/4 = 2. Another problem: 3/4 ÷ 1/8 — the child DISCOVERS how many EIGHTHS fit into 3/4 (the answer is 6). The MATERIAL FITTING makes the QUOTIENT VISIBLE: children count HOW MANY of the DIVISOR pieces FIT into the DIVIDEND piece. This concrete experience reveals the LOGIC of fraction division (sometimes resulting in quotients GREATER than 1, when the divisor is smaller than the dividend) — a concept that baffles students using only symbolic methods.',
     key_materials: ['fraction insets', 'problem cards', 'paper for recording', 'comparative fitting mechanism', 'quotient counting discovery'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multiplication, addition, or subtraction (dividing fractions)',
+      'NOT showing equal sharing of whole quantities only (works with fractional divisors and dividends)',
+      'NOT a single-piece display (child COMPARING pieces for quotient discovery)',
+      'NOT concrete beads or non-circular materials (CIRCULAR INSETS only)',
+    ],
     difficulty: 'hard',
   },
   {
@@ -523,6 +859,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'SETS OF SMALL WOODEN BOWLING PINS (SKITTLES) in VARIOUS QUANTITIES serve as physical representations of FRACTIONS and the CONNECTION between FRACTIONS and DIVISION. One skittle set might contain 9 SKITTLES total, with 3 MARKED or COLORED DISTINCTLY (red, while others are natural wood) to show 3/9 = 1/3. Another set has 12 SKITTLES with 4 MARKED to show 4/12 = 1/3. Another shows 6 SKITTLES with 2 MARKED to show 2/6 = 1/3. A child is HANDLING skittle sets, COUNTING total and COLORED portions, DISCOVERING that DIFFERENT SKITTLE SETS can show EQUIVALENT FRACTIONS (3/9 = 2/6 = 1/3). The sets naturally demonstrate the RELATIONSHIP between FRACTIONS and DIVISION: 3 ÷ 9 = 1/3. The PHYSICAL SKITTLES (DIFFERENT from abstract insets) create KINESTHETIC learning and reveal FRACTION EQUIVALENCE through CONCRETE QUANTITIES. Some sets might include multiple COLORED skittles showing multiple fractions simultaneously (3 RED + 2 BLUE in a set of 10 showing 3/10 + 2/10 = 5/10).',
     key_materials: ['fraction skittles sets (various quantities)', 'marked or colored skittles per set', 'fraction equivalence representation', 'division-fraction connection', 'multiple fractional groupings optional'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT circular fraction insets (uses WOODEN SKITTLES)',
+      'NOT simple multiplication or division (demonstrates FRACTION EQUIVALENCE)',
+      'NOT single-quantity display (shows multiple FRACTIONAL GROUPINGS for comparison)',
+      'NOT abstract numerals or formulas (concrete SKITTLE-BASED representations)',
+    ],
     difficulty: 'hard',
   },
 
@@ -535,6 +877,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'WOODEN OR BAMBOO STICKS OF VARIOUS LENGTHS are organized in a STORAGE BOX or BASKET with COMPARTMENTS, typically with DISTINCT COLORS for different lengths (short sticks in one color, medium in another, long in a third, etc.). The sticks range from very short (~5cm) to relatively long (~30cm). A child is SELECTING sticks and CONSTRUCTING GEOMETRIC SHAPES on a mat or table: three sticks form TRIANGLES (child discovers that the sum of any two sides must exceed the third for a valid triangle), four sticks form QUADRILATERALS (squares, rectangles, parallelograms, trapezoids), five sticks form PENTAGONS, six sticks form HEXAGONS. The child is COUNTING VERTICES (corner points where sticks meet) and SIDES while constructing, discovering properties: "A triangle ALWAYS has 3 sides and 3 vertices," "A square has 4 equal sides and 4 right angles," "A hexagon has 6 sides." The COLOR-CODING of different stick lengths aids pattern discovery and makes the shapes\'s properties immediately visible.',
     key_materials: ['colored wooden or bamboo sticks (various lengths)', 'storage box with compartments', 'distinct colors for different lengths', 'prepared mat for construction', 'vertices and sides discovery mechanism'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT beads or connecting materials (WOODEN STICKS only)',
+      'NOT showing equal-length sets (VARIETY of different length sticks)',
+      'NOT abstract geometry (concrete STICK-BASED shape construction)',
+      'NOT pre-formed shapes (child ASSEMBLES shapes using sticks)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -545,6 +893,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'NOMENCLATURE CARDS displaying GEOMETRIC VOCABULARY are organized in sets, each card showing a GEOMETRIC ILLUSTRATION and a PRINTED LABEL. Cards cover LINES (straight line, curved line, perpendicular lines, parallel lines), ANGLES (acute angle <90°, right angle =90°, obtuse angle >90°, straight angle =180°), TRIANGLES (equilateral triangle with all sides equal, isosceles triangle with 2 equal sides, scalene triangle with no equal sides, right triangle with 90° angle), QUADRILATERALS (square with 4 equal sides and 4 right angles, rectangle with opposite sides equal and 4 right angles, rhombus with 4 equal sides and opposite angles equal, trapezoid with one pair of parallel sides, parallelogram with opposite sides parallel). A child is READING LABELS, MATCHING cards to corresponding illustrated shapes, or ARRANGING cards in logical groupings (all triangles together, all quadrilaterals together). The VISUAL ILLUSTRATIONS combined with PRINTED LABELS create a NOMENCLATURE SYSTEM for geometric vocabulary, building VISUAL and VERBAL understanding of geometric concepts.',
     key_materials: ['nomenclature cards with illustrations', 'printed geometric labels', 'comprehensive geometric vocabulary', 'matching activity format', 'logical grouping organization'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT three-dimensional wooden forms (PRINTED CARDS with illustrations)',
+      'NOT concrete shape construction (NOMENCLATURE/labeling activity)',
+      'NOT beads or manipulatives (visual cards with geometric vocabulary)',
+      'NOT showing measurements or dimensions (focuses on shape IDENTIFICATION and naming)',
+    ],
     difficulty: 'medium',
   },
   {
@@ -555,6 +909,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'YELLOW WOODEN TRIANGLES, all of a STANDARD SIZE (typically equilateral or isosceles triangles, approximately 5cm × 5cm × 5cm or similar), are USED to COVER and TILE various GEOMETRIC SHAPES. The child is SELECTING shapes (rectangles, parallelograms, trapezoids, hexagons drawn on cards or cut from cardboard) and ARRANGING the YELLOW TRIANGLES to COMPLETELY COVER the shape, counting HOW MANY TRIANGLES FIT. For example, a rectangular area might require 12 TRIANGLES to cover completely, so "the area of this rectangle is 12 triangle-units." A parallelogram of the same size also covers 12 triangles (revealing area equivalence despite different shape). A trapezoid might require 9 triangles. The HANDS-ON COVERING and COUNTING creates a CONCRETE understanding of AREA MEASUREMENT: area is HOW MANY UNITS COVER a surface. Over time, the child DISCOVERS that AREA can be calculated (length × width for rectangles, base × height for parallelograms, etc.) through pattern observation. The YELLOW TRIANGLE UNIT becomes a MEASURING UNIT, introducing concepts foundational to later area formulas.',
     key_materials: ['yellow wooden triangles (standard size)', 'geometric insets or drawn shapes', 'covering and tiling method', 'prepared mat or cards', 'unit-counting discovery system'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT multi-colored shapes (all triangles are YELLOW)',
+      'NOT abstract symbols (concrete WOODEN TRIANGLE pieces)',
+      'NOT nomenclature or labeling (GEOMETRIC EXPLORATION and covering)',
+      'NOT showing three-dimensional forms (flat geometric triangle manipulation)',
+    ],
     difficulty: 'medium',
   },
 
@@ -567,6 +927,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LEARNING CLOCK features a WOODEN or PLASTIC FACE displaying NUMERALS 1-12 arranged in a CIRCLE in standard clock positions. TWO MOVABLE HANDS (hour hand — shorter, minute hand — longer) are MOUNTED at the center and can be ROTATED by the child to any position. TIME CARDS DISPLAY different times in STANDARD NOTATION (3:30, 10:15, 7:45, 12:00, etc.). A child is READING a time card, then SETTING THE CLOCK HANDS to show that time: "3:30" means the HOUR HAND between 3 and 4, the MINUTE HAND pointing at 6. Another approach: the child OBSERVES a clock position and READS the time shown. The child DISCOVERS PATTERNS: "minute hand at 12 means 0 minutes (on the hour)," "minute hand at 3 means 15 minutes," "minute hand at 6 means 30 minutes." The MANIPULABLE HANDS create KINESTHETIC learning, and REPEATED PRACTICE with multiple time cards builds FLUENCY in READING and SETTING TIME, essential for understanding clock and time concepts.',
     key_materials: ['learning clock (plastic or wooden)', 'movable hour and minute hands', 'time cards with standard notation', 'numeral face 1-12', 'prepared mat or holder'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT showing only numerals (a FUNCTIONAL CLOCK with movable hands)',
+      'NOT an analogue mathematical grid (CIRCULAR FACE with 12-hour NUMERAL layout)',
+      'NOT beads or geometry pieces (mechanical CLOCK teaching tool)',
+      'NOT a static display (child is POSITIONING hands to match time cards)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -577,6 +943,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'PLAY COINS or REAL COINS of VARIOUS DENOMINATIONS (pennies = 1¢, nickels = 5¢, dimes = 10¢, quarters = 25¢) are ARRANGED on a PREPARED MAT. PRICE TAGS with DOLLAR AMOUNTS ($0.05, $0.30, $1.47, etc.) are DISPLAYED. SHOP MATERIALS (pretend food items, toys, picture cards representing merchandise) and ROLE-PLAY ITEMS are set up simulating a STORE ENVIRONMENT. A child is RECOGNIZING individual coin VALUES (point at coins and name: "penny = 1¢," "nickel = 5¢," "dime = 10¢," "quarter = 25¢"), COUNTING MIXED COIN AMOUNTS ("3 dimes + 2 nickels + 1 penny = 41¢"), MAKING CHANGE in a pretend transaction ("Item costs 35¢, customer gives 50¢, change is 15¢"), or PURCHASING items by selecting appropriate coins. The HANDS-ON COIN MANIPULATION and REAL-WORLD ROLE-PLAY make CURRENCY UNDERSTANDING practical, relevant, and ENGAGING. Multiple practice opportunities build FLUENCY in coin VALUE RECOGNITION and MONETARY CALCULATION.',
     key_materials: ['play coins or real coins (multiple denominations)', 'price tags with amounts', 'shop materials and merchandise', 'role-play items for store', 'change-making practice system'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT pure mathematical tools (integrated with SHOP/ROLE-PLAY materials)',
+      'NOT showing single currency only (MULTIPLE coin DENOMINATIONS)',
+      'NOT abstract numerals (PHYSICAL COINS and MERCHANDISE)',
+      'NOT a passive learning activity (child engaged in TRANSACTION role-play)',
+    ],
     difficulty: 'easy',
   },
   {
@@ -587,6 +959,12 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     visual_description: 'A LARGE CALENDAR BOARD displays a COMPLETE MONTH with CELLS or SQUARES for each DATE, typically arranged in 7 COLUMNS (Sunday through Saturday) and ROWS totaling 4-6 rows (depending on the month\'s length). DAY-OF-WEEK LABELS appear across the TOP (SUN, MON, TUE, WED, THU, FRI, SAT). MONTH AND YEAR LABELS identify the current calendar period. DATE CARDS or TILES (numbered 1-31, depending on month) are PLACED sequentially into the calendar cells by the child. A child is PERFORMING daily calendar work: PLACING the date card matching "today" in the correct cell, IDENTIFYING the DAY OF THE WEEK ("Today is Wednesday"), NAMING the MONTH, NOTING the POSITION in the month ("We are on the 15th — halfway through"), COUNTING remaining days until month\'s end, or OBSERVING PATTERNS (how many Mondays, which dates are weekends). This DAILY RITUAL builds TEMPORAL AWARENESS and provides MATHEMATICAL PRACTICE in COUNTING, SEQUENCING, PATTERN RECOGNITION, and CALENDAR LITERACY essential for navigating the calendar system.',
     key_materials: ['calendar board (month view)', 'date cards (1-31)', 'day of week labels', 'month and year labels', 'prepared mat or wall mounting', 'daily ritual engagement'],
     confusion_pairs: [],
+    negative_descriptions: [
+      'NOT a clock or timekeeping tool (CALENDAR showing MONTH layout)',
+      'NOT showing only numbers (includes DAY, MONTH, and YEAR labels)',
+      'NOT a static display (child UPDATES date card daily)',
+      'NOT showing all 365 days simultaneously (single MONTH view)',
+    ],
     difficulty: 'easy',
   },
 ];

@@ -188,6 +188,10 @@ export async function POST(request: NextRequest) {
     const childName = childData.name || 'the child';
     const ageYears = childData.age ? Math.floor(childData.age / 12) : 3;
 
+    const langInstruction = locale === 'zh'
+      ? '\n\nWrite the observation in Simplified Chinese (中文). Use warm, natural Chinese.'
+      : '';
+
     const systemPrompt = `You are observing ${childName} (age ${ageYears}) working with ${work_name} in the ${area_key.replace(/_/g, ' ')} area.
 
 Materials used: ${materials.slice(0, 3).join(', ') || 'standard Montessori materials'}.
@@ -199,7 +203,7 @@ Assess their mastery level based on visible evidence:
 - "unclear": cannot determine from the photo
 
 Write ONE warm observation (encourage, note technique, or progress).
-Suggest a crop if it would nicely frame the child and material together.`;
+Suggest a crop if it would nicely frame the child and material together.${langInstruction}`;
 
     const abortController = new AbortController();
     const timeoutHandle = setTimeout(() => abortController.abort(), 15_000);
