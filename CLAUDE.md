@@ -14,6 +14,51 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 22, 2026)
 
+### Session Work (Mar 22, 2026 — Demo Prep Fixes, Late Night)
+
+**Demo Prep: Threshold Fix + Gallery Download + CLIP RawImage — COMPLETE, NOT YET PUSHED:**
+
+Critical fixes for Monday Mar 23 demo. 5 files, 9 edits, 3 parallel audit agents, all issues resolved.
+
+**Fix 1 — Parent Report "0 Activities" (CRITICAL):**
+- ROOT CAUSE: `AUTO_UPDATE_THRESHOLD` was 0.95. Two-pass Haiku (only working path with CLIP broken) returns 0.80-0.92 confidence. Nothing ever reached GREEN zone → progress never auto-updated → reports empty.
+- `AUTO_UPDATE_THRESHOLD` lowered from 0.95 → 0.85 in `photo-insight/route.ts`
+- Haiku confidence calibration prompt updated to match: 0.85+ = auto-update, 0.75-0.84 = teacher confirmation (was calibrated to 0.95 ranges — CRITICAL mismatch that would have persisted even after threshold change)
+- 4 stale comments referencing 0.95 updated throughout
+
+**Fix 2 — Gallery Photo Download:**
+- 💾 download button added to gallery photo cards (blob download + fallback)
+- Filename sanitized: `{work_name}_{date}.jpg` with both parts cleaned
+- All 3 action buttons (download/crop/delete) always visible on mobile, hover-only on desktop
+- i18n: `gallery.downloadPhoto` added to en.ts + zh.ts
+
+**Fix 3 — CLIP RawImage:**
+- `classifyImageInternal()` now uses `RawImage.fromURL()` from `@xenova/transformers`
+- Previous approach passed URL strings → pipeline treated as TEXT input → "Missing inputs: pixel_values"
+- `RawImage` properly: downloads → decodes → creates image tensor → resizes to 224x224
+- Dead code removed: `downloadImageAsBuffer()` function + `MAX_IMAGE_SIZE_BYTES` + `IMAGE_DOWNLOAD_TIMEOUT_MS` constants
+
+**Audit (3 parallel agents):** Haiku prompt calibration mismatch (CRITICAL, fixed), 4 stale comments (fixed), filename sanitization (fixed), dead code (removed). iOS Safari fallback edge case noted (primary blob path works fine).
+
+**Files (5 modified):**
+1. `app/api/montree/guru/photo-insight/route.ts` — 6 edits (threshold, prompt calibration, 4 comments)
+2. `lib/montree/classifier/clip-classifier.ts` — 3 edits (RawImage, dead function, dead constants)
+3. `app/montree/dashboard/[childId]/gallery/page.tsx` — 2 edits (download button, filename sanitization)
+4. `lib/montree/i18n/en.ts` — 1 key
+5. `lib/montree/i18n/zh.ts` — 1 key
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add app/api/montree/guru/photo-insight/route.ts lib/montree/classifier/clip-classifier.ts app/montree/dashboard/\[childId\]/gallery/page.tsx lib/montree/i18n/en.ts lib/montree/i18n/zh.ts CLAUDE.md docs/handoffs/HANDOFF_DEMO_PREP_FIXES_MAR22.md
+git commit -m "fix: lower auto-update threshold to 0.85 + CLIP RawImage fix + gallery download button"
+git push origin main
+```
+
+**Handoff:** `docs/handoffs/HANDOFF_DEMO_PREP_FIXES_MAR22.md`
+
+---
+
 ### Session Work (Mar 22, 2026 — Auto-Propose Custom Work 10x Plan)
 
 **Auto-Propose Custom Work — 10x PLAN + 10x BUILD COMPLETE, NOT YET PUSHED:**
