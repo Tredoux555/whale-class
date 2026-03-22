@@ -1807,7 +1807,7 @@ Match this description to the correct Montessori work. Use the visual identifica
     );
 
     // Whether this result needs teacher confirmation (AMBER zone)
-    const needsConfirmation = !shouldAutoUpdate && matchScore >= 0.5 && input.confidence >= 0.5;
+    const needsConfirmation = !shouldAutoUpdate && matchScore >= 0.75 && input.confidence >= 0.75;
 
     let autoUpdated = false;
 
@@ -2024,7 +2024,7 @@ Match this description to the correct Montessori work. Use the visual identifica
     // Don't use autoUpdated as a proxy — check actual shelf/classroom state
     // If auto-add-to-shelf failed, inChildShelf is still false → scenario C (user can add manually)
     let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
-    if (matchScore < 0.5 || input.confidence < 0.5) {
+    if (matchScore < 0.75 || input.confidence < 0.75) {
       scenario = 'A'; // Unknown or too uncertain
     } else if (!inClassroom) {
       scenario = 'B'; // Known work, not in this classroom
