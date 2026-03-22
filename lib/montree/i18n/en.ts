@@ -834,6 +834,7 @@ export const en = {
   'gallery.noteSaveError': 'Failed to save note',
   'gallery.crop': 'Crop',
   'gallery.cropPhoto': 'Crop Photo',
+  'gallery.downloadPhoto': 'Download Photo',
   'gallery.deletePhoto': 'Delete Photo',
   'gallery.aspectRatio': 'Aspect Ratio',
   'gallery.free': 'Free',

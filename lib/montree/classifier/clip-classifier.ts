@@ -361,13 +361,18 @@ export async function classifyImage(imageUrl: string): Promise<ClassifyResult | 
 
 async function classifyImageInternal(imageUrl: string, startTime: number): Promise<ClassifyResult | null> {
   try {
-    // Pass image URL directly to the pipeline — Xenova/transformers handles
-    // downloading, decoding, resizing (224x224), and normalizing internally.
-    // Previous approach of downloading as Buffer caused "Missing the following
-    // inputs: pixel_values" error because raw Buffer isn't auto-converted to
-    // the tensor format SigLIP expects.
-    console.log(`[CLIP] Computing image embedding from: ${imageUrl.slice(0, 100)}...`);
-    const imageEmbedding = await pipeline(imageUrl, {
+    // Use RawImage.fromURL() to properly download, decode, and create an image
+    // tensor that SigLIP's feature-extraction pipeline can process.
+    // Previous approaches failed:
+    //   - Raw Buffer: "Missing inputs: pixel_values" (Buffer not auto-converted)
+    //   - Direct URL string: feature-extraction pipeline treats strings as TEXT input
+    // RawImage handles: fetch → decode → create proper image tensor → resize to 224x224
+    console.log(`[CLIP] Downloading image via RawImage: ${imageUrl.slice(0, 100)}...`);
+    const transformers = await getTransformersModule();
+    const { RawImage } = transformers;
+    const image = await RawImage.fromURL(imageUrl);
+    console.log(`[CLIP] Image loaded: ${image.width}x${image.height}, computing embedding...`);
+    const imageEmbedding = await pipeline(image, {
       pooling: 'mean',
       normalize: true,
     });

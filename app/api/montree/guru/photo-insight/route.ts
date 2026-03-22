@@ -379,9 +379,12 @@ const STATUS_RANK: Record<string, number> = {
   'not_started': 0, 'unclear': 0, 'presented': 1, 'practicing': 2, 'mastered': 3,
 };
 
-// Auto-update threshold: GREEN zone only (≥0.95 match AND ≥0.95 confidence)
-// AMBER zone (0.5–0.95) requires teacher confirmation before any progress update
-const AUTO_UPDATE_THRESHOLD = 0.95;
+// Auto-update threshold: GREEN zone
+// With CLIP disabled/broken, two-pass Haiku typically returns 0.80-0.92 confidence.
+// 0.95 was too strict — nothing ever auto-updated progress, breaking parent reports.
+// 0.85 is conservative enough to avoid misidentifications while allowing correct
+// identifications to flow through to progress + reports.
+const AUTO_UPDATE_THRESHOLD = 0.85;
 
 // Haiku-first router: acceptance threshold for skipping Sonnet escalation
 // If Haiku confidence ≥ 0.80 AND matchToCurriculumV2 score ≥ 0.80, accept Haiku result.

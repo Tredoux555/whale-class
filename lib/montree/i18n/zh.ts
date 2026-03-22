@@ -827,6 +827,7 @@ export const zh = {
   'gallery.noteSaveError': '保存笔记失败',
   'gallery.crop': '裁剪',
   'gallery.cropPhoto': '裁剪照片',
+  'gallery.downloadPhoto': '下载照片',
   'gallery.deletePhoto': '删除照片',
   'gallery.aspectRatio': '宽高比',
   'gallery.free': '自由',
