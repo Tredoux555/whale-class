@@ -834,15 +834,41 @@ export default function GalleryPage() {
           {!selectionMode && (
             <div className="absolute top-2 right-2 flex gap-1">
               <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const photoUrl = imageUrls[photo.id] || photo.url;
+                  if (!photoUrl) return;
+                  try {
+                    const res = await fetch(photoUrl);
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = `${(photo.work_name || 'photo').replace(/[^a-zA-Z0-9]/g, '_')}_${formatDate(photo.captured_at)}.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(blobUrl);
+                  } catch {
+                    // Fallback: open in new tab for manual save
+                    window.open(photoUrl, '_blank');
+                  }
+                }}
+                className="w-8 h-8 bg-black/40 hover:bg-emerald-500 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
+                aria-label={t('gallery.downloadPhoto') || 'Download photo'}
+              >
+                💾
+              </button>
+              <button
                 onClick={() => setCropPhoto({ id: photo.id, url: imageUrls[photo.id] || photo.url })}
-                className="w-8 h-8 bg-black/40 hover:bg-blue-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+                className="w-8 h-8 bg-black/40 hover:bg-blue-500 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
                 aria-label={t('gallery.cropPhoto')}
               >
                 ✂️
               </button>
               <button
                 onClick={() => setPhotoToDelete(photo)}
-                className="w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+                className="w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
                 aria-label={t('gallery.deletePhoto')}
               >
                 🗑
