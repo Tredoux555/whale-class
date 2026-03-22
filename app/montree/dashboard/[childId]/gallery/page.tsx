@@ -398,23 +398,23 @@ export default function GalleryPage() {
   };
 
   const SPECIAL_EVENT_PRESETS = [
-    { name: 'Birthday Celebration', emoji: '🎂' },
-    { name: 'Field Trip', emoji: '🚌' },
-    { name: 'Holiday Party', emoji: '🎄' },
-    { name: 'Sports Day', emoji: '⚽' },
-    { name: 'Cultural Day', emoji: '🌍' },
-    { name: 'Graduation', emoji: '🎓' },
-    { name: 'Art Show', emoji: '🎨' },
-    { name: 'Science Fair', emoji: '🔬' },
-    { name: 'Music Performance', emoji: '🎵' },
-    { name: 'Community Event', emoji: '🤝' },
+    { name: locale === 'zh' ? '生日庆祝' : 'Birthday Celebration', emoji: '🎂' },
+    { name: locale === 'zh' ? '实地考察' : 'Field Trip', emoji: '🚌' },
+    { name: locale === 'zh' ? '节日派对' : 'Holiday Party', emoji: '🎄' },
+    { name: locale === 'zh' ? '运动会' : 'Sports Day', emoji: '⚽' },
+    { name: locale === 'zh' ? '文化日' : 'Cultural Day', emoji: '🌍' },
+    { name: locale === 'zh' ? '毕业典礼' : 'Graduation', emoji: '🎓' },
+    { name: locale === 'zh' ? '美术展' : 'Art Show', emoji: '🎨' },
+    { name: locale === 'zh' ? '科学展览' : 'Science Fair', emoji: '🔬' },
+    { name: locale === 'zh' ? '音乐表演' : 'Music Performance', emoji: '🎵' },
+    { name: locale === 'zh' ? '社区活动' : 'Community Event', emoji: '🤝' },
   ];
 
   const handleSpecialEventTag = async (eventName: string) => {
     if (!specialEventsPhotoId || creatingEvent) return;
     const classroomId = session?.classroom?.id;
     if (!classroomId) {
-      toast.error('No classroom found');
+      toast.error(t('gallery.noClassroomFound'));
       return;
     }
     setCreatingEvent(true);
@@ -451,7 +451,7 @@ export default function GalleryPage() {
       }
 
       if (!workId) {
-        toast.error('Could not create event');
+        toast.error(t('gallery.couldNotCreateEvent'));
         return;
       }
 
@@ -836,14 +836,14 @@ export default function GalleryPage() {
               <button
                 onClick={() => setCropPhoto({ id: photo.id, url: imageUrls[photo.id] || photo.url })}
                 className="w-8 h-8 bg-black/40 hover:bg-blue-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
-                aria-label="Crop photo"
+                aria-label={t('gallery.cropPhoto')}
               >
                 ✂️
               </button>
               <button
                 onClick={() => setPhotoToDelete(photo)}
                 className="w-8 h-8 bg-black/40 hover:bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
-                aria-label="Delete photo"
+                aria-label={t('gallery.deletePhoto')}
               >
                 🗑
               </button>
@@ -1023,7 +1023,7 @@ export default function GalleryPage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-gray-800">📤 {t('reports.parentReport' as any) || 'Parent Report'}</h3>
+              <h3 className="text-sm font-bold text-gray-800">📤 {t('reports.parentReport')}</h3>
               <p className="text-xs text-gray-400">
                 {lastReportDate
                   ? `${t('reports.lastSent')}: ${new Date(lastReportDate).toLocaleDateString()}`
@@ -1054,7 +1054,7 @@ export default function GalleryPage() {
             onClick={() => setInviteModalOpen(true)}
             className="mt-2 w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
           >
-            ✉️ {t('reports.inviteParent' as any) || 'Invite Parent'}
+            ✉️ {t('reports.inviteParent')}
           </button>
         </div>
       )}
@@ -1070,7 +1070,7 @@ export default function GalleryPage() {
               viewMode === 'grid' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            {t('review.allPhotos' as any) || 'All Photos'}
+            {t('review.allPhotos')}
           </button>
           <button
             onClick={() => { setViewMode('timeline'); setSelectedArea(null); }}
@@ -1078,7 +1078,7 @@ export default function GalleryPage() {
               viewMode === 'timeline' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            {t('gallery.timeline' as any) || 'Timeline'}
+            {t('gallery.timeline')}
           </button>
         </div>
 
@@ -1169,11 +1169,11 @@ export default function GalleryPage() {
           <div className="text-4xl mb-3">📷</div>
           <h2 className="text-base font-bold text-gray-800 mb-1">
             {selectedArea
-              ? (t('review.noPhotosInArea' as any) || 'No photos in this area yet')
-              : (t('review.noPhotos' as any) || 'No photos yet')}
+              ? t('review.noPhotosInArea')
+              : t('review.noPhotos')}
           </h2>
           <p className="text-sm text-gray-500">
-            {t('review.takePhotos' as any) || 'Take photos of the child working to build their portfolio'}
+            {t('review.takePhotos')}
           </p>
         </div>
       ) : viewMode === 'timeline' && !selectedArea ? (
@@ -1473,14 +1473,14 @@ export default function GalleryPage() {
                     ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                     : 'bg-red-500/80 text-white hover:bg-red-600'
                 }`}
-                title={isExcluded ? 'Restore' : t('gallery.removeFromReport')}
+                title={isExcluded ? t('gallery.restore') : t('gallery.removeFromReport')}
               >
                 {isExcluded ? '↩' : '✕'}
               </button>
               {isExcluded && (
                 <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
                   <div className="bg-red-500/80 text-white px-3 py-1 rounded-lg text-xs font-bold">
-                    {locale === 'zh' ? '已移除' : 'Removed'}
+                    {t('gallery.removed')}
                   </div>
                 </div>
               )}
@@ -1714,8 +1714,8 @@ export default function GalleryPage() {
                   <div className="flex items-center gap-2 mb-3 px-1">
                     <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">📸</div>
                     <div>
-                      <p className="font-bold text-gray-800 text-sm">{locale === 'zh' ? '更多瞬间' : 'More Moments'}</p>
-                      <p className="text-xs text-gray-500">{reportUnassigned.length} {locale === 'zh' ? '张照片' : 'photos'}</p>
+                      <p className="font-bold text-gray-800 text-sm">{t('gallery.moreMoments')}</p>
+                      <p className="text-xs text-gray-500">{reportUnassigned.length} {t('gallery.photos')}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
