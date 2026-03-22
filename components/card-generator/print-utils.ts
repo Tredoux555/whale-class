@@ -1,6 +1,17 @@
 import { Card } from './types';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 
+/**
+ * Get validated object-position CSS for a card's image offset.
+ * Defaults to 50% 50% (centered) if no offset is set.
+ * Clamps values to 0-100 range to prevent CSS injection.
+ */
+const getObjectPosition = (card: Card): string => {
+  const x = Math.max(0, Math.min(100, card.imageOffset?.x ?? 50));
+  const y = Math.max(0, Math.min(100, card.imageOffset?.y ?? 50));
+  return `object-position: ${x}% ${y}%`;
+};
+
 // Constants for card dimensions (in cm)
 const A4_WIDTH_CM = 21;
 const A4_HEIGHT_CM = 29.7;
@@ -25,7 +36,7 @@ const createCardHTML = ({ card, type }: CreateCardHTMLParams): string => {
     return `
       <div class="card card-control">
         <div class="image-area">
-          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
+          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}">
         </div>
         <div class="label-area">${escapeHtml(card.label)}</div>
       </div>
@@ -34,7 +45,7 @@ const createCardHTML = ({ card, type }: CreateCardHTMLParams): string => {
     return `
       <div class="card card-picture">
         <div class="image-area">
-          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
+          <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}">
         </div>
       </div>
     `;
@@ -459,7 +470,7 @@ export const generateLargeCards = ({
           ${pageCards.map(card => `
             <div class="image-box">
               <div class="image-inner">
-                <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}">
+                <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}">
               </div>
             </div>
           `).join('')}

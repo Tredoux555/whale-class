@@ -198,6 +198,13 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
     if (cropMode === id) setCropMode(null);
   };
 
+  // Update image offset (drag-to-reposition)
+  const updateImageOffset = (id: number, x: number, y: number) => {
+    setCards(prev => prev.map(card =>
+      card.id === id ? { ...card, imageOffset: { x, y } } : card
+    ));
+  };
+
   // Start crop mode
   const startCrop = (id: number) => {
     setCropMode(id);
@@ -278,8 +285,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
     
     const croppedDataUrl = canvas.toDataURL('image/png');
     
-    setCards(prev => prev.map(c => 
-      c.id === cropMode ? { ...c, croppedImage: croppedDataUrl } : c
+    setCards(prev => prev.map(c =>
+      c.id === cropMode ? { ...c, croppedImage: croppedDataUrl, imageOffset: undefined } : c
     ));
     setCropMode(null);
   };
@@ -325,41 +332,57 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         return;
       }
       
+      // Helper: calculate offset-aware image position (matches CSS object-fit:cover + object-position)
+      const calcCoverPosition = (imgW: number, imgH: number, areaW: number, areaH: number, offXPct: number, offYPct: number) => {
+        const scale = Math.max(areaW / imgW, areaH / imgH);
+        const scaledW = imgW * scale;
+        const scaledH = imgH * scale;
+        // Convert percentage offset to pixel position
+        // At 0%: image left/top edge aligns with area left/top
+        // At 50%: centered (default)
+        // At 100%: image right/bottom edge aligns with area right/bottom
+        const maxShiftX = scaledW - areaW;
+        const maxShiftY = scaledH - areaH;
+        const drawX = -(offXPct / 100) * maxShiftX;
+        const drawY = -(offYPct / 100) * maxShiftY;
+        return { drawX, drawY, scaledW, scaledH };
+      };
+
+      const imgOffX = card.imageOffset?.x ?? 50;
+      const imgOffY = card.imageOffset?.y ?? 50;
+
       if (type === 'control') {
         // Control card: Image + Label
         canvas.width = CARD_SIZE;
         canvas.height = CARD_SIZE + LABEL_HEIGHT;
-        
+
         // Border/background
         ctx.fillStyle = currentBorderColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         // White area for image
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
-        
+
         // White area for label
         ctx.fillRect(BORDER_SIZE, CARD_SIZE, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE);
-        
+
         // Draw image
         const img = new Image();
         img.onload = () => {
           try {
-            // Calculate aspect ratio fill (cover)
-            const scale = Math.max(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
-            const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-            const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-            
+            const { drawX, drawY, scaledW, scaledH } = calcCoverPosition(
+              img.width, img.height, IMAGE_SIZE, IMAGE_SIZE, imgOffX, imgOffY
+            );
+
             // Clip to image area
             ctx.save();
             ctx.beginPath();
             ctx.rect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
             ctx.clip();
-            ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            ctx.drawImage(img, BORDER_SIZE + drawX, BORDER_SIZE + drawY, scaledW, scaledH);
             ctx.restore();
-            
+
             // Draw label with optimal font size
             ctx.fillStyle = '#000000';
             const labelFontSize = calculateOptimalFontSize(ctx, cardLabel, IMAGE_SIZE, LABEL_HEIGHT - BORDER_SIZE * 2, currentFontFamily);
@@ -367,7 +390,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(cardLabel, canvas.width / 2, CARD_SIZE + LABEL_HEIGHT / 2);
-            
+
             resolve(canvas);
           } catch (error) {
             reject(error);
@@ -375,34 +398,31 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         };
         img.onerror = () => reject(new Error('Failed to load image'));
         img.src = cardImage;
-        
+
       } else if (type === 'picture') {
         // Picture card: Image only
         canvas.width = CARD_SIZE;
         canvas.height = CARD_SIZE;
-        
+
         ctx.fillStyle = currentBorderColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         ctx.fillStyle = '#FFFFFF';
         ctx.fillRect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
-        
+
         const img = new Image();
         img.onload = () => {
           try {
-            // Calculate aspect ratio fill (cover)
-            const scale = Math.max(IMAGE_SIZE / img.width, IMAGE_SIZE / img.height);
-            const scaledWidth = img.width * scale;
-            const scaledHeight = img.height * scale;
-            const offsetX = BORDER_SIZE + (IMAGE_SIZE - scaledWidth) / 2;
-            const offsetY = BORDER_SIZE + (IMAGE_SIZE - scaledHeight) / 2;
-            
+            const { drawX, drawY, scaledW, scaledH } = calcCoverPosition(
+              img.width, img.height, IMAGE_SIZE, IMAGE_SIZE, imgOffX, imgOffY
+            );
+
             // Clip to image area
             ctx.save();
             ctx.beginPath();
             ctx.rect(BORDER_SIZE, BORDER_SIZE, IMAGE_SIZE, IMAGE_SIZE);
             ctx.clip();
-            ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+            ctx.drawImage(img, BORDER_SIZE + drawX, BORDER_SIZE + drawY, scaledW, scaledH);
             ctx.restore();
             resolve(canvas);
           } catch (error) {
@@ -999,8 +1019,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             gap: '20px'
           }}>
             {cards.map(card => (
-              <CardPreview 
-                key={card.id} 
+              <CardPreview
+                key={card.id}
                 card={card}
                 borderColor={borderColor}
                 fontFamily={fontFamily}
@@ -1008,6 +1028,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
                 onStartCrop={startCrop}
                 onDownloadCard={downloadCard}
                 onRemoveCard={removeCard}
+                onUpdateOffset={updateImageOffset}
               />
             ))}
           </div>
