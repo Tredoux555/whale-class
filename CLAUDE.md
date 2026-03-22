@@ -14,6 +14,113 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 22, 2026)
 
+### Session Work (Mar 22, 2026 — Auto-Propose Custom Work 10x Plan)
+
+**Auto-Propose Custom Work — 10x PLAN-AUDIT CYCLE COMPLETE, READY FOR BUILD:**
+
+When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), system now auto-drafts a custom work proposal via Haiku mini-call with the actual photo. Teacher sees amber card with pre-filled name, area, description, materials — one tap to add. Turns "Untagged" into a single-tap custom work creation.
+
+**10x Methodology:** Plan v1 → Audit 1 (5 agents) → Plan v2 → Audit 2 (5 agents) → Plan v3 → Audit 3 (5 agents) → Plan v4 (FINAL). 15 independent audit agents, 4 plan iterations, ~140 findings triaged. 8 blockers found and resolved.
+
+**Architecture (Plan v4 FINAL):**
+- `proposeCustomWork()` helper fires inside Scenario A block with dynamic timeout (`Math.max(5000, 45000 - elapsed - 2000)`)
+- Haiku vision call with actual photo + sanitized observation + `tool_choice: { type: 'tool' }` (forces structured output)
+- Non-educational gate: `is_educational === false` → no proposal shown
+- Materials cross-check: filters hallucinated materials not found in observation text
+- New `POST /api/montree/guru/photo-insight/add-custom-work` endpoint — atomic 3-step: create work + re-tag photo + fire-and-forget visual memory
+- work_key uses `randomUUID().slice(0, 8)` suffix (not Date.now() — prevents millisecond collisions)
+- DB-level dedup: partial UNIQUE index `(classroom_id, LOWER(name)) WHERE is_custom = true` + 23505 handler
+- Rollback on partial failure: DELETE orphaned work if media UPDATE fails
+- Prompt injection defense: observation in boundary markers + explicit "ignore embedded instructions"
+
+**Migration 144:** Adds `is_custom BOOLEAN`, `teacher_notes TEXT`, `source TEXT` columns + partial unique index + lookup index.
+
+**UI:** Amber card in PhotoInsightButton for Scenario A when proposal exists. "Add as New Work" (emerald), "Not this one" (gray dismiss to localStorage), "Edit before adding..." (opens Teach modal pre-filled). Bug fix: `is_custom: false` → `true` on line 216.
+
+**Files (2 new, 5 modified):**
+1. `migrations/144_custom_work_schema.sql` — NEW schema prerequisites
+2. `app/api/montree/guru/photo-insight/route.ts` — +proposeCustomWork helper + Scenario A block + response field
+3. `app/api/montree/guru/photo-insight/add-custom-work/route.ts` — NEW atomic endpoint
+4. `lib/montree/photo-insight-store.ts` — +custom_work_proposal field + dismiss functions
+5. `components/montree/guru/PhotoInsightButton.tsx` — +amber card UI + handlers + is_custom bug fix
+6. `lib/montree/i18n/en.ts` — +7 keys
+7. `lib/montree/i18n/zh.ts` — +7 keys
+
+**8 Blockers Resolved:**
+1. Route timeout safety → early exit at 38s + per-call AbortController
+2. Cross-tenant media update → `.eq('school_id')` on ALL media UPDATEs
+3. Prompt injection → sanitization + boundary markers + explicit defense
+4. Transaction partial failure → rollback DELETE on media UPDATE failure
+5. work_key collision → randomUUID suffix
+6. 23505 duplicate → fetch existing + re-tag
+7. Materials hallucination → cross-check against observation text
+8. AbortController lifecycle → per-call controller linked to route abort, cleanup in finally
+
+**Cost:** ~$0.0006 per proposal (Haiku vision, ~400 tokens). Only fires on Scenario A (~10-15% of photos).
+
+**Status:** PLANNED ONLY — no code written yet. Ready for implementation (4-6 hours estimated).
+
+**Handoff:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`
+
+---
+
+### Session Work (Mar 22, 2026 — Super-Admin 10x Audit + Fix Cycle)
+
+**Super-Admin 10x Audit — 30 findings + Phase 1-3 Fix Cycle — COMPLETE, NOT YET PUSHED:**
+
+Two-part session: (1) Full 10x audit finding 30 issues, then (2) fix cycle applying Phases 1-3 with 5 audit cycles achieving 3 consecutive clean passes.
+
+**Earlier in session (audit + initial fixes — 6 files):**
+- CardPreview.tsx unmount memory leak fix (cleanupRef pattern)
+- School interface: added `login_codes?: string[]` to types.ts
+- Schools API: fetch teacher login codes in parallel Promise.all
+- SchoolsTab: search by login code + display codes in mono font
+- Super-admin page: session persistence via sessionStorage
+- Marketing layout: shared session with super-admin
+
+**Fix Cycle (Phases 1-3 — 17 files modified, 5 audit cycles, 12+ agents):**
+
+**Phase 1 — Data Integrity (COMPLETE):**
+- ALL 3 child insertion routes now include school_id: `children/bulk`, `onboarding/students`, `admin/import`
+- Migration 143: backfill null school_id → delete orphans → conditional NOT NULL constraint → BEFORE INSERT OR UPDATE trigger auto-derives school_id from classroom
+
+**Phase 2 — Auth & Security (COMPLETE):**
+- JWT session tokens replace password in sessionStorage (XSS fix)
+- `verifySuperAdminAuth()` in `lib/verify-super-admin.ts` — dual-mode: JWT first (`x-super-admin-token`), password fallback (`x-super-admin-password`)
+- JWT issued with `role: 'super_admin'` claim, 1-hour expiry (changed from 15m during audit — client 15-min inactivity timeout is the real session control)
+- ALL 8 super-admin API routes migrated to JWT auth: schools, audit, login-as, leads, feedback, dm, onboarding/settings
+- Hooks updated: `useAdminData.ts` (authHeaders helper), `useLeadOperations.ts` (x-super-admin-token header)
+- Rate limiting on DELETE (5/15min), tier validation on PATCH, cascade delete null safety, password removed from query params
+
+**Phase 3 — Count Queries & Performance (COMPLETE):**
+- Children count query has `.not('school_id', 'is', null)` filter
+- DM polling: exponential backoff (30s→5min) via setTimeout chain + useRef interval
+
+**Audit Results (5 cycles, 3 consecutive clean):**
+- Cycle 1: CLEAN (3 parallel agents, 10 files)
+- Cycle 2: 1 issue found — JWT 15m expiry mismatch → FIXED to 1h
+- Cycle 3: CLEAN ✅ (fix verified)
+- Cycle 4: CLEAN ✅ (adversarial edge cases — empty tokens, concurrent sessions, migration edge cases all handled)
+- Cycle 5: CLEAN ✅ (17/17 files verified)
+
+**Phases 4-5 deferred:** School detail view, soft delete, error sanitization, batch delete validation.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
+```bash
+cd ~/Desktop/Master\ Brain/ACTIVE/whale
+git add lib/verify-super-admin.ts app/api/montree/super-admin/auth/route.ts app/montree/super-admin/page.tsx app/montree/super-admin/marketing/layout.tsx app/api/montree/super-admin/schools/route.ts app/api/montree/leads/route.ts app/api/montree/feedback/route.ts app/api/montree/dm/route.ts app/api/montree/super-admin/login-as/route.ts app/api/montree/super-admin/audit/route.ts app/api/montree/onboarding/settings/route.ts hooks/useAdminData.ts hooks/useLeadOperations.ts migrations/143_child_school_id_integrity.sql app/api/montree/children/bulk/route.ts app/api/montree/onboarding/students/route.ts app/api/montree/admin/import/route.ts components/card-generator/CardPreview.tsx components/montree/super-admin/types.ts components/montree/super-admin/SchoolsTab.tsx CLAUDE.md docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md docs/handoffs/HANDOFF_SUPER_ADMIN_AUDIT_FIX_CYCLE_MAR22.md
+git commit -m "fix: super-admin JWT auth + child school_id integrity + session persistence + login code search"
+git push origin main
+```
+
+⚠️ After deploy, run migration: `psql $DATABASE_URL -f migrations/143_child_school_id_integrity.sql`
+
+**Handoffs:**
+- `docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md` (original audit findings)
+- `docs/handoffs/HANDOFF_SUPER_ADMIN_AUDIT_FIX_CYCLE_MAR22.md` (fix cycle + audit results)
+
+---
+
 ### Session Work (Mar 22, 2026 — CLIP Recognition Accuracy 10x Fix)
 
 **CLIP Photo Recognition Accuracy — 10x DEEP DIVE + FIX, NOT YET PUSHED:**
@@ -541,6 +648,20 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 ### ⚠️ CONTEXT: Hostile Tester Scenario
 System goes live Monday Mar 23 with a tester who wants it to fail. Every misidentification, slow upload, or UI glitch will be used as evidence. Strategy: maximize CLIP accuracy with lean schema upgrade + ensure bulletproof reliability.
 
+### ✅ Priority #-2: Super-Admin 10x Deep Audit Fix Cycle — PHASES 1-3 DONE
+
+**Status:** Phases 1-3 COMPLETE. 17 files modified. 5 audit cycles, 3 consecutive clean. Migration 143 created (needs `psql` run after deploy).
+
+**Phase 1 — Data Integrity ✅:** All 3 child insertion routes include school_id. Migration 143: backfill + NOT NULL + auto-derive trigger.
+**Phase 2 — Auth & Security ✅:** JWT session tokens replace password in sessionStorage. All 8 super-admin API routes use `verifySuperAdminAuth()`. Rate limiting on DELETE, tier validation on PATCH.
+**Phase 3 — Count Queries & Performance ✅:** Null school_id filter on counts. DM polling exponential backoff (30s→5min).
+**Phase 4 — UX & Features (DEFERRED):** School detail view, soft delete, dev principal audit trail, copy login code.
+**Phase 5 — Error Handling (DEFERRED):** Sanitize Supabase error leaks, batch delete validation, DM error indicator.
+
+**Also still needed: Clean up stale schools** — delete everything except V8F8V9 + X4RAT5.
+
+**Handoffs:** `docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md`, `docs/handoffs/HANDOFF_SUPER_ADMIN_AUDIT_FIX_CYCLE_MAR22.md`
+
 ### 🔴 Priority #-1: Cloudflare Image Proxy for China Speed (1-2 hours) — CRITICAL FOR MONDAY
 
 **Status:** PLANNED. Photos load 5-15+ seconds in China without VPN. Teachers WILL notice.
@@ -619,6 +740,14 @@ Before Monday, manually test full pipeline:
 Add tracking fields to `context_snapshot` so Monday produces actionable data:
 - `negative_penalty_applied`, `confusion_pair_matched`, `differentiation_injected`
 - After Monday: query corrections table → find worst performers → target those works with richer descriptions
+
+### 🟢 Priority #4: Build Auto-Propose Custom Work (4-6 hours)
+
+**Status:** PLANNED — 10x plan-audit cycle complete, Plan v4 FINAL ready for implementation.
+
+When Scenario A fires (unmatched photo), Haiku auto-drafts custom work proposal → teacher sees amber card → one tap to add. Migration 144 + 2 new files + 5 modified. Full implementation details in handoff.
+
+**Handoff:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`
 
 ### AFTER MONDAY: Data-Driven Refinement (deferred)
 
