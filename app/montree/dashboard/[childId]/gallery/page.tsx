@@ -129,6 +129,9 @@ export default function GalleryPage() {
   // Area picker state
   const [showAreaPicker, setShowAreaPicker] = useState(false);
   const [areaPickerPhotoId, setAreaPickerPhotoId] = useState<string | null>(null);
+  const [showSpecialEventsPicker, setShowSpecialEventsPicker] = useState(false);
+  const [specialEventsPhotoId, setSpecialEventsPhotoId] = useState<string | null>(null);
+  const [creatingEvent, setCreatingEvent] = useState(false);
 
   // Delete state
   const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
@@ -164,6 +167,7 @@ export default function GalleryPage() {
   const [sending, setSending] = useState(false);
   const [previewSelectedArea, setPreviewSelectedArea] = useState<string | null>(null);
   const [previewExpandedCard, setPreviewExpandedCard] = useState<string | null>(null);
+  const [excludedWorks, setExcludedWorks] = useState<Set<string>>(new Set());
   const [reportLightboxSrc, setReportLightboxSrc] = useState('');
   const [reportLightboxOpen, setReportLightboxOpen] = useState(false);
   // Photo selection modal
@@ -379,11 +383,99 @@ export default function GalleryPage() {
 
   const handleAreaSelected = (area: string) => {
     setShowAreaPicker(false);
+    if (area === 'special_events') {
+      // Special Events has no curriculum works — show quick-create picker instead
+      setShowSpecialEventsPicker(true);
+      setSpecialEventsPhotoId(areaPickerPhotoId);
+      setAreaPickerPhotoId(null);
+      return;
+    }
     setPickerArea(area);
     setPickerPhotoId(areaPickerPhotoId);
     setPickerCurrentWork(undefined);
     setPickerOpen(true);
     setAreaPickerPhotoId(null);
+  };
+
+  const SPECIAL_EVENT_PRESETS = [
+    { name: 'Birthday Celebration', emoji: '🎂' },
+    { name: 'Field Trip', emoji: '🚌' },
+    { name: 'Holiday Party', emoji: '🎄' },
+    { name: 'Sports Day', emoji: '⚽' },
+    { name: 'Cultural Day', emoji: '🌍' },
+    { name: 'Graduation', emoji: '🎓' },
+    { name: 'Art Show', emoji: '🎨' },
+    { name: 'Science Fair', emoji: '🔬' },
+    { name: 'Music Performance', emoji: '🎵' },
+    { name: 'Community Event', emoji: '🤝' },
+  ];
+
+  const handleSpecialEventTag = async (eventName: string) => {
+    if (!specialEventsPhotoId || creatingEvent) return;
+    const classroomId = session?.classroom?.id;
+    if (!classroomId) {
+      toast.error('No classroom found');
+      return;
+    }
+    setCreatingEvent(true);
+    try {
+      // 1. Create or find this event as a custom work in the classroom curriculum
+      const createRes = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          classroom_id: classroomId,
+          name: eventName,
+          area_key: 'special_events',
+          is_custom: true,
+        }),
+      });
+
+      let workId: string | null = null;
+      if (createRes.ok) {
+        const createData = await createRes.json();
+        workId = createData.id || createData.work?.id || null;
+      } else if (createRes.status === 409 || createRes.status === 500) {
+        // Already exists or insert failed — look it up from curriculum
+        const existRes = await fetch(`/api/montree/curriculum?classroom_id=${classroomId}`, { credentials: 'include' });
+        if (existRes.ok) {
+          const existData = await existRes.json();
+          // GET response shape: { curriculum: [...], byArea: { special_events: [...], ... }, total: N }
+          const specialWorks = existData.byArea?.special_events || existData.curriculum || [];
+          const match = specialWorks.find((w: { name: string; id: string }) =>
+            w.name.toLowerCase() === eventName.toLowerCase()
+          );
+          if (match) workId = match.id;
+        }
+      }
+
+      if (!workId) {
+        toast.error('Could not create event');
+        return;
+      }
+
+      // 2. Tag the photo with this work
+      const tagRes = await fetch('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id: specialEventsPhotoId, work_id: workId }),
+      });
+      if (!tagRes.ok) throw new Error('Failed to tag');
+
+      // 3. Update local state
+      setPhotos(prev => prev.map(p =>
+        p.id === specialEventsPhotoId ? { ...p, work_id: workId!, work_name: eventName, area: 'special_events' } : p
+      ));
+      toast.success(t('gallery.workUpdated'));
+      setShowSpecialEventsPicker(false);
+      setSpecialEventsPhotoId(null);
+    } catch {
+      toast.error(t('gallery.workUpdateError'));
+    } finally {
+      setCreatingEvent(false);
+    }
   };
 
   const handleWorkSelected = async (work: CurriculumWork) => {
@@ -584,6 +676,7 @@ export default function GalleryPage() {
   const handleOpenReportPreview = useCallback(async () => {
     setPreviewSelectedArea(null);
     setPreviewExpandedCard(null);
+    setExcludedWorks(new Set()); // Clear stale exclusions from previous preview
     await fetchReportPreview();
     setShowReportPreview(true);
   }, [fetchReportPreview]);
@@ -594,7 +687,10 @@ export default function GalleryPage() {
       const res = await fetch(`/api/montree/reports/send?locale=${locale}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ child_id: childId }),
+        body: JSON.stringify({
+          child_id: childId,
+          excluded_works: excludedWorks.size > 0 ? Array.from(excludedWorks) : undefined,
+        }),
       });
       if (!res.ok) throw new Error(`Send failed: ${res.status}`);
       const data = await res.json();
@@ -602,6 +698,7 @@ export default function GalleryPage() {
         toast.success(t('reports.published'));
         setReportItems([]);
         setReportStats(null);
+        setExcludedWorks(new Set());
         setLastReportDate(new Date().toISOString());
         setShowReportPreview(false);
       } else {
@@ -1191,6 +1288,45 @@ export default function GalleryPage() {
         </div>
       )}
 
+      {/* Special Events Quick-Create Picker */}
+      {showSpecialEventsPicker && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); }}
+        >
+          <div
+            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">🎉 {t('gallery.tagSpecialEvent')}</h3>
+              <button
+                onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); }}
+                className="p-2 text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {SPECIAL_EVENT_PRESETS.map(event => (
+                <button
+                  key={event.name}
+                  disabled={creatingEvent}
+                  onClick={() => handleSpecialEventTag(event.name)}
+                  className="flex items-center gap-2 px-3 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors text-left disabled:opacity-50"
+                >
+                  <span className="text-xl">{event.emoji}</span>
+                  <span className="font-medium text-gray-800 text-sm">{event.name}</span>
+                </button>
+              ))}
+            </div>
+            {creatingEvent && (
+              <div className="text-center py-2 text-sm text-gray-500 mt-2">Tagging photo...</div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Work Wheel Picker */}
       <WorkWheelPicker
         isOpen={pickerOpen}
@@ -1286,30 +1422,68 @@ export default function GalleryPage() {
           return locale === 'zh' ? conf.labelZh : conf.label;
         };
 
+        // Separate included vs excluded items for accurate counts
+        const includedItems = reportItems.filter(i => !excludedWorks.has(i.work_name));
+
         const previewWorksByArea: Record<string, ReportItem[]> = {};
         for (const area of PREVIEW_AREA_ORDER) previewWorksByArea[area] = [];
-        for (const item of reportItems) {
+        for (const item of includedItems) {
           const area = normalizePreviewArea(item.area || 'other');
           if (!previewWorksByArea[area]) previewWorksByArea[area] = [];
           previewWorksByArea[area].push(item);
         }
 
-        const previewMastered = reportItems.filter(i => i.status === 'mastered' || i.status === 'completed').length;
-        const previewPracticing = reportItems.filter(i => i.status === 'practicing').length;
-        const previewPresented = reportItems.filter(i => i.status === 'presented').length;
+        const previewMastered = includedItems.filter(i => i.status === 'mastered' || i.status === 'completed').length;
+        const previewPracticing = includedItems.filter(i => i.status === 'practicing').length;
+        const previewPresented = includedItems.filter(i => i.status === 'presented').length;
 
+        // Filter for display still uses ALL items (so excluded cards show with opacity)
         const previewFiltered = previewSelectedArea
           ? reportItems.filter(i => normalizePreviewArea(i.area) === previewSelectedArea)
           : reportItems;
+
+        const toggleExcludeWork = (workName: string) => {
+          setExcludedWorks(prev => {
+            const next = new Set(prev);
+            if (next.has(workName)) {
+              next.delete(workName);
+              toast.success(t('gallery.restoredToReport'));
+            } else {
+              next.add(workName);
+              toast.success(t('gallery.excludedFromReport'));
+            }
+            return next;
+          });
+        };
 
         const renderPreviewCard = (item: ReportItem, i: number) => {
           const displayName = locale === 'zh' && item.chineseName ? item.chineseName : item.work_name;
           const areaConf = getPreviewAreaConf(item.area);
           const cardKey = `${item.work_name}-${i}`;
           const isExpanded = previewExpandedCard === cardKey;
+          const isExcluded = excludedWorks.has(item.work_name);
 
           return (
-            <div key={cardKey} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div key={cardKey} className={`bg-white rounded-xl shadow-sm border overflow-hidden relative ${isExcluded ? 'border-red-200 opacity-50' : 'border-gray-100'}`}>
+              {/* Exclude/Restore button */}
+              <button
+                onClick={() => toggleExcludeWork(item.work_name)}
+                className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-md transition-colors ${
+                  isExcluded
+                    ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+                    : 'bg-red-500/80 text-white hover:bg-red-600'
+                }`}
+                title={isExcluded ? 'Restore' : t('gallery.removeFromReport')}
+              >
+                {isExcluded ? '↩' : '✕'}
+              </button>
+              {isExcluded && (
+                <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+                  <div className="bg-red-500/80 text-white px-3 py-1 rounded-lg text-xs font-bold">
+                    {locale === 'zh' ? '已移除' : 'Removed'}
+                  </div>
+                </div>
+              )}
               {item.photo_url ? (
                 <div className="relative group">
                   <button onClick={() => { setReportLightboxSrc(item.photo_url!); setReportLightboxOpen(true); }} className="w-full">
@@ -1396,7 +1570,12 @@ export default function GalleryPage() {
                       <h2 className="text-xl font-bold">
                         {locale === 'zh' ? `${reportChildName}的学习报告` : `${reportChildName}'s Learning Report`}
                       </h2>
-                      <p className="text-emerald-100 text-sm">{reportItems.length} {t('reports.activitiesToShare')}</p>
+                      <p className="text-emerald-100 text-sm">
+                        {reportItems.length - excludedWorks.size} {t('reports.activitiesToShare')}
+                        {excludedWorks.size > 0 && (
+                          <span className="text-red-200 ml-1">({excludedWorks.size} {locale === 'zh' ? '已移除' : 'removed'})</span>
+                        )}
+                      </p>
                     </div>
                   </div>
                   {reportItems.length > 0 && (
@@ -1429,12 +1608,12 @@ export default function GalleryPage() {
                     {(() => {
                       const areasCount = Object.values(previewWorksByArea).filter(a => a.length > 0).length;
                       if (locale === 'zh') {
-                        const parts = [`${reportChildName}度过了充实而专注的一周！本周共探索了${reportItems.length}项工作。`];
+                        const parts = [`${reportChildName}度过了充实而专注的一周！本周共探索了${includedItems.length}项工作。`];
                         if (areasCount >= 3) parts.push(`涵盖了${areasCount}个不同领域——全面发展正是蒙特梭利教育的精髓。`);
                         if (previewPracticing > 0) parts.push(`正在练习的工作说明孩子正处于深入学习中——重复是通往精通的道路。`);
                         return parts.join('');
                       }
-                      const parts = [`${reportChildName} had a wonderful week of learning! This week they explored ${reportItems.length} different activities.`];
+                      const parts = [`${reportChildName} had a wonderful week of learning! This week they explored ${includedItems.length} different activities.`];
                       if (areasCount >= 3) parts.push(` Active across ${areasCount} areas — well-rounded exploration is at the heart of Montessori.`);
                       if (previewPracticing > 0) parts.push(` The works still being practiced show deep learning in progress — in Montessori, repetition is the path to mastery.`);
                       return parts.join('');
@@ -1444,7 +1623,7 @@ export default function GalleryPage() {
 
                 {/* Mastered highlights */}
                 {(() => {
-                  const masteredItems = reportItems.filter(i => i.status === 'mastered' || i.status === 'completed');
+                  const masteredItems = includedItems.filter(i => i.status === 'mastered' || i.status === 'completed');
                   if (masteredItems.length === 0) return null;
                   return (
                     <div className="px-5 py-3 pb-4">
@@ -1557,13 +1736,13 @@ export default function GalleryPage() {
               )}
 
               {/* Recommendations */}
-              {reportItems.filter(i => i.status === 'mastered' || i.status === 'practicing').length > 0 && (
+              {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').length > 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm">
                   <h4 className="font-bold text-amber-800 mb-3 flex items-center gap-2 text-sm">
                     💡 {locale === 'zh' ? '在家可以这样做' : 'Try This at Home'}
                   </h4>
                   <div className="space-y-2">
-                    {reportItems.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
+                    {includedItems.filter(i => i.status === 'mastered' || i.status === 'practicing').slice(0, 3).map((item, i) => (
                       <p key={i} className="text-amber-900 text-sm leading-relaxed flex items-start gap-2">
                         <span className="text-amber-500 mt-0.5 flex-shrink-0">•</span>
                         <span>
@@ -1605,10 +1784,10 @@ export default function GalleryPage() {
               </button>
               <button
                 onClick={sendReport}
-                disabled={sending}
+                disabled={sending || includedItems.length === 0}
                 className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
               >
-                {sending ? `⏳ ${t('reports.publishing')}` : `✅ ${t('reports.publishReport')}`}
+                {sending ? `⏳ ${t('reports.publishing')}` : includedItems.length === 0 ? `${locale === 'zh' ? '没有可发送的活动' : 'No activities to send'}` : `✅ ${t('reports.publishReport')}`}
               </button>
             </div>
           </div>
