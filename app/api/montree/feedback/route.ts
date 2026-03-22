@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 // POST - Submit feedback (open to all authenticated users)
 export async function POST(req: NextRequest) {
@@ -99,13 +100,9 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     const { searchParams } = new URL(req.url);
 
-    // Verify super admin password (accepts env var OR fallback, matching login page)
-    const superAdminPassword = req.headers.get('x-super-admin-password');
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
-    const isValid = superAdminPassword === expectedPassword;
-
-    if (!isValid) {
+    // Verify super admin (JWT token or password fallback)
+    const { valid } = await verifySuperAdminAuth(req.headers);
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -168,13 +165,9 @@ export async function PATCH(req: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Verify super admin password (accepts env var OR fallback, matching login page)
-    const superAdminPassword = req.headers.get('x-super-admin-password');
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
-    const isValid = superAdminPassword === expectedPassword;
-
-    if (!isValid) {
+    // Verify super admin (JWT token or password fallback)
+    const { valid: patchValid } = await verifySuperAdminAuth(req.headers);
+    if (!patchValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

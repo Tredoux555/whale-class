@@ -2,9 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { School, Feedback, Lead } from '@/components/montree/super-admin/types';
 
 interface UseAdminDataProps {
-  password: string;
+  password: string;  // JWT session token (legacy name kept for interface compat)
   logAction: (action: string, details?: Record<string, unknown>) => Promise<void>;
   authenticated: boolean;
+}
+
+function authHeaders(token: string): Record<string, string> {
+  return token ? { 'x-super-admin-token': token } : {};
 }
 
 export function useAdminData({ password, logAction, authenticated }: UseAdminDataProps) {
@@ -24,7 +28,7 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
   const fetchSchools = useCallback(async () => {
     try {
       const res = await fetch('/api/montree/super-admin/schools', {
-        headers: { 'x-super-admin-password': password }
+        headers: authHeaders(password)
       });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
@@ -41,7 +45,7 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
     setLoadingFeedback(true);
     try {
       const res = await fetch('/api/montree/feedback', {
-        headers: { 'x-super-admin-password': password }
+        headers: authHeaders(password)
       });
       if (!res.ok) throw new Error('Failed to fetch');
       const data = await res.json();
@@ -58,7 +62,7 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
     setLoadingLeads(true);
     try {
       const res = await fetch('/api/montree/leads', {
-        headers: { 'x-super-admin-password': password }
+        headers: authHeaders(password)
       });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -80,32 +84,47 @@ export function useAdminData({ password, logAction, authenticated }: UseAdminDat
     }
   }, [password]);
 
+  const dmPollIntervalRef = useRef(30000);
+  const DM_POLL_MIN = 30000;
+  const DM_POLL_MAX = 300000; // 5 min max backoff
+
   const fetchDmUnread = useCallback(async () => {
     if (!password || dmFetchingRef.current) return;
     dmFetchingRef.current = true;
     try {
       const res = await fetch('/api/montree/dm?reader_type=admin', {
-        headers: { 'x-super-admin-password': password }
+        headers: authHeaders(password)
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        dmPollIntervalRef.current = Math.min(dmPollIntervalRef.current * 2, DM_POLL_MAX);
+        return;
+      }
       const contentType = res.headers.get('content-type');
       if (!contentType?.includes('application/json')) return;
       const data = await res.json();
       setDmUnreadTotal(data.total_unread || 0);
       setDmUnreadPerConvo(data.per_conversation || {});
+      dmPollIntervalRef.current = DM_POLL_MIN; // Reset on success
     } catch (err) {
-      // Silently handle polling errors
+      dmPollIntervalRef.current = Math.min(dmPollIntervalRef.current * 2, DM_POLL_MAX);
     } finally {
       dmFetchingRef.current = false;
     }
   }, [password]);
 
-  // Poll for unread DMs every 30s when authenticated
+  // Poll for unread DMs with exponential backoff on errors
   useEffect(() => {
     if (!authenticated) return;
     fetchDmUnread();
-    const interval = setInterval(fetchDmUnread, 30000);
-    return () => clearInterval(interval);
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const poll = () => {
+      timeoutId = setTimeout(async () => {
+        await fetchDmUnread();
+        poll();
+      }, dmPollIntervalRef.current);
+    };
+    poll();
+    return () => clearTimeout(timeoutId);
   }, [authenticated, fetchDmUnread]);
 
   return {

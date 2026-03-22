@@ -77,12 +77,13 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Create student/child (note: school_id column doesn't exist - use classroom_id only)
+      // Create student/child — include school_id for data integrity
       // Age must be integer (database constraint)
       const { data: createdChild, error: childError } = await supabase
         .from('montree_children')
         .insert({
           classroom_id: classroomId,
+          school_id: classroom.school_id,
           name: student.name.trim(),
           age: Math.round(student.age || 4),
         })

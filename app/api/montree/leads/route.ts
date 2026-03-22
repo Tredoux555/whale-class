@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 // POST - Submit a new lead (public)
 export async function POST(req: NextRequest) {
@@ -160,18 +161,9 @@ export async function GET(req: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Verify super admin
-    const superAdminPassword = req.headers.get('x-super-admin-password');
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
-    const isValid = superAdminPassword === expectedPassword;
-
-    if (!isValid) {
-      // Phase 8: Removed undefined fallbackPassword reference, sanitized log
-      console.error('Super admin auth failed:', {
-        receivedPassword: superAdminPassword ? 'provided' : 'none',
-        expectedPassword: expectedPassword ? 'set' : 'not set',
-      });
+    // Verify super admin (JWT token or password fallback)
+    const { valid } = await verifySuperAdminAuth(req.headers);
+    if (!valid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -221,13 +213,9 @@ export async function PATCH(req: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Verify super admin
-    const superAdminPassword = req.headers.get('x-super-admin-password');
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
-    const isValid = superAdminPassword === expectedPassword;
-
-    if (!isValid) {
+    // Verify super admin (JWT token or password fallback)
+    const { valid: patchValid } = await verifySuperAdminAuth(req.headers);
+    if (!patchValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -272,13 +260,9 @@ export async function DELETE(req: NextRequest) {
   try {
     const supabase = getSupabase();
 
-    // Verify super admin
-    const superAdminPassword = req.headers.get('x-super-admin-password');
-    const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-    if (!expectedPassword) return NextResponse.json({ error: 'Not configured' }, { status: 500 });
-    const isValid = superAdminPassword === expectedPassword;
-
-    if (!isValid) {
+    // Verify super admin (JWT token or password fallback)
+    const { valid: deleteValid } = await verifySuperAdminAuth(req.headers);
+    if (!deleteValid) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

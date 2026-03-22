@@ -146,6 +146,52 @@ Rewrote 4 work descriptions (Color Box 1/2/3, Fabric Matching) to maximize visua
 
 ---
 
+## NEXT SESSION CALL TO ACTION (4 tasks, in order)
+
+### Task 1: CLIP Signature Full Enrichment (DO THIS FIRST)
+
+**⚠️ THIS IS THE ABSOLUTE CORNERSTONE OF THE ENTIRE SMART CAPTURE SYSTEM. Do NOT skimp. Do NOT be lazy. Take as much processing power as needed. Every single description must be INCREDIBLY detailed and clearly distinguishing. Deep-dive EACH AND EVERY work individually.**
+
+Write detailed, photo-specific visual descriptions for ALL 329 works in the system. Not "rewrite 156 + add 173" — write all 329 from scratch with the same quality standard. Use 5 parallel agents (one per Montessori area). Each agent reads the curriculum JSON for their area and writes entries for EVERY work. Plus build custom work Sonnet-analysis feature (NOT Opus — Sonnet is sufficient for material descriptions at 5x lower cost; the bottleneck is the prompt not model intelligence).
+
+**Quality standard for EVERY description (non-negotiable):**
+- **Deep-dive each work individually** — Research what each work physically looks like in a real Montessori classroom. What does a phone camera see from 1-2 meters away? What materials? What colors? What shapes? What is the child doing?
+- **Material-first** — Lead with EXACT material composition: "Rigid WOODEN painted tablets" not "color matching materials". Wood, metal, plastic, fabric, paper, ceramic, glass beads, brass rods, sandpaper — be specific.
+- **Photo-specific** — Describe the VISUAL appearance, NOT the educational purpose. "Ten pink wooden cubes decreasing in size from 10cm to 1cm, stacked in a tower on a mat" NOT "A grading exercise for visual discrimination."
+- **Anti-confusion** — For EVERY work, explicitly state what it is NOT. Call out the most likely confusion pairs by material/visual difference. "NOT fabric swatches. NOT paper cards. NOT plastic counters."
+- **Action verbs** — What are the child's hands DOING? Stacking, pouring, tracing, threading, matching, sorting, grading, building, spooning, pinching, folding, buttoning, lacing, polishing.
+- **Distinguishing features** — Color palette, size dimensions, container type (wooden box, tray, basket, mat), arrangement pattern, unique identifiers.
+- **NEVER generic** — "A child matching pairs" could be 10 different works and is USELESS for CLIP. "A child sitting at a table with soft foldable cloth swatches, FEELING texture with fingertips, eyes closed, fabric pieces draped loosely" is specific enough to distinguish from every other matching work.
+
+**Template (minimum standard):**
+```
+"[EXACT MATERIAL TYPE] [OBJECT SHAPE/SIZE/DIMENSIONS] with [COLOR/TEXTURE/SURFACE FINISH].
+[CONTAINER/PRESENTATION: tray, box, basket, mat]. Child [SPECIFIC ACTION WITH HANDS].
+[KEY DISTINGUISHING VISUAL FEATURE that separates this from confusion pairs].
+NOT [confusion pair 1 material]. NOT [confusion pair 2 material]."
+```
+
+### Task 2: Streamline Upload System (DO THIS SECOND, after CLIP is done)
+Current upload flow is glitchy and slow. Diagnose and fix:
+- Background sync feels slow (5-15s network upload, but no progress feedback)
+- Sequential uploads (one at a time) — should be parallel (3-4 concurrent)
+- No upload progress indicator for teachers (just "Photo saved!" then silence)
+- Gallery shows "1 photo waiting to upload" with no ETA
+- Test the full flow: capture → compress → enqueue → upload → AI analysis → gallery display
+- Files: `lib/montree/offline/sync-manager.ts`, `app/montree/dashboard/capture/page.tsx`, `components/montree/media/PhotoQueueBanner.tsx`
+
+### Task 3: 10x Deep Audit Health Check Fix Cycle (THIRD)
+Full 10-round audit-fix loop on the ENTIRE Smart Capture pipeline end-to-end:
+- Round 1-10: Fresh parallel audit agents each round examining different angles
+- Fix all issues found each round
+- Re-audit until 3 consecutive clean passes
+- Scope: ALL Smart Capture files (photo-insight, photo-enrich, corrections, clip-classifier, photo-insight-store, sync-manager, capture page, gallery page)
+
+### Task 4: Push ALL Code
+Push everything from Mar 21 session (32 fixes + CLIP rewrites) plus all new session work.
+
+---
+
 ## DEPLOY STATUS
 
 ⚠️ NOT YET PUSHED (VM disk full, ENOSPC). Push from Mac:

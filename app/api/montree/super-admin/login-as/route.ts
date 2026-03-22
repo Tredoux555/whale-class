@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 export async function POST(req: NextRequest) {
   try {
@@ -23,13 +23,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { schoolId, superAdminPassword } = await req.json();
-
-    // Phase 9: Timing-safe password verification
-    const { valid: passwordValid, error: passwordError } = verifySuperAdminPassword(superAdminPassword);
-    if (passwordError === 'Server misconfiguration') {
-      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
-    }
+    // Verify super admin (JWT token in header, or password fallback)
+    const { valid: passwordValid } = await verifySuperAdminAuth(req.headers);
     if (!passwordValid) {
       await logAudit(supabase, {
         adminIdentifier: ip,
@@ -40,6 +35,8 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { schoolId } = await req.json();
 
     // Get school data
     const { data: school, error: schoolError } = await supabase

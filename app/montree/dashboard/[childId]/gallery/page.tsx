@@ -208,9 +208,14 @@ export default function GalleryPage() {
         return r.json();
       })
       .then(data => {
-        const sorted = (data.media || []).sort((a: GalleryItem, b: GalleryItem) =>
-          new Date(b.captured_at).getTime() - new Date(a.captured_at).getTime()
-        );
+        const sorted = (data.media || []).sort((a: GalleryItem, b: GalleryItem) => {
+          const dateA = new Date(a.captured_at || a.created_at || 0).getTime();
+          const dateB = new Date(b.captured_at || b.created_at || 0).getTime();
+          const cmp = dateB - dateA;
+          if (cmp !== 0) return cmp;
+          // Tiebreaker: created_at (DB insert order — newest first)
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
         setPhotos(sorted);
       })
       .catch((err) => {

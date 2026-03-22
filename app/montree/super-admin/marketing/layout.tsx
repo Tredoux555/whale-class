@@ -11,6 +11,24 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
   const [lastActivity, setLastActivity] = useState<number>(Date.now());
   const [sessionWarning, setSessionWarning] = useState(false);
 
+  // Restore session from sessionStorage (shared JWT token with super-admin page)
+  useEffect(() => {
+    try {
+      const savedToken = sessionStorage.getItem('sa_session');
+      const savedTs = sessionStorage.getItem('sa_session_ts');
+      if (savedToken && savedTs) {
+        const elapsed = Date.now() - parseInt(savedTs, 10);
+        if (elapsed < SESSION_TIMEOUT_MS) {
+          setAuthenticated(true);
+          setLastActivity(Date.now());
+        } else {
+          sessionStorage.removeItem('sa_session');
+          sessionStorage.removeItem('sa_session_ts');
+        }
+      }
+    } catch { /* */ }
+  }, []);
+
   // Session timeout
   useEffect(() => {
     if (!authenticated) return;
@@ -54,8 +72,16 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       });
 
       if (res.ok) {
+        const data = await res.json();
         setAuthenticated(true);
         setLastActivity(Date.now());
+        setPassword(''); // Clear password from memory
+        try {
+          if (data.token) {
+            sessionStorage.setItem('sa_session', data.token);
+          }
+          sessionStorage.setItem('sa_session_ts', Date.now().toString());
+        } catch { /* */ }
       } else if (res.status === 429) {
         setError('Too many attempts. Please try again later.');
       } else {

@@ -33,7 +33,7 @@ export function useLeadOperations({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': password
         },
         body: JSON.stringify({ lead_id: leadId, status: newStatus })
       });
@@ -53,7 +53,7 @@ export function useLeadOperations({
     try {
       const res = await fetch(`/api/montree/leads?lead_id=${lead.id}`, {
         method: 'DELETE',
-        headers: { 'x-super-admin-password': password }
+        headers: { 'x-super-admin-token': password }
       });
       if (!res.ok) throw new Error('Failed');
       setLeads(prev => prev.filter(l => l.id !== lead.id));
@@ -70,7 +70,7 @@ export function useLeadOperations({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': password
         },
         body: JSON.stringify({ lead_id: leadId, notes: notesText })
       });
@@ -118,7 +118,7 @@ export function useLeadOperations({
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password
+          'x-super-admin-token': password
         },
         body: JSON.stringify({
           lead_id: lead.id,
@@ -135,7 +135,7 @@ export function useLeadOperations({
             method: 'PATCH',
             headers: {
               'Content-Type': 'application/json',
-              'x-super-admin-password': password
+              'x-super-admin-token': password
             },
             body: JSON.stringify({
               action: 'bridge',
@@ -165,12 +165,14 @@ export function useLeadOperations({
     try {
       const res = await fetch('/api/montree/super-admin/schools', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': password,
+        },
         body: JSON.stringify({
           schoolId,
           subscription_tier: newTier,
           subscription_status: newTier === 'free' ? 'active' : (newTier === 'paid' ? 'active' : 'trialing'),
-          password
         })
       });
 
@@ -202,7 +204,7 @@ export function useLeadOperations({
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password,
+          'x-super-admin-token': password,
         },
         body: JSON.stringify({ schoolIds: [school.id] }),
       });
@@ -238,7 +240,7 @@ export function useLeadOperations({
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'x-super-admin-password': password,
+          'x-super-admin-token': password,
         },
         body: JSON.stringify({ schoolIds }),
       });
@@ -283,8 +285,11 @@ export function useLeadOperations({
     try {
       const res = await fetch('/api/montree/super-admin/login-as', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ schoolId, superAdminPassword: password }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': password,
+        },
+        body: JSON.stringify({ schoolId }),
       });
 
       if (!res.ok) throw new Error('Failed to login');

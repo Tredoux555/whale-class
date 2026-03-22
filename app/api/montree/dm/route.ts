@@ -4,12 +4,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
-// Helper function to verify super-admin access
-function verifySuperAdminPassword(req: NextRequest): boolean {
-  const passwordHeader = req.headers.get('x-super-admin-password');
-  const expectedPassword = process.env.SUPER_ADMIN_PASSWORD;
-  return passwordHeader === expectedPassword;
+// Helper function to verify super-admin access (JWT token or password fallback)
+async function verifySuperAdmin(req: NextRequest): Promise<boolean> {
+  const { valid } = await verifySuperAdminAuth(req.headers);
+  return valid;
 }
 
 // GET - Fetch messages for a conversation, or global unread summary for admin
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     // ── Global unread summary for admin (no conversation_id) ──
     if (!conversationId && readerType === 'admin') {
-      if (!verifySuperAdminPassword(req)) {
+      if (!await verifySuperAdmin(req)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Auth check: either super-admin password OR reader_type=user (user viewing own inbox)
-    const isSuperAdmin = verifySuperAdminPassword(req);
+    const isSuperAdmin = await verifySuperAdmin(req);
     const isUserViewing = readerType === 'user';
 
     if (!isSuperAdmin && !isUserViewing) {
@@ -140,7 +140,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Auth: admin messages require super-admin password
-    if (sender_type === 'admin' && !verifySuperAdminPassword(req)) {
+    if (sender_type === 'admin' && !await verifySuperAdmin(req)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
@@ -209,7 +209,7 @@ export async function PATCH(req: NextRequest) {
       }
 
       // Bridge requires super-admin password
-      if (!verifySuperAdminPassword(req)) {
+      if (!await verifySuperAdmin(req)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
       }
 

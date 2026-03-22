@@ -22,6 +22,7 @@ export interface School {
   signup_city?: string | null;
   signup_region?: string | null;
   signup_timezone?: string | null;
+  login_codes?: string[];
 }
 
 export interface Feedback {

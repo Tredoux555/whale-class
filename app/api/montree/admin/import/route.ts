@@ -108,6 +108,7 @@ export async function POST(request: NextRequest) {
           .insert({
             name: assignment.childName,
             classroom_id: classroomId,
+            school_id: schoolId,
             age: 4,
             is_active: true
           })
