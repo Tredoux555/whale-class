@@ -1,3 +1,8 @@
+export interface ImageOffset {
+  x: number; // percentage 0-100, 50 = centered
+  y: number; // percentage 0-100, 50 = centered
+}
+
 export interface Card {
   id: number;
   originalImage: string;
@@ -5,6 +10,7 @@ export interface Card {
   label: string;
   width: number;
   height: number;
+  imageOffset?: ImageOffset;
 }
 
 export interface CropData {
