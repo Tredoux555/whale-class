@@ -846,7 +846,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
               slimMastery !== null &&
               inClassroom
             );
-            const needsConfirmation = !shouldAutoUpdate && clipConfidence >= 0.5 && slimInput.confidence >= 0.5;
+            const needsConfirmation = !shouldAutoUpdate && clipConfidence >= 0.75 && slimInput.confidence >= 0.75;
             let autoUpdated = false;
 
             // Tag media
