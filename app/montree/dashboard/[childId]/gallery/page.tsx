@@ -551,6 +551,10 @@ export default function GalleryPage() {
       setPhotos(prev => prev.filter(p => p.id !== photoToDelete.id));
       // Clean up image URL cache for deleted photo
       setImageUrls(prev => { const next = { ...prev }; delete next[photoToDelete.id]; return next; });
+      // Remove from report preview if open (prevent stale reference)
+      setReportItems(prev => prev.filter(i => i.photo_id !== photoToDelete.id));
+      // Reset lightbox index to prevent out-of-bounds
+      setLightboxIndex(0);
       toast.success(t('gallery.photoDeletedSuccessfully'));
       setPhotoToDelete(null);
     } catch {
@@ -569,6 +573,10 @@ export default function GalleryPage() {
       setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)));
       // Clean up image URL cache for deleted photos
       setImageUrls(prev => { const next = { ...prev }; selectedIds.forEach(id => delete next[id]); return next; });
+      // Remove from report preview if open (prevent stale reference)
+      setReportItems(prev => prev.filter(i => !i.photo_id || !selectedIds.has(i.photo_id)));
+      // Reset lightbox index to prevent out-of-bounds
+      setLightboxIndex(0);
       toast.success(t('gallery.photosDeletedSuccessfully').replace('{count}', selectedIds.size.toString()));
       setSelectedIds(new Set());
       setShowBulkDeleteConfirm(false);

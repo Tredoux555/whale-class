@@ -494,7 +494,7 @@ export async function POST(request: NextRequest) {
       const cachedWorkName = (snapshot.identified_work_name as string) || null;
       const cachedArea = (snapshot.identified_area as string) || null;
       const cachedMatchScore = (snapshot.curriculum_match_score as number) ?? 0;
-      const cachedConfidence = (snapshot.sonnet_confidence as number) ?? 0;
+      const cachedConfidence = (snapshot.sonnet_confidence as number) ?? (snapshot.haiku_confidence as number) ?? 0;
 
       // Re-check scenario freshness: classroom/shelf status may have changed since original analysis
       // Only re-check if original scenario was B (not in classroom) or C (not on shelf)
@@ -570,7 +570,7 @@ export async function POST(request: NextRequest) {
           mastery_evidence: snapshot.mastery_evidence ?? null,
           auto_updated: false,
           needs_confirmation: snapshot.needs_confirmation ?? false,
-          confidence: snapshot.sonnet_confidence ?? null,
+          confidence: snapshot.sonnet_confidence ?? snapshot.haiku_confidence ?? null,
           match_score: snapshot.curriculum_match_score ?? null,
           candidates: Array.isArray(snapshot.candidates) ? snapshot.candidates : [],
           scenario: freshScenario,
