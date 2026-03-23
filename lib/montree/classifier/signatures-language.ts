@@ -10,7 +10,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'COLLECTION of REAL 3D CLASSROOM OBJECTS in NATURAL LIGHTING displayed on a WOODEN TRAY or TABLE SURFACE—scissors with SILVER metal blades and PLASTIC handles, pencil with POINTED graphite tip and WOODEN barrel, ERASER in PINK rubber form, CERAMIC or PLASTIC cup in LIGHT COLOR, WOODEN spoon with SMOOTH GRAIN, METAL fork with SHINY SILVER tines. Each object is FULLY 3-DIMENSIONAL, ISOLATED from others with CLEAR SPACING. Child\'s HAND holding or TOUCHING individual object, FINGER POINTING at specific part, MOUTH OPEN mid-speech engaging in VOCABULARY NAMING. Adult or teacher at child\'s EYE LEVEL with ATTENTIVE LISTENING POSTURE, NOT lecturing but RESPONSIVE to child\'s utterances.',
     key_materials: ['Scissors metal/plastic', 'Pencils with erasers', 'Ceramic cups', 'Wooden utensils', 'Metal forks and spoons'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_object_picture_matching',
+        reason: 'Both show REAL OBJECTS and CHILDREN engaged with them, but Vocabulary Enrichment shows classroom objects with HAND engagement while Object Matching shows MINIATURE objects paired with picture cards',
+        differentiation: 'Vocabulary Enrichment shows FULL-SIZE classroom objects (SCISSORS, PENCIL, CUP, SPOON). Object Matching shows MINIATURE 1.5-2 inch objects with MATCHING illustrations.'
+      }
+    ],
     negative_descriptions: [
       'NOT picture cards or illustrations - these are REAL 3D objects',
       'NOT a single object - multiple classroom items arranged',
@@ -25,7 +31,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'LAMINATED PICTURE CARDS (precisely 2x3 inches, glossy CARD STOCK surface) ORGANIZED IN NEAT ROWS or STACKS by SEMANTIC CATEGORY on a WORK MAT. Each card displays ONE CLEAR PHOTOGRAPHIC or ILLUSTRATED IMAGE: BROWN DOG facing forward with clear ears, ORANGE CAT sitting upright, BLUE BIRD in profile, RED FIRE TRUCK with visible wheels, SCHOOL BUS in bright YELLOW, colorful CLOTHING ITEMS (BLUE shirt, RED pants, GREEN hat). Illustrations rendered in BRIGHT SATURATED COLORS on PURE WHITE BACKGROUND with NO background clutter. Child\'s FINGERS SEPARATING cards from stack, THUMB and FOREFINGER pinching card edges, EYES SCANNING card details. Cards laying FLAT on table surface in ORGANIZED ARRANGEMENT by category.',
     key_materials: ['Laminated picture cards 2x3 inches', 'Card sets by animal/vehicle/clothing categories', 'Card baskets or wooden trays'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_pink_object_box',
+        reason: 'Both involve PICTURE CARDS with objects and ORGANIZED arrangement, but Classified Cards show only ILLUSTRATIONS while Pink Object Box shows MINIATURE 3D objects with matching cards',
+        differentiation: 'Classified Cards show LAMINATED PICTURE ILLUSTRATIONS of objects (NOT real). Pink Object Box shows REAL CERAMIC MINIATURES alongside matching picture cards.'
+      }
+    ],
     negative_descriptions: [
       'NOT 3-part cards which have label + picture + control card',
       'NOT picture-word cards showing both image and written word',
@@ -40,7 +52,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'MINIATURE 3D OBJECTS (1.5-2 inches tall, CERAMIC or HARD PLASTIC construction with FINE DETAIL work) arranged in NEAT ROWS on WHITE WORK SURFACE alongside MATCHING COLOR ILLUSTRATION CARDS. Miniatures include REALISTIC DOG figurine with BROWN SPOTS and POINTED EARS, TINY RED CAR with BLACK wheels and CHROME details, SMALL CUP with HANDLE in CERAMIC white. Picture cards show IDENTICAL objects as COLOR ILLUSTRATIONS (NOT photographs—hand-drawn style). Clear SPATIAL PAIRING with each 3D object positioned DIRECTLY NEXT TO matching illustration card. Child\'s HAND REACHING or HOVERING toward object, FINGERS TOUCHING miniature surface showing tactile engagement. Strong CAST SHADOWS visible under miniatures demonstrating 3D form and OBJECT DEPTH.',
     key_materials: ['Ceramic miniature objects animals/vehicles/household', 'Matching picture illustration cards', 'White wooden work trays'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_classified_cards',
+        reason: 'Both show OBJECTS and PICTURES together in organized layout, but Object Matching has MINIATURE 3D objects while Classified Cards show only flat picture illustrations',
+        differentiation: 'Object Matching shows TACTILE MINIATURE CERAMIC 3D objects paired with cards. Classified Cards show only flat LAMINATED PICTURE ILLUSTRATIONS without 3D objects.'
+      }
+    ],
     negative_descriptions: [
       'NOT classified cards which show only pictures',
       'NOT 3D objects without matching picture cards',
@@ -55,7 +73,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'WOVEN BASKET or WOODEN TRAY containing 12-15 SMALL OBJECTS with DISTINCT INITIAL PHONETIC SOUNDS: CERAMIC muffin figurine, PLASTIC apple, STUFFED bear, WOODEN dog, CERAMIC cat, PLASTIC fan with ROTATING blades, WOODEN sun shape, WOODEN or METAL pen, FELT mouse, BROWN rat figurine, CERAMIC pig, BRIGHT YELLOW sun, WOODEN pen holder, SMALL CARD with word. Objects are TEXTURED with REALISTIC DETAIL (embossed patterns, CARVED grain, MOLDED features). Child\'s RIGHT INDEX FINGER POINTING DIRECTLY at selected object while MOUTH SHAPES INITIAL SOUND aloud (/m/ for muffin, /b/ for bear). CLASSROOM BACKGROUND visible with SHELVING and other materials. Multiple OBJECT DISPLACEMENT visible showing child making multiple selections.',
     key_materials: ['Sound objects in woven basket', 'Objects with distinct initial consonants and vowels', 'Classroom shelf setting'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_enrichment_vocabulary',
+        reason: 'Both feature REAL CLASSROOM OBJECTS arranged in organized settings with children TOUCHING/POINTING, but Sound Games focuses on PHONETIC SOUNDS while Vocabulary Enrichment focuses on OBJECT NAMING',
+        differentiation: 'Sound Games shows FINGER POINTING at object while PRONOUNCING INITIAL SOUND (/m/, /b/). Vocabulary Enrichment shows CHILD TOUCHING object while NAMING the whole object (scissors, pencil, cup).'
+      }
+    ],
     negative_descriptions: [
       'NOT picture-based sound matching - these are REAL 3D objects',
       'NOT letter cards or phonograms',
@@ -70,7 +94,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'PICTURE CARDS or CERAMIC MINIATURE OBJECTS showing RHYMING PAIRS (cat wearing PURPLE hat, DOG near BROWN log, BRIGHT sun above BUN on plate, SILVER moon and WOODEN spoon) arranged in DISTINCT PAIRS on WORK MAT. Cards are 2x3 inches with LARGE COLORFUL ILLUSTRATIONS of single FAMILIAR objects. Child\'s HANDS holding TWO MATCHING RHYME cards between THUMB and FOREFINGER, holding cards NEAR MOUTH as if SPEAKING words aloud. FACIAL EXPRESSION showing CONCENTRATION on SOUND SIMILARITY. Card pairs spatially separated in ORGANIZED GROUPINGS, with CLEAR SPACE between different rhyme sets. Visual shows progression from HOLDING to SPEAKING to MATCHING.',
     key_materials: ['Rhyming picture card pairs', 'Ceramic rhyming object sets', 'Rhyming matching baskets'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_sound_games',
+        reason: 'Both involve sound-focused language activities with objects/cards, but Rhyming matches END sounds while Sound Games matches INITIAL sounds',
+        differentiation: 'Rhyming shows cards PAIRED together (cat-hat, sun-bun) emphasizing matching END SOUNDS. Sound Games shows INDIVIDUAL objects emphasizing matching INITIAL SOUNDS (/m/, /b/).'
+      }
+    ],
     negative_descriptions: [
       'NOT initial sound games which focus on first sound',
       'NOT phonogram introduction which teaches letter combinations',
@@ -85,7 +115,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'SEQUENCE CARDS (set of 4-6 LAMINATED cards, each 3x4 inches) showing CLEAR NARRATIVE PROGRESSION with BRIGHT CARTOON-STYLE ILLUSTRATIONS (NOT photographs, hand-drawn expressiveness): CHILD IN BED with EYES CLOSED and PILLOW (morning waking), CHILD AT TABLE with BOWL and SPOON (breakfast eating), CHILD GETTING DRESSED with SHIRT and PANTS pulled halfway on, CHILD WALKING through DOORWAY with BACKPACK. Each card depicts ONE DISTINCT ACTION with MINIMAL background detail. Cards LAID OUT in LINEAR LEFT-TO-RIGHT sequence on TABLE SURFACE with SPACE between each card for clarity. Child\'s HAND POINTING to each card IN SEQUENCE while MOUTH MOVES mid-speech creating narrative flow. Story ACTION is OBVIOUS and SEQUENTIAL with clear VISUAL TRANSITIONS.',
     key_materials: ['Story sequence cards 3x4 inches', 'Laminated narrative cards with 4-6 scenes', 'Felt board optional for manipulation'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_poems_songs',
+        reason: 'Both involve NARRATIVE engagement with GROUP of children, but Storytelling shows SEQUENTIAL picture CARDS requiring ORDERING while Poems/Songs show LYRICS on poster for RECITATION',
+        differentiation: 'Storytelling shows SEQUENCE CARDS laid out left-to-right requiring child to ORDER events. Poems/Songs show LYRICS POSTER with children SINGING/RECITING words aloud together.'
+      }
+    ],
     negative_descriptions: [
       'NOT individual picture cards without sequence relationship',
       'NOT written story text or chapter books',
@@ -100,7 +136,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'LARGE POSTER or CHART (visible from 6+ feet classroom distance, approximately 24x36 inches) showing SONG or POEM LYRICS in BOLD BLACK TEXT (14-18pt font, SANS-SERIF for clarity) with COLORFUL ILLUSTRATED BORDERS featuring NATURE motifs (flowers, leaves, butterflies, birds). Chart mounted on STURDY FOAM BOARD or LAMINATED PAPER backing, POSITIONED at child\'s EYE LEVEL or slightly above. Teacher or MULTIPLE CHILDREN POINTING to WORDS with FINGER or WOODEN POINTER STICK while SINGING or RECITING in UNISON. Children\'s HANDS performing COORDINATED FINGERPLAY MOTIONS: TOUCHING forehead, CLAPPING palms together, ARMS RAISED overhead, TOUCHING nose tip, CROSSING arms over chest. Group of 2-5 CHILDREN visible with OPEN MOUTHS and ENGAGED FACIAL EXPRESSIONS. Chart is BRIGHTLY COLORED with CLEAR READABILITY and PROMINENT POSITIONING.',
     key_materials: ['Song poster or chart 24x36 inches', 'Poetry cards with colorful borders', 'Wooden pointer stick'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_storytelling',
+        reason: 'Both involve GROUP engagement with NARRATIVE, but Poems/Songs show LYRICS with GROUP SINGING while Storytelling shows SEQUENCE CARDS requiring ORDER CREATION',
+        differentiation: 'Poems/Songs show LARGE POSTER with LYRICS, children POINTING and SINGING/RECITING. Storytelling shows individual SEQUENCE CARDS that child ARRANGES in order.'
+      }
+    ],
     negative_descriptions: [
       'NOT single-child quiet reading activity',
       'NOT silent or solo recitation',
@@ -115,7 +157,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Oral Language Development',
     visual_description: 'SMALL INTIMATE GROUP of 2-4 CHILDREN sitting in CIRCLE FORMATION on CARPETED FLOOR or in LOW WOODEN CHAIRS, POSITIONED so ALL PARTICIPANTS are FACING each other at EQUAL EYE LEVEL. NO TABLE between speakers—completely unobstructed INTERPERSONAL SPACE. Child\'s MOUTH OPEN mid-speech with VISIBLE TONGUE and LIP MOVEMENT. HAND GESTURES prominently displayed: HANDS RAISED in animated discussion, FINGERS POINTING to reference objects, PALMS FACING outward for emphasis, ARMS MOVING expressively. ADULT sitting at child\'s HEIGHT on same level, displaying ATTENTIVE LISTENING POSTURE with LEANED-IN TORSO and DIRECT EYE CONTACT. INFORMAL CLASSROOM SETTING with SHELVING visible in background. INTIMATE COMPOSITION showing FACES, EYE CONTACT, and ENGAGED BODY LANGUAGE. NOT formal presentation, NOT lecture format, NOT one-way communication.',
     key_materials: ['Circle discussion area on floor', 'Low wooden chairs or cushions', 'Conversation starter prompts'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_poems_songs',
+        reason: 'Both are GROUP language activities, but Conversation is DISCUSSION in small CIRCLE facing each other while Poems/Songs is GROUP recitation facing a POSTER',
+        differentiation: 'Conversation shows INTIMATE CIRCLE formation with all FACING each other, HANDS GESTURING, NATURAL talk flow. Poems/Songs shows children GROUPED before a POSTER, POINTING and SINGING together.'
+      }
+    ],
     negative_descriptions: [
       'NOT structured group lesson with all children facing one direction',
       'NOT formal presentation where child faces audience',
@@ -174,7 +222,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Writing Preparation',
     visual_description: 'WOODEN TRAY (12x18 inches, STAINED DARK BROWN or NATURAL WOOD finish) FILLED completely with FINE SMOOTH COLORED SAND (TAN sand or LIGHT BLUE sand, 2-3 inches DEEP, SURFACE completely LEVEL and SMOOTH). Child\'s FINGER (SINGLE index finger or MULTIPLE fingers) or SMALL WOODEN STICK DRAGGING through sand to FORM LARGE LETTERS (capital and lowercase). CLEAR DARK TRACKS visible in sand showing LETTER SHAPE, with SAND DISPLACED to sides of track showing DEPTH of impression. CLOSE-UP detail shows FINGER-WIDTH GROOVES in sand surface with CLEAN track edges. Multiple LETTER ATTEMPTS visible in SAME tray showing PROGRESSION: some letters COMPLETE and WELL-FORMED, some PARTIALLY erased with GHOSTING visible, some NEW attempts BEGINNING. Sand SURFACE is SMOOTH WITHOUT WATER or moisture. TACTILE IMPRESSION visible showing DEPRESSION DEPTH of 0.5+ inches demonstrating HAND PRESSURE and CONTROL.',
     key_materials: ['Wooden sand tray 12x18 inches', 'Fine smooth colored sand tan/blue', 'Sand tray tools and sticks'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_chalkboard_writing',
+        reason: 'Both are large-format writing activities using DARK SURFACES and whole-arm movement, but Sand Tray is HORIZONTAL with SMOOTH SAND while Chalkboard is VERTICAL with CHALK',
+        differentiation: 'Sand Tray shows HORIZONTAL tray at table with FINE SMOOTH SAND, FINGER making TRACKS. Chalkboard shows VERTICAL mounted board, WHOLE-ARM motion with CHALK, creating bright white LINES on dark surface.'
+      }
+    ],
     negative_descriptions: [
       'NOT sandpaper letter tracing which has rough texture',
       'NOT chalkboard writing which uses chalk on dark surface',
@@ -189,7 +243,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Writing Preparation',
     visual_description: 'WOODEN FRAME or SLATE CHALKBOARD (24x36 inches, MOUNTED on WALL or EASEL at CHILD\'S SHOULDER HEIGHT) with DARK BLACKBOARD surface (MATTE finish, CHALK dust visible). Child\'s ARM FULLY EXTENDED from SHOULDER at approximately 45-degree ANGLE, holding CHALK stick in FINGERTIP grip (NOT pencil grip—whole-arm movement required). LARGE WHITE or COLORED CHALK LINES drawn (WHITE chalk shows BRIGHTEST contrast, COLORED chalk in YELLOW/PINK also visible). Each LETTER is 8+ INCHES TALL per letter stroke. CHALK MARKS show BRIGHT WHITE LINES on DEEP BLACK SURFACE with HIGH CONTRAST. Whole-arm motion is OBVIOUS and VISIBLE—SHOULDER, ELBOW, WRIST all moving together in COORDINATED GROSS-MOTOR movement, NOT just finger movement. CHALK DUST visible suspended in AIR and accumulated on CHILD\'S HAND. WOODEN CHALKBOARD ERASER hanging from STRING on board side. VERTICAL SURFACE positioning shown clearly. Letters are LARGE and LEGIBLE from across CLASSROOM distance.',
     key_materials: ['Wooden or slate chalkboard 24x36 inches', 'Colored chalk sticks white/yellow/pink', 'Wooden chalkboard eraser'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_sand_tray',
+        reason: 'Both are WRITING preparation activities with LARGE MARKS, but Chalkboard is VERTICAL with WHOLE-ARM CHALK motion while Sand Tray is HORIZONTAL with FINGER TRACKING',
+        differentiation: 'Chalkboard shows VERTICAL surface at SHOULDER HEIGHT, BRIGHT WHITE CHALK LINES on black surface, WHOLE-ARM motion from SHOULDER. Sand Tray shows HORIZONTAL table surface, FINE SMOOTH SAND, FINGER-WIDTH GROOVES.'
+      }
+    ],
     negative_descriptions: [
       'NOT horizontal sand tray writing activity',
       'NOT small pencil writing with tripod grip',
@@ -225,7 +285,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Writing Preparation',
     visual_description: 'LINED HANDWRITING PAPER with PRECISELY MEASURED 4-LINE FORMAT: TOP SOLID LINE, MIDDLE DASHED LINE (BASELINE for lowercase body), BOTTOM SOLID LINE, and ADDITIONAL BASELINE showing PROPER letter PROPORTION. Paper is STANDARD 8.5x11 inches WHITE or CREAM COLORED with LIGHT BLUE or GRAY lines. Child\'s HANDWRITTEN lowercase LETTERS positioned CORRECTLY on baseline between BOTTOM and MIDDLE DASHED lines (showing PROPER letter SIZING of 0.5-0.75 inches tall). PENCIL HELD in CORRECT TRIPOD GRIP with THUMB and TWO FINGERS supporting WOODEN #2 PENCIL (SHARPENED graphite visible). Letters show CONSISTENT FORMATION with CONNECTED cursive strokes. PROPER SPACING visible between LETTERS (approximately LETTER WIDTH) and between WORDS (approximately HALF-LETTER WIDTH). Paper shows MULTIPLE LETTERS or simple CVC WORDS (cat, dog, run) written in CHILD\'S natural handwriting. NO CRAYONS or MARKERS—standard GRAPHITE PENCIL only. Light PENCIL MARKS visible where child may have MADE corrections.',
     key_materials: ['Lined handwriting paper 4-line format', 'Standard #2 sharpened pencils', 'Letter formation reference cards'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_creative_writing',
+        reason: 'Both are PENCIL-BASED writing on paper, but Handwriting Practice shows LINED paper with MODELS while Creative Writing shows BLANK paper with CHILD\'S original composition',
+        differentiation: 'Handwriting shows LINED 4-line FORMAT paper with GUIDED BASELINES and child FORMING LETTERS correctly. Creative Writing shows BLANK UNLINED paper with child WRITING original thoughts.'
+      }
+    ],
     negative_descriptions: [
       'NOT chalkboard large-format writing',
       'NOT sand tray writing activity',
@@ -240,7 +306,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Writing Preparation',
     visual_description: 'BLANK WRITING JOURNAL or PAGE showing child\'s HANDWRITTEN ORIGINAL COMPOSITION (NOT copying from model, NOT handwriting practice—ORIGINAL authorship). PENCIL-WRITTEN TEXT in child\'s NATURAL HANDWRITING showing INDIVIDUAL letter VARIATIONS and PERSONAL WRITING STYLE. Sentences are SELF-COMPOSED demonstrating ORIGINAL IDEAS and CREATIVE THOUGHT. Lines of text show LEGIBLE SPELLING with CONSISTENT LETTER SPACING. Paper BACKGROUND is PLAIN WHITE without PRINTED lines or GUIDING TEXT. Writing demonstrates CHILD-AUTHORED WORDS—word SELECTIONS reflect CHILD\'S thinking, word ORDER matches CHILD\'S syntax, CONTENT is CHILD\'S original narrative. May include TEACHER\'S LIGHT PENCIL MARKS showing GENTLE CORRECTION or ENCOURAGEMENT (light check marks, arrow indicators—NOT extensive marking). Writing shows ORIGINAL THOUGHT and PERSONAL VOICE, NOT REPEATED TEXT or DICTATION transcription. OVERALL composition shows EMERGING writing CONFIDENCE and VOICE development.',
     key_materials: ['Writing journals bound or loose', 'Blank paper unlined', 'Standard pencils', 'Writing prompt cards optional'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_handwriting_paper',
+        reason: 'Both are PENCIL-BASED WRITING on paper, but Handwriting Practice focuses on LETTER FORMATION while Creative Writing focuses on ORIGINAL COMPOSITION and VOICE',
+        differentiation: 'Handwriting shows LINED paper with child COPYING/FORMING standard letters correctly. Creative Writing shows BLANK paper with child\'s ORIGINAL thoughts, PERSONAL style, NATURAL spelling variations.'
+      }
+    ],
     negative_descriptions: [
       'NOT handwriting practice copying prescribed letters',
       'NOT lined handwriting paper with guided format',
@@ -434,7 +506,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'CARDS or BOOKLETS featuring NON-PHONETIC high-frequency WORDS that CANNOT be decoded using phonetic rules: "the", "a", "an", "is", "to", "and", "was", "were", "said", "have", "do", "does", "you", "of", "water", "could", "would". Words PRINTED on CARD STOCK (2x3 inch cards or booklet pages) in LOWERCASE, CLEARLY PRINTED text (SANS-SERIF font for CLARITY). Words do NOT follow PHONETIC DECODING rules—they must be LEARNED VISUALLY and MEMORIZED from SIGHT. Some materials may feature PUZZLE-CUT SHAPES where WORD PIECES physically INTERLOCK like jigsaw puzzle pieces (hence "puzzle" words). Child READING SIGHT WORDS from CARDS without attempting PHONETIC DECODING. Irregular SPELLING PATTERNS clearly visible (compare "though", "through", "tough"—all SPELLED differently despite shared sounds). NOT phonetically decodable.',
     key_materials: ['Puzzle word cards 2x3 inches', 'Sight word booklets', 'Puzzle-cut interlocking word materials'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_phonogram_intro',
+        reason: 'Both are WORD-based language activities, but Puzzle Words are NON-PHONETIC sight words while Phonogram Introduction teaches LETTER COMBINATION sounds',
+        differentiation: 'Puzzle Words shows IRREGULAR words (the, said, water) that CANNOT be sounded out. Phonogram Intro shows TWO-LETTER COMBINATIONS (sh, th, ee) that produce predictable SOUNDS.'
+      }
+    ],
     negative_descriptions: [
       'NOT phonetically decodable words following phonetic rules',
       'NOT CVC words, blend words, or phonogram words',
@@ -449,7 +527,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'Child READING a COMPLEX WORD aloud and ANALYZING which PHONOGRAMS are PRESENT using a PHONOGRAM REFERENCE CHART (LARGE LAMINATED POSTER showing all learned PHONOGRAMS organized by TYPE). Child\'s FINGER POINTING to CHART while simultaneously IDENTIFYING PHONOGRAM COMPONENTS in WORD CARD. Analysis shows DECOMPOSITION of word—BREAKING COMPLEX WORDS into constituent PHONOGRAM PATTERNS (example: "playing" = "pl-ay-ing" with each COMPONENT identified). Paper or CHART showing COLOR-CODED or HIGHLIGHTED PHONOGRAM IDENTIFICATION with DIFFERENT COLORS for different PHONOGRAM TYPES (BLUE for consonant BLENDS, GREEN for VOWEL DIGRAPHS, PINK for silent E patterns, etc.). Diagram or WRITTEN ANALYSIS shows EXPLICIT BREAKDOWN of word STRUCTURE. NOT simple reading—this is ADVANCED ANALYTICAL reading with EXPLICIT PHONOGRAM IDENTIFICATION and word STRUCTURE BREAKDOWN.',
     key_materials: ['Reading analysis charts and materials', 'Laminated phonogram reference posters', 'Colored word cards with analysis markings'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_reading_classification',
+        reason: 'Both are ADVANCED reading activities requiring COMPREHENSION, but Reading Analysis focuses on PHONOGRAM BREAKDOWN while Reading Classification focuses on SEMANTIC SORTING',
+        differentiation: 'Reading Analysis shows child DECOMPOSING words into PHONOGRAM components (pl-ay-ing), examining LETTER PATTERNS. Reading Classification shows child SORTING words by MEANING category (animals, food, clothing).'
+      }
+    ],
     negative_descriptions: [
       'NOT simple sight word reading',
       'NOT phonogram introduction - this is ANALYSIS of phonograms',
@@ -464,7 +548,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'WORD CARDS (approximately 1x2 inches each) to be CLASSIFIED by SEMANTIC CATEGORY while READING and COMPREHENDING meaning. CATEGORY LABEL CARDS visible: "ANIMALS", "FOOD", "CLOTHING", "FURNITURE", "VERBS", "ADJECTIVES". Child READS each WORD CARD independently (example: child reads "dog", "cat", "bird" and comprehends meaning). Child then SORTS WORD CARDS into CORRECT SEMANTIC CATEGORIES by UNDERSTANDING word MEANING and CATEGORY membership. SORTED WORD CARDS arranged in NEAT PILES or COLUMNS by CATEGORY on table. CATEGORY LABELS clearly visible at TOP or HEADER of each GROUPING. Multiple CATEGORIES visible with CLEAR SPATIAL SEPARATION between category PILES. READING COMPREHENSION is demonstrated through ACCURATE CLASSIFICATION—child must UNDERSTAND word MEANING (not just DECODE) AND recognize CATEGORY membership.',
     key_materials: ['Classification reading word cards', 'Category label cards', 'Word sorting materials and trays'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_reading_analysis',
+        reason: 'Both are ADVANCED reading requiring ANALYSIS, but Reading Classification focuses on SEMANTIC MEANING while Reading Analysis focuses on PHONOGRAM STRUCTURE',
+        differentiation: 'Reading Classification shows child SORTING words by SEMANTIC CATEGORY (animals, food, clothing). Reading Analysis shows child BREAKING words into PHONOGRAM components (sh-ee-p, sp-oo-n).'
+      }
+    ],
     negative_descriptions: [
       'NOT decoding practice without comprehension',
       'NOT phonogram or sound-based sorting',
@@ -479,7 +569,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'COMMAND CARDS (3x5 inch LAMINATED CARD STOCK) showing IMPERATIVE SENTENCES with ACTION VERBS in LOWERCASE PRINT: "Stand up", "Hop on one foot", "Touch your nose", "Clap your hands three times", "Walk to the door", "Jump high", "Sit down", "Skip around the room". Text is CLEARLY PRINTED in large SANS-SERIF font (14-18pt). Card BACKGROUND is WHITE or CREAM with BOLD BLACK TEXT. Child HOLDING card in HAND, READING command aloud silently or WHISPERED. Immediately AFTER reading, child PERFORMS the PHYSICAL ACTION described. Visual shows child MID-ACTION: JUMPING with FEET off ground, HOPPING on single LEG while BALANCING, CLAPPING palms together repeatedly, WALKING in specific DIRECTION, TOUCHING nose with FINGERTIP, SITTING on CHAIR or FLOOR. Card VISIBLE in child\'s HAND during or AFTER action execution. Child\'s BODY POSITION clearly showing ACTION EXECUTION.',
     key_materials: ['Command cards 3x5 inches', 'Action reading verb cards', 'Simple imperative sentence cards'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_verb_intro',
+        reason: 'Both involve READING and PERFORMING ACTIONS, but Command Cards focus on INSTRUCTION FOLLOWING while Verb Intro focuses on VERB SYMBOL learning',
+        differentiation: 'Command Cards show child READING imperative sentence then EXECUTING action (Jump, Clap, Hop). Verb Intro shows child IDENTIFYING RED CIRCLE symbols above VERBS and performing corresponding ACTIONS.'
+      }
+    ],
     negative_descriptions: [
       'NOT grammar symbol instruction cards',
       'NOT silent reading or comprehension-only activity',
@@ -494,7 +590,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'Child READING ALOUD from POETRY BOOK, SHORT STORY, or DRAMATIC SCRIPT with VARIED EXPRESSION and EMOTIONAL INTERPRETATION. Reader\'s FACIAL EXPRESSION changes with TEXT MEANING: EYEBROWS raised for surprise or excitement, MOUTH CURVED upward for happy content, EYES NARROWED for serious or fearful passages, OVERALL EXPRESSION MATCHING emotional TONE. VOICE INFLECTION clearly varied: VOLUME increases for emphasis, PITCH rises for excitement, SPEECH SLOWS for dramatic moments, PAUSES between phrases for effect. HAND GESTURES match TEXT MOOD and DESCRIBED ACTIONS: HANDS raised for joy, ARMS CROSSED for confrontation, PALMS OPEN for invitation, FINGERS POINTING for emphasis. Child\'s MOUTH clearly MOVING with VARIED INTONATION—NOT flat or monotone. OPEN BOOK visible in child\'s HANDS or on TABLE. May show child READING to SMALL AUDIENCE of 2-4 peers listening with ENGAGED ATTENTION. EXPRESSIVE BODY LANGUAGE visible throughout (LEANING forward, TURNING pages with INTENTION, POSTURE changing). NOT mechanical reading—this is EMOTIONAL INTERPRETIVE reading demonstrating deep TEXT COMPREHENSION through VOCAL and PHYSICAL EXPRESSION.',
     key_materials: ['Poetry books with expressive text', 'Short story collections', 'Drama scripts with dialogue'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_silent_reading',
+        reason: 'Both are READING ACTIVITIES with books, but Interpretive Reading emphasizes EXPRESSIVE VOCAL/PHYSICAL delivery while Silent Reading is QUIET WITHOUT expression',
+        differentiation: 'Interpretive Reading shows child READING ALOUD with VARIED VOICE inflection, FACIAL EXPRESSIONS, HAND GESTURES matching emotional tone. Silent Reading shows child READING quietly alone with CLOSED LIPS, EYES scanning pages.'
+      }
+    ],
     negative_descriptions: [
       'NOT silent independent reading without expression',
       'NOT simple word decoding or sight word reading',
@@ -509,7 +611,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Reading',
     visual_description: 'Child SITTING AT WOODEN TABLE or in COZY READING CORNER on CUSHIONED seat with OPEN CHAPTER BOOK or LEVELED READER (appropriate READING LEVEL for child). Child\'s EYES SCANNING PAGES from LEFT to RIGHT, MOVING down lines systematically. NO VOICE—completely SILENT reading with LIPS CLOSED. Child\'s HAND occasionally TURNING PAGE with DELIBERATE motion, using THUMB to HOLD page. QUIET CLASSROOM ENVIRONMENT: SOFT NATURAL or warm LIGHTING, MINIMAL background NOISE, CARPETED or soft FLOORING. Child SITTING ALONE with book—not being TAUGHT, not answering QUESTIONS in REAL TIME, not DISCUSSING text—purely INDEPENDENT reading. READING POSTURE shows UPRIGHT SEATED position with RELAXED SHOULDERS and BOOK held at COMFORTABLE distance (10-12 inches from EYES). FACIAL EXPRESSION shows CONCENTRATION with EYES FOCUSED on PAGE text. NOT guided reading with teacher, NOT read-aloud (which is expressive and vocal), NOT interpretive performance.',
     key_materials: ['Leveled books by reading level', 'Chapter books for independent readers', 'Reading corner with comfortable seating'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_interpretive_reading',
+        reason: 'Both are READING from books, but Silent Reading is QUIET INDEPENDENT activity while Interpretive Reading is EXPRESSIVE read-aloud with AUDIENCE',
+        differentiation: 'Silent Reading shows child READING ALONE in QUIET corner, CLOSED LIPS, EYES scanning left-to-right. Interpretive Reading shows child READING ALOUD with VOCAL VARIATION, HAND GESTURES, often to AUDIENCE of peers.'
+      }
+    ],
     negative_descriptions: [
       'NOT read-aloud or expressive reading with vocal variation',
       'NOT guided reading lesson with teacher instruction',
@@ -657,7 +765,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Grammar',
     visual_description: 'Child DEMONSTRATING POSITION words with REAL OBJECTS showing SPATIAL RELATIONSHIPS: pencil placed "IN the box" (pencil INSIDE box opening), pencil placed "ON the table" (pencil RESTING on FLAT surface), pencil placed "UNDER the chair" (pencil BELOW chair SEAT), pencil placed "BEHIND the door" (pencil OBSCURED behind door), pencil placed "BETWEEN two books" (pencil SANDWICHED between OBJECTS). PREPOSITIONS displayed on GREEN CRESCENT or BRIDGE SYMBOL (curved shape suggesting RELATIONSHIP or CONNECTION—approximately 2x1.5 inches, BRIGHT GREEN). Child\'s HAND and OBJECT clearly showing SPATIAL RELATIONSHIP—demonstrating POSITIONAL meaning through PHYSICAL action. Multiple POSITION examples visible showing PREPOSITION VARIETY. GREEN CRESCENT = MONTESSORI standard grammar symbol = PREPOSITION. NOT circle (verb/adverb). NOT triangle (noun/adjective/article/pronoun).',
     key_materials: ['Preposition lesson materials with symbols', 'Green crescent/bridge symbols 2x1.5 inches', 'Preposition game objects for demonstration'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_conjunction_intro',
+        reason: 'Both connect elements, but PREPOSITIONS show SPATIAL RELATIONSHIPS while CONJUNCTIONS JOIN SENTENCES',
+        differentiation: 'Preposition Intro shows GREEN CRESCENT symbol with OBJECTS in SPATIAL positions (in, on, under, between). Conjunction Intro shows PINK RECTANGLE symbol JOINING two complete SENTENCES.'
+      }
+    ],
     negative_descriptions: [
       'NOT circle symbols (verbs or adverbs)',
       'NOT triangle symbols (nouns, articles, adjectives, pronouns)',
@@ -672,7 +786,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Grammar',
     visual_description: 'TWO SENTENCE CARDS JOINED TOGETHER with CONJUNCTION CARD positioned in MIDDLE: Left sentence "The cat is black" + CONJUNCTION CARD "AND" (on PINK RECTANGLE symbol) + Right sentence "the dog is brown." CONJUNCTIONS (and, but, or, nor, yet, so) displayed on PINK RECTANGLE SYMBOL (approximately 2x1 inches, BRIGHT PINK). COMPLETE COMPOUND SENTENCE written out showing CONJUNCTION HIGHLIGHTED or BOLD: "The cat is black AND the dog is brown." Conjunction CONNECTS two INDEPENDENT CLAUSES creating LONGER sentence. CARD ARRANGEMENT shows PHYSICAL JOINING—sentence HALVES separated until CONJUNCTION CARD placed between them. PINK RECTANGLE = MONTESSORI standard grammar symbol = CONJUNCTION. NOT other grammar symbols. SENTENCE BUILDING with PHYSICAL cards clearly showing conjunction JOINING two COMPLETE sentence HALVES.',
     key_materials: ['Conjunction lesson materials with symbols', 'Pink rectangle symbols 2x1 inches', 'Conjunction sentence card sets'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_preposition_intro',
+        reason: 'Both connect elements, but CONJUNCTIONS JOIN SENTENCES while PREPOSITIONS show SPATIAL RELATIONSHIPS',
+        differentiation: 'Conjunction Intro shows PINK RECTANGLE symbol JOINING two complete SENTENCES ("The cat is black AND the dog is brown"). Preposition Intro shows GREEN CRESCENT symbol with OBJECTS in POSITIONS (in, on, under).'
+      }
+    ],
     negative_descriptions: [
       'NOT triangle or circle grammar symbols',
       'NOT single-word grammar instruction (nouns, verbs, adjectives)',
@@ -687,7 +807,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Grammar',
     visual_description: 'Child EXCLAIMING with STRONG EMOTIONAL EXPRESSION: "Oh! I found my pencil!" (SURPRISED expression), "Wow! That\'s amazing!" (AMAZED FACIAL expression), "Ouch! That hurt!" (PAINED EXPRESSION), "Yay! I won!" (JOYFUL CELEBRATION). INTERJECTIONS displayed on GOLD or YELLOW KEYHOLE SYMBOL (UNIQUE curved shape with HOLE in center—approximately 2x1.5 inches, BRIGHT GOLD or YELLOW). Child\'s FACE showing STRONG EMOTION MATCHING interjection: EYEBROWS raised for surprise ("Oh!"), MOUTH open WIDE for amazement ("Wow!"), MOUTH GRIMACED for pain ("Ouch!"), BIG SMILE for joy ("Yay!"). EXCLAMATION MARK clearly visible after interjection. Interjection STANDS ALONE in SENTENCE—NOT connected grammatically to REST of sentence. GOLD KEYHOLE = MONTESSORI standard grammar symbol = INTERJECTION (UNIQUE shape, distinct from all other SYMBOLS).',
     key_materials: ['Interjection lesson materials with symbols', 'Gold/yellow keyhole symbols 2x1.5 inches', 'Interjection word cards with exclamation marks'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_verb_intro',
+        reason: 'Both involve EMOTIONAL demonstration, but VERBS are ACTION words with RED CIRCLES while INTERJECTIONS are EMOTIONAL EXCLAMATIONS with GOLD KEYHOLES',
+        differentiation: 'Verb Intro shows RED CIRCLE symbols for base ACTIONS (run, jump, sit). Interjection Intro shows GOLD KEYHOLE symbols for EMOTIONAL EXCLAMATIONS (Oh!, Wow!, Ouch!).'
+      }
+    ],
     negative_descriptions: [
       'NOT triangle or circle or crescent grammar symbols',
       'NOT emotionless or neutral expressions',
@@ -746,7 +872,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'WORD FAMILY CLUSTERS displayed on CARDS or CHART showing RHYMING WORDS grouped by SHARED ENDING SOUND and SPELLING PATTERN: AT FAMILY (cat, bat, hat, sat, mat, fat, rat, pat, sat, vat—all ENDING in "-at" sound), AN FAMILY (can, fan, pan, ran, man, tan, ban, van, plan—all ENDING in "-an"), IG FAMILY (big, dig, fig, jig, pig, rig, wig, lig—all ENDING in "-ig"). Each WORD on SMALL CARD (1x2 inches) or CHART format. Child ARRANGING RHYMING WORDS by FAMILY. Multiple WORD CARDS GROUPED IN FAMILY STACKS or CHART DISPLAY with FAMILY NAMES (AT, AN, AP, OT, IG, etc.) prominently LISTED with words GROUPED UNDER each FAMILY LABEL. Words SHARING ENDING SOUND and IDENTICAL SPELLING PATTERN grouped TOGETHER visually. NOT rhyming ACTIVITIES (those use OBJECTS for sound comparison). NOT phonogram WORK (phonograms are SINGLE combinations like "sh", "th").',
     key_materials: ['Word family cards 1x2 inches', 'Word family organization charts', 'Family name label cards'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_phonogram_intro',
+        reason: 'Both involve LETTER patterns, but WORD FAMILIES group COMPLETE rhyming WORDS while PHONOGRAMS focus on LETTER SOUND COMBINATIONS',
+        differentiation: 'Word Families show complete words grouped by ending SOUND/SPELLING (cat, bat, hat in AT family). Phonograms teach individual LETTER COMBINATIONS like "sh" sound, "th" sound.'
+      }
+    ],
     negative_descriptions: [
       'NOT phonogram work (which focuses on letter COMBINATIONS)',
       'NOT rhyming sound activity with objects',
@@ -761,7 +893,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'CHART or CARD SET displaying ENGLISH SPELLING RULES with CLEAR EXAMPLES for each RULE: DOUBLING RULE (\'hop\' + \'ing\' = \'hopping\'—double final consonant before ADDING vowel suffix), SILENT E RULE (\'made\' removes final E when ADDING \'ing\' to make \'making\'—silent E DROPS before vowel suffix), Y TO I RULE (\'happy\' changes Y to I before ADDING suffix to make \'happier\'). COLOR-CODED CHART clearly LISTING each RULE with MULTIPLE EXAMPLES, or CARD PAIRS showing BEFORE and AFTER spelling transformation. Child READING RULE statement and APPLYING it to NEW WORDS not shown (TRANSFER learning). PATTERN RECOGNITION—consistent SPELLING RULE PATTERNS clearly visible throughout CHART. Words HIGHLIGHTED to show changed LETTERS. NOT word families (those group RHYMING words). NOT phonograms (those are LETTER combinations).',
     key_materials: ['Spelling rule reference charts', 'Word sorting materials by rule type', 'Before/after rule example cards'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_prefixes_suffixes',
+        reason: 'Both involve ADDING parts to words, but SPELLING RULES govern HOW letters CHANGE when ADDING suffixes while PREFIXES/SUFFIXES focus on MEANING change',
+        differentiation: 'Spelling Rules show TRANSFORMATION patterns (hop→hopping, silent E drops). Prefixes/Suffixes focus on SEMANTIC change (happy→unhappy, play→playing).'
+      }
+    ],
     negative_descriptions: [
       'NOT word families or rhyming word groups',
       'NOT phonogram instruction (letter COMBINATIONS)',
@@ -776,7 +914,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'CARDS showing COMPOUND WORD FORMATION through VISUAL DECOMPOSITION: sun + flower displayed SEPARATELY on TWO cards with PLUS sign between them, then FINAL COMPOUND WORD "sunflower" shown SEPARATELY. Additional examples: rain + bow = rainbow, butter + fly = butterfly, tooth + brush = toothbrush, sun + set = sunset, snow + man = snowman. TWO WORD CARDS JOINED by PHYSICAL PLUS SIGN card (+), then FINAL COMPOUND CARD displayed SEPARATELY. PICTURE-WORD CARDS showing COMPOUND WORD matching to COLOR ILLUSTRATION (sunflower picture shows YELLOW flower attached to SUN). Child MATCHING TWO WORD PARTS to CREATE REAL COMPOUND WORD by SELECTING appropriate first and second WORDS. COMPOSITION demonstration—two SEPARATE SMALLER WORDS COMBINE to CREATE one LARGER WORD with NEW meaning. NOT prefixes/suffixes (those MODIFY meaning, not CREATE by COMBINING equal parts).',
     key_materials: ['Compound word cards', 'Compound word matching materials', 'Picture cards with compound words'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_prefixes_suffixes',
+        reason: 'Both combine word parts, but COMPOUND WORDS join two equal WORDS while PREFIXES/SUFFIXES MODIFY a root with non-equal PARTS',
+        differentiation: 'Compound Words combine sun + flower (equal words) = sunflower. Prefixes/Suffixes add un- (prefix) or -ing (suffix) to a ROOT word to CHANGE meaning.'
+      }
+    ],
     negative_descriptions: [
       'NOT prefix/suffix work (which MODIFIES meaning rather than COMBINES equal words)',
       'NOT word families or spelling rules',
@@ -791,7 +935,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'CARDS showing MORPHOLOGICAL WORD PARTS: PREFIXES (un-, re-, pre-, dis-, in-, mis-, over-, under-) and SUFFIXES (-ed, -ing, -er, -est, -ly, -tion, -ment, -ful, -less, -able). ROOT WORD with PREFIX and SUFFIX CARDS that can SLIDE or ATTACH before and AFTER: prefix "un-" + root "happy" = "unhappy", root "play" + suffix "-ing" = "playing". POSSIBLY COLOR-CODED (PREFIXES one color like YELLOW, roots another color like GREEN, SUFFIXES third color like BLUE). Child BUILDING NEW WORDS by systematically ADDING WORD PARTS to CHANGE or EXTEND meaning. MORPHOLOGY demonstrated—adding WORD PARTS MODIFIES or EXTENDS base WORD meaning. Examples show MEANING CHANGES: "happy" (positive) vs "unhappy" (negative), "play" (verb) vs "playing" (verb+action), "quick" (adjective) vs "quickly" (adverb). NOT compound WORDS (those COMBINE equal WORDS, not MODIFY with PARTS).',
     key_materials: ['Prefix/suffix cards color-coded', 'Root word cards', 'Word building materials with examples'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_compound_words',
+        reason: 'Both combine word parts, but PREFIXES/SUFFIXES MODIFY a ROOT with non-equal PARTS while COMPOUND WORDS join two equal WORDS',
+        differentiation: 'Prefixes/Suffixes: un- (prefix) + happy (root) = unhappy (MEANING changes). Compound Words: sun (word) + flower (word) = sunflower (two equal WORDS joined).'
+      }
+    ],
     negative_descriptions: [
       'NOT compound words (which COMBINE equal words rather than MODIFY)',
       'NOT spelling rules or word families',
@@ -806,7 +956,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'CARD PAIRS showing SEMANTIC RELATIONSHIPS: SYNONYMS with SAME MEANING (big/large, happy/joyful, run/sprint, beautiful/lovely) displayed NEXT to each other; ANTONYMS with OPPOSITE MEANING (hot/cold, fast/slow, happy/sad, beginning/end, open/close) displayed on OPPOSITE SIDES of card or SEPARATED visually. TWO WORD CARDS placed HORIZONTALLY NEXT TO each other for SYNONYM PAIRS, or VERTICALLY OPPOSITE for ANTONYM PAIRS. CHART with two COLUMNS labeled "SAME" and "OPPOSITE" showing EXAMPLE WORD PAIRS in each CATEGORY. Child MATCHING WORD PAIRS by SEMANTIC RELATIONSHIP—determining if words MEAN SAME or OPPOSITE. Cards may show PICTURE ILLUSTRATIONS alongside WORDS to clarify MEANING (picture of BIG dog, LARGE dog for synonyms; HAPPY face, SAD face for antonyms). NOT homonyms (those SOUND SAME but MEAN different—like "to/two/too"). NOT word families (those SHARE spelling PATTERNS).',
     key_materials: ['Synonym/antonym card pairs', 'Semantic relationship matching games', 'Comparison/contrast charts'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_homonyms',
+        reason: 'Both work with word MEANING relationships, but SYNONYMS/ANTONYMS have DIFFERENT SOUNDS while HOMONYMS SOUND IDENTICAL',
+        differentiation: 'Synonyms/Antonyms: big/large (SOUND different, mean SAME), hot/cold (SOUND different, mean OPPOSITE). Homonyms: to/two/too (SOUND IDENTICAL /too/, but DIFFERENT meanings).'
+      }
+    ],
     negative_descriptions: [
       'NOT homonyms (words that SOUND SAME with different meanings)',
       'NOT word families or spelling patterns',
@@ -821,7 +977,13 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     category: 'Word Study',
     visual_description: 'CARDS or PICTURE CARDS showing HOMOPHONES—words that SOUND IDENTICAL but HAVE DIFFERENT MEANINGS and SPELLING: to/two/too, their/there/they\'re, here/hear, see/sea, sun/son, knight/night, brake/break, right/write, be/bee, sail/sale, deer/dear, meet/meat. PICTURE CARDS showing MEANING DIFFERENCES (BEACH with OCEAN water = "sea" vs LETTER C in ALPHABET = "see"—both SOUND SAME /sē/ but SPELLED DIFFERENTLY with DIFFERENT meanings). Child MATCHING HOMOPHONES to DIFFERENT ILLUSTRATIONS showing DISTINCT MEANINGS. Cards may display ONE SOUND phonetically (/tə/ sound) with MULTIPLE WRITTEN FORMS and PICTURES showing DIFFERENT MEANINGS. ONE IDENTICAL SOUND, MULTIPLE SPELLINGS and MEANINGS clearly shown. NOT synonyms/antonyms (those have DIFFERENT SOUNDS). NOT word families (those SHARE spellings).',
     key_materials: ['Homonym cards with pictures', 'Homophone matching materials', 'Picture cards showing different meanings'],
-    confusion_pairs: [],
+    confusion_pairs: [
+      {
+        work_key: 'la_synonyms_antonyms',
+        reason: 'Both work with word MEANING relationships, but HOMONYMS SOUND IDENTICAL while SYNONYMS/ANTONYMS have DIFFERENT SOUNDS',
+        differentiation: 'Homonyms: to/two/too SOUND IDENTICAL /too/ but are SPELLED differently and mean DIFFERENT things. Synonyms/Antonyms: big/large SOUND different but mean SAME or OPPOSITE.'
+      }
+    ],
     negative_descriptions: [
       'NOT synonyms or antonyms (which have different sounds)',
       'NOT word families (which share spelling patterns)',
