@@ -69,6 +69,7 @@ Teachers can now create custom events (e.g., "Trip to Science Museum", "Cultural
 5. `lib/montree/i18n/zh.ts` — 9 matching Chinese keys (perfect EN/ZH parity)
 
 **Deploy:** ⚠️ NOT YET PUSHED. Migration 145 already run.
+**Handoff:** `docs/handoffs/HANDOFF_CLASS_EVENTS_ATTENDANCE_MAR23.md`
 
 ---
 
@@ -4087,7 +4088,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md` | **CURRENT** — Smart Filter: skip AI for tagged photos + hybrid Haiku/Sonnet Guru routing. 10x theory-audit + 3x build-audit (3 consecutive CLEAN). $100-150/mo savings at scale. |
+| `docs/handoffs/HANDOFF_CLASS_EVENTS_ATTENDANCE_MAR23.md` | **CURRENT** — Class Events attendance tagging: custom events + tag children individually or Tag All. Diff-based save, classroom-scoped, 3 plan-audit + 3 build-audit cycles (ALL CLEAN). |
+| `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md` | Smart Filter: skip AI for tagged photos + hybrid Haiku/Sonnet Guru routing. 10x theory-audit + 3x build-audit (3 consecutive CLEAN). $100-150/mo savings at scale. |
 | `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md` | Reports + Gallery 3x3x3 audit: 10 bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Security, performance, React hooks, rate limiter, AbortController fixes. |
 | `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
 | `docs/handoffs/HANDOFF_SMART_CAPTURE_AUDIT_MAR15.md` | Smart Capture deep audit: 3 CRITICAL + 4 HIGH bugs found. Timeout gaps, silent data loss, race conditions. Full fix patterns with code. |
