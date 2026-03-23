@@ -50,6 +50,7 @@ export interface MontreeMedia {
 export interface MontreeEvent {
   id: string;
   school_id: string;
+  classroom_id: string | null;
   name: string;
   description: string | null;
   event_date: string;          // ISO date string (YYYY-MM-DD)

@@ -20,6 +20,7 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import InviteParentModal from '@/components/montree/InviteParentModal';
+import EventAttendanceModal from '@/components/montree/events/EventAttendanceModal';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 interface GalleryItem extends MontreeMedia {
@@ -180,6 +181,8 @@ export default function GalleryPage() {
   const [loadingLastReport, setLoadingLastReport] = useState(false);
   // Invite parent
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  // Event attendance
+  const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
   // Image URL cache
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
@@ -1106,6 +1109,14 @@ export default function GalleryPage() {
           >
             {t('gallery.timeline')}
           </button>
+          {!isHomeschoolParent() && (
+            <button
+              onClick={() => setEventAttendanceOpen(true)}
+              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+            >
+              🎉 Tag Event
+            </button>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -1948,6 +1959,17 @@ export default function GalleryPage() {
           teacherId={session?.teacher?.id}
           isOpen={inviteModalOpen}
           onClose={() => setInviteModalOpen(false)}
+        />
+      )}
+
+      {/* Event Attendance Modal */}
+      {session?.classroom?.id && session?.school?.id && (
+        <EventAttendanceModal
+          isOpen={eventAttendanceOpen}
+          onClose={() => setEventAttendanceOpen(false)}
+          classroomId={session.classroom.id}
+          schoolId={session.school.id}
+          onSaved={() => setEventAttendanceOpen(false)}
         />
       )}
 

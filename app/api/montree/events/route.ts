@@ -59,15 +59,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Event name too long' }, { status: 400 });
     }
 
+    // Validate classroom belongs to school (if provided)
+    const classroomId = body.classroom_id || auth.classroomId || null;
+    if (classroomId) {
+      const { data: validClassroom } = await supabase
+        .from('montree_classrooms')
+        .select('id')
+        .eq('id', classroomId)
+        .eq('school_id', auth.schoolId)
+        .maybeSingle();
+
+      if (!validClassroom) {
+        return NextResponse.json({ error: 'Classroom not found in school' }, { status: 403 });
+      }
+    }
+
     const { data: event, error } = await supabase
       .from('montree_events')
       .insert({
         school_id: auth.schoolId,
+        classroom_id: classroomId,
         name: name.trim(),
         event_date,
         description: description?.trim() || null,
         event_type: event_type || 'special',
-        created_by: auth.sub || null,
+        created_by: auth.userId || null,
       })
       .select()
       .single();

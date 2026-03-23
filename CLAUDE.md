@@ -12,11 +12,69 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 22, 2026)
+## CURRENT STATUS (Mar 23, 2026)
+
+### Session Work (Mar 23, 2026 — Deploy Day)
+
+**ALL Mar 21-22 Code PUSHED + Migrations RUN — FULLY DEPLOYED:**
+
+Confirmed all 5 unpushed commits from Mar 21-22 were already committed on Mac (git said "Everything up-to-date" on push). Both migrations run via Supabase SQL Editor:
+- Migration 143 (child school_id integrity): ✅ Run successfully
+- Migration 144 (custom work schema): ✅ Run successfully (required dedup of duplicate "map of the world" custom work in classroom `51e7adb6` before unique index could be created)
+
+**System is LIVE for Monday demo.** All features deployed: threshold fix, gallery download, CLIP RawImage, auto-propose custom work, super-admin JWT auth, CLIP accuracy fixes, album upload fix.
+
+### Session Work (Mar 23, 2026 — Class Events Feature)
+
+**Class Events Attendance Tagging — BUILD COMPLETE, 3 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
+
+Teachers can now create custom events (e.g., "Trip to Science Museum", "Cultural Day") and tag children to those events individually or via "Tag All". Events are fully custom (no pre-prescribed events). Built for Tuesday Mar 24 demo.
+
+**3 Plan-Audit Cycles (9 independent agents) + 3 Build-Audit Cycles (9 independent agents):**
+- Plan v1 → Audit (3 agents) → Plan v2 → Audit (3 agents) → Plan v3 (FINAL) → Audit (3 agents) → CLEAN
+- Build → Audit 1 (3 agents) → fixes → Audit 2 (3 agents) → fixes → Audit 3 (3 agents) → **ALL CLEAN**
+
+**Architecture:**
+- `montree_event_attendance` table with UNIQUE(event_id, child_id) for idempotent upserts
+- Diff-based save: tracks `initialChecked` (server state) vs `checked` (UI state), computes toAdd/toRemove, sends both in parallel
+- Classroom-scoped events (nullable `classroom_id` on `montree_events`)
+- Teacher permission check: teachers can only tag events in their own classroom
+- Stacked list UI with "Tag All" / "Clear All" toggle using `childrenRef` (useRef) to avoid stale closures
+- Inline event creation (name + date) without leaving the modal
+- Backdrop click-to-close with `e.stopPropagation()` on inner panel
+
+**Migration 145:** Adds `classroom_id` column to `montree_events` + creates `montree_event_attendance` table. ✅ Already run via Supabase SQL Editor.
+
+**Audit Issues Found and Fixed:**
+1. `auth.sub` → `auth.userId` in events/route.ts POST (VerifiedRequest has userId not sub)
+2. Two-request save pattern → diff-based approach (tracks initialChecked vs checked, parallel Promise.all)
+3. Missing classroom validation on events POST (teacher could create events in other schools' classrooms)
+4. Missing teacher classroom permission check on attendance POST
+5. toggleAll stale closure → childrenRef (useRef) pattern
+6. Missing classroom_id on MontreeEvent type interface
+7. onSaved={fetchPhotos} → just close modal (events don't change photos)
+8. All 12+ hardcoded strings → i18n `t()` calls (9 new keys EN/ZH)
+9. newEventDate not resetting on modal reopen → reset in isOpen useEffect
+10. Inconsistent error response format (removed `success: false` from one error path)
+
+**Files Created (2):**
+1. `app/api/montree/events/attendance/route.ts` (~230 lines) — GET (attendance + photo counts) + POST (bulk set/set_all/remove with classroom auth)
+2. `components/montree/events/EventAttendanceModal.tsx` (~400 lines) — Modal with event selector, inline create, stacked child list, Tag All, diff-based save
+
+**Files Modified (5):**
+1. `app/api/montree/events/route.ts` — 2 edits: auth.userId fix + classroom validation on POST
+2. `lib/montree/media/types.ts` — Added `classroom_id: string | null` to MontreeEvent interface
+3. `app/montree/dashboard/[childId]/gallery/page.tsx` — onSaved fix + Tag Event button color (emerald)
+4. `lib/montree/i18n/en.ts` — 9 new `events.*` keys
+5. `lib/montree/i18n/zh.ts` — 9 matching Chinese keys (perfect EN/ZH parity)
+
+**Deploy:** ⚠️ NOT YET PUSHED. Migration 145 already run.
+
+---
 
 ### Session Work (Mar 22, 2026 — Demo Prep Fixes, Late Night)
 
-**Demo Prep: Threshold Fix + Gallery Download + CLIP RawImage — COMPLETE, NOT YET PUSHED:**
+**Demo Prep: Threshold Fix + Gallery Download + CLIP RawImage — COMPLETE, ✅ DEPLOYED:**
 
 Critical fixes for Monday Mar 23 demo. 5 files, 9 edits, 3 parallel audit agents, all issues resolved.
 
@@ -27,7 +85,7 @@ Critical fixes for Monday Mar 23 demo. 5 files, 9 edits, 3 parallel audit agents
 - 4 stale comments referencing 0.95 updated throughout
 
 **Fix 2 — Gallery Photo Download:**
-- 💾 download button added to gallery photo cards (blob download + fallback)
+- download button added to gallery photo cards (blob download + fallback)
 - Filename sanitized: `{work_name}_{date}.jpg` with both parts cleaned
 - All 3 action buttons (download/crop/delete) always visible on mobile, hover-only on desktop
 - i18n: `gallery.downloadPhoto` added to en.ts + zh.ts
@@ -47,21 +105,14 @@ Critical fixes for Monday Mar 23 demo. 5 files, 9 edits, 3 parallel audit agents
 4. `lib/montree/i18n/en.ts` — 1 key
 5. `lib/montree/i18n/zh.ts` — 1 key
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
-```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add app/api/montree/guru/photo-insight/route.ts lib/montree/classifier/clip-classifier.ts app/montree/dashboard/\[childId\]/gallery/page.tsx lib/montree/i18n/en.ts lib/montree/i18n/zh.ts CLAUDE.md docs/handoffs/HANDOFF_DEMO_PREP_FIXES_MAR22.md
-git commit -m "fix: lower auto-update threshold to 0.85 + CLIP RawImage fix + gallery download button"
-git push origin main
-```
-
+**Deploy:** ✅ PUSHED + DEPLOYED.
 **Handoff:** `docs/handoffs/HANDOFF_DEMO_PREP_FIXES_MAR22.md`
 
 ---
 
 ### Session Work (Mar 22, 2026 — Auto-Propose Custom Work 10x Plan)
 
-**Auto-Propose Custom Work — 10x PLAN + 10x BUILD COMPLETE, NOT YET PUSHED:**
+**Auto-Propose Custom Work — 10x PLAN + 10x BUILD COMPLETE, ✅ DEPLOYED:**
 
 When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), Haiku now auto-drafts a custom work proposal from the actual photo. Teacher sees amber card with pre-filled name, area, description, materials — one tap to add. Turns "Untagged" into a single-tap custom work creation.
 
@@ -101,15 +152,7 @@ When Smart Capture can't match a photo to curriculum (Scenario A / RED zone), Ha
 
 **Cost:** ~$0.0006 per proposal (Haiku vision, ~400 tokens). Only fires on Scenario A (~10-15% of photos).
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
-```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add migrations/144_custom_work_schema.sql app/api/montree/guru/photo-insight/route.ts app/api/montree/guru/photo-insight/add-custom-work/route.ts lib/montree/photo-insight-store.ts components/montree/guru/PhotoInsightButton.tsx lib/montree/i18n/en.ts lib/montree/i18n/zh.ts CLAUDE.md docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_BUILD_MAR22.md
-git commit -m "feat: auto-propose custom work when Smart Capture can't match photo (Scenario A)"
-git push origin main
-```
-
-⚠️ After deploy, run migration: `psql $DATABASE_URL -f migrations/144_custom_work_schema.sql`
+**Deploy:** ✅ PUSHED + DEPLOYED. Migration 144 run (dedup of duplicate "map of the world" required before unique index creation).
 
 **Handoffs:**
 - `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md` (planning phase)
@@ -119,7 +162,7 @@ git push origin main
 
 ### Session Work (Mar 22, 2026 — Super-Admin 10x Audit + Fix Cycle)
 
-**Super-Admin 10x Audit — 30 findings + Phase 1-3 Fix Cycle — COMPLETE, NOT YET PUSHED:**
+**Super-Admin 10x Audit — 30 findings + Phase 1-3 Fix Cycle — COMPLETE, ✅ DEPLOYED:**
 
 Two-part session: (1) Full 10x audit finding 30 issues, then (2) fix cycle applying Phases 1-3 with 5 audit cycles achieving 3 consecutive clean passes.
 
@@ -158,15 +201,7 @@ Two-part session: (1) Full 10x audit finding 30 issues, then (2) fix cycle apply
 
 **Phases 4-5 deferred:** School detail view, soft delete, error sanitization, batch delete validation.
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac:
-```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add lib/verify-super-admin.ts app/api/montree/super-admin/auth/route.ts app/montree/super-admin/page.tsx app/montree/super-admin/marketing/layout.tsx app/api/montree/super-admin/schools/route.ts app/api/montree/leads/route.ts app/api/montree/feedback/route.ts app/api/montree/dm/route.ts app/api/montree/super-admin/login-as/route.ts app/api/montree/super-admin/audit/route.ts app/api/montree/onboarding/settings/route.ts hooks/useAdminData.ts hooks/useLeadOperations.ts migrations/143_child_school_id_integrity.sql app/api/montree/children/bulk/route.ts app/api/montree/onboarding/students/route.ts app/api/montree/admin/import/route.ts components/card-generator/CardPreview.tsx components/montree/super-admin/types.ts components/montree/super-admin/SchoolsTab.tsx CLAUDE.md docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md docs/handoffs/HANDOFF_SUPER_ADMIN_AUDIT_FIX_CYCLE_MAR22.md
-git commit -m "fix: super-admin JWT auth + child school_id integrity + session persistence + login code search"
-git push origin main
-```
-
-⚠️ After deploy, run migration: `psql $DATABASE_URL -f migrations/143_child_school_id_integrity.sql`
+**Deploy:** ✅ PUSHED + DEPLOYED. Migration 143 run successfully.
 
 **Handoffs:**
 - `docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md` (original audit findings)
@@ -176,7 +211,7 @@ git push origin main
 
 ### Session Work (Mar 22, 2026 — CLIP Recognition Accuracy 10x Fix)
 
-**CLIP Photo Recognition Accuracy — 10x DEEP DIVE + FIX, NOT YET PUSHED:**
+**CLIP Photo Recognition Accuracy — 10x DEEP DIVE + FIX, ✅ DEPLOYED:**
 
 Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive audit → 10x plan-audit → 10x build → 8 audit cycles (3 consecutive CLEAN passes, 15+ parallel audit agents total).
 
@@ -209,13 +244,7 @@ Teachers reported "horribly mismatched" CLIP identifications. Full 10x deep-dive
 
 **Audit:** 8 audit cycles total (10x build + continuation session audits). 4 real issues found and fixed: (1) validateToolOutput missing new fields, (2) VisualMemory confidence field mapping, (3) CLIP path .ilike() escaping, (4) two-pass path .ilike() escaping. 3 consecutive CLEAN passes achieved (cycles 6-7-8, 7 independent agents, 0 issues).
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac (MUST include work-signatures.ts to fix build):
-```bash
-cd ~/Desktop/Master\ Brain/ACTIVE/whale
-git add app/api/montree/guru/photo-insight/route.ts lib/montree/classifier/clip-classifier.ts lib/montree/classifier/work-signatures.ts CLAUDE.md docs/handoffs/HANDOFF_CLIP_ACCURACY_10X_FIX_MAR22.md
-git commit -m "fix: CLIP recognition accuracy — 9 fixes + build fix (include work-signatures.ts)"
-git push origin main
-```
+**Deploy:** ✅ PUSHED + DEPLOYED (includes work-signatures.ts build fix).
 
 **Handoff:** `docs/handoffs/HANDOFF_CLIP_ACCURACY_10X_FIX_MAR22.md`
 
@@ -225,7 +254,7 @@ git push origin main
 
 ### Session Work (Mar 21, 2026 — Album Upload Fix)
 
-**Album Photo Upload Silent Failure — DIAGNOSED + FIXED, NOT YET PUSHED:**
+**Album Photo Upload Silent Failure — DIAGNOSED + FIXED, ✅ DEPLOYED:**
 
 Teachers reported album photo uploads silently failing — camera photos worked perfectly but album picks produced no toast, no error, no feedback. Photos saved to IndexedDB but never appeared in gallery.
 
@@ -696,26 +725,21 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES — MONDAY LIVE TEST (Mar 23, 2026)
+## 🔥 NEXT SESSION PRIORITIES — POST-DEMO (Mar 23, 2026)
 
-### ⚠️ CONTEXT: Hostile Tester Scenario
-System goes live Monday Mar 23 with a tester who wants it to fail. Every misidentification, slow upload, or UI glitch will be used as evidence. Strategy: maximize CLIP accuracy with lean schema upgrade + ensure bulletproof reliability.
+### ⚠️ CONTEXT: Demo Day — System LIVE
+All code deployed, all migrations run. Monday Mar 23 demo is GO. Monitor Railway logs for issues.
 
-### ✅ Priority #-2: Super-Admin 10x Deep Audit Fix Cycle — PHASES 1-3 DONE
+### ✅ Priority #-2: Super-Admin 10x Deep Audit Fix Cycle — DEPLOYED
 
-**Status:** Phases 1-3 COMPLETE. 17 files modified. 5 audit cycles, 3 consecutive clean. Migration 143 created (needs `psql` run after deploy).
+**Status:** Phases 1-3 COMPLETE + DEPLOYED. Migration 143 run. 17 files modified. 5 audit cycles, 3 consecutive clean.
 
-**Phase 1 — Data Integrity ✅:** All 3 child insertion routes include school_id. Migration 143: backfill + NOT NULL + auto-derive trigger.
-**Phase 2 — Auth & Security ✅:** JWT session tokens replace password in sessionStorage. All 8 super-admin API routes use `verifySuperAdminAuth()`. Rate limiting on DELETE, tier validation on PATCH.
-**Phase 3 — Count Queries & Performance ✅:** Null school_id filter on counts. DM polling exponential backoff (30s→5min).
 **Phase 4 — UX & Features (DEFERRED):** School detail view, soft delete, dev principal audit trail, copy login code.
 **Phase 5 — Error Handling (DEFERRED):** Sanitize Supabase error leaks, batch delete validation, DM error indicator.
 
 **Also still needed: Clean up stale schools** — delete everything except V8F8V9 + X4RAT5.
 
-**Handoffs:** `docs/handoffs/HANDOFF_SUPER_ADMIN_10X_AUDIT_MAR22.md`, `docs/handoffs/HANDOFF_SUPER_ADMIN_AUDIT_FIX_CYCLE_MAR22.md`
-
-### 🔴 Priority #-1: Cloudflare Image Proxy for China Speed (1-2 hours) — CRITICAL FOR MONDAY
+### 🔴 Priority #-1: Cloudflare Image Proxy for China Speed (1-2 hours) — CRITICAL
 
 **Status:** PLANNED. Photos load 5-15+ seconds in China without VPN. Teachers WILL notice.
 
@@ -775,13 +799,17 @@ interface ConfusionPair {
 **Estimated accuracy improvement:** 15-25% reduction in misclassifications on hard works
 **Full plan:** `docs/handoffs/HANDOFF_CLIP_SIGNATURES_FULL_ENRICHMENT_MAR21.md` → "NEXT SESSION PLAN" section
 
-### 🟡 Priority #1: Push ALL Unpushed Code (5 minutes)
+### ✅ Priority #1: Push ALL Unpushed Code — DONE (Mar 23)
 
-Run push command from Mac terminal. Mar 21 continuation session changes (7 audit fixes + upload streamlining) still need push.
+All code confirmed pushed. Git reported "Everything up-to-date" — commits were already on remote.
+
+### ✅ Priority #4: Build Auto-Propose Custom Work — DEPLOYED (Mar 23)
+
+**Status:** CODE COMPLETE + DEPLOYED. Migration 144 run. 10x plan-audit + 10x build-audit. 5 audit cycles, 23 agents, 3 consecutive CLEAN.
 
 ### 🟡 Priority #2: End-to-End Smoke Test (1 hour)
 
-Before Monday, manually test full pipeline:
+Manually test full pipeline during/after demo:
 - Smart Capture: photo → CLIP → Haiku → tag → gallery
 - Upload reliability: 5 rapid photos, all appear in gallery within 30s
 - Teacher corrections: tap wrong → pick correct → saves
@@ -790,17 +818,11 @@ Before Monday, manually test full pipeline:
 
 ### 🟢 Priority #3: Misclassification Data Collection (30 min setup)
 
-Add tracking fields to `context_snapshot` so Monday produces actionable data:
+Add tracking fields to `context_snapshot` so demo produces actionable data:
 - `negative_penalty_applied`, `confusion_pair_matched`, `differentiation_injected`
-- After Monday: query corrections table → find worst performers → target those works with richer descriptions
+- After demo: query corrections table → find worst performers → target those works with richer descriptions
 
-### ✅ Priority #4: Build Auto-Propose Custom Work (4-6 hours) — DONE
-
-**Status:** CODE COMPLETE + AUDIT VERIFIED. 10x plan-audit + 10x build-audit. 5 audit cycles, 23 agents, 3 consecutive CLEAN. Not yet pushed.
-
-**Handoffs:** `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_MAR22.md`, `docs/handoffs/HANDOFF_AUTO_PROPOSE_CUSTOM_WORK_BUILD_MAR22.md`
-
-### AFTER MONDAY: Data-Driven Refinement (deferred)
+### AFTER DEMO: Data-Driven Refinement (deferred)
 
 Week 1-2: collect data. Week 2-3: pull worst performers, write targeted richer descriptions (view_descriptions, physical_attributes) ONLY for the 20-30 works that actually get confused. NOT all 270.
 
