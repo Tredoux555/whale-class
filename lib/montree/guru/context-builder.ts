@@ -190,7 +190,8 @@ function calculateTimeAtSchool(enrollmentDate: string): string {
 
 export async function buildChildContext(
   supabase: SupabaseClient,
-  childId: string
+  childId: string,
+  locale?: string
 ): Promise<ChildContext | null> {
   // 1. Fetch basic child info
   // Note: montree_children has 'age' (integer years, not date_of_birth which is nullable)
@@ -246,14 +247,21 @@ export async function buildChildContext(
       .gte('observed_at', thirtyDaysAgo.toISOString())
       .order('observed_at', { ascending: false })
       .limit(10),
-    // 5. Past guru interactions (exclude photo insight cache entries)
-    supabase
-      .from('montree_guru_interactions')
-      .select('asked_at, question, response_insight, outcome, context_snapshot')
-      .eq('child_id', childId)
-      .not('question', 'like', 'photo:%')
-      .order('asked_at', { ascending: false })
-      .limit(5),
+    // 5. Past guru interactions (exclude photo insight cache entries, filter by locale)
+    (() => {
+      let query = supabase
+        .from('montree_guru_interactions')
+        .select('asked_at, question, response_insight, outcome, context_snapshot')
+        .eq('child_id', childId)
+        .not('question', 'like', 'photo:%');
+      // Filter by locale: show interactions in the current language + pre-migration rows (NULL locale)
+      // Validate locale against whitelist (defense-in-depth — caller should also validate)
+      const validLocale = locale && ['en', 'zh'].includes(locale) ? locale : undefined;
+      if (validLocale) {
+        query = query.or(`locale.eq.${validLocale},locale.is.null`);
+      }
+      return query.order('asked_at', { ascending: false }).limit(5);
+    })(),
     // 6. Teacher notes from work sessions (only 10 used in prompt)
     supabase
       .from('montree_work_sessions')

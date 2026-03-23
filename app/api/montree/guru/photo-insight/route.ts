@@ -454,12 +454,13 @@ export async function POST(request: NextRequest) {
       .select('response_insight, context_snapshot, asked_at')
       .eq('child_id', child_id)
       .eq('question_type', 'photo_insight')
-      .eq('question', `photo:${media_id}:${child_id}:${locale}`)
+      .eq('question', `photo:${media_id}:${child_id}`)
       .order('asked_at', { ascending: false })
       .limit(1)
       .maybeSingle();
 
-    // Fallback: try old format (pre-locale cache entries) if new format missed
+    // Fallback: try old locale-suffixed format (photo:media:child:en or photo:media:child:zh)
+    // These entries were created before we made cache keys locale-agnostic
     // Wrapped in try-catch: fallback is best-effort — if it fails, fall through to fresh analysis
     const effectiveCached = cached ?? (await (async () => {
       try {
@@ -468,7 +469,7 @@ export async function POST(request: NextRequest) {
           .select('response_insight, context_snapshot, asked_at')
           .eq('child_id', child_id)
           .eq('question_type', 'photo_insight')
-          .eq('question', `photo:${media_id}:${child_id}`)
+          .like('question', `photo:${media_id}:${child_id}:%`)
           .order('asked_at', { ascending: false })
           .limit(1)
           .maybeSingle();
@@ -911,7 +912,7 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             supabase.from('montree_guru_interactions').insert({
               child_id,
               question_type: 'photo_insight',
-              question: `photo:${media_id}:${child_id}:${locale}`,
+              question: `photo:${media_id}:${child_id}`,
               response_insight: slimInput.observation,
               mode: 'clip_enriched',
               model_used: HAIKU_MODEL,
@@ -2076,7 +2077,7 @@ Match this description to the correct Montessori work. Use the visual identifica
       .insert({
         child_id,
         classroom_id: classroomId,
-        question: `photo:${media_id}:${child_id}:${locale}`,
+        question: `photo:${media_id}:${child_id}`,
         question_type: 'photo_insight',
         response_insight: insightText,
         model_used: modelUsed,
