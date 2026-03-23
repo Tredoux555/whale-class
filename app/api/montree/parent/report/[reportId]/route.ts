@@ -4,7 +4,7 @@ import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
-import { Anthropic } from '@anthropic-ai/sdk';
+import { getChineseParentDescription } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 
 // Load parent descriptions from curriculum JSON files with area info
@@ -122,85 +122,6 @@ function findBestDescription(
   return bestMatch?.desc || null;
 }
 
-// Translate work descriptions to Chinese using Claude
-async function translateDescriptionsToZh(
-  descriptions: Array<{ description: string; why_it_matters: string; work_name: string }>
-): Promise<Map<string, { description: string; why_it_matters: string }>> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    console.warn('ANTHROPIC_API_KEY not set, skipping description translation');
-    return new Map();
-  }
-
-  try {
-    const client = new Anthropic();
-
-    // Batch descriptions for efficiency (translate up to 10 at once)
-    const batches: Array<Array<{ description: string; why_it_matters: string; work_name: string }>> = [];
-    for (let i = 0; i < descriptions.length; i += 10) {
-      batches.push(descriptions.slice(i, i + 10));
-    }
-
-    const results = new Map<string, { description: string; why_it_matters: string }>();
-
-    for (const batch of batches) {
-      const prompt = `Translate these Montessori work descriptions to simplified Chinese. Keep the language professional but accessible to parents. Return ONLY a JSON object with this exact structure, no other text:
-{
-  "translations": [
-    {
-      "work_name": "Original Work Name",
-      "description": "Chinese translation of parent description",
-      "why_it_matters": "Chinese translation of why it matters"
-    }
-  ]
-}
-
-Works to translate:
-${batch.map(item => `{
-  "work_name": "${item.work_name.replace(/"/g, '\\"')}",
-  "description": "${item.description.replace(/"/g, '\\"').replace(/\n/g, ' ')}",
-  "why_it_matters": "${item.why_it_matters.replace(/"/g, '\\"').replace(/\n/g, ' ')}"
-}`).join('\n')}`;
-
-      const message = await client.messages.create({
-        model: 'claude-opus-4-6',
-        max_tokens: 2000,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          }
-        ]
-      });
-
-      try {
-        const content = message.content[0];
-        if (content.type !== 'text') continue;
-
-        const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) continue;
-
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.translations && Array.isArray(parsed.translations)) {
-          for (const trans of parsed.translations) {
-            results.set(trans.work_name, {
-              description: trans.description,
-              why_it_matters: trans.why_it_matters,
-            });
-          }
-        }
-      } catch (parseErr) {
-        console.error('Failed to parse translation response:', parseErr);
-        continue;
-      }
-    }
-
-    return results;
-  } catch (err) {
-    console.error('Translation error:', err);
-    return new Map();
-  }
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ reportId: string }> }
@@ -290,25 +211,21 @@ export async function GET(
         why_it_matters: w.why_it_matters || null,
       }));
 
-      // Translate descriptions to Chinese if requested
-      if (locale === 'zh' && worksCompleted.some(w => w.parent_description)) {
-        const toTranslate = worksCompleted
-          .filter(w => w.parent_description)
-          .map(w => ({
-            work_name: w.work_name,
-            description: w.parent_description,
-            why_it_matters: w.why_it_matters,
-          })) as Array<{ work_name: string; description: string; why_it_matters: string }>;
-
-        const translations = await translateDescriptionsToZh(toTranslate);
-
+      // Override descriptions with Chinese static map if locale is zh
+      // For new reports (with report_locale baked in), descriptions are already in the correct language.
+      // For old reports saved in English, look up Chinese descriptions from static map.
+      const savedLocale = (savedContent as Record<string, unknown>)?.report_locale as string | undefined;
+      if (locale === 'zh' && savedLocale !== 'zh') {
         worksCompleted = worksCompleted.map(w => {
-          const trans = translations.get(w.work_name);
-          return {
-            ...w,
-            parent_description: trans?.description || w.parent_description,
-            why_it_matters: trans?.why_it_matters || w.why_it_matters,
-          };
+          const zh = getChineseParentDescription(w.work_name);
+          if (zh) {
+            return {
+              ...w,
+              parent_description: zh.parent_description,
+              why_it_matters: zh.why_it_matters,
+            };
+          }
+          return w;
         });
       }
 
@@ -483,25 +400,18 @@ export async function GET(
       };
     });
 
-    // Translate descriptions to Chinese if requested
-    if (locale === 'zh' && worksCompleted.some(w => w.parent_description)) {
-      const toTranslate = worksCompleted
-        .filter(w => w.parent_description)
-        .map(w => ({
-          work_name: w.work_name,
-          description: w.parent_description,
-          why_it_matters: w.why_it_matters,
-        })) as Array<{ work_name: string; description: string; why_it_matters: string }>;
-
-      const translations = await translateDescriptionsToZh(toTranslate);
-
+    // Override descriptions with Chinese static map if locale is zh
+    if (locale === 'zh') {
       worksCompleted = worksCompleted.map(w => {
-        const trans = translations.get(w.work_name);
-        return {
-          ...w,
-          parent_description: trans?.description || w.parent_description,
-          why_it_matters: trans?.why_it_matters || w.why_it_matters,
-        };
+        const zh = getChineseParentDescription(w.work_name);
+        if (zh) {
+          return {
+            ...w,
+            parent_description: zh.parent_description,
+            why_it_matters: zh.why_it_matters,
+          };
+        }
+        return w;
       });
     }
 
