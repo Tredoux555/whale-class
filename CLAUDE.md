@@ -24,6 +24,75 @@ Confirmed all 5 unpushed commits from Mar 21-22 were already committed on Mac (g
 
 **System is LIVE for Monday demo.** All features deployed: threshold fix, gallery download, CLIP RawImage, auto-propose custom work, super-admin JWT auth, CLIP accuracy fixes, album upload fix.
 
+### Session Work (Mar 23, 2026 — Chinese Parent Report Descriptions)
+
+**Chinese Parent Report Descriptions — BUILD COMPLETE, 13 AUDIT AGENTS (0 UNFIXED ISSUES), ⚠️ NOT YET PUSHED:**
+
+When teacher switches locale to Chinese and generates a parent report, `parent_description` and `why_it_matters` fields now display in Chinese instead of English. Replaced expensive runtime Anthropic API translation (~$0.01+ per parent view) with zero-cost static map lookup.
+
+**3 Plan-Audit Cycles (9 agents) + Build + 2 Verification Audits (4 agents):**
+- Plan v1 → Audit (3 agents) → Plan v2 → Audit (3 agents) → Plan v3-FINAL → Audit (3 agents) → CLEAN
+- Build → Verification audit (1 agent) → CLEAN → Post-build audit (3 agents) → ALL CLEAN
+
+**Root cause:** All 3 report routes read descriptions from English-only sources (`loadAllCurriculumWorks()` static JSON + DB `montree_classroom_curriculum_works`). The `findBestDescription()` locale parameter only affected area-level generic fallback (step 5), not work-level matching (steps 1-4).
+
+**Fix:** Static Chinese descriptions map (`parent-descriptions-zh.ts`, 106 works) overrides `staticDescriptions`/`dbDescriptions` Maps BEFORE downstream code reads from them — all existing matching logic works unchanged. WYSIWYG: teacher previews in Chinese → sends → parent sees exact Chinese content baked at send time.
+
+**Files Created (1):**
+1. `lib/curriculum/comprehensive-guides/parent-descriptions-zh.ts` (~550 lines) — 106 Montessori work descriptions in Chinese, keyed by lowercase English name. Exports `getChineseParentDescription()` + `getChineseDescriptionsMap()`.
+
+**Files Modified (3):**
+1. `app/api/montree/reports/preview/route.ts` — 2 edits: import + Chinese override of `staticDescriptions` when `locale === 'zh'` (before curriculum works loop)
+2. `app/api/montree/reports/send/route.ts` — 3 edits: import + Chinese override of `dbDescriptions` when `locale === 'zh'` + `report_locale: locale` in saved content
+3. `app/api/montree/parent/report/[reportId]/route.ts` — Removed `Anthropic` import + `translateDescriptionsToZh()` function (~80 lines). Both runtime translation call sites replaced with static `getChineseParentDescription()` lookups. Saved content path checks `savedLocale !== 'zh'` to avoid double-translating.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_CHINESE_PARENT_REPORT_DESCRIPTIONS_MAR23.md`
+
+---
+
+### Session Work (Mar 23, 2026 — Chinese Locale Guru Support)
+
+**Chinese Locale Support for Guru — BUILD COMPLETE, 27 AUDIT AGENTS (0 UNFIXED ISSUES), ⚠️ NOT YET PUSHED:**
+
+Full Chinese language support for the Guru AI advisor. When language is switched to Chinese: conversation history filters to Chinese + pre-migration universal rows, new interactions saved with locale tag, Smart Capture shows Chinese work names + translated area names, photo cache avoids duplicate Sonnet analysis on language switch.
+
+**Architecture:** Locale is presentation-layer only. Brain learning, pattern learning, rate limits, and billing remain language-blind.
+
+**3 Plan-Audit Cycles (9 agents) + 4 Build-Audit Cycles (12 agents) + 2 Post-Build Audits (6 agents):**
+- Plan v1 → Audit (3 agents) → Plan v2 → Audit (3 agents) → Plan v3-FINAL → Audit (3 agents) → CLEAN
+- Build → Audit 1 (3 agents) → CLEAN → Audit 2 (3 agents) → CLEAN → Audit 3 (3 agents) → 1 fix (POST locale validation) → Audit 4 (3 agents) → CLEAN
+- Post-build audit (3 agents) → 2 low fixes (context-builder whitelist, index partial→full) → Final audit (3 agents) → CLEAN
+
+**8 Fixes:**
+1. Migration 146: locale column (DEFAULT NULL) + full index on (child_id, locale, asked_at DESC)
+2. POST locale validation against `['en', 'zh']` whitelist (defaults to `'en'`)
+3. All 6 `saveInteractionAndLearn` calls pass locale; structured INSERT includes locale
+4. GET handler locale-filtered history with `.or('locale.eq.${locale},locale.is.null')` backward compat
+5. Context-builder IIFE locale filter with defense-in-depth whitelist validation
+6. GuruChatThread re-fetches history on language switch (locale in useEffect deps)
+7. Photo cache keys locale-agnostic (`photo:${media_id}:${child_id}` — no locale suffix, saves $0.01-0.02 duplicate Sonnet calls)
+8. Corrections route simplified from dual en/zh queries to single locale-agnostic + `.like()` fallback
+9. PhotoInsightButton shows Chinese work names via `getChineseNameForWork()` + translated area names
+
+**Migration 146:** ⚠️ NOT YET RUN. Run via Supabase SQL Editor after push.
+
+**Files Created (1):**
+1. `migrations/146_guru_locale.sql` (~10 lines) — locale column + index
+
+**Files Modified (6):**
+1. `app/api/montree/guru/route.ts` — POST locale validation + 6 save calls + GET locale filter
+2. `lib/montree/guru/context-builder.ts` — Function signature + locale filter with whitelist
+3. `components/montree/guru/GuruChatThread.tsx` — History fetch URL + useEffect deps
+4. `app/api/montree/guru/photo-insight/route.ts` — 3 cache key edits + fallback rewrite
+5. `app/api/montree/guru/corrections/route.ts` — Photo URL lookup rewrite
+6. `components/montree/guru/PhotoInsightButton.tsx` — Chinese work names + translated areas
+
+**Deploy:** ⚠️ NOT YET PUSHED. Migration 146 not yet run.
+**Handoff:** `docs/handoffs/HANDOFF_CHINESE_LOCALE_GURU_MAR23.md`
+
+---
+
 ### Session Work (Mar 23, 2026 — Class Events Feature)
 
 **Class Events Attendance Tagging — BUILD COMPLETE, 3 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
