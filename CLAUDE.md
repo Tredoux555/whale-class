@@ -14,6 +14,87 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 23, 2026)
 
+### Session Work (Mar 23, 2026 — LIVE Curriculum POST Fix)
+
+**Custom Work Addition 500 Fix — DIAGNOSED + FIXED, ✅ DEPLOYED:**
+
+Teacher tried to add custom work "CVC Puzzle" to Language area in LIVE classroom. `POST /api/montree/curriculum` returned 500, blocking all custom work additions.
+
+**Root cause: Ghost columns in insert data.** The route always included `prompt_used: null` and `reference_photo_url: null` in every insert. These columns were defined in `migrations/138_work_ingestion.sql`, but that migration was **never run** — `138_visual_memory.sql` ran instead (three conflicting migration 138 files). PostgreSQL rejected the insert with "column does not exist".
+
+**Fix (1 file, 2 changes):**
+1. Removed `prompt_used` and `reference_photo_url` from default insert data — now only included if request body explicitly provides values
+2. Added proper 23505 duplicate handling — partial unique index from migration 144 now returns clear 409 "already exists" instead of generic 500
+
+**Files Modified (1):**
+1. `app/api/montree/curriculum/route.ts` — 2 edits (remove ghost columns, add 23505 handler)
+
+**Audit:** Verified every insert column against migration 099 (table creation) + migration 144 (custom work schema). Frontend error display confirmed working via `AddWorkModal.tsx:221`. Enrichment trigger unaffected.
+
+**Deploy:** ✅ Commit `5a62a1a1`, pushed, Railway auto-deploying. CLIP changes excluded from push per plan.
+**Handoff:** `docs/handoffs/HANDOFF_CURRICULUM_POST_FIX_MAR23.md`
+
+---
+
+### Session Work (Mar 23, 2026 — CLIP Schema Upgrade)
+
+**CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions — BUILD COMPLETE, 10 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
+
+Upgraded CLIP/SigLIP classifier with two new high-value fields across all 270 works: structured `ConfusionPair` objects (`{ work_key, reason, differentiation }` with CAPS on distinguishing feature) and `negative_descriptions` (`string[]` of "NOT X" statements for negative CLIP embeddings). Margin-based negative embedding algorithm replaces naive subtraction — only penalizes when gap between positive and negative scores is dangerously small (`MARGIN=0.12`, `WEIGHT=0.25`).
+
+**10 Audit Cycles, 30 independent agents, 10 issues found and fixed:**
+- Cycle 1: 2 issues (invalid work_key ref + missing barrel export)
+- Cycles 2-3: CLEAN
+- Cycle 4: 2 issues (pl_weaving + pl_tying_shoes missing negative_descriptions)
+- Cycle 5: 5 issues (5 Cultural Music works missing negative_descriptions)
+- Cycle 6: CLEAN (reset)
+- Cycle 7: 1 issue (ConfusionPair type missing from barrel export)
+- **Cycles 8-9-10: 3 CONSECUTIVE CLEAN ✅**
+
+**Files Modified (5):**
+1. `lib/montree/classifier/clip-classifier.ts` — Margin-based negative embedding algorithm + constants
+2. `lib/montree/classifier/work-signatures.ts` — ConfusionPair interface + getNegativeDescriptions() + getConfusionPairsForWork()
+3. `lib/montree/classifier/index.ts` — Barrel exports (ConfusionPair type, getNegativeDescriptions, getConfusionDifferentiation)
+4. `lib/montree/classifier/signatures-practical-life.ts` — Confusion pairs on ~54 works + negative_descriptions on 2 missing works
+5. `lib/montree/classifier/signatures-language.ts` — Confusion pairs on ~27 works + la_phonogram_work → la_phonogram_intro fix
+6. `lib/montree/classifier/signatures-cultural.ts` — negative_descriptions on 5 Music works
+
+**Production safety:** ALL changes confined to `lib/montree/classifier/` only. Zero API routes, components, or middleware touched. Deployed system completely isolated.
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push over weekend after first successful live week. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_SCHEMA_UPGRADE_MAR23.md`
+
+---
+
+### 🔴 NEXT PRIORITY: Weekly Admin Report Documents (Physical Books)
+
+**Context:** Montree is LIVE in a real classroom as of Mar 23. Teachers need two weekly documents that are physically cut and pasted into little books with precise spacing:
+
+1. **"What was done"** — Per-child summary of activities completed across all 5 areas + area-by-area achievement summary
+2. **"What is next"** — Per-child plan for coming week across all 5 areas, next works to present/practice
+
+**Implementation plan:** Teacher will provide sample documents (photos/scans). Replicate exact format using reportlab (PDF) or python-docx (DOCX) with pixel-perfect spacing. Data from existing `montree_child_progress` + focus works tables. New API route generates both documents.
+
+**Waiting on:** Teacher to provide both sample documents so format can be precisely replicated.
+
+---
+
+### Session Work (Mar 23, 2026 — Build Fix)
+
+**Turbopack Parse Error Fix — COMPLETE, ✅ DEPLOYED:**
+
+Railway build failed on `parent-descriptions-zh.ts` line 283 — unescaped single quotes around `'mmm'` inside a single-quoted string literal. Turbopack parser saw inner `'` as string terminator → `Expected ',', got 'ident'`.
+
+**Fix:** Escaped `'mmm'` → `\'mmm\'` in the I Spy Game description.
+
+**Files Modified (1):**
+1. `lib/curriculum/comprehensive-guides/parent-descriptions-zh.ts` — 1 edit (line 283, escape inner quotes)
+
+**Deploy:** ✅ Commit `d2b23f43`, pushed, Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_BUILD_FIX_CHINESE_DESCRIPTIONS_MAR23.md`
+
+---
+
 ### Session Work (Mar 23, 2026 — Deploy Day)
 
 **ALL Mar 21-22 Code PUSHED + Migrations RUN — FULLY DEPLOYED:**
@@ -839,35 +920,10 @@ Teachers reported new photos sometimes appearing at the bottom of the gallery in
 
 **Handoff:** `docs/handoffs/HANDOFF_PHOTO_SORT_CHINA_CDN_MAR21.md`
 
-### 🔴 Priority #0: CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions (3-4 hours)
+### ✅ Priority #0: CLIP Schema Upgrade — DONE (Mar 23)
 
-**Status:** PLANNED. This is the single highest-impact accuracy improvement before Monday.
-
-**What:** Upgrade `WorkSignature` interface with two new high-value fields:
-1. `confusion_pairs`: from `string[]` → `ConfusionPair[]` with `reason` + `differentiation` text
-2. `negative_descriptions: string[]` — "NOT X" statements for CLIP negative embeddings
-
-**Why:** Current confusion_pairs tells classifier "these look similar" but not HOW to tell them apart. The classifier doesn't even USE the field. Negative descriptions actively suppress false positives via negative CLIP embeddings.
-
-**Schema:**
-```typescript
-interface ConfusionPair {
-  work_key: string;
-  reason: string;           // why they look similar
-  differentiation: string;  // how to tell them apart — CAPS on distinguishing word
-}
-```
-
-**Implementation steps:**
-1. Update `WorkSignature` interface in work-signatures.ts (~10 min)
-2. Update all 5 area signature files with structured pairs + negatives (~2 hours, 5 parallel agents)
-3. Update clip-classifier.ts: compute negative embeddings at init, subtract weighted penalty during scoring, inject differentiation into Haiku prompt (~1 hour)
-4. Audit all 5 areas for cross-area confusion pairs (most dangerous — wrong area = correct work never found)
-5. Build verification (tsc, apostrophe check, Railway build)
-
-**Files to modify:** work-signatures.ts, signatures-*.ts (5), clip-classifier.ts, photo-insight/route.ts
-**Estimated accuracy improvement:** 15-25% reduction in misclassifications on hard works
-**Full plan:** `docs/handoffs/HANDOFF_CLIP_SIGNATURES_FULL_ENRICHMENT_MAR21.md` → "NEXT SESSION PLAN" section
+**Status:** BUILD COMPLETE. 10 audit cycles, 30 agents, 3 consecutive clean. Push over weekend after first successful live week.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_SCHEMA_UPGRADE_MAR23.md`
 
 ### ✅ Priority #1: Push ALL Unpushed Code — DONE (Mar 23)
 
