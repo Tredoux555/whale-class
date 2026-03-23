@@ -22,6 +22,7 @@ import {
   type PhotoInsightResult,
   type CustomWorkProposal,
 } from '@/lib/montree/photo-insight-store';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 interface PhotoInsightButtonProps {
   childId: string;
@@ -437,8 +438,13 @@ export default function PhotoInsightButton({
           {result.work_name && (
             <div className="flex items-center gap-2 flex-wrap">
               {result.area && <AreaBadge area={result.area} size="xs" />}
+              {result.area && (
+                <span className="text-xs text-gray-500">
+                  {t(`area.${result.area}`)}
+                </span>
+              )}
               <span className="text-sm font-semibold text-gray-800">
-                {result.work_name}
+                {locale === 'zh' ? (getChineseNameForWork(result.work_name) || result.work_name) : result.work_name}
               </span>
               {statusInfo && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${

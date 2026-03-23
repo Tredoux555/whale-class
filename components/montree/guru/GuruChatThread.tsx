@@ -79,7 +79,7 @@ export default function GuruChatThread({
         // Teachers skip concern onboarding — go straight to chat
         if (isTeacher) {
           // Fetch chat history
-          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
+          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&locale=${locale}&limit=20`, { signal: abortController.signal });
           if (!histRes.ok) throw new Error(`History fetch failed: ${histRes.status}`);
           const histData = await histRes.json();
 
@@ -118,7 +118,7 @@ export default function GuruChatThread({
           setConcerns(concernsData.concerns || []);
 
           // Fetch chat history
-          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&limit=20`, { signal: abortController.signal });
+          const histRes = await fetch(`/api/montree/guru?child_id=${childId}&locale=${locale}&limit=20`, { signal: abortController.signal });
           if (!histRes.ok) throw new Error(`History fetch failed: ${histRes.status}`);
           const histData = await histRes.json();
 
@@ -189,7 +189,7 @@ export default function GuruChatThread({
 
     init();
     return () => abortController.abort();
-  }, [childId, childName, isTeacher, isWholeClassMode]);
+  }, [childId, childName, isTeacher, isWholeClassMode, locale]);
 
   // Handle onboarding complete
   const handleOnboardingComplete = (selectedConcerns: string[]) => {

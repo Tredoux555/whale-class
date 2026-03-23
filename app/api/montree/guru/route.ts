@@ -107,6 +107,8 @@ export async function POST(request: NextRequest) {
     // Parse request
     const body: GuruRequest = await request.json();
     let { child_id, question, classroom_id, teacher_id, role, conversational, image_url, stream: streamRequested, locale } = body;
+    // Validate locale against whitelist — prevent injection via unsanitized locale in .or() filters
+    locale = locale && ['en', 'zh'].includes(locale) ? locale : 'en';
     const isPrincipal = role === 'principal';
 
     if (!child_id || !question) {
@@ -403,7 +405,7 @@ export async function POST(request: NextRequest) {
       // Parallelize: childContext, knowledge, and childSettings are all independent DB/IO operations.
       // Saves ~200-400ms by running in parallel instead of sequential.
       const [childCtxResult, knowledgeResult, childSettingsResult] = await Promise.all([
-        buildChildContext(supabase, child_id),
+        buildChildContext(supabase, child_id, locale),
         retrieveKnowledge(question, 4),
         supabase.from('montree_children').select('settings').eq('id', child_id).maybeSingle(),
       ]);
@@ -664,7 +666,7 @@ export async function POST(request: NextRequest) {
                   child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                   question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
                   guruTier, estCost: 0, responseText: finalText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole,
+                  isTeacher, isGreetingTrigger, isParentRole, locale,
                 });
               }
             });
@@ -725,7 +727,7 @@ export async function POST(request: NextRequest) {
                   child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                   question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
                   guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole,
+                  isTeacher, isGreetingTrigger, isParentRole, locale,
                 });
               }
             });
@@ -771,7 +773,7 @@ export async function POST(request: NextRequest) {
                 child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                 question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
                 guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
-                isTeacher, isGreetingTrigger, isParentRole,
+                isTeacher, isGreetingTrigger, isParentRole, locale,
               });
             }
           });
@@ -811,7 +813,7 @@ export async function POST(request: NextRequest) {
               child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
               question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
               guruTier, estCost, responseText, knowledge, guruModel, startTime,
-              isTeacher, isGreetingTrigger, isParentRole,
+              isTeacher, isGreetingTrigger, isParentRole, locale,
             });
           }
         });
@@ -913,7 +915,7 @@ export async function POST(request: NextRequest) {
             child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
             question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
             guruTier, estCost: 0, responseText, knowledge, guruModel, startTime,
-            isTeacher, isGreetingTrigger, isParentRole,
+            isTeacher, isGreetingTrigger, isParentRole, locale,
           });
 
           return NextResponse.json({ success: true, insight: responseText, conversational: true });
@@ -991,7 +993,7 @@ export async function POST(request: NextRequest) {
         child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
         question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
         guruTier, estCost, responseText, knowledge, guruModel, startTime, processingTime,
-        isTeacher, isGreetingTrigger, isParentRole,
+        isTeacher, isGreetingTrigger, isParentRole, locale,
       });
 
       // Actions are internal (saved in context_snapshot) — never exposed to the parent
@@ -1057,6 +1059,7 @@ export async function POST(request: NextRequest) {
         sources_used: knowledge.sources_used,
         processing_time_ms: processingTime,
         model_used: AI_MODEL,
+        locale: locale || 'en',
       })
       .select('id')
       .single();
@@ -1167,6 +1170,8 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const childId = searchParams.get('child_id');
+    const rawLocale = searchParams.get('locale');
+    const historyLocale = rawLocale && ['en', 'zh'].includes(rawLocale) ? rawLocale : null;
     const limit = parseInt(searchParams.get('limit') || '10');
 
     if (!childId) {
@@ -1188,11 +1193,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    const { data: history, error } = await supabase
+    let historyQuery = supabase
       .from('montree_guru_interactions')
       .select('id, asked_at, question, question_type, response_insight, response_action_plan, outcome')
       .eq('child_id', childId)
-      .not('question', 'like', 'photo:%')
+      .not('question', 'like', 'photo:%');
+
+    // Filter by locale: show interactions in the current language + pre-migration rows (NULL locale)
+    if (historyLocale) {
+      historyQuery = historyQuery.or(`locale.eq.${historyLocale},locale.is.null`);
+    }
+
+    const { data: history, error } = await historyQuery
       .order('asked_at', { ascending: false })
       .limit(limit);
 
@@ -1230,6 +1242,7 @@ function saveInteractionAndLearn(supabase: any, opts: {
   guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
   knowledge: KnowledgeResult; guruModel: string; startTime: number;
   isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
+  locale?: string;
 }) {
   // This runs after the stream is closed — don't block anything
   saveInteractionAndLearnSync(supabase, { ...opts, processingTime: Date.now() - opts.startTime }).catch(err =>
@@ -1249,12 +1262,13 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
   guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
   knowledge: KnowledgeResult; guruModel: string; startTime: number; processingTime?: number;
   isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
+  locale?: string;
 }) {
   const {
     child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
     question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
     guruTier, estCost, responseText, knowledge, guruModel, startTime,
-    isTeacher, isGreetingTrigger,
+    isTeacher, isGreetingTrigger, locale: interactionLocale,
   } = opts;
   const processingTime = opts.processingTime || (Date.now() - startTime);
 
@@ -1299,6 +1313,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
       sources_used: knowledge.sources_used,
       processing_time_ms: processingTime,
       model_used: guruModel,
+      locale: interactionLocale || 'en',
     })
     .select('id')
     .single();
