@@ -378,6 +378,11 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       throw new Error(result.error || 'Upload returned failure');
     }
 
+    // Revoke blob URL to prevent memory leak (was created in enqueuePhoto)
+    if (entry._local_url) {
+      try { URL.revokeObjectURL(entry._local_url); } catch { /* non-fatal */ }
+    }
+
     // CRITICAL-003: Delete blob FIRST, then mark uploaded
     // If crash happens after blob delete but before status update:
     //   → Entry stays 'uploading', blob is gone
@@ -471,6 +476,7 @@ async function aggressiveCleanup(): Promise<void> {
     .filter(e => e.status === 'uploaded')
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
   for (const entry of uploaded.slice(0, 50)) {
+    if (entry._local_url) { try { URL.revokeObjectURL(entry._local_url); } catch { /* non-fatal */ } }
     await deleteEntry(entry.id);
   }
 
@@ -479,6 +485,7 @@ async function aggressiveCleanup(): Promise<void> {
     .filter(e => e.status === 'permanent_failure')
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
   for (const entry of permFailed.slice(0, 20)) {
+    if (entry._local_url) { try { URL.revokeObjectURL(entry._local_url); } catch { /* non-fatal */ } }
     await deleteEntry(entry.id);
   }
 
