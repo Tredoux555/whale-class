@@ -133,6 +133,9 @@ export default function GalleryPage() {
   const [showSpecialEventsPicker, setShowSpecialEventsPicker] = useState(false);
   const [specialEventsPhotoId, setSpecialEventsPhotoId] = useState<string | null>(null);
   const [creatingEvent, setCreatingEvent] = useState(false);
+  const [customEventName, setCustomEventName] = useState('');
+  const [existingSpecialEvents, setExistingSpecialEvents] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingSpecialEvents, setLoadingSpecialEvents] = useState(false);
 
   // Delete state
   const [photoToDelete, setPhotoToDelete] = useState<GalleryItem | null>(null);
@@ -387,7 +390,7 @@ export default function GalleryPage() {
   const handleAreaSelected = (area: string) => {
     setShowAreaPicker(false);
     if (area === 'special_events') {
-      // Special Events has no curriculum works — show quick-create picker instead
+      // Special Events — show custom event picker (existing events + create new)
       setShowSpecialEventsPicker(true);
       setSpecialEventsPhotoId(areaPickerPhotoId);
       setAreaPickerPhotoId(null);
@@ -400,18 +403,35 @@ export default function GalleryPage() {
     setAreaPickerPhotoId(null);
   };
 
-  const SPECIAL_EVENT_PRESETS = [
-    { name: locale === 'zh' ? '生日庆祝' : 'Birthday Celebration', emoji: '🎂' },
-    { name: locale === 'zh' ? '实地考察' : 'Field Trip', emoji: '🚌' },
-    { name: locale === 'zh' ? '节日派对' : 'Holiday Party', emoji: '🎄' },
-    { name: locale === 'zh' ? '运动会' : 'Sports Day', emoji: '⚽' },
-    { name: locale === 'zh' ? '文化日' : 'Cultural Day', emoji: '🌍' },
-    { name: locale === 'zh' ? '毕业典礼' : 'Graduation', emoji: '🎓' },
-    { name: locale === 'zh' ? '美术展' : 'Art Show', emoji: '🎨' },
-    { name: locale === 'zh' ? '科学展览' : 'Science Fair', emoji: '🔬' },
-    { name: locale === 'zh' ? '音乐表演' : 'Music Performance', emoji: '🎵' },
-    { name: locale === 'zh' ? '社区活动' : 'Community Event', emoji: '🤝' },
-  ];
+  // Fetch existing special_events curriculum works when picker opens
+  useEffect(() => {
+    if (!showSpecialEventsPicker) return;
+    const classroomId = session?.classroom?.id;
+    if (!classroomId) return;
+    setLoadingSpecialEvents(true);
+    setCustomEventName('');
+    const abortController = new AbortController();
+    fetch(`/api/montree/curriculum?classroom_id=${classroomId}`, { credentials: 'include', signal: abortController.signal })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (abortController.signal.aborted) return;
+        if (data?.byArea?.special_events) {
+          setExistingSpecialEvents(
+            data.byArea.special_events.map((w: { id: string; name: string }) => ({ id: w.id, name: w.name }))
+          );
+        } else {
+          setExistingSpecialEvents([]);
+        }
+      })
+      .catch(err => {
+        if (err.name === 'AbortError') return;
+        setExistingSpecialEvents([]);
+      })
+      .finally(() => {
+        if (!abortController.signal.aborted) setLoadingSpecialEvents(false);
+      });
+    return () => abortController.abort();
+  }, [showSpecialEventsPicker, session?.classroom?.id]);
 
   const handleSpecialEventTag = async (eventName: string) => {
     if (!specialEventsPhotoId || creatingEvent) return;
@@ -474,6 +494,7 @@ export default function GalleryPage() {
       toast.success(t('gallery.workUpdated'));
       setShowSpecialEventsPicker(false);
       setSpecialEventsPhotoId(null);
+      setCustomEventName('');
     } catch {
       toast.error(t('gallery.workUpdateError'));
     } finally {
@@ -1325,40 +1346,76 @@ export default function GalleryPage() {
         </div>
       )}
 
-      {/* Special Events Quick-Create Picker */}
+      {/* Special Events — Custom Event Picker */}
       {showSpecialEventsPicker && (
         <div
           className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
-          onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); }}
+          onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
         >
           <div
-            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4"
+            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4 max-h-[70vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="font-bold text-lg">🎉 {t('gallery.tagSpecialEvent')}</h3>
               <button
-                onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); }}
+                onClick={() => { setShowSpecialEventsPicker(false); setSpecialEventsPhotoId(null); setCustomEventName(''); }}
                 className="p-2 text-gray-500"
               >
                 ✕
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {SPECIAL_EVENT_PRESETS.map(event => (
-                <button
-                  key={event.name}
-                  disabled={creatingEvent}
-                  onClick={() => handleSpecialEventTag(event.name)}
-                  className="flex items-center gap-2 px-3 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors text-left disabled:opacity-50"
-                >
-                  <span className="text-xl">{event.emoji}</span>
-                  <span className="font-medium text-gray-800 text-sm">{event.name}</span>
-                </button>
-              ))}
+
+            {/* Create new event */}
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={customEventName}
+                onChange={(e) => setCustomEventName(e.target.value)}
+                placeholder={t('gallery.eventNamePlaceholder')}
+                className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
+                maxLength={200}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && customEventName.trim()) {
+                    e.preventDefault();
+                    handleSpecialEventTag(customEventName.trim());
+                  }
+                }}
+              />
+              <button
+                disabled={!customEventName.trim() || creatingEvent}
+                onClick={() => handleSpecialEventTag(customEventName.trim())}
+                className="px-4 py-2 bg-rose-500 text-white rounded-lg text-sm font-medium disabled:opacity-50 whitespace-nowrap"
+              >
+                {creatingEvent ? '...' : t('gallery.createAndTag')}
+              </button>
             </div>
+
+            {/* Existing special events from this classroom */}
+            <div className="overflow-y-auto flex-1 -mx-1">
+              {loadingSpecialEvents ? (
+                <div className="text-center py-4 text-sm text-gray-400">{t('common.loading')}</div>
+              ) : existingSpecialEvents.length > 0 ? (
+                <div className="space-y-1 px-1">
+                  {existingSpecialEvents.map(event => (
+                    <button
+                      key={event.id}
+                      disabled={creatingEvent}
+                      onClick={() => handleSpecialEventTag(event.name)}
+                      className="w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-rose-50 hover:bg-rose-100 transition-colors text-left disabled:opacity-50"
+                    >
+                      <span className="text-lg">🎉</span>
+                      <span className="font-medium text-gray-800 text-sm">{event.name}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4 text-sm text-gray-400">{t('gallery.noEventsYet')}</div>
+              )}
+            </div>
+
             {creatingEvent && (
-              <div className="text-center py-2 text-sm text-gray-500 mt-2">Tagging photo...</div>
+              <div className="text-center py-2 text-sm text-gray-500 mt-2">{t('gallery.taggingPhoto')}</div>
             )}
           </div>
         </div>
