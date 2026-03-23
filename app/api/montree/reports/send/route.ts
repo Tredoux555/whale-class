@@ -8,6 +8,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 
 export async function POST(request: NextRequest) {
   try {
@@ -199,6 +200,17 @@ export async function POST(request: NextRequest) {
         dbDescriptions.set(w.name.toLowerCase(), {
           description: w.parent_description,
           why_it_matters: w.why_it_matters || '',
+        });
+      }
+    }
+
+    // Override with Chinese descriptions when locale is zh
+    if (locale === 'zh') {
+      const zhDescriptions = getChineseDescriptionsMap();
+      for (const [name, zh] of zhDescriptions) {
+        dbDescriptions.set(name, {
+          description: zh.parent_description,
+          why_it_matters: zh.why_it_matters,
         });
       }
     }
@@ -443,6 +455,7 @@ export async function POST(request: NextRequest) {
         work_name: p.work_id ? workIdToName.get(p.work_id) : p.caption,
       })),
       generated_at: now,
+      report_locale: locale,
     };
 
     // Calculate week start (Sunday) and end (Saturday)

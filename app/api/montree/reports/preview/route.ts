@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
@@ -190,6 +191,17 @@ export async function GET(request: NextRequest) {
         staticDescriptions.set(work.name.toLowerCase().trim(), {
           description: work.parent_description,
           why_it_matters: work.why_it_matters || '',
+        });
+      }
+    }
+
+    // Override with Chinese descriptions when locale is zh
+    if (locale === 'zh') {
+      const zhDescriptions = getChineseDescriptionsMap();
+      for (const [name, zh] of zhDescriptions) {
+        staticDescriptions.set(name, {
+          description: zh.parent_description,
+          why_it_matters: zh.why_it_matters,
         });
       }
     }
