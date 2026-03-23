@@ -8,7 +8,7 @@ export {
   isClassifierReady,
   getClassifierStats,
   resetInitError,
-  // getConfusionDifferentiation, // TEMP: not yet pushed to git — re-enable after pushing clip-classifier.ts
+  getConfusionDifferentiation,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';
@@ -21,7 +21,9 @@ export {
   getSignatureByKey,
   getWorkKeysForArea,
   getConfusionPairsForWork,
+  getNegativeDescriptions,
   type WorkSignature,
+  type ConfusionPair,
 } from './work-signatures';
 
 export {

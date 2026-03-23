@@ -19,7 +19,8 @@ const CLIP_CONFIDENCE_THRESHOLD = 0.75; // Below this, fall back to Haiku vision
 const VISUAL_MEMORY_BOOST = 0.15; // Confidence boost for works with visual memory
 const VISUAL_MEMORY_BOOST_CAP = 0.99; // Cap boosted confidence at this value
 const CLASSIFICATION_TIMEOUT_MS = 30_000; // 30s max for entire classification
-const NEGATIVE_EMBEDDING_WEIGHT = 0.3; // Weight for negative embedding penalty (conservative)
+const NEGATIVE_EMBEDDING_MARGIN = 0.12; // Minimum gap required between positive and negative scores
+const NEGATIVE_EMBEDDING_WEIGHT = 0.25; // Weight for margin-deficit penalty
 
 export interface ClassifyResult {
   work_key: string;
@@ -469,10 +470,16 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
           if (negSim > maxNegSimilarity) maxNegSimilarity = negSim;
         }
         if (maxNegSimilarity > 0.3) { // Only penalize if negative match is meaningful
-          const penalty = maxNegSimilarity * NEGATIVE_EMBEDDING_WEIGHT;
-          bestWorkConfidence = Math.max(0, bestWorkConfidence - penalty);
-          negativePenaltyApplied = true;
-          console.log(`[CLIP] Negative penalty: ${rawConfidence.toFixed(3)} - ${penalty.toFixed(3)} = ${bestWorkConfidence.toFixed(3)} for ${bestWork.work_key}`);
+          const confidenceGap = bestWorkConfidence - maxNegSimilarity;
+          if (confidenceGap < NEGATIVE_EMBEDDING_MARGIN) {
+            const marginDeficit = NEGATIVE_EMBEDDING_MARGIN - confidenceGap;
+            const penalty = marginDeficit * NEGATIVE_EMBEDDING_WEIGHT;
+            bestWorkConfidence = Math.max(0, bestWorkConfidence - penalty);
+            negativePenaltyApplied = true;
+            console.log(`[CLIP] Margin-based penalty: gap=${confidenceGap.toFixed(3)}, deficit=${marginDeficit.toFixed(3)}, penalty=${penalty.toFixed(3)}, ${rawConfidence.toFixed(3)} -> ${bestWorkConfidence.toFixed(3)} for ${bestWork.work_key}`);
+          } else {
+            console.log(`[CLIP] Negative match found but gap sufficient: gap=${confidenceGap.toFixed(3)} >= margin=${NEGATIVE_EMBEDDING_MARGIN} for ${bestWork.work_key}`);
+          }
         }
       }
 
