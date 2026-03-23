@@ -323,12 +323,14 @@ export async function POST(request: NextRequest) {
       teacher_notes: teacher_notes || null,
       is_custom: is_custom !== undefined ? is_custom : true,
       source: body.source || 'teacher_manual',
-      prompt_used: body.prompt_used || null,
-      reference_photo_url: body.reference_photo_url || null,
       quick_guide: body.quick_guide || null,
       parent_description: body.parent_description || null,
       presentation_steps: body.presentation_steps || [],
     };
+
+    // Only include optional columns if they have values (columns may not exist in all deployments)
+    if (body.prompt_used) insertData.prompt_used = body.prompt_used;
+    if (body.reference_photo_url) insertData.reference_photo_url = body.reference_photo_url;
 
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
@@ -336,6 +338,11 @@ export async function POST(request: NextRequest) {
       .select();
 
     if (error) {
+      // Handle duplicate custom work name (partial unique index from migration 144)
+      if (error.code === '23505') {
+        console.log(`[Curriculum] Duplicate custom work "${name}" in classroom ${classroom_id}`);
+        return NextResponse.json({ error: 'A custom work with this name already exists in your classroom' }, { status: 409 });
+      }
       console.error('Insert error:', error.message, error.code, error.details, error.hint);
       console.error('Insert data was:', JSON.stringify(insertData, null, 2));
       return NextResponse.json({ error: 'Failed to add work' }, { status: 500 });
