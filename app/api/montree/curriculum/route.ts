@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
 
       const { error: seedError } = await supabase
         .from('montree_classroom_curriculum_areas')
-        .insert(areasToInsert);
+        .upsert(areasToInsert, { onConflict: 'classroom_id,area_key', ignoreDuplicates: true });
 
       if (seedError) {
         console.error('Failed to auto-seed areas:', seedError);

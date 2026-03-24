@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { toast } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { getClassroomId } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
@@ -147,7 +148,7 @@ export default function WorkWheelPicker({
 
     const classroomId = getClassroomId();
     if (!classroomId) {
-      alert('No classroom found');
+      toast.error('No classroom found');
       return;
     }
 
@@ -175,12 +176,12 @@ export default function WorkWheelPicker({
         setInsertAfterIndex(null);
         onWorkAdded?.(); // Trigger refresh
       } else {
-        const err = await response.json();
-        alert(err.error || 'Failed to add work');
+        const err = await response.json().catch(() => ({ error: 'Failed to add work' }));
+        toast.error(err.error || 'Failed to add work');
       }
     } catch (error) {
       console.error('Add work error:', error);
-      alert('Failed to add work');
+      toast.error('Failed to add work');
     } finally {
       setIsAdding(false);
     }

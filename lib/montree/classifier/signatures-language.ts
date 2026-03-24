@@ -199,19 +199,26 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     name: 'Sandpaper Letters',
     area_key: 'language',
     category: 'Writing Preparation',
-    visual_description: 'INDIVIDUAL LOWERCASE CURSIVE LETTER (c, m, a, t, s, r, n, o, i, u, e) AFFIXED to WOODEN or CARDBOARD BASE (approximately 6x8 inches). LETTER SHAPE entirely constructed from COARSE TEXTURED SANDPAPER (MEDIUM-GRIT sand GLUED firmly to base, visible GRAINY TEXTURE with ROUGHNESS apparent). PINK or RED BASE COLOR for CONSONANTS, BLUE BASE COLOR for VOWELS (clear chromatic distinction). Letter outline is DISTINCT AGAINST BASE with CRISP EDGES. Child\'s INDEX AND MIDDLE FINGER TRACING SANDPAPER LETTER OUTLINE in CORRECT DIRECTION, clearly FEELING the TEXTURED surface with TACTILE PRESSURE visible in FINGER TENSION. CLOSE-UP shows FINGER TIPS directly contacting ROUGH SANDPAPER surface with SKIN INDENTATION visible. Lowercase cursive letters show CONNECTED strokes and FLOWING form. STRONG VISUAL CONTRAST between SMOOTH painted base and ROUGH textured letter. Child\'s FACE often positioned CLOSE to letter, EYES sometimes CLOSED to enhance tactile sensation.',
+    visual_description: 'INDIVIDUAL LOWERCASE CURSIVE LETTER (c, m, a, t, s, r, n, o, i, u, e) AFFIXED to FLAT WOODEN or CARDBOARD TABLET BASE (approximately 6x8 inches). ONE LETTER PER TABLET — each tablet is a SEPARATE FLAT BOARD, NOT stored in compartments. LETTER SHAPE entirely constructed from COARSE TEXTURED SANDPAPER (MEDIUM-GRIT sand GLUED firmly to base, visible GRAINY TEXTURE with ROUGHNESS apparent). PINK or RED BASE COLOR for CONSONANTS, BLUE BASE COLOR for VOWELS (clear chromatic distinction). Letter outline is DISTINCT AGAINST BASE with CRISP EDGES. Child\'s INDEX AND MIDDLE FINGER TRACING SANDPAPER LETTER OUTLINE in CORRECT DIRECTION, clearly FEELING the TEXTURED surface with TACTILE PRESSURE visible in FINGER TENSION. CLOSE-UP shows FINGER TIPS directly contacting ROUGH SANDPAPER surface with SKIN INDENTATION visible. Lowercase cursive letters show CONNECTED strokes and FLOWING form. STRONG VISUAL CONTRAST between SMOOTH painted base and ROUGH textured letter. Child\'s FACE often positioned CLOSE to letter, EYES sometimes CLOSED to enhance tactile sensation. CRITICAL: These are FLAT TABLETS with ONE FIXED letter each — NOT a compartmentalized box of loose pieces.',
     key_materials: ['Sandpaper letters lowercase cursive', 'Pink/red consonant bases', 'Blue vowel bases', 'Sandpaper texture medium-grit'],
     confusion_pairs: [
       {
         work_key: 'ma_sandpaper_numerals',
         reason: 'Both are SANDPAPER-textured and TRACED by hand, but LETTERS are ALPHABET symbols while NUMERALS are NUMBERS 0-9',
         differentiation: 'Sandpaper LETTERS are LOWERCASE CURSIVE script (a,b,c,d,...) with PINK/BLUE color-coding. Sandpaper NUMERALS are NUMBER SHAPES (1,2,3,...) with GREEN/ORANGE color-coding.'
+      },
+      {
+        work_key: 'la_moveable_alphabet',
+        reason: 'Both involve INDIVIDUAL LETTERS with BLUE/RED color-coding, but Sandpaper Letters are FLAT TABLETS with TEXTURED surface for TRACING while Moveable Alphabet is a COMPARTMENTALIZED BOX of LOOSE SMOOTH pieces for SPELLING',
+        differentiation: 'Sandpaper Letters: FLAT TABLET with ONE FIXED rough SANDPAPER letter, child TRACES with FINGER. Moveable Alphabet: LARGE BOX with 26 LABELED COMPARTMENTS full of LOOSE SMOOTH PLASTIC/WOODEN letters, child PICKS UP pieces and ARRANGES them on a MAT to SPELL WORDS.'
       }
     ],
     negative_descriptions: [
       'NOT numerals or numbers - these are ALPHABET LETTERS a-z',
+      'NOT a compartmentalized box of loose letter pieces - those are MOVEABLE ALPHABET',
       'NOT wooden shape cutouts without sandpaper texture',
-      'NOT printed letter cards'
+      'NOT printed letter cards',
+      'NOT loose moveable pieces being arranged to spell words'
     ],
     difficulty: 'easy',
   },
@@ -262,19 +269,20 @@ export const LANGUAGE_SIGNATURES: WorkSignature[] = [
     name: 'Moveable Alphabet',
     area_key: 'language',
     category: 'Writing Preparation',
-    visual_description: 'LARGE WOODEN BOX or TRAY with 26 LABELED COMPARTMENTS containing INDIVIDUAL CUT-OUT PLASTIC or WOODEN LETTERS in LOWERCASE CURSIVE form (approximately 2 inches tall each). BLUE CONSONANTS clearly distinct from RED VOWELS—stark COLOR CONTRAST (BLUE letters in compartments A, B, C vs RED letters A, E, I, O, U). Letters are PHYSICAL MANIPULABLE PIECES that can be LIFTED and MOVED. Child PULLING individual BLUE or RED letter from COMPARTMENTS and ARRANGING letters on FLAT WORK MAT to SPELL WORDS: C-A-T, D-O-G, R-U-N. Arranged letters show CLEAR COLOR CONTRAST between BLUE consonants and RED vowels in LEFT-TO-RIGHT sequence. Letter SPACING is VISIBLE and PROPER between characters. Multiple COMPLETED WORDS visible on mat showing progression of letter arrangement. Letters are FULLY 3-DIMENSIONAL OBJECTS, NOT handwritten or printed—distinct from writing activity.',
-    key_materials: ['Large moveable alphabet box compartmented', 'Blue consonant letter pieces', 'Red vowel letter pieces', 'Work mats for arrangement'],
+    visual_description: 'LARGE WOODEN COMPARTMENTALIZED BOX (approximately 18x12 inches) with 26 LABELED SECTIONS arranged in rows, each compartment holding MULTIPLE COPIES of the SAME LOOSE PLASTIC or WOODEN LETTER in LOWERCASE CURSIVE form (approximately 2 inches tall each). The BOX WITH COMPARTMENTS is the KEY VISUAL IDENTIFIER — a GRID-LIKE STORAGE SYSTEM full of loose pieces. BLUE CONSONANTS clearly distinct from RED VOWELS—stark COLOR CONTRAST (BLUE letters in compartments B, C, D vs RED letters A, E, I, O, U). Letters are SMOOTH SOLID PIECES (NO sandpaper texture) that can be LIFTED OUT and MOVED freely. Child PULLING individual BLUE or RED letter from COMPARTMENTS and ARRANGING letters on FLAT WORK MAT to SPELL WORDS: C-A-T, D-O-G, R-U-N. Arranged letters show CLEAR COLOR CONTRAST between BLUE consonants and RED vowels in LEFT-TO-RIGHT sequence. Multiple COMPLETED WORDS visible on mat. CRITICAL DIFFERENCE from Sandpaper Letters: Moveable Alphabet has a LARGE BOX FULL OF LOOSE PIECES being ARRANGED to SPELL; Sandpaper Letters are INDIVIDUAL FLAT TABLETS with ONE FIXED TEXTURED letter being TRACED.',
+    key_materials: ['Large moveable alphabet box compartmented', 'Blue consonant letter pieces smooth plastic/wood', 'Red vowel letter pieces smooth plastic/wood', 'Work mats for arrangement'],
     confusion_pairs: [
       {
         work_key: 'la_sandpaper_letters',
-        reason: 'Both use BLUE consonants and RED vowels color-coding, but Sandpaper Letters are TEXTURED for tracing while Moveable Alphabet are SMOOTH SOLID pieces for arranging',
-        differentiation: 'Sandpaper Letters show child TRACING rough TEXTURED letter with FINGER on fixed base. Moveable Alphabet shows MOVEABLE PLASTIC/WOODEN pieces being ARRANGED on flat mat to SPELL words.'
+        reason: 'Both use BLUE consonants and RED vowels color-coding, but Sandpaper Letters are FLAT TABLETS with TEXTURED surface for TRACING while Moveable Alphabet is a COMPARTMENTALIZED BOX of LOOSE SMOOTH pieces for SPELLING',
+        differentiation: 'Sandpaper Letters: FLAT TABLET with ONE FIXED rough SANDPAPER letter, child TRACES with FINGER. Moveable Alphabet: LARGE BOX with 26 LABELED COMPARTMENTS full of LOOSE SMOOTH PLASTIC/WOODEN letters, child PICKS UP pieces and ARRANGES them on a MAT to SPELL WORDS.'
       }
     ],
     negative_descriptions: [
-      'NOT sandpaper letter tracing activity',
-      'NOT printed letter cards',
-      'NOT fixed letter base pieces'
+      'NOT sandpaper letter tracing activity — NO rough textured surface',
+      'NOT individual flat tablets with one fixed letter each',
+      'NOT printed letter cards or worksheets',
+      'NOT a child tracing a letter with their finger — pieces are PICKED UP and MOVED'
     ],
     difficulty: 'medium',
   },

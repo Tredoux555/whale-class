@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
@@ -1065,6 +1065,7 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-4 pb-8">
+      <Toaster position="top-center" richColors />
 
       {/* Offline Photo Queue Status */}
       <PhotoQueueBanner childId={childId} />
