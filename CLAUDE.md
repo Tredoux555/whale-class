@@ -12,7 +12,60 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 23, 2026)
+## CURRENT STATUS (Mar 24, 2026)
+
+### Session Work (Mar 24, 2026 — Photo Pipeline 3×3×3 Audit + Push Day)
+
+**Photo Pipeline 3×3×3 Audit — 10 FIXES, 3 VERIFICATION AGENTS CLEAN, ⚠️ NOT YET PUSHED:**
+
+Full 3×3×3 audit health check on the photo capture/identification/gallery pipeline. 3 parallel audit agents, 10 real issues found (1 CRITICAL, 3 HIGH, 4 MEDIUM, 2 LOW), all fixed. 3 verification agents achieved consecutive CLEAN passes. Integration audit caught a field name bug in the initial fix — corrected and re-verified.
+
+**Issues Fixed (10):**
+1. **CRITICAL: Cache confidence field mismatch** — CLIP path stores `haiku_confidence`, Sonnet stores `sonnet_confidence`, cache-hit only read Sonnet → CLIP photos returned null confidence. Fixed with `?? haiku_confidence` fallback.
+2. **HIGH: Blob URL memory leak** — `URL.createObjectURL()` never revoked. Added revocation before blob deletion on upload success + in aggressiveCleanup().
+3. **HIGH: Stale report items after delete** — Deleting photo updated `photos` but not `reportItems`. Added `setReportItems` filter in both delete handlers.
+4. **HIGH: ReportItem filter field name** — Initial fix used `i.id` but interface has `photo_id`. Fixed to `i.photo_id` with null guard on bulk delete.
+5. **MEDIUM: Lightbox index out of bounds** — `setLightboxIndex(0)` on every delete.
+6. **MEDIUM: AbortController on special events fetch** — Full cleanup pattern added.
+7. **MEDIUM: Close handlers clear customEventName** — Both backdrop and ✕ button now clear state.
+8. **MEDIUM: Enter key preventDefault** — On event name input.
+9. **LOW: handleSpecialEventTag cleanup** — Clears customEventName on success.
+10. **LOW: 4 new i18n keys** — EN/ZH parity for special events UI.
+
+**Files Modified (5):**
+1. `app/api/montree/guru/photo-insight/route.ts` — 2 edits (cache confidence fallback chain)
+2. `lib/montree/offline/sync-manager.ts` — 3 edits (blob URL revocation: upload success + cleanup ×2)
+3. `app/montree/dashboard/[childId]/gallery/page.tsx` — 8 edits (report items, lightbox, AbortController, close handlers, enter key, cleanup)
+4. `lib/montree/i18n/en.ts` — 4 new keys
+5. `lib/montree/i18n/zh.ts` — 4 matching Chinese keys
+
+**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac (see push command below).
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_PIPELINE_3X3X3_AUDIT_MAR24.md`
+
+---
+
+### Session Work (Mar 24, 2026 — Push Day: 4 Features + Migration 146)
+
+**ALL 4 Unpushed Features PUSHED + Migration 146 RUN — ✅ DEPLOYED:**
+
+Pushed all 4 features that were marked ⚠️ NOT YET PUSHED from Mar 23 sessions:
+
+1. **Chinese Parent Report Descriptions** — Static Chinese descriptions map for 106 works, overrides in preview/send routes, removed runtime Anthropic translation
+2. **Chinese Locale Guru Support** — Locale column on interactions, filtered history, Chinese work names in PhotoInsightButton, locale-agnostic photo cache
+3. **Class Events Attendance** — Custom events + tag children individually/Tag All, diff-based save, classroom-scoped
+4. **CLIP Schema Upgrade** — Structured confusion pairs + negative descriptions across all 270 works, margin-based negative embedding algorithm
+
+**Migration 146 run** via Supabase SQL Editor: `locale TEXT DEFAULT NULL` column + index on `montree_guru_interactions`.
+
+**Special Events Consolidation (during this session):**
+- Removed hardcoded `SPECIAL_EVENT_PRESETS` array from gallery page
+- Replaced with dynamic fetch from curriculum API (existing custom events with `area_key: 'special_events'`)
+- Added inline custom event creation with text input
+- Unified on curriculum work approach — feeds into reports/progress via `work_id`
+
+---
+
+## PREVIOUS STATUS (Mar 23, 2026)
 
 ### Session Work (Mar 23, 2026 — LIVE Curriculum POST Fix)
 
@@ -38,7 +91,7 @@ Teacher tried to add custom work "CVC Puzzle" to Language area in LIVE classroom
 
 ### Session Work (Mar 23, 2026 — CLIP Schema Upgrade)
 
-**CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions — BUILD COMPLETE, 10 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
+**CLIP Schema Upgrade — Structured Confusion Pairs + Negative Descriptions — BUILD COMPLETE, 10 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ✅ PUSHED (Mar 24):**
 
 Upgraded CLIP/SigLIP classifier with two new high-value fields across all 270 works: structured `ConfusionPair` objects (`{ work_key, reason, differentiation }` with CAPS on distinguishing feature) and `negative_descriptions` (`string[]` of "NOT X" statements for negative CLIP embeddings). Margin-based negative embedding algorithm replaces naive subtraction — only penalizes when gap between positive and negative scores is dangerously small (`MARGIN=0.12`, `WEIGHT=0.25`).
 
@@ -61,7 +114,7 @@ Upgraded CLIP/SigLIP classifier with two new high-value fields across all 270 wo
 
 **Production safety:** ALL changes confined to `lib/montree/classifier/` only. Zero API routes, components, or middleware touched. Deployed system completely isolated.
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push over weekend after first successful live week. No migrations needed.
+**Deploy:** ✅ PUSHED (Mar 24). No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_CLIP_SCHEMA_UPGRADE_MAR23.md`
 
 ---
@@ -107,7 +160,7 @@ Confirmed all 5 unpushed commits from Mar 21-22 were already committed on Mac (g
 
 ### Session Work (Mar 23, 2026 — Chinese Parent Report Descriptions)
 
-**Chinese Parent Report Descriptions — BUILD COMPLETE, 13 AUDIT AGENTS (0 UNFIXED ISSUES), ⚠️ NOT YET PUSHED:**
+**Chinese Parent Report Descriptions — BUILD COMPLETE, 13 AUDIT AGENTS (0 UNFIXED ISSUES), ✅ PUSHED (Mar 24):**
 
 When teacher switches locale to Chinese and generates a parent report, `parent_description` and `why_it_matters` fields now display in Chinese instead of English. Replaced expensive runtime Anthropic API translation (~$0.01+ per parent view) with zero-cost static map lookup.
 
@@ -127,14 +180,14 @@ When teacher switches locale to Chinese and generates a parent report, `parent_d
 2. `app/api/montree/reports/send/route.ts` — 3 edits: import + Chinese override of `dbDescriptions` when `locale === 'zh'` + `report_locale: locale` in saved content
 3. `app/api/montree/parent/report/[reportId]/route.ts` — Removed `Anthropic` import + `translateDescriptionsToZh()` function (~80 lines). Both runtime translation call sites replaced with static `getChineseParentDescription()` lookups. Saved content path checks `savedLocale !== 'zh'` to avoid double-translating.
 
-**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Deploy:** ✅ PUSHED (Mar 24). No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_CHINESE_PARENT_REPORT_DESCRIPTIONS_MAR23.md`
 
 ---
 
 ### Session Work (Mar 23, 2026 — Chinese Locale Guru Support)
 
-**Chinese Locale Support for Guru — BUILD COMPLETE, 27 AUDIT AGENTS (0 UNFIXED ISSUES), ⚠️ NOT YET PUSHED:**
+**Chinese Locale Support for Guru — BUILD COMPLETE, 27 AUDIT AGENTS (0 UNFIXED ISSUES), ✅ PUSHED (Mar 24):**
 
 Full Chinese language support for the Guru AI advisor. When language is switched to Chinese: conversation history filters to Chinese + pre-migration universal rows, new interactions saved with locale tag, Smart Capture shows Chinese work names + translated area names, photo cache avoids duplicate Sonnet analysis on language switch.
 
@@ -156,7 +209,7 @@ Full Chinese language support for the Guru AI advisor. When language is switched
 8. Corrections route simplified from dual en/zh queries to single locale-agnostic + `.like()` fallback
 9. PhotoInsightButton shows Chinese work names via `getChineseNameForWork()` + translated area names
 
-**Migration 146:** ⚠️ NOT YET RUN. Run via Supabase SQL Editor after push.
+**Migration 146:** ✅ RUN (Mar 24) via Supabase SQL Editor.
 
 **Files Created (1):**
 1. `migrations/146_guru_locale.sql` (~10 lines) — locale column + index
@@ -169,14 +222,14 @@ Full Chinese language support for the Guru AI advisor. When language is switched
 5. `app/api/montree/guru/corrections/route.ts` — Photo URL lookup rewrite
 6. `components/montree/guru/PhotoInsightButton.tsx` — Chinese work names + translated areas
 
-**Deploy:** ⚠️ NOT YET PUSHED. Migration 146 not yet run.
+**Deploy:** ✅ PUSHED (Mar 24). Migration 146 run.
 **Handoff:** `docs/handoffs/HANDOFF_CHINESE_LOCALE_GURU_MAR23.md`
 
 ---
 
 ### Session Work (Mar 23, 2026 — Class Events Feature)
 
-**Class Events Attendance Tagging — BUILD COMPLETE, 3 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
+**Class Events Attendance Tagging — BUILD COMPLETE, 3 AUDIT CYCLES (3 CONSECUTIVE CLEAN), ✅ PUSHED (Mar 24):**
 
 Teachers can now create custom events (e.g., "Trip to Science Museum", "Cultural Day") and tag children to those events individually or via "Tag All". Events are fully custom (no pre-prescribed events). Built for Tuesday Mar 24 demo.
 
@@ -218,7 +271,7 @@ Teachers can now create custom events (e.g., "Trip to Science Museum", "Cultural
 4. `lib/montree/i18n/en.ts` — 9 new `events.*` keys
 5. `lib/montree/i18n/zh.ts` — 9 matching Chinese keys (perfect EN/ZH parity)
 
-**Deploy:** ⚠️ NOT YET PUSHED. Migration 145 already run.
+**Deploy:** ✅ PUSHED (Mar 24). Migration 145 already run.
 **Handoff:** `docs/handoffs/HANDOFF_CLASS_EVENTS_ATTENDANCE_MAR23.md`
 
 ---
@@ -876,10 +929,10 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 
 ---
 
-## 🔥 NEXT SESSION PRIORITIES — POST-DEMO (Mar 23, 2026)
+## 🔥 NEXT SESSION PRIORITIES — POST-LIVE (Mar 24, 2026)
 
-### ⚠️ CONTEXT: Demo Day — System LIVE
-All code deployed, all migrations run. Monday Mar 23 demo is GO. Monitor Railway logs for issues.
+### ⚠️ CONTEXT: System LIVE in Real Classroom
+All code deployed, all migrations run. All 4 unpushed features from Mar 23 now pushed (Mar 24). Photo pipeline audited (10 fixes). Migration 146 run.
 
 ### ✅ Priority #-2: Super-Admin 10x Deep Audit Fix Cycle — DEPLOYED
 
@@ -920,9 +973,9 @@ Teachers reported new photos sometimes appearing at the bottom of the gallery in
 
 **Handoff:** `docs/handoffs/HANDOFF_PHOTO_SORT_CHINA_CDN_MAR21.md`
 
-### ✅ Priority #0: CLIP Schema Upgrade — DONE (Mar 23)
+### ✅ Priority #0: CLIP Schema Upgrade — DONE + PUSHED (Mar 24)
 
-**Status:** BUILD COMPLETE. 10 audit cycles, 30 agents, 3 consecutive clean. Push over weekend after first successful live week.
+**Status:** BUILD COMPLETE + PUSHED. 10 audit cycles, 30 agents, 3 consecutive clean.
 **Handoff:** `docs/handoffs/HANDOFF_CLIP_SCHEMA_UPGRADE_MAR23.md`
 
 ### ✅ Priority #1: Push ALL Unpushed Code — DONE (Mar 23)
@@ -932,6 +985,11 @@ All code confirmed pushed. Git reported "Everything up-to-date" — commits were
 ### ✅ Priority #4: Build Auto-Propose Custom Work — DEPLOYED (Mar 23)
 
 **Status:** CODE COMPLETE + DEPLOYED. Migration 144 run. 10x plan-audit + 10x build-audit. 5 audit cycles, 23 agents, 3 consecutive CLEAN.
+
+### ✅ Priority #1.5: Photo Pipeline 3×3×3 Audit — DONE (Mar 24)
+
+**Status:** 10 fixes across 5 files. 3 parallel audit agents + 3 verification agents, all CLEAN. Special events UI consolidated (removed hardcoded presets, dynamic fetch + inline creation).
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_PIPELINE_3X3X3_AUDIT_MAR24.md`
 
 ### 🟡 Priority #2: End-to-End Smoke Test (1 hour)
 
@@ -4213,7 +4271,8 @@ Both local and production connect to the SAME Supabase database.
 
 | Doc | What |
 |-----|------|
-| `docs/handoffs/HANDOFF_CLASS_EVENTS_ATTENDANCE_MAR23.md` | **CURRENT** — Class Events attendance tagging: custom events + tag children individually or Tag All. Diff-based save, classroom-scoped, 3 plan-audit + 3 build-audit cycles (ALL CLEAN). |
+| `docs/handoffs/HANDOFF_PHOTO_PIPELINE_3X3X3_AUDIT_MAR24.md` | **CURRENT** — Photo pipeline 3×3×3 audit: 10 fixes (1 CRITICAL cache confidence, 3 HIGH blob leak/report items/field name, 4 MEDIUM, 2 LOW). Special events UI consolidated. 3 verification agents CLEAN. |
+| `docs/handoffs/HANDOFF_CLASS_EVENTS_ATTENDANCE_MAR23.md` | Class Events attendance tagging: custom events + tag children individually or Tag All. Diff-based save, classroom-scoped, 3 plan-audit + 3 build-audit cycles (ALL CLEAN). |
 | `docs/handoffs/HANDOFF_SMART_FILTER_COST_OPTIMIZATION_MAR20.md` | Smart Filter: skip AI for tagged photos + hybrid Haiku/Sonnet Guru routing. 10x theory-audit + 3x build-audit (3 consecutive CLEAN). $100-150/mo savings at scale. |
 | `docs/handoffs/HANDOFF_REPORTS_GALLERY_3X3X3_MAR17.md` | Reports + Gallery 3x3x3 audit: 10 bugs fixed (2 CRITICAL, 3 HIGH, 4 MEDIUM, 1 LOW). Security, performance, React hooks, rate limiter, AbortController fixes. |
 | `docs/handoffs/HANDOFF_PERFORMANCE_TAB_CONSOLIDATION_MAR16.md` | Full performance audit (18 API issues, 25+ frontend issues) + tab consolidation (4->2 tabs). Audit backlog with fix priorities. |
