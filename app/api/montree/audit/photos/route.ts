@@ -99,6 +99,12 @@ export async function GET(request: NextRequest) {
       for (const r of (confidenceResult.value as any) || []) {
         const parts = r.question.split(':');
         const mediaId = parts[1];
+        if (!mediaId) {
+          console.warn('[Photo Audit] Malformed cache question format:', r.question);
+          continue;
+        }
+        // Prefer new-format (no locale suffix) over old-format — don't overwrite if already set
+        if (confidenceMap.has(mediaId)) continue;
         const snapshot = r.context_snapshot || {};
         confidenceMap.set(mediaId, {
           confidence: snapshot.sonnet_confidence ?? snapshot.haiku_confidence ?? null,
@@ -160,42 +166,59 @@ export async function GET(request: NextRequest) {
 
 // Helper: Fetch confidence data with two-format cache key approach
 async function fetchConfidenceData(supabase: any, mediaRows: any[], schoolId: string) {
-  const newKeys = mediaRows
-    .filter(m => m.child_id)
-    .map(m => `photo:${m.id}:${m.child_id}`);
+  const mediaWithChild = mediaRows.filter(m => m.child_id);
+  const newKeys = mediaWithChild.map(m => `photo:${m.id}:${m.child_id}`);
 
   if (newKeys.length === 0) return [];
 
-  // Query 1: New format (exact match via .in())
-  const { data: newFormat } = await supabase
-    .from('montree_guru_interactions')
-    .select('question, context_snapshot')
-    .in('question', newKeys)
-        .eq('school_id', schoolId);
+  // Query 1: New format (exact match via .in(), chunked to avoid URL length limits)
+  let newFormat: any[] = [];
+  const IN_CHUNK_SIZE = 30; // ~70 chars per key × 30 = ~2.1KB per chunk (safe under 8KB limit)
+  for (let i = 0; i < newKeys.length; i += IN_CHUNK_SIZE) {
+    const chunk = newKeys.slice(i, i + IN_CHUNK_SIZE);
+    const { data } = await supabase
+      .from('montree_guru_interactions')
+      .select('question, context_snapshot')
+      .in('question', chunk)
+      .eq('school_id', schoolId);
+    if (data) newFormat.push(...data);
+  }
 
   // Find media IDs NOT in new format results
   const foundMediaIds = new Set(
     (newFormat || []).map((r: any) => r.question.split(':')[1])
   );
-  const missingMedia = mediaRows.filter(m => !foundMediaIds.has(m.id) && m.child_id);
+  const missingMedia = mediaWithChild.filter(m => !foundMediaIds.has(m.id));
 
-  // Query 2: Old locale-suffixed format (.like() fallback, max 50)
+  // Query 2: Old locale-suffixed format (.like() fallback)
+  // Process in sequential chunks of 20 to avoid connection pool exhaustion
   let oldFormat: any[] = [];
-  if (missingMedia.length > 0 && missingMedia.length <= 50) {
-    const oldResults = await Promise.allSettled(
-      missingMedia.map(m =>
-        supabase
-          .from('montree_guru_interactions')
-          .select('question, context_snapshot')
-          .like('question', `photo:${m.id}:${m.child_id}:%`)
-          .eq('school_id', schoolId)
-          .limit(1)
-          .maybeSingle()
-      )
-    );
-    oldFormat = oldResults
-      .filter((r: any) => r.status === 'fulfilled' && r.value?.data)
-      .map((r: any) => r.value.data);
+  if (missingMedia.length > 0) {
+    if (missingMedia.length > 50) {
+      console.warn(`[Photo Audit] ${missingMedia.length} items need .like() fallback — old-format cache data`);
+    }
+    const CHUNK_SIZE = 20;
+    for (let i = 0; i < missingMedia.length; i += CHUNK_SIZE) {
+      const chunk = missingMedia.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await Promise.allSettled(
+        chunk.map(m =>
+          supabase
+            .from('montree_guru_interactions')
+            .select('question, context_snapshot')
+            .like('question', `photo:${m.id}:${m.child_id}:%`)
+            .eq('school_id', schoolId)
+            .limit(1)
+            .maybeSingle()
+        )
+      );
+      for (const r of chunkResults) {
+        if (r.status === 'fulfilled' && (r as any).value?.data) {
+          oldFormat.push((r as any).value.data);
+        } else if (r.status === 'rejected') {
+          console.error('[Photo Audit] Confidence fallback query failed:', (r as any).reason);
+        }
+      }
+    }
   }
 
   return [...(newFormat || []), ...oldFormat];

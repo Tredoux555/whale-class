@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
+import { getSession } from '@/lib/montree/auth';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 
 const AREAS = [
@@ -50,8 +51,6 @@ export default function PhotoAuditPage() {
   // Correction state
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
   const [pickerArea, setPickerArea] = useState('');
-  const [pickerOpen, setPickerOpen] = useState(false);
-  const [showAreaPicker, setShowAreaPicker] = useState(false);
 
   // Batch state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -61,19 +60,29 @@ export default function PhotoAuditPage() {
 
   // Load curriculum on mount for WorkWheelPicker
   useEffect(() => {
+    const session = getSession();
+    const classroomId = session?.classroom?.id;
+    if (!classroomId) {
+      console.warn('[Photo Audit] No classroomId — cannot load curriculum');
+      return;
+    }
     let cancelled = false;
-    fetch('/api/montree/curriculum')
-      .then(r => r.json())
+    fetch(`/api/montree/works/search?classroom_id=${classroomId}`)
+      .then(r => {
+        if (!r.ok) throw new Error(`Curriculum fetch failed: ${r.status}`);
+        return r.json();
+      })
       .then(data => {
         if (cancelled) return;
         const byArea: Record<string, any[]> = {};
         for (const w of data.works || []) {
-          if (!byArea[w.area_key]) byArea[w.area_key] = [];
-          byArea[w.area_key].push(w);
+          const areaKey = w.area?.area_key || w.area_key || 'unknown';
+          if (!byArea[areaKey]) byArea[areaKey] = [];
+          byArea[areaKey].push(w);
         }
         setCurriculum(byArea);
       })
-      .catch(() => {}); // Non-fatal
+      .catch(err => console.error('[Photo Audit] Curriculum load failed:', err));
     return () => { cancelled = true; };
   }, []);
 
@@ -101,6 +110,8 @@ export default function PhotoAuditPage() {
       setCounts(data.counts);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
+      setPhotos([]);
+      setCounts({ green: 0, amber: 0, red: 0, untagged: 0 });
       toast.error(t('audit.fetchError'));
     } finally {
       if (!controller.signal.aborted) setLoading(false);
@@ -143,22 +154,21 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Single correction — opens area picker or work picker
+  // Single correction — opens area picker (if no area) or work picker directly
+  const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'];
+
   const handleCorrect = (photo: AuditPhoto) => {
     setCorrectingPhoto(photo);
-    if (!photo.area) {
-      setShowAreaPicker(true);
-    } else {
+    if (photo.area && VALID_AREAS.includes(photo.area)) {
       setPickerArea(photo.area);
-      setPickerOpen(true);
     }
+    // If no area or invalid area, area picker modal shows automatically (correctingPhoto && !pickerArea)
   };
 
   // Work selected from WorkWheelPicker — submit correction
-  const handleWorkSelected = async (work: any) => {
+  const handleWorkSelected = async (work: any, _status?: string) => {
     if (!correctingPhoto) return;
     setProcessingId(correctingPhoto.id);
-    setPickerOpen(false);
     try {
       const res = await fetch('/api/montree/guru/corrections', {
         method: 'POST',
@@ -186,6 +196,7 @@ export default function PhotoAuditPage() {
       toast.error(t('audit.correctionFailed'));
     } finally {
       setProcessingId(null);
+      setPickerArea('');
     }
     setCorrectingPhoto(null);
   };
@@ -457,7 +468,7 @@ export default function PhotoAuditPage() {
       {correctingPhoto && pickerArea && (
         <WorkWheelPicker
           isOpen={true}
-          onClose={() => { setCorrectingPhoto(null); setPickerArea(null); }}
+          onClose={() => { setCorrectingPhoto(null); setPickerArea(''); }}
           area={pickerArea}
           works={areaWorks}
           currentWorkName={correctingPhoto.work_name || undefined}
