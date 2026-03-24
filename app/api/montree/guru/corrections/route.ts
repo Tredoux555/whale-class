@@ -315,15 +315,52 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    // Step 7: Invalidate stale photo-insight cache so next view gets fresh classification
+    // Without this, corrected photos keep showing the OLD wrong identification for up to 5 minutes
+    if (media_id && child_id) {
+      parallelTasks.push(
+        supabase
+          .from('montree_guru_interactions')
+          .delete()
+          .eq('question', `photo:${media_id}:${child_id}`)
+          .then(({ error: delErr }) => {
+            if (delErr) {
+              console.error('[Corrections] Cache invalidation error (non-fatal):', delErr);
+            } else {
+              console.log(`[Corrections] Cache invalidated for photo:${media_id}:${child_id}`);
+            }
+          })
+          .catch((err: unknown) => {
+            console.error('[Corrections] Cache invalidation failed (non-fatal):', err);
+          })
+      );
+      // Also try old locale-suffixed format cache keys
+      parallelTasks.push(
+        supabase
+          .from('montree_guru_interactions')
+          .delete()
+          .like('question', `photo:${media_id}:${child_id}:%`)
+          .then(({ error: delErr }) => {
+            if (delErr) {
+              console.error('[Corrections] Old-format cache invalidation error (non-fatal):', delErr);
+            }
+          })
+          .catch((err: unknown) => {
+            console.error('[Corrections] Old-format cache invalidation failed (non-fatal):', err);
+          })
+      );
+    }
+
     // Wait for all parallel tasks (none are fatal)
     await Promise.allSettled(parallelTasks);
 
-    console.log(`[Corrections] Recorded: "${original_work_name}" → "${corrected_work_name}" (classroom ${classroomId})${photoUrl ? ' [visual memory generated]' : ''}`);
+    console.log(`[Corrections] Recorded: "${original_work_name}" → "${corrected_work_name}" (classroom ${classroomId})${photoUrl ? ' [visual memory generated]' : ''}${media_id ? ' [cache invalidated]' : ''}`);
 
     return NextResponse.json({
       success: true,
       correction_id: correction?.id || null,
       visual_learning: !!photoUrl,
+      cache_invalidated: !!(media_id && child_id),
       ...(photoUrl ? {} : { warning: 'Correction saved but visual learning could not be applied (photo not found)' }),
     });
   } catch (error) {

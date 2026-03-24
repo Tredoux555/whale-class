@@ -137,12 +137,15 @@ export const MATHEMATICS_SIGNATURES: WorkSignature[] = [
     confusion_pairs: [
       { work_key: 'se_bead_bars', reason: 'Both use colored beads threaded on wire in a staircase', differentiation: 'SHORT BEAD STAIR has 9 bars (1-9) for MATHEMATICS; SENSORIAL BEAD BARS have longer chains for sensorial exploration' },
       { work_key: 'ma_number_rods', reason: 'Both show size progression in a staircase pattern', differentiation: 'BEAD STAIR has INDIVIDUAL COLORED BEADS on wire; NUMBER RODS are solid WOODEN RODS with alternating RED-AND-BLUE segments' },
+      { work_key: 'pl_threading_beads', reason: 'Both involve colorful beads — CLIP confuses any bead activity with this math work', differentiation: 'Short Bead Stair is MATH: FIXED BEAD BARS permanently wired in STAIRCASE PATTERN (1-9), each bar a SPECIFIC Montessori color. Threading Beads is PRACTICAL LIFE: LOOSE individual beads being strung one-by-one onto a CORD from a CONTAINER, RANDOM colors, no staircase pattern' },
     ],
     negative_descriptions: [
       'NOT a single continuous chain (each bar is separate)',
       'NOT solid wooden rods (these are beads threaded on wire)',
       'NOT a tool for measuring length (beads represent quantity, not linear measurement)',
       'NOT long chains (short stair goes 1-9 only)',
+      'NOT Threading Beads — bead stair bars are PRE-MADE fixed assemblies in a staircase, NOT loose beads being threaded onto string',
+      'NOT any craft/art bead activity (perler beads, bead art) — this is a structured MATH material with specific color coding',
     ],
     difficulty: 'easy',
   },
