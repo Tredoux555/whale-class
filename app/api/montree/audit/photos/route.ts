@@ -78,9 +78,8 @@ export async function GET(request: NextRequest) {
         : Promise.resolve({ data: [] }),
       workIds.length > 0
         ? supabase.from('montree_classroom_curriculum_works')
-            .select('work_id, name, area_key')
-            .in('work_id', workIds)
-            .eq('school_id', auth.schoolId)
+            .select('work_id:id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
+            .in('id', workIds)
         : Promise.resolve({ data: [] }),
       fetchConfidenceData(supabase, mediaRows, auth.schoolId),
     ]);
@@ -92,7 +91,7 @@ export async function GET(request: NextRequest) {
     }
     const workMap = new Map<string, { name: string; area: string }>();
     if (workResult.status === 'fulfilled') {
-      for (const w of (workResult.value as any).data || []) workMap.set(w.work_id, { name: w.name, area: w.area_key });
+      for (const w of (workResult.value as any).data || []) workMap.set(w.work_id, { name: w.name, area: w.area?.area_key || 'unknown' });
     }
     const confidenceMap = new Map<string, { confidence: number | null; scenario: string | null }>();
     if (confidenceResult.status === 'fulfilled') {
@@ -191,13 +190,14 @@ async function fetchConfidenceData(supabase: any, mediaRows: any[], schoolId: st
   const missingMedia = mediaWithChild.filter(m => !foundMediaIds.has(m.id));
 
   // Query 2: Old locale-suffixed format (.like() fallback)
-  // Process in sequential chunks of 20 to avoid connection pool exhaustion
+  // Process in sequential chunks of 5 to avoid connection pool exhaustion
   let oldFormat: any[] = [];
   if (missingMedia.length > 0) {
     if (missingMedia.length > 50) {
-      console.warn(`[Photo Audit] ${missingMedia.length} items need .like() fallback — old-format cache data`);
+      console.warn(`[Photo Audit] ${missingMedia.length} items need .like() fallback — capping at 50 to prevent timeout`);
+      missingMedia.length = 50; // Truncate — remaining photos just won't have confidence data
     }
-    const CHUNK_SIZE = 20;
+    const CHUNK_SIZE = 5; // Keep small — each .like() does a full-table scan
     for (let i = 0; i < missingMedia.length; i += CHUNK_SIZE) {
       const chunk = missingMedia.slice(i, i + CHUNK_SIZE);
       const chunkResults = await Promise.allSettled(
