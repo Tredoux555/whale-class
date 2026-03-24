@@ -171,12 +171,19 @@ export async function GET(request: NextRequest) {
     }
 
     // ============================================================
-    // STEP 1: Get curriculum works (the source of truth for work info)
+    // STEP 1: Get curriculum works + visual memory descriptions (parallel)
     // ============================================================
-    const { data: curriculumWorks } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('id, name, area, parent_description, why_it_matters')
-      .eq('classroom_id', child.classroom_id);
+    const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area, parent_description, why_it_matters')
+        .eq('classroom_id', child.classroom_id),
+      supabase
+        .from('montree_visual_memory')
+        .select('work_name, parent_description, why_it_matters')
+        .eq('classroom_id', child.classroom_id)
+        .not('parent_description', 'is', null),
+    ]);
 
     // Build lookup maps from curriculum
     const workIdToInfo = new Map<string, { name: string; area: string; description: string; why_it_matters: string }>();
@@ -206,6 +213,20 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Override with per-classroom visual memory descriptions (Sonnet-generated from reference photos)
+    // These are more specific than generic static descriptions, so they take priority
+    // But teacher-edited DB descriptions (in curriculum_works table) still win via the || chain below
+    if (visualMemories) {
+      for (const vm of visualMemories) {
+        if (vm.work_name && vm.parent_description) {
+          staticDescriptions.set(vm.work_name.toLowerCase().trim(), {
+            description: vm.parent_description,
+            why_it_matters: vm.why_it_matters || '',
+          });
+        }
+      }
+    }
+
     for (const work of curriculumWorks || []) {
       // Try DB description first, then fall back to static curriculum
       const staticDesc = staticDescriptions.get(work.name.toLowerCase().trim());
@@ -218,11 +239,11 @@ export async function GET(request: NextRequest) {
         description,
         why_it_matters: whyItMatters,
       });
-      workNameToId.set(work.name.toLowerCase(), work.id);
+      workNameToId.set(work.name.toLowerCase().trim(), work.id);
 
       // Add to description map if we have ANY description (DB or static)
       if (description) {
-        dbDescriptions.set(work.name.toLowerCase(), {
+        dbDescriptions.set(work.name.toLowerCase().trim(), {
           description,
           why_it_matters: whyItMatters,
           originalName: work.name,

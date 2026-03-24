@@ -186,18 +186,25 @@ export async function POST(request: NextRequest) {
       }));
     }
 
-    // Get curriculum works to map work_id to work_name for photos
-    const { data: curriculumWorks } = await supabase
-      .from('montree_classroom_curriculum_works')
-      .select('id, name, parent_description, why_it_matters')
-      .eq('classroom_id', child.classroom_id);
+    // Get curriculum works + visual memory descriptions (parallel)
+    const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, parent_description, why_it_matters')
+        .eq('classroom_id', child.classroom_id),
+      supabase
+        .from('montree_visual_memory')
+        .select('work_name, parent_description, why_it_matters')
+        .eq('classroom_id', child.classroom_id)
+        .not('parent_description', 'is', null),
+    ]);
 
     const workIdToName = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
     for (const w of curriculumWorks || []) {
       workIdToName.set(w.id, w.name);
       if (w.parent_description) {
-        dbDescriptions.set(w.name.toLowerCase(), {
+        dbDescriptions.set(w.name.toLowerCase().trim(), {
           description: w.parent_description,
           why_it_matters: w.why_it_matters || '',
         });
@@ -212,6 +219,20 @@ export async function POST(request: NextRequest) {
           description: zh.parent_description,
           why_it_matters: zh.why_it_matters,
         });
+      }
+    }
+
+    // Override with per-classroom visual memory descriptions (Sonnet-generated from reference photos)
+    // These are more specific than generic static/Chinese descriptions, so they always win
+    // Matches the same priority logic as reports/preview/route.ts
+    if (visualMemories) {
+      for (const vm of visualMemories) {
+        if (vm.work_name && vm.parent_description) {
+          dbDescriptions.set(vm.work_name.toLowerCase().trim(), {
+            description: vm.parent_description,
+            why_it_matters: vm.why_it_matters || '',
+          });
+        }
       }
     }
 

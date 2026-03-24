@@ -3361,6 +3361,16 @@ export const en = {
   'audit.loadFailed': 'Failed to load photos',
   'audit.correctionFailed': 'Correction failed',
   'audit.fetchError': 'Failed to load photos',
+  'audit.useAsReference': 'Use as Reference',
+  'audit.describing': 'AI is analyzing this photo...',
+  'audit.visualDescription': 'Visual Description',
+  'audit.parentDescription': 'Parent Description',
+  'audit.whyItMatters': 'Why It Matters',
+  'audit.keyMaterials': 'Key Materials',
+  'audit.saveReference': 'Save as Reference',
+  'audit.referenceSaved': 'Reference photo saved — AI will learn from this!',
+  'audit.referenceSaveFailed': 'Failed to save reference',
+  'audit.describeFailed': 'Failed to analyze photo',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

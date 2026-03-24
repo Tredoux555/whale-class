@@ -3362,6 +3362,16 @@ export const zh = {
   'audit.loadFailed': '加载照片失败',
   'audit.correctionFailed': '修正失败',
   'audit.fetchError': '加载照片失败',
+  'audit.useAsReference': '设为参考照片',
+  'audit.describing': 'AI正在分析这张照片...',
+  'audit.visualDescription': '视觉描述',
+  'audit.parentDescription': '家长描述',
+  'audit.whyItMatters': '为什么重要',
+  'audit.keyMaterials': '关键材料',
+  'audit.saveReference': '保存为参考',
+  'audit.referenceSaved': '参考照片已保存——AI将从中学习！',
+  'audit.referenceSaveFailed': '保存参考失败',
+  'audit.describeFailed': '分析照片失败',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

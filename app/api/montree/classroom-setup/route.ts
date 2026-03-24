@@ -161,16 +161,32 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate work belongs to this classroom's curriculum
-    const { data: workExists } = await supabase
+    // Accept both work_key slug (e.g. "pl_pouring_water") and UUID id
+    let workExists: { id: string; work_key: string } | null = null;
+    const { data: byKey } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('id')
+      .select('id, work_key')
       .eq('classroom_id', auth.classroomId)
       .eq('work_key', work_key)
       .maybeSingle();
+    workExists = byKey;
+    if (!workExists) {
+      // Fallback: treat work_key as UUID id (photo-audit sends work_id which is UUID)
+      const { data: byId } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, work_key')
+        .eq('classroom_id', auth.classroomId)
+        .eq('id', work_key)
+        .maybeSingle();
+      workExists = byId;
+    }
 
     if (!workExists) {
       return NextResponse.json({ success: false, error: 'Work not found in classroom curriculum' }, { status: 404 });
     }
+
+    // Use the resolved work_key for visual_memory (always the slug, not UUID)
+    const resolvedWorkKey = workExists.work_key;
 
     // Upsert into visual_memory with teacher_setup source and confidence 1.0
     const { error: upsertError } = await supabase
@@ -178,7 +194,7 @@ export async function POST(request: NextRequest) {
       .upsert({
         classroom_id: auth.classroomId,
         work_name: work_name.trim(),
-        work_key,
+        work_key: resolvedWorkKey,
         area,
         is_custom: is_custom || false,
         visual_description: visual_description.trim().slice(0, 1000),
@@ -199,7 +215,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Failed to save description' }, { status: 500 });
     }
 
-    console.log(`[ClassroomSetup] Saved description for "${work_name}" (${work_key}) in classroom ${auth.classroomId}`);
+    console.log(`[ClassroomSetup] Saved description for "${work_name}" (${resolvedWorkKey}) in classroom ${auth.classroomId}`);
 
     // Invalidate per-classroom CLIP embeddings so they re-build with new description
     if (auth.classroomId) {
