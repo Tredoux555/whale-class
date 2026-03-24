@@ -14,69 +14,47 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 24, 2026)
 
-### Session Work (Mar 24, 2026 — Photo Audit Page + Smart Learning System Plan)
+### Session Work (Mar 24, 2026 — Smart Learning System BUILD: All 5 Sprints COMPLETE)
 
-**Photo Audit Page — BUILD COMPLETE, 3x3x3x3 (3 CONSECUTIVE CLEAN), ⚠️ NOT YET PUSHED:**
+**Smart Learning System — ALL 5 SPRINTS COMPLETE, ✅ DEPLOYED + MIGRATION 147 RUN:**
 
-Built a dedicated Photo Audit page at `/montree/dashboard/photo-audit` for teachers to review, confirm, and correct Smart Capture identifications at scale. 3 full audit cycles, 10 issues found and fixed, 3 consecutive clean passes.
+Per-classroom visual learning system. Teachers photograph each work once → Sonnet describes it ($0.03-0.06/work) → CLIP re-embeds per-classroom → accuracy ~80-90% → cost ~$0.001/photo at steady state.
 
-**Architecture:**
-- Zone-based tabs: All / GREEN (≥0.85) / AMBER (0.50-0.84) / RED (<0.50) / UNTAGGED
-- Two-format cache key confidence lookup: new format `photo:{media_id}:{child_id}` via `.in()`, old locale-suffixed format via `.like()` fallback
-- 4 parallel queries via Promise.allSettled: media, children, works, confidence data
-- Single and batch correction flows via existing corrections API
-- WorkWheelPicker integration for work reassignment
-- Auto-crop CSS rendering on photo cards
+**Sprint 1 (✅ DEPLOYED):** Fixed Photo Audit "Fix" button (curriculum 400), audit API 500 on pagination (chunk-based), migration 147 (6 new columns on visual_memory + stale embedding index).
 
-**Files Created (2):**
-1. `app/api/montree/audit/photos/route.ts` (~202 lines) — GET endpoint with security (teacher→classroomId forced, principal→classroom validated against school), pagination, zone classification
-2. `app/montree/dashboard/photo-audit/page.tsx` (~555 lines) — Zone tabs, photo grid, AuditPhotoCard component, single/batch confirm+correct flows, area picker → WorkWheelPicker
+**Sprint 2 (✅ DEPLOYED):** Classroom Setup page `/montree/dashboard/classroom-setup` ("Teach the AI") + Sonnet describe endpoint `/api/montree/classroom-setup/describe` (tool_choice forced structured output, 45s timeout).
 
-**Files Modified (3):**
-1. `components/montree/DashboardHeader.tsx` — Added 🔍 audit nav link
-2. `lib/montree/i18n/en.ts` — 27 new `audit.*` keys
-3. `lib/montree/i18n/zh.ts` — 27 matching Chinese keys (perfect EN/ZH parity)
+**Sprint 3 (✅ DEPLOYED, 3x3x3x3 CLEAN):** Per-classroom CLIP re-embedding engine. `classroom-embeddings.ts` manages per-classroom text embedding cache. `invalidateClassroomEmbeddings()` on visual_memory changes. `getClassroomAwareSignatures()` merges per-classroom with static signatures.
 
-**10 Issues Found and Fixed During 3x3x3x3:**
-1. Missing `setProcessingId(null)` in finally blocks — buttons stuck in loading state forever
-2. Missing `schoolId` argument to `fetchConfidenceData()` — would error at runtime
-3. Missing `school_id` filter on old-format cache fallback — cross-school data leak
-4. Missing `url` field in AuditPhoto interface — page referenced `photo.url` but interface had `thumbnail_path`
-5. `t` in useCallback dependency array causing potential infinite re-render loops — removed
-6. Dead state variables `pickerOpen` and `showAreaPicker` — declared but never read
-7-10. Various security and data flow fixes caught across 3 audit cycles
+**Sprint 4 (✅ DEPLOYED, 3x3x3x3 CLEAN — 10 audit cycles, 3 consecutive CLEAN):**
+- 4A: Sonnet describe endpoint refined
+- 4B: "Use as Reference" on Photo Audit — 📷 button with AbortController, double-click guard, describe→preview→confirm/cancel flow
+- 4C: Visual memory descriptions wired into report preview + send routes (unconditional override, `.toLowerCase().trim()` consistency)
+- **Critical fix:** classroom-setup POST accepts both work_key slugs AND UUID ids (dual-lookup fallback, resolvedWorkKey for upsert)
 
-**Known Issues (to fix in Smart Learning System build):**
-- ⚠️ "Fix" button broken — curriculum API returns 400, WorkWheelPicker shows "No works available"
-- ⚠️ API returns 500 on pagination offset >100 — needs debugging
-- Console errors visible in production
+**Sprint 5 (✅ COMPLETE):** All 37 `audit.*` i18n keys in EN/ZH parity. No dead code, no console.log leaks. All files production-ready.
 
-**Deploy:** ⚠️ NOT YET PUSHED. Push from Mac.
+**Files Created (across all sprints):**
+1. `lib/montree/classifier/classroom-embeddings.ts` — Per-classroom embedding cache
+2. `app/montree/dashboard/classroom-setup/page.tsx` — "Teach the AI" page
+3. `app/api/montree/classroom-setup/describe/route.ts` — Sonnet vision describe
+4. `app/api/montree/classroom-setup/route.ts` — Save reference + dual work_key/id lookup
+5. `migrations/147_smart_learning_columns.sql` — 6 columns + stale embedding index
 
----
+**Files Modified (across all sprints):**
+1. `app/montree/dashboard/photo-audit/page.tsx` — Sprint 1 fixes + Sprint 4B Use as Reference
+2. `app/api/montree/audit/photos/route.ts` — Sprint 1 pagination fix
+3. `lib/montree/classifier/clip-classifier.ts` — Sprint 3 classroom-aware embeddings
+4. `lib/montree/classifier/index.ts` — Sprint 3 exports
+5. `app/api/montree/reports/preview/route.ts` — Sprint 4C visual memory injection
+6. `app/api/montree/reports/send/route.ts` — Sprint 4C visual memory injection
+7. `lib/montree/i18n/en.ts` — 10 new keys (Sprint 4+5)
+8. `lib/montree/i18n/zh.ts` — 10 matching Chinese keys
 
-**Smart Learning System — PLAN COMPLETE, APPROVED FOR BUILD:**
-
-Identified fundamental scaling problem: generic 270-work CLIP descriptions don't match real classroom materials → everything shows as Amber → manual review doesn't scale to 100+ schools.
-
-**Solution:** Per-classroom visual learning system where:
-1. Teachers photograph each work ONCE during classroom setup
-2. Sonnet writes rich visual description from that reference photo ($0.03-0.06/work)
-3. CLIP re-embeds using per-classroom descriptions (not generic ones)
-4. Accuracy jumps from ~30% to ~80-90%, cost drops to ~$0.001/photo at steady state
-5. Teacher corrections continuously improve CLIP embeddings
-
-**5 Sprint Build Plan:**
-- Sprint 1: Fix broken Photo Audit "Fix" button + API pagination + migration 147
-- Sprint 2: Classroom Setup page ("Teach the AI") + Sonnet description endpoint
-- Sprint 3: CLIP re-embedding engine (per-classroom embeddings) ⚠️ 3x3x3x3
-- Sprint 4: Wire corrections→CLIP, Photo Audit "Use as Reference", report descriptions
-- Sprint 5: Polish, test, i18n
-
-**Cost model:** $1.50-6.00 one-time per classroom setup, then ~$180/month at 100 schools (vs $900-9,000/month without Smart Learning).
-
-**Plan document:** `docs/PLAN_SMART_LEARNING_SYSTEM.md`
-**Build handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_MAR24.md`
+**Cost model:** $1.50-6.00 one-time per classroom, ~$180/month at 100 schools (vs $900-9,000/month without).
+**Migration 147:** ✅ RUN via Supabase SQL Editor.
+**Deploy:** ✅ All commits pushed. Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_COMPLETE_MAR24.md`
 
 ---
 
@@ -185,17 +163,10 @@ Upgraded CLIP/SigLIP classifier with two new high-value fields across all 270 wo
 
 ---
 
-### 🔴 NEXT PRIORITY: Smart Learning System Build (10-15 hours)
+### ✅ COMPLETED: Smart Learning System Build — ALL 5 SPRINTS DEPLOYED
 
-**Status:** PLAN APPROVED. Full handoff ready for fresh chat.
-**Handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_MAR24.md`
-**Plan:** `docs/PLAN_SMART_LEARNING_SYSTEM.md`
-
-Per-classroom visual learning system. Teachers photograph each work once → Sonnet describes it → CLIP learns per-classroom → accuracy ~80-90% → cost drops 10-50x. 5 sprints. Sprint 3 (CLIP re-embedding) is the core innovation — use 3x3x3x3.
-
-**Includes:** Fix Photo Audit "Fix" button (broken), fix audit API 500 on pagination, build classroom setup page, CLIP per-classroom embedding engine, wire corrections→CLIP re-embedding, wire report descriptions from visual memory.
-
-**Unpushed from this session:** Photo Audit page (2 new files, 3 modified files, 27 i18n keys). Push before starting Smart Learning build.
+**Status:** ALL COMPLETE + DEPLOYED. Migration 147 run. 3x3x3x3 on Sprint 3 and Sprint 4.
+**Handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_COMPLETE_MAR24.md`
 
 ### 🟡 NEXT PRIORITY: Weekly Admin Report Documents (Physical Books)
 
@@ -1012,17 +983,10 @@ Cycles 8-10: Cross-validation of all fixes → Clean.
 ### ⚠️ CONTEXT: System LIVE in Real Classroom
 All code deployed, all migrations run. All 4 unpushed features from Mar 23 now pushed (Mar 24). Photo pipeline audited (10 fixes). Migration 146 run. Photo Audit page built (NOT YET PUSHED). Smart Learning System planned and approved.
 
-### 🔴 Priority #-3: Smart Learning System Build (10-15 hours) — TOP PRIORITY
+### ✅ Priority #-3: Smart Learning System Build — ALL 5 SPRINTS DEPLOYED
 
-**Status:** PLAN APPROVED. Full handoff ready.
-**Handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_MAR24.md`
-**Plan:** `docs/PLAN_SMART_LEARNING_SYSTEM.md`
-
-Per-classroom visual learning: teachers photograph each work once → Sonnet describes → CLIP re-embeds per-classroom → 80-90% accuracy → cost drops 10-50x. 5 sprints. Core innovation is Sprint 3 (CLIP per-classroom embeddings).
-
-**MUST PUSH FIRST:** Photo Audit page (2 new + 3 modified files) from this session.
-
-**Includes fixing:** Photo Audit "Fix" button (curriculum 400), audit API 500 on pagination, migration 147 (new visual_memory columns).
+**Status:** ALL COMPLETE + DEPLOYED. Migration 147 run. 3x3x3x3 on Sprint 3 and Sprint 4 (10 audit cycles, 3 consecutive CLEAN).
+**Handoff:** `docs/handoffs/HANDOFF_SMART_LEARNING_SYSTEM_COMPLETE_MAR24.md`
 
 ### ✅ Priority #-2: Super-Admin 10x Deep Audit Fix Cycle — DEPLOYED
 
