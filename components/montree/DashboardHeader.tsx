@@ -231,6 +231,14 @@ export default function DashboardHeader() {
               >
                 🔍
               </Link>
+              <Link
+                href="/montree/dashboard/classroom-setup"
+                data-guide="nav-setup"
+                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
+                title={t('setup.title')}
+              >
+                🎓
+              </Link>
             </>
           )}
           {razTrackerEnabled && (
