@@ -58,6 +58,19 @@ export default function PhotoAuditPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
+  // "Use as Reference" state
+  const [describingPhoto, setDescribingPhoto] = useState<AuditPhoto | null>(null);
+  const [describeResult, setDescribeResult] = useState<{
+    visual_description: string;
+    parent_description: string;
+    why_it_matters: string;
+    key_materials: string[];
+    negative_descriptions: string[];
+  } | null>(null);
+  const [describeLoading, setDescribeLoading] = useState(false);
+  const [describeSaving, setDescribeSaving] = useState(false);
+  const describeAbortRef = useRef<AbortController | null>(null);
+
   // Load curriculum on mount for WorkWheelPicker
   useEffect(() => {
     const session = getSession();
@@ -247,6 +260,88 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // "Use as Reference" — Sonnet describes the photo, teacher confirms to save
+  const handleUseAsReference = async (photo: AuditPhoto) => {
+    if (!photo.url || !photo.work_name || !photo.work_id) return;
+    // Prevent concurrent describe requests
+    if (describeLoading || describeSaving) return;
+    // Abort any previous in-flight describe request
+    describeAbortRef.current?.abort();
+    const controller = new AbortController();
+    describeAbortRef.current = controller;
+    setDescribingPhoto(photo);
+    setDescribeResult(null);
+    setDescribeLoading(true);
+    try {
+      const res = await fetch('/api/montree/classroom-setup/describe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photo_url: photo.url,
+          work_name: photo.work_name,
+          area: photo.area || 'practical_life',
+        }),
+        signal: controller.signal,
+      });
+      if (controller.signal.aborted) return;
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Describe failed');
+      }
+      const data = await res.json();
+      if (controller.signal.aborted) return;
+      setDescribeResult(data.description);
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      toast.error(err?.message || t('audit.describeFailed'));
+      setDescribingPhoto(null);
+    } finally {
+      if (!controller.signal.aborted) setDescribeLoading(false);
+    }
+  };
+
+  const handleConfirmReference = async () => {
+    if (!describingPhoto || !describeResult) return;
+    if (describeSaving) return; // Prevent double-click
+    setDescribeSaving(true);
+    try {
+      const res = await fetch('/api/montree/classroom-setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          work_key: describingPhoto.work_id,
+          work_name: describingPhoto.work_name,
+          area: describingPhoto.area || 'practical_life',
+          visual_description: describeResult.visual_description,
+          reference_photo_url: describingPhoto.url,
+          parent_description: describeResult.parent_description,
+          why_it_matters: describeResult.why_it_matters,
+          key_materials: describeResult.key_materials,
+          negative_descriptions: describeResult.negative_descriptions,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Save failed');
+      }
+      toast.success(t('audit.referenceSaved'));
+    } catch (err: any) {
+      toast.error(err?.message || t('audit.referenceSaveFailed'));
+    } finally {
+      setDescribeSaving(false);
+      setDescribingPhoto(null);
+      setDescribeResult(null);
+    }
+  };
+
+  const handleCancelReference = () => {
+    describeAbortRef.current?.abort();
+    setDescribingPhoto(null);
+    setDescribeResult(null);
+    setDescribeLoading(false);
+    setDescribeSaving(false);
+  };
+
   // Toggle selection
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -358,6 +453,7 @@ export default function PhotoAuditPage() {
               onToggle={() => toggleSelect(photo.id)}
               onConfirm={() => handleConfirm(photo)}
               onCorrect={() => handleCorrect(photo)}
+              onUseAsReference={() => handleUseAsReference(photo)}
               processing={processingId === photo.id}
               t={t}
             />
@@ -475,17 +571,91 @@ export default function PhotoAuditPage() {
           onSelectWork={handleWorkSelected}
         />
       )}
+
+      {/* "Use as Reference" preview modal */}
+      {describingPhoto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={handleCancelReference}>
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[85vh] overflow-y-auto p-4"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold mb-3">
+              📷 {t('audit.useAsReference')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-2">{describingPhoto.work_name}</p>
+
+            {/* Photo preview */}
+            {describingPhoto.url && (
+              <img src={describingPhoto.url} alt={describingPhoto.work_name || ''}
+                className="w-full h-40 object-cover rounded-lg mb-3" />
+            )}
+
+            {describeLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+                <span className="ml-3 text-sm text-gray-500">{t('audit.describing')}</span>
+              </div>
+            )}
+
+            {describeResult && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase">{t('audit.visualDescription')}</label>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.visual_description}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase">{t('audit.parentDescription')}</label>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.parent_description}</p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase">{t('audit.whyItMatters')}</label>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.why_it_matters}</p>
+                </div>
+                {describeResult.key_materials.length > 0 && (
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 uppercase">{t('audit.keyMaterials')}</label>
+                    <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.key_materials.join(', ')}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={handleConfirmReference}
+                    disabled={describeSaving}
+                    className="flex-1 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm disabled:opacity-50"
+                  >
+                    {describeSaving ? '...' : t('audit.saveReference')}
+                  </button>
+                  <button
+                    onClick={handleCancelReference}
+                    className="flex-1 py-2 rounded-lg border text-gray-600 font-medium text-sm"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!describeLoading && !describeResult && (
+              <button onClick={handleCancelReference}
+                className="w-full py-2 text-sm text-gray-500 mt-4">
+                {t('common.cancel')}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
   onConfirm: () => void;
   onCorrect: () => void;
+  onUseAsReference: () => void;
   processing: boolean;
   t: (key: string) => string;
 }) {
@@ -559,6 +729,16 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, proce
           >
             ✏️ {t('audit.fix')}
           </button>
+          {photo.work_name && photo.work_id && photo.url && (
+            <button
+              onClick={onUseAsReference}
+              disabled={processing}
+              className="text-[10px] py-1 px-1.5 rounded bg-blue-50 text-blue-700 font-medium disabled:opacity-50"
+              title={t('audit.useAsReference')}
+            >
+              📷
+            </button>
+          )}
         </div>
       </div>
     </div>
