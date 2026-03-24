@@ -62,7 +62,20 @@ let initializationError: Error | null = null;
 let initInProgress: Promise<void> | null = null; // Re-entrance guard for initClassifier
 
 // Pipeline mutex: serializes concurrent classifyImage calls to prevent ONNX state corruption
-let pipelineQueue: Promise<ClassifyResult | null> = Promise.resolve(null);
+// Type is Promise<unknown> to support both classification (ClassifyResult|null) and embedding builds (void)
+let pipelineQueue: Promise<unknown> = Promise.resolve(null);
+
+// Per-classroom embedding overrides: classroomId -> (work_key -> Float32Array)
+// When a classroom has visual memories with descriptions, we re-embed using THOSE
+// descriptions instead of the generic work-signatures. LRU eviction at max classrooms.
+const classroomEmbeddingCache = new Map<string, {
+  embeddings: Map<string, Float32Array>;
+  createdAt: number;
+  workCount: number;
+}>();
+const CLASSROOM_CACHE_MAX = 50;
+const CLASSROOM_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const CLASSROOM_EMBEDDING_TIMEOUT_MS = 15_000; // 15s max for embedding build
 
 // ============================================================
 // Helper: Cosine similarity
@@ -93,6 +106,122 @@ function cosineSimilarity(a: Float32Array, b: Float32Array): number {
 
 // NOTE: downloadImageAsBuffer() removed — no longer needed after switching to RawImage.fromURL()
 // which handles image download, decode, and tensor creation in one step.
+
+// ============================================================
+// Helper: Build per-classroom embeddings (serialized via pipelineQueue)
+// ============================================================
+
+/**
+ * Ensure per-classroom text embeddings are built and cached.
+ * When a classroom has visual memories with rich descriptions from teacher setup
+ * or corrections, we re-embed those descriptions instead of using generic work-signatures.
+ *
+ * ONNX thread safety: all pipeline() calls serialize through pipelineQueue.
+ * LRU eviction: oldest classroom evicted when cache hits CLASSROOM_CACHE_MAX.
+ * TTL: 30-minute auto-expiry to pick up new visual memories.
+ */
+async function ensureClassroomEmbeddings(
+  classroomId: string,
+  visualMemories: VisualMemory[],
+): Promise<Map<string, Float32Array>> {
+  // Filter to memories with actual descriptions worth embedding (needed for count comparison below)
+  const memoriesWithDescriptions = visualMemories.filter(
+    vm => vm.visual_description && vm.visual_description.length >= 20 && vm.work_key
+  );
+
+  // Fast path: return cached if fresh AND covers all current visual memories
+  // The workCount check prevents stale cache when new visual memories arrive between requests
+  const cached = classroomEmbeddingCache.get(classroomId);
+  if (cached && (Date.now() - cached.createdAt) < CLASSROOM_CACHE_TTL_MS
+      && cached.workCount >= memoriesWithDescriptions.length) {
+    return cached.embeddings;
+  }
+
+  if (memoriesWithDescriptions.length === 0) {
+    return new Map(); // No overrides — use generic embeddings
+  }
+
+  // Build embeddings through the pipelineQueue mutex (ONNX thread safety)
+  // Uses the same nested-Promise pattern as classifyImage() (lines 309-334)
+  const classroomMap = await new Promise<Map<string, Float32Array>>((resolve) => {
+    pipelineQueue = pipelineQueue.then(async () => {
+      // Double-check cache after acquiring mutex (another request may have built it)
+      // Also verify workCount matches — if new visual memories arrived since cache was built, rebuild
+      const recheck = classroomEmbeddingCache.get(classroomId);
+      if (recheck && (Date.now() - recheck.createdAt) < CLASSROOM_CACHE_TTL_MS
+          && recheck.workCount >= memoriesWithDescriptions.length) {
+        resolve(recheck.embeddings);
+        return;
+      }
+
+      if (!pipeline) {
+        console.warn('[CLIP] Pipeline not ready for classroom embedding build');
+        resolve(new Map());
+        return;
+      }
+
+      console.log(`[CLIP] Building per-classroom embeddings for ${classroomId} (${memoriesWithDescriptions.length} works)`);
+      const startMs = Date.now();
+      const embMap = new Map<string, Float32Array>();
+
+      // Timeout: prevent hanging on bad ONNX state
+      const timeoutPromise = new Promise<'timeout'>((res) => {
+        setTimeout(() => res('timeout'), CLASSROOM_EMBEDDING_TIMEOUT_MS);
+      });
+
+      const buildWork = async () => {
+        for (const vm of memoriesWithDescriptions) {
+          try {
+            const prompt = `${vm.work_name}. ${vm.visual_description}`.slice(0, 512);
+            const embedding = await pipeline(prompt, { pooling: 'mean', normalize: true });
+            if (embedding?.data) {
+              embMap.set(vm.work_key, new Float32Array(embedding.data));
+            }
+          } catch (err) {
+            console.warn(`[CLIP] Failed to embed visual memory for ${vm.work_key}:`, err instanceof Error ? err.message : String(err));
+          }
+        }
+        return 'done' as const;
+      };
+
+      const result = await Promise.race([buildWork(), timeoutPromise]);
+
+      if (result === 'timeout') {
+        console.warn(`[CLIP] Classroom embedding build timed out after ${CLASSROOM_EMBEDDING_TIMEOUT_MS}ms — using ${embMap.size} partial embeddings`);
+      }
+
+      // LRU eviction: remove oldest if over limit
+      if (classroomEmbeddingCache.size >= CLASSROOM_CACHE_MAX) {
+        let oldestKey = '';
+        let oldestTime = Infinity;
+        for (const [key, entry] of classroomEmbeddingCache) {
+          if (entry.createdAt < oldestTime) {
+            oldestTime = entry.createdAt;
+            oldestKey = key;
+          }
+        }
+        if (oldestKey) {
+          classroomEmbeddingCache.delete(oldestKey);
+          console.log(`[CLIP] LRU evicted classroom ${oldestKey} from embedding cache`);
+        }
+      }
+
+      classroomEmbeddingCache.set(classroomId, {
+        embeddings: embMap,
+        createdAt: Date.now(),
+        workCount: embMap.size,
+      });
+
+      console.log(`[CLIP] Built ${embMap.size} per-classroom embeddings in ${Date.now() - startMs}ms`);
+      resolve(embMap);
+    }).catch((err) => {
+      console.error('[CLIP] Classroom embedding build error:', err);
+      resolve(new Map());
+    });
+  });
+
+  return classroomMap;
+}
 
 // ============================================================
 // Helper: Load dynamic module
@@ -298,7 +427,10 @@ export async function initClassifier(): Promise<void> {
 // Public API: Classify image
 // ============================================================
 
-export async function classifyImage(imageUrl: string): Promise<ClassifyResult | null> {
+export async function classifyImage(
+  imageUrl: string,
+  classroomOverrides?: Map<string, Float32Array>,
+): Promise<ClassifyResult | null> {
   if (!initialized || !pipeline) {
     console.warn('[CLIP] Classifier not initialized, skipping classification');
     return null;
@@ -319,7 +451,7 @@ export async function classifyImage(imageUrl: string): Promise<ClassifyResult | 
       });
 
       const classificationResult = await Promise.race([
-        classifyImageInternal(imageUrl, startTime),
+        classifyImageInternal(imageUrl, startTime, classroomOverrides),
         timeoutPromise,
       ]);
       resolve(classificationResult);
@@ -334,7 +466,11 @@ export async function classifyImage(imageUrl: string): Promise<ClassifyResult | 
   return result;
 }
 
-async function classifyImageInternal(imageUrl: string, startTime: number): Promise<ClassifyResult | null> {
+async function classifyImageInternal(
+  imageUrl: string,
+  startTime: number,
+  classroomOverrides?: Map<string, Float32Array>,
+): Promise<ClassifyResult | null> {
   try {
     // Use RawImage.fromURL() to properly download, decode, and create an image
     // tensor that SigLIP's feature-extraction pipeline can process.
@@ -387,7 +523,7 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
     let runnerUpConfidence = 0;
 
     for (const work of areaWorks) {
-      const workVec = textEmbeddings.get(work.work_key);
+      const workVec = classroomOverrides?.get(work.work_key) || textEmbeddings.get(work.work_key);
       if (!workVec) continue;
 
       const similarity = cosineSimilarity(imageVec, workVec);
@@ -420,7 +556,7 @@ async function classifyImageInternal(imageUrl: string, startTime: number): Promi
 
       for (const [areaKey, areaWorksForSearch] of worksByArea) {
         for (const work of areaWorksForSearch) {
-          const workVec = textEmbeddings.get(work.work_key);
+          const workVec = classroomOverrides?.get(work.work_key) || textEmbeddings.get(work.work_key);
           if (!workVec) continue;
           const similarity = cosineSimilarity(imageVec, workVec);
           if (similarity > globalBestConfidence) {
@@ -541,7 +677,14 @@ export async function classifyImageWithMemory(
   classroomId: string,
   visualMemories?: VisualMemory[]
 ): Promise<ClassifyResult | null> {
-  const result = await classifyImage(imageUrl);
+  // Build per-classroom embeddings if visual memories provided
+  let classroomOverrides: Map<string, Float32Array> | undefined;
+  if (classroomId && visualMemories && visualMemories.length > 0) {
+    classroomOverrides = await ensureClassroomEmbeddings(classroomId, visualMemories);
+    if (classroomOverrides.size === 0) classroomOverrides = undefined;
+  }
+
+  const result = await classifyImage(imageUrl, classroomOverrides);
   if (!result || !visualMemories || visualMemories.length === 0) {
     return result;
   }
@@ -597,6 +740,7 @@ export function getClassifierStats(): {
   areas_loaded: number;
   negative_embeddings_loaded: number;
   confusion_pairs_loaded: number;
+  classroom_caches: number;
   error?: string;
 } {
   return {
@@ -605,6 +749,7 @@ export function getClassifierStats(): {
     areas_loaded: areaEmbeddings.size,
     negative_embeddings_loaded: negativeEmbeddings.size,
     confusion_pairs_loaded: confusionPairMap.size,
+    classroom_caches: classroomEmbeddingCache.size,
     model: CLIP_MODEL,
     error: initializationError?.message,
   };
@@ -627,4 +772,11 @@ export function getConfusionDifferentiation(workKey: string, confusedWithKey: st
  */
 export function resetInitError(): void {
   initializationError = null;
+}
+
+/** Invalidate cached per-classroom embeddings when visual memory changes */
+export function invalidateClassroomEmbeddings(classroomId: string): void {
+  if (classroomEmbeddingCache.delete(classroomId)) {
+    console.log(`[CLIP] Invalidated classroom embedding cache for ${classroomId}`);
+  }
 }

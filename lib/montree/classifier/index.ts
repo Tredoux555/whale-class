@@ -9,6 +9,7 @@ export {
   getClassifierStats,
   resetInitError,
   getConfusionDifferentiation,
+  invalidateClassroomEmbeddings,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';
