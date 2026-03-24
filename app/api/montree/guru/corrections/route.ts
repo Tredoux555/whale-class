@@ -4,6 +4,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 // import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
 
 // POST /api/montree/guru/corrections — Record a teacher correction for self-learning
@@ -505,6 +506,8 @@ async function generateAndStoreVisualMemory({
     console.error('[VisualMemory] Upsert error:', upsertError);
   } else {
     console.log(`[VisualMemory] Stored description for "${workName}" in classroom ${classroomId} (source: ${source})`);
+    // Invalidate per-classroom CLIP embeddings so they re-build with new description
+    invalidateClassroomEmbeddings(classroomId);
   }
 
   // Also update the correction record with the visual description

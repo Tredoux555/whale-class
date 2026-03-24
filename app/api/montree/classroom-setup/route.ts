@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 
 export async function GET(request: NextRequest) {
   try {
@@ -199,6 +200,11 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[ClassroomSetup] Saved description for "${work_name}" (${work_key}) in classroom ${auth.classroomId}`);
+
+    // Invalidate per-classroom CLIP embeddings so they re-build with new description
+    if (auth.classroomId) {
+      invalidateClassroomEmbeddings(auth.classroomId);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
