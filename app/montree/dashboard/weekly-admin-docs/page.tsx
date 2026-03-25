@@ -38,6 +38,7 @@ export default function WeeklyAdminDocsPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [autoFilling, setAutoFilling] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null); // 'summary' | 'plan' | null
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -252,6 +253,89 @@ export default function WeeklyAdminDocsPage() {
     }
   };
 
+  // ─── Auto-fill from Data ──────────────────────────────────
+
+  const handleAutoFill = async () => {
+    if (!session?.classroomId) return;
+    setAutoFilling(true);
+    setError('');
+
+    try {
+      const res = await montreeApi(
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroomId}&week_start=${weekStart}`
+      );
+
+      if (!res.ok) {
+        setError(t('weeklyAdmin.autoFillFailed'));
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data.children || !Array.isArray(data.children)) {
+        setError(t('weeklyAdmin.autoFillFailed'));
+        return;
+      }
+
+      // Compute filled count BEFORE setState (avoid React batching issue)
+      let filledCount = 0;
+
+      if (activeTab === 'summary') {
+        // Count how many empty fields will be filled
+        for (const suggestion of data.children) {
+          const existing = summaryNotes[suggestion.childId];
+          if (!existing?.english_text && suggestion.summaryEnglish) filledCount++;
+        }
+        // Fill only EMPTY summary English fields
+        setSummaryNotes((prev) => {
+          const next = { ...prev };
+          for (const suggestion of data.children) {
+            const existing = next[suggestion.childId];
+            if (!existing?.english_text) {
+              next[suggestion.childId] = {
+                english_text: suggestion.summaryEnglish || '',
+                chinese_text: existing?.chinese_text || '',
+              };
+            }
+          }
+          return next;
+        });
+      } else {
+        // Count how many empty fields will be filled
+        for (const suggestion of data.children) {
+          for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
+            const existing = planNotes[suggestion.childId]?.[area];
+            if (!existing?.english_text && workName) filledCount++;
+          }
+        }
+        // Fill only EMPTY plan area cells
+        setPlanNotes((prev) => {
+          const next = { ...prev };
+          for (const suggestion of data.children) {
+            if (!next[suggestion.childId]) next[suggestion.childId] = {};
+            for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
+              const existing = next[suggestion.childId][area];
+              if (!existing?.english_text && workName) {
+                next[suggestion.childId][area] = {
+                  english_text: workName as string,
+                  chinese_text: existing?.chinese_text || '',
+                };
+              }
+            }
+          }
+          return next;
+        });
+      }
+
+      setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch {
+      setError(t('weeklyAdmin.autoFillFailed'));
+    } finally {
+      setAutoFilling(false);
+    }
+  };
+
   // ─── Note Update Helpers ───────────────────────────────────
 
   const updateSummaryNote = (childId: string, field: 'english_text' | 'chinese_text', value: string) => {
@@ -344,6 +428,15 @@ export default function WeeklyAdminDocsPage() {
         </button>
 
         <div className="flex-1" />
+
+        {/* Auto-fill button */}
+        <button
+          onClick={handleAutoFill}
+          disabled={autoFilling}
+          className="px-3 py-2 bg-amber-500 text-white text-sm rounded-lg disabled:opacity-50"
+        >
+          {autoFilling ? '...' : t('weeklyAdmin.autoFill')}
+        </button>
 
         {/* Generate buttons */}
         <button

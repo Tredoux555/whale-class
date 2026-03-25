@@ -49,7 +49,7 @@ const SUMMARY = {
   COL_WIDTH: 3402,     // 6.001cm (3 equal columns)
   ROW_HEIGHT: 3402,    // 6.001cm
   TABLE_WIDTH: 10206,  // 3 × 3402
-  FONT: 'Times New Roman',
+  FONT: 'SimSun',     // handles mixed EN/ZH text (matches Plan doc font)
   FONT_SIZE: 18,       // 9pt in half-points
 };
 

@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
-    // Fetch children + notes in parallel
+    // Step 1: Fetch children + notes + progress in parallel
     const [childrenRes, notesRes, progressRes] = await Promise.all([
       // 1. All children in classroom
       supabase
@@ -73,7 +73,10 @@ export async function POST(request: NextRequest) {
             p_classroom_id: classroomId,
             p_week_start: weekStart,
           }).then((res: { data: unknown; error: unknown }) => res)
-          .catch(() => ({ data: null, error: null }))
+          .catch((err: unknown) => {
+            console.error('weekly-admin-docs/generate progress RPC error:', err);
+            return { data: null, error: null };
+          })
         : Promise.resolve({ data: null, error: null }),
     ]);
 
@@ -89,6 +92,21 @@ export async function POST(request: NextRequest) {
 
     const children = childrenRes.data || [];
     const notes = notesRes.data || [];
+    const childIds = children.map((c: { id: string; name: string }) => c.id);
+
+    // Step 2: Fetch focus works using child IDs (table has no classroom_id column)
+    let focusWorksRes: { data: unknown; error: unknown } = { data: null, error: null };
+    if (childIds.length > 0) {
+      try {
+        focusWorksRes = await supabase
+          .from('montree_child_focus_works')
+          .select('child_id, area, work_name')
+          .in('child_id', childIds);
+      } catch (err) {
+        console.error('weekly-admin-docs/generate focus works error:', err);
+        focusWorksRes = { data: null, error: null };
+      }
+    }
 
     // Build notes lookup: child_id -> { area -> note }
     const notesMap = new Map<string, Map<string | null, typeof notes[0]>>();
@@ -110,6 +128,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Build focus works lookup: childId -> area -> work_name (for "next week" in Summary)
+    const focusMap = new Map<string, Map<string, string>>();
+    if (focusWorksRes.data && Array.isArray(focusWorksRes.data)) {
+      for (const fw of focusWorksRes.data) {
+        if (!focusMap.has(fw.child_id)) {
+          focusMap.set(fw.child_id, new Map());
+        }
+        focusMap.get(fw.child_id)!.set(fw.area, fw.work_name);
+      }
+    }
+
     // Assemble ChildNotes for the doc generator
     const childNotes: ChildNotes[] = children.map((child: { id: string; name: string }) => {
       const childNotesMap = notesMap.get(child.id);
@@ -118,13 +147,33 @@ export async function POST(request: NextRequest) {
         // Summary: overall English + Chinese notes (area=null)
         const summaryNote = childNotesMap?.get(null);
 
-        // Auto-generate English from progress if not manually overridden
+        // Auto-generate English from progress + focus works if not manually overridden
         let englishSummary = summaryNote?.english_text || '';
         if (!englishSummary) {
           const progItems = progressMap.get(child.id);
           if (progItems && progItems.length > 0) {
             const workNames = progItems.map((p) => p.work_name).slice(0, 5);
-            englishSummary = `worked on ${workNames.join(', ')} this week.`;
+            const worksStr = workNames.length === 1
+              ? workNames[0]
+              : workNames.length === 2
+                ? `${workNames[0]} and ${workNames[1]}`
+                : `${workNames.slice(0, -1).join(', ')}, and ${workNames[workNames.length - 1]}`;
+            englishSummary = `did ${worksStr} this week.`;
+
+            // Add "Next week" from focus works
+            const childFocus = focusMap.get(child.id);
+            if (childFocus) {
+              const nextWork = childFocus.get('language')
+                || childFocus.get('mathematics')
+                || childFocus.get('sensorial')
+                || childFocus.get('practical_life')
+                || childFocus.get('cultural');
+              if (nextWork) {
+                englishSummary += ` Next week: ${nextWork}.`;
+              }
+            }
+          } else {
+            englishSummary = "didn't complete any recorded activities this week.";
           }
         }
 
