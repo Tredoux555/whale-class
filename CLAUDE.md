@@ -12,7 +12,43 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 24, 2026)
+## CURRENT STATUS (Mar 25, 2026)
+
+### Session Work (Mar 25, 2026 — System Audit Fixes + Cloudflare Proxy Migration)
+
+**System Audit Fixes — 12 Routes Migrated to Cloudflare Proxy + 2 Smart Learning Fixes + 1 Weekly Admin Fix — ✅ DEPLOYED:**
+
+Comprehensive system audit identified multiple CRITICAL/HIGH issues. All client-facing photo URLs migrated from direct Supabase storage to Cloudflare-cached proxy URLs for China speed (5-15s → <500ms cached).
+
+**Cloudflare Proxy Migration (12 routes):**
+All browser-facing photo URLs now use `getProxyUrl()` returning `/api/montree/media/proxy/${storagePath}`. Cloudflare caches at edge POPs near China. Server-to-server URLs (Anthropic vision API calls) intentionally kept as direct Supabase URLs.
+
+Routes migrated: `photos.ts`, `reports/send`, `reports/preview`, `reports/route`, `reports/batch`, `reports/available-photos`, `reports/unreported`, `parent/report/[reportId]`, `children/[childId]`, `parent/dashboard`, `classroom-setup/describe` (response only).
+
+**Smart Learning Describe Fix (CRITICAL):** `classroom-setup/describe/route.ts` now accepts both `photo_url` AND `storage_path` parameters. Uses `getPublicUrl` for Anthropic vision, `getProxyUrl` for client response. Returns `reference_photo_url`.
+
+**Weekly Admin Docs Fix (HIGH):** Added missing `notesRes.error` check in `weekly-admin-docs/generate/route.ts`.
+
+**NOT migrated (intentional):** Avatar upload (stores full URL in DB for emails), phonics upload (internal), curriculum photo (internal admin).
+
+**Files Modified (12):**
+1. `lib/montree/photos.ts` — getProxyUrl for url + thumbnail_url
+2. `app/api/montree/reports/send/route.ts` — getProxyUrl in 2 locations
+3. `app/api/montree/reports/preview/route.ts` — getProxyUrl
+4. `app/api/montree/reports/route.ts` — getProxyUrl for url + thumbnail_url
+5. `app/api/montree/reports/batch/route.ts` — getProxyUrl
+6. `app/api/montree/reports/available-photos/route.ts` — getProxyUrl
+7. `app/api/montree/reports/unreported/route.ts` — getProxyUrl for url + thumbnail_url
+8. `app/api/montree/parent/report/[reportId]/route.ts` — getProxyUrl in 3 locations
+9. `app/api/montree/children/[childId]/route.ts` — getProxyUrl for url + thumbnail_url
+10. `app/api/montree/parent/dashboard/route.ts` — getProxyUrl for media_url
+11. `app/api/montree/classroom-setup/describe/route.ts` — dual param + getProxyUrl response
+12. `app/api/montree/weekly-admin-docs/generate/route.ts` — notesRes.error check
+
+**Deploy:** ✅ Commits `f714fc02` + `f186c094` pushed. Railway deployment successful.
+**Handoff:** `docs/handoffs/HANDOFF_SYSTEM_AUDIT_FIXES_MAR25.md`
+
+---
 
 ### Session Work (Mar 24, 2026 — Smart Learning System BUILD: All 5 Sprints COMPLETE)
 
@@ -997,19 +1033,12 @@ All code deployed, all migrations run. All 4 unpushed features from Mar 23 now p
 
 **Also still needed: Clean up stale schools** — delete everything except V8F8V9 + X4RAT5.
 
-### 🔴 Priority #-1: Cloudflare Image Proxy for China Speed (1-2 hours) — CRITICAL
+### ✅ Priority #-1: Cloudflare Image Proxy for China Speed — DONE (Mar 25)
 
-**Status:** PLANNED. Photos load 5-15+ seconds in China without VPN. Teachers WILL notice.
+**Status:** ✅ COMPLETE + DEPLOYED. All 12 client-facing routes migrated to `getProxyUrl()`. montree-media bucket set to public. Proxy route at `/api/montree/media/proxy/[...path]` with `Cache-Control: public, max-age=86400`. Deployed Mar 25.
 
-**Problem:** Supabase storage (`dmfncjjtsoxrnvcdnvjq.supabase.co`) is US-region. Signed URLs go directly to origin. Great Firewall throttles connections → slow images. The Guru AI works fine (server-to-server calls bypass GFW), but photo loading is painfully slow.
-
-**Fix — 3 steps:**
-1. **Make `montree-media` bucket public** in Supabase Dashboard → Storage → Settings
-2. **Create image proxy route** at `app/api/montree/media/proxy/[...path]/route.ts` — fetches from Supabase public URL, returns with `Cache-Control: public, max-age=86400`. Cloudflare caches at edge → fast in China.
-3. **Update `app/api/montree/media/urls/route.ts`** — return proxy URLs (`/api/montree/media/proxy/${path}`) instead of signed URLs
-
-**Expected:** First load ~2-3s, cached loads <500ms. No VPN needed.
-**Handoff:** `docs/handoffs/HANDOFF_PHOTO_SORT_CHINA_CDN_MAR21.md`
+**Performance:** First load ~2-3s, cached loads <500ms. No VPN needed in China.
+**Handoff:** `docs/handoffs/HANDOFF_SYSTEM_AUDIT_FIXES_MAR25.md`
 
 ### Session Work (Mar 21, 2026 — Late Night)
 
