@@ -227,6 +227,7 @@ export default function PhotoAuditPage() {
           if (!byArea[areaKey]) byArea[areaKey] = [];
           byArea[areaKey].push(w);
         }
+        console.log('[Photo Audit] Curriculum loaded:', Object.keys(byArea).join(', '), '| special_events:', byArea['special_events']?.length || 0, 'works');
         setCurriculum(byArea);
       })
       .catch(err => console.error('[Photo Audit] Curriculum load failed:', err));
