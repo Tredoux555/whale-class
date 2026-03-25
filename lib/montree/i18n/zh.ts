@@ -17,6 +17,7 @@ export const zh = {
   'common.search': '搜索',
   'common.noResults': '未找到结果',
   'common.confirm': '确认',
+  'common.select': '选择',
   'common.close': '关闭',
   'common.next': '下一步',
   'common.previous': '上一步',
