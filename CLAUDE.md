@@ -71,13 +71,16 @@ Two UI components fixed. PhotoCropModal was showing no image (CSS flex chicken-a
 
 **Curriculum Nav Icon Added:** 📚 icon added to DashboardHeader nav bar (after 🧠 Guru, before 📋 Overview). Teachers can now reach `/montree/dashboard/curriculum` directly to edit work names/details via ✏️ pencil button. Previously the curriculum page was undiscoverable from the nav.
 
-**Files Modified (4):**
+**Cross-Area Work Search in Photo Audit:** Added `AreaPickerWithSearch` component to the photo-audit area chooser dialog. Teachers can now type any work name and instantly find it across ALL areas without picking an area first. Search results show work name + area label + area color dot. Selecting a result auto-sets the correct area and applies the correction. Uses `areaOverride` parameter on `handleWorkSelected` to bypass stale `pickerArea` state race condition.
+
+**Files Modified (6):**
 1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-[300px])
 2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines)
-3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` key
+3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` + `audit.searchWorks` keys
 4. `components/montree/DashboardHeader.tsx` — Added 📚 curriculum nav link
+5. `app/montree/dashboard/photo-audit/page.tsx` — New `AreaPickerWithSearch` component + `handleWorkSelected` areaOverride param
 
-**Deploy:** ✅ Commits `f334c9a9`, `53b2415c`, `bc357a6f`, `4641ec2b`, `12209d22` pushed. Railway auto-deploying.
+**Deploy:** ✅ Commits `f334c9a9`, `53b2415c`, `bc357a6f`, `4641ec2b`, `12209d22`, `5776ac32` pushed. Railway auto-deploying.
 **Handoff:** `docs/handoffs/HANDOFF_UI_POLISH_CROP_WHEELPICKER_MAR25.md`
 
 ---

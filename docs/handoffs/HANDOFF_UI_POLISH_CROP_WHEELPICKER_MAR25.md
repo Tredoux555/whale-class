@@ -94,12 +94,38 @@ const STATUS_COLORS: Record<string, string> = {
 
 ---
 
-## Files Modified (4)
+## Fix 4 — Cross-Area Work Search in Photo Audit Area Picker
+
+**Problem:** When correcting a photo tag on the Photo Audit page, teachers had to first pick an area (Practical Life, Sensorial, etc.) and THEN search for the work within that area. For works like "Chalk Board Writing" where the teacher may not remember which area it belongs to, this required trial-and-error across 5 areas.
+
+**Fix:** Added `AreaPickerWithSearch` component to the area chooser dialog. A search input at the top lets teachers type any work name and instantly see matching results across ALL areas. Each result shows the work name + area label + area color dot. Selecting a result auto-sets the correct area and immediately applies the correction — no need to manually pick an area first.
+
+**Architecture:**
+- `AreaPickerWithSearch` is a sibling component in `photo-audit/page.tsx` (not extracted to a separate file — only used here)
+- Cross-area search flattens `curriculum` (`Record<string, any[]>`) into a single list, filtered by query (min 2 chars, max 15 results)
+- `handleWorkSelected` modified with `areaOverride` parameter to bypass stale `pickerArea` state:
+  ```typescript
+  const handleWorkSelected = async (work: any, _status?: string, areaOverride?: string) => {
+    const effectiveArea = areaOverride || pickerArea;
+    // ... uses effectiveArea for correction POST + state update
+  ```
+- `onSelectWork` callback passes area directly: `handleWorkSelected(work, undefined, areaKey)`
+- Area buttons still visible below search results as fallback for browsing
+- Auto-focus on search input when dialog opens (`requestAnimationFrame` + `inputRef`)
+
+**i18n:** Added `audit.searchWorks` key in both EN ("Search works across all areas...") and ZH ("搜索所有区域的工作...")
+
+**Commit:** `5776ac32`
+
+---
+
+## Files Modified (6)
 
 1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-0 → min-h-[300px])
 2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines). Functional fixes + visual polish.
-3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` key
+3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` + `audit.searchWorks` keys
 4. `components/montree/DashboardHeader.tsx` — Added 📚 curriculum nav link
+5. `app/montree/dashboard/photo-audit/page.tsx` — New `AreaPickerWithSearch` component + `handleWorkSelected` areaOverride param
 
 ## Commits
 
@@ -108,6 +134,7 @@ const STATUS_COLORS: Record<string, string> = {
 - `bc357a6f` — WorkWheelPicker functional fixes (adaptive button, search, remove sequences)
 - `4641ec2b` — WorkWheelPicker visual polish overhaul
 - `12209d22` — Curriculum 📚 icon in header nav
+- `5776ac32` — Cross-area work search in photo-audit area picker
 
 ## Deploy
 
@@ -123,4 +150,6 @@ const STATUS_COLORS: Record<string, string> = {
 
 3. **Photo Audit → Curriculum flow** — Teacher's primary workflow is Photo Audit (tag photos) → occasionally needs to edit work names. Currently requires navigating away to curriculum page. Could add an "edit work" option directly in the photo-audit "Fix" flow or in the WorkWheelPicker itself.
 
-4. **End-to-end smoke test needed** — Multiple UI components were rewritten this session. Worth a manual pass through: crop modal (open, crop, save), WorkWheelPicker on photo-audit (select work, add custom work), WorkWheelPicker on gallery (add extra work with position picker), curriculum page (edit a work name).
+4. **End-to-end smoke test needed** — Multiple UI components were rewritten this session. Worth a manual pass through: crop modal (open, crop, save), WorkWheelPicker on photo-audit (select work, add custom work), WorkWheelPicker on gallery (add extra work with position picker), curriculum page (edit a work name), photo-audit cross-area search (type a work name, verify correct area auto-selected).
+
+5. **Cross-area search could be reused** — The `AreaPickerWithSearch` pattern (search across all areas, auto-select area on pick) could be valuable in other places: gallery "add extra work" flow, WorkWheelPicker itself, or anywhere teachers need to find a work without knowing its area.
