@@ -7,6 +7,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { getPublicUrl } from '@/lib/supabase-client';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { checkRateLimit } from '@/lib/rate-limiter';
+import { getSupabase } from '@/lib/supabase-client';
 
 const DESCRIBE_TIMEOUT_MS = 45_000;
 
@@ -17,6 +19,17 @@ export async function POST(request: NextRequest) {
 
     if (!auth.classroomId) {
       return NextResponse.json({ success: false, error: 'No classroom associated' }, { status: 403 });
+    }
+
+    // Rate limit: 20 describe calls per 15 minutes per IP (Sonnet is expensive)
+    const supabase = getSupabase();
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
+    const { allowed, retryAfterSeconds } = await checkRateLimit(supabase, ip, '/api/montree/classroom-setup/describe', 20, 15);
+    if (!allowed) {
+      return NextResponse.json(
+        { success: false, error: `Rate limited. Try again in ${retryAfterSeconds || 60}s` },
+        { status: 429 }
+      );
     }
     if (!anthropic) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
