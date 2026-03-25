@@ -176,7 +176,7 @@ export default function WorkWheelPicker({
   if (!works || works.length === 0) {
     return (
       <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center" onClick={onClose}>
-        <div className="text-center text-white p-8" onClick={e => e.stopPropagation()}>
+        <div className="text-center text-white p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
           <div
             className="w-14 h-14 rounded-2xl inline-flex items-center justify-center text-white text-2xl mx-auto mb-3"
             style={{ backgroundColor: areaConfig.color }}
@@ -184,13 +184,50 @@ export default function WorkWheelPicker({
             {areaConfig.icon}
           </div>
           <h2 className="font-semibold text-xl mb-1">{areaConfig.name}</h2>
-          <p className="text-white/50 mb-6 text-sm">{t('workWheel.noWorksAvailable')}</p>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="px-6 py-3 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors text-sm"
-          >
-            + {t('workWheel.addFirstWork')}
-          </button>
+
+          {showAddForm ? (
+            <div className="mt-4 space-y-3 text-left">
+              <input
+                type="text"
+                value={newWorkName}
+                onChange={(e) => setNewWorkName(e.target.value)}
+                placeholder={t('workWheel.workNamePlaceholder')}
+                autoFocus
+                className="w-full px-4 py-3 rounded-xl bg-white/8 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:border-white/30 text-sm"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newWorkName.trim()) handleAddWork();
+                  if (e.key === 'Escape') setShowAddForm(false);
+                }}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleAddWork}
+                  disabled={!newWorkName.trim() || isAdding}
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-white transition-colors disabled:opacity-30"
+                  style={{ backgroundColor: areaConfig.color }}
+                >
+                  {isAdding ? '...' : `+ ${t('workWheel.addFirstWork')}`}
+                </button>
+                <button
+                  onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
+                  className="py-3 px-4 rounded-xl text-sm text-white/50 hover:text-white/80 bg-white/5"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-white/50 mb-6 text-sm">{t('workWheel.noWorksAvailable')}</p>
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="px-6 py-3 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors text-sm"
+              >
+                + {t('workWheel.addFirstWork')}
+              </button>
+            </>
+          )}
+
           <button onClick={onClose} className="block mx-auto mt-4 text-white/40 hover:text-white/70 text-sm">
             {t('common.close')}
           </button>
