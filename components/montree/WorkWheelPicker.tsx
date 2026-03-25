@@ -52,6 +52,8 @@ export default function WorkWheelPicker({
   const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
   const [showPositionPicker, setShowPositionPicker] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
+  const [positionSearch, setPositionSearch] = useState('');
+  const positionSearchRef = useRef<HTMLInputElement>(null);
 
   const areaConfig = AREA_CONFIG[area] || AREA_CONFIG[area.replace('math', 'mathematics')] || {
     name: area, icon: '📋', color: '#888'
@@ -340,9 +342,9 @@ export default function WorkWheelPicker({
                     </p>
                   </div>
 
-                  {/* Sequence number */}
-                  {work.sequence && (
-                    <span className="text-white/60 text-sm font-medium">#{work.sequence}</span>
+                  {/* Check for selected */}
+                  {distance === 0 && (
+                    <span className="text-emerald-400 text-lg shrink-0">›</span>
                   )}
                 </div>
               </div>
@@ -378,10 +380,10 @@ export default function WorkWheelPicker({
             <div className="flex gap-2">
               <button
                 onClick={() => setShowPositionPicker(true)}
-                className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white border border-white/30 flex items-center justify-center gap-2"
+                className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white border border-white/30 flex items-center justify-center gap-2 truncate"
               >
-                <span>After #{insertAfterIndex !== null ? works[insertAfterIndex]?.sequence || '?' : '?'}</span>
-                <span className="text-white/60">▼</span>
+                <span className="truncate">After: {insertAfterIndex !== null ? works[insertAfterIndex]?.name || '?' : '?'}</span>
+                <span className="text-white/60 shrink-0">▼</span>
               </button>
               <button
                 onClick={() => setInsertAfterIndex(null)}
@@ -395,70 +397,78 @@ export default function WorkWheelPicker({
               </button>
             </div>
 
-            {/* Position Picker Modal - Wheel Style */}
+            {/* Position Picker Modal - Searchable List */}
             {showPositionPicker && (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-50">
-                {/* Header */}
-                <div className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-4">
-                  <div className="flex items-center justify-between text-white">
-                    <button onClick={() => setShowPositionPicker(false)} className="p-2 -ml-2">
-                      <span className="text-2xl">✕</span>
-                    </button>
-                    <div className="text-center flex flex-col items-center">
-                      <span
-                        className="w-12 h-12 rounded-full inline-flex items-center justify-center font-bold text-white text-xl shadow-lg"
-                        style={{ backgroundColor: areaConfig.color }}
-                      >
-                        {areaConfig.icon}
-                      </span>
-                      <h2 className="font-bold text-lg mt-1">{t('workWheel.insertAfterPosition')}</h2>
+              <div
+                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-50"
+                onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }}
+              >
+                <div
+                  className="flex-1 flex flex-col max-w-lg mx-auto w-full"
+                  onClick={e => e.stopPropagation()}
+                >
+                  {/* Header */}
+                  <div className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-3 shrink-0">
+                    <div className="flex items-center justify-between text-white">
+                      <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="p-2 -ml-2">
+                        <span className="text-2xl">✕</span>
+                      </button>
+                      <h2 className="font-bold text-lg">{t('workWheel.insertAfterPosition')}</h2>
+                      <div className="w-10" />
                     </div>
-                    <div className="w-10" />
-                  </div>
-                </div>
-
-                {/* Wheel Container */}
-                <div className="flex-1 relative overflow-hidden">
-                  {/* Gradient overlays */}
-                  <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
-
-                  {/* Selection highlight */}
-                  <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[70px] bg-white/15 rounded-2xl border-2 border-white/40 z-5 pointer-events-none" />
-
-                  {/* Scrollable wheel */}
-                  <div
-                    className="h-full overflow-y-auto scrollbar-hide"
-                    style={{ scrollSnapType: 'y mandatory' }}
-                  >
-                    <div style={{ height: 'calc(50% - 35px)' }} />
-                    {works.map((work, idx) => {
-                      const isSelected = insertAfterIndex === idx;
-                      return (
-                        <div
-                          key={work.id || idx}
-                          onClick={() => {
-                            setInsertAfterIndex(idx);
-                            setShowPositionPicker(false);
-                          }}
-                          className="h-[70px] flex items-center justify-center px-6 snap-center cursor-pointer"
+                    {/* Search */}
+                    <div className="mt-3 relative">
+                      <input
+                        ref={positionSearchRef}
+                        type="text"
+                        value={positionSearch}
+                        onChange={e => setPositionSearch(e.target.value)}
+                        placeholder={t('workWheel.typeToSearch')}
+                        autoFocus
+                        className="w-full px-4 py-2.5 pl-9 rounded-xl bg-white/15 text-white placeholder-white/40 border border-white/20 focus:outline-none focus:border-white/50 text-sm"
+                      />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">🔍</span>
+                      {positionSearch && (
+                        <button
+                          onClick={() => setPositionSearch('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"
                         >
-                          <div className={`flex items-center gap-3 w-full max-w-md transition-all duration-200 ${
-                            isSelected ? 'opacity-100 scale-100' : 'opacity-60 scale-95'
-                          }`}>
-                            <span className="text-white/70 font-bold w-10 text-right">#{work.sequence}</span>
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Scrollable list */}
+                  <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                    {works
+                      .map((work, idx) => ({ work, idx }))
+                      .filter(({ work }) =>
+                        !positionSearch.trim() || work.name.toLowerCase().includes(positionSearch.toLowerCase())
+                      )
+                      .map(({ work, idx }) => {
+                        const isSelected = insertAfterIndex === idx;
+                        return (
+                          <button
+                            key={work.id || idx}
+                            onClick={() => {
+                              setInsertAfterIndex(idx);
+                              setShowPositionPicker(false);
+                              setPositionSearch('');
+                            }}
+                            className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex items-center gap-3 transition-colors ${
+                              isSelected
+                                ? 'bg-white/20 border border-white/40'
+                                : 'bg-white/5 border border-transparent hover:bg-white/10'
+                            }`}
+                          >
                             <span className="flex-1 text-white font-medium truncate">{work.name}</span>
-                            {isSelected && <span className="text-emerald-400 text-xl">✓</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div style={{ height: 'calc(50% - 35px)' }} />
+                            {isSelected && <span className="text-emerald-400 text-lg shrink-0">✓</span>}
+                          </button>
+                        );
+                      })}
                   </div>
                 </div>
-
-                {/* Bottom safe area */}
-                <div className="pb-[max(1rem,env(safe-area-inset-bottom))]" />
               </div>
             )}
 
