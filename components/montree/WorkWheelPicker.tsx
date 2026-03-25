@@ -514,15 +514,13 @@ export default function WorkWheelPicker({
               {selectedWork?.name?.substring(0, 40)}{selectedWork?.name && selectedWork.name.length > 40 ? '...' : ''}
             </p>
 
-            {/* Add custom work link — only when adding works */}
-            {onAddExtra && (
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
-              >
+            {/* Add work link */}
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
+            >
                 + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
               </button>
-            )}
           </>
         )}
       </div>
