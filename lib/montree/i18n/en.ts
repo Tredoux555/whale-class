@@ -2679,6 +2679,22 @@ export const en = {
   'weeklyAdmin.copyAll': 'Copy All',
   'weeklyAdmin.copied': 'Copied!',
 
+  // Weekly Admin Documents (docx generation)
+  'weeklyAdmin.week': 'Week',
+  'weeklyAdmin.summaryTab': 'Weekly Summary',
+  'weeklyAdmin.planTab': 'Weekly Plan',
+  'weeklyAdmin.englishSummary': 'English summary of what was done this week...',
+  'weeklyAdmin.chineseSummary': '日常：\n感官：\n数学：\n语言：\n文化：',
+  'weeklyAdmin.englishPlan': 'English work name...',
+  'weeklyAdmin.chinesePlan': '中文备注...',
+  'weeklyAdmin.saved': 'Notes saved',
+  'weeklyAdmin.saveFailed': 'Failed to save notes',
+  'weeklyAdmin.noNotes': 'No notes to save',
+  'weeklyAdmin.downloaded': 'Downloaded',
+  'weeklyAdmin.generateFailed': 'Failed to generate document',
+  'weeklyAdmin.fetchError': 'Failed to load notes',
+  'weeklyAdmin.noChildren': 'No children in this classroom',
+
   // Guru Teaching Instructions + Image Upload
   'guru.teachingInstructions': 'How to Teach This',
   'guru.instructionsLoading': 'Generating personalized instructions...',

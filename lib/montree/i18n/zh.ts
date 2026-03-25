@@ -2680,6 +2680,22 @@ export const zh = {
   'weeklyAdmin.copyAll': '复制全部',
   'weeklyAdmin.copied': '已复制！',
 
+  // Weekly Admin Documents (docx generation)
+  'weeklyAdmin.week': '周',
+  'weeklyAdmin.summaryTab': '每周总结',
+  'weeklyAdmin.planTab': '每周计划表',
+  'weeklyAdmin.englishSummary': '本周英文总结...',
+  'weeklyAdmin.chineseSummary': '日常：\n感官：\n数学：\n语言：\n文化：',
+  'weeklyAdmin.englishPlan': '英文工作名称...',
+  'weeklyAdmin.chinesePlan': '中文备注...',
+  'weeklyAdmin.saved': '笔记已保存',
+  'weeklyAdmin.saveFailed': '保存笔记失败',
+  'weeklyAdmin.noNotes': '没有需要保存的笔记',
+  'weeklyAdmin.downloaded': '已下载',
+  'weeklyAdmin.generateFailed': '生成文档失败',
+  'weeklyAdmin.fetchError': '加载笔记失败',
+  'weeklyAdmin.noChildren': '此教室没有学生',
+
   // Guru Teaching Instructions + Image Upload
   'guru.teachingInstructions': '如何教授此工作',
   'guru.instructionsLoading': '正在生成个性化教学指导...',
