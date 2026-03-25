@@ -514,6 +514,16 @@
           <option value="yes">Center free space</option>
         </select>
       </div>
+      <div class="control-group">
+        <label>Text Size</label>
+        <select id="textSize">
+          <option value="16">Small</option>
+          <option value="20">Medium</option>
+          <option value="24" selected>Large</option>
+          <option value="30">Extra Large</option>
+          <option value="38">Huge</option>
+        </select>
+      </div>
       <div class="btn-group">
         <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
         <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
@@ -573,6 +583,16 @@
         <select id="customFreeSpace">
           <option value="no" selected>No free space</option>
           <option value="yes">Center free space</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Text Size</label>
+        <select id="customTextSize">
+          <option value="16">Small</option>
+          <option value="20">Medium</option>
+          <option value="24" selected>Large</option>
+          <option value="30">Extra Large</option>
+          <option value="38">Huge</option>
         </select>
       </div>
     </div>
@@ -746,7 +766,7 @@ WORD_SETS['cvc-all'].words = [
 ];
 
 // ===== BINGO BOARDS — words only, single-sided =====
-function generateBoards(words, title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace) {
+function generateBoards(words, title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace, fontSize) {
   // Board borders 2x thicker than calling cards — boards will be cut and laminated
   borderW = borderW * 2;
   const output = document.getElementById('output');
@@ -790,12 +810,12 @@ function generateBoards(words, title, gridSize, boardCount, borderColor, borderW
       if (hasFreeSpace && i === centerIdx) {
         el.className = 'bingo-cell cell-free';
         el.setAttribute('style', cellStyle);
-        el.innerHTML = '<div class="cell-word">⭐<br>FREE</div>';
+        el.innerHTML = `<div class="cell-word" style="font-size:${Math.round(fontSize * 0.75)}px">⭐<br>FREE</div>`;
       } else {
         el.className = 'bingo-cell';
         el.setAttribute('style', cellStyle);
         const word = selected[wordIdx++];
-        el.innerHTML = `<div class="cell-word">${word}</div>`;
+        el.innerHTML = `<div class="cell-word" style="font-size:${fontSize}px">${word}</div>`;
       }
       grid.appendChild(el);
     }
@@ -805,7 +825,7 @@ function generateBoards(words, title, gridSize, boardCount, borderColor, borderW
 }
 
 // ===== CALLING CARDS — 3-Part Card style with indent cutting guides =====
-function generateCallingCardsCore(words, title, borderColor, borderW, radius) {
+function generateCallingCardsCore(words, title, borderColor, borderW, radius, fontSize) {
   const output = document.getElementById('output');
   output.innerHTML = '';
 
@@ -854,7 +874,8 @@ function generateCallingCardsCore(words, title, borderColor, borderW, radius) {
       card.className = 'calling-card';
       if (word) {
         card.setAttribute('style', cardStyle);
-        card.innerHTML = `<div class="card-inner" style="${innerStyle}"><div class="card-word">${word}</div></div>`;
+        const callingFontSize = Math.round(fontSize * 1.17);
+        card.innerHTML = `<div class="card-inner" style="${innerStyle}"><div class="card-word" style="font-size:${callingFontSize}px">${word}</div></div>`;
       } else {
         card.setAttribute('style', emptyStyle);
       }
@@ -875,9 +896,10 @@ function generate() {
   const borderW = parseFloat(document.getElementById('borderWidth').value);
   const radius = parseInt(document.getElementById('cornerRadius').value);
   const hasFreeSpace = document.getElementById('freeSpace').value === 'yes';
+  const fontSize = parseInt(document.getElementById('textSize').value);
 
   const wordSet = WORD_SETS[setKey];
-  generateBoards(wordSet.words, wordSet.title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace);
+  generateBoards(wordSet.words, wordSet.title, gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace, fontSize);
 }
 
 function generateCallingCards() {
@@ -886,8 +908,10 @@ function generateCallingCards() {
   const borderW = parseFloat(document.getElementById('borderWidth').value);
   const radius = parseInt(document.getElementById('cornerRadius').value);
 
+  const fontSize = parseInt(document.getElementById('textSize').value);
+
   const wordSet = WORD_SETS[setKey];
-  generateCallingCardsCore(wordSet.words, wordSet.title, borderColor, borderW, radius);
+  generateCallingCardsCore(wordSet.words, wordSet.title, borderColor, borderW, radius, fontSize);
 }
 
 // ===== CUSTOM MODE =====
@@ -901,8 +925,9 @@ function generateCustom() {
   const borderW = parseFloat(document.getElementById('customBorderWidth').value);
   const radius = parseInt(document.getElementById('customCornerRadius').value);
   const hasFreeSpace = document.getElementById('customFreeSpace').value === 'yes';
+  const fontSize = parseInt(document.getElementById('customTextSize').value);
 
-  generateBoards(words, 'Custom', gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace);
+  generateBoards(words, 'Custom', gridSize, boardCount, borderColor, borderW, radius, hasFreeSpace, fontSize);
 }
 
 function generateCustomCallingCards() {
@@ -912,8 +937,9 @@ function generateCustomCallingCards() {
   const borderColor = document.getElementById('customBorderColor').value;
   const borderW = parseFloat(document.getElementById('customBorderWidth').value);
   const radius = parseInt(document.getElementById('customCornerRadius').value);
+  const fontSize = parseInt(document.getElementById('customTextSize').value);
 
-  generateCallingCardsCore(words, 'Custom', borderColor, borderW, radius);
+  generateCallingCardsCore(words, 'Custom', borderColor, borderW, radius, fontSize);
 }
 
 // Auto-generate preset on load
