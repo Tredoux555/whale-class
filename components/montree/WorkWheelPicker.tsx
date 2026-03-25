@@ -14,7 +14,7 @@ interface Work {
   name_chinese?: string;
   status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
   sequence?: number;
-  dbSequence?: number; // Real DB sequence (preserved through merge)
+  dbSequence?: number;
 }
 
 interface WorkWheelPickerProps {
@@ -24,9 +24,16 @@ interface WorkWheelPickerProps {
   works: Work[];
   currentWorkName?: string;
   onSelectWork: (work: Work, status: string) => void;
-  onAddExtra?: (work: Work) => void; // Add as extra work (not focus)
-  onWorkAdded?: () => void; // Callback to refresh curriculum after adding
+  onAddExtra?: (work: Work) => void;
+  onWorkAdded?: () => void;
 }
+
+const STATUS_COLORS: Record<string, string> = {
+  mastered: '#10b981',
+  completed: '#10b981',
+  practicing: '#3b82f6',
+  presented: '#f59e0b',
+};
 
 export default function WorkWheelPicker({
   isOpen,
@@ -42,14 +49,12 @@ export default function WorkWheelPicker({
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Type-to-jump search state
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Add Work form state
   const [showAddForm, setShowAddForm] = useState(false);
   const [newWorkName, setNewWorkName] = useState('');
-  const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null); // null = end of list
+  const [insertAfterIndex, setInsertAfterIndex] = useState<number | null>(null);
   const [showPositionPicker, setShowPositionPicker] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [positionSearch, setPositionSearch] = useState('');
@@ -59,7 +64,7 @@ export default function WorkWheelPicker({
     name: area, icon: '📋', color: '#888'
   };
 
-  // Type-to-jump: scroll wheel to first matching work as user types
+  // Type-to-jump: scroll wheel to first matching work
   useEffect(() => {
     if (!searchText.trim() || works.length === 0) return;
     const needle = searchText.toLowerCase();
@@ -71,19 +76,14 @@ export default function WorkWheelPicker({
     }
   }, [searchText, works]);
 
-  // Clear search on close, auto-focus on open
   useEffect(() => {
     if (!isOpen) {
       setSearchText('');
     } else {
-      // Auto-focus search input so user can type immediately
-      requestAnimationFrame(() => {
-        searchInputRef.current?.focus();
-      });
+      requestAnimationFrame(() => searchInputRef.current?.focus());
     }
   }, [isOpen]);
 
-  // Find initial index based on currentWorkName
   useEffect(() => {
     if (isOpen && currentWorkName && works.length > 0) {
       const idx = works.findIndex(w =>
@@ -91,45 +91,36 @@ export default function WorkWheelPicker({
       );
       if (idx >= 0) {
         setSelectedIndex(idx);
-        // Scroll after DOM has rendered the items - use multiple attempts for reliability
         requestAnimationFrame(() => {
           scrollToIndex(idx, false);
-          // Second attempt after scroll container is fully ready
           setTimeout(() => scrollToIndex(idx, false), 100);
         });
       }
     }
   }, [isOpen, currentWorkName, works]);
 
-
   const scrollToIndex = useCallback((index: number, smooth = true) => {
     if (wheelRef.current) {
-      const itemHeight = 80; // Height of each work item
-      const scrollPos = index * itemHeight;
+      const itemHeight = 64;
       wheelRef.current.scrollTo({
-        top: scrollPos,
+        top: index * itemHeight,
         behavior: smooth ? 'smooth' : 'auto'
       });
     }
   }, []);
 
-  // Handle scroll end to snap to nearest item
   const handleScroll = useCallback(() => {
     if (wheelRef.current) {
-      const itemHeight = 80;
-      const scrollTop = wheelRef.current.scrollTop;
-      const newIndex = Math.round(scrollTop / itemHeight);
+      const itemHeight = 64;
+      const newIndex = Math.round(wheelRef.current.scrollTop / itemHeight);
       const clampedIndex = Math.max(0, Math.min(newIndex, works.length - 1));
-
       if (clampedIndex !== selectedIndex) {
         setSelectedIndex(clampedIndex);
-        // Haptic feedback
         if (navigator.vibrate) navigator.vibrate(10);
       }
     }
   }, [selectedIndex, works.length]);
 
-  // Handle work selection - simple: just select and default to not_started
   const handleSelectWork = () => {
     if (works[selectedIndex]) {
       onSelectWork(works[selectedIndex], works[selectedIndex].status || 'not_started');
@@ -137,29 +128,21 @@ export default function WorkWheelPicker({
     }
   };
 
-  // Initialize insert position to current selection when form opens
   useEffect(() => {
     if (showAddForm && insertAfterIndex === null) {
       setInsertAfterIndex(selectedIndex);
     }
   }, [showAddForm, selectedIndex]);
 
-  // Handle adding a new work
   const handleAddWork = async () => {
     if (!newWorkName.trim()) return;
-
     const classroomId = getClassroomId();
-    if (!classroomId) {
-      toast.error('No classroom found');
-      return;
-    }
+    if (!classroomId) { toast.error('No classroom found'); return; }
 
     setIsAdding(true);
     try {
-      // Get the REAL DB sequence from the selected position (not display index)
       const afterWork = insertAfterIndex !== null ? works[insertAfterIndex] : null;
       const afterSequence = afterWork?.dbSequence ?? afterWork?.sequence;
-
       const response = await fetch('/api/montree/curriculum', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -171,12 +154,11 @@ export default function WorkWheelPicker({
           is_custom: true,
         }),
       });
-
       if (response.ok) {
         setNewWorkName('');
         setShowAddForm(false);
         setInsertAfterIndex(null);
-        onWorkAdded?.(); // Trigger refresh
+        onWorkAdded?.();
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed to add work' }));
         toast.error(err.error || 'Failed to add work');
@@ -191,32 +173,25 @@ export default function WorkWheelPicker({
 
   if (!isOpen) return null;
 
-  // Handle empty works array
   if (!works || works.length === 0) {
     return (
-      <div
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center"
-        onClick={onClose}
-      >
+      <div className="fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center" onClick={onClose}>
         <div className="text-center text-white p-8" onClick={e => e.stopPropagation()}>
-          <span
-            className="w-16 h-16 rounded-full inline-flex items-center justify-center font-bold text-white text-2xl shadow-lg mb-4"
+          <div
+            className="w-14 h-14 rounded-2xl inline-flex items-center justify-center text-white text-2xl mx-auto mb-3"
             style={{ backgroundColor: areaConfig.color }}
           >
             {areaConfig.icon}
-          </span>
-          <h2 className="font-bold text-xl mb-2">{areaConfig.name}</h2>
-          <p className="text-white/70 mb-6">{t('workWheel.noWorksAvailable')}</p>
+          </div>
+          <h2 className="font-semibold text-xl mb-1">{areaConfig.name}</h2>
+          <p className="text-white/50 mb-6 text-sm">{t('workWheel.noWorksAvailable')}</p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="px-6 py-3 bg-white/20 rounded-xl text-white font-semibold hover:bg-white/30 transition-colors"
+            className="px-6 py-3 bg-white/10 rounded-xl text-white font-medium hover:bg-white/20 transition-colors text-sm"
           >
-            ➕ {t('workWheel.addFirstWork')}
+            + {t('workWheel.addFirstWork')}
           </button>
-          <button
-            onClick={onClose}
-            className="block mx-auto mt-4 text-white/60 hover:text-white"
-          >
+          <button onClick={onClose} className="block mx-auto mt-4 text-white/40 hover:text-white/70 text-sm">
             {t('common.close')}
           </button>
         </div>
@@ -225,33 +200,30 @@ export default function WorkWheelPicker({
   }
 
   const selectedWork = works[selectedIndex];
+  const statusColor = selectedWork ? (STATUS_COLORS[selectedWork.status || ''] || null) : null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex flex-col"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 bg-black/90 flex flex-col" onClick={onClose}>
+
       {/* Header */}
-      <div
-        className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-3"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="pt-[max(0.75rem,env(safe-area-inset-top))] px-5 pb-3 shrink-0" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between text-white">
-          <button onClick={onClose} className="p-2 -ml-2">
-            <span className="text-2xl">✕</span>
+          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 -ml-1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
-          <div className="text-center flex flex-col items-center">
-            <span
-              className="w-12 h-12 rounded-full inline-flex items-center justify-center font-bold text-white text-xl shadow-lg"
+          <div className="text-center">
+            <div
+              className="w-10 h-10 rounded-xl inline-flex items-center justify-center text-white text-lg mx-auto mb-1"
               style={{ backgroundColor: areaConfig.color }}
             >
               {areaConfig.icon}
-            </span>
-            <h2 className="font-bold text-lg mt-1">{areaConfig.name}</h2>
+            </div>
+            <h2 className="font-semibold text-base tracking-tight">{areaConfig.name}</h2>
           </div>
-          <div className="w-10" /> {/* Spacer for centering */}
+          <div className="w-10" />
         </div>
-        {/* Type-to-jump search */}
+
+        {/* Search */}
         <div className="mt-3 relative">
           <input
             ref={searchInputRef}
@@ -259,164 +231,146 @@ export default function WorkWheelPicker({
             value={searchText}
             onChange={e => setSearchText(e.target.value)}
             placeholder={t('workWheel.typeToSearch')}
-            className="w-full px-4 py-2 pl-9 rounded-xl bg-white/15 text-white placeholder-white/40 border border-white/20 focus:outline-none focus:border-white/50 text-sm"
+            className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white/8 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:border-white/30 focus:bg-white/12 text-sm transition-colors"
           />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">
-            🔍
-          </span>
+          <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
           {searchText && (
-            <button
-              onClick={() => setSearchText('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"
-            >
-              ✕
+            <button onClick={() => setSearchText('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           )}
         </div>
       </div>
 
       {/* Wheel Container */}
-      <div
-        className="flex-1 relative overflow-hidden flex flex-col"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Gradient overlays for fade effect */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 to-transparent z-10 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none" />
+      <div className="flex-1 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Fade overlays */}
+        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
 
-        {/* Selection highlight - centered in container */}
-        <div className="absolute top-1/2 left-4 right-4 -translate-y-1/2 h-[80px] bg-white/15 rounded-2xl border-2 border-white/40 z-5 pointer-events-none" />
+        {/* Selection highlight */}
+        <div
+          className="absolute top-1/2 left-3 right-3 -translate-y-1/2 h-[64px] rounded-2xl z-5 pointer-events-none"
+          style={{
+            background: `linear-gradient(135deg, ${areaConfig.color}18, ${areaConfig.color}08)`,
+            border: `1.5px solid ${areaConfig.color}40`,
+          }}
+        />
 
         {/* Scrollable wheel */}
         <div
           ref={wheelRef}
-          className="flex-1 overflow-y-auto scrollbar-hide"
+          className="h-full overflow-y-auto scrollbar-hide"
           onScroll={handleScroll}
-          style={{
-            scrollSnapType: 'y mandatory'
-          }}
+          style={{ scrollSnapType: 'y mandatory' }}
         >
-          {/* Top spacer to center first item */}
-          <div style={{ height: 'calc(50% - 40px)' }} />
+          <div style={{ height: 'calc(50% - 32px)' }} />
           {works.map((work, index) => {
             const distance = Math.abs(index - selectedIndex);
-            const opacity = distance === 0 ? 1 : distance === 1 ? 0.6 : 0.3;
-            const scale = distance === 0 ? 1 : distance === 1 ? 0.9 : 0.8;
+            const isSelected = distance === 0;
+            const sc = isSelected ? 1 : distance === 1 ? 0.95 : 0.88;
+            const op = isSelected ? 1 : distance === 1 ? 0.55 : 0.25;
+            const sColor = STATUS_COLORS[work.status || ''] || null;
 
             return (
               <div
                 key={work.id || index}
-                className="h-[80px] flex items-center justify-center px-6 snap-center cursor-pointer"
-                style={{
-                  transform: `scale(${scale})`,
-                  transition: 'transform 0.2s'
-                }}
+                className="h-[64px] flex items-center px-7 snap-center cursor-pointer"
+                style={{ transform: `scale(${sc})`, opacity: op, transition: 'all 0.2s ease-out' }}
                 onClick={() => {
-                  if (index === selectedIndex) {
-                    handleSelectWork();
-                  } else {
-                    setSelectedIndex(index);
-                    scrollToIndex(index);
-                  }
+                  if (index === selectedIndex) handleSelectWork();
+                  else { setSelectedIndex(index); scrollToIndex(index); }
                 }}
               >
-                <div className={`flex items-center gap-3 w-full max-w-md transition-opacity duration-200 ${
-                  distance === 0 ? 'opacity-100' : distance === 1 ? 'opacity-70' : 'opacity-40'
-                }`}>
-                  {/* Status indicator */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shadow-lg
-                    ${work.status === 'mastered' || work.status === 'completed' ? 'bg-emerald-500 text-white' :
-                      work.status === 'practicing' ? 'bg-blue-500 text-white' :
-                      work.status === 'presented' ? 'bg-amber-500 text-white' :
-                      'bg-white/30 text-white'}`}
-                  >
-                    {work.status === 'mastered' || work.status === 'completed' ? '✓' :
-                     work.status === 'practicing' ? 'Pr' :
-                     work.status === 'presented' ? 'P' : '○'}
+                <div className="flex items-center gap-3 w-full">
+                  {/* Status dot */}
+                  <div className="w-5 flex justify-center shrink-0">
+                    {sColor ? (
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sColor, boxShadow: `0 0 6px ${sColor}60` }} />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-white/20" />
+                    )}
                   </div>
 
                   {/* Work name */}
-                  <div className="flex-1">
-                    <p className={`font-semibold text-white ${distance === 0 ? 'text-lg' : 'text-base'}`}>
-                      {work.name}
-                    </p>
-                  </div>
+                  <p className={`flex-1 truncate transition-all ${
+                    isSelected
+                      ? 'text-white font-semibold text-[15px]'
+                      : 'text-white/80 font-normal text-sm'
+                  }`}>
+                    {work.name}
+                  </p>
 
-                  {/* Check for selected */}
-                  {distance === 0 && (
-                    <span className="text-emerald-400 text-lg shrink-0">›</span>
+                  {/* Status label for selected */}
+                  {isSelected && work.status && work.status !== 'not_started' && (
+                    <span
+                      className="text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0"
+                      style={{
+                        color: sColor || '#fff',
+                        backgroundColor: (sColor || '#fff') + '18',
+                      }}
+                    >
+                      {work.status === 'mastered' || work.status === 'completed' ? 'Mastered' :
+                       work.status === 'practicing' ? 'Practicing' : 'Presented'}
+                    </span>
                   )}
                 </div>
               </div>
             );
           })}
-          {/* Bottom spacer to center last item */}
-          <div style={{ height: 'calc(50% - 40px)' }} />
+          <div style={{ height: 'calc(50% - 32px)' }} />
         </div>
       </div>
 
       {/* Bottom Action Area */}
-      <div
-        className="pb-[max(1rem,env(safe-area-inset-bottom))] px-4 pt-4 space-y-3"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Add Work Form - expandable */}
+      <div className="pb-[max(0.75rem,env(safe-area-inset-bottom))] px-5 pt-3 shrink-0" onClick={e => e.stopPropagation()}>
         {showAddForm ? (
-          <div className="bg-white/10 rounded-2xl p-4 space-y-3">
+          <div className="bg-white/6 border border-white/10 rounded-2xl p-4 space-y-3">
             <input
               type="text"
               value={newWorkName}
               onChange={(e) => setNewWorkName(e.target.value)}
               placeholder={t('workWheel.workNamePlaceholder')}
               autoFocus
-              className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/50 border border-white/30 focus:outline-none focus:border-white/60"
+              className="w-full px-4 py-3 rounded-xl bg-white/8 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:border-white/30 text-sm"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newWorkName.trim()) handleAddWork();
                 if (e.key === 'Escape') setShowAddForm(false);
               }}
             />
 
-            {/* Position selector - tap to open picker */}
             <div className="flex gap-2">
               <button
                 onClick={() => setShowPositionPicker(true)}
-                className="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors bg-white/20 text-white border border-white/30 flex items-center justify-center gap-2 truncate"
+                className="flex-1 py-2.5 px-3 rounded-xl text-xs font-medium bg-white/8 text-white/70 border border-white/10 flex items-center justify-center gap-1.5 truncate hover:bg-white/12 transition-colors"
               >
                 <span className="truncate">After: {insertAfterIndex !== null ? works[insertAfterIndex]?.name || '?' : '?'}</span>
-                <span className="text-white/60 shrink-0">▼</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0 opacity-40"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <button
                 onClick={() => setInsertAfterIndex(null)}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  insertAfterIndex === null
-                    ? 'bg-white/30 text-white'
-                    : 'bg-white/10 text-white/60'
+                className={`py-2.5 px-4 rounded-xl text-xs font-medium transition-colors ${
+                  insertAfterIndex === null ? 'bg-white/15 text-white' : 'bg-white/5 text-white/40'
                 }`}
               >
                 {t('workWheel.endOfList')}
               </button>
             </div>
 
-            {/* Position Picker Modal - Searchable List */}
+            {/* Position Picker */}
             {showPositionPicker && (
-              <div
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm flex flex-col z-50"
-                onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }}
-              >
-                <div
-                  className="flex-1 flex flex-col max-w-lg mx-auto w-full"
-                  onClick={e => e.stopPropagation()}
-                >
-                  {/* Header */}
-                  <div className="pt-[max(1rem,env(safe-area-inset-top))] px-4 pb-3 shrink-0">
+              <div className="fixed inset-0 bg-black/90 flex flex-col z-50" onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }}>
+                <div className="flex-1 flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
+                  <div className="pt-[max(1rem,env(safe-area-inset-top))] px-5 pb-3 shrink-0">
                     <div className="flex items-center justify-between text-white">
-                      <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="p-2 -ml-2">
-                        <span className="text-2xl">✕</span>
+                      <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                       </button>
-                      <h2 className="font-bold text-lg">{t('workWheel.insertAfterPosition')}</h2>
+                      <h2 className="font-semibold text-base">{t('workWheel.insertAfterPosition')}</h2>
                       <div className="w-10" />
                     </div>
-                    {/* Search */}
                     <div className="mt-3 relative">
                       <input
                         ref={positionSearchRef}
@@ -425,45 +379,36 @@ export default function WorkWheelPicker({
                         onChange={e => setPositionSearch(e.target.value)}
                         placeholder={t('workWheel.typeToSearch')}
                         autoFocus
-                        className="w-full px-4 py-2.5 pl-9 rounded-xl bg-white/15 text-white placeholder-white/40 border border-white/20 focus:outline-none focus:border-white/50 text-sm"
+                        className="w-full px-4 py-2.5 pl-10 rounded-xl bg-white/8 text-white placeholder-white/30 border border-white/10 focus:outline-none focus:border-white/30 text-sm transition-colors"
                       />
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-sm">🔍</span>
+                      <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                      </svg>
                       {positionSearch && (
-                        <button
-                          onClick={() => setPositionSearch('')}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 text-xs"
-                        >
-                          ✕
+                        <button onClick={() => setPositionSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                         </button>
                       )}
                     </div>
                   </div>
-
-                  {/* Scrollable list */}
                   <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
                     {works
                       .map((work, idx) => ({ work, idx }))
-                      .filter(({ work }) =>
-                        !positionSearch.trim() || work.name.toLowerCase().includes(positionSearch.toLowerCase())
-                      )
+                      .filter(({ work }) => !positionSearch.trim() || work.name.toLowerCase().includes(positionSearch.toLowerCase()))
                       .map(({ work, idx }) => {
-                        const isSelected = insertAfterIndex === idx;
+                        const isSel = insertAfterIndex === idx;
                         return (
                           <button
                             key={work.id || idx}
-                            onClick={() => {
-                              setInsertAfterIndex(idx);
-                              setShowPositionPicker(false);
-                              setPositionSearch('');
-                            }}
+                            onClick={() => { setInsertAfterIndex(idx); setShowPositionPicker(false); setPositionSearch(''); }}
                             className={`w-full text-left px-4 py-3 rounded-xl mb-1 flex items-center gap-3 transition-colors ${
-                              isSelected
-                                ? 'bg-white/20 border border-white/40'
-                                : 'bg-white/5 border border-transparent hover:bg-white/10'
+                              isSel ? 'bg-white/12 border border-white/20' : 'border border-transparent hover:bg-white/6'
                             }`}
                           >
-                            <span className="flex-1 text-white font-medium truncate">{work.name}</span>
-                            {isSelected && <span className="text-emerald-400 text-lg shrink-0">✓</span>}
+                            <span className="flex-1 text-white/90 text-sm font-medium truncate">{work.name}</span>
+                            {isSel && (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" className="shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
+                            )}
                           </button>
                         );
                       })}
@@ -472,56 +417,54 @@ export default function WorkWheelPicker({
               </div>
             )}
 
-            {/* Action buttons */}
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowAddForm(false); setNewWorkName(''); }}
-                className="flex-1 py-3 bg-white/20 text-white font-medium rounded-xl"
+                className="flex-1 py-3 bg-white/8 text-white/60 font-medium rounded-xl text-sm hover:bg-white/12 transition-colors"
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={handleAddWork}
                 disabled={!newWorkName.trim() || isAdding}
-                className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl disabled:opacity-50"
+                className="flex-1 py-3 font-semibold rounded-xl text-sm disabled:opacity-40 transition-colors text-white"
+                style={{ backgroundColor: areaConfig.color }}
               >
                 {isAdding ? t('common.adding') : t('workWheel.addWork')}
               </button>
             </div>
           </div>
         ) : (
-          <>
-            {/* Primary action button — adapts to context */}
+          <div className="space-y-2">
+            {/* Primary action */}
             <button
               onClick={() => {
                 if (!selectedWork) return;
-                if (onAddExtra) {
-                  onAddExtra(selectedWork);
-                  onClose();
-                } else {
-                  onSelectWork(selectedWork, selectedWork.status || 'not_started');
-                  onClose();
-                }
+                if (onAddExtra) { onAddExtra(selectedWork); onClose(); }
+                else { onSelectWork(selectedWork, selectedWork.status || 'not_started'); onClose(); }
               }}
               disabled={!selectedWork}
-              className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
+              className="w-full py-3.5 text-white font-semibold rounded-2xl text-[15px] active:scale-[0.98] transition-all disabled:opacity-40"
+              style={{ backgroundColor: areaConfig.color }}
             >
               {onAddExtra ? t('workWheel.addWork') : t('common.select')}
             </button>
 
-            {/* Selected work name display */}
-            <p className="text-center text-white/80 text-sm mt-1">
-              {selectedWork?.name?.substring(0, 40)}{selectedWork?.name && selectedWork.name.length > 40 ? '...' : ''}
-            </p>
+            {/* Selected work name */}
+            {selectedWork && (
+              <p className="text-center text-white/40 text-xs tracking-wide">
+                {selectedWork.name}
+              </p>
+            )}
 
-            {/* Add work link */}
+            {/* Add custom work */}
             <button
               onClick={() => setShowAddForm(true)}
-              className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
+              className="w-full py-2 text-white/30 text-xs font-medium hover:text-white/60 transition-colors"
             >
-                + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
-              </button>
-          </>
+              + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
+            </button>
+          </div>
         )}
       </div>
     </div>
