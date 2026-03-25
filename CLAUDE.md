@@ -69,12 +69,15 @@ Two UI components fixed. PhotoCropModal was showing no image (CSS flex chicken-a
 - Status label pill on selected item, refined search input (`bg-white/8`)
 - `STATUS_COLORS` constant for consistent color mapping across component
 
-**Files Modified (3):**
+**Curriculum Nav Icon Added:** 📚 icon added to DashboardHeader nav bar (after 🧠 Guru, before 📋 Overview). Teachers can now reach `/montree/dashboard/curriculum` directly to edit work names/details via ✏️ pencil button. Previously the curriculum page was undiscoverable from the nav.
+
+**Files Modified (4):**
 1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-[300px])
 2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines)
 3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` key
+4. `components/montree/DashboardHeader.tsx` — Added 📚 curriculum nav link
 
-**Deploy:** ✅ Commits `f334c9a9`, `53b2415c`, `bc357a6f`, `4641ec2b` pushed. Railway auto-deploying.
+**Deploy:** ✅ Commits `f334c9a9`, `53b2415c`, `bc357a6f`, `4641ec2b`, `12209d22` pushed. Railway auto-deploying.
 **Handoff:** `docs/handoffs/HANDOFF_UI_POLISH_CROP_WHEELPICKER_MAR25.md`
 
 ---

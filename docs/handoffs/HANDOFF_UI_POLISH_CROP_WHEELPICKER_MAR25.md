@@ -84,11 +84,22 @@ const STATUS_COLORS: Record<string, string> = {
 
 ---
 
-## Files Modified (3)
+## Fix 3 — Curriculum Nav Icon Added to Dashboard Header
+
+**Problem:** Curriculum page (`/montree/dashboard/curriculum`) existed with full edit capabilities (✏️ pencil to rename/edit any work) but had NO icon in the header nav bar. Teachers couldn't discover it without knowing the URL.
+
+**Fix:** Added 📚 icon to DashboardHeader nav, positioned after 🧠 Guru and before 📋 Classroom Overview. Teacher-only (hidden for homeschool parents via `!isHome` gate). Uses existing `t('nav.curriculum')` i18n key for title tooltip.
+
+**Commit:** `12209d22`
+
+---
+
+## Files Modified (4)
 
 1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-0 → min-h-[300px])
 2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines). Functional fixes + visual polish.
 3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` key
+4. `components/montree/DashboardHeader.tsx` — Added 📚 curriculum nav link
 
 ## Commits
 
@@ -96,7 +107,20 @@ const STATUS_COLORS: Record<string, string> = {
 - `53b2415c` — i18n select key
 - `bc357a6f` — WorkWheelPicker functional fixes (adaptive button, search, remove sequences)
 - `4641ec2b` — WorkWheelPicker visual polish overhaul
+- `12209d22` — Curriculum 📚 icon in header nav
 
 ## Deploy
 
 ✅ All commits pushed to main. Railway auto-deploying.
+
+---
+
+## Next Session Considerations
+
+1. **Nav bar getting crowded** — Header now has 8+ icons (中文, 📸, 🧠, 📚, 📋, 🖼️, 🔍, 📖, inbox, AI budget, logout). On narrow mobile screens these overflow with `overflow-x-auto`. May want to consider a hamburger menu or grouping lesser-used icons behind a "more" dropdown.
+
+2. **Curriculum page UX for bulk edits** — Teacher asked about editing "CVC same ending sound /a/" → "/at/". The EditWorkModal works for one-at-a-time edits but there's no bulk rename/edit capability. If teachers frequently need to edit multiple works, a spreadsheet-style inline edit view would be faster.
+
+3. **Photo Audit → Curriculum flow** — Teacher's primary workflow is Photo Audit (tag photos) → occasionally needs to edit work names. Currently requires navigating away to curriculum page. Could add an "edit work" option directly in the photo-audit "Fix" flow or in the WorkWheelPicker itself.
+
+4. **End-to-end smoke test needed** — Multiple UI components were rewritten this session. Worth a manual pass through: crop modal (open, crop, save), WorkWheelPicker on photo-audit (select work, add custom work), WorkWheelPicker on gallery (add extra work with position picker), curriculum page (edit a work name).
