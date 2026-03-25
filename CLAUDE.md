@@ -48,6 +48,35 @@ Routes migrated: `photos.ts`, `reports/send`, `reports/preview`, `reports/route`
 **Deploy:** ✅ Commits `f714fc02` + `f186c094` pushed. Railway deployment successful.
 **Handoff:** `docs/handoffs/HANDOFF_SYSTEM_AUDIT_FIXES_MAR25.md`
 
+### Session Work (Mar 25, 2026 — UI Polish: PhotoCropModal Fix + WorkWheelPicker Overhaul)
+
+**PhotoCropModal Fix + WorkWheelPicker Complete Overhaul — 4 Functional Fixes + Visual Polish — ✅ DEPLOYED:**
+
+Two UI components fixed. PhotoCropModal was showing no image (CSS flex chicken-and-egg). WorkWheelPicker got 4 functional fixes + complete visual rewrite.
+
+**PhotoCropModal Fix (CRITICAL):** Image container used `flex-1 min-h-0` inside `max-h-[90vh]` flex column. ResizeObserver + conditional render guard created zero-dimension cycle. Fix: `min-h-0` → `min-h-[300px]` on line 719.
+
+**WorkWheelPicker Functional Fixes (4):**
+1. **CRITICAL: "Add Work" button broken on photo-audit** — Button required `onAddExtra` prop but photo-audit only passes `onSelectWork`. Fix: adaptive button checks `onAddExtra` first, falls back to `onSelectWork`. Label adapts ("Add Work" vs "Select").
+2. **Position picker missing search** — Added searchable list to "Insert after position..." modal.
+3. **Messy sequence numbers** — Removed `#177` style numbers from work names.
+4. **"Add custom work" link disappeared** — Was accidentally hidden behind `{onAddExtra && (...)}` conditional. Now always visible.
+
+**WorkWheelPicker Visual Polish (Complete Rewrite):**
+- Darker backdrop (`bg-black/90`), smaller items (`h-[64px]`), SVG icons replacing emoji
+- Status dots: small colored circles with glow (mastered=emerald, practicing=blue, presented=amber)
+- Area-colored selection highlight + primary button using `areaConfig.color`
+- Status label pill on selected item, refined search input (`bg-white/8`)
+- `STATUS_COLORS` constant for consistent color mapping across component
+
+**Files Modified (3):**
+1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-[300px])
+2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines)
+3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` key
+
+**Deploy:** ✅ Commits `f334c9a9`, `53b2415c`, `bc357a6f`, `4641ec2b` pushed. Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_UI_POLISH_CROP_WHEELPICKER_MAR25.md`
+
 ---
 
 ### Session Work (Mar 24, 2026 — Smart Learning System BUILD: All 5 Sprints COMPLETE)
