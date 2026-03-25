@@ -37,6 +37,130 @@ interface AuditPhoto {
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
+// Area picker with cross-area work search
+function AreaPickerWithSearch({
+  areas, curriculum, onSelectArea, onSelectWork, onClose, t
+}: {
+  areas: typeof AREAS;
+  curriculum: Record<string, any[]>;
+  onSelectArea: (areaKey: string) => void;
+  onSelectWork: (work: any, areaKey: string) => void;
+  onClose: () => void;
+  t: (key: string) => string;
+}) {
+  const [query, setQuery] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-focus search on mount
+  useEffect(() => {
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, []);
+
+  // Search across all areas
+  const searchResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q.length < 2) return [];
+    const results: { work: any; areaKey: string; areaLabel: string; areaColor: string }[] = [];
+    for (const area of areas) {
+      const works = curriculum[area.key] || [];
+      for (const w of works) {
+        if (w.name?.toLowerCase().includes(q)) {
+          results.push({ work: { ...w, id: w.id || w.work_key || w.name }, areaKey: area.key, areaLabel: area.label, areaColor: area.color });
+        }
+      }
+    }
+    return results.slice(0, 15);
+  }, [query, curriculum, areas]);
+
+  const showSearch = query.trim().length >= 2;
+
+  return (
+    <div className="fixed inset-0 z-30 bg-black/50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="bg-white rounded-xl p-5 w-full max-w-sm max-h-[85vh] flex flex-col"
+        onClick={e => e.stopPropagation()}
+      >
+        <h3 className="text-lg font-semibold mb-3">{t('audit.pickArea')}</h3>
+
+        {/* Search input */}
+        <div className="relative mb-3">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder={t('audit.searchWorks') || 'Search works across all areas...'}
+            className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+            autoComplete="off"
+          />
+          {query && (
+            <button onClick={() => setQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm">
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="overflow-y-auto flex-1 min-h-0">
+          {/* Search results */}
+          {showSearch && searchResults.length > 0 && (
+            <div className="space-y-1 mb-2">
+              {searchResults.map((r, i) => (
+                <button
+                  key={`${r.areaKey}-${r.work.name}-${i}`}
+                  onClick={() => onSelectWork(r.work, r.areaKey)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-left transition-colors"
+                >
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
+                    style={{ backgroundColor: r.areaColor }}>
+                    {r.areaKey[0].toUpperCase()}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-800 truncate">{r.work.name}</div>
+                    <div className="text-xs text-gray-400">{r.areaLabel}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {showSearch && searchResults.length === 0 && (
+            <p className="text-sm text-gray-400 text-center py-3">{t('common.noResults') || 'No works found'}</p>
+          )}
+
+          {/* Area buttons (always visible below search results) */}
+          {!showSearch && (
+            <div className="grid grid-cols-1 gap-2">
+              {areas.map(a => (
+                <button
+                  key={a.key}
+                  onClick={() => onSelectArea(a.key)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg border hover:bg-gray-50 text-left"
+                >
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                    style={{ backgroundColor: a.color }}>
+                    {a.key[0].toUpperCase()}
+                  </span>
+                  <span className="font-medium">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onClose}
+          className="mt-3 w-full py-2 text-sm text-gray-500"
+        >
+          {t('common.cancel')}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function PhotoAuditPage() {
   const { t } = useI18n();
   const abortRef = useRef<AbortController | null>(null);
@@ -203,9 +327,11 @@ export default function PhotoAuditPage() {
     // If no area or invalid area, area picker modal shows automatically (correctingPhoto && !pickerArea)
   };
 
-  // Work selected from WorkWheelPicker — submit correction
-  const handleWorkSelected = async (work: any, _status?: string) => {
+  // Work selected from WorkWheelPicker or cross-area search — submit correction
+  // areaOverride is used when selecting directly from search (pickerArea not yet set in state)
+  const handleWorkSelected = async (work: any, _status?: string, areaOverride?: string) => {
     if (!correctingPhoto) return;
+    const effectiveArea = areaOverride || pickerArea;
     setProcessingId(correctingPhoto.id);
     try {
       const res = await fetch('/api/montree/guru/corrections', {
@@ -220,13 +346,13 @@ export default function PhotoAuditPage() {
           original_confidence: correctingPhoto.confidence || 0,
           corrected_work_name: work.name,
           corrected_work_id: work.id,
-          corrected_area: pickerArea,
+          corrected_area: effectiveArea,
         }),
       });
       if (!res.ok) throw new Error('correction failed');
       setPhotos(prev => prev.map(p =>
         p.id === correctingPhoto.id
-          ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea, zone: 'green' as const, confidence: 1.0 }
+          ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea, zone: 'green' as const, confidence: 1.0 }
           : p
       ));
       toast.success(t('audit.corrected'));
@@ -653,38 +779,18 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
-      {/* Area picker modal (shown when correcting) */}
+      {/* Area picker modal with cross-area search (shown when correcting) */}
       {correctingPhoto && !pickerArea && (
-        <div className="fixed inset-0 z-30 bg-black/50 flex items-center justify-center p-4"
-          onClick={() => setCorrectingPhoto(null)}
-        >
-          <div className="bg-white rounded-xl p-5 w-full max-w-sm"
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-lg font-semibold mb-4">{t('audit.pickArea')}</h3>
-            <div className="grid grid-cols-1 gap-2">
-              {AREAS.map(a => (
-                <button
-                  key={a.key}
-                  onClick={() => setPickerArea(a.key)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border hover:bg-gray-50 text-left"
-                >
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-                    style={{ backgroundColor: a.color }}>
-                    {a.key[0].toUpperCase()}
-                  </span>
-                  <span className="font-medium">{a.label}</span>
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => setCorrectingPhoto(null)}
-              className="mt-4 w-full py-2 text-sm text-gray-500"
-            >
-              {t('common.cancel')}
-            </button>
-          </div>
-        </div>
+        <AreaPickerWithSearch
+          areas={AREAS}
+          curriculum={curriculum}
+          onSelectArea={(areaKey: string) => setPickerArea(areaKey)}
+          onSelectWork={(work: any, areaKey: string) => {
+            handleWorkSelected(work, undefined, areaKey);
+          }}
+          onClose={() => setCorrectingPhoto(null)}
+          t={t}
+        />
       )}
 
       {/* WorkWheelPicker (shown after area selected) */}

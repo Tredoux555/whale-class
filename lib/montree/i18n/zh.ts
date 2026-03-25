@@ -3369,6 +3369,7 @@ export const zh = {
   'audit.confirm': '正确',
   'audit.fix': '修正',
   'audit.pickArea': '选择区域',
+  'audit.searchWorks': '搜索所有区域的工作...',
   'audit.selected': '已选 {count} 张',
   'audit.selectAll': '全选',
   'audit.clearSelection': '取消',
