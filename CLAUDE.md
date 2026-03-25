@@ -40,13 +40,41 @@ Teachers could not tag photos to Special Events works via the photo-audit "Fix" 
 **Deploy:** ✅ All pushed. Railway auto-deploying. Verified working.
 **Handoff:** `docs/handoffs/HANDOFF_SPECIAL_EVENTS_PHOTO_AUDIT_FIX_MAR26.md`
 
-### 🟡 NEXT PRIORITY: Smart Learning System Bug Fixes
+### Session Work (Mar 26, 2026 — Photo Audit Multi-Child Tagging + Untagged Bug Fix + Health Checks)
 
-**Context:** Smart Learning system is functional but "a little buggy" per teacher feedback. Console shows 500 errors on:
-- `/api/montree/classroom-setup/describe` — Sonnet vision endpoint for describing reference photos
-- `/api/montree/guru/corrections` — Teacher correction endpoint (3 failed calls visible)
+**Photo Audit Multi-Child Tagging + Untagged Bug Fix + Health Checks — 3 Issues Fixed + Verification Pass — ⚠️ NOT YET PUSHED:**
 
-These need diagnosis and fixing next session.
+Three issues diagnosed and fixed: (1) photos showing as "Untagged" despite Smart Capture identification, (2) no way to tag multiple children to a photo, (3) health check issues across several routes.
+
+**Fix 1 (CRITICAL): Untagged photo bug — work_key fallback** — Smart Capture identified works but `work_id` stayed NULL when `.ilike()` name lookup failed due to slight name differences between AI output and curriculum. Added `work_key` fallback lookup on both CLIP path (line ~821) and two-pass path (line ~1818) of photo-insight/route.ts.
+
+**Fix 2 (HIGH): Multi-child photo tagging** — Photos with multiple children could only show one child tagged. Built complete multi-child tagging feature:
+- New `POST /api/montree/media/children` endpoint (add/remove/set actions, school validation, primary child_id management)
+- Photo audit API enriched with junction table children (`child_ids[]`, `child_names[]` per photo)
+- Child Tagger Modal on photo-audit page (checkbox list, photo thumbnail, save/cancel)
+- Clickable multi-child name display with `👶+` icon on each photo card
+
+**Fix 3 (MEDIUM): Health check fixes** — 4 unsafe `.single()` → `.maybeSingle()` fixes (available-photos child lookup, guru/route.ts classroom verification + 2 greeting queries). Describe route validation strengthened to check all 3 required string fields + ensure arrays present.
+
+**Files Created (1):**
+1. `app/api/montree/media/children/route.ts` — NEW endpoint for child-photo associations (139 lines)
+
+**Files Modified (8):**
+1. `app/api/montree/guru/photo-insight/route.ts` — work_key fallback on CLIP + two-pass paths
+2. `app/api/montree/audit/photos/route.ts` — junction table query + multi-child response
+3. `app/montree/dashboard/photo-audit/page.tsx` — child tagger modal + multi-child display
+4. `app/api/montree/reports/available-photos/route.ts` — .maybeSingle() fix
+5. `app/api/montree/guru/route.ts` — 3× .maybeSingle() fixes
+6. `app/api/montree/classroom-setup/describe/route.ts` — validation strengthening
+7. `lib/montree/i18n/en.ts` — 5 new keys
+8. `lib/montree/i18n/zh.ts` — 5 matching Chinese keys (perfect EN/ZH parity)
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed. Junction table `montree_media_children` already exists.
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_AUDIT_MULTICHILD_HEALTHCHECK_MAR26.md`
+
+### 🟡 NEXT PRIORITY: Smart Learning System Bug Fixes (Corrections Route)
+
+**Context:** `/api/montree/guru/corrections` was returning 500s (3 failed calls visible in console). The describe endpoint 500s should be mitigated by the validation strengthening above. Corrections route needs separate diagnosis next session.
 
 ---
 

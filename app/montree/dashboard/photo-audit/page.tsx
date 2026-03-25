@@ -22,6 +22,8 @@ interface AuditPhoto {
   id: string;
   child_id: string;
   child_name: string;
+  child_ids: string[];
+  child_names: string[];
   classroom_id: string;
   work_id: string | null;
   work_name: string | null;
@@ -206,6 +208,12 @@ export default function PhotoAuditPage() {
   // Smart Learning progress
   const [smartLearningStats, setSmartLearningStats] = useState<{ total: number; described: number } | null>(null);
 
+  // Child tagging state
+  const [classroomChildren, setClassroomChildren] = useState<{ id: string; name: string }[]>([]);
+  const [taggingPhoto, setTaggingPhoto] = useState<AuditPhoto | null>(null);
+  const [taggingSelection, setTaggingSelection] = useState<Set<string>>(new Set());
+  const [taggingSaving, setTaggingSaving] = useState(false);
+
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
   const fetchCurriculum = useCallback(() => {
@@ -249,6 +257,66 @@ export default function PhotoAuditPage() {
   }, []);
 
   useEffect(() => { fetchSmartLearningStats(); }, [fetchSmartLearningStats]);
+
+  // Fetch classroom children for child tagging
+  useEffect(() => {
+    const session = getSession();
+    const classroomId = session?.classroom?.id;
+    if (!classroomId) return;
+    montreeApi(`/api/montree/children?classroom_id=${classroomId}`)
+      .then(r => { if (r.ok) return r.json(); throw new Error(); })
+      .then(data => {
+        const kids = (data.children || data || []).map((c: any) => ({ id: c.id, name: c.name }));
+        kids.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        setClassroomChildren(kids);
+      })
+      .catch(() => { /* silent — child tagging just won't show names */ });
+  }, []);
+
+  // Child tagging handlers
+  const handleOpenChildTagger = (photo: AuditPhoto) => {
+    setTaggingPhoto(photo);
+    setTaggingSelection(new Set(photo.child_ids || (photo.child_id ? [photo.child_id] : [])));
+  };
+
+  const handleToggleChild = (childId: string) => {
+    setTaggingSelection(prev => {
+      const next = new Set(prev);
+      next.has(childId) ? next.delete(childId) : next.add(childId);
+      return next;
+    });
+  };
+
+  const handleSaveChildTags = async () => {
+    if (!taggingPhoto) return;
+    setTaggingSaving(true);
+    try {
+      const res = await montreeApi('/api/montree/media/children', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_id: taggingPhoto.id,
+          action: 'set',
+          child_ids: Array.from(taggingSelection),
+        }),
+      });
+      if (!res.ok) throw new Error();
+      // Update local state
+      const newChildIds = Array.from(taggingSelection);
+      const newChildNames = newChildIds.map(id => classroomChildren.find(c => c.id === id)?.name || 'Unknown');
+      setPhotos(prev => prev.map(p =>
+        p.id === taggingPhoto.id
+          ? { ...p, child_ids: newChildIds, child_names: newChildNames, child_id: newChildIds[0] || p.child_id, child_name: newChildNames[0] || p.child_name }
+          : p
+      ));
+      toast.success(t('audit.childTagUpdated'));
+      setTaggingPhoto(null);
+    } catch {
+      toast.error(t('audit.childTagFailed'));
+    } finally {
+      setTaggingSaving(false);
+    }
+  };
 
   // Fetch photos when zone/date/page changes
   const fetchPhotos = useCallback(async () => {
@@ -709,6 +777,7 @@ export default function PhotoAuditPage() {
               onConfirm={() => handleConfirm(photo)}
               onCorrect={() => handleCorrect(photo)}
               onUseAsReference={() => handleTeachAI(photo)}
+              onTagChildren={() => handleOpenChildTagger(photo)}
               processing={processingId === photo.id}
               t={t}
             />
@@ -866,6 +935,66 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
+      {/* Child Tagger Modal */}
+      {taggingPhoto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setTaggingPhoto(null)}>
+          <div className="bg-white rounded-xl max-w-sm w-full max-h-[85vh] flex flex-col p-5"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold mb-1">👶 {t('audit.tagChildren')}</h3>
+            <p className="text-xs text-gray-400 mb-3 truncate">{taggingPhoto.work_name || t('audit.untaggedWork')}</p>
+
+            {/* Thumbnail */}
+            {taggingPhoto.url && (
+              <img src={taggingPhoto.url} alt="" className="w-full h-28 object-cover rounded-lg mb-3" />
+            )}
+
+            {/* Children list */}
+            <div className="flex-1 overflow-y-auto -mx-1 px-1 space-y-1 min-h-0 max-h-[40vh]">
+              {classroomChildren.map(child => {
+                const checked = taggingSelection.has(child.id);
+                return (
+                  <button
+                    key={child.id}
+                    onClick={() => handleToggleChild(child.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                      checked ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
+                      checked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300'
+                    }`}>
+                      {checked && '✓'}
+                    </span>
+                    <span className="text-sm font-medium">{child.name}</span>
+                  </button>
+                );
+              })}
+              {classroomChildren.length === 0 && (
+                <p className="text-sm text-gray-400 text-center py-4">{t('common.loading')}</p>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 mt-3 pt-3 border-t">
+              <button
+                onClick={handleSaveChildTags}
+                disabled={taggingSaving}
+                className="flex-1 py-2.5 rounded-lg bg-emerald-600 text-white font-medium text-sm disabled:opacity-50"
+              >
+                {taggingSaving ? '...' : t('common.save')}
+              </button>
+              <button
+                onClick={() => setTaggingPhoto(null)}
+                className="flex-1 py-2.5 rounded-lg border text-gray-600 font-medium text-sm"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* "Teach AI" description preview modal */}
       {describingPhoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
@@ -943,13 +1072,14 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
   onConfirm: () => void;
   onCorrect: () => void;
   onUseAsReference: () => void;
+  onTagChildren: () => void;
   processing: boolean;
   t: (key: string) => string;
 }) {
@@ -1000,7 +1130,19 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       {/* Info + actions */}
       <div className="p-2 bg-white">
         <p className="text-xs font-medium truncate">{photo.work_name || t('audit.untaggedWork')}</p>
-        <p className="text-[10px] text-gray-400 truncate">{photo.child_name || ''}</p>
+        {/* Multi-child display with tag button */}
+        <button
+          onClick={onTagChildren}
+          className="flex items-center gap-1 mt-0.5 text-[10px] text-gray-400 hover:text-blue-600 transition-colors group w-full text-left"
+          title={t('audit.tagChildren')}
+        >
+          <span className="truncate flex-1">
+            {photo.child_names && photo.child_names.length > 0
+              ? photo.child_names.join(', ')
+              : photo.child_name || t('audit.noChildrenTagged')}
+          </span>
+          <span className="opacity-0 group-hover:opacity-100 text-blue-500 flex-shrink-0">👶+</span>
+        </button>
         {photo.confidence !== null && (
           <p className="text-[10px] text-gray-400">
             {Math.round(photo.confidence * 100)}%
