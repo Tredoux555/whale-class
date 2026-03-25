@@ -17,6 +17,7 @@ export const en = {
   'common.search': 'Search',
   'common.noResults': 'No results found',
   'common.confirm': 'Confirm',
+  'common.select': 'Select',
   'common.close': 'Close',
   'common.next': 'Next',
   'common.previous': 'Previous',

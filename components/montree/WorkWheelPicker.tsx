@@ -491,32 +491,38 @@ export default function WorkWheelPicker({
           </div>
         ) : (
           <>
-            {/* Add Work button - click highlighted work to change focus */}
+            {/* Primary action button — adapts to context */}
             <button
               onClick={() => {
-                if (selectedWork && onAddExtra) {
+                if (!selectedWork) return;
+                if (onAddExtra) {
                   onAddExtra(selectedWork);
+                  onClose();
+                } else {
+                  onSelectWork(selectedWork, selectedWork.status || 'not_started');
                   onClose();
                 }
               }}
-              disabled={!selectedWork || !onAddExtra}
+              disabled={!selectedWork}
               className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl text-lg active:scale-98 transition-transform disabled:opacity-50"
             >
-              {t('workWheel.addWork')}
+              {onAddExtra ? t('workWheel.addWork') : t('common.select')}
             </button>
 
             {/* Selected work name display */}
             <p className="text-center text-white/80 text-sm mt-1">
-              {selectedWork?.name?.substring(0, 30)}{selectedWork?.name && selectedWork.name.length > 30 ? '...' : ''}
+              {selectedWork?.name?.substring(0, 40)}{selectedWork?.name && selectedWork.name.length > 40 ? '...' : ''}
             </p>
 
-            {/* Add custom work link */}
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
-            >
-              + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
-            </button>
+            {/* Add custom work link — only when adding works */}
+            {onAddExtra && (
+              <button
+                onClick={() => setShowAddForm(true)}
+                className="w-full py-2 text-white/70 text-sm font-medium hover:text-white transition-colors"
+              >
+                + {t('workWheel.addCustomWork').replace('{area}', areaConfig.name)}
+              </button>
+            )}
           </>
         )}
       </div>
