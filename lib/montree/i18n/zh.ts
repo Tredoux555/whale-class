@@ -2695,6 +2695,9 @@ export const zh = {
   'weeklyAdmin.generateFailed': '生成文档失败',
   'weeklyAdmin.fetchError': '加载笔记失败',
   'weeklyAdmin.noChildren': '此教室没有学生',
+  'weeklyAdmin.autoFill': '自动填充',
+  'weeklyAdmin.autoFilled': '已从数据自动填充',
+  'weeklyAdmin.autoFillFailed': '自动填充失败',
 
   // Guru Teaching Instructions + Image Upload
   'guru.teachingInstructions': '如何教授此工作',

@@ -2694,6 +2694,9 @@ export const en = {
   'weeklyAdmin.generateFailed': 'Failed to generate document',
   'weeklyAdmin.fetchError': 'Failed to load notes',
   'weeklyAdmin.noChildren': 'No children in this classroom',
+  'weeklyAdmin.autoFill': 'Auto-fill',
+  'weeklyAdmin.autoFilled': 'Auto-filled from data',
+  'weeklyAdmin.autoFillFailed': 'Failed to auto-fill',
 
   // Guru Teaching Instructions + Image Upload
   'guru.teachingInstructions': 'How to Teach This',
