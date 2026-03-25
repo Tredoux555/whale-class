@@ -6,6 +6,7 @@ import { join } from 'path';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseParentDescription } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Load parent descriptions from curriculum JSON files with area info
 function loadParentDescriptions(): Map<string, { description: string; why_it_matters: string; area: string }> {
@@ -246,10 +247,9 @@ export async function GET(
           .gte('captured_at', startOfWeek.toISOString())
           .lt('captured_at', endOfWeek.toISOString());
 
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
         allPhotos = (weekPhotos || []).map(p => ({
           id: p.id,
-          url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
+          url: getProxyUrl(p.storage_path),
           caption: p.caption,
           work_name: null,
           captured_at: p.captured_at,
@@ -363,7 +363,7 @@ export async function GET(
       const workName = p.work_id ? workIdToName.get(p.work_id) : p.caption;
       if (workName && p.storage_path) {
         photosByWorkName.set(workName.toLowerCase(), {
-          url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
+          url: getProxyUrl(p.storage_path),
           caption: p.caption,
         });
         usedPhotoIds.add(p.id);
@@ -418,7 +418,7 @@ export async function GET(
     // Collect ALL photos for the week (including ones not matched to works)
     const allPhotos = (mediaPhotos || []).map(p => ({
       id: p.id,
-      url: `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      url: getProxyUrl(p.storage_path),
       caption: p.caption,
       work_name: p.work_id ? workIdToName.get(p.work_id) : null,
       captured_at: p.captured_at,

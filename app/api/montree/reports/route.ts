@@ -7,6 +7,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedAreaName, getTranslatedStatus } from '@/lib/montree/i18n/server';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
@@ -273,11 +274,10 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Build photo URLs
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const photos = (mediaItems || []).map((item: { id: string; storage_path: string; thumbnail_path?: string; caption?: string; captured_at: string; work_id?: string }) => ({
       id: item.id,
-      url: `${supabaseUrl}/storage/v1/object/public/montree-media/${item.storage_path}`,
-      thumbnail_url: item.thumbnail_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${item.thumbnail_path}` : null,
+      url: getProxyUrl(item.storage_path),
+      thumbnail_url: item.thumbnail_path ? getProxyUrl(item.thumbnail_path) : null,
       caption: item.caption,
       captured_at: item.captured_at,
       work_id: item.work_id,

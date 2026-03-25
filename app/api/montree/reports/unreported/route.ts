@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,9 +53,9 @@ export async function GET(request: NextRequest) {
     // Build photo URLs from storage paths
     const photos = (photosData || []).map(p => ({
       id: p.id,
-      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      url: getProxyUrl(p.storage_path),
       caption: p.caption,
-      thumbnail_url: p.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.thumbnail_path}` : null,
+      thumbnail_url: p.thumbnail_path ? getProxyUrl(p.thumbnail_path) : null,
       captured_at: p.captured_at,
     }));
 

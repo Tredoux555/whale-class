@@ -9,6 +9,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
               work_id: p.work_id,
               caption: p.caption,
               captured_at: p.captured_at,
-              url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+              url: getProxyUrl(p.storage_path),
             }));
         }
       }
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
         work_id: p.work_id as string | null,
         caption: p.caption as string | null,
         captured_at: p.captured_at as string,
-        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+        url: getProxyUrl(p.storage_path as string),
       }));
     }
 

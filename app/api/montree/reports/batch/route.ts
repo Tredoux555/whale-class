@@ -9,6 +9,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 const MAX_PHOTOS_PER_REPORT = 6;
 
@@ -174,13 +175,10 @@ export async function POST(request: NextRequest) {
     }));
 
     // Build photo URLs
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-    const photos = supabaseUrl
-      ? (mediaItems || []).map(item => ({
-          url: `${supabaseUrl}/storage/v1/object/public/montree-media/${item.storage_path}`,
-          caption: item.caption,
-        }))
-      : [];
+    const photos = (mediaItems || []).map(item => ({
+      url: getProxyUrl(item.storage_path),
+      caption: item.caption,
+    }));
 
     // Build the report content — count only photo-backed works
     const worksThisWeek = Object.values(worksByArea).reduce((sum, works) => sum + works.length, 0);

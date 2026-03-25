@@ -3,6 +3,7 @@
 // Photos are stored in montree_media (NOT montree_child_photos which is legacy)
 
 import { SupabaseClient } from '@supabase/supabase-js';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export interface ChildPhoto {
   id: string;
@@ -23,8 +24,6 @@ export async function getChildPhotos(
   childId: string,
   classroomId?: string
 ): Promise<ChildPhoto[]> {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
   // Get direct photos for this child
   const { data: directPhotos } = await supabase
     .from('montree_media')
@@ -65,10 +64,10 @@ export async function getChildPhotos(
   return allMedia.map((p: Record<string, unknown>) => ({
     id: p.id,
     url: p.storage_path
-      ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}`
+      ? getProxyUrl(p.storage_path as string)
       : null,
     thumbnail_url: p.thumbnail_path
-      ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.thumbnail_path}`
+      ? getProxyUrl(p.thumbnail_path as string)
       : null,
     work_name: p.work_id ? workIdToName.get(p.work_id) || null : null,
     work_id: p.work_id || null,

@@ -6,6 +6,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -63,8 +64,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       work_id: photo.work_id,
       captured_at: photo.captured_at,
       thumbnail_path: photo.thumbnail_path,
-      url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${photo.storage_path}`,
-      thumbnail_url: photo.thumbnail_path ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${photo.thumbnail_path}` : null
+      url: getProxyUrl(photo.storage_path),
+      thumbnail_url: photo.thumbnail_path ? getProxyUrl(photo.thumbnail_path) : null
     }));
 
     const response = NextResponse.json({ success: true, child, photos: formattedPhotos });
