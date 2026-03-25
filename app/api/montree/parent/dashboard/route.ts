@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Area icon mapping
 const AREA_ICONS: Record<string, string> = {
@@ -241,7 +242,7 @@ export async function GET(request: NextRequest) {
 
     const recentMedia = (photos || []).map(p => ({
       id: p.id,
-      media_url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/montree-media/${p.storage_path}`,
+      media_url: getProxyUrl(p.storage_path),
       media_type: 'image' as const,
       work_name: p.work_id,
       taken_at: p.captured_at,
