@@ -210,6 +210,14 @@ export default function DashboardHeader() {
           {!isHome && (
             <>
               <Link
+                href="/montree/dashboard/curriculum"
+                data-guide="nav-curriculum"
+                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
+                title={t('nav.curriculum')}
+              >
+                📚
+              </Link>
+              <Link
                 href="/montree/dashboard/classroom-overview"
                 data-guide="nav-overview"
                 className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
