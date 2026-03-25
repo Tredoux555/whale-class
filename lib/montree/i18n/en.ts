@@ -3398,6 +3398,11 @@ export const en = {
   'audit.cropAndTeach': 'Crop to Work & Teach AI',
   'audit.useFullPhoto': 'Use Full Photo',
   'audit.uploadingCrop': 'Uploading cropped photo...',
+  'audit.tagChildren': 'Tag Children',
+  'audit.taggedChildren': 'Tagged Children',
+  'audit.noChildrenTagged': 'No children tagged',
+  'audit.childTagUpdated': 'Children updated',
+  'audit.childTagFailed': 'Failed to update children',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

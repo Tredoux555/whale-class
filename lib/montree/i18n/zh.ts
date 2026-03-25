@@ -3399,6 +3399,11 @@ export const zh = {
   'audit.cropAndTeach': '裁剪教具并训练AI',
   'audit.useFullPhoto': '使用完整照片',
   'audit.uploadingCrop': '正在上传裁剪照片...',
+  'audit.tagChildren': '标记儿童',
+  'audit.taggedChildren': '已标记的儿童',
+  'audit.noChildrenTagged': '未标记儿童',
+  'audit.childTagUpdated': '儿童已更新',
+  'audit.childTagFailed': '更新儿童失败',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

@@ -818,7 +818,28 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
             }
 
             // Classroom + shelf lookups
-            const classroomWorkId = clipClassroomLookup.data?.id || null;
+            let classroomWorkId = clipClassroomLookup.data?.id || null;
+
+            // Fallback: if .ilike() on name didn't find it, try work_key from CLIP result
+            if (!classroomWorkId && clipDecision?.clipResult?.work_key && preChildClassroomId) {
+              try {
+                const { data: byKey } = await supabase
+                  .from('montree_classroom_curriculum_works')
+                  .select('id')
+                  .eq('classroom_id', preChildClassroomId)
+                  .eq('work_key', clipDecision.clipResult.work_key)
+                  .eq('is_active', true)
+                  .limit(1)
+                  .maybeSingle();
+                if (byKey?.id) {
+                  classroomWorkId = byKey.id;
+                  console.log(`[PhotoInsight/CLIP] work_key fallback matched: "${clipDecision.clipResult.work_key}" → ${classroomWorkId}`);
+                }
+              } catch (err) {
+                console.error('[PhotoInsight/CLIP] work_key fallback lookup failed:', err);
+              }
+            }
+
             const inClassroom = !!classroomWorkId;
 
             let inChildShelf = false;
@@ -1790,6 +1811,30 @@ Match this description to the correct Montessori work. Use the visual identifica
         inClassroom = true;
         classroomWorkId = classroomLookup.value.data.id;
       }
+
+      // Fallback: if .ilike() on name didn't find it, try work_key from curriculum match
+      // This catches cases where AI returns slightly different name (e.g. "Pouring Water" vs "Pouring")
+      // but the curriculum matcher resolved the correct work_key
+      if (!classroomWorkId && finalWorkKey && classroomId) {
+        try {
+          const { data: byKey } = await supabase
+            .from('montree_classroom_curriculum_works')
+            .select('id')
+            .eq('classroom_id', classroomId)
+            .eq('work_key', finalWorkKey)
+            .eq('is_active', true)
+            .limit(1)
+            .maybeSingle();
+          if (byKey?.id) {
+            inClassroom = true;
+            classroomWorkId = byKey.id;
+            console.log(`[PhotoInsight] work_key fallback matched: "${finalWorkKey}" → ${classroomWorkId} (name "${finalWorkName}" didn't match .ilike())`);
+          }
+        } catch (err) {
+          console.error('[PhotoInsight] work_key fallback lookup failed:', err);
+        }
+      }
+
       if (shelfLookup.status === 'fulfilled' && shelfLookup.value?.data?.id) {
         inChildShelf = true;
       }

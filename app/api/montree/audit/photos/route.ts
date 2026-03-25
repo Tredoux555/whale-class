@@ -68,11 +68,12 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Step 4: Parallel enrichment (children + works + confidence)
+    // Step 4: Parallel enrichment (children + works + confidence + multi-child links)
     const childIds = [...new Set(mediaRows.map(m => m.child_id).filter(Boolean))];
     const workIds = [...new Set(mediaRows.map(m => m.work_id).filter(Boolean))];
+    const mediaIds = mediaRows.map(m => m.id);
 
-    const [childResult, workResult, confidenceResult] = await Promise.allSettled([
+    const [childResult, workResult, confidenceResult, multiChildResult] = await Promise.allSettled([
       childIds.length > 0
         ? supabase.from('montree_children').select('id, name').in('id', childIds)
         : Promise.resolve({ data: [] }),
@@ -82,12 +83,42 @@ export async function GET(request: NextRequest) {
             .in('id', workIds)
         : Promise.resolve({ data: [] }),
       fetchConfidenceData(supabase, mediaRows, auth.schoolId),
+      // Fetch multi-child links from junction table
+      mediaIds.length > 0
+        ? supabase.from('montree_media_children').select('media_id, child_id').in('media_id', mediaIds)
+        : Promise.resolve({ data: [] }),
     ]);
 
     // Step 5: Build lookup maps
     const childMap = new Map<string, string>();
     if (childResult.status === 'fulfilled') {
       for (const c of (childResult.value as any).data || []) childMap.set(c.id, c.name);
+    }
+    // Build multi-child map: media_id → Set of child_ids (from junction table)
+    const multiChildMap = new Map<string, Set<string>>();
+    if (multiChildResult.status === 'fulfilled') {
+      for (const mc of (multiChildResult.value as any).data || []) {
+        if (!multiChildMap.has(mc.media_id)) {
+          multiChildMap.set(mc.media_id, new Set());
+        }
+        multiChildMap.get(mc.media_id)!.add(mc.child_id);
+      }
+    }
+    // Fetch names for any junction-table children not in the initial childMap
+    const missingChildIds: string[] = [];
+    for (const childSet of multiChildMap.values()) {
+      for (const cid of childSet) {
+        if (!childMap.has(cid) && !missingChildIds.includes(cid)) {
+          missingChildIds.push(cid);
+        }
+      }
+    }
+    if (missingChildIds.length > 0) {
+      const { data: extraChildren } = await supabase
+        .from('montree_children').select('id, name').in('id', missingChildIds);
+      if (extraChildren) {
+        for (const c of extraChildren) childMap.set(c.id, c.name);
+      }
     }
     const workMap = new Map<string, { name: string; area: string }>();
     if (workResult.status === 'fulfilled') {
@@ -127,10 +158,35 @@ export async function GET(request: NextRequest) {
       const work = m.work_id ? workMap.get(m.work_id) : null;
       const photoZone = classifyZone(m.work_id, conf?.confidence ?? null);
       counts[photoZone as keyof typeof counts]++;
+
+      // Merge direct child_id with junction table children for complete list
+      const junctionChildren = multiChildMap.get(m.id);
+      const allChildIds: string[] = [];
+      const allChildNames: string[] = [];
+      // Always include the direct child_id first
+      if (m.child_id) {
+        allChildIds.push(m.child_id);
+        allChildNames.push(childMap.get(m.child_id) || 'Unknown');
+      }
+      // Add any additional children from junction table
+      if (junctionChildren) {
+        for (const cid of junctionChildren) {
+          if (!allChildIds.includes(cid)) {
+            allChildIds.push(cid);
+            allChildNames.push(childMap.get(cid) || 'Unknown');
+          }
+        }
+      }
+      // Also fetch child names for junction-only children not yet in childMap
+      // (childIds set was built from direct child_id only — junction children might be missing)
+      // This is handled by ensuring we add junction child_ids to the children query above
+
       return {
         id: m.id,
         child_id: m.child_id,
         child_name: childMap.get(m.child_id) || 'Unknown',
+        child_ids: allChildIds,
+        child_names: allChildNames,
         classroom_id: m.classroom_id,
         work_id: m.work_id,
         work_name: work?.name || null,

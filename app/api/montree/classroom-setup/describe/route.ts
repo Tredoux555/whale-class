@@ -142,10 +142,13 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
       }
     }
 
-    if (!result || !result.visual_description) {
-      console.error('[Describe] Sonnet returned no tool_use result');
+    if (!result || !result.visual_description || !result.parent_description || !result.why_it_matters) {
+      console.error('[Describe] Sonnet returned incomplete tool_use result:', result ? Object.keys(result) : 'null');
       return NextResponse.json({ success: false, error: 'Failed to generate description' }, { status: 500 });
     }
+    // Ensure arrays are present (Sonnet might omit them)
+    if (!Array.isArray(result.key_materials)) result.key_materials = [];
+    if (!Array.isArray(result.negative_descriptions)) result.negative_descriptions = [];
 
     // Build reference_photo_url for the client (proxy URL for China speed)
     const referencePhotoUrl = resolvedStoragePath
