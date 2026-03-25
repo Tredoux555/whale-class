@@ -3368,6 +3368,7 @@ export const en = {
   'audit.confirm': 'Correct',
   'audit.fix': 'Fix',
   'audit.pickArea': 'Choose an area',
+  'audit.searchWorks': 'Search works across all areas...',
   'audit.selected': '{count} selected',
   'audit.selectAll': 'Select All',
   'audit.clearSelection': 'Clear',
