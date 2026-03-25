@@ -207,6 +207,7 @@ export default function PhotoAuditPage() {
   const [smartLearningStats, setSmartLearningStats] = useState<{ total: number; described: number } | null>(null);
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
+  // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
   const fetchCurriculum = useCallback(() => {
     const session = getSession();
     const classroomId = session?.classroom?.id;
@@ -214,7 +215,7 @@ export default function PhotoAuditPage() {
       console.warn('[Photo Audit] No classroomId — cannot load curriculum');
       return;
     }
-    fetch(`/api/montree/works/search?classroom_id=${classroomId}`)
+    fetch(`/api/montree/works/search?classroom_id=${classroomId}&_t=${Date.now()}`)
       .then(r => {
         if (!r.ok) throw new Error(`Curriculum fetch failed: ${r.status}`);
         return r.json();
