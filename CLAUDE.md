@@ -12,7 +12,45 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 25, 2026)
+## CURRENT STATUS (Mar 26, 2026)
+
+### Session Work (Mar 26, 2026 — Special Events Photo Audit Fix)
+
+**Special Events Photo Audit Fix — 3 Issues Fixed + Audit — ✅ DEPLOYED:**
+
+Teachers could not tag photos to Special Events works via the photo-audit "Fix" flow. Three issues diagnosed and fixed.
+
+**Fix 1 (CRITICAL): WorkWheelPicker empty state add form not rendering** — When `works.length === 0`, early return prevented add form JSX from rendering. Fixed by embedding add form directly in the early-return block.
+
+**Fix 2 (HIGH): Photo-audit missing `onWorkAdded` callback** — WorkWheelPicker's `onWorkAdded?.()` was undefined because photo-audit page didn't pass the prop. Fixed by extracting `fetchCurriculum` into a useCallback and passing as `onWorkAdded={fetchCurriculum}`.
+
+**Fix 3 (MEDIUM): 409 duplicate work not refreshing curriculum** — When adding a work that already existed (409), the error branch never refreshed the curriculum, so the existing work stayed invisible. Fixed by calling `onWorkAdded?.()` on 409 + showing info toast.
+
+**Additional:** Cache-buster `&_t=${Date.now()}` added to curriculum fetch URL. Diagnostic logging added.
+
+**Verification:** Console confirms `[Photo Audit] Curriculum loaded: special_events, language, practical_life, sensorial, mathematics, cultural | special_events: 2 works`.
+
+**500 errors noted (pre-existing):** `/api/montree/classroom-setup/describe` and `/api/montree/guru/corrections` returning 500s — Smart Learning system bugs to fix next session.
+
+**Files Modified (2):**
+1. `components/montree/WorkWheelPicker.tsx` — Empty state add form + 409 refresh
+2. `app/montree/dashboard/photo-audit/page.tsx` — fetchCurriculum useCallback + onWorkAdded + cache-buster + logging
+
+**Commits:** `bd1ea26b`, `c455db3a`, `f762f70a`, `b9f4a565`
+**Deploy:** ✅ All pushed. Railway auto-deploying. Verified working.
+**Handoff:** `docs/handoffs/HANDOFF_SPECIAL_EVENTS_PHOTO_AUDIT_FIX_MAR26.md`
+
+### 🟡 NEXT PRIORITY: Smart Learning System Bug Fixes
+
+**Context:** Smart Learning system is functional but "a little buggy" per teacher feedback. Console shows 500 errors on:
+- `/api/montree/classroom-setup/describe` — Sonnet vision endpoint for describing reference photos
+- `/api/montree/guru/corrections` — Teacher correction endpoint (3 failed calls visible)
+
+These need diagnosis and fixing next session.
+
+---
+
+## PREVIOUS STATUS (Mar 25, 2026)
 
 ### Session Work (Mar 25, 2026 — System Audit Fixes + Cloudflare Proxy Migration)
 
