@@ -206,22 +206,20 @@ export default function PhotoAuditPage() {
   // Smart Learning progress
   const [smartLearningStats, setSmartLearningStats] = useState<{ total: number; described: number } | null>(null);
 
-  // Load curriculum on mount for WorkWheelPicker
-  useEffect(() => {
+  // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
+  const fetchCurriculum = useCallback(() => {
     const session = getSession();
     const classroomId = session?.classroom?.id;
     if (!classroomId) {
       console.warn('[Photo Audit] No classroomId — cannot load curriculum');
       return;
     }
-    let cancelled = false;
     fetch(`/api/montree/works/search?classroom_id=${classroomId}`)
       .then(r => {
         if (!r.ok) throw new Error(`Curriculum fetch failed: ${r.status}`);
         return r.json();
       })
       .then(data => {
-        if (cancelled) return;
         const byArea: Record<string, any[]> = {};
         for (const w of data.works || []) {
           const areaKey = w.area?.area_key || w.area_key || 'unknown';
@@ -231,8 +229,10 @@ export default function PhotoAuditPage() {
         setCurriculum(byArea);
       })
       .catch(err => console.error('[Photo Audit] Curriculum load failed:', err));
-    return () => { cancelled = true; };
   }, []);
+
+  // Load curriculum on mount
+  useEffect(() => { fetchCurriculum(); }, [fetchCurriculum]);
 
   // Fetch Smart Learning stats (how many works have AI descriptions)
   const fetchSmartLearningStats = useCallback(async () => {
@@ -802,6 +802,7 @@ export default function PhotoAuditPage() {
           works={areaWorks}
           currentWorkName={correctingPhoto.work_name || undefined}
           onSelectWork={handleWorkSelected}
+          onWorkAdded={fetchCurriculum}
         />
       )}
 
