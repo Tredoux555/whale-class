@@ -7,6 +7,7 @@ import { loadAllCurriculumWorks, getChineseNameForWork } from '@/lib/montree/cur
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Area-based generic descriptions - used as LAST RESORT when no DB description found
 // Keyed by area_key from the progress data (always correct - no guessing needed)
@@ -296,14 +297,13 @@ export async function GET(request: NextRequest) {
     const allMediaPhotos = Array.from(photoMap.values());
 
     // Transform photos with work info from curriculum (using work_id directly)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const allPhotos = allMediaPhotos.map((p: Record<string, unknown>) => {
       // Get work info from curriculum using work_id (the reliable connection)
       const workInfo = p.work_id ? workIdToInfo.get(p.work_id) : null;
       return {
         id: p.id,
         work_id: p.work_id,
-        url: p.storage_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}` : null,
+        url: p.storage_path ? getProxyUrl(p.storage_path) : null,
         work_name: workInfo?.name || p.caption || null,
         area: workInfo?.area || null,
         caption: p.caption,

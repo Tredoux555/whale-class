@@ -5,6 +5,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { getPublicUrl } from '@/lib/supabase-client';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 const DESCRIBE_TIMEOUT_MS = 45_000;
 
@@ -21,10 +23,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { photo_url, work_name, area } = body;
+    const { photo_url, storage_path, work_name, area } = body;
 
-    if (!photo_url || typeof photo_url !== 'string' || !photo_url.startsWith('http')) {
-      return NextResponse.json({ success: false, error: 'Valid photo_url required' }, { status: 400 });
+    // Accept either photo_url (full URL from photo-audit) or storage_path (from classroom-setup)
+    let resolvedPhotoUrl = photo_url;
+    let resolvedStoragePath = storage_path;
+    if (!resolvedPhotoUrl && storage_path) {
+      // Classroom-setup sends storage_path — build full URL for Anthropic vision API
+      resolvedPhotoUrl = getPublicUrl('montree-media', storage_path);
+    }
+
+    if (!resolvedPhotoUrl || typeof resolvedPhotoUrl !== 'string' || !resolvedPhotoUrl.startsWith('http')) {
+      return NextResponse.json({ success: false, error: 'Valid photo_url or storage_path required' }, { status: 400 });
     }
     if (!work_name || typeof work_name !== 'string') {
       return NextResponse.json({ success: false, error: 'work_name required' }, { status: 400 });
@@ -82,7 +92,7 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
           content: [
             {
               type: 'image',
-              source: { type: 'url', url: photo_url },
+              source: { type: 'url', url: resolvedPhotoUrl },
             },
             {
               type: 'text',
@@ -124,6 +134,11 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
       return NextResponse.json({ success: false, error: 'Failed to generate description' }, { status: 500 });
     }
 
+    // Build reference_photo_url for the client (proxy URL for China speed)
+    const referencePhotoUrl = resolvedStoragePath
+      ? getProxyUrl(resolvedStoragePath)
+      : photo_url; // photo-audit already has a full URL
+
     return NextResponse.json({
       success: true,
       description: {
@@ -133,6 +148,7 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
         key_materials: (result.key_materials || []).slice(0, 20),
         negative_descriptions: (result.negative_descriptions || []).slice(0, 10),
       },
+      reference_photo_url: referencePhotoUrl,
     });
   } catch (error) {
     console.error('[Describe] Error:', error);

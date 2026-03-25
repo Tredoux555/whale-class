@@ -82,6 +82,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
 
+    if (notesRes.error) {
+      console.error('weekly-admin-docs/generate notes error:', notesRes.error.message);
+      return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
+    }
+
     const children = childrenRes.data || [];
     const notes = notesRes.data || [];
 

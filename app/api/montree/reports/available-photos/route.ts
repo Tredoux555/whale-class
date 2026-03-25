@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,10 +85,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform media photos to have work_name and proper URL
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const allPhotos = Array.from(photoMap.values()).map((p: Record<string, unknown>) => ({
       id: p.id,  // Actual media ID
-      url: p.storage_path ? `${supabaseUrl}/storage/v1/object/public/montree-media/${p.storage_path}` : null,
+      url: p.storage_path ? getProxyUrl(p.storage_path) : null,
       work_name: p.work_id ? workIdToName.get(p.work_id) : null,
       caption: p.caption,
       created_at: p.captured_at,
