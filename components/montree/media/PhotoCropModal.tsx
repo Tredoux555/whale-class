@@ -716,7 +716,7 @@ export default function PhotoCropModal({
         {!imgError && (
           <div
             ref={containerRef}
-            className="relative flex-1 min-h-0 bg-gray-900 overflow-hidden select-none"
+            className="relative flex-1 min-h-[300px] bg-gray-900 overflow-hidden select-none"
             style={{
               cursor: dragging ? 'grabbing' : 'crosshair',
               touchAction: 'none',
