@@ -262,7 +262,7 @@ export default function PhotoAuditPage() {
 
     try {
       const res = await fetch(
-        `/api/montree/audit/photos?zone=${zone}&date_from=${dateFrom}&limit=100&offset=${page * 100}`,
+        `/api/montree/audit/photos?zone=${zone}&date_from=${dateFrom}&limit=200&offset=0`,
         { signal: controller.signal }
       );
       if (controller.signal.aborted) return;
@@ -279,7 +279,7 @@ export default function PhotoAuditPage() {
       if (!controller.signal.aborted) setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone, dateRange, page]);
+  }, [zone, dateRange]);
 
   useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
   useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
