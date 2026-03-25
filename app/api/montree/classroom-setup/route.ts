@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
     const [worksResult, memoriesResult] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, work_key, area_key, description, is_custom, sequence')
+        .select('id, name, work_key, description, is_custom, sequence, area:montree_classroom_curriculum_areas!area_id(area_key, sequence)')
         .eq('classroom_id', classroomId)
-        .order('area_key')
         .order('sequence'),
       supabase
         .from('montree_visual_memory')
@@ -66,13 +65,16 @@ export async function GET(request: NextRequest) {
     }
 
     // Merge works with their visual memory status
-    const works = (worksResult.data || []).map((w) => {
+    const works = (worksResult.data || []).map((w: any) => {
       const memory = memoryMap.get(w.work_key);
+      const areaKey = w.area?.area_key || 'other';
+      const areaSeq = w.area?.sequence ?? 999;
       return {
         id: w.id,
         name: w.name,
         work_key: w.work_key,
-        area_key: w.area_key,
+        area_key: areaKey,
+        _areaSeq: areaSeq,
         description: w.description,
         is_custom: w.is_custom || false,
         sequence: w.sequence,
@@ -86,6 +88,16 @@ export async function GET(request: NextRequest) {
         last_updated: memory?.updated_at || null,
       };
     });
+
+    // Sort by area sequence (from joined area), then work sequence within each area
+    works.sort((a: any, b: any) => {
+      const aAreaSeq = a._areaSeq ?? 999;
+      const bAreaSeq = b._areaSeq ?? 999;
+      if (aAreaSeq !== bAreaSeq) return aAreaSeq - bAreaSeq;
+      return (a.sequence ?? 0) - (b.sequence ?? 0);
+    });
+    // Remove internal sort field
+    for (const w of works) delete (w as any)._areaSeq;
 
     // Stats
     const total = works.length;
