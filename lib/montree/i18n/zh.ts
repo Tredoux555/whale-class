@@ -3388,6 +3388,12 @@ export const zh = {
   'audit.referenceSaved': '参考照片已保存——AI将从中学习！',
   'audit.referenceSaveFailed': '保存参考失败',
   'audit.describeFailed': '分析照片失败',
+  'audit.teachAI': '训练AI',
+  'audit.teach': '训练',
+  'audit.smartLearning': '智能学习',
+  'audit.cropAndTeach': '裁剪教具并训练AI',
+  'audit.useFullPhoto': '使用完整照片',
+  'audit.uploadingCrop': '正在上传裁剪照片...',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

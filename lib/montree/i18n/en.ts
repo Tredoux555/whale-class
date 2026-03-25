@@ -3387,6 +3387,12 @@ export const en = {
   'audit.referenceSaved': 'Reference photo saved — AI will learn from this!',
   'audit.referenceSaveFailed': 'Failed to save reference',
   'audit.describeFailed': 'Failed to analyze photo',
+  'audit.teachAI': 'Teach AI',
+  'audit.teach': 'Teach',
+  'audit.smartLearning': 'Smart Learning',
+  'audit.cropAndTeach': 'Crop to Work & Teach AI',
+  'audit.useFullPhoto': 'Use Full Photo',
+  'audit.uploadingCrop': 'Uploading cropped photo...',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

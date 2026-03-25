@@ -5,7 +5,9 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
+import { montreeApi } from '@/lib/montree/api';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -58,7 +60,7 @@ export default function PhotoAuditPage() {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
-  // "Use as Reference" state
+  // "Teach AI" / "Use as Reference" state
   const [describingPhoto, setDescribingPhoto] = useState<AuditPhoto | null>(null);
   const [describeResult, setDescribeResult] = useState<{
     visual_description: string;
@@ -70,6 +72,15 @@ export default function PhotoAuditPage() {
   const [describeLoading, setDescribeLoading] = useState(false);
   const [describeSaving, setDescribeSaving] = useState(false);
   const describeAbortRef = useRef<AbortController | null>(null);
+
+  // Crop choice + crop modal state
+  const [cropChoicePhoto, setCropChoicePhoto] = useState<AuditPhoto | null>(null);
+  const [cropPhoto, setCropPhoto] = useState<AuditPhoto | null>(null);
+  const [croppedReferenceUrl, setCroppedReferenceUrl] = useState<string | null>(null);
+  const [cropUploading, setCropUploading] = useState(false);
+
+  // Smart Learning progress
+  const [smartLearningStats, setSmartLearningStats] = useState<{ total: number; described: number } | null>(null);
 
   // Load curriculum on mount for WorkWheelPicker
   useEffect(() => {
@@ -98,6 +109,20 @@ export default function PhotoAuditPage() {
       .catch(err => console.error('[Photo Audit] Curriculum load failed:', err));
     return () => { cancelled = true; };
   }, []);
+
+  // Fetch Smart Learning stats (how many works have AI descriptions)
+  const fetchSmartLearningStats = useCallback(async () => {
+    try {
+      const res = await montreeApi('/api/montree/classroom-setup');
+      if (!res.ok) return;
+      const data = await res.json();
+      setSmartLearningStats(data.stats ? { total: data.stats.total, described: data.stats.described } : null);
+    } catch {
+      // Silently fail — progress bar is a nice-to-have
+    }
+  }, []);
+
+  useEffect(() => { fetchSmartLearningStats(); }, [fetchSmartLearningStats]);
 
   // Fetch photos when zone/date/page changes
   const fetchPhotos = useCallback(async () => {
@@ -260,12 +285,87 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // "Use as Reference" — Sonnet describes the photo, teacher confirms to save
-  const handleUseAsReference = async (photo: AuditPhoto) => {
+  // "Teach AI" — shows choice: Use Full Photo or Crop to Work
+  const handleTeachAI = (photo: AuditPhoto) => {
     if (!photo.url || !photo.work_name || !photo.work_id) return;
-    // Prevent concurrent describe requests
-    if (describeLoading || describeSaving) return;
-    // Abort any previous in-flight describe request
+    if (describeLoading || describeSaving || cropUploading) return;
+    setCropChoicePhoto(photo);
+  };
+
+  // Option 1: Use the full photo as-is (original flow)
+  const handleUseFullPhoto = async () => {
+    const photo = cropChoicePhoto;
+    if (!photo) return;
+    setCropChoicePhoto(null);
+    setCroppedReferenceUrl(null);
+    try {
+      await describePhotoForReference(photo, { photo_url: photo.url });
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      toast.error(err?.message || t('audit.describeFailed'));
+    }
+  };
+
+  // Option 2: Open crop modal first
+  const handleCropAndTeach = () => {
+    if (!cropChoicePhoto) return;
+    setCropPhoto(cropChoicePhoto);
+    setCropChoicePhoto(null);
+  };
+
+  // Crop completed → upload cropped blob to Supabase → then describe
+  const handleCropSave = async (croppedBlob: Blob, _width: number, _height: number) => {
+    const photo = cropPhoto;
+    if (!photo) return;
+    setCropPhoto(null);
+    setCropUploading(true);
+    setCroppedReferenceUrl(null);
+
+    try {
+      const session = getSession();
+      if (!session?.school?.id || !session?.classroom?.id) {
+        throw new Error('No session');
+      }
+
+      // Upload cropped blob as a NEW file (not overwriting original)
+      const formData = new FormData();
+      formData.append('file', new File([croppedBlob], `reference_${photo.work_id}_${Date.now()}.jpg`, { type: 'image/jpeg' }));
+      formData.append('metadata', JSON.stringify({
+        school_id: session.school.id,
+        classroom_id: session.classroom.id,
+        media_type: 'photo',
+        tags: ['reference_photo', photo.work_id],
+        caption: `Reference: ${photo.work_name}`,
+      }));
+
+      const uploadRes = await montreeApi('/api/montree/media/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error('Upload failed');
+      const uploadData = await uploadRes.json();
+      const storagePath = uploadData.media?.storage_path;
+      if (!storagePath) throw new Error('No storage path returned');
+
+      // Store the cropped reference URL for later save
+      const croppedUrl = uploadData.media?.url || null;
+      setCroppedReferenceUrl(croppedUrl);
+
+      // Now describe using storage_path (server-to-server, no body size limit)
+      await describePhotoForReference(photo, { storage_path: storagePath });
+    } catch (err: any) {
+      toast.error(err?.message || t('audit.describeFailed'));
+    } finally {
+      setCropUploading(false);
+    }
+  };
+
+  // Shared describe logic used by both full-photo and crop flows
+  const describePhotoForReference = async (
+    photo: AuditPhoto,
+    describeParams: { photo_url?: string; storage_path?: string }
+  ) => {
     describeAbortRef.current?.abort();
     const controller = new AbortController();
     describeAbortRef.current = controller;
@@ -277,7 +377,7 @@ export default function PhotoAuditPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          photo_url: photo.url,
+          ...describeParams,
           work_name: photo.work_name,
           area: photo.area || 'practical_life',
         }),
@@ -293,8 +393,10 @@ export default function PhotoAuditPage() {
       setDescribeResult(data.description);
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
-      toast.error(err?.message || t('audit.describeFailed'));
+      // Clean up all state on error — callers show the toast
       setDescribingPhoto(null);
+      setCroppedReferenceUrl(null);
+      throw err; // Re-throw so callers can show appropriate toast
     } finally {
       if (!controller.signal.aborted) setDescribeLoading(false);
     }
@@ -305,6 +407,8 @@ export default function PhotoAuditPage() {
     if (describeSaving) return; // Prevent double-click
     setDescribeSaving(true);
     try {
+      // Use cropped URL if available, otherwise fall back to original photo URL
+      const referenceUrl = croppedReferenceUrl || describingPhoto.url;
       const res = await fetch('/api/montree/classroom-setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -313,7 +417,7 @@ export default function PhotoAuditPage() {
           work_name: describingPhoto.work_name,
           area: describingPhoto.area || 'practical_life',
           visual_description: describeResult.visual_description,
-          reference_photo_url: describingPhoto.url,
+          reference_photo_url: referenceUrl,
           parent_description: describeResult.parent_description,
           why_it_matters: describeResult.why_it_matters,
           key_materials: describeResult.key_materials,
@@ -325,12 +429,15 @@ export default function PhotoAuditPage() {
         throw new Error(errData.error || 'Save failed');
       }
       toast.success(t('audit.referenceSaved'));
+      // Refresh stats after saving a new reference
+      fetchSmartLearningStats();
     } catch (err: any) {
       toast.error(err?.message || t('audit.referenceSaveFailed'));
     } finally {
       setDescribeSaving(false);
       setDescribingPhoto(null);
       setDescribeResult(null);
+      setCroppedReferenceUrl(null);
     }
   };
 
@@ -340,6 +447,10 @@ export default function PhotoAuditPage() {
     setDescribeResult(null);
     setDescribeLoading(false);
     setDescribeSaving(false);
+    setCroppedReferenceUrl(null);
+    setCropChoicePhoto(null);
+    setCropPhoto(null);
+    setCropUploading(false);
   };
 
   // Toggle selection
@@ -411,6 +522,22 @@ export default function PhotoAuditPage() {
           </select>
         </div>
 
+        {/* Smart Learning progress bar */}
+        {smartLearningStats && smartLearningStats.total > 0 && (
+          <div className="mt-2">
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
+              <span>🧠 {t('audit.smartLearning')}</span>
+              <span>{smartLearningStats.described}/{smartLearningStats.total} ({Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%)</span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-1.5">
+              <div
+                className="bg-blue-500 rounded-full h-1.5 transition-all duration-500"
+                style={{ width: `${Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Zone tabs */}
         <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
           {ZONE_TABS.map(tab => (
@@ -453,7 +580,7 @@ export default function PhotoAuditPage() {
               onToggle={() => toggleSelect(photo.id)}
               onConfirm={() => handleConfirm(photo)}
               onCorrect={() => handleCorrect(photo)}
-              onUseAsReference={() => handleUseAsReference(photo)}
+              onUseAsReference={() => handleTeachAI(photo)}
               processing={processingId === photo.id}
               t={t}
             />
@@ -572,20 +699,78 @@ export default function PhotoAuditPage() {
         />
       )}
 
-      {/* "Use as Reference" preview modal */}
+      {/* Crop choice modal — "Use Full Photo" vs "Crop to Work" */}
+      {cropChoicePhoto && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
+          onClick={() => setCropChoicePhoto(null)}>
+          <div className="bg-white rounded-xl max-w-sm w-full p-5"
+            onClick={e => e.stopPropagation()}>
+            <h3 className="text-base font-semibold mb-2">🧠 {t('audit.teachAI')}</h3>
+            <p className="text-sm text-gray-500 mb-4">{cropChoicePhoto.work_name}</p>
+
+            {cropChoicePhoto.url && (
+              <img src={cropChoicePhoto.url} alt={cropChoicePhoto.work_name || ''}
+                className="w-full h-36 object-cover rounded-lg mb-4" />
+            )}
+
+            <div className="space-y-2">
+              <button
+                onClick={handleCropAndTeach}
+                className="w-full py-3 rounded-lg bg-blue-600 text-white font-medium text-sm"
+              >
+                ✂️ {t('audit.cropAndTeach')}
+              </button>
+              <button
+                onClick={handleUseFullPhoto}
+                className="w-full py-3 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm"
+              >
+                🖼️ {t('audit.useFullPhoto')}
+              </button>
+              <button
+                onClick={() => setCropChoicePhoto(null)}
+                className="w-full py-2 text-sm text-gray-400"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PhotoCropModal */}
+      {cropPhoto && cropPhoto.url && (
+        <PhotoCropModal
+          imageUrl={cropPhoto.url}
+          isOpen={true}
+          onClose={() => setCropPhoto(null)}
+          onSave={handleCropSave}
+        />
+      )}
+
+      {/* Crop uploading overlay */}
+      {cropUploading && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3">
+            <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
+            <p className="text-sm text-gray-600">{t('audit.uploadingCrop')}</p>
+          </div>
+        </div>
+      )}
+
+      {/* "Teach AI" description preview modal */}
       {describingPhoto && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4"
           onClick={handleCancelReference}>
           <div className="bg-white rounded-xl max-w-md w-full max-h-[85vh] overflow-y-auto p-4"
             onClick={e => e.stopPropagation()}>
             <h3 className="text-base font-semibold mb-3">
-              📷 {t('audit.useAsReference')}
+              🧠 {t('audit.teachAI')}
             </h3>
             <p className="text-sm text-gray-500 mb-2">{describingPhoto.work_name}</p>
 
-            {/* Photo preview */}
-            {describingPhoto.url && (
-              <img src={describingPhoto.url} alt={describingPhoto.work_name || ''}
+            {/* Photo preview — show crop if available, else original */}
+            {(croppedReferenceUrl || describingPhoto.url) && (
+              <img src={croppedReferenceUrl || describingPhoto.url || ''} alt={describingPhoto.work_name || ''}
                 className="w-full h-40 object-cover rounded-lg mb-3" />
             )}
 
@@ -733,10 +918,10 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <button
               onClick={onUseAsReference}
               disabled={processing}
-              className="text-[10px] py-1 px-1.5 rounded bg-blue-50 text-blue-700 font-medium disabled:opacity-50"
-              title={t('audit.useAsReference')}
+              className="flex-1 text-[10px] py-1 rounded bg-blue-50 text-blue-700 font-medium disabled:opacity-50"
+              title={t('audit.teachAI')}
             >
-              📷
+              🧠 {t('audit.teach')}
             </button>
           )}
         </div>
