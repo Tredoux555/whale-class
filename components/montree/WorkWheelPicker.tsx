@@ -159,6 +159,12 @@ export default function WorkWheelPicker({
         setShowAddForm(false);
         setInsertAfterIndex(null);
         onWorkAdded?.();
+      } else if (response.status === 409) {
+        // Work already exists — refresh curriculum so it appears in the picker
+        toast.info('This work already exists — you can select it below');
+        setNewWorkName('');
+        setShowAddForm(false);
+        onWorkAdded?.();
       } else {
         const err = await response.json().catch(() => ({ error: 'Failed to add work' }));
         toast.error(err.error || 'Failed to add work');
