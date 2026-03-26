@@ -133,7 +133,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
     } catch {
       toast.error(t('common.error'));
     }
-  }, []);
+  }, [t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {

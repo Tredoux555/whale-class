@@ -216,6 +216,7 @@ export default function PhotoAuditPage() {
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
+  const curriculumAbortRef = useRef<AbortController | null>(null);
   const fetchCurriculum = useCallback(() => {
     const session = getSession();
     const classroomId = session?.classroom?.id;
@@ -223,12 +224,17 @@ export default function PhotoAuditPage() {
       console.warn('[Photo Audit] No classroomId — cannot load curriculum');
       return;
     }
-    fetch(`/api/montree/works/search?classroom_id=${classroomId}&_t=${Date.now()}`)
+    // Abort previous curriculum fetch if still in-flight (prevents race on rapid area changes)
+    curriculumAbortRef.current?.abort();
+    const controller = new AbortController();
+    curriculumAbortRef.current = controller;
+    fetch(`/api/montree/works/search?classroom_id=${classroomId}&_t=${Date.now()}`, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error(`Curriculum fetch failed: ${r.status}`);
         return r.json();
       })
       .then(data => {
+        if (controller.signal.aborted) return;
         const byArea: Record<string, any[]> = {};
         for (const w of data.works || []) {
           const areaKey = w.area?.area_key || w.area_key || 'unknown';
@@ -238,7 +244,10 @@ export default function PhotoAuditPage() {
         console.log('[Photo Audit] Curriculum loaded:', Object.keys(byArea).join(', '), '| special_events:', byArea['special_events']?.length || 0, 'works');
         setCurriculum(byArea);
       })
-      .catch(err => console.error('[Photo Audit] Curriculum load failed:', err));
+      .catch(err => {
+        if (err?.name === 'AbortError') return;
+        console.error('[Photo Audit] Curriculum load failed:', err);
+      });
   }, []);
 
   // Load curriculum on mount
