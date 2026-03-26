@@ -1158,17 +1158,29 @@ export default function PhotoAuditPage() {
         />
       )}
 
-      {/* WorkWheelPicker (shown after area selected) */}
+      {/* WorkWheelPicker (shown after area selected) — with "Change Area" back button */}
       {correctingPhoto && pickerArea && (
-        <WorkWheelPicker
-          isOpen={true}
-          onClose={() => { setCorrectingPhoto(null); setPickerArea(''); }}
-          area={pickerArea}
-          works={areaWorks}
-          currentWorkName={correctingPhoto.work_name || undefined}
-          onSelectWork={handleWorkSelected}
-          onWorkAdded={fetchCurriculum}
-        />
+        <>
+          {/* "Change Area" floating button — lets teacher go back to area picker if AI classified into wrong area */}
+          <div className="fixed top-3 left-3 z-[60]">
+            <button
+              onClick={() => setPickerArea('')}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg text-sm font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors border border-gray-200"
+            >
+              <span>←</span>
+              <span>{t('audit.changeArea')}</span>
+            </button>
+          </div>
+          <WorkWheelPicker
+            isOpen={true}
+            onClose={() => { setCorrectingPhoto(null); setPickerArea(''); }}
+            area={pickerArea}
+            works={areaWorks}
+            currentWorkName={correctingPhoto.work_name || undefined}
+            onSelectWork={handleWorkSelected}
+            onWorkAdded={fetchCurriculum}
+          />
+        </>
       )}
 
       {/* Crop choice modal — "Use Full Photo" vs "Crop to Work" */}
