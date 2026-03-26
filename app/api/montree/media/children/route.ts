@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
 
       // If the media has no primary child_id, set this one
       if (!media.child_id) {
-        await supabase.from('montree_media').update({ child_id }).eq('id', media_id);
+        const { error: updateErr } = await supabase.from('montree_media').update({ child_id }).eq('id', media_id);
+        if (updateErr) console.error('[Media Children] Primary child_id update error:', updateErr);
       }
 
       return NextResponse.json({ success: true });
@@ -86,10 +87,11 @@ export async function POST(request: NextRequest) {
           .eq('media_id', media_id)
           .limit(1)
           .maybeSingle();
-        await supabase
+        const { error: reassignErr } = await supabase
           .from('montree_media')
           .update({ child_id: remaining?.child_id || null })
           .eq('id', media_id);
+        if (reassignErr) console.error('[Media Children] Reassign primary child_id error:', reassignErr);
       }
 
       return NextResponse.json({ success: true });
@@ -111,7 +113,11 @@ export async function POST(request: NextRequest) {
       }
 
       // Delete all existing links, then insert new ones
-      await supabase.from('montree_media_children').delete().eq('media_id', media_id);
+      const { error: deleteErr } = await supabase.from('montree_media_children').delete().eq('media_id', media_id);
+      if (deleteErr) {
+        console.error('[Media Children] Delete existing links error:', deleteErr);
+        return NextResponse.json({ success: false, error: 'Failed to clear existing children' }, { status: 500 });
+      }
 
       if (child_ids.length > 0) {
         const links = child_ids.map((cid: string) => ({ media_id, child_id: cid }));

@@ -127,7 +127,6 @@ export default function DashboardHeader() {
   // Fetch students for search bar (cached in sessionStorage, 5 min TTL)
   useEffect(() => {
     if (!session?.classroom?.id) return;
-    // Don't show search for homeschool parents (they only have 1 child)
     if (isHomeschoolParent(session)) return;
 
     const cacheKey = `montree_students_${session.classroom.id}`;
@@ -142,14 +141,17 @@ export default function DashboardHeader() {
       }
     } catch {}
 
-    montreeApi(`/api/montree/children?classroom_id=${session.classroom.id}`)
+    const controller = new AbortController();
+    montreeApi(`/api/montree/children?classroom_id=${session.classroom.id}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { children?: StudentOption[] }) => {
+        if (controller.signal.aborted) return;
         const list = (data.children || []).sort((a, b) => a.name.localeCompare(b.name));
         setStudents(list);
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
       })
       .catch(() => {});
+    return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.classroom?.id]);
 
@@ -167,14 +169,17 @@ export default function DashboardHeader() {
       }
     } catch {}
 
-    montreeApi(`/api/montree/classroom/teachers?classroom_id=${session.classroom.id}`)
+    const controller = new AbortController();
+    montreeApi(`/api/montree/classroom/teachers?classroom_id=${session.classroom.id}`, { signal: controller.signal })
       .then((res) => res.json())
       .then((data: { teachers?: TeacherOption[] }) => {
+        if (controller.signal.aborted) return;
         const list = data.teachers || [];
         setTeachers(list);
         try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
       })
       .catch(() => {});
+    return () => controller.abort();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.classroom?.id]);
 

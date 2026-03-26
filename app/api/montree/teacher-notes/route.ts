@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { data: note, error: insertError } = await supabase
+    const { data: insertedRows, error: insertError } = await supabase
       .from('montree_teacher_notes')
       .insert({
         classroom_id: classroom_id,
@@ -122,14 +122,14 @@ export async function POST(request: NextRequest) {
         content: content.trim(),
         transcription: transcription?.trim() || null,
       })
-      .select('id, content, transcription, created_at')
-      .single();
+      .select('id, content, transcription, created_at');
 
     if (insertError) {
       console.error('Failed to create teacher note:', insertError.message);
       return NextResponse.json({ error: 'Failed to save note' }, { status: 500 });
     }
 
+    const note = Array.isArray(insertedRows) ? insertedRows[0] : insertedRows;
     return NextResponse.json({ note }, { status: 201 });
   } catch (error) {
     console.error('Teacher notes POST error:', error);
