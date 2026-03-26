@@ -26,6 +26,8 @@ const GuruContextBubble = dynamic(() => import('@/components/montree/guru/GuruCo
 const GuruChatThread = dynamic(() => import('@/components/montree/guru/GuruChatThread'), { ssr: false });
 const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/WeeklyAdminCard'), { ssr: false });
 const BatchReportsCard = dynamic(() => import('@/components/montree/reports/BatchReportsCard'), { ssr: false });
+const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
+const TeacherNotes = dynamic(() => import('@/components/montree/TeacherNotes'), { ssr: false });
 
 
 interface Child {
@@ -46,6 +48,7 @@ export default function DashboardPage() {
   const [showDashboardGuide, setShowDashboardGuide] = useState(false);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [guruFirstView, setGuruFirstView] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   // ─── Inline search + tools state (must be before early returns) ───
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +59,7 @@ export default function DashboardPage() {
   const childrenUrl = session?.classroom?.id
     ? `/api/montree/children?classroom_id=${session.classroom.id}`
     : null;
-  const { data: childrenData, loading, error: childrenError } = useMontreeData<{ children: Child[] }>(childrenUrl);
+  const { data: childrenData, loading, error: childrenError, refetch: refetchChildren } = useMontreeData<{ children: Child[] }>(childrenUrl);
   const children = childrenData?.children || [];
 
   // Filtered children for search (MUST be after children declaration)
@@ -275,17 +278,31 @@ export default function DashboardPage() {
         <main className="max-w-6xl mx-auto px-4 pt-5 pb-8">
 
           {children.length === 0 ? (
-            /* Empty state — add first student */
-            <Link
-              href="/montree/dashboard/students"
-              data-tutorial="student-grid"
-              className="block bg-white rounded-2xl shadow-md p-12 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
-            >
-              <span className="text-6xl mb-4 block">👶</span>
-              <p className="text-gray-600 font-medium text-lg">
-                {t('dashboard.tapAddFirstStudent')}
-              </p>
-            </Link>
+            /* Empty state — bulk import or add manually */
+            <div className="space-y-4">
+              <button
+                onClick={() => setShowBulkImport(true)}
+                data-tutorial="student-grid"
+                className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+              >
+                <span className="text-5xl mb-3 block">📋</span>
+                <p className="text-gray-700 font-semibold text-lg mb-1">
+                  {t('bulkImport.title')}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  {t('bulkImport.subtitle')}
+                </p>
+              </button>
+              <Link
+                href="/montree/dashboard/students"
+                className="block bg-white/60 border-2 border-dashed border-gray-300 hover:border-emerald-400 hover:bg-emerald-50 rounded-2xl transition-all p-6 text-center"
+              >
+                <span className="text-2xl text-gray-400 mb-1 block">+</span>
+                <p className="text-gray-400 text-sm">
+                  {t('dashboard.tapAddFirstStudent')}
+                </p>
+              </Link>
+            </div>
           ) : (
             <>
               {/* ── Search Bar ── */}
@@ -375,6 +392,7 @@ export default function DashboardPage() {
                     <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                       <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
                       <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                      <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
                     </div>
                   )}
                 </div>
@@ -399,6 +417,21 @@ export default function DashboardPage() {
           childName={children[0].name}
           isHomeschoolParent={isParent}
           onDismiss={() => { localStorage.setItem('montree_guide_dashboard_done', '1'); setShowDashboardGuide(false); }}
+        />
+      )}
+
+      {/* Bulk Paste Import Modal */}
+      {showBulkImport && session?.classroom?.id && (
+        <BulkPasteImport
+          classroomId={session.classroom.id}
+          existingCount={children.length}
+          onImported={() => {
+            setShowBulkImport(false);
+            refetchChildren();
+            // Clear student search cache so header search picks up new students
+            try { sessionStorage.removeItem(`montree_students_${session.classroom?.id}`); } catch {}
+          }}
+          onClose={() => setShowBulkImport(false)}
         />
       )}
 

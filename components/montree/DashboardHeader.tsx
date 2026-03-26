@@ -12,11 +12,19 @@ import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
+import { toast } from 'sonner';
 
 interface StudentOption {
   id: string;
   name: string;
   photo_url?: string;
+}
+
+interface TeacherOption {
+  id: string;
+  name: string;
+  role: string;
+  login_code: string;
 }
 
 export default function DashboardHeader() {
@@ -27,6 +35,14 @@ export default function DashboardHeader() {
   const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
   const [razTrackerEnabled, setRazTrackerEnabled] = useState(false);
   const [aiBudget, setAiBudget] = useState<{ spent: number; budget: number; percentage: number } | null>(null);
+
+  // Teacher selector state
+  const [teachers, setTeachers] = useState<TeacherOption[]>([]);
+  const [showTeacherMenu, setShowTeacherMenu] = useState(false);
+  const [showAddTeacher, setShowAddTeacher] = useState(false);
+  const [newTeacherName, setNewTeacherName] = useState('');
+  const [addingTeacher, setAddingTeacher] = useState(false);
+  const teacherMenuRef = useRef<HTMLDivElement>(null);
 
   // Student search state
   const [students, setStudents] = useState<StudentOption[]>([]);
@@ -125,11 +141,40 @@ export default function DashboardHeader() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.classroom?.id]);
 
-  // Close dropdown when clicking outside
+  // Fetch teachers for this classroom
+  useEffect(() => {
+    if (!session?.classroom?.id) return;
+    if (isHomeschoolParent(session)) return;
+
+    const cacheKey = `montree_teachers_${session.classroom.id}`;
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { list, ts } = JSON.parse(cached);
+        if (Date.now() - ts < 5 * 60 * 1000) { setTeachers(list); return; }
+      }
+    } catch {}
+
+    montreeApi(`/api/montree/classroom/teachers?classroom_id=${session.classroom.id}`)
+      .then((res) => res.json())
+      .then((data: { teachers?: TeacherOption[] }) => {
+        const list = data.teachers || [];
+        setTeachers(list);
+        try { sessionStorage.setItem(cacheKey, JSON.stringify({ list, ts: Date.now() })); } catch {}
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.classroom?.id]);
+
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
+      }
+      if (teacherMenuRef.current && !teacherMenuRef.current.contains(e.target as Node)) {
+        setShowTeacherMenu(false);
+        setShowAddTeacher(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -142,6 +187,34 @@ export default function DashboardHeader() {
     const q = searchQuery.toLowerCase();
     return students.filter(s => s.name.toLowerCase().includes(q));
   }, [searchQuery, students]);
+
+  const handleAddTeacher = useCallback(async () => {
+    if (!newTeacherName.trim() || !session?.classroom?.id || addingTeacher) return;
+    setAddingTeacher(true);
+    try {
+      const res = await montreeApi('/api/montree/classroom/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ classroom_id: session.classroom.id, name: newTeacherName.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Failed to add teacher:', data.error);
+        toast.error(t('teachers.addFailed'));
+        return;
+      }
+      toast.success(t('teachers.added'));
+      // Refresh teacher list
+      setTeachers(prev => [...prev, data.teacher]);
+      try { sessionStorage.removeItem(`montree_teachers_${session.classroom?.id}`); } catch {}
+      setNewTeacherName('');
+      setShowAddTeacher(false);
+    } catch (err) {
+      console.error('Add teacher error:', err);
+    } finally {
+      setAddingTeacher(false);
+    }
+  }, [newTeacherName, session?.classroom?.id, addingTeacher, t]);
 
   const handleStudentSelect = useCallback((student: StudentOption) => {
     setSearchQuery('');
@@ -178,11 +251,89 @@ export default function DashboardHeader() {
   return (
     <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Left: Logo + classroom */}
-        <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-2 hover:opacity-90 transition-opacity min-w-0 flex-shrink">
-          <span className="text-xl sm:text-2xl flex-shrink-0">🌳</span>
-          <span className="font-bold text-base sm:text-lg truncate">{session.classroom?.name || t('app.name')}</span>
-        </Link>
+        {/* Left: Logo + classroom + teacher selector */}
+        <div className="flex items-center gap-2 min-w-0 flex-shrink">
+          <Link href="/montree/dashboard" data-guide="nav-home" className="flex items-center gap-2 hover:opacity-90 transition-opacity min-w-0 flex-shrink">
+            <span className="text-xl sm:text-2xl flex-shrink-0">🌳</span>
+            <span className="font-bold text-base sm:text-lg truncate">{session.classroom?.name || t('app.name')}</span>
+          </Link>
+
+          {/* Teacher selector — teachers only, when multiple teachers exist or to add new ones */}
+          {!isHome && (
+            <div ref={teacherMenuRef} className="relative flex-shrink-0">
+              <button
+                onClick={() => { setShowTeacherMenu(!showTeacherMenu); setShowAddTeacher(false); }}
+                className="flex items-center gap-1 px-2 py-1 bg-white/15 hover:bg-white/25 rounded-lg text-xs sm:text-sm transition-colors"
+              >
+                <span className="truncate max-w-[80px] sm:max-w-[120px]">{session.teacher?.name || t('teachers.teacher')}</span>
+                <span className="text-white/60">▾</span>
+              </button>
+
+              {showTeacherMenu && (
+                <div className="absolute top-full left-0 mt-1 bg-white rounded-lg shadow-xl overflow-hidden z-[60] min-w-[200px]">
+                  {/* Teacher list */}
+                  {teachers.map((teacher) => (
+                    <div
+                      key={teacher.id}
+                      className={`flex items-center justify-between px-3 py-2.5 text-sm ${
+                        teacher.id === session.teacher?.id
+                          ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="truncate">{teacher.name}</span>
+                      {teacher.id === session.teacher?.id && (
+                        <span className="text-emerald-500 text-xs ml-2 flex-shrink-0">{t('teachers.you')}</span>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Divider */}
+                  {teachers.length > 0 && <div className="border-t border-gray-100" />}
+
+                  {/* Add teacher */}
+                  {!showAddTeacher ? (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setShowAddTeacher(true); }}
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    >
+                      <span>+</span>
+                      <span>{t('teachers.addTeacher')}</span>
+                    </button>
+                  ) : (
+                    <div className="p-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="text"
+                        value={newTeacherName}
+                        onChange={(e) => setNewTeacherName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddTeacher(); if (e.key === 'Escape') setShowAddTeacher(false); }}
+                        placeholder={t('teachers.namePlaceholder')}
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none"
+                        autoFocus
+                        maxLength={100}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setShowAddTeacher(false)}
+                          className="flex-1 px-2 py-1 text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          {t('common.cancel')}
+                        </button>
+                        <button
+                          onClick={handleAddTeacher}
+                          disabled={!newTeacherName.trim() || addingTeacher}
+                          className="flex-1 px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed"
+                        >
+                          {addingTeacher ? t('common.adding') : t('common.add')}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Right: Action icons — overflow-x-auto prevents wrapping on narrow screens */}
         <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
