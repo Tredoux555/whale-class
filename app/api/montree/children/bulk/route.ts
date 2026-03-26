@@ -6,6 +6,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 interface StudentInput {
   name: string;
   age?: number;
+  date_of_birth?: string;
   gender?: 'boy' | 'girl';
   tenure?: string;
   notes?: string;
@@ -74,7 +75,7 @@ function validateRequest(body: unknown): BulkImportRequest {
       throw new Error(`Student at index ${index} must be an object`);
     }
 
-    const { name, age, gender, tenure, notes, progress } = student as Record<string, unknown>;
+    const { name, age, date_of_birth, gender, tenure, notes, progress } = student as Record<string, unknown>;
 
     if (!name || typeof name !== 'string' || name.trim() === '') {
       throw new Error(`Student at index ${index} must have a non-empty name`);
@@ -82,6 +83,13 @@ function validateRequest(body: unknown): BulkImportRequest {
 
     if (age !== undefined && (typeof age !== 'number' || age < 0 || age > 100)) {
       throw new Error(`Student at index ${index} has invalid age`);
+    }
+
+    if (date_of_birth !== undefined && typeof date_of_birth === 'string') {
+      const dobDate = new Date(date_of_birth);
+      if (isNaN(dobDate.getTime())) {
+        throw new Error(`Student at index ${index} has invalid date_of_birth`);
+      }
     }
 
     if (gender !== undefined && !['boy', 'girl'].includes(gender as string)) {
@@ -278,12 +286,31 @@ export async function POST(request: NextRequest) {
         const childId = crypto.randomUUID();
         const enrolledAt = getEnrolledAtFromTenure(student.tenure);
 
+        // Derive age from DOB if provided, otherwise use explicit age
+        let derivedAge: number | null = student.age ? Math.round(student.age) : null;
+        let dobValue: string | null = null;
+        if (student.date_of_birth) {
+          const dobDate = new Date(student.date_of_birth);
+          if (!isNaN(dobDate.getTime())) {
+            dobValue = dobDate.toISOString().split('T')[0]; // YYYY-MM-DD for DATE column
+            // Calculate age in years from DOB
+            const now = new Date();
+            let ageYears = now.getFullYear() - dobDate.getFullYear();
+            const monthDiff = now.getMonth() - dobDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dobDate.getDate())) {
+              ageYears--;
+            }
+            derivedAge = ageYears;
+          }
+        }
+
         const childRecord: Record<string, any> = {
           id: childId,
           classroom_id: classroomId,
           school_id: schoolId,
           name: student.name.trim(),
-          age: student.age ? Math.round(student.age) : null,
+          age: derivedAge,
+          date_of_birth: dobValue,
           notes: student.notes ?? null,
           enrolled_at: enrolledAt,
         };
