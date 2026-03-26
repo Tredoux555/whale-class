@@ -3426,6 +3426,9 @@ export const zh = {
   'audit.deleteConfirm': '删除此照片？此操作无法撤销。',
   'audit.photoDeleted': '照片已删除',
   'audit.deleteFailed': '删除照片失败',
+  'audit.addNote': '添加关于这张照片的备注...',
+  'audit.saving': '保存中...',
+  'audit.noteSaveFailed': '保存备注失败',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

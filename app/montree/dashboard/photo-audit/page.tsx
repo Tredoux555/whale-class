@@ -34,6 +34,7 @@ interface AuditPhoto {
   url: string | null;
   auto_crop: { x: number; y: number; width: number; height: number } | null;
   captured_at: string;
+  caption: string | null;
 }
 
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
@@ -652,6 +653,27 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // Save photo note (caption) via PATCH
+  const handleSaveNote = useCallback(async (photoId: string, caption: string) => {
+    try {
+      const res = await montreeApi('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: photoId, caption: caption || null }),
+      });
+      if (!res.ok) {
+        console.error('[Photo Audit] Note save failed:', res.status);
+        toast.error(t('audit.noteSaveFailed'));
+      } else {
+        // Update local state
+        setPhotos(prev => prev.map(p => p.id === photoId ? { ...p, caption: caption || null } : p));
+      }
+    } catch (err) {
+      console.error('[Photo Audit] Note save error:', err);
+      toast.error(t('audit.noteSaveFailed'));
+    }
+  }, [t]);
+
   // Single correction — opens area picker (if no area) or work picker directly
   const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'];
 
@@ -1047,6 +1069,7 @@ export default function PhotoAuditPage() {
               onUseAsReference={() => handleTeachAI(photo)}
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
+              onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               t={t}
             />
@@ -1343,7 +1366,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onSaveNote, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1352,9 +1375,30 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
+  onSaveNote: (caption: string) => void;
   processing: boolean;
   t: (key: string) => string;
 }) {
+  const [noteText, setNoteText] = useState(photo.caption || '');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounced auto-save: 1.2s after last keystroke
+  const handleNoteChange = useCallback((value: string) => {
+    setNoteText(value);
+    setNoteSaved(false);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setNoteSaving(true);
+      onSaveNote(value);
+      // Optimistic: show saved after short delay
+      setTimeout(() => { setNoteSaving(false); setNoteSaved(true); }, 400);
+    }, 1200);
+  }, [onSaveNote]);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }, []);
   const zoneColors: Record<string, string> = {
     green: 'border-emerald-400',
     amber: 'border-amber-400',
@@ -1420,6 +1464,18 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             {Math.round(photo.confidence * 100)}%
           </p>
         )}
+        {/* Teacher note input */}
+        <div className="mt-1 relative">
+          <textarea
+            value={noteText}
+            onChange={e => handleNoteChange(e.target.value)}
+            placeholder={t('audit.addNote')}
+            className="w-full text-[10px] p-1.5 rounded border border-gray-200 bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
+            rows={2}
+          />
+          {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
+          {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
+        </div>
         <div className="flex gap-1 mt-1.5">
           {photo.zone !== 'green' && photo.work_id && (
             <button
