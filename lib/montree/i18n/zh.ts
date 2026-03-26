@@ -3429,6 +3429,7 @@ export const zh = {
   'audit.addNote': '添加关于这张照片的备注...',
   'audit.saving': '保存中...',
   'audit.noteSaveFailed': '保存备注失败',
+  'audit.changeArea': '切换区域',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

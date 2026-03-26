@@ -3428,6 +3428,7 @@ export const en = {
   'audit.addNote': 'Add a note about this photo...',
   'audit.saving': 'Saving...',
   'audit.noteSaveFailed': 'Failed to save note',
+  'audit.changeArea': 'Change Area',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',
