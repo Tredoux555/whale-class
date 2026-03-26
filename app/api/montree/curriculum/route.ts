@@ -351,11 +351,36 @@ export async function POST(request: NextRequest) {
     const work = data?.[0] || null;
 
     // Fire-and-forget: auto-generate Sonnet descriptions for custom works
-    // Only triggers when is_custom=true AND enrichment fields are empty
+    // Only triggers when is_custom=true AND enrichment fields are empty (fast path)
+    // When enriched fields are provided (preview path), skip — descriptions already generated
     if (work && work.is_custom && !work.description && !work.quick_guide && !work.parent_description) {
       // Don't await — this runs in the background after the response is sent
-      enrichCustomWorkInBackground(work.id, work.name, normalizedAreaKey, auth.schoolId)
-        .catch(err => console.error('[Curriculum] Enrichment failed:', err instanceof Error ? err.message : err));
+      enrichCustomWorkInBackground(work.id, work.name, normalizedAreaKey, auth.schoolId, {
+        classroomId: classroom_id,
+        teacherDescription: body.teacher_description || undefined,
+        workKey: work.work_key,
+      }).catch(err => console.error('[Curriculum] Enrichment failed:', err instanceof Error ? err.message : err));
+    }
+
+    // If visual_description provided (from preview path), upsert into montree_visual_memory for CLIP
+    if (work && body.visual_description && typeof body.visual_description === 'string' && classroom_id) {
+      const vmWorkKey = work.work_key || `custom_${work.name.toLowerCase().replace(/\s+/g, '_')}`;
+      supabase
+        .from('montree_visual_memory')
+        .upsert({
+          classroom_id,
+          work_name: work.name,
+          work_key: vmWorkKey,
+          area: normalizedAreaKey,
+          is_custom: true,
+          visual_description: body.visual_description,
+          source: 'teacher_enrichment',
+          description_confidence: 0.8,
+        }, { onConflict: 'classroom_id,work_name' })
+        .then(({ error: vmErr }) => {
+          if (vmErr) console.error(`[Curriculum] Visual memory upsert failed for "${work.name}":`, vmErr.message);
+          else console.log(`[Curriculum] ✅ Visual memory saved for "${work.name}"`);
+        });
     }
 
     return NextResponse.json({ success: true, work });

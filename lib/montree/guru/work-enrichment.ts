@@ -14,6 +14,7 @@ export interface WorkEnrichmentResult {
   direct_aims: string[];
   indirect_aims: string[];
   materials: string[];
+  visual_description?: string;
 }
 
 const AREA_CONTEXT: Record<string, string> = {
@@ -59,6 +60,9 @@ export async function generateWorkEnrichment(
 
   const areaContext = AREA_CONTEXT[areaKey] || 'Montessori educational activity';
 
+  // Extract teacherDescription from options if provided
+  const teacherDescription = (options as any).teacherDescription as string | undefined;
+
   const systemPrompt = `You are an expert AMI Montessori educator creating enrichment content for a custom work that a teacher has added to their classroom curriculum.
 
 Guidelines:
@@ -69,13 +73,18 @@ Guidelines:
 - Direct aims: 2-4 specific skills the child directly practices
 - Indirect aims: 1-3 secondary developmental benefits
 - Materials: Practical list of what's needed
+- Visual description: What a phone camera would see from 1-2 meters — material-first (wood, plastic, fabric, beads), colors, shapes, arrangement. NOT conceptual. For CLIP classifier.
 
 Respond with ONLY valid JSON. No markdown, no code blocks, no explanation.`;
+
+  const teacherContext = teacherDescription
+    ? `\nTeacher's description (use as seed context): ${teacherDescription}`
+    : '';
 
   const userPrompt = `Generate enrichment content for this custom Montessori work:
 
 Work Name: ${workName}
-Area: ${areaKey} (${areaContext})
+Area: ${areaKey} (${areaContext})${teacherContext}
 
 JSON structure required:
 {
@@ -85,7 +94,8 @@ JSON structure required:
   "why_it_matters": "string",
   "direct_aims": ["string"],
   "indirect_aims": ["string"],
-  "materials": ["string"]
+  "materials": ["string"],
+  "visual_description": "string"
 }`;
 
   let lastError: Error | null = null;
@@ -131,6 +141,11 @@ JSON structure required:
           throw new Error('Missing required fields in enrichment response');
         }
 
+        // visual_description is optional but should be a string if present
+        if (enrichment.visual_description && typeof enrichment.visual_description !== 'string') {
+          enrichment.visual_description = undefined;
+        }
+
         return enrichment;
       } finally {
         clearTimeout(timeout);
@@ -157,15 +172,19 @@ JSON structure required:
  * Fire-and-forget: generate enrichment and update the work record in DB.
  * Called after a custom work is created — never blocks the POST response.
  * All errors are caught and logged (silent failure is acceptable).
+ * Also upserts visual_description into montree_visual_memory for CLIP learning.
  */
 export async function enrichCustomWorkInBackground(
   workId: string,
   workName: string,
   areaKey: string,
   schoolId?: string,
+  opts?: { classroomId?: string; teacherDescription?: string; workKey?: string },
 ): Promise<void> {
   try {
-    const enrichment = await generateWorkEnrichment(workName, areaKey, schoolId);
+    const enrichment = await generateWorkEnrichment(workName, areaKey, schoolId, {
+      teacherDescription: opts?.teacherDescription,
+    } as any);
 
     const supabase = getSupabase();
     const { error } = await supabase
@@ -184,10 +203,32 @@ export async function enrichCustomWorkInBackground(
 
     if (error) {
       console.error(`[WORK_ENRICHMENT] DB update failed for "${workName}":`, error.message);
-      return;
+    } else {
+      console.log(`[WORK_ENRICHMENT] ✅ Custom work "${workName}" enriched successfully`);
     }
 
-    console.log(`[WORK_ENRICHMENT] ✅ Custom work "${workName}" enriched successfully`);
+    // Upsert visual_description into montree_visual_memory for CLIP learning
+    if (enrichment.visual_description && opts?.classroomId) {
+      const workKey = opts.workKey || `custom_${workName.toLowerCase().replace(/\s+/g, '_')}`;
+      const { error: vmError } = await supabase
+        .from('montree_visual_memory')
+        .upsert({
+          classroom_id: opts.classroomId,
+          work_name: workName,
+          work_key: workKey,
+          area: areaKey,
+          is_custom: true,
+          visual_description: enrichment.visual_description,
+          source: 'teacher_enrichment',
+          description_confidence: 0.8,
+        }, { onConflict: 'classroom_id,work_name' });
+
+      if (vmError) {
+        console.error(`[WORK_ENRICHMENT] Visual memory upsert failed for "${workName}":`, vmError.message);
+      } else {
+        console.log(`[WORK_ENRICHMENT] ✅ Visual memory saved for "${workName}" — CLIP will learn this`);
+      }
+    }
   } catch (error) {
     console.error(`[WORK_ENRICHMENT] ❌ Failed to enrich "${workName}":`, error instanceof Error ? error.message : error);
     // Silent failure — work is still usable without enrichment fields

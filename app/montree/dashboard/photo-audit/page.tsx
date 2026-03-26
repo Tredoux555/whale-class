@@ -39,19 +39,34 @@ interface AuditPhoto {
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
-// Area picker with cross-area work search
+// Area picker with cross-area work search + inline add custom work form
 function AreaPickerWithSearch({
-  areas, curriculum, onSelectArea, onSelectWork, onClose, t
+  areas, curriculum, onSelectArea, onSelectWork, onClose, onWorkAdded, classroomId, t
 }: {
   areas: typeof AREAS;
   curriculum: Record<string, any[]>;
   onSelectArea: (areaKey: string) => void;
   onSelectWork: (work: any, areaKey: string) => void;
   onClose: () => void;
+  onWorkAdded?: () => void;
+  classroomId?: string;
   t: (key: string) => string;
 }) {
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewAbortRef = useRef<AbortController | null>(null);
+
+  // Inline add-work form state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addWorkName, setAddWorkName] = useState('');
+  const [addWorkArea, setAddWorkArea] = useState('practical_life');
+  const [addWorkDesc, setAddWorkDesc] = useState('');
+  const [addSaving, setAddSaving] = useState(false);
+
+  // Preview state
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewData, setPreviewData] = useState<Record<string, any> | null>(null);
 
   // Auto-focus search on mount
   useEffect(() => {
@@ -76,6 +91,99 @@ function AreaPickerWithSearch({
 
   const showSearch = query.trim().length >= 2;
 
+  // Open inline add form with query pre-filled
+  const openAddForm = (prefill?: string) => {
+    setShowAddForm(true);
+    setAddWorkName(prefill || query.trim());
+    setShowPreview(false);
+    setPreviewData(null);
+  };
+
+  // Fast path — save immediately, fire-and-forget enrichment in background
+  const handleSaveWork = async () => {
+    if (!addWorkName.trim() || !classroomId) return;
+    setAddSaving(true);
+    try {
+      const body: Record<string, any> = {
+        classroom_id: classroomId,
+        name: addWorkName.trim(),
+        area_key: addWorkArea,
+        is_custom: true,
+      };
+      if (addWorkDesc.trim()) body.description = addWorkDesc.trim();
+      if (addWorkDesc.trim()) body.teacher_description = addWorkDesc.trim();
+      // If preview was used, include all enriched fields
+      if (previewData) {
+        body.description = previewData.description || body.description;
+        body.parent_description = previewData.parent_description;
+        body.why_it_matters = previewData.why_it_matters;
+        body.quick_guide = previewData.quick_guide;
+        body.direct_aims = previewData.direct_aims;
+        body.indirect_aims = previewData.indirect_aims;
+        body.materials = previewData.materials;
+        body.visual_description = previewData.visual_description;
+      }
+
+      const res = await fetch('/api/montree/curriculum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (res.status === 409) {
+        toast.info(t('audit.addWorkDuplicate') || 'This work already exists in your classroom');
+        onWorkAdded?.();
+        return;
+      }
+      if (!res.ok) throw new Error(data.error || 'Failed to add work');
+      const newWork = data.work;
+      toast.success(`${addWorkName.trim()} ${t('audit.addWorkSuccess') || 'added and tagged!'}`);
+      onWorkAdded?.();
+      // Auto-select the new work for the correction
+      if (newWork) {
+        onSelectWork({ ...newWork, id: newWork.id, name: newWork.name }, addWorkArea);
+      }
+    } catch (err) {
+      console.error('[AddWork] Save failed:', err);
+      toast.error(t('audit.addWorkFailed') || 'Failed to add work');
+    } finally {
+      setAddSaving(false);
+    }
+  };
+
+  // Preview path — generate AI descriptions before saving
+  const handlePreview = async () => {
+    if (!addWorkName.trim()) return;
+    previewAbortRef.current?.abort();
+    previewAbortRef.current = new AbortController();
+    setPreviewLoading(true);
+    setShowPreview(true);
+    try {
+      const res = await fetch('/api/montree/curriculum/enrich-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        signal: previewAbortRef.current.signal,
+        body: JSON.stringify({
+          work_name: addWorkName.trim(),
+          area_key: addWorkArea,
+          teacher_description: addWorkDesc.trim() || undefined,
+        }),
+      });
+      if (!res.ok) throw new Error('Preview failed');
+      const data = await res.json();
+      setPreviewData(data);
+    } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return;
+      console.error('[AddWork] Preview failed:', err);
+      toast.error(t('audit.previewFailed') || 'AI preview failed — you can still save without it');
+      setShowPreview(false);
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-30 bg-black/50 flex items-center justify-center p-4"
       onClick={onClose}
@@ -83,8 +191,116 @@ function AreaPickerWithSearch({
       <div className="bg-white rounded-xl p-5 w-full max-w-sm max-h-[85vh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        <h3 className="text-lg font-semibold mb-3">{t('audit.pickArea')}</h3>
+        <h3 className="text-lg font-semibold mb-3">
+          {showAddForm ? (t('audit.addCustomWork') || 'Add Custom Work') : t('audit.pickArea')}
+        </h3>
 
+        {/* === INLINE ADD FORM === */}
+        {showAddForm ? (
+          <div className="overflow-y-auto flex-1 min-h-0 space-y-3">
+            {/* Work name */}
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">{t('audit.workName') || 'Work Name'}</label>
+              <input
+                type="text"
+                value={addWorkName}
+                onChange={e => setAddWorkName(e.target.value)}
+                maxLength={255}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                autoFocus
+              />
+            </div>
+
+            {/* Area selector */}
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">{t('audit.area') || 'Area'}</label>
+              <select
+                value={addWorkArea}
+                onChange={e => setAddWorkArea(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              >
+                {areas.map(a => (
+                  <option key={a.key} value={a.key}>{a.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Brief description */}
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1 block">{t('audit.briefDescription') || 'Brief description (optional)'}</label>
+              <textarea
+                value={addWorkDesc}
+                onChange={e => setAddWorkDesc(e.target.value)}
+                maxLength={500}
+                rows={2}
+                placeholder={t('audit.descriptionPlaceholder') || "e.g., 'Children learn to blend st sound using objects'"}
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              />
+              <div className="text-xs text-gray-400 text-right mt-0.5">{addWorkDesc.length}/500</div>
+            </div>
+
+            {/* Preview results (editable) */}
+            {showPreview && (
+              <div className="border border-emerald-200 rounded-lg p-3 bg-emerald-50/50">
+                {previewLoading ? (
+                  <div className="flex items-center justify-center py-4 gap-2">
+                    <span className="animate-spin text-lg">⏳</span>
+                    <span className="text-sm text-gray-500">{t('audit.generatingPreview') || 'Generating AI descriptions...'}</span>
+                  </div>
+                ) : previewData ? (
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-600">{t('audit.previewDescription') || 'Description:'}</span>
+                      <p className="text-gray-700 mt-0.5">{previewData.description}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">{t('audit.previewParent') || 'For parents:'}</span>
+                      <p className="text-gray-700 mt-0.5">{previewData.parent_description}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium text-gray-600">{t('audit.previewWhyMatters') || 'Why it matters:'}</span>
+                      <p className="text-gray-700 mt-0.5">{previewData.why_it_matters}</p>
+                    </div>
+                    {previewData.materials?.length > 0 && (
+                      <div>
+                        <span className="font-medium text-gray-600">{t('audit.previewMaterials') || 'Materials:'}</span>
+                        <p className="text-gray-700 mt-0.5">{previewData.materials.join(', ')}</p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div className="space-y-2 pt-1">
+              <button
+                onClick={handleSaveWork}
+                disabled={!addWorkName.trim() || addSaving}
+                className="w-full py-2.5 rounded-lg font-medium text-white text-sm bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {addSaving ? (t('common.saving') || 'Saving...') : (previewData ? (t('audit.saveWithDescriptions') || 'Save with these descriptions') : (t('common.save') || 'Save'))}
+              </button>
+              {!showPreview && (
+                <button
+                  onClick={handlePreview}
+                  disabled={!addWorkName.trim() || previewLoading || addSaving}
+                  className="w-full py-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                >
+                  {t('audit.previewAI') || 'Preview AI Descriptions'}
+                </button>
+              )}
+              <button
+                onClick={() => { previewAbortRef.current?.abort(); setShowAddForm(false); setShowPreview(false); setPreviewData(null); }}
+                className="w-full py-2 text-sm text-gray-500"
+              >
+                {t('common.back') || 'Back'}
+              </button>
+            </div>
+          </div>
+        ) : (
+        /* === SEARCH + AREA PICKER === */
+        <>
         {/* Search input */}
         <div className="relative mb-3">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
@@ -125,11 +341,27 @@ function AreaPickerWithSearch({
                   </div>
                 </button>
               ))}
+              {/* "Add custom work" link below search results */}
+              <button
+                onClick={() => openAddForm()}
+                className="w-full text-center py-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+              >
+                + {t('audit.addCustomWorkLink') || 'Add a custom work'}
+              </button>
             </div>
           )}
 
+          {/* Zero results — prominent add button */}
           {showSearch && searchResults.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-3">{t('common.noResults') || 'No works found'}</p>
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-400 mb-3">{t('common.noResults') || 'No works found'}</p>
+              <button
+                onClick={() => openAddForm(query.trim())}
+                className="w-full py-3 rounded-lg font-medium text-white text-sm bg-emerald-500 hover:bg-emerald-600 transition-colors"
+              >
+                ➕ {t('audit.addQueryAsWork') || `Add '${query.trim()}' as a custom work`}
+              </button>
+            </div>
           )}
 
           {/* Area buttons (always visible below search results) */}
@@ -151,9 +383,11 @@ function AreaPickerWithSearch({
             </div>
           )}
         </div>
+        </>
+        )}
 
         <button
-          onClick={onClose}
+          onClick={() => { previewAbortRef.current?.abort(); onClose(); }}
           className="mt-3 w-full py-2 text-sm text-gray-500"
         >
           {t('common.cancel')}
@@ -875,6 +1109,8 @@ export default function PhotoAuditPage() {
             handleWorkSelected(work, undefined, areaKey);
           }}
           onClose={() => setCorrectingPhoto(null)}
+          onWorkAdded={fetchCurriculum}
+          classroomId={getSession()?.classroom?.id || ''}
           t={t}
         />
       )}
