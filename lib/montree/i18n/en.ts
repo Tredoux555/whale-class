@@ -3425,6 +3425,9 @@ export const en = {
   'audit.deleteConfirm': 'Delete this photo? This cannot be undone.',
   'audit.photoDeleted': 'Photo deleted',
   'audit.deleteFailed': 'Failed to delete photo',
+  'audit.addNote': 'Add a note about this photo...',
+  'audit.saving': 'Saving...',
+  'audit.noteSaveFailed': 'Failed to save note',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

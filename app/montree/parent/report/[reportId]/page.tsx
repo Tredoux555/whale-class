@@ -380,8 +380,18 @@ export default function ParentReportPage() {
             </button>
           )}
 
+          {/* Teacher's note (photo caption from audit) */}
+          {work.photo_caption && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+              <p className="text-[11px] font-semibold text-blue-700 mb-0.5">
+                📝 {locale === 'zh' ? '老师的观察' : "Teacher's Note"}
+              </p>
+              <p className="text-xs text-blue-800 leading-relaxed">{work.photo_caption}</p>
+            </div>
+          )}
+
           {/* Fallback description when no parent_description exists */}
-          {!work.parent_description && !work.why_it_matters && (
+          {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
             <p className="text-gray-400 text-xs">
               {locale === 'zh'
                 ? `您的孩子在${getAreaLabel(work.area)}方面进行了学习。`

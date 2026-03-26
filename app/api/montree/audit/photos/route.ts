@@ -209,6 +209,7 @@ export async function GET(request: NextRequest) {
           : null,
         auto_crop: m.auto_crop,
         captured_at: m.captured_at || m.created_at,
+        caption: m.caption || null,
       };
     });
 
