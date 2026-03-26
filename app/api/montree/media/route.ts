@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         { data: groupLinks, error: linkError },
       ] = await Promise.all([
         supabase.from('montree_children').select('classroom_id').eq('id', childId).maybeSingle(),
-        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop').eq('child_id', childId).or('tags.is.null,not.tags.cs.["reference_photo"]').order('captured_at', { ascending: false }),
+        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags').eq('child_id', childId).order('captured_at', { ascending: false }),
         supabase.from('montree_media_children').select('media_id').eq('child_id', childId),
       ]);
 
@@ -74,10 +74,13 @@ export async function GET(request: NextRequest) {
 
       const groupMedia: Array<Record<string, unknown>> = groupMediaResult.data || [];
 
-      // Combine and deduplicate by ID
+      // Combine and deduplicate by ID, filtering out reference photos
       const mediaMap = new Map();
       for (const item of [...(directMedia || []), ...groupMedia]) {
         if (!mediaMap.has(item.id)) {
+          // Filter out reference photos (PostgREST .or() has issues with JSONB array syntax)
+          const tags = (item as any).tags;
+          if (Array.isArray(tags) && tags.includes('reference_photo')) continue;
           mediaMap.set(item.id, item);
         }
       }

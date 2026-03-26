@@ -635,6 +635,23 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // Delete photo from audit
+  const handleDeletePhoto = async (photo: AuditPhoto) => {
+    if (!confirm(t('audit.deleteConfirm'))) return;
+    setProcessingId(photo.id);
+    try {
+      const res = await montreeApi(`/api/montree/media?id=${photo.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('delete failed');
+      setPhotos(prev => prev.filter(p => p.id !== photo.id));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
+      toast.success(t('audit.photoDeleted'));
+    } catch {
+      toast.error(t('audit.deleteFailed'));
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   // Single correction — opens area picker (if no area) or work picker directly
   const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'];
 
@@ -1029,6 +1046,7 @@ export default function PhotoAuditPage() {
               onCorrect={() => handleCorrect(photo)}
               onUseAsReference={() => handleTeachAI(photo)}
               onTagChildren={() => handleOpenChildTagger(photo)}
+              onDelete={() => handleDeletePhoto(photo)}
               processing={processingId === photo.id}
               t={t}
             />
@@ -1325,7 +1343,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1333,6 +1351,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onCorrect: () => void;
   onUseAsReference: () => void;
   onTagChildren: () => void;
+  onDelete: () => void;
   processing: boolean;
   t: (key: string) => string;
 }) {
@@ -1428,6 +1447,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               🧠 {t('audit.teach')}
             </button>
           )}
+          <button
+            onClick={onDelete}
+            disabled={processing}
+            className="text-[10px] py-1 px-1.5 rounded bg-red-50 text-red-500 font-medium disabled:opacity-50"
+            title={t('audit.deletePhoto')}
+          >
+            🗑️
+          </button>
         </div>
       </div>
     </div>

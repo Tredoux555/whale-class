@@ -53,9 +53,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'work_name required' }, { status: 400 });
     }
 
+    // Check for existing visual_memory entry to accumulate descriptions
+    let existingDescription: string | null = null;
+    try {
+      const { data: existing } = await supabase
+        .from('montree_visual_memory')
+        .select('visual_description')
+        .eq('classroom_id', auth.classroomId)
+        .ilike('work_name', work_name.trim())
+        .maybeSingle();
+      if (existing?.visual_description) {
+        existingDescription = existing.visual_description;
+        console.log(`[Describe] Found existing description for "${work_name}" — will merge`);
+      }
+    } catch {
+      // Non-critical — proceed without existing description
+    }
+
     const apiAbortController = new AbortController();
     const apiTimeout = setTimeout(() => apiAbortController.abort(), DESCRIBE_TIMEOUT_MS);
     const startMs = Date.now();
+
+    // Build user prompt — include existing description if available so Sonnet merges knowledge
+    const userPromptParts: string[] = [
+      `This is the Montessori work "${work_name}" (area: ${area || 'unknown'}).`,
+    ];
+    if (existingDescription) {
+      userPromptParts.push(
+        `\nAn earlier reference photo produced this description:\n"${existingDescription}"\n`,
+        `Now you have a NEW reference photo. Produce an ENHANCED description that merges what you already know from the earlier description with any NEW visual details from this photo. Keep everything that was accurate before and ADD new observations. The result should be richer and more complete than either source alone.`
+      );
+    } else {
+      userPromptParts.push(
+        `Generate a complete description set from this reference photo. Focus on what makes this specific material recognizable — its exact colors, shapes, textures, and arrangement.`
+      );
+    }
 
     let message;
     try {
@@ -109,7 +141,7 @@ IMPORTANT: Describe the MATERIALS, not the child or the environment. Focus on wh
             },
             {
               type: 'text',
-              text: `This is the Montessori work "${work_name}" (area: ${area || 'unknown'}). Generate a complete description set from this reference photo. Focus on what makes this specific material recognizable — its exact colors, shapes, textures, and arrangement.`,
+              text: userPromptParts.join(' '),
             },
           ],
         }],

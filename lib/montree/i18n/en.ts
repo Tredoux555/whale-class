@@ -3421,6 +3421,10 @@ export const en = {
   'audit.previewWhyMatters': 'Why It Matters',
   'audit.previewMaterials': 'Materials',
   'audit.saveWithDescriptions': 'Save with these descriptions',
+  'audit.deletePhoto': 'Delete Photo',
+  'audit.deleteConfirm': 'Delete this photo? This cannot be undone.',
+  'audit.photoDeleted': 'Photo deleted',
+  'audit.deleteFailed': 'Failed to delete photo',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

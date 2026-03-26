@@ -42,13 +42,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Get ALL photos for this child from montree_media table
-    const { data: mediaPhotos } = await supabase
+    const { data: rawMediaPhotos } = await supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible')
+      .select('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible, tags')
       .eq('child_id', childId)
       .eq('media_type', 'photo')
-      .or('tags.is.null,not.tags.cs.["reference_photo"]')
       .order('captured_at', { ascending: false });
+    // Filter out reference photos in JS (PostgREST .or() has issues with JSONB array syntax)
+    const mediaPhotos = (rawMediaPhotos || []).filter((m: any) => {
+      if (!m.tags) return true;
+      if (Array.isArray(m.tags) && m.tags.includes('reference_photo')) return false;
+      return true;
+    });
 
     // Also check junction table for group photos where child is included
     const { data: groupPhotos } = await supabase
