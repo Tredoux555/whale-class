@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
       .select('id, storage_path, thumbnail_path, work_id, caption, captured_at, parent_visible')
       .eq('child_id', childId)
       .eq('media_type', 'photo')
+      .or('tags.is.null,not.tags.cs.["reference_photo"]')
       .order('captured_at', { ascending: false });
 
     // Also check junction table for group photos where child is included
