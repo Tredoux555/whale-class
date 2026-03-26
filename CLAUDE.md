@@ -14,6 +14,85 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 26, 2026)
 
+### Session Work (Mar 26, 2026 — Cross-Area Correction Flow Fix)
+
+**Cross-Area Correction Flow Fix — 3x3x3 Audited — ✅ DEPLOYED:**
+
+When AI misclassified a photo into the wrong area (e.g., Language work classified as Practical Life), the "Fix" button's WorkWheelPicker was locked to the wrong area with no way to switch. Root cause: `handleCorrect()` immediately set `pickerArea` to the photo's (incorrect) area, skipping the AreaPickerWithSearch modal.
+
+**Fix:** Added floating "← Change Area" button (z-[60], top-left) alongside WorkWheelPicker during corrections. Clicking it clears `pickerArea` → hides WorkWheelPicker → shows AreaPickerWithSearch (which has cross-area search). Teacher picks correct area → WorkWheelPicker re-mounts with correct works.
+
+**3x3x3 Audit:** 3 parallel agents (UI/UX flow, data flow/state transitions, i18n parity). All 3 CLEAN.
+
+**Files Modified (3):**
+1. `app/montree/dashboard/photo-audit/page.tsx` — Floating "← Change Area" button in Fragment wrapper
+2. `lib/montree/i18n/en.ts` — 1 new key (`audit.changeArea`)
+3. `lib/montree/i18n/zh.ts` — 1 matching Chinese key (perfect EN/ZH parity)
+
+**Commit:** `d9831a33`
+**Deploy:** ✅ Pushed. Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_CROSS_AREA_CORRECTION_FLOW_MAR26.md`
+
+### Session Work (Mar 26, 2026 — Photo Notes on Audit Cards)
+
+**Photo Notes on Audit Cards — 3x3x3 Audited — ✅ DEPLOYED:**
+
+Teachers can now add notes to individual photos from the photo audit page. Notes are saved to `montree_media.caption` (already existed), flow through to parent reports as "Teacher's Note" (blue card with 📝 icon), and are available for teacher review.
+
+**Features:** Debounced auto-save (1200ms), optimistic saved indicator (400ms), PATCH to existing `/api/montree/media` endpoint (already supported caption). Parent report shows notes prominently in blue card below work description.
+
+**Files Modified (4):**
+1. `app/montree/dashboard/photo-audit/page.tsx` — Note textarea with auto-save + handleSaveNote
+2. `app/api/montree/audit/photos/route.ts` — Added `caption` to response mapping
+3. `app/montree/parent/report/[reportId]/page.tsx` — "Teacher's Note" blue card display
+4. `lib/montree/i18n/en.ts` + `zh.ts` — 3 new keys each (perfect EN/ZH parity)
+
+**Commit:** `de4026d1`
+**Deploy:** ✅ Pushed. Railway auto-deploying.
+
+### Session Work (Mar 26, 2026 — Picture Bank + Bingo Integration)
+
+**Picture Bank for Picture Bingo Generator — ✅ DEPLOYED:**
+
+Added a Picture Bank page at `/montree/library/tools/picture-bank` where teachers can browse, search, and select from 355+ phonics images organized by CVC word sets. Integrated with Picture Bingo Generator — teachers can pick images from the bank and they auto-populate bingo boards.
+
+**Commit:** `0fe12c02`
+**Deploy:** ✅ Pushed. Railway auto-deploying.
+
+### Session Work (Mar 26, 2026 — Classroom Onboarding Redesign: 3 Sprints)
+
+**Classroom Onboarding Redesign — 3 Sprints Complete + Triple Audited — ✅ DEPLOYED:**
+
+Three-sprint redesign making classroom setup faster for teachers.
+
+**Sprint 1: Bulk Paste Student Import** — `BulkPasteImport.tsx` with two side-by-side textareas (names + birthdays). Supports tab-separated Excel paste, 3 date formats (YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY), duplicate detection (case-insensitive), age validation (0-18), preview table before confirm. `children/bulk/route.ts` enhanced with `date_of_birth` support + age derivation from DOB.
+
+**Sprint 2: Multi-Teacher Management** — Teacher selector dropdown in DashboardHeader. Shows all active teachers in classroom, inline "Add Teacher" form auto-generates 6-char login code (charset excludes O/0/I/1), SHA256 hash, collision retry on 23505. New `GET/POST /api/montree/classroom/teachers` endpoint.
+
+**Sprint 3: Teacher Notes with Voice Recording** — `TeacherNotes.tsx` for classroom-level notes. Text + voice recording (MediaRecorder → Whisper transcription → editable textarea). Delete own notes only. Paginated. New `GET/POST/DELETE /api/montree/teacher-notes` endpoint.
+
+**Migration 148:** `date_of_birth DATE` column on `montree_children` + `montree_teacher_notes` table with FK refs + 2 indexes. ✅ RUN via Supabase SQL Editor.
+
+**Triple Audit:** 4 cycles, 4 fixes applied (formatTime i18n, toast import+feedback, useCallback deps), 3 consecutive CLEAN passes.
+
+**Files Created (5):**
+1. `migrations/148_classroom_onboarding.sql` — date_of_birth + teacher_notes table
+2. `app/api/montree/classroom/teachers/route.ts` — GET/POST teachers per classroom
+3. `app/api/montree/teacher-notes/route.ts` — GET/POST/DELETE classroom notes
+4. `components/montree/TeacherNotes.tsx` — Notes UI with voice recording
+5. `components/montree/BulkPasteImport.tsx` — Paste-based bulk student import
+
+**Files Modified (5):**
+1. `app/api/montree/children/bulk/route.ts` — date_of_birth + age derivation
+2. `components/montree/DashboardHeader.tsx` — Teacher selector + add teacher
+3. `app/montree/dashboard/page.tsx` — Dynamic imports for BulkPasteImport + TeacherNotes
+4. `lib/montree/i18n/en.ts` — 44 new keys
+5. `lib/montree/i18n/zh.ts` — 44 matching Chinese keys (perfect EN/ZH parity)
+
+**Commit:** `8c32102b`
+**Deploy:** ✅ Pushed. Railway deployed. Migration 148 run.
+**Handoff:** `docs/handoffs/HANDOFF_CLASSROOM_ONBOARDING_REDESIGN_MAR26.md`
+
 ### Session Work (Mar 26, 2026 — Special Events Photo Audit Fix)
 
 **Special Events Photo Audit Fix — 3 Issues Fixed + Audit — ✅ DEPLOYED:**
