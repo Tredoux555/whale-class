@@ -64,6 +64,9 @@ export default function DashboardHeader() {
     if (!sess) return;
     setSession(sess);
 
+    // HIGH FIX: AbortController prevents hanging fetches on unmount/navigation
+    const abortController = new AbortController();
+
     // Check if voice observations feature is enabled for this school
     // PERF: Cache in sessionStorage (5 min TTL) to avoid API call on every page navigation
     if (sess.school?.id) {
@@ -75,41 +78,50 @@ export default function DashboardHeader() {
           if (Date.now() - ts < 5 * 60 * 1000) {
             setVoiceObsEnabled(voice);
             setRazTrackerEnabled(raz);
-            return;
           }
         }
       } catch {}
 
-      montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
-        .then((res) => res.json())
-        .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
-          const voice = data.features?.find((f) => f.feature_key === 'voice_observations')?.enabled || false;
-          const raz = data.features?.find((f) => f.feature_key === 'raz_reading_tracker')?.enabled || false;
-          setVoiceObsEnabled(voice);
-          setRazTrackerEnabled(raz);
-          try { sessionStorage.setItem(cacheKey, JSON.stringify({ voice, raz, ts: Date.now() })); } catch {}
-        })
-        .catch(() => {});
+      // Only fetch if cache miss (moved outside the early-return block so budget also fetches)
+      if (!sessionStorage.getItem(cacheKey) || (() => { try { const c = JSON.parse(sessionStorage.getItem(cacheKey)!); return Date.now() - c.ts >= 5 * 60 * 1000; } catch { return true; } })()) {
+        montreeApi(`/api/montree/features?school_id=${sess.school.id}`, { signal: abortController.signal })
+          .then((res) => res.json())
+          .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
+            if (abortController.signal.aborted) return;
+            const voice = data.features?.find((f) => f.feature_key === 'voice_observations')?.enabled || false;
+            const raz = data.features?.find((f) => f.feature_key === 'raz_reading_tracker')?.enabled || false;
+            setVoiceObsEnabled(voice);
+            setRazTrackerEnabled(raz);
+            try { sessionStorage.setItem(cacheKey, JSON.stringify({ voice, raz, ts: Date.now() })); } catch {}
+          })
+          .catch(() => {});
+      }
 
       // Fetch AI budget for pill display (teachers only, 60s cache)
       const budgetCacheKey = `montree_ai_budget_${sess.school.id}`;
+      let budgetCached = false;
       try {
-        const budgetCached = sessionStorage.getItem(budgetCacheKey);
-        if (budgetCached) {
-          const { data: bd, ts } = JSON.parse(budgetCached);
-          if (Date.now() - ts < 60_000) { setAiBudget(bd); return; }
+        const cached = sessionStorage.getItem(budgetCacheKey);
+        if (cached) {
+          const { data: bd, ts } = JSON.parse(cached);
+          if (Date.now() - ts < 60_000) { setAiBudget(bd); budgetCached = true; }
         }
       } catch {}
-      montreeApi(`/api/montree/admin/ai-budget?school_id=${sess.school.id}`)
-        .then((res) => res.ok ? res.json() : null)
-        .then((data) => {
-          if (!data?.summary) return;
-          const bd = { spent: Number(data.summary.spent) || 0, budget: Number(data.summary.budget) || 50, percentage: Number(data.summary.percentage) || 0 };
-          setAiBudget(bd);
-          try { sessionStorage.setItem(budgetCacheKey, JSON.stringify({ data: bd, ts: Date.now() })); } catch {}
-        })
-        .catch(() => {});
+      if (!budgetCached) {
+        montreeApi(`/api/montree/admin/ai-budget?school_id=${sess.school.id}`, { signal: abortController.signal })
+          .then((res) => res.ok ? res.json() : null)
+          .then((data) => {
+            if (abortController.signal.aborted) return;
+            if (!data?.summary) return;
+            const bd = { spent: Number(data.summary.spent) || 0, budget: Number(data.summary.budget) || 50, percentage: Number(data.summary.percentage) || 0 };
+            setAiBudget(bd);
+            try { sessionStorage.setItem(budgetCacheKey, JSON.stringify({ data: bd, ts: Date.now() })); } catch {}
+          })
+          .catch(() => {});
+      }
     }
+
+    return () => abortController.abort();
   }, []);
 
   // Fetch students for search bar (cached in sessionStorage, 5 min TTL)

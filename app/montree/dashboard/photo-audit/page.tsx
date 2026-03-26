@@ -263,14 +263,18 @@ export default function PhotoAuditPage() {
     const session = getSession();
     const classroomId = session?.classroom?.id;
     if (!classroomId) return;
-    montreeApi(`/api/montree/children?classroom_id=${classroomId}`)
+    // HIGH FIX: Add AbortController to prevent hanging fetch on unmount
+    const controller = new AbortController();
+    montreeApi(`/api/montree/children?classroom_id=${classroomId}`, { signal: controller.signal })
       .then(r => { if (r.ok) return r.json(); throw new Error(); })
       .then(data => {
+        if (controller.signal.aborted) return;
         const kids = (data.children || data || []).map((c: any) => ({ id: c.id, name: c.name }));
         kids.sort((a: any, b: any) => a.name.localeCompare(b.name));
         setClassroomChildren(kids);
       })
       .catch(() => { /* silent — child tagging just won't show names */ });
+    return () => controller.abort();
   }, []);
 
   // Child tagging handlers
@@ -313,6 +317,8 @@ export default function PhotoAuditPage() {
       setTaggingPhoto(null);
     } catch {
       toast.error(t('audit.childTagFailed'));
+      // HIGH FIX: Close modal on error so UI doesn't appear frozen
+      setTaggingPhoto(null);
     } finally {
       setTaggingSaving(false);
     }
