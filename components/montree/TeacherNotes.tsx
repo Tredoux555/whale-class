@@ -64,8 +64,20 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
     };
   }, []);
 
+  // Mounted ref to prevent state updates after unmount
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
+      // CRITICAL FIX: navigator.mediaDevices is undefined on HTTP pages or unsupported browsers
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error(t('teacherNotes.micNotSupported'));
+        return;
+      }
+
       // CRITICAL FIX: getUserMedia can hang indefinitely on permission denial — add 10s timeout
       const stream = await Promise.race([
         navigator.mediaDevices.getUserMedia({ audio: true }),
@@ -96,6 +108,9 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         chunksRef.current = [];
 
+        // Guard: component may have unmounted while recording
+        if (!mountedRef.current) return;
+
         // Transcribe via existing Whisper endpoint
         setIsTranscribing(true);
         try {
@@ -112,6 +127,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
           });
           clearTimeout(transcribeTimeout);
 
+          if (!mountedRef.current) return;
+
           if (res.ok) {
             const data = await res.json();
             if (data.text) {
@@ -121,9 +138,9 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
             toast.error(t('common.error'));
           }
         } catch {
-          toast.error(t('common.error'));
+          if (mountedRef.current) toast.error(t('common.error'));
         } finally {
-          setIsTranscribing(false);
+          if (mountedRef.current) setIsTranscribing(false);
         }
       };
 

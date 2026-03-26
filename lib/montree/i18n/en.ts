@@ -3457,6 +3457,7 @@ export const en = {
   'bulkImport.pasteNamesFirst': 'Paste student names first',
   'bulkImport.importStudents': 'Import {count} students',
   'bulkImport.success': '{count} students imported!',
+  'bulkImport.tooMany': 'Maximum 200 students at a time',
 
   // Teacher Management
   'teachers.teacher': 'Teacher',
@@ -3480,6 +3481,7 @@ export const en = {
   'teacherNotes.by': 'by',
   'teacherNotes.deleteConfirm': 'Delete this note?',
   'teacherNotes.deleted': 'Note deleted',
+  'teacherNotes.micNotSupported': 'Microphone not available — try using HTTPS',
 } as const;
 
 export type TranslationKey = keyof typeof en;

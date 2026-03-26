@@ -133,9 +133,15 @@ export default function BulkPasteImport({ classroomId, existingCount, onImported
   const hasErrors = parsed.some(s => s.error);
   const validCount = parsed.filter(s => !s.error).length;
 
+  const MAX_STUDENTS = 200;
+
   const handlePreview = useCallback(() => {
     if (parsed.length === 0) {
       toast.error(t('bulkImport.pasteNamesFirst'));
+      return;
+    }
+    if (parsed.length > MAX_STUDENTS) {
+      toast.error(t('bulkImport.tooMany'));
       return;
     }
     setShowPreview(true);

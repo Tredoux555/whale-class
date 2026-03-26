@@ -98,6 +98,11 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === 'set' && Array.isArray(child_ids)) {
+      // Safety cap: no photo should have more than 50 tagged children
+      if (child_ids.length > 50) {
+        return NextResponse.json({ success: false, error: 'Too many children (max 50)' }, { status: 400 });
+      }
+
       // Validate all children belong to the school
       if (child_ids.length > 0) {
         const { data: validChildren } = await supabase
@@ -128,10 +133,12 @@ export async function POST(request: NextRequest) {
         }
 
         // Set primary child_id to first in list
-        await supabase.from('montree_media').update({ child_id: child_ids[0] }).eq('id', media_id);
+        const { error: setPrimaryErr } = await supabase.from('montree_media').update({ child_id: child_ids[0] }).eq('id', media_id);
+        if (setPrimaryErr) console.error('[Media Children] Set primary child_id error:', setPrimaryErr);
       } else {
         // No children — clear primary child_id
-        await supabase.from('montree_media').update({ child_id: null }).eq('id', media_id);
+        const { error: clearPrimaryErr } = await supabase.from('montree_media').update({ child_id: null }).eq('id', media_id);
+        if (clearPrimaryErr) console.error('[Media Children] Clear primary child_id error:', clearPrimaryErr);
       }
 
       return NextResponse.json({ success: true });

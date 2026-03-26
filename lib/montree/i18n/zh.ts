@@ -3458,6 +3458,7 @@ export const zh = {
   'bulkImport.pasteNamesFirst': '请先粘贴学生姓名',
   'bulkImport.importStudents': '导入 {count} 名学生',
   'bulkImport.success': '成功导入 {count} 名学生！',
+  'bulkImport.tooMany': '每次最多导入200名学生',
 
   // 教师管理
   'teachers.teacher': '教师',
@@ -3481,4 +3482,5 @@ export const zh = {
   'teacherNotes.by': '来自',
   'teacherNotes.deleteConfirm': '删除这条笔记？',
   'teacherNotes.deleted': '笔记已删除',
+  'teacherNotes.micNotSupported': '麦克风不可用 — 请使用HTTPS',
 } as const;
