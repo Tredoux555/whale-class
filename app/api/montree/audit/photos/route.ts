@@ -41,10 +41,9 @@ export async function GET(request: NextRequest) {
     // Step 3: Query media
     let mediaQuery = supabase
       .from('montree_media')
-      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id', { count: 'exact' })
+      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
-      .or('tags.is.null,not.tags.cs.["reference_photo"]')
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
       .order('created_at', { ascending: false })
@@ -59,9 +58,18 @@ export async function GET(request: NextRequest) {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
     }
 
-    const { data: mediaRows, count: totalCount, error: mediaErr } = await mediaQuery;
-    if (mediaErr) return NextResponse.json({ error: 'Failed to fetch photos' }, { status: 500 });
-    if (!mediaRows || mediaRows.length === 0) {
+    const { data: rawMediaRows, count: totalCount, error: mediaErr } = await mediaQuery;
+    if (mediaErr) {
+      console.error('[Photo Audit] Media query error:', mediaErr);
+      return NextResponse.json({ error: 'Failed to fetch photos' }, { status: 500 });
+    }
+    // Filter out reference photos in JS (PostgREST .or() has issues with JSONB array syntax)
+    const mediaRows = (rawMediaRows || []).filter((m: any) => {
+      if (!m.tags) return true;
+      if (Array.isArray(m.tags) && m.tags.includes('reference_photo')) return false;
+      return true;
+    });
+    if (mediaRows.length === 0) {
       return NextResponse.json({
         success: true, photos: [], total: 0,
         counts: { green: 0, amber: 0, red: 0, untagged: 0 },

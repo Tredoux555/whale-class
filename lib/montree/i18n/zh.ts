@@ -3422,6 +3422,10 @@ export const zh = {
   'audit.previewWhyMatters': '为什么重要',
   'audit.previewMaterials': '材料',
   'audit.saveWithDescriptions': '使用这些描述保存',
+  'audit.deletePhoto': '删除照片',
+  'audit.deleteConfirm': '删除此照片？此操作无法撤销。',
+  'audit.photoDeleted': '照片已删除',
+  'audit.deleteFailed': '删除照片失败',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',
