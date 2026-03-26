@@ -778,6 +778,8 @@ export default function PhotoAuditPage() {
       formData.append('metadata', JSON.stringify({
         school_id: session.school.id,
         classroom_id: session.classroom.id,
+        child_id: photo.child_id || undefined,
+        work_id: photo.work_id || undefined,
         media_type: 'photo',
         tags: ['reference_photo', photo.work_id],
         caption: `Reference: ${photo.work_name}`,
