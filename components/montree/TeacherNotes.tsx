@@ -66,7 +66,13 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
 
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // CRITICAL FIX: getUserMedia can hang indefinitely on permission denial — add 10s timeout
+      const stream = await Promise.race([
+        navigator.mediaDevices.getUserMedia({ audio: true }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Microphone permission timeout')), 10_000)
+        ),
+      ]);
       streamRef.current = stream;
       chunksRef.current = [];
 
@@ -96,10 +102,15 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
           const formData = new FormData();
           formData.append('audio', blob, 'recording.webm');
 
+          // CRITICAL FIX: Whisper transcription can hang — add 30s timeout via AbortController
+          const transcribeAbort = new AbortController();
+          const transcribeTimeout = setTimeout(() => transcribeAbort.abort(), 30_000);
           const res = await montreeApi('/api/montree/voice-notes/transcribe', {
             method: 'POST',
             body: formData,
+            signal: transcribeAbort.signal,
           });
+          clearTimeout(transcribeTimeout);
 
           if (res.ok) {
             const data = await res.json();
