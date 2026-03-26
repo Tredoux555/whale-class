@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
-      .not('tags', 'cs', '["reference_photo"]')
+      .or('tags.is.null,not.tags.cs.["reference_photo"]')
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
       .order('created_at', { ascending: false })
