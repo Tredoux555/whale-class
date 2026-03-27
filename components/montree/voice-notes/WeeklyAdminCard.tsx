@@ -6,6 +6,7 @@
 // "Copy All Plan Rows" formats entire class as table for Weekly Plan doc
 
 import { useState, useCallback, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
@@ -277,6 +278,14 @@ export default function WeeklyAdminCard({ classroomId, children }: Props) {
       {error && (
         <div className="text-sm text-red-600 bg-red-50 rounded-lg p-2 mt-2">{error}</div>
       )}
+
+      {/* Link to DOCX generator page */}
+      <Link
+        href="/montree/dashboard/weekly-admin-docs"
+        className="block mt-3 text-center text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+      >
+        📄 {locale === 'zh' ? '下载 DOCX 文档' : 'Download DOCX Documents'}
+      </Link>
     </div>
   );
 }

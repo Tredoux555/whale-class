@@ -50,6 +50,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
+    // Calculate week boundaries for progress query
+    const weekEndDate = new Date(parsed.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const weekEnd = weekEndDate.toISOString().slice(0, 10);
+
     // Step 1: Fetch children + notes + progress in parallel
     const [childrenRes, notesRes, progressRes] = await Promise.all([
       // 1. All children in classroom
@@ -69,14 +73,12 @@ export async function POST(request: NextRequest) {
 
       // 3. Progress data for auto-generation (summary only)
       docType === 'summary'
-        ? supabase.rpc('get_weekly_progress', {
-            p_classroom_id: classroomId,
-            p_week_start: weekStart,
-          }).then((res: { data: unknown; error: unknown }) => res)
-          .catch((err: unknown) => {
-            console.error('weekly-admin-docs/generate progress RPC error:', err);
-            return { data: null, error: null };
-          })
+        ? supabase
+            .from('montree_child_progress')
+            .select('child_id, work_name, area, status, updated_at')
+            .eq('classroom_id', classroomId)
+            .gte('updated_at', weekStart)
+            .lt('updated_at', weekEnd)
         : Promise.resolve({ data: null, error: null }),
     ]);
 
@@ -88,6 +90,11 @@ export async function POST(request: NextRequest) {
     if (notesRes.error) {
       console.error('weekly-admin-docs/generate notes error:', notesRes.error.message);
       return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
+    }
+
+    // Progress errors are non-fatal — auto-generation degrades gracefully to empty summaries
+    if (progressRes.error) {
+      console.error('weekly-admin-docs/generate progress error:', progressRes.error.message);
     }
 
     const children = childrenRes.data || [];
@@ -205,8 +212,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Generate document
-    const weekEnd = new Date(parsed.getTime() + 6 * 24 * 60 * 60 * 1000);
-    const weekLabel = `W${getWeekNumber(parsed)} (${weekStart} \u2013 ${weekEnd.toISOString().slice(0, 10)})`;
+    const weekEndForLabel = new Date(parsed.getTime() + 6 * 24 * 60 * 60 * 1000);
+    const weekLabel = `W${getWeekNumber(parsed)} (${weekStart} \u2013 ${weekEndForLabel.toISOString().slice(0, 10)})`;
 
     const doc = docType === 'summary'
       ? generateWeeklySummary(childNotes, weekLabel)

@@ -13,6 +13,7 @@ import { montreeApi } from '@/lib/montree/api';
 import InboxButton from './InboxButton';
 import LanguageToggle from './LanguageToggle';
 import { toast } from 'sonner';
+import { useFeatures } from '@/hooks/useFeatures';
 
 interface StudentOption {
   id: string;
@@ -32,8 +33,7 @@ export default function DashboardHeader() {
   const pathname = usePathname();
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
-  const [voiceObsEnabled, setVoiceObsEnabled] = useState(false);
-  const [razTrackerEnabled, setRazTrackerEnabled] = useState(false);
+  const { isEnabled } = useFeatures();
   const [aiBudget, setAiBudget] = useState<{ spent: number; budget: number; percentage: number } | null>(null);
 
   // Teacher selector state
@@ -67,36 +67,9 @@ export default function DashboardHeader() {
     // HIGH FIX: AbortController prevents hanging fetches on unmount/navigation
     const abortController = new AbortController();
 
-    // Check if voice observations feature is enabled for this school
-    // PERF: Cache in sessionStorage (5 min TTL) to avoid API call on every page navigation
+    // Feature flags now handled by FeaturesProvider + useFeatures() hook
+    // Only AI budget still fetched here (not part of feature toggle system)
     if (sess.school?.id) {
-      const cacheKey = `montree_features_${sess.school.id}`;
-      try {
-        const cached = sessionStorage.getItem(cacheKey);
-        if (cached) {
-          const { voice, raz, ts } = JSON.parse(cached);
-          if (Date.now() - ts < 5 * 60 * 1000) {
-            setVoiceObsEnabled(voice);
-            setRazTrackerEnabled(raz);
-          }
-        }
-      } catch {}
-
-      // Only fetch if cache miss (moved outside the early-return block so budget also fetches)
-      if (!sessionStorage.getItem(cacheKey) || (() => { try { const c = JSON.parse(sessionStorage.getItem(cacheKey)!); return Date.now() - c.ts >= 5 * 60 * 1000; } catch { return true; } })()) {
-        montreeApi(`/api/montree/features?school_id=${sess.school.id}`, { signal: abortController.signal })
-          .then((res) => res.json())
-          .then((data: { features?: { feature_key: string; enabled: boolean }[] }) => {
-            if (abortController.signal.aborted) return;
-            const voice = data.features?.find((f) => f.feature_key === 'voice_observations')?.enabled || false;
-            const raz = data.features?.find((f) => f.feature_key === 'raz_reading_tracker')?.enabled || false;
-            setVoiceObsEnabled(voice);
-            setRazTrackerEnabled(raz);
-            try { sessionStorage.setItem(cacheKey, JSON.stringify({ voice, raz, ts: Date.now() })); } catch {}
-          })
-          .catch(() => {});
-      }
-
       // Fetch AI budget for pill display (teachers only, 60s cache)
       const budgetCacheKey = `montree_ai_budget_${sess.school.id}`;
       let budgetCached = false;
@@ -410,7 +383,7 @@ export default function DashboardHeader() {
               </Link>
             </>
           )}
-          {razTrackerEnabled && (
+          {isEnabled('raz_reading_tracker') && (
             <Link
               href="/montree/dashboard/raz"
               data-guide="nav-raz"

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { toast, Toaster } from 'sonner';
 import { useI18n, type TranslationKey } from '@/lib/montree/i18n';
+import { invalidateFeatures } from '@/lib/montree/features';
 
 interface Feature {
   feature_key: string;
@@ -35,13 +36,16 @@ export default function FeaturesAdminPage() {
   }, [router]);
 
   useEffect(() => {
-    if (!session?.classroom?.id) return;
+    if (!session) return; // Session not loaded yet
+    if (!session.classroom?.id) { setLoading(false); return; } // No classroom — stop loading
     loadFeatures();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   async function loadFeatures() {
+    if (!session?.classroom?.id) return;
     try {
-      const res = await fetch(`/api/montree/features?classroom_id=${session?.classroom?.id}`);
+      const res = await fetch(`/api/montree/features?classroom_id=${session.classroom.id}`);
       const data = await res.json();
       if (data.success) setFeatures(data.features || []);
     } catch (err) {
@@ -68,6 +72,8 @@ export default function FeaturesAdminPage() {
         setFeatures(prev => prev.map(f => 
           f.feature_key === featureKey ? { ...f, enabled, classroom_enabled: enabled } : f
         ));
+        // Invalidate the shared features cache so other pages pick up the change
+        if (session?.school?.id) invalidateFeatures(session.school.id);
         toast.success(`${enabled ? t('features.enabled' as TranslationKey) : t('features.disabled' as TranslationKey)} ${featureKey}`);
       }
     } catch (err) {
