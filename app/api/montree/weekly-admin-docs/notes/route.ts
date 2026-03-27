@@ -29,12 +29,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'week_start must be a valid Monday date' }, { status: 400 });
   }
 
-  // Validate not future
+  // Validate not too far in future (allow +1 week for plan preparation)
   const now = new Date();
   const todayBeijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const currentMonday = getBeijingMonday(todayBeijing);
-  if (weekStart > currentMonday) {
-    return NextResponse.json({ error: 'week_start cannot be in the future' }, { status: 400 });
+  const nextMonday = getNextMonday(currentMonday);
+  if (weekStart > nextMonday) {
+    return NextResponse.json({ error: 'week_start cannot be more than 1 week in the future' }, { status: 400 });
   }
 
   const supabase = getSupabase();
@@ -101,12 +102,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'week_start must be a valid Monday date' }, { status: 400 });
     }
 
-    // Validate not future
+    // Validate not too far in future (allow +1 week for plan preparation)
     const now = new Date();
     const todayBeijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     const currentMonday = getBeijingMonday(todayBeijing);
-    if (weekStart > currentMonday) {
-      return NextResponse.json({ error: 'week_start cannot be in the future' }, { status: 400 });
+    const nextMonday = getNextMonday(currentMonday);
+    if (weekStart > nextMonday) {
+      return NextResponse.json({ error: 'week_start cannot be more than 1 week in the future' }, { status: 400 });
     }
 
     // Validate doc_type and area values
@@ -119,6 +121,10 @@ export async function POST(request: NextRequest) {
       }
       if (note.area && !validAreas.includes(note.area)) {
         return NextResponse.json({ error: `Invalid area: ${note.area}` }, { status: 400 });
+      }
+      // area='notes' is only valid for plan doc_type (additional teacher notes column)
+      if (note.area === 'notes' && note.doc_type !== 'plan') {
+        return NextResponse.json({ error: 'area="notes" is only valid for doc_type="plan"' }, { status: 400 });
       }
     }
 
@@ -213,5 +219,12 @@ function getBeijingMonday(date: Date): string {
   const day = d.getUTCDay(); // 0=Sun, 1=Mon, ...
   const diff = day === 0 ? -6 : 1 - day; // Go back to Monday
   d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Get YYYY-MM-DD of the Monday after the given Monday string. */
+function getNextMonday(mondayStr: string): string {
+  const d = new Date(`${mondayStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 7);
   return d.toISOString().slice(0, 10);
 }
