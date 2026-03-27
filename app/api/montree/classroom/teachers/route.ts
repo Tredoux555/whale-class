@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash the login code for password_hash (same SHA256 pattern as other teacher creation routes)
-    const { legacySha256 } = await import('@/lib/montree/server-auth');
+    const { legacySha256 } = await import('@/lib/montree/password');
 
     const { data: teacher, error: insertError } = await supabase
       .from('montree_teachers')
