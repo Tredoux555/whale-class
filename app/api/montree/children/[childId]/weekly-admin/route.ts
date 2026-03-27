@@ -273,7 +273,7 @@ export async function POST(
     // Fetch child info
     const { data: child } = await supabase
       .from('montree_children')
-      .select('id, name, first_name, settings')
+      .select('id, name, settings')
       .eq('id', childId)
       .maybeSingle();
 
@@ -281,7 +281,7 @@ export async function POST(
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    const childName = child.name || child.first_name || 'Student';
+    const childName = child.name || 'Student';
 
     // 4 parallel DB queries
     const [focusRes, progressRes, guruRes] = await Promise.all([
