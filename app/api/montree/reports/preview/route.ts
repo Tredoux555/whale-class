@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
     const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, area, parent_description, why_it_matters')
+        .select('id, name, area, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh')
         .eq('classroom_id', child.classroom_id),
       supabase
         .from('montree_visual_memory')
@@ -230,9 +230,14 @@ export async function GET(request: NextRequest) {
 
     for (const work of curriculumWorks || []) {
       // Try DB description first, then fall back to static curriculum
+      // When locale is zh, prefer DB Chinese columns (from custom work translation or manual entry)
       const staticDesc = staticDescriptions.get(work.name.toLowerCase().trim());
-      const description = work.parent_description || staticDesc?.description || '';
-      const whyItMatters = work.why_it_matters || staticDesc?.why_it_matters || '';
+      const description = (locale === 'zh' && work.parent_description_zh)
+        ? work.parent_description_zh
+        : (work.parent_description || staticDesc?.description || '');
+      const whyItMatters = (locale === 'zh' && work.why_it_matters_zh)
+        ? work.why_it_matters_zh
+        : (work.why_it_matters || staticDesc?.why_it_matters || '');
 
       workIdToInfo.set(work.id, {
         name: work.name,

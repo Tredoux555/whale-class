@@ -449,6 +449,12 @@ export default function PhotoAuditPage() {
   const [taggingSelection, setTaggingSelection] = useState<Set<string>>(new Set());
   const [taggingSaving, setTaggingSaving] = useState(false);
 
+  // Reclassify (batch reprocess via Sonnet onboarding engine) state
+  const [reclassifying, setReclassifying] = useState(false);
+  const [reclassifyProgress, setReclassifyProgress] = useState({ current: 0, total: 0, green: 0, amber: 0, red: 0, custom: 0, errors: 0 });
+  const [showReclassifyConfirm, setShowReclassifyConfirm] = useState(false);
+  const reclassifyCancelledRef = useRef(false);
+
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
   const curriculumAbortRef = useRef<AbortController | null>(null);
@@ -769,6 +775,119 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // ================================================================
+  // RECLASSIFY ALL — Batch reprocess non-green photos via Sonnet onboarding engine
+  // ================================================================
+  const nonGreenCount = (counts.amber || 0) + (counts.red || 0) + (counts.untagged || 0);
+  const estimatedCost = (nonGreenCount * 0.04).toFixed(2);
+  const estimatedMinutes = Math.ceil(nonGreenCount * 10 / 60);
+
+  const handleReclassifyAll = async () => {
+    setShowReclassifyConfirm(false);
+    reclassifyCancelledRef.current = false;
+
+    // Collect non-green photos that have a child_id (required for photo-insight)
+    const photosToProcess = photos.filter(p =>
+      (p.zone === 'amber' || p.zone === 'red' || p.zone === 'untagged') && p.child_id
+    );
+
+    if (photosToProcess.length === 0) {
+      toast.info(t('audit.reclassifyNone') || 'No photos to reclassify');
+      return;
+    }
+
+    setReclassifying(true);
+    setReclassifyProgress({ current: 0, total: photosToProcess.length, green: 0, amber: 0, red: 0, custom: 0, errors: 0 });
+
+    const results = { green: 0, amber: 0, red: 0, custom: 0, errors: 0 };
+
+    for (let i = 0; i < photosToProcess.length; i++) {
+      if (reclassifyCancelledRef.current) {
+        toast.info(t('audit.reclassifyCancelled') || `Reclassification cancelled. ${i} of ${photosToProcess.length} processed.`);
+        break;
+      }
+
+      const photo = photosToProcess[i];
+      setReclassifyProgress(prev => ({ ...prev, current: i + 1 }));
+
+      try {
+        const res = await fetch('/api/montree/guru/photo-insight', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            media_id: photo.id,
+            child_id: photo.child_id,
+            force_onboarding: true,
+          }),
+        });
+
+        if (res.status === 429) {
+          // Rate limited — wait 5s and retry once
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          const retryRes = await fetch('/api/montree/guru/photo-insight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              media_id: photo.id,
+              child_id: photo.child_id,
+              force_onboarding: true,
+            }),
+          });
+          if (retryRes.status === 429) {
+            toast.error(t('audit.reclassifyRateLimited') || 'Rate limited — try again in a few minutes');
+            break;
+          }
+          if (!retryRes.ok) {
+            results.errors++;
+            continue;
+          }
+          const retryData = await retryRes.json();
+          if (retryData.needs_confirmation) results.amber++;
+          else if (retryData.auto_updated) results.green++;
+          else results.red++;
+          if (retryData.custom_work_proposal) results.custom++;
+        } else if (!res.ok) {
+          results.errors++;
+          continue;
+        } else {
+          const data = await res.json();
+          if (data.needs_confirmation) results.amber++;
+          else if (data.auto_updated) results.green++;
+          else results.red++;
+          if (data.custom_work_proposal) results.custom++;
+        }
+
+        // Refetch this photo's data to update in list
+        setReclassifyProgress(prev => ({
+          ...prev,
+          green: results.green,
+          amber: results.amber,
+          red: results.red,
+          custom: results.custom,
+          errors: results.errors,
+        }));
+      } catch (err) {
+        console.error(`[Reclassify] Error processing photo ${photo.id}:`, err);
+        results.errors++;
+        // Network error — stop batch
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          toast.error(t('audit.reclassifyNetworkError') || 'Connection lost');
+          break;
+        }
+      }
+    }
+
+    setReclassifying(false);
+    // Refresh all photos to show new zones
+    fetchPhotos();
+    toast.success(
+      t('audit.reclassifyComplete') ||
+      `Reclassification complete: ${results.green} identified, ${results.amber} needs review, ${results.errors} errors`
+    );
+  };
+
   // "Teach AI" — shows choice: Use Full Photo or Crop to Work
   const handleTeachAI = (photo: AuditPhoto) => {
     if (!photo.url || !photo.work_name || !photo.work_id) return;
@@ -1024,20 +1143,60 @@ export default function PhotoAuditPage() {
           </div>
         )}
 
-        {/* Zone tabs */}
-        <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-          {ZONE_TABS.map(tab => (
+        {/* Zone tabs + Reclassify button */}
+        <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
+          <div className="flex gap-2 flex-1 overflow-x-auto">
+            {ZONE_TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setZone(tab.key)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                  zone === tab.key ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-gray-50 text-gray-400'
+                }`}
+              >
+                {tab.label} ({tab.count})
+              </button>
+            ))}
+          </div>
+          {nonGreenCount > 0 && !reclassifying && (
             <button
-              key={tab.key}
-              onClick={() => setZone(tab.key)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                zone === tab.key ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-gray-50 text-gray-400'
-              }`}
+              onClick={() => setShowReclassifyConfirm(true)}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors whitespace-nowrap"
             >
-              {tab.label} ({tab.count})
+              🔄 {t('audit.reclassifyAll') || 'Reclassify All'}
             </button>
-          ))}
+          )}
         </div>
+
+        {/* Reclassify progress bar (shown during batch processing) */}
+        {reclassifying && (
+          <div className="mt-2 p-2 bg-violet-50 rounded-lg border border-violet-200">
+            <div className="flex items-center justify-between text-xs text-violet-700 mb-1">
+              <span className="font-medium">
+                {t('audit.reclassifyProgress') || 'Reclassifying'} {reclassifyProgress.current}/{reclassifyProgress.total}...
+              </span>
+              <button
+                onClick={() => { reclassifyCancelledRef.current = true; }}
+                className="px-2 py-0.5 rounded text-xs bg-white text-gray-600 border hover:bg-gray-50"
+              >
+                {t('audit.reclassifyCancel') || 'Cancel'}
+              </button>
+            </div>
+            <div className="w-full bg-violet-100 rounded-full h-2">
+              <div
+                className="bg-violet-500 rounded-full h-2 transition-all duration-300"
+                style={{ width: `${reclassifyProgress.total > 0 ? Math.round((reclassifyProgress.current / reclassifyProgress.total) * 100) : 0}%` }}
+              />
+            </div>
+            <div className="flex gap-3 mt-1 text-[10px] text-gray-500">
+              <span className="text-emerald-600">{reclassifyProgress.green} identified</span>
+              <span className="text-amber-600">{reclassifyProgress.amber} review</span>
+              <span className="text-red-600">{reclassifyProgress.red} unknown</span>
+              {reclassifyProgress.custom > 0 && <span className="text-blue-600">{reclassifyProgress.custom} custom</span>}
+              {reclassifyProgress.errors > 0 && <span className="text-gray-400">{reclassifyProgress.errors} errors</span>}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Loading state */}
@@ -1213,6 +1372,37 @@ export default function PhotoAuditPage() {
               <button
                 onClick={() => setCropChoicePhoto(null)}
                 className="w-full py-2 text-sm text-gray-400"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reclassify Confirmation Dialog */}
+      {showReclassifyConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowReclassifyConfirm(false)}>
+          <div className="bg-white rounded-xl p-5 max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-2">{t('audit.reclassifyConfirm') || 'Reclassify Photos'}</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              {t('audit.reclassifyDescription') || `This will reclassify ${nonGreenCount} photos using Sonnet vision.`}
+            </p>
+            <div className="space-y-1 text-sm text-gray-500 mb-4">
+              <p>{t('audit.reclassifyCost') || 'Estimated cost'}: ~${estimatedCost}</p>
+              <p>{t('audit.reclassifyTime') || 'Estimated time'}: ~{estimatedMinutes} {t('audit.minutes') || 'minutes'}</p>
+              <p className="text-xs text-gray-400">{t('audit.reclassifyCancelNote') || 'You can cancel anytime — progress is saved.'}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleReclassifyAll}
+                className="flex-1 py-2 rounded-lg bg-violet-600 text-white font-medium text-sm hover:bg-violet-700"
+              >
+                {t('audit.reclassifyStart') || 'Start Reclassifying'}
+              </button>
+              <button
+                onClick={() => setShowReclassifyConfirm(false)}
+                className="flex-1 py-2 rounded-lg border text-gray-600 font-medium text-sm hover:bg-gray-50"
               >
                 {t('common.cancel')}
               </button>

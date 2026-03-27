@@ -7,7 +7,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
+import { getGlossaryPromptSection } from '@/lib/montree/classifier/montessori-glossary-zh';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -243,6 +244,45 @@ export async function POST(request: NextRequest) {
         .catch((err) => {
           console.error('[AddCustomWork] Visual memory media lookup failed (non-fatal):', err);
         });
+    }
+
+    // 3b: Chinese translation — fire-and-forget Sonnet generates name_zh, parent_description_zh, why_it_matters_zh
+    // Only for NEW custom works (not deduplicated — those may already have Chinese)
+    if (anthropic && !deduplicated) {
+      const glossarySection = getGlossaryPromptSection();
+      anthropic.messages.create({
+        model: AI_MODEL,
+        max_tokens: 500,
+        system: `You are a bilingual Montessori education translator (English→Chinese). Translate the following custom Montessori work information into natural, professional Chinese suitable for parent reports.\n\n${glossarySection}\n\nRules:\n- Use established Montessori terms from the glossary above\n- Keep the translation natural and warm for Chinese parents\n- Output ONLY valid JSON with exactly these 3 fields: name_zh, parent_description_zh, why_it_matters_zh\n- No markdown, no explanations, just the JSON object`,
+        messages: [{
+          role: 'user',
+          content: `Translate this custom Montessori work to Chinese:\n\nName: ${trimmedName}\nArea: ${area}\nDescription: ${description.trim()}\nMaterials: ${materials.join(', ')}\nWhy it matters: ${why_it_matters || 'Develops concentration and independence through hands-on exploration'}`,
+        }],
+      }).then((msg) => {
+        const textBlock = msg.content.find(b => b.type === 'text');
+        if (!textBlock || textBlock.type !== 'text') return;
+        try {
+          const parsed = JSON.parse(textBlock.text.trim());
+          const { name_zh, parent_description_zh, why_it_matters_zh } = parsed;
+          if (!name_zh || typeof name_zh !== 'string') return;
+          return supabase
+            .from('montree_classroom_curriculum_works')
+            .update({
+              name_zh: name_zh.trim().slice(0, 120),
+              parent_description_zh: (parent_description_zh || '').trim().slice(0, 1000) || null,
+              why_it_matters_zh: (why_it_matters_zh || '').trim().slice(0, 1000) || null,
+            })
+            .eq('id', workId)
+            .then(({ error }) => {
+              if (error) console.error('[AddCustomWork] Chinese update error:', error);
+              else console.log(`[AddCustomWork] Chinese translations saved for "${trimmedName}" → "${name_zh}"`);
+            });
+        } catch (parseErr) {
+          console.error('[AddCustomWork] Chinese translation parse error:', parseErr);
+        }
+      }).catch((err) => {
+        console.error('[AddCustomWork] Chinese translation failed (non-fatal):', err);
+      });
     }
 
     return NextResponse.json({

@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
     const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, parent_description, why_it_matters')
+        .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh')
         .eq('classroom_id', child.classroom_id),
       supabase
         .from('montree_visual_memory')
@@ -201,13 +201,24 @@ export async function POST(request: NextRequest) {
     ]);
 
     const workIdToName = new Map<string, string>();
+    const workIdToNameZh = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
     for (const w of curriculumWorks || []) {
+      // workIdToName MUST stay in English — used as matching key between photos and progress records
       workIdToName.set(w.id, w.name);
-      if (w.parent_description) {
+      // Separate Chinese name map for display only (keyed by lowercase English name for progress record lookup)
+      if (w.name_zh) workIdToNameZh.set(w.name.toLowerCase().trim(), w.name_zh);
+      // When locale is zh, prefer DB Chinese columns (from custom work translation or manual entry)
+      const desc = (locale === 'zh' && w.parent_description_zh)
+        ? w.parent_description_zh
+        : w.parent_description;
+      const whyMatters = (locale === 'zh' && w.why_it_matters_zh)
+        ? w.why_it_matters_zh
+        : (w.why_it_matters || '');
+      if (desc) {
         dbDescriptions.set(w.name.toLowerCase().trim(), {
-          description: w.parent_description,
-          why_it_matters: w.why_it_matters || '',
+          description: desc,
+          why_it_matters: whyMatters,
         });
       }
     }
@@ -278,7 +289,7 @@ export async function POST(request: NextRequest) {
       if (!photo?.url) continue;
       progressWorks.push({
         name: w.work_name,
-        chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
+        chineseName: w.work_name ? (workIdToNameZh.get(workNameLower) || getChineseNameForWork(w.work_name)) : null,
         area: w.area,
         status: w.status === 'completed' ? 'mastered' : w.status,
         status_label: getStatusLabel(w.status),
