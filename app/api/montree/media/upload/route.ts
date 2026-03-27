@@ -1,7 +1,7 @@
 // /api/montree/media/upload/route.ts
 // Upload photos to Supabase storage
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase } from '@/lib/supabase-client';
+import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
@@ -22,20 +22,33 @@ export async function POST(request: NextRequest) {
     }
 
     let metadata;
-    try {
-      metadata = JSON.parse(metadataStr);
-    } catch {
-      return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
+    if (metadataStr) {
+      try {
+        metadata = JSON.parse(metadataStr);
+      } catch {
+        return NextResponse.json({ error: 'Invalid metadata' }, { status: 400 });
+      }
+    } else {
+      // Fallback: read flat form fields (e.g. Guru image upload sends child_id + type directly)
+      metadata = {
+        school_id: auth.schoolId,
+        classroom_id: (formData.get('classroom_id') as string) || auth.classroomId || null,
+        child_id: (formData.get('child_id') as string) || null,
+        media_type: (formData.get('type') as string) || 'photo',
+      };
     }
 
     const { school_id, classroom_id, child_id, child_ids, work_id, event_id, caption, tags, width, height, media_type, duration } = metadata;
 
-    if (!school_id) {
+    // Use auth school_id as fallback (Guru uploads may not send school_id explicitly)
+    const effectiveSchoolId = school_id || auth.schoolId;
+
+    if (!effectiveSchoolId) {
       return NextResponse.json({ error: 'school_id required' }, { status: 400 });
     }
 
-    // Verify school_id matches authenticated user's school
-    if (school_id !== auth.schoolId) {
+    // Verify school_id matches authenticated user's school (skip if using auth's own school_id)
+    if (school_id && school_id !== auth.schoolId) {
       return NextResponse.json({ error: 'school_id mismatch' }, { status: 403 });
     }
 
@@ -76,7 +89,7 @@ export async function POST(request: NextRequest) {
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
     const mediaFolder = media_type === 'video' ? 'videos' : 'photos';
     const childFolder = child_id || 'group';
-    const storagePath = `${school_id}/${childFolder}/${mediaFolder}/${year}/${month}/${filename}`;
+    const storagePath = `${effectiveSchoolId}/${childFolder}/${mediaFolder}/${year}/${month}/${filename}`;
     
     // Upload main file to Supabase storage
     const fileBuffer = await file.arrayBuffer();
@@ -98,7 +111,7 @@ export async function POST(request: NextRequest) {
     let thumbnailPath = null;
     if (thumbnail) {
       const thumbFilename = filename.replace(`.${ext}`, `-thumb.${ext}`);
-      thumbnailPath = `${school_id}/${childFolder}/${year}/${month}/${thumbFilename}`;
+      thumbnailPath = `${effectiveSchoolId}/${childFolder}/${year}/${month}/${thumbFilename}`;
       
       const thumbBuffer = await thumbnail.arrayBuffer();
       await supabase.storage
@@ -111,8 +124,8 @@ export async function POST(request: NextRequest) {
 
     // Create database record
     const mediaRecord = {
-      school_id,
-      classroom_id: classroom_id || null,
+      school_id: effectiveSchoolId,
+      classroom_id: classroom_id || auth.classroomId || null,
       child_id: child_id || null,
       media_type: media_type || 'photo',
       storage_path: storagePath,
@@ -181,9 +194,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Build URL for client use (Guru image upload expects data.url)
+    const url = getPublicUrl('montree-media', storagePath);
+
     return NextResponse.json({
       success: true,
-      media
+      media,
+      url,
     });
 
   } catch (error) {
