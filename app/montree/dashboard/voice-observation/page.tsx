@@ -8,6 +8,7 @@ import { toast, Toaster } from 'sonner';
 import { getSession, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import VoiceObservationRecorder from '@/components/montree/voice-observation/VoiceObservationRecorder';
 import VoiceObservationProgress from '@/components/montree/voice-observation/VoiceObservationProgress';
 import VoiceObservationReview from '@/components/montree/voice-observation/VoiceObservationReview';
@@ -36,7 +37,7 @@ export default function VoiceObservationPage() {
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [pageState, setPageState] = useState<PageState>('idle');
   const [activeSession, setActiveSession] = useState<SessionData | null>(null);
-  const [featureEnabled, setFeatureEnabled] = useState<boolean | null>(null);
+  const { isEnabled, loading: featuresLoading } = useFeatures();
   const [history, setHistory] = useState<HistorySession[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,14 +50,7 @@ export default function VoiceObservationPage() {
     }
     setSession(sess);
 
-    // Check feature toggle
-    montreeApi(`/api/montree/features?school_id=${sess.school.id}`)
-      .then(res => { if (!res.ok) throw new Error(`Feature check: ${res.status}`); return res.json(); })
-      .then(data => {
-        const voiceFeature = data.features?.find((f: any) => f.feature_key === 'voice_observations');
-        setFeatureEnabled(voiceFeature?.enabled || false);
-      })
-      .catch((err) => { console.error('[voice-obs] Feature check error:', err); setFeatureEnabled(false); });
+    // Feature check now handled by FeaturesProvider + useFeatures() hook
 
     // Load history
     montreeApi('/api/montree/voice-observation/history?limit=10')
@@ -145,7 +139,7 @@ export default function VoiceObservationPage() {
     setPageState('idle');
   }, []);
 
-  if (loading || featureEnabled === null) {
+  if (loading || featuresLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
@@ -154,7 +148,7 @@ export default function VoiceObservationPage() {
   }
 
   // Premium gate
-  if (!featureEnabled) {
+  if (!isEnabled('voice_observations')) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <Toaster position="top-center" />

@@ -119,13 +119,27 @@ const STATUS_COLORS: Record<string, string> = {
 
 ---
 
+## Fix 5 — WorkWheelPicker Empty State Add Form + Photo-Audit onWorkAdded
+
+**Problem:** When correcting a photo to "Special Events" area (which has 0 works initially), the WorkWheelPicker showed "No works available" with a "+ Add First Work" button — but clicking it did nothing. No console output, no form appeared.
+
+**Root cause:** The empty state (`works.length === 0`) returned early from the component before the `showAddForm` conditional JSX could render. `setShowAddForm(true)` updated state, but the re-render still hit the early return — never reaching the form JSX.
+
+**Fix (2 changes):**
+1. **WorkWheelPicker.tsx** — Embedded the add form directly inside the empty state's conditional render. When `showAddForm` is true, the input + buttons appear inline. When false, the original "No works available" + button shows.
+2. **photo-audit/page.tsx** — Extracted curriculum fetch into `fetchCurriculum` callback. Passed `onWorkAdded={fetchCurriculum}` to WorkWheelPicker so curriculum refreshes after creating a custom work (e.g., a Special Event). Teacher can then select the new work to tag the photo.
+
+**Commit:** `bd1ea26b`
+
+---
+
 ## Files Modified (6)
 
 1. `components/montree/media/PhotoCropModal.tsx` — 1 edit (min-h-0 → min-h-[300px])
-2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines). Functional fixes + visual polish.
+2. `components/montree/WorkWheelPicker.tsx` — Complete rewrite (~330 lines). Functional fixes + visual polish + empty state add form fix.
 3. `lib/montree/i18n/en.ts` + `zh.ts` — Added `common.select` + `audit.searchWorks` keys
 4. `components/montree/DashboardHeader.tsx` — Added 📚 curriculum nav link
-5. `app/montree/dashboard/photo-audit/page.tsx` — New `AreaPickerWithSearch` component + `handleWorkSelected` areaOverride param
+5. `app/montree/dashboard/photo-audit/page.tsx` — New `AreaPickerWithSearch` component + `handleWorkSelected` areaOverride param + `fetchCurriculum` callback + `onWorkAdded` wiring
 
 ## Commits
 
@@ -135,6 +149,7 @@ const STATUS_COLORS: Record<string, string> = {
 - `4641ec2b` — WorkWheelPicker visual polish overhaul
 - `12209d22` — Curriculum 📚 icon in header nav
 - `5776ac32` — Cross-area work search in photo-audit area picker
+- `bd1ea26b` — WorkWheelPicker empty state add form + photo-audit onWorkAdded wiring
 
 ## Deploy
 
