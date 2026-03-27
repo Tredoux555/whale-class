@@ -12,6 +12,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { toast, Toaster } from 'sonner';
 import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData } from '@/lib/montree/cache';
+import { useFeatures } from '@/hooks/useFeatures';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
 import dynamic from 'next/dynamic';
 
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
+  const { isEnabled } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(() => {
     if (typeof window === 'undefined') return null;
     return getSession();
@@ -390,7 +392,9 @@ export default function DashboardPage() {
                   </button>
                   {toolsOpen && (
                     <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                      <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+                      {isEnabled('weekly_admin_docs') && (
+                        <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+                      )}
                       <BatchReportsCard classroomId={session.classroom.id} children={children} />
                       <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
                     </div>

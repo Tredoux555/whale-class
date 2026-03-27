@@ -3081,6 +3081,7 @@ export const zh = {
   'features.title': '功能开关',
   'features.subtitle': '开启/关闭功能',
   'features.classroom': '班级',
+  'features.notEnabled': '此功能未在您的学校启用。',
 
   // ── 加入页面 ──
   'join.welcome': '欢迎来到Montree！',

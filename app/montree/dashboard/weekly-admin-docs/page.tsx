@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -34,6 +35,7 @@ type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area ->
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
   const { t } = useI18n();
+  const { isEnabled } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -364,6 +366,20 @@ export default function WeeklyAdminDocsPage() {
   // ─── Render ────────────────────────────────────────────────
 
   if (!session) return null;
+
+  // Feature gate — redirect if not enabled
+  if (!isEnabled('weekly_admin_docs')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-6">
+          <p className="text-gray-500 mb-4">{t('features.notEnabled')}</p>
+          <button onClick={() => router.push('/montree/dashboard')} className="text-emerald-600 underline">
+            ← {t('common.back')}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

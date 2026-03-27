@@ -3080,6 +3080,7 @@ export const en = {
   'features.title': 'Feature Toggles',
   'features.subtitle': 'Toggle features on/off',
   'features.classroom': 'Classroom',
+  'features.notEnabled': 'This feature is not enabled for your school.',
 
   // ── Join Page ──
   'join.welcome': 'Welcome to Montree!',
