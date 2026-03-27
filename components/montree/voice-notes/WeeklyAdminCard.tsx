@@ -74,6 +74,7 @@ export default function WeeklyAdminCard({ classroomId, children }: Props) {
           method: 'POST',
           body: JSON.stringify({ locale }),
           signal: abortRef.current?.signal,
+          timeout: 90000, // Sonnet needs 15-40s per child for structured JSON generation
         });
         const data = await res.json();
 
@@ -134,6 +135,7 @@ export default function WeeklyAdminCard({ classroomId, children }: Props) {
           method: 'POST',
           body: JSON.stringify({ locale }),
           signal: abortRef.current?.signal,
+          timeout: 90000, // Sonnet needs 15-40s per child for structured JSON generation
         });
         const data = await res.json();
 

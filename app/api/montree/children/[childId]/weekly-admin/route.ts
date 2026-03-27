@@ -29,7 +29,7 @@ interface ProgressRecord {
 interface GuruInteraction {
   question: string;
   response_insight: string;
-  created_at: string;
+  asked_at: string;
 }
 // ---- Area Labels ----
 
@@ -303,10 +303,10 @@ export async function POST(
       // 3. Guru conversations this week
       supabase
         .from('montree_guru_interactions')
-        .select('question, response_insight, created_at')
+        .select('question, response_insight, asked_at')
         .eq('child_id', childId)
-        .gte('created_at', weekStart)
-        .order('created_at', { ascending: false })
+        .gte('asked_at', weekStart)
+        .order('asked_at', { ascending: false })
         .limit(5),
     ]);
 
@@ -321,12 +321,12 @@ export async function POST(
       locale, weekStart, weekEnd
     );
 
-    // Call Sonnet
+    // Call Sonnet (60s timeout — structured JSON generation can take 15-40s)
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
-    });
+    }, { timeout: 60000 });
 
     // Extract text
     let responseText = '';
