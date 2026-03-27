@@ -219,11 +219,12 @@ export async function POST(request: NextRequest) {
 
     // Generate document
     const weekEndForLabel = new Date(parsed.getTime() + 6 * 24 * 60 * 60 * 1000);
-    const weekLabel = `W${getWeekNumber(parsed)} (${weekStart} \u2013 ${weekEndForLabel.toISOString().slice(0, 10)})`;
+    const weekNumber = getWeekNumber(parsed);
+    const weekLabel = `W${weekNumber} (${weekStart} \u2013 ${weekEndForLabel.toISOString().slice(0, 10)})`;
 
     const doc = docType === 'summary'
       ? generateWeeklySummary(childNotes, weekLabel)
-      : generateWeeklyPlan(childNotes, weekLabel);
+      : generateWeeklyPlan(childNotes, `W${weekNumber}`);
 
     const buffer = await packDocument(doc);
 
