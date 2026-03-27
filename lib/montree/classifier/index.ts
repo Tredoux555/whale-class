@@ -33,3 +33,15 @@ export {
   getClipDiagnostics,
   type ClassifyDecision,
 } from './classify-orchestrator';
+
+export {
+  getClassroomOnboardingStatus,
+  invalidateOnboardingCache,
+  clearOnboardingCache,
+  type OnboardingStatus,
+} from './classroom-embeddings';
+
+export {
+  MONTESSORI_GLOSSARY_ZH,
+  getGlossaryPromptSection,
+} from './montessori-glossary-zh';

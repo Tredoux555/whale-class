@@ -15,6 +15,9 @@ import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
 import type { VisualMemory } from '@/lib/montree/classifier';
+import { getClassroomOnboardingStatus, invalidateOnboardingCache } from '@/lib/montree/classifier/classroom-embeddings';
+import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier/clip-classifier';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 // import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier'; // TEMP: commented out — function exists locally but not yet pushed to git. Re-enable after pushing clip-classifier.ts with confusion pair support.
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
@@ -433,6 +436,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { child_id, media_id } = body;
+    const force_onboarding = body.force_onboarding === true;
     // Validate locale against allowed values
     const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';
 
@@ -927,6 +931,52 @@ Write ONE warm observation sentence. Suggest a crop if useful.`;
               } catch (err) {
                 console.error('[PhotoInsight/CLIP] Auto-add to shelf error:', err);
               }
+            }
+
+            // ONBOARDING BONUS: When CLIP hits GREEN during onboarding, generate visual memory
+            // from this confident CLIP result so the system learns faster
+            if (preChildClassroomId && clipWorkName && clipAreaKey && shouldAutoUpdate) {
+              getClassroomOnboardingStatus(preChildClassroomId).then(status => {
+                if (!status.isOnboarding) return;
+                console.log(`[PhotoInsight/CLIP] Onboarding bonus: generating visual memory for "${clipWorkName}" from CLIP GREEN hit`);
+                // Fire-and-forget: Haiku generates visual description from photo
+                if (!anthropic) return;
+                anthropic.messages.create({
+                  model: HAIKU_MODEL,
+                  max_tokens: 300,
+                  messages: [{
+                    role: 'user',
+                    content: [
+                      { type: 'image', source: { type: 'url', url: photoUrl } },
+                      { type: 'text', text: `Describe this Montessori material "${clipWorkName}" in exactly 150 tokens. Focus on: physical appearance, colors, materials (wood/metal/plastic/fabric), size, shape, distinctive features, and how a child interacts with it. Be specific enough that this description could identify the same material in future photos.` },
+                    ],
+                  }],
+                }).then(vmResponse => {
+                  const vmDesc = vmResponse.content.find(b => b.type === 'text')?.text?.trim();
+                  if (!vmDesc || vmDesc.length < 20) return;
+                  const vmWorkKey = clipDecision?.clipResult?.work_key || clipWorkName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+                  supabase.from('montree_visual_memory').upsert({
+                    classroom_id: preChildClassroomId,
+                    work_name: clipWorkName,
+                    work_key: vmWorkKey,
+                    area: clipAreaKey,
+                    is_custom: false,
+                    visual_description: vmDesc,
+                    source: 'clip_onboarding_bonus',
+                    source_media_id: media_id,
+                    photo_url: photoUrl,
+                    description_confidence: 0.8,
+                    updated_at: new Date().toISOString(),
+                  }, { onConflict: 'classroom_id,work_name' }).then(({ error }) => {
+                    if (error) console.error('[PhotoInsight/CLIP] Onboarding visual memory upsert error:', error);
+                    else {
+                      invalidateClassroomEmbeddings(preChildClassroomId!);
+                      invalidateOnboardingCache(preChildClassroomId!);
+                      console.log(`[PhotoInsight/CLIP] Onboarding visual memory stored for "${clipWorkName}"`);
+                    }
+                  }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM promise rejected:', err));
+                }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM Haiku call failed:', err));
+              }).catch(() => {}); // Non-fatal: onboarding check failure is fine
             }
 
             // Save interaction (analytics + cache)
@@ -1540,7 +1590,268 @@ to confirm (0.75-0.84) than to auto-update incorrectly (0.85+).
 ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
 
     // ================================================================
-    // TWO-PASS DESCRIBE-THEN-MATCH ARCHITECTURE
+    // ONBOARDING ENGINE: Sonnet direct path for new classrooms
+    // When a classroom has <30% visual memory coverage, route to Sonnet
+    // instead of the cheaper Haiku two-pass pipeline. Sonnet builds
+    // visual memory fast so CLIP+Haiku can take over after onboarding.
+    // ================================================================
+
+    let input: ReturnType<typeof validateToolOutput> | null = null;
+    let matchResult: ReturnType<typeof matchToCurriculumV2> | null = null;
+    let finalWorkName: string = '';
+    let finalArea: string | null = null;
+    let finalWorkKey: string | null = null;
+    let matchScore: number = 0;
+    let modelUsed: string = HAIKU_MODEL;
+    let haikuAttempted = true;
+    let haikuAccepted = false;
+
+    // Check if classroom is in onboarding mode (< 30% curriculum coverage)
+    let isOnboardingMode = false;
+    if (classroomId) {
+      try {
+        const onboardingStatus = await getClassroomOnboardingStatus(classroomId);
+        isOnboardingMode = onboardingStatus.isOnboarding;
+        if (isOnboardingMode) {
+          console.log(`[PhotoInsight] Classroom ${classroomId} in onboarding mode: coverage=${onboardingStatus.coveragePercent}, vm=${onboardingStatus.vmCount}/${onboardingStatus.curriculumCount}`);
+        }
+      } catch (err) {
+        console.error('[PhotoInsight] Failed to check onboarding status (non-fatal):', err);
+      }
+    }
+
+    // Validate force_onboarding parameter: only accept when
+    // (a) classroom IS in onboarding mode, OR (b) request comes from super-admin
+    let useOnboardingPath = false;
+    if (force_onboarding) {
+      if (isOnboardingMode) {
+        useOnboardingPath = true;
+        console.log('[PhotoInsight] force_onboarding accepted — classroom is in onboarding mode');
+      } else {
+        // Check super-admin auth as fallback
+        const superAdminResult = await verifySuperAdminAuth(request.headers);
+        if (superAdminResult.authenticated) {
+          useOnboardingPath = true;
+          console.log('[PhotoInsight] force_onboarding accepted — super-admin override');
+        } else {
+          console.warn('[PhotoInsight] force_onboarding REJECTED — classroom not onboarding and not super-admin');
+          // Don't fail — just ignore the flag and use normal pipeline
+        }
+      }
+    } else if (isOnboardingMode) {
+      // No force_onboarding but classroom IS onboarding — use Sonnet for non-GREEN CLIP results
+      useOnboardingPath = true;
+    }
+
+    // SONNET DIRECT PATH (onboarding mode only)
+    // Uses Sonnet with BOTH tools: tag_photo AND PROPOSE_CUSTOM_WORK_TOOL
+    // Sonnet decides which tool to use based on what it sees in the photo
+    if (useOnboardingPath && !input) {
+      console.log('[PhotoInsight] Routing to Sonnet direct path (onboarding engine)');
+      haikuAttempted = false; // We're skipping Haiku entirely
+
+      const onboardingSystemPrompt = `You are a Montessori classroom expert analyzing a photo of a child working. This is a NEW CLASSROOM that is still being set up — accuracy is critical for building the visual learning system.
+
+${langInstruction}
+
+Your task: Classify this Montessori material against the classroom's curriculum. Use the tag_photo tool if you can identify the work. If you genuinely cannot find a match in the curriculum below, use the propose_custom_work tool to propose a new custom work with a name, area, description, and materials list.
+
+CRITICAL RULES:
+1. Identify based ONLY on what you SEE in the photo — materials, tools, setup, actions
+2. Match to the EXACT standard curriculum name from the list below
+3. Focus on the SPECIFIC TOOL/MATERIAL being used — this determines the work name
+4. If unsure between two similar works, pick the MORE specific one and set confidence to 0.75-0.84
+5. Keep the observation to ONE warm, specific sentence
+6. COMPOSITION: Also suggest a crop that frames the child AND the work material together beautifully. Use normalized 0-1 coordinates.
+
+CONFIDENCE CALIBRATION:
+- 0.85+ : CERTAIN of the exact work name — system will auto-update child's progress
+- 0.75-0.84 : Likely match but some ambiguity — teacher will confirm
+- 0.5-0.74 : Best guess based on limited evidence — requires teacher confirmation
+- Below 0.5 : Cannot reliably identify — use propose_custom_work if it's a real Montessori activity
+${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
+
+      const sonnetOnboardAbort = new AbortController();
+      let sonnetOnboardTimeout: ReturnType<typeof setTimeout> | undefined;
+      const onRouteAbortOnboard = () => sonnetOnboardAbort.abort();
+      routeAbort.signal.addEventListener('abort', onRouteAbortOnboard, { once: true });
+
+      try {
+        const elapsed = Date.now() - routeStart;
+        const remainingMs = Math.max(5000, ROUTE_TIMEOUT_MS - elapsed - 3000);
+        const sonnetTimeout = Math.min(remainingMs, 40000);
+        console.log(`[PhotoInsight] Sonnet onboarding timeout: ${sonnetTimeout}ms (${elapsed}ms elapsed)`);
+
+        sonnetOnboardTimeout = setTimeout(() => sonnetOnboardAbort.abort(), sonnetTimeout);
+
+        const onboardMessage = await anthropic.messages.create({
+          model: AI_MODEL,
+          max_tokens: 600,
+          system: onboardingSystemPrompt,
+          tools: [PHOTO_ANALYSIS_TOOL, PROPOSE_CUSTOM_WORK_TOOL],
+          // Let Sonnet choose which tool — tag_photo for matches, propose_custom_work for unknowns
+          tool_choice: { type: 'any' },
+          messages: [{ role: 'user', content: [
+            { type: 'image' as const, source: { type: 'url' as const, url: photoUrl } },
+            { type: 'text' as const, text: `Child: ${childName}, age ${childAge}\n\nAnalyze this photo and identify the Montessori work. If it matches a known curriculum work, use tag_photo. If it's a unique material not in the curriculum, use propose_custom_work.` },
+          ] }],
+        }, { signal: sonnetOnboardAbort.signal });
+
+        clearTimeout(sonnetOnboardTimeout);
+        routeAbort.signal.removeEventListener('abort', onRouteAbortOnboard);
+
+        // Check which tool Sonnet chose
+        const tagBlock = onboardMessage.content.find(b => b.type === 'tool_use' && b.name === 'tag_photo');
+        const proposeBlock = onboardMessage.content.find(b => b.type === 'tool_use' && b.name === 'propose_custom_work');
+
+        if (tagBlock && tagBlock.type === 'tool_use') {
+          // Sonnet identified a curriculum match
+          input = validateToolOutput(tagBlock.input as Record<string, unknown>);
+          matchResult = matchToCurriculumV2(
+            input.work_name,
+            input.area !== 'unknown' ? input.area : null,
+            curriculum,
+            correctionsMap,
+            input.observation,
+          );
+          finalWorkName = matchResult.bestMatch?.name || input.work_name;
+          finalArea = matchResult.bestMatch?.area_key || (input.area !== 'unknown' ? input.area : null);
+          finalWorkKey = matchResult.bestMatch?.work_key || null;
+          matchScore = matchResult.bestScore;
+          modelUsed = AI_MODEL;
+          haikuAccepted = false;
+          console.log(`[PhotoInsight] Sonnet onboarding: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
+
+          // ONBOARDING BONUS: Fire-and-forget visual memory generation
+          // After Sonnet classifies, trigger Haiku to generate a visual description
+          // This builds classroom visual memory from EVERY onboarding photo
+          if (classroomId && photoUrl && finalWorkName && matchScore >= 0.75 && input.confidence >= 0.75) {
+            const isCustom = finalWorkKey ? finalWorkKey.startsWith('custom_') : false;
+            // Fire-and-forget: generate and store visual memory
+            (async () => {
+              try {
+                // Inline version of generateAndStoreVisualMemory (from corrections/route.ts)
+                // Uses Haiku vision to describe the materials, then upserts to visual_memory
+                const vmAbort = new AbortController();
+                const vmTimeout = setTimeout(() => vmAbort.abort(), 30000);
+
+                const vmMessage = await anthropic!.messages.create({
+                  model: HAIKU_MODEL,
+                  max_tokens: 150,
+                  system: `You are a Montessori classroom material describer. Given a photo of a child working with Montessori materials, describe ONLY the physical materials/objects visible — NOT the child, NOT the activity, NOT the room. Focus on: shape, color, size, material (wood/metal/fabric/plastic), arrangement, and any distinctive visual features. Keep it to 1-2 sentences, max 120 words.`,
+                  messages: [{
+                    role: 'user',
+                    content: [
+                      { type: 'image', source: { type: 'url', url: photoUrl } },
+                      { type: 'text', text: `This is the Montessori work "${finalWorkName}" (area: ${finalArea || 'unknown'}). Describe the physical materials visible.` },
+                    ],
+                  }],
+                }, { signal: vmAbort.signal });
+
+                clearTimeout(vmTimeout);
+                let desc = '';
+                for (const block of vmMessage.content) {
+                  if (block.type === 'text') { desc = block.text.trim().slice(0, 500); break; }
+                }
+
+                if (desc.length >= 10) {
+                  // Confidence: 0.8 for onboarding Sonnet path (between first_capture 0.7 and correction 0.9)
+                  const { data: existing } = await supabase
+                    .from('montree_visual_memory')
+                    .select('description_confidence')
+                    .eq('classroom_id', classroomId!)
+                    .eq('work_name', finalWorkName)
+                    .maybeSingle();
+
+                  // Only upsert if no existing memory or existing has lower confidence
+                  if (!existing || (existing.description_confidence ?? 0) <= 0.8) {
+                    await supabase
+                      .from('montree_visual_memory')
+                      .upsert({
+                        classroom_id: classroomId,
+                        work_name: finalWorkName,
+                        work_key: finalWorkKey,
+                        area: finalArea,
+                        is_custom: isCustom,
+                        visual_description: desc,
+                        source: 'onboarding',
+                        source_media_id: media_id,
+                        photo_url: photoUrl,
+                        description_confidence: 0.8,
+                        updated_at: new Date().toISOString(),
+                      }, { onConflict: 'classroom_id,work_name' });
+                    console.log(`[VisualMemory] Onboarding stored for "${finalWorkName}"`);
+                  }
+                }
+
+                // Invalidate classroom embeddings so CLIP rebuilds with new visual memory
+                invalidateClassroomEmbeddings(classroomId!);
+                // Invalidate onboarding cache so coverage % is refreshed
+                invalidateOnboardingCache(classroomId!);
+
+              } catch (err) {
+                console.error('[VisualMemory] Onboarding visual memory generation failed (non-fatal):', err);
+              }
+            })();
+
+            // Fire-and-forget: feed brain learning (cross-classroom patterns)
+            if (auth.schoolId && auth.userId) {
+              supabase.rpc('append_brain_learning', {
+                p_category: 'montessori_insights',
+                p_learning: `Onboarding: Sonnet identified "${finalWorkName}" (${finalArea}) with confidence ${input.confidence.toFixed(2)} in classroom ${classroomId}`,
+              }).then(({ error: brainErr }) => {
+                if (brainErr) console.error('[Brain] Onboarding learning append failed:', brainErr);
+              }).catch(() => {});
+            }
+          }
+
+        } else if (proposeBlock && proposeBlock.type === 'tool_use') {
+          // Sonnet proposed a custom work — treat as Scenario A with proposal
+          const proposal = proposeBlock.input as Record<string, unknown>;
+          console.log(`[PhotoInsight] Sonnet onboarding proposed custom work: "${proposal.name}"`);
+
+          // Set low confidence so it routes to Scenario A with proposal
+          input = validateToolOutput({
+            work_name: (proposal.name as string) || 'Unknown Work',
+            area: (proposal.area as string) || 'practical_life',
+            mastery_evidence: 'practicing',
+            observation: (proposal.description as string) || 'Custom work observed',
+            confidence: 0.4, // Low to trigger Scenario A
+            work_verified: false,
+          });
+          matchResult = matchToCurriculumV2(
+            input.work_name,
+            input.area !== 'unknown' ? input.area : null,
+            curriculum,
+            correctionsMap,
+            input.observation,
+          );
+          finalWorkName = input.work_name;
+          finalArea = input.area !== 'unknown' ? input.area : null;
+          finalWorkKey = null;
+          matchScore = 0.3; // Low to ensure Scenario A
+          modelUsed = AI_MODEL;
+          haikuAccepted = false;
+
+          // The proposal data will be picked up by the Scenario A handler below
+          // which already calls proposeCustomWork — but since Sonnet already did it,
+          // we can skip the second call by providing the data directly
+        }
+
+      } catch (onboardErr) {
+        clearTimeout(sonnetOnboardTimeout);
+        routeAbort.signal.removeEventListener('abort', onRouteAbortOnboard);
+        if (sonnetOnboardAbort.signal.aborted) {
+          console.error('[PhotoInsight] Sonnet onboarding timed out — falling through to Haiku two-pass');
+        } else {
+          console.error('[PhotoInsight] Sonnet onboarding failed — falling through to Haiku two-pass:', onboardErr);
+        }
+        // Fall through to two-pass Haiku pipeline below
+      }
+    }
+
+    // ================================================================
+    // TWO-PASS DESCRIBE-THEN-MATCH ARCHITECTURE (skipped if onboarding Sonnet succeeded)
     //
     // Research shows vision accuracy degrades with long system prompts.
     // Splitting into two passes gives each model ONE job:
@@ -1560,18 +1871,10 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
     // Accuracy: Higher — each pass does ONE thing well.
     // ================================================================
 
-    let input: ReturnType<typeof validateToolOutput> | null = null;
-    let matchResult: ReturnType<typeof matchToCurriculumV2> | null = null;
-    let finalWorkName: string = '';
-    let finalArea: string | null = null;
-    let finalWorkKey: string | null = null;
-    let matchScore: number = 0;
-    let modelUsed: string = HAIKU_MODEL;
-    const haikuAttempted = true;
-    let haikuAccepted = false;
-
     // === PASS 1: DESCRIBE — Haiku looks at the photo with a minimal prompt ===
     // No curriculum, no visual ID guide, no corrections — just "describe what you see"
+    // GUARD: Skip two-pass pipeline if onboarding Sonnet already produced a result
+    if (!input) {
     const describeAbort = new AbortController();
     let describeTimeout: ReturnType<typeof setTimeout> | undefined;
     let visualDescription = '';
@@ -1703,6 +2006,7 @@ Match this description to the correct Montessori work. Use the visual identifica
       routeAbort.signal.removeEventListener('abort', onRouteAbortMatch);
       console.error('[PhotoInsight] Pass 2 MATCH failed:', matchErr);
     }
+    } // END: if (!input) — skip two-pass when onboarding Sonnet already succeeded
 
     // === FALLBACK: If two-pass failed, try single-pass Sonnet (old approach) ===
     if (!input || !matchResult) {
@@ -2162,6 +2466,9 @@ Match this description to the correct Montessori work. Use the visual identifica
           confusion_pair_matched: clipDecision?.clipResult?.confusion_pair_matched ?? null,
           differentiation_injected: false, // CLIP not used in two-pass fallback path
           custom_work_proposal: customWorkProposal, // null if not generated or failed
+          onboarding_mode: isOnboardingMode,
+          onboarding_sonnet_used: useOnboardingPath && modelUsed === AI_MODEL,
+          force_onboarding: force_onboarding,
         },
       });
 
