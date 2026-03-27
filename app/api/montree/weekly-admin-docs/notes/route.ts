@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     // Validate doc_type and area values
     const validDocTypes = ['summary', 'plan'];
-    const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const validAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'notes'];
 
     for (const note of notes) {
       if (!validDocTypes.includes(note.doc_type)) {

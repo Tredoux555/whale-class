@@ -2689,6 +2689,8 @@ export const zh = {
   'weeklyAdmin.chineseSummary': '日常：\n感官：\n数学：\n语言：\n文化：',
   'weeklyAdmin.englishPlan': '英文工作名称...',
   'weeklyAdmin.chinesePlan': '中文备注...',
+  'weeklyAdmin.chineseNote': '中文备注',
+  'weeklyAdmin.additionalNotes': '备注',
   'weeklyAdmin.saved': '笔记已保存',
   'weeklyAdmin.saveFailed': '保存笔记失败',
   'weeklyAdmin.noNotes': '没有需要保存的笔记',

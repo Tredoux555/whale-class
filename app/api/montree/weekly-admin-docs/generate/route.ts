@@ -191,7 +191,7 @@ export async function POST(request: NextRequest) {
           chineseSummary: summaryNote?.chinese_text || '',
         };
       } else {
-        // Plan: per-area English + Chinese notes
+        // Plan: per-area English work names + overall Chinese note + additional notes
         const areas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
         const planAreas: ChildNotes['planAreas'] = {};
 
@@ -199,14 +199,20 @@ export async function POST(request: NextRequest) {
           const areaNote = childNotesMap?.get(area);
           planAreas[area] = {
             en: areaNote?.english_text || '',
-            zh: areaNote?.chinese_text || '',
           };
         }
+
+        // Overall Chinese developmental note (stored with area=null)
+        const overallNote = childNotesMap?.get(null);
+        // Additional notes text (stored with area='notes')
+        const notesEntry = childNotesMap?.get('notes');
 
         return {
           childId: child.id,
           childName: child.name,
           planAreas,
+          chineseNote: overallNote?.chinese_text || '',
+          notesText: notesEntry?.english_text || '',
         };
       }
     });

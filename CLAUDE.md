@@ -12,7 +12,32 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 26, 2026)
+## CURRENT STATUS (Mar 27, 2026)
+
+### Session Work (Mar 27, 2026 — Weekly Admin Plan Document Format Fix)
+
+**Weekly Admin Plan Document Format Fix — Audited — ⚠️ NOT YET PUSHED:**
+
+The Weekly Plan document generator was producing the wrong format. Compared against teacher's sample document (`docs/samples/Weekly Plan 2026 - 27.docx`) and fixed to match the physical book format exactly: 7-column table with English headers, English work names per area, Chinese developmental note in col0 of notes row, additional notes in col6.
+
+**What was wrong:** Code had Chinese headers, per-area Chinese text fields alongside English, and no separate Chinese note / additional notes fields. The sample document shows a clean two-row-per-child layout with English-only area columns and Chinese relegated to a single notes row.
+
+**Files Modified (6):**
+1. `lib/montree/weekly-admin/doc-generator.ts` — 3 edits: ChildNotes interface (removed `zh` from planAreas, added `chineseNote` + `notesText`), English headers, notes row layout (col0=Chinese, cols1-5=empty, col6=notes)
+2. `app/api/montree/weekly-admin-docs/generate/route.ts` — 1 edit: Plan mode reads Chinese note from `area=null`, notes text from `area='notes'`
+3. `app/montree/dashboard/weekly-admin-docs/page.tsx` — 4 edits: notes parsing, save handler, PlanCard UI redesigned (5 English inputs + Chinese note + notes textarea)
+4. `app/api/montree/weekly-admin-docs/notes/route.ts` — 1 edit (audit fix): added `'notes'` to `validAreas` whitelist
+5. `lib/montree/i18n/en.ts` — 2 new keys (`weeklyAdmin.chineseNote`, `weeklyAdmin.additionalNotes`)
+6. `lib/montree/i18n/zh.ts` — 2 matching Chinese keys (perfect EN/ZH parity)
+
+**Audit:** 1 CRITICAL bug found and fixed (missing `'notes'` in validAreas — would have rejected saves). Unique index collision concern investigated and cleared (doc_type differentiates plan vs summary). Full data flow verified end-to-end.
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_WEEKLY_ADMIN_DOCS_PLAN_FORMAT_MAR27.md`
+
+---
+
+## PREVIOUS STATUS (Mar 26, 2026)
 
 ### Session Work (Mar 26, 2026 — Cross-Area Correction Flow Fix)
 

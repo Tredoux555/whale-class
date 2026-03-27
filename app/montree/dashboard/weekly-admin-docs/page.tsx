@@ -28,9 +28,9 @@ interface NoteData {
 }
 
 // Summary: one overall note per child (area=null)
-// Plan: one note per child per area
+// Plan: per-area English work names + overall Chinese note + additional notes
 type SummaryNotes = Record<string, NoteData>; // childId -> note
-type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area -> note
+type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area|'_chinese'|'_notes' -> note
 
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
@@ -105,10 +105,24 @@ export default function WeeklyAdminDocsPage() {
             };
           } else if (note.doc_type === 'plan') {
             if (!pNotes[note.child_id]) pNotes[note.child_id] = {};
-            pNotes[note.child_id][note.area || ''] = {
-              english_text: note.english_text || '',
-              chinese_text: note.chinese_text || '',
-            };
+            if (note.area === null) {
+              // Overall Chinese developmental note (stored with area=null)
+              pNotes[note.child_id]['_chinese'] = {
+                english_text: note.english_text || '',
+                chinese_text: note.chinese_text || '',
+              };
+            } else if (note.area === 'notes') {
+              // Additional notes text
+              pNotes[note.child_id]['_notes'] = {
+                english_text: note.english_text || '',
+                chinese_text: note.chinese_text || '',
+              };
+            } else {
+              pNotes[note.child_id][note.area] = {
+                english_text: note.english_text || '',
+                chinese_text: note.chinese_text || '',
+              };
+            }
           }
         }
       }
@@ -161,17 +175,40 @@ export default function WeeklyAdminDocsPage() {
       for (const child of children) {
         const pn = planNotes[child.id];
         if (pn) {
+          // Per-area English work names
           for (const area of AREAS) {
             const an = pn[area.key];
-            if (an && (an.english_text || an.chinese_text)) {
+            if (an && an.english_text) {
               notes.push({
                 child_id: child.id,
                 doc_type: 'plan',
                 area: area.key,
                 english_text: an.english_text || null,
-                chinese_text: an.chinese_text || null,
+                chinese_text: null,
               });
             }
+          }
+          // Overall Chinese developmental note (area=null)
+          const chNote = pn['_chinese'];
+          if (chNote && chNote.chinese_text) {
+            notes.push({
+              child_id: child.id,
+              doc_type: 'plan',
+              area: null,
+              english_text: null,
+              chinese_text: chNote.chinese_text || null,
+            });
+          }
+          // Additional notes text (area='notes')
+          const notesEntry = pn['_notes'];
+          if (notesEntry && notesEntry.english_text) {
+            notes.push({
+              child_id: child.id,
+              doc_type: 'plan',
+              area: 'notes',
+              english_text: notesEntry.english_text || null,
+              chinese_text: null,
+            });
           }
         }
       }
@@ -572,35 +609,59 @@ function PlanCard({
   onUpdate: (childId: string, area: string, field: 'english_text' | 'chinese_text', value: string) => void;
 }) {
   const { t } = useI18n();
+  const chineseNote = notes['_chinese'] || { english_text: '', chinese_text: '' };
+  const notesEntry = notes['_notes'] || { english_text: '', chinese_text: '' };
 
   return (
     <div className="space-y-3">
-      {AREAS.map((area) => {
-        const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
-        return (
-          <div key={area.key} className="border rounded-lg p-3 bg-gray-50">
-            <div className="text-xs font-semibold text-gray-600 mb-2">
-              {area.label} / {area.zh}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <textarea
+      {/* Per-area English work names */}
+      <div className="grid grid-cols-5 gap-2">
+        {AREAS.map((area) => {
+          const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
+          return (
+            <div key={area.key}>
+              <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
+                {area.label}
+              </div>
+              <input
+                type="text"
                 value={areaNote.english_text}
                 onChange={(e) => onUpdate(childId, area.key, 'english_text', e.target.value)}
-                placeholder={t('weeklyAdmin.englishPlan')}
-                className="px-2 py-1.5 border rounded text-xs resize-none"
-                rows={2}
-              />
-              <textarea
-                value={areaNote.chinese_text}
-                onChange={(e) => onUpdate(childId, area.key, 'chinese_text', e.target.value)}
-                placeholder={t('weeklyAdmin.chinesePlan')}
-                className="px-2 py-1.5 border rounded text-xs resize-none"
-                rows={2}
+                placeholder={area.zh}
+                className="w-full px-2 py-1.5 border rounded text-xs"
               />
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+
+      {/* Overall Chinese developmental note + additional notes */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-gray-500 font-medium block mb-1">
+            {t('weeklyAdmin.chineseNote')}
+          </label>
+          <textarea
+            value={chineseNote.chinese_text}
+            onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
+            placeholder="本周重点..."
+            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+            rows={3}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-gray-500 font-medium block mb-1">
+            {t('weeklyAdmin.additionalNotes')}
+          </label>
+          <textarea
+            value={notesEntry.english_text}
+            onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}
+            placeholder="e.g. 上周因为写数字卷，计划未变"
+            className="w-full px-2 py-1.5 border rounded text-xs resize-none"
+            rows={3}
+          />
+        </div>
+      </div>
     </div>
   );
 }
