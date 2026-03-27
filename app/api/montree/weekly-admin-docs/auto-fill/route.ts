@@ -51,6 +51,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'week_start must be a valid Monday date' }, { status: 400 });
     }
 
+    // Validate not too far in future (allow +1 week for plan preparation)
+    const now = new Date();
+    const todayBeijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+    const currentMonday = getBeijingMonday(todayBeijing);
+    const nextMondayStr = getNextMonday(currentMonday);
+    if (weekStart > nextMondayStr) {
+      return NextResponse.json({ error: 'week_start cannot be more than 1 week in the future' }, { status: 400 });
+    }
+
     const supabase = getSupabase();
 
     // Verify classroom belongs to teacher's school
@@ -219,4 +228,22 @@ export async function GET(request: NextRequest) {
     console.error('auto-fill exception:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+/** Get YYYY-MM-DD of the Monday of the week containing the given date (Beijing time). */
+function getBeijingMonday(date: Date): string {
+  const d = new Date(date);
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setUTCDate(d.getUTCDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Get YYYY-MM-DD of the Monday after the given Monday string. */
+function getNextMonday(mondayStr: string): string {
+  const d = new Date(`${mondayStr}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 7);
+  return d.toISOString().slice(0, 10);
 }

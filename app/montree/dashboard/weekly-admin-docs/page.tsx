@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
-import { useFeatures } from '@/hooks/useFeatures';
+// Feature flag removed — weekly admin docs is a core teacher tool, always available
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -35,7 +35,7 @@ type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area|'_
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
   const { t } = useI18n();
-  const { isEnabled } = useFeatures();
+  // Feature flag removed — always accessible for teachers
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ export default function WeeklyAdminDocsPage() {
       ]);
 
       const childrenData = await childrenRes.json();
-      const notesData = await notesRes.json();
+      const notesData = notesRes.ok ? await notesRes.json() : { notes: [] };
 
       if (childrenData.children) {
         const sorted = childrenData.children.sort((a: Child, b: Child) =>
@@ -404,19 +404,7 @@ export default function WeeklyAdminDocsPage() {
 
   if (!session) return null;
 
-  // Feature gate — redirect if not enabled
-  if (!isEnabled('weekly_admin_docs')) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center p-6">
-          <p className="text-gray-500 mb-4">{t('features.notEnabled')}</p>
-          <button onClick={() => router.push('/montree/dashboard')} className="text-emerald-600 underline">
-            ← {t('common.back')}
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Feature gate removed — weekly admin docs always accessible for teachers
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -452,9 +440,10 @@ export default function WeeklyAdminDocsPage() {
         <button
           onClick={() => {
             const next = shiftWeek(weekStart, 1);
-            if (next <= getCurrentMonday()) setWeekStart(next);
+            const maxWeek = activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday();
+            if (next <= maxWeek) setWeekStart(next);
           }}
-          disabled={weekStart >= getCurrentMonday()}
+          disabled={weekStart >= (activeTab === 'plan' ? shiftWeek(getCurrentMonday(), 1) : getCurrentMonday())}
           className="px-2 py-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
         >
           ▶

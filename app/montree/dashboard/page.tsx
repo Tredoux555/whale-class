@@ -392,9 +392,7 @@ export default function DashboardPage() {
                   </button>
                   {toolsOpen && (
                     <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                      {isEnabled('weekly_admin_docs') && (
-                        <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
-                      )}
+                      <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
                       <BatchReportsCard classroomId={session.classroom.id} children={children} />
                       <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
                     </div>
