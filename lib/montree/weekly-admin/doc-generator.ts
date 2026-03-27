@@ -29,14 +29,18 @@ export interface ChildNotes {
   englishSummary?: string;
   /** Summary doc: Chinese text (日常：...\n感官：...\n数学：...\n语言：...\n文化：...) */
   chineseSummary?: string;
-  /** Plan doc: per-area notes (english + chinese per area) */
+  /** Plan doc: per-area English work names */
   planAreas?: {
-    practical_life?: { en?: string; zh?: string };
-    sensorial?: { en?: string; zh?: string };
-    mathematics?: { en?: string; zh?: string };
-    language?: { en?: string; zh?: string };
-    cultural?: { en?: string; zh?: string };
+    practical_life?: { en?: string };
+    sensorial?: { en?: string };
+    mathematics?: { en?: string };
+    language?: { en?: string };
+    cultural?: { en?: string };
   };
+  /** Plan doc: single overall Chinese developmental note (goes in col0 of notes row) */
+  chineseNote?: string;
+  /** Plan doc: additional notes text (goes in col6 "Notes" column of notes row) */
+  notesText?: string;
 }
 
 // ─── Pre-computed Twips (verified from template measurements) ─
@@ -72,8 +76,9 @@ const PLAN = {
 };
 
 const PLAN_AREA_KEYS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
-// 7-column header: [Week/blank] [日常] [感官] [数学] [语言] [文化] [Notes/blank]
-const PLAN_HEADERS_7 = ['', '日常', '感官', '数学', '语言', '文化', ''];
+// 7-column header: [Week#] [Practical] [Sensorial] [Math] [Language] [Science & Culture] [Notes]
+// Matches the teacher's handmade template exactly
+const PLAN_HEADERS_7 = ['', 'Practical', 'Sensorial', 'Math', 'Language', 'Science & Culture', 'Notes'];
 
 // Thin black borders matching both templates
 const THIN_BORDER = { style: BorderStyle.SINGLE, size: 1, color: '000000' };
@@ -228,30 +233,32 @@ function buildPlanTable(children: ChildNotes[], weekId?: string): Table {
   const childRows: TableRow[] = [];
 
   for (const child of children) {
-    // Name row: child name + English work names per area
+    // Name row: child name + English work names per area + empty notes col
     childRows.push(new TableRow({
       height: { value: PLAN.NAME_ROW_HEIGHT, rule: HeightRule.EXACT },
       children: [
         // Col 0: Child name
         textCell(child.childName, PLAN.COL_WIDTHS[0], PLAN.BODY_FONT, PLAN.BODY_FONT_SIZE, { bold: true }),
-        // Cols 1-5: English text per area
+        // Cols 1-5: English work name per area
         ...PLAN_AREA_KEYS.map((key, i) =>
           textCell(child.planAreas?.[key]?.en || '', PLAN.COL_WIDTHS[i + 1], PLAN.BODY_FONT, PLAN.BODY_FONT_SIZE)
         ),
-        // Col 6: empty
+        // Col 6: empty (notes only go in the Chinese row below)
         emptyCell(PLAN.COL_WIDTHS[6]),
       ],
     }));
 
-    // Notes row: Chinese text per area
+    // Notes row: Chinese developmental note in col0, empty cols 1-5, additional notes in col6
+    // Matches the teacher's physical book format exactly
     childRows.push(new TableRow({
       height: { value: PLAN.NOTES_ROW_HEIGHT, rule: HeightRule.EXACT },
       children: [
-        emptyCell(PLAN.COL_WIDTHS[0]),
-        ...PLAN_AREA_KEYS.map((key, i) =>
-          textCell(child.planAreas?.[key]?.zh || '', PLAN.COL_WIDTHS[i + 1], PLAN.BODY_FONT, PLAN.BODY_FONT_SIZE)
-        ),
-        emptyCell(PLAN.COL_WIDTHS[6]),
+        // Col 0: Overall Chinese developmental note for this child
+        textCell(child.chineseNote || '', PLAN.COL_WIDTHS[0], PLAN.BODY_FONT, PLAN.BODY_FONT_SIZE),
+        // Cols 1-5: empty
+        ...PLAN_AREA_KEYS.map((_, i) => emptyCell(PLAN.COL_WIDTHS[i + 1])),
+        // Col 6: Additional notes (e.g., "上周因为写数字卷，计划未变")
+        textCell(child.notesText || '', PLAN.COL_WIDTHS[6], PLAN.BODY_FONT, PLAN.BODY_FONT_SIZE),
       ],
     }));
   }

@@ -2688,6 +2688,8 @@ export const en = {
   'weeklyAdmin.chineseSummary': '日常：\n感官：\n数学：\n语言：\n文化：',
   'weeklyAdmin.englishPlan': 'English work name...',
   'weeklyAdmin.chinesePlan': '中文备注...',
+  'weeklyAdmin.chineseNote': 'Chinese Note',
+  'weeklyAdmin.additionalNotes': 'Notes',
   'weeklyAdmin.saved': 'Notes saved',
   'weeklyAdmin.saveFailed': 'Failed to save notes',
   'weeklyAdmin.noNotes': 'No notes to save',
