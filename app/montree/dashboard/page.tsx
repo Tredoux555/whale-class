@@ -29,6 +29,7 @@ const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/W
 const BatchReportsCard = dynamic(() => import('@/components/montree/reports/BatchReportsCard'), { ssr: false });
 const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
 const TeacherNotes = dynamic(() => import('@/components/montree/TeacherNotes'), { ssr: false });
+const ShelfAutopilotCard = dynamic(() => import('@/components/montree/ShelfAutopilotCard'), { ssr: false });
 
 
 interface Child {
@@ -394,6 +395,7 @@ export default function DashboardPage() {
                     <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                       <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
                       <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                      <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />
                       <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
                     </div>
                   )}
