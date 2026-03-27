@@ -72,14 +72,14 @@ export default function WeeklyAdminDocsPage() {
 
   // Fetch children + existing notes when session or week changes
   const fetchData = useCallback(async () => {
-    if (!session?.classroomId) return;
+    if (!session?.classroom?.id) return;
     setLoading(true);
     setError('');
 
     try {
       const [childrenRes, notesRes] = await Promise.all([
-        montreeApi(`/api/montree/children?classroom_id=${session.classroomId}`),
-        montreeApi(`/api/montree/weekly-admin-docs/notes?classroom_id=${session.classroomId}&week_start=${weekStart}`),
+        montreeApi(`/api/montree/children?classroom_id=${session.classroom?.id}`),
+        montreeApi(`/api/montree/weekly-admin-docs/notes?classroom_id=${session.classroom?.id}&week_start=${weekStart}`),
       ]);
 
       const childrenData = await childrenRes.json();
@@ -134,7 +134,7 @@ export default function WeeklyAdminDocsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session?.classroomId, weekStart, t]);
+  }, [session?.classroom?.id, weekStart, t]);
 
   useEffect(() => {
     fetchData();
@@ -143,7 +143,7 @@ export default function WeeklyAdminDocsPage() {
   // ─── Save Notes ────────────────────────────────────────────
 
   const handleSave = async () => {
-    if (!session?.classroomId) return;
+    if (!session?.classroom?.id) return;
     setSaving(true);
     setError('');
     setSuccess('');
@@ -223,7 +223,7 @@ export default function WeeklyAdminDocsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classroom_id: session.classroomId,
+          classroom_id: session.classroom?.id,
           week_start: weekStart,
           notes,
         }),
@@ -246,7 +246,7 @@ export default function WeeklyAdminDocsPage() {
   // ─── Generate & Download ───────────────────────────────────
 
   const handleGenerate = async (docType: 'summary' | 'plan') => {
-    if (!session?.classroomId) return;
+    if (!session?.classroom?.id) return;
     setGenerating(docType);
     setError('');
 
@@ -256,7 +256,7 @@ export default function WeeklyAdminDocsPage() {
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          classroom_id: session.classroomId,
+          classroom_id: session.classroom?.id,
           week_start: weekStart,
           doc_type: docType,
         }),
@@ -295,13 +295,13 @@ export default function WeeklyAdminDocsPage() {
   // ─── Auto-fill from Data ──────────────────────────────────
 
   const handleAutoFill = async () => {
-    if (!session?.classroomId) return;
+    if (!session?.classroom?.id) return;
     setAutoFilling(true);
     setError('');
 
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroomId}&week_start=${weekStart}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroom?.id}&week_start=${weekStart}`
       );
 
       if (!res.ok) {
