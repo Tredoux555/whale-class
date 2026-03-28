@@ -2800,6 +2800,26 @@ export const zh = {
   'photoInsight.customWorkFailed': '添加工作失败',
   'photoInsight.photoAlreadyTagged': '照片已标记',
 
+  // Sprint 2 — PhotoInsightPopup (Teacher OS)
+  'popup.confirmed': '已确认',
+  'popup.failed': '操作失败，请重试',
+  'popup.pickStatus': '选择状态',
+  'popup.sure': '确定',
+  'popup.justSave': '仅保存',
+  'popup.wrongFix': '不对？修改 →',
+  'popup.notSure': '我不确定这是什么',
+  'popup.helpTag': '帮我标记一下',
+  'popup.pickWork': '选择作品 →',
+  'popup.identifying': '正在识别...',
+  'popup.tookTooLong': '识别超时',
+  'popup.connectionError': '网络错误',
+  'popup.identificationFailed': '识别失败',
+  'popup.tagManually': '手动标记',
+  'popup.morePending': '更多待确认',
+  'popup.presented': '已展示',
+  'popup.practicing': '练习中',
+  'popup.mastered': '已掌握',
+
   // Report status translations
   'reportStatus.mastered': '已掌握',
   'reportStatus.practicing': '练习中',

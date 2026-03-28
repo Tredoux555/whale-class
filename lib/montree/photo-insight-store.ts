@@ -1,7 +1,16 @@
 // lib/montree/photo-insight-store.ts
 // Global background store for Smart Capture / Photo Insight processing
-// Decoupled from React component lifecycle — requests survive navigation
-// Components subscribe to updates via listeners
+// v2 — Teacher OS simplified states (photo-first flow)
+//
+// Decoupled from React component lifecycle — requests survive navigation.
+// Components subscribe to updates via listeners.
+//
+// v2 changes (Teacher OS):
+// - InsightStatus simplified: 'analyzing' | 'identified' | 'no_match' | 'error'
+//   (removed 'done', 'confirmed', 'rejected' — teacher status is separate)
+// - Added teacher_status_choice: 'save' | 'presented' | 'practicing' | 'mastered' | null
+// - Removed from result: auto_updated, needs_confirmation, scenario
+// - Kept: candidates, in_classroom, in_child_shelf, classroom_work_id, custom_work_proposal
 
 import { montreeApi } from '@/lib/montree/api';
 
@@ -24,24 +33,47 @@ export interface CustomWorkProposal {
   proposal_confidence: number;
 }
 
+/** Teacher's chosen status for a photo (set via PhotoInsightPopup) */
+export type TeacherStatusChoice = 'save' | 'presented' | 'practicing' | 'mastered';
+
 export interface PhotoInsightResult {
   insight: string;
   work_name: string | null;
   area: string | null;
   mastery_evidence: string | null;
-  auto_updated: boolean;
-  needs_confirmation?: boolean;
   confidence?: number;
   match_score?: number;
   candidates?: CandidateWork[];
-  scenario?: 'A' | 'B' | 'C' | 'D';
   in_classroom?: boolean;
   in_child_shelf?: boolean;
   classroom_work_id?: string | null;
   custom_work_proposal?: CustomWorkProposal | null;
+
+  // ---- Backward compatibility (Sprint 1 Teacher OS) ----
+  // Sprint 1 returns these fields directly (NOT computed from store state).
+  // API hardcodes these values per new photo-first workflow:
+  // - auto_updated: always false (teacher must explicitly choose status via PhotoInsightPopup)
+  // - needs_confirmation: always true (photo requires teacher action)
+  // - scenario: returned by API for Scenario A/B/C/D detection downstream
+  // Preserved for consumer compatibility until full Teacher OS rollout.
+
+  /** @deprecated Sprint 1 compat — API always returns false (teacher OS: explicit status via popup) */
+  auto_updated?: boolean;
+  /** @deprecated Sprint 1 compat — API always returns true (teacher OS: explicit confirmation required) */
+  needs_confirmation?: boolean;
+  /** @deprecated Sprint 1 compat — API returns Scenario A/B/C/D for old logic, will be removed */
+  scenario?: string;
 }
 
-export type InsightStatus = 'analyzing' | 'done' | 'error' | 'confirmed' | 'rejected' | 'retrying';
+/**
+ * v2 InsightStatus — simplified for Teacher OS photo-first flow.
+ *
+ * 'analyzing'  — CLIP classification in progress (includes internal retries)
+ * 'identified' — CLIP found a match (teacher hasn't picked status yet)
+ * 'no_match'   — CLIP confidence too low to suggest (teacher must pick work manually)
+ * 'error'      — Failed after all retries (network, timeout, server error)
+ */
+export type InsightStatus = 'analyzing' | 'identified' | 'no_match' | 'error';
 
 export type InsightErrorType = 'timeout' | 'rate_limit' | 'server_error' | 'network' | 'auth_error' | 'unknown';
 
@@ -53,6 +85,8 @@ export interface InsightEntry {
   startTime: number;
   errorType?: InsightErrorType;
   retryCount?: number;
+  /** Teacher's chosen status — set when teacher taps a status button in the popup */
+  teacherStatusChoice?: TeacherStatusChoice | null;
 }
 
 type Listener = () => void;
@@ -66,10 +100,48 @@ function makeKey(mediaId: string, childId: string): string {
 }
 
 // ============================================================
+// INTERNAL STATUS (retry tracking hidden from public API)
+// ============================================================
+
+// Internal status includes 'retrying' for backoff logic, but the public
+// InsightStatus exposes 'retrying' as 'analyzing' (teacher doesn't care about retries)
+type InternalStatus = InsightStatus | 'retrying';
+
+interface InternalEntry {
+  mediaId: string;
+  childId: string;
+  internalStatus: InternalStatus;
+  result: PhotoInsightResult | null;
+  startTime: number;
+  errorType?: InsightErrorType;
+  retryCount?: number;
+  teacherStatusChoice?: TeacherStatusChoice | null;
+}
+
+/** Map internal status to public InsightStatus */
+function toPublicStatus(internalStatus: InternalStatus): InsightStatus {
+  return internalStatus === 'retrying' ? 'analyzing' : internalStatus;
+}
+
+/** Convert internal entry to public InsightEntry */
+function toPublicEntry(internal: InternalEntry): InsightEntry {
+  return {
+    mediaId: internal.mediaId,
+    childId: internal.childId,
+    status: toPublicStatus(internal.internalStatus),
+    result: internal.result,
+    startTime: internal.startTime,
+    errorType: internal.errorType,
+    retryCount: internal.retryCount,
+    teacherStatusChoice: internal.teacherStatusChoice,
+  };
+}
+
+// ============================================================
 // STORE (module-level singleton — survives React re-renders + navigation)
 // ============================================================
 
-const entries = new Map<string, InsightEntry>();
+const entries = new Map<string, InternalEntry>();
 const listeners = new Set<Listener>();
 // AbortControllers for in-flight fetches — keyed same as entries (mediaId:childId)
 // Prevents zombie fetches from resurrecting deleted entries after resetEntry/clearAll
@@ -82,6 +154,8 @@ const retryTimeouts = new Map<string, NodeJS.Timeout>();
 // useSyncExternalStore compares snapshots with Object.is — same reference = no re-render
 let version = 0;
 let cachedSnapshot: { version: number; map: Map<string, InsightEntry> } = { version: -1, map: new Map() };
+// Cached pending entries per childId — avoids creating new arrays on every useSyncExternalStore call
+const cachedPending: Map<string, { version: number; entries: InsightEntry[] }> = new Map();
 
 // Notify all subscribers (React components re-render via useSyncExternalStore)
 function notify(): void {
@@ -90,6 +164,13 @@ function notify(): void {
     listener();
   }
 }
+
+// ============================================================
+// CONFIDENCE THRESHOLDS
+// ============================================================
+
+/** Below this, CLIP result is treated as no_match (show WorkWheelPicker directly) */
+const NO_MATCH_CONFIDENCE_THRESHOLD = 0.40;
 
 // ============================================================
 // PUBLIC API
@@ -104,30 +185,76 @@ export function subscribe(listener: Listener): () => void {
 /** Get current snapshot (for useSyncExternalStore) — returns new Map on each mutation */
 export function getSnapshot(): Map<string, InsightEntry> {
   if (cachedSnapshot.version !== version) {
-    cachedSnapshot = { version, map: new Map(entries) };
+    const publicMap = new Map<string, InsightEntry>();
+    for (const [key, internal] of entries) {
+      publicMap.set(key, toPublicEntry(internal));
+    }
+    cachedSnapshot = { version, map: publicMap };
   }
   return cachedSnapshot.map;
 }
 
 /** Get a single entry by mediaId + childId (composite key for group photo correctness) */
 export function getEntry(mediaId: string, childId: string): InsightEntry | undefined {
-  return entries.get(makeKey(mediaId, childId));
+  const internal = entries.get(makeKey(mediaId, childId));
+  return internal ? toPublicEntry(internal) : undefined;
 }
 
 /** Check if a mediaId+childId is currently being analyzed */
 export function isAnalyzing(mediaId: string, childId: string): boolean {
-  return entries.get(makeKey(mediaId, childId))?.status === 'analyzing';
+  const internal = entries.get(makeKey(mediaId, childId));
+  return internal?.internalStatus === 'analyzing' || internal?.internalStatus === 'retrying';
 }
 
 /** Get all entries for a specific child (for showing results after navigation) */
 export function getEntriesForChild(childId: string): InsightEntry[] {
   const result: InsightEntry[] = [];
-  for (const entry of entries.values()) {
-    if (entry.childId === childId) {
-      result.push(entry);
+  for (const internal of entries.values()) {
+    if (internal.childId === childId) {
+      result.push(toPublicEntry(internal));
     }
   }
   return result;
+}
+
+/**
+ * Get entries that need teacher attention (identified or no_match, no status choice yet).
+ * Used by PhotoInsightPopup toast queue to show pending popups.
+ * Returns a STABLE array reference (cached by version) for useSyncExternalStore compatibility.
+ */
+export function getPendingEntries(childId?: string): InsightEntry[] {
+  const cacheKey = childId ?? '__all__';
+  const cached = cachedPending.get(cacheKey);
+  if (cached && cached.version === version) return cached.entries;
+
+  const result: InsightEntry[] = [];
+  for (const internal of entries.values()) {
+    if (childId && internal.childId !== childId) continue;
+    const publicStatus = toPublicStatus(internal.internalStatus);
+    if ((publicStatus === 'identified' || publicStatus === 'no_match') && !internal.teacherStatusChoice) {
+      result.push(toPublicEntry(internal));
+    }
+  }
+  cachedPending.set(cacheKey, { version, entries: result });
+  return result;
+}
+
+/**
+ * Get original work data for corrections flow (work_name, area, confidence).
+ * The corrections API needs the original CLIP suggestion to record what was wrong.
+ */
+export function getOriginalWorkData(mediaId: string, childId: string): {
+  work_name: string | null;
+  area: string | null;
+  confidence: number | undefined;
+} | null {
+  const internal = entries.get(makeKey(mediaId, childId));
+  if (!internal?.result) return null;
+  return {
+    work_name: internal.result.work_name,
+    area: internal.result.area,
+    confidence: internal.result.confidence,
+  };
 }
 
 // Max auto-retries for transient errors (network, server 5xx)
@@ -137,7 +264,7 @@ const MAX_AUTO_RETRIES = 2;
 const RETRY_BASE_DELAY_MS = 2000;
 // Client timeout: slightly longer than server's 45s to allow server response
 const CLIENT_TIMEOUT_MS = 50000;
-// Re-analysis TTL: allow re-analysis of "done" entries after 10 minutes
+// Re-analysis TTL: allow re-analysis of completed entries after 10 minutes
 const REANALYSIS_TTL_MS = 10 * 60 * 1000;
 
 /** Exponential backoff with jitter: base * 2^attempt + random(0, base) */
@@ -166,7 +293,7 @@ function classifyError(res?: Response, err?: unknown): InsightErrorType {
     if (res.status === 429) return 'rate_limit';
     if (res.status >= 500) return 'server_error';
     if (res.status === 408) return 'timeout';
-    if (res.status === 403 || res.status === 401) return 'auth_error' as InsightErrorType;
+    if (res.status === 403 || res.status === 401) return 'auth_error';
   }
   return 'unknown';
 }
@@ -180,7 +307,7 @@ function isRetryable(errorType: InsightErrorType): boolean {
  * Start a photo insight analysis in the background.
  * Returns immediately — the fetch runs detached from any component.
  * Results are stored in the global map and subscribers are notified.
- * Automatically retries once on transient errors (network, server, timeout).
+ * Automatically retries on transient errors (network, server, timeout).
  */
 export function startAnalysis(
   mediaId: string,
@@ -191,11 +318,11 @@ export function startAnalysis(
 
   // Don't duplicate if already in progress
   const existing = entries.get(key);
-  if (existing && (existing.status === 'analyzing' || existing.status === 'retrying')) {
+  if (existing && (existing.internalStatus === 'analyzing' || existing.internalStatus === 'retrying')) {
     return;
   }
-  // Allow re-analysis of "done" entries after REANALYSIS_TTL_MS
-  if (existing && existing.status === 'done') {
+  // Allow re-analysis of completed entries after REANALYSIS_TTL_MS
+  if (existing && (existing.internalStatus === 'identified' || existing.internalStatus === 'no_match')) {
     if (Date.now() - existing.startTime < REANALYSIS_TTL_MS) {
       return; // Still fresh — don't re-analyze
     }
@@ -229,10 +356,11 @@ function runAnalysisFetch(
   entries.set(key, {
     mediaId,
     childId,
-    status: isRetry ? 'retrying' : 'analyzing',
+    internalStatus: isRetry ? 'retrying' : 'analyzing',
     result: null,
     startTime: isRetry ? (entries.get(key)?.startTime ?? Date.now()) : Date.now(),
     retryCount,
+    teacherStatusChoice: null,
   });
   notify();
 
@@ -241,15 +369,13 @@ function runAnalysisFetch(
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     const current = entries.get(key);
-    if (current?.status === 'analyzing' || current?.status === 'retrying') {
+    if (current?.internalStatus === 'analyzing' || current?.internalStatus === 'retrying') {
       timedOut = true;
       handleAnalysisError(mediaId, childId, locale, retryCount, 'timeout');
     }
   }, CLIENT_TIMEOUT_MS);
 
   // Fire the fetch with abort signal — resetEntry/clearAll can cancel via abortControllers map
-  // Timeout: CLIENT_TIMEOUT_MS + 5s buffer so store's own timeout fires first for clean handling
-  // (montreeApi default is 30s — too short for Sonnet vision which has a 45s server timeout)
   montreeApi('/api/montree/guru/photo-insight', {
     method: 'POST',
     body: JSON.stringify({ child_id: childId, media_id: mediaId, locale }),
@@ -300,12 +426,9 @@ function runAnalysisFetch(
         work_name: (data.work_name as string) ?? null,
         area: (data.area as string) ?? null,
         mastery_evidence: (data.mastery_evidence as string) ?? null,
-        auto_updated: (data.auto_updated as boolean) ?? false,
-        needs_confirmation: (data.needs_confirmation as boolean) ?? false,
-        confidence: data.confidence as number | undefined,
-        match_score: (data.match_score as number) ?? null,
+        confidence: typeof data.confidence === 'number' && !isNaN(data.confidence) ? data.confidence : undefined,
+        match_score: typeof data.match_score === 'number' ? data.match_score : undefined,
         candidates: Array.isArray(data.candidates) ? data.candidates as CandidateWork[] : [],
-        scenario: (['A', 'B', 'C', 'D'].includes(data.scenario as string) ? data.scenario as 'A' | 'B' | 'C' | 'D' : 'D'),
         in_classroom: (data.in_classroom as boolean) ?? false,
         in_child_shelf: (data.in_child_shelf as boolean) ?? false,
         classroom_work_id: (data.classroom_work_id as string) ?? null,
@@ -315,13 +438,31 @@ function runAnalysisFetch(
       // Final guard: entry may have been deleted while parsing response
       if (!entries.has(key)) return;
 
+      // Determine status based on confidence threshold
+      const confidence = result.confidence ?? 0;
+      const hasWorkMatch = result.work_name !== null && result.work_name !== '';
+      const isIdentified = hasWorkMatch && confidence >= NO_MATCH_CONFIDENCE_THRESHOLD;
+
+      // Populate v1 backward-compat fields for existing consumers during migration
+      result.auto_updated = false; // v2 never auto-updates — teacher always chooses
+      result.needs_confirmation = isIdentified; // true when CLIP found a match
+      // Map v2 status to v1 scenario for PhotoInsightButton compat:
+      // Scenario B = identified standard work, Scenario A = no match / unknown
+      // Scenario C = identified custom work (has proposal), Scenario D = cache hit (n/a here)
+      if (isIdentified) {
+        result.scenario = result.custom_work_proposal ? 'C' : 'B';
+      } else {
+        result.scenario = 'A';
+      }
+
       entries.set(key, {
         mediaId,
         childId,
-        status: 'done',
+        internalStatus: isIdentified ? 'identified' : 'no_match',
         result,
         startTime: entries.get(key)?.startTime ?? Date.now(),
         retryCount,
+        teacherStatusChoice: null,
       });
       notify();
     })
@@ -353,25 +494,26 @@ function handleAnalysisError(
   // Guard: entry may have been deleted by resetEntry/clearAll — don't resurrect
   if (!entries.has(key)) return;
 
-  // Auto-retry once for transient errors (not rate limits)
+  // Auto-retry for transient errors (not rate limits or auth errors)
   if (retryCount < MAX_AUTO_RETRIES && isRetryable(errorType)) {
     const delay = getRetryDelay(retryCount);
     console.log(`[PhotoInsight] Retrying in ${delay}ms (attempt ${retryCount + 2}/${MAX_AUTO_RETRIES + 1}, error: ${errorType})`);
     entries.set(key, {
       mediaId,
       childId,
-      status: 'retrying',
+      internalStatus: 'retrying',
       result: null,
       startTime: entries.get(key)?.startTime ?? Date.now(),
       errorType,
       retryCount,
+      teacherStatusChoice: null,
     });
     notify();
     // Schedule retry timeout — store ID so resetEntry/clearAll can cancel it
     const retryTimeoutId = setTimeout(() => {
       // Only retry if still in retrying state (user might have manually reset or clearAll called)
       const current = entries.get(key);
-      if (current?.status === 'retrying') {
+      if (current?.internalStatus === 'retrying') {
         retryTimeouts.delete(key); // Timeout is firing, remove from tracking
         runAnalysisFetch(mediaId, childId, locale, retryCount + 1);
       }
@@ -384,13 +526,71 @@ function handleAnalysisError(
   entries.set(key, {
     mediaId,
     childId,
-    status: 'error',
+    internalStatus: 'error',
     result: null,
     startTime: entries.get(key)?.startTime ?? Date.now(),
     errorType,
     retryCount,
+    teacherStatusChoice: null,
   });
   notify();
+}
+
+// ============================================================
+// STATUS CHOICE API (Teacher OS — teacher picks status via popup)
+// ============================================================
+
+/**
+ * Record teacher's status choice for a photo.
+ * Called when teacher taps Presented/Practicing/Mastered/Save in the popup.
+ * Does NOT update the server — the caller (popup component) handles that.
+ */
+export function setTeacherStatusChoice(mediaId: string, childId: string, choice: TeacherStatusChoice): void {
+  const key = makeKey(mediaId, childId);
+  const entry = entries.get(key);
+  if (entry) {
+    entries.set(key, { ...entry, teacherStatusChoice: choice });
+    notify();
+  }
+}
+
+/**
+ * Update an entry's result after teacher correction (e.g., WorkWheelPicker fix).
+ * Sets the corrected work_name and area, and marks status as identified.
+ */
+export function updateEntryAfterCorrection(
+  mediaId: string,
+  childId: string,
+  correctedWorkName: string,
+  correctedArea: string,
+): void {
+  const key = makeKey(mediaId, childId);
+  const entry = entries.get(key);
+  if (entry) {
+    // Teacher correction: always identified with full confidence, bypass NO_MATCH_CONFIDENCE_THRESHOLD
+    // (teacher explicitly picked the work — their authority overrides CLIP confidence)
+    const correctedResult: PhotoInsightResult = entry.result
+      ? { ...entry.result, work_name: correctedWorkName, area: correctedArea, needs_confirmation: true, auto_updated: false, scenario: 'B' }
+      : {
+          insight: 'Corrected by teacher',
+          work_name: correctedWorkName,
+          area: correctedArea,
+          mastery_evidence: null,
+          confidence: 1.0, // Teacher correction = full confidence
+          custom_work_proposal: null,
+          needs_confirmation: true,
+          auto_updated: false,
+          scenario: 'B',
+        };
+    entries.set(key, {
+      ...entry,
+      internalStatus: 'identified',
+      errorType: undefined, // Clear any previous error state
+      result: correctedResult,
+      teacherStatusChoice: null, // Reset choice — teacher needs to pick status for corrected work
+    });
+    notify();
+  }
 }
 
 /** Reset a specific entry (e.g., to retry after error) */
@@ -407,48 +607,6 @@ export function resetEntry(mediaId: string, childId: string): void {
   }
   entries.delete(key);
   notify();
-}
-
-/** Mark an entry as confirmed by the teacher */
-export function confirmEntry(mediaId: string, childId: string): void {
-  const key = makeKey(mediaId, childId);
-  const entry = entries.get(key);
-  if (entry) {
-    entries.set(key, { ...entry, status: 'confirmed' });
-    notify();
-  }
-}
-
-/** Update an entry's result after teacher correction (e.g., TeachGuruWorkModal)
- *  Replaces the work_name, area, and marks as confirmed so the gallery/review shows the corrected work */
-export function updateEntryAfterCorrection(
-  mediaId: string,
-  childId: string,
-  correctedWorkName: string,
-  correctedArea: string,
-): void {
-  const key = makeKey(mediaId, childId);
-  const entry = entries.get(key);
-  if (entry) {
-    entries.set(key, {
-      ...entry,
-      status: 'confirmed',
-      result: entry.result
-        ? { ...entry.result, work_name: correctedWorkName, area: correctedArea, needs_confirmation: false, auto_updated: false }
-        : { insight: 'Corrected by teacher', work_name: correctedWorkName, area: correctedArea, mastery_evidence: 'practicing', auto_updated: false, needs_confirmation: false, scenario: 'D' },
-    });
-    notify();
-  }
-}
-
-/** Mark an entry as rejected by the teacher */
-export function rejectEntry(mediaId: string, childId: string): void {
-  const key = makeKey(mediaId, childId);
-  const entry = entries.get(key);
-  if (entry) {
-    entries.set(key, { ...entry, status: 'rejected' });
-    notify();
-  }
 }
 
 /** Clear all entries (e.g., on logout) */
@@ -483,6 +641,9 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
     }
   }
   for (const key of keysToEvict) {
+    // Abort any in-flight fetch for this key to prevent zombie resurrection
+    abortControllers.get(key)?.abort();
+    abortControllers.delete(key);
     const retryTimeout = retryTimeouts.get(key);
     if (retryTimeout) {
       clearTimeout(retryTimeout);
@@ -497,6 +658,9 @@ export function evictStale(maxAgeMs: number = 30 * 60 * 1000): void {
     const sorted = [...entries.entries()].sort((a, b) => a[1].startTime - b[1].startTime);
     const toRemove = sorted.slice(0, entries.size - MAX_ENTRIES);
     for (const [key] of toRemove) {
+      // Abort any in-flight fetch for this key to prevent zombie resurrection
+      abortControllers.get(key)?.abort();
+      abortControllers.delete(key);
       const retryTimeout = retryTimeouts.get(key);
       if (retryTimeout) {
         clearTimeout(retryTimeout);
@@ -546,4 +710,21 @@ export function isProposalDismissed(mediaId: string, childId: string): boolean {
   } catch {
     return false;
   }
+}
+
+// ============================================================
+// BACKWARD COMPATIBILITY (v1 → v2 adapter)
+// ============================================================
+// These deprecated functions allow existing consumers (PhotoInsightButton,
+// photo-audit page, gallery) to continue working during the migration.
+// Remove after Sprint 3 when all consumers are updated.
+
+/** @deprecated Use setTeacherStatusChoice instead */
+export function confirmEntry(mediaId: string, childId: string): void {
+  setTeacherStatusChoice(mediaId, childId, 'save');
+}
+
+/** @deprecated Use resetEntry instead */
+export function rejectEntry(mediaId: string, childId: string): void {
+  resetEntry(mediaId, childId);
 }

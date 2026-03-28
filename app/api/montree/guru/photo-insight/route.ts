@@ -694,13 +694,12 @@ export async function POST(request: NextRequest) {
       if (clipDecision.action === 'slim_enrich' && clipDecision.clipResult) {
         console.log(`[PhotoInsight] CLIP identified: "${clipDecision.clipResult.work_name}" — using slim enrichment`);
 
-        // Slim path: minimal DB queries (just child name + age + classroom check)
+        // Slim path: classroom curriculum lookup for work_id association
         // Escape SQL wildcards in work name for .ilike() safety
         const clipWorkNameEscaped = clipDecision.clipResult.work_name
           .replace(/%/g, '\\%')
           .replace(/_/g, '\\_');
-        const [clipChildResult, clipClassroomLookup] = await Promise.all([
-          supabase.from('montree_children').select('name, age, classroom_id').eq('id', child_id).maybeSingle(),
+        const [clipClassroomLookup] = await Promise.all([
           // Look up work in THIS classroom's curriculum (case-insensitive, classroom-scoped)
           preChildClassroomId
             ? supabase.from('montree_classroom_curriculum_works')
@@ -718,340 +717,171 @@ export async function POST(request: NextRequest) {
                 .maybeSingle(),
         ]);
 
-        const clipChild = clipChildResult.data;
-        const clipClassroomId = clipChild?.classroom_id;
-        const clipChildName = clipChild?.name?.split(' ')[0] || 'This child';
-        const clipChildAge = clipChild?.age ?? 4;
-
-        // Get work materials from curriculum for slim prompt
-        let clipMaterials: string[] = [];
-        try {
-          const allWorks = loadAllCurriculumWorks();
-          const workRecord = allWorks.find(w => w.work_key === clipDecision!.clipResult!.work_key);
-          clipMaterials = workRecord?.materials?.slice(0, 3) || [];
-        } catch { /* non-fatal */ }
-
         const clipWorkName = clipDecision.clipResult.work_name;
         const clipAreaKey = clipDecision.clipResult.area_key;
         const clipConfidence = clipDecision.clipResult.confidence;
 
-        // SLIM Haiku enrichment (~800 tokens vs ~4000)
-        const langInstruction = locale === 'zh' ? 'Write the observation in Simplified Chinese.' : 'Write the observation in English.';
+        // ================================================================
+        // TEACHER OS SPRINT 1: Return CLIP results directly to client
+        // No Haiku verification — teacher confirms/corrects via popup
+        // Two-pass pipeline remains as fallback when CLIP fails
+        // ================================================================
 
-        // Inject confusion pair differentiation if CLIP detected a near-miss
-        // TEMP: getConfusionDifferentiation not yet pushed — using inline fallback
-        let differentiationNote = '';
-        const confusionPairKey = clipDecision.clipResult?.confusion_pair_matched;
-        if (confusionPairKey) {
-          const confusedWorkName = clipDecision.clipResult?.runner_up?.work_name || confusionPairKey;
-          differentiationNote = `\nIMPORTANT: This work is often confused with "${confusedWorkName}". Verify the identification matches what you see in the photo.`;
+        // Classroom + shelf lookups
+        let classroomWorkId = clipClassroomLookup.data?.id || null;
+
+        // Fallback: if .ilike() on name didn't find it, try work_key from CLIP result
+        if (!classroomWorkId && clipDecision?.clipResult?.work_key && preChildClassroomId) {
+          try {
+            const { data: byKey } = await supabase
+              .from('montree_classroom_curriculum_works')
+              .select('id')
+              .eq('classroom_id', preChildClassroomId)
+              .eq('work_key', clipDecision.clipResult.work_key)
+              .eq('is_active', true)
+              .limit(1)
+              .maybeSingle();
+            if (byKey?.id) {
+              classroomWorkId = byKey.id;
+              console.log(`[PhotoInsight/CLIP] work_key fallback matched: "${clipDecision.clipResult.work_key}" → ${classroomWorkId}`);
+            }
+          } catch (err) {
+            console.error('[PhotoInsight/CLIP] work_key fallback lookup failed:', err);
+          }
         }
 
-        const slimPrompt = `You are observing ${clipChildName} (age ${Math.floor(clipChildAge)}) in a Montessori classroom.
-Our image classifier suggests this might be "${clipWorkName}" in the ${clipAreaKey.replace(/_/g, ' ')} area.
-Expected materials: ${clipMaterials.join(', ') || 'standard Montessori materials'}.${differentiationNote}
-${langInstruction}
+        const inClassroom = !!classroomWorkId;
 
-FIRST: Verify if the classifier suggestion matches what you actually see. If the materials/activity clearly DON'T match "${clipWorkName}", set work_verified to false and suggest what the actual work might be.
-
-Then assess mastery level:
-- "mastered": completed correctly, independently, with precision
-- "practicing": actively working, trying different approaches, some errors
-- "presented": appears to be first exposure to the work
-- "unclear": cannot determine from the photo
-
-Write ONE warm observation sentence. Suggest a crop if useful.`;
-
-        const slimAbort = new AbortController();
-        const slimTimeout = setTimeout(() => slimAbort.abort(), 15000);
-        // Chain route-level abort to this sub-operation
-        const onRouteAbort = () => slimAbort.abort();
-        routeAbort.signal.addEventListener('abort', onRouteAbort, { once: true });
-
-        try {
-          const slimResponse = await anthropic.messages.create({
-            model: HAIKU_MODEL,
-            max_tokens: 256,
-            system: slimPrompt,
-            messages: [{
-              role: 'user',
-              content: [
-                { type: 'image', source: { type: 'url', url: photoUrl } },
-                { type: 'text', text: 'Assess this child\'s mastery.' },
-              ],
-            }],
-            tools: [{
-              name: 'assess_mastery' as const,
-              description: 'Assess mastery level from photo.',
-              input_schema: {
-                type: 'object' as const,
-                properties: {
-                  mastery_evidence: { type: 'string', enum: ['mastered', 'practicing', 'presented', 'unclear'] },
-                  confidence: { type: 'number', description: '0.0-1.0' },
-                  observation: { type: 'string' },
-                  work_verified: { type: 'boolean', description: 'True if the photo matches the suggested work, false if it looks like a different work' },
-                  actual_work_name: { type: 'string', description: 'If work_verified is false, what work does this actually look like?' },
-                  suggested_crop: {
-                    type: 'object',
-                    properties: { x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' } },
-                    required: ['x', 'y', 'width', 'height'],
-                  },
-                },
-                required: ['mastery_evidence', 'confidence', 'observation'],
-              },
-            }],
-            tool_choice: { type: 'tool', name: 'assess_mastery' },
-          }, { signal: slimAbort.signal });
-
-          clearTimeout(slimTimeout);
-          routeAbort.signal.removeEventListener('abort', onRouteAbort);
-
-          const slimToolBlock = slimResponse.content.find(b => b.type === 'tool_use');
-          if (slimToolBlock && slimToolBlock.type === 'tool_use') {
-            const slimInput = validateToolOutput({
-              work_name: clipWorkName,
-              area: clipAreaKey,
-              ...(slimToolBlock.input as Record<string, unknown>),
-            });
-
-            // If Haiku disagrees with CLIP identification, fall through to full two-pass
-            if (slimInput.work_verified === false) {
-              console.log(`[PhotoInsight/CLIP] Haiku overrode CLIP: "${clipWorkName}" → "${slimInput.actual_work_name || 'unknown'}". Falling to two-pass.`);
-              // Don't use slim result — fall through to full two-pass pipeline below
-              throw new Error('CLIP_OVERRIDE_BY_HAIKU');
-            }
-
-            // Classroom + shelf lookups
-            let classroomWorkId = clipClassroomLookup.data?.id || null;
-
-            // Fallback: if .ilike() on name didn't find it, try work_key from CLIP result
-            if (!classroomWorkId && clipDecision?.clipResult?.work_key && preChildClassroomId) {
-              try {
-                const { data: byKey } = await supabase
-                  .from('montree_classroom_curriculum_works')
-                  .select('id')
-                  .eq('classroom_id', preChildClassroomId)
-                  .eq('work_key', clipDecision.clipResult.work_key)
-                  .eq('is_active', true)
-                  .limit(1)
-                  .maybeSingle();
-                if (byKey?.id) {
-                  classroomWorkId = byKey.id;
-                  console.log(`[PhotoInsight/CLIP] work_key fallback matched: "${clipDecision.clipResult.work_key}" → ${classroomWorkId}`);
-                }
-              } catch (err) {
-                console.error('[PhotoInsight/CLIP] work_key fallback lookup failed:', err);
-              }
-            }
-
-            const inClassroom = !!classroomWorkId;
-
-            let inChildShelf = false;
-            if (child_id) {
-              const { data: shelfData } = await supabase
-                .from('montree_child_focus_works')
-                .select('id')
-                .eq('child_id', child_id)
-                .eq('work_name', clipWorkName)
-                .limit(1)
-                .maybeSingle();
-              inChildShelf = !!shelfData?.id;
-            }
-
-            // Scenario determination
-            let scenario: 'A' | 'B' | 'C' | 'D';
-            if (!inClassroom) scenario = 'B';
-            else if (!inChildShelf) scenario = 'C';
-            else scenario = 'D';
-
-            // GREEN/AMBER/RED zone with CLIP confidence factored in
-            // CLIP models are calibrated differently than Haiku — 0.80 CLIP ≈ 0.85 Haiku
-            const CLIP_GREEN_THRESHOLD = 0.80; // CLIP confidence needed for GREEN zone auto-update
-            const validStatuses = ['mastered', 'practicing', 'presented'];
-            const slimMastery = validStatuses.includes(slimInput.mastery_evidence) ? slimInput.mastery_evidence : null;
-            const shouldAutoUpdate = (
-              clipConfidence >= CLIP_GREEN_THRESHOLD &&
-              slimInput.confidence >= AUTO_UPDATE_THRESHOLD && // Haiku needs 0.85 (AUTO_UPDATE_THRESHOLD)
-              slimMastery !== null &&
-              inClassroom
-            );
-            const needsConfirmation = !shouldAutoUpdate && clipConfidence >= 0.75 && slimInput.confidence >= 0.75;
-            let autoUpdated = false;
-
-            // Tag media
-            const mediaUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
-            if (classroomWorkId) mediaUpdate.work_id = classroomWorkId;
-            if (slimInput.suggested_crop) mediaUpdate.auto_crop = slimInput.suggested_crop;
-            if (Object.keys(mediaUpdate).length > 1) {
-              supabase.from('montree_media').update(mediaUpdate).eq('id', media_id)
-                .then(({ error }) => { if (error) console.error('[PhotoInsight/CLIP] Media update error:', error); })
-                .catch((err) => console.error('[PhotoInsight/CLIP] Media update promise rejected:', err));
-            }
-
-            // Auto-update progress (GREEN zone, upgrade-only)
-            if (shouldAutoUpdate && slimMastery) {
-              try {
-                const { data: existing } = await supabase
-                  .from('montree_child_progress')
-                  .select('status')
-                  .eq('child_id', child_id)
-                  .eq('work_name', clipWorkName)
-                  .maybeSingle();
-                const currentRank = STATUS_RANK[existing?.status || 'not_started'] || 0;
-                const newRank = STATUS_RANK[slimMastery] || 0;
-                if (newRank > currentRank) {
-                  await supabase.from('montree_child_progress').upsert({
-                    child_id,
-                    work_name: clipWorkName,
-                    area: clipAreaKey,
-                    status: slimMastery,
-                    updated_at: new Date().toISOString(),
-                    notes: `[Smart Capture CLIP] ${slimInput.observation}`,
-                  }, { onConflict: 'child_id,work_name' });
-                  autoUpdated = true;
-                }
-              } catch (err) {
-                console.error('[PhotoInsight/CLIP] Progress update error:', err);
-              }
-            }
-
-            // GREEN zone: Auto-add to shelf if work is in classroom but NOT on shelf
-            if (shouldAutoUpdate && inClassroom && !inChildShelf && clipWorkName && clipAreaKey && classroomWorkId) {
-              try {
-                await supabase.from('montree_child_focus_works').upsert({
-                  child_id,
-                  work_name: clipWorkName,
-                  area: clipAreaKey,
-                  work_id: classroomWorkId,
-                  status: slimMastery || 'presented',
-                  source: 'smart_capture_clip',
-                }, { onConflict: 'child_id,work_name' });
-                inChildShelf = true;
-                console.log(`[PhotoInsight/CLIP] Auto-added "${clipWorkName}" to shelf for child ${child_id}`);
-              } catch (err) {
-                console.error('[PhotoInsight/CLIP] Auto-add to shelf error:', err);
-              }
-            }
-
-            // ONBOARDING BONUS: When CLIP hits GREEN during onboarding, generate visual memory
-            // from this confident CLIP result so the system learns faster
-            if (preChildClassroomId && clipWorkName && clipAreaKey && shouldAutoUpdate) {
-              getClassroomOnboardingStatus(preChildClassroomId).then(status => {
-                if (!status.isOnboarding) return;
-                console.log(`[PhotoInsight/CLIP] Onboarding bonus: generating visual memory for "${clipWorkName}" from CLIP GREEN hit`);
-                // Fire-and-forget: Haiku generates visual description from photo
-                if (!anthropic) return;
-                anthropic.messages.create({
-                  model: HAIKU_MODEL,
-                  max_tokens: 300,
-                  messages: [{
-                    role: 'user',
-                    content: [
-                      { type: 'image', source: { type: 'url', url: photoUrl } },
-                      { type: 'text', text: `Describe this Montessori material "${clipWorkName}" in exactly 150 tokens. Focus on: physical appearance, colors, materials (wood/metal/plastic/fabric), size, shape, distinctive features, and how a child interacts with it. Be specific enough that this description could identify the same material in future photos.` },
-                    ],
-                  }],
-                }).then(vmResponse => {
-                  const vmDesc = vmResponse.content.find(b => b.type === 'text')?.text?.trim();
-                  if (!vmDesc || vmDesc.length < 20) return;
-                  const vmWorkKey = clipDecision?.clipResult?.work_key || clipWorkName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-                  supabase.from('montree_visual_memory').upsert({
-                    classroom_id: preChildClassroomId,
-                    work_name: clipWorkName,
-                    work_key: vmWorkKey,
-                    area: clipAreaKey,
-                    is_custom: false,
-                    visual_description: vmDesc,
-                    source: 'clip_onboarding_bonus',
-                    source_media_id: media_id,
-                    photo_url: photoUrl,
-                    description_confidence: 0.8,
-                    updated_at: new Date().toISOString(),
-                  }, { onConflict: 'classroom_id,work_name' }).then(({ error }) => {
-                    if (error) console.error('[PhotoInsight/CLIP] Onboarding visual memory upsert error:', error);
-                    else {
-                      invalidateClassroomEmbeddings(preChildClassroomId!);
-                      invalidateOnboardingCache(preChildClassroomId!);
-                      console.log(`[PhotoInsight/CLIP] Onboarding visual memory stored for "${clipWorkName}"`);
-                    }
-                  }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM promise rejected:', err));
-                }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM Haiku call failed:', err));
-              }).catch(() => {}); // Non-fatal: onboarding check failure is fine
-            }
-
-            // Save interaction (analytics + cache)
-            supabase.from('montree_guru_interactions').insert({
-              child_id,
-              question_type: 'photo_insight',
-              question: `photo:${media_id}:${child_id}`,
-              response_insight: slimInput.observation,
-              mode: 'clip_enriched',
-              model_used: HAIKU_MODEL,
-              context_snapshot: {
-                classification_method: 'clip_enriched',
-                clip_model: 'siglip-base-patch16-224',
-                clip_confidence: clipConfidence,
-                clip_raw_confidence: clipDecision.clipResult?.raw_confidence ?? clipConfidence,
-                clip_area_confidence: clipDecision.clipResult?.area_confidence ?? null,
-                clip_runner_up: clipDecision.clipResult?.runner_up ?? null,
-                clip_classification_ms: clipDecision.clipResult?.classification_ms ?? null,
-                haiku_confidence: slimInput.confidence,
-                identified_work_name: clipWorkName,
-                identified_area: clipAreaKey,
-                mastery_evidence: slimMastery,
-                curriculum_match_score: clipConfidence, // CLIP score IS the match score
-                scenario,
-                in_classroom: inClassroom,
-                in_child_shelf: inChildShelf,
-                needs_confirmation: needsConfirmation,
-                auto_updated: autoUpdated,
-                suggested_crop: slimInput.suggested_crop,
-                // Misclassification tracking fields (Step 5)
-                negative_penalty_applied: clipDecision.clipResult?.negative_penalty_applied ?? false,
-                confusion_pair_matched: clipDecision.clipResult?.confusion_pair_matched ?? null,
-                differentiation_injected: !!differentiationNote,
-              },
-            }).then(({ error }) => {
-              if (error) console.error('[PhotoInsight/CLIP] Interaction save error:', error);
-            }).catch((err) => console.error('[PhotoInsight/CLIP] Interaction save promise rejected:', err));
-
-            console.log(`[PhotoInsight] CLIP+SlimHaiku complete: "${clipWorkName}" (clip: ${clipConfidence.toFixed(2)}, haiku: ${slimInput.confidence.toFixed(2)}, scenario: ${scenario})`);
-
-            return NextResponse.json({
-              success: true,
-              insight: slimInput.observation,
-              work_name: clipWorkName,
-              area: clipAreaKey,
-              mastery_evidence: slimMastery,
-              auto_updated: autoUpdated,
-              needs_confirmation: needsConfirmation,
-              confidence: slimInput.confidence,
-              match_score: clipConfidence,
-              candidates: clipDecision.clipResult?.runner_up
-                ? [{ name: clipDecision.clipResult.runner_up.work_name, area: clipAreaKey, score: clipDecision.clipResult.runner_up.confidence }]
-                : [],
-              scenario,
-              in_classroom: inClassroom,
-              in_child_shelf: inChildShelf,
-              classroom_work_id: classroomWorkId,
-              suggested_crop: slimInput.suggested_crop,
-              clip_confidence: clipConfidence,
-              classification_method: 'clip_enriched',
-            }, {
-              headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
-            });
-          }
-        } catch (slimErr) {
-          clearTimeout(slimTimeout);
-          routeAbort.signal.removeEventListener('abort', onRouteAbort);
-          const errMsg = slimErr instanceof Error ? slimErr.message : String(slimErr);
-          if (errMsg === 'CLIP_OVERRIDE_BY_HAIKU') {
-            console.log('[PhotoInsight] CLIP identification overridden by Haiku — using full two-pass pipeline');
-          } else {
-            console.error('[PhotoInsight] CLIP slim enrichment failed, falling back to two-pass:', errMsg);
-          }
-          // Fall through to two-pass pipeline below
+        let inChildShelf = false;
+        if (child_id) {
+          const { data: shelfData } = await supabase
+            .from('montree_child_focus_works')
+            .select('id')
+            .eq('child_id', child_id)
+            .eq('work_name', clipWorkName)
+            .limit(1)
+            .maybeSingle();
+          inChildShelf = !!shelfData?.id;
         }
+
+        // Scenario determination (backward compat for v1 consumers)
+        const scenario: 'A' | 'B' | 'C' | 'D' = !inClassroom ? 'B' : (!inChildShelf ? 'C' : 'D');
+
+        // Tag media with CLIP-identified work (fire-and-forget)
+        // Teacher OS: tag immediately so photo is associated with work even before teacher confirms status
+        const mediaUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
+        if (classroomWorkId) mediaUpdate.work_id = classroomWorkId;
+        if (Object.keys(mediaUpdate).length > 1) {
+          supabase.from('montree_media').update(mediaUpdate).eq('id', media_id)
+            .then(({ error }) => { if (error) console.error('[PhotoInsight/CLIP] Media update error:', error); })
+            .catch((err) => console.error('[PhotoInsight/CLIP] Media update promise rejected:', err));
+        }
+
+        // NO auto-update progress — teacher picks status via PhotoInsightPopup
+        // NO auto-add to shelf — teacher's status choice triggers shelf/progress updates
+
+        // ONBOARDING BONUS: When CLIP is confident during onboarding, generate visual memory
+        // Trigger on CLIP confidence ≥ 0.80 (fire-and-forget, non-blocking)
+        if (preChildClassroomId && clipWorkName && clipAreaKey && clipConfidence >= 0.80 && photoUrl) {
+          getClassroomOnboardingStatus(preChildClassroomId).then(status => {
+            if (!status.isOnboarding) return;
+            console.log(`[PhotoInsight/CLIP] Onboarding bonus: generating visual memory for "${clipWorkName}" from confident CLIP hit`);
+            if (!anthropic) return;
+            anthropic.messages.create({
+              model: HAIKU_MODEL,
+              max_tokens: 300,
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'image', source: { type: 'url', url: photoUrl } },
+                  { type: 'text', text: `Describe this Montessori material "${clipWorkName}" in exactly 150 tokens. Focus on: physical appearance, colors, materials (wood/metal/plastic/fabric), size, shape, distinctive features, and how a child interacts with it. Be specific enough that this description could identify the same material in future photos.` },
+                ],
+              }],
+            }).then(vmResponse => {
+              const vmDesc = vmResponse.content.find(b => b.type === 'text')?.text?.trim();
+              if (!vmDesc || vmDesc.length < 20) return;
+              const vmWorkKey = clipDecision?.clipResult?.work_key || clipWorkName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+              supabase.from('montree_visual_memory').upsert({
+                classroom_id: preChildClassroomId,
+                work_name: clipWorkName,
+                work_key: vmWorkKey,
+                area: clipAreaKey,
+                is_custom: false,
+                visual_description: vmDesc,
+                source: 'clip_onboarding_bonus',
+                source_media_id: media_id,
+                photo_url: photoUrl,
+                description_confidence: 0.8,
+                updated_at: new Date().toISOString(),
+              }, { onConflict: 'classroom_id,work_name' }).then(({ error }) => {
+                if (error) console.error('[PhotoInsight/CLIP] Onboarding visual memory upsert error:', error);
+                else {
+                  invalidateClassroomEmbeddings(preChildClassroomId!);
+                  invalidateOnboardingCache(preChildClassroomId!);
+                  console.log(`[PhotoInsight/CLIP] Onboarding visual memory stored for "${clipWorkName}"`);
+                }
+              }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM promise rejected:', err));
+            }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM Haiku call failed:', err));
+          }).catch(() => {}); // Non-fatal: onboarding check failure is fine
+        }
+
+        // Save interaction (analytics + cache)
+        supabase.from('montree_guru_interactions').insert({
+          child_id,
+          question_type: 'photo_insight',
+          question: `photo:${media_id}:${child_id}`,
+          response_insight: `CLIP identified: ${clipWorkName} (${(clipConfidence * 100).toFixed(0)}% confidence)`,
+          mode: 'clip_direct',
+          model_used: 'clip_siglip',
+          context_snapshot: {
+            classification_method: 'clip_direct',
+            clip_model: 'siglip-base-patch16-224',
+            clip_confidence: clipConfidence,
+            clip_raw_confidence: clipDecision.clipResult?.raw_confidence ?? clipConfidence,
+            clip_area_confidence: clipDecision.clipResult?.area_confidence ?? null,
+            clip_runner_up: clipDecision.clipResult?.runner_up ?? null,
+            clip_classification_ms: clipDecision.clipResult?.classification_ms ?? null,
+            identified_work_name: clipWorkName,
+            identified_area: clipAreaKey,
+            curriculum_match_score: clipConfidence,
+            scenario,
+            in_classroom: inClassroom,
+            in_child_shelf: inChildShelf,
+            negative_penalty_applied: clipDecision.clipResult?.negative_penalty_applied ?? false,
+            confusion_pair_matched: clipDecision.clipResult?.confusion_pair_matched ?? null,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('[PhotoInsight/CLIP] Interaction save error:', error);
+        }).catch((err) => console.error('[PhotoInsight/CLIP] Interaction save promise rejected:', err));
+
+        console.log(`[PhotoInsight] CLIP direct: "${clipWorkName}" (confidence: ${clipConfidence.toFixed(2)}, in_classroom: ${inClassroom}, scenario: ${scenario})`);
+
+        // Return CLIP result directly — teacher decides status via PhotoInsightPopup
+        return NextResponse.json({
+          success: true,
+          work_name: clipWorkName,
+          area: clipAreaKey,
+          confidence: clipConfidence,
+          match_score: clipConfidence,
+          candidates: clipDecision.clipResult?.runner_up
+            ? [{ name: clipDecision.clipResult.runner_up.work_name, area: clipAreaKey, score: clipDecision.clipResult.runner_up.confidence }]
+            : [],
+          in_classroom: inClassroom,
+          in_child_shelf: inChildShelf,
+          classroom_work_id: classroomWorkId,
+          clip_confidence: clipConfidence,
+          classification_method: 'clip_direct',
+          // Teacher OS: no mastery evidence from route — teacher picks via popup
+          mastery_evidence: null,
+          suggested_crop: null,
+          // Backward compat fields (v1 consumers during migration)
+          auto_updated: false,
+          needs_confirmation: true,
+          scenario,
+          insight: `Identified: ${clipWorkName}`,
+        }, {
+          headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
+        });
       }
     } catch (clipErr) {
       console.error('[PhotoInsight] CLIP orchestration error — falling through:', clipErr);

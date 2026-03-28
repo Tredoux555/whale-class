@@ -844,18 +844,32 @@ export default function PhotoAuditPage() {
             continue;
           }
           const retryData = await retryRes.json();
-          if (retryData.needs_confirmation) results.amber++;
-          else if (retryData.auto_updated) results.green++;
-          else results.red++;
+          // Sprint 1: auto_updated always false, needs_confirmation always true
+          // Zone logic: if work_name identified, it's AMBER (teacher confirms)
+          // If no work_name, it's RED (teacher picks manually)
+          if (retryData.work_name && !retryData.error) {
+            results.amber++;  // Identified — teacher must explicitly confirm
+          } else if (!retryData.work_name && !retryData.error) {
+            results.red++;    // No match — teacher must pick work manually
+          } else {
+            results.red++;    // Error — network/timeout/server error
+          }
           if (retryData.custom_work_proposal) results.custom++;
         } else if (!res.ok) {
           results.errors++;
           continue;
         } else {
           const data = await res.json();
-          if (data.needs_confirmation) results.amber++;
-          else if (data.auto_updated) results.green++;
-          else results.red++;
+          // Sprint 1: auto_updated always false, needs_confirmation always true
+          // Zone logic: if work_name identified, it's AMBER (teacher confirms)
+          // If no work_name, it's RED (teacher picks manually)
+          if (data.work_name && !data.error) {
+            results.amber++;  // Identified — teacher must explicitly confirm
+          } else if (!data.work_name && !data.error) {
+            results.red++;    // No match — teacher must pick work manually
+          } else {
+            results.red++;    // Error — network/timeout/server error
+          }
           if (data.custom_work_proposal) results.custom++;
         }
 
