@@ -11,8 +11,10 @@ import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
+import PhotoInsightPopup from '@/components/montree/guru/PhotoInsightPopup';
 import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
+import type { TeacherStatusChoice } from '@/lib/montree/photo-insight-store';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
@@ -491,6 +493,10 @@ export default function GalleryPage() {
       setPhotos(prev => prev.map(p =>
         p.id === specialEventsPhotoId ? { ...p, work_id: workId!, work_name: eventName, area: 'special_events' } : p
       ));
+      // Update popup store so the toast dismisses / shows tagged event
+      if (specialEventsPhotoId) {
+        updateEntryAfterCorrection(specialEventsPhotoId, childId, eventName, 'special_events');
+      }
       toast.success(t('gallery.workUpdated'));
       setShowSpecialEventsPicker(false);
       setSpecialEventsPhotoId(null);
@@ -515,6 +521,8 @@ export default function GalleryPage() {
       setPhotos(prev => prev.map(p =>
         p.id === pickerPhotoId ? { ...p, work_id: work.id, work_name: work.name, area: pickerArea } : p
       ));
+      // Update popup store so the toast dismisses / shows corrected work
+      updateEntryAfterCorrection(pickerPhotoId, childId, work.name, pickerArea);
       toast.success(t('gallery.workUpdated'));
     } catch {
       toast.error(t('gallery.workUpdateError'));
@@ -626,6 +634,39 @@ export default function GalleryPage() {
   const handleProgressUpdate = useCallback(() => {
     fetchPhotos();
   }, [fetchPhotos]);
+
+  // ── PhotoInsightPopup callbacks ──
+  const handlePopupStatusPicked = useCallback((_mediaId: string, _childId: string, _status: TeacherStatusChoice, _workName: string) => {
+    // Refresh gallery photos to reflect any changes
+    fetchPhotos();
+  }, [fetchPhotos]);
+
+  const handlePopupCorrect = useCallback((mediaId: string, _childId: string, originalWorkName: string | null, originalArea: string | null) => {
+    // Open the existing WorkWheelPicker for correction
+    const area = originalArea || '';
+    setPickerArea(area);
+    setPickerPhotoId(mediaId);
+    setPickerCurrentWork(originalWorkName || undefined);
+    // Ensure curriculum is loaded before opening picker
+    loadCurriculum().then(() => {
+      setPickerOpen(true);
+    }).catch((err) => {
+      console.error('[Gallery] Failed to load curriculum for popup correction:', err);
+      toast.error(t('gallery.workUpdateError'));
+    });
+  }, [loadCurriculum]);
+
+  const handlePopupTagManually = useCallback((mediaId: string, _childId: string) => {
+    // Open area picker → work picker for unidentified photos
+    setAreaPickerPhotoId(mediaId);
+    // Ensure curriculum is loaded before opening picker
+    loadCurriculum().then(() => {
+      setShowAreaPicker(true);
+    }).catch((err) => {
+      console.error('[Gallery] Failed to load curriculum for manual tagging:', err);
+      toast.error(t('gallery.workUpdateError'));
+    });
+  }, [loadCurriculum]);
 
   // Use refs to avoid stale closures + recreation on every keystroke
   const notesDraftRef = useRef(notesDraft);
@@ -2048,6 +2089,15 @@ export default function GalleryPage() {
           onSave={handleCropSave}
         />
       )}
+
+      {/* PhotoInsightPopup — Toast popups for CLIP identifications */}
+      <PhotoInsightPopup
+        childId={childId}
+        classroomId={session?.classroom?.id}
+        onStatusPicked={handlePopupStatusPicked}
+        onCorrect={handlePopupCorrect}
+        onTagManually={handlePopupTagManually}
+      />
     </div>
   );
 }

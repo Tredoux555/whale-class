@@ -118,6 +118,40 @@ Built the non-blocking toast popup that appears after CLIP identifies a work. Te
 
 **Next Sprint:** Sprint 3 — Wire popup into capture page, gallery, and photo-audit page
 
+### Session Work (Mar 28, 2026 — Teacher OS Sprint 3: Wire PhotoInsightPopup into Pages)
+
+**Teacher OS Sprint 3 — Wire PhotoInsightPopup into Pages — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+
+Wired the PhotoInsightPopup component into 3 pages: Gallery (full callbacks), Capture (standalone), Photo-Audit (skipped with comment — already has its own correction UI).
+
+**Gallery page (`app/montree/dashboard/[childId]/gallery/page.tsx`):**
+- 3 callback handlers: `handlePopupStatusPicked` (refreshes photos), `handlePopupCorrect` (opens WorkWheelPicker with curriculum pre-load + error handling), `handlePopupTagManually` (opens AreaPickerWithSearch after curriculum loads)
+- 2 existing handlers enhanced: `handleWorkSelected` + `handleSpecialEventTag` — both now call `updateEntryAfterCorrection()` after successful PATCH to keep popup store in sync
+- JSX render with childId, classroomId, and all 3 callbacks
+
+**Capture page (`app/montree/dashboard/capture/page.tsx`):**
+- Conditional render when exactly 1 child selected (`selectedChildIds.length === 1`)
+- No callbacks — teacher navigates away immediately, popup works standalone
+
+**Photo-Audit page (`app/montree/dashboard/photo-audit/page.tsx`):**
+- Comment only — popup intentionally NOT wired (page is classroom-wide, popup is per-child; audit page already has its own correction UI)
+
+**Audit Summary (3 cycles):**
+- Cycle 1: 3 fixes — missing `updateEntryAfterCorrection` in handleWorkSelected (CRITICAL), no `.catch()` on loadCurriculum in handlePopupCorrect (HIGH), handlePopupTagManually opened picker before curriculum loaded (MEDIUM)
+- Cycle 2: 1 fix — missing `updateEntryAfterCorrection` in handleSpecialEventTag for special events path (CRITICAL)
+- Cycle 3: **ALL 3 AGENTS CLEAN** ✅
+
+**Total fixes applied:** 4 across 2 cycles, then ALL CLEAN on Cycle 3.
+
+**Files Modified (2):**
+1. `app/montree/dashboard/[childId]/gallery/page.tsx` — 3 popup callbacks, 2 enhanced handlers, JSX render
+2. `app/montree/dashboard/capture/page.tsx` — Import + conditional popup render
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT3_MAR28.md`
+
+**Next Sprint:** Sprint 4 — TBD (wire startAnalysis trigger from sync-manager, or other Teacher OS features)
+
 ---
 
 ## PREVIOUS STATUS (Mar 27, 2026)
