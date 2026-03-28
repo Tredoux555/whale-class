@@ -16,7 +16,7 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprint 0: Foundation Build)
 
-**Teacher OS Sprint 0 — Foundation Build — 3 Audit Cycles, 3 Consecutive CLEAN — ⚠️ NOT YET PUSHED:**
+**Teacher OS Sprint 0 — Foundation Build — 3 Audit Cycles, 3 Consecutive CLEAN — ✅ PUSHED:**
 
 Sprint 0 of the Teacher Operating System build. Creates all database foundation objects and rewrites the photo-insight-store for the new photo-first flow.
 
@@ -42,15 +42,15 @@ Complete rewrite for photo-first flow. InsightStatus simplified to `'analyzing' 
 1. `lib/montree/photo-insight-store.ts` — Complete v2 rewrite (~720 lines)
 2. `package.json` — Added `idb` dependency
 
-**Migration:** 155 — NOT YET RUN (safe to run, fully idempotent)
-**Deploy:** ⚠️ NOT YET PUSHED
+**Migration:** 155 — ✅ RUN via Supabase SQL Editor (Mar 28)
+**Deploy:** ✅ PUSHED — commit `8759e3af`, Railway deploy `25baa5f5` Active+Online
 **Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT0_MAR28.md`
 
 **Next Sprint:** Sprint 1 — Simplify photo-insight route (remove Haiku verification, return CLIP results directly)
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprint 1: Simplify Photo-Insight Route)
 
-**Teacher OS Sprint 1 — Remove Haiku Verification from CLIP Path — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+**Teacher OS Sprint 1 — Remove Haiku Verification from CLIP Path — 3 Audit Cycles, Cycle 3 ALL CLEAN — ✅ PUSHED:**
 
 Removed the Haiku verification step from the CLIP success path. When CLIP identifies a work, the result is returned directly to the client with `classification_method: 'clip_direct'`. Teacher confirms/corrects via popup (Sprint 2). Two-pass Haiku pipeline preserved as fallback when CLIP fails.
 
@@ -71,14 +71,14 @@ Removed the Haiku verification step from the CLIP success path. When CLIP identi
 1. `app/api/montree/guru/photo-insight/route.ts` — Replaced Haiku verification section with CLIP direct return (~130 lines)
 2. `app/montree/dashboard/photo-audit/page.tsx` — Updated zone classification for Sprint 1
 
-**Deploy:** ⚠️ NOT YET PUSHED. Migration 155 still NOT YET RUN.
+**Deploy:** ✅ PUSHED — commit `8759e3af`, Railway deploy `25baa5f5` Active+Online. Migration 155 ✅ RUN.
 **Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT1_MAR28.md`
 
 **Next Sprint:** Sprint 2 — PhotoInsightPopup component (non-blocking popup with status buttons)
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprint 2: PhotoInsightPopup Component)
 
-**Teacher OS Sprint 2 — PhotoInsightPopup Component — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+**Teacher OS Sprint 2 — PhotoInsightPopup Component — 3 Audit Cycles, Cycle 3 ALL CLEAN — ✅ PUSHED:**
 
 Built the non-blocking toast popup that appears after CLIP identifies a work. Teacher sees work name + area badge + status buttons (Presented / Practicing / Mastered / Save). Multiple popups stack for group photos or rapid capture.
 
@@ -113,7 +113,7 @@ Built the non-blocking toast popup that appears after CLIP identifies a work. Te
 1. `lib/montree/photo-insight-store.ts` — cachedPending system, getPendingEntries(), teacherStatusChoice
 2. `lib/montree/i18n/en.ts` + `zh.ts` — 18 new `popup.*` keys each (perfect EN/ZH parity)
 
-**Deploy:** ⚠️ NOT YET PUSHED. Migration 155 still NOT YET RUN.
+**Deploy:** ✅ PUSHED — commit `8759e3af`, Railway deploy `25baa5f5` Active+Online. Migration 155 ✅ RUN.
 **Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT2_MAR28.md`
 
 **Next Sprint:** Sprint 3 — Wire popup into capture page, gallery, and photo-audit page
