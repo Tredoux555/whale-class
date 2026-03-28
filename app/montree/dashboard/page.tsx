@@ -30,6 +30,12 @@ const BatchReportsCard = dynamic(() => import('@/components/montree/reports/Batc
 const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
 const TeacherNotes = dynamic(() => import('@/components/montree/TeacherNotes'), { ssr: false });
 const ShelfAutopilotCard = dynamic(() => import('@/components/montree/ShelfAutopilotCard'), { ssr: false });
+const AttendanceWidget = dynamic(() => import('@/components/montree/AttendanceWidget'), { ssr: false });
+const StaleWorksPanel = dynamic(() => import('@/components/montree/StaleWorksPanel'), { ssr: false });
+const ConferenceNotesPanel = dynamic(() => import('@/components/montree/ConferenceNotesPanel'), { ssr: false });
+const PulsePanel = dynamic(() => import('@/components/montree/PulsePanel'), { ssr: false });
+const EvidencePanel = dynamic(() => import('@/components/montree/EvidencePanel'), { ssr: false });
+const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
 
 
 interface Child {
@@ -339,6 +345,13 @@ export default function DashboardPage() {
                 </p>
               </div>
 
+              {/* ── Daily Brief Panel ── */}
+              {session?.classroom?.id && (
+                <div className="mb-4">
+                  <DailyBriefPanel />
+                </div>
+              )}
+
               {/* ── Student Grid ── */}
               <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-6">
                 {filteredChildren.map((child, index) => (
@@ -375,6 +388,17 @@ export default function DashboardPage() {
                 )}
               </div>
 
+
+              {/* ── Teacher OS Detail Panels (below student grid) ── */}
+              {session?.classroom?.id && (
+                <div className="mb-4 space-y-3">
+                  <div id="panel-attendance"><AttendanceWidget /></div>
+                  <div id="panel-stale_works"><StaleWorksPanel /></div>
+                  <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
+                  <div id="panel-evidence"><EvidencePanel /></div>
+                  <div id="panel-pulse"><PulsePanel /></div>
+                </div>
+              )}
 
               {/* ── Teacher Tools (collapsible) ── */}
               {session?.classroom?.id && (
