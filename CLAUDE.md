@@ -12,7 +12,115 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 27, 2026)
+## CURRENT STATUS (Mar 28, 2026)
+
+### Session Work (Mar 28, 2026 — Teacher OS Sprint 0: Foundation Build)
+
+**Teacher OS Sprint 0 — Foundation Build — 3 Audit Cycles, 3 Consecutive CLEAN — ⚠️ NOT YET PUSHED:**
+
+Sprint 0 of the Teacher Operating System build. Creates all database foundation objects and rewrites the photo-insight-store for the new photo-first flow.
+
+**1. Migration 155 — Teacher OS Foundation (`migrations/155_teacher_os_foundation.sql`, 240 lines):**
+Creates all database objects: `montree_attendance_override` (manual Mark Present), `montree_attendance_view` (SQL view deriving attendance from photos + overrides, timezone-aware), `montree_stale_works_view` (works not updated 7+ days), evidence columns on `montree_child_progress`, `montree_pulse_lock` (prevents concurrent Pulse generation, 30-min timeout), `montree_conference_notes` + versions (draft/shared/retracted with version history), `montree_stale_work_dismissals`. 4 RPCs: `acquire_pulse_lock`, `increment_pulse_progress`, `complete_pulse_lock`, `increment_evidence_photo`. All DDL uses `IF NOT EXISTS` / `CREATE OR REPLACE` — safe to run multiple times.
+
+**2. Store v2 Rewrite (`lib/montree/photo-insight-store.ts`, ~720 lines):**
+Complete rewrite for photo-first flow. InsightStatus simplified to `'analyzing' | 'identified' | 'no_match' | 'error'` (removed 'done', 'confirmed', 'rejected'). Internal 'retrying' state hidden from public API. TeacherStatusChoice: `'save' | 'presented' | 'practicing' | 'mastered'`. NO_MATCH_CONFIDENCE_THRESHOLD = 0.40. Composite key `mediaId:childId` for group photos. New `getOriginalWorkData()` getter. Backward compat fields (auto_updated, needs_confirmation, scenario) populated in ALL code paths. Deprecated adapters: `confirmEntry()` → `setTeacherStatusChoice('save')`, `rejectEntry()` → `resetEntry()`.
+
+**3. Dependency Addition:** `"idb": "^8.0.1"` added to package.json.
+
+**Audit Summary (3 cycles, 9 parallel agents per cycle):**
+- Cycle 1: DB CLEAN. Store v2: 5 CRITICAL + 3 HIGH + 3 MEDIUM + 2 LOW — triaged, 3 real bugs fixed (backward compat fields, errorType clearing, getOriginalWorkData). Consumer Compat: 5 breaking changes → fixed with backward compat fields.
+- Cycle 2: DB CLEAN. Store v2: 3 CRITICAL + 2 HIGH + 4 MEDIUM + 2 LOW — fixed AbortController cleanup in evictStale, custom_work_proposal + confidence in correction fallback, threshold bypass documented. Consumer Compat: CLEAN.
+- Cycle 3: **ALL 3 AGENTS CLEAN** ✅
+
+**Total fixes applied:** 6 across 2 cycles, then 3 consecutive CLEAN.
+
+**Files Created (1):**
+1. `migrations/155_teacher_os_foundation.sql` — 240 lines, all Teacher OS foundation DDL
+
+**Files Modified (2):**
+1. `lib/montree/photo-insight-store.ts` — Complete v2 rewrite (~720 lines)
+2. `package.json` — Added `idb` dependency
+
+**Migration:** 155 — NOT YET RUN (safe to run, fully idempotent)
+**Deploy:** ⚠️ NOT YET PUSHED
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT0_MAR28.md`
+
+**Next Sprint:** Sprint 1 — Simplify photo-insight route (remove Haiku verification, return CLIP results directly)
+
+### Session Work (Mar 28, 2026 — Teacher OS Sprint 1: Simplify Photo-Insight Route)
+
+**Teacher OS Sprint 1 — Remove Haiku Verification from CLIP Path — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+
+Removed the Haiku verification step from the CLIP success path. When CLIP identifies a work, the result is returned directly to the client with `classification_method: 'clip_direct'`. Teacher confirms/corrects via popup (Sprint 2). Two-pass Haiku pipeline preserved as fallback when CLIP fails.
+
+**What was removed:** Haiku prompt construction + API call, `work_verified` check, GREEN/AMBER/RED zone logic, auto-update progress, auto-add to shelf, slim Haiku catch block (~300 lines removed).
+
+**What replaced it (~130 lines):** Direct classroom + shelf lookups, fire-and-forget media tagging, onboarding visual memory bonus (CLIP confidence ≥ 0.80 + photoUrl guard), interaction save with `classification_method: 'clip_direct'`, clean response with all backward compat fields.
+
+**Key changes:** `auto_updated` always `false`, `needs_confirmation` always `true` (store overrides to `isIdentified`), `mastery_evidence` always `null`, `confidence` = CLIP confidence, `suggested_crop` = `null`. Cost: $0.00 per CLIP-identified photo.
+
+**Audit Summary (3 cycles):**
+- Cycle 1: Route — photoUrl guard FIXED, photo-audit zone logic FIXED (branching on work_name instead of hardcoded needs_confirmation). Store — pre-existing issues triaged.
+- Cycle 2: Route — dead `clipClassroomId` variable CLEANED. Store CLEAN. Consumer — 2 false positives (store overrides API values).
+- Cycle 3: **ALL 3 AGENTS CLEAN** ✅
+
+**Total fixes applied:** 4 across 2 cycles, then 3 consecutive CLEAN on Cycle 3.
+
+**Files Modified (2):**
+1. `app/api/montree/guru/photo-insight/route.ts` — Replaced Haiku verification section with CLIP direct return (~130 lines)
+2. `app/montree/dashboard/photo-audit/page.tsx` — Updated zone classification for Sprint 1
+
+**Deploy:** ⚠️ NOT YET PUSHED. Migration 155 still NOT YET RUN.
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT1_MAR28.md`
+
+**Next Sprint:** Sprint 2 — PhotoInsightPopup component (non-blocking popup with status buttons)
+
+### Session Work (Mar 28, 2026 — Teacher OS Sprint 2: PhotoInsightPopup Component)
+
+**Teacher OS Sprint 2 — PhotoInsightPopup Component — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+
+Built the non-blocking toast popup that appears after CLIP identifies a work. Teacher sees work name + area badge + status buttons (Presented / Practicing / Mastered / Save). Multiple popups stack for group photos or rapid capture.
+
+**Component: `components/montree/guru/PhotoInsightPopup.tsx` (~500 lines):**
+- Toast-style popups at bottom of screen, non-blocking (teacher keeps capturing)
+- Status buttons: Presented (amber) / Practicing (blue) / Mastered (emerald) / Just Save (gray)
+- "Wrong? Fix →" correction flow (delegates to parent via `onCorrect` callback)
+- No-match state with "Help Tag" / "Pick Work" buttons
+- Error/analyzing states with appropriate messaging
+- Max 3 visible popups with "+N more pending" indicator
+- Mobile-first: `left-4 right-4` on mobile, `right-4` only on desktop
+- `pointer-events-none` container, `pointer-events-auto` on cards
+- `useSyncExternalStore` with store's cached `getPendingEntries()` for stable references
+- Ref + State pattern: `processingKeyRef` for stale-closure-safe guard, `processingKey` state for UI
+
+**Store v2 enhancements (`lib/montree/photo-insight-store.ts`):**
+- `cachedPending` Map with version-based invalidation (stable array refs for React)
+- `getPendingEntries(childId?)` with cache — fixes CRITICAL useSyncExternalStore re-render issue
+- `teacherStatusChoice` field + `setTeacherStatusChoice()` setter
+
+**Audit Summary (3 cycles):**
+- Cycle 1: 7 fixes — double-tap guard (HIGH), fire-and-forget .ok check (HIGH), useCallback deps (MEDIUM), mobile overflow (MEDIUM), overflow-y-auto (MEDIUM), CRITICAL store array instability. Consumer: 3 false positives triaged.
+- Cycle 2: 1 fix — no-match card missing `relative` (MEDIUM). Store CLEAN. Consumer CLEAN.
+- Cycle 3: **ALL 3 AGENTS CLEAN** ✅
+
+**Total fixes applied:** 8 across 2 cycles, then 3 consecutive CLEAN on Cycle 3.
+
+**Files Created (1):**
+1. `components/montree/guru/PhotoInsightPopup.tsx` (~500 lines) — Non-blocking toast popup
+
+**Files Modified (2):**
+1. `lib/montree/photo-insight-store.ts` — cachedPending system, getPendingEntries(), teacherStatusChoice
+2. `lib/montree/i18n/en.ts` + `zh.ts` — 18 new `popup.*` keys each (perfect EN/ZH parity)
+
+**Deploy:** ⚠️ NOT YET PUSHED. Migration 155 still NOT YET RUN.
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT2_MAR28.md`
+
+**Next Sprint:** Sprint 3 — Wire popup into capture page, gallery, and photo-audit page
+
+---
+
+## PREVIOUS STATUS (Mar 27, 2026)
 
 ### Session Work (Mar 27, 2026 — Weekly Admin Plan Document Format Fix)
 
@@ -32,7 +140,8 @@ The Weekly Plan document generator was producing the wrong format. Compared agai
 
 **Audit:** 1 CRITICAL bug found and fixed (missing `'notes'` in validAreas — would have rejected saves). Unique index collision concern investigated and cleared (doc_type differentiates plan vs summary). Full data flow verified end-to-end.
 
-**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Commit:** `07bccffc`
+**Deploy:** ✅ Pushed. Railway auto-deploying. No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_WEEKLY_ADMIN_DOCS_PLAN_FORMAT_MAR27.md`
 
 ---

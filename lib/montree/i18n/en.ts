@@ -2799,6 +2799,26 @@ export const en = {
   'photoInsight.customWorkFailed': 'Failed to add work',
   'photoInsight.photoAlreadyTagged': 'Photo is already tagged',
 
+  // Sprint 2 — PhotoInsightPopup (Teacher OS)
+  'popup.confirmed': 'Confirmed',
+  'popup.failed': 'Failed — try again',
+  'popup.pickStatus': 'Pick status',
+  'popup.sure': 'sure',
+  'popup.justSave': 'Just Save',
+  'popup.wrongFix': 'Wrong? Fix →',
+  'popup.notSure': "I'm not sure what this is",
+  'popup.helpTag': 'Help me tag it',
+  'popup.pickWork': 'Pick work →',
+  'popup.identifying': 'Identifying...',
+  'popup.tookTooLong': 'Took too long',
+  'popup.connectionError': 'Connection error',
+  'popup.identificationFailed': 'Identification failed',
+  'popup.tagManually': 'Tag manually',
+  'popup.morePending': 'more pending',
+  'popup.presented': 'Presented',
+  'popup.practicing': 'Practicing',
+  'popup.mastered': 'Mastered',
+
   // Report status translations
   'reportStatus.mastered': 'Mastered',
   'reportStatus.practicing': 'Practicing',
