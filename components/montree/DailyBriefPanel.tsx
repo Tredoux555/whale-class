@@ -55,9 +55,9 @@ interface DailyBrief {
 }
 
 const PRIORITY_CONFIG = {
-  high: { dot: 'bg-red-400', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
-  medium: { dot: 'bg-amber-400', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  low: { dot: 'bg-blue-400', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  high: { dot: 'bg-amber-400', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  medium: { dot: 'bg-blue-400', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  low: { dot: 'bg-gray-300', bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200' },
 } as const;
 
 const TYPE_ICONS: Record<ActionItem['type'], string> = {
@@ -121,7 +121,6 @@ export default function DailyBriefPanel() {
 
   if (!brief) return null;
 
-  const highCount = brief.action_items.filter(a => a.priority === 'high').length;
   const totalActions = brief.action_items.length;
   const allGood = totalActions === 0;
 
@@ -150,9 +149,9 @@ export default function DailyBriefPanel() {
         </div>
 
         <div className="flex items-center gap-2">
-          {highCount > 0 && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">
-              {highCount} {t('brief.urgent')}
+          {totalActions > 0 && (
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-50 text-amber-700">
+              {totalActions} {t('brief.toDo')}
             </span>
           )}
           {allGood && (
@@ -179,7 +178,7 @@ export default function DailyBriefPanel() {
             </div>
             <div className="flex-1 bg-amber-50 rounded-lg px-2 py-1.5 text-center">
               <div className="text-base font-bold text-amber-700">{brief.stale_works.total}</div>
-              <div className="text-[10px] text-amber-600 font-medium">{t('brief.stale')}</div>
+              <div className="text-[10px] text-amber-600 font-medium">{t('brief.toRevisit')}</div>
             </div>
             <div className="flex-1 bg-blue-50 rounded-lg px-2 py-1.5 text-center">
               <div className="text-base font-bold text-blue-700">{brief.conference_notes.drafts}</div>
@@ -214,9 +213,6 @@ export default function DailyBriefPanel() {
                       {t(`brief.action.${item.type}`)
                         .replace('{count}', String(item.count))
                       }
-                    </span>
-                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cfg.text} bg-white/50`}>
-                      {t(`brief.priority.${item.priority}`)}
                     </span>
                     <span className="text-xs text-gray-400">↓</span>
                   </button>
