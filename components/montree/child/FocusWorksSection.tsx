@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
 import TeachingInstructions from '@/components/montree/guru/TeachingInstructions';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
+import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
+import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
 export interface Assignment {
@@ -85,6 +87,68 @@ export default function FocusWorksSection({
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
   const statusConfig = getStatusConfig(t);
+
+  // Evidence tracking — loaded once per child, cached in state
+  const [evidenceMap, setEvidenceMap] = useState<Record<string, {
+    evidence_photo_count: number;
+    evidence_photo_days: number;
+    evidence_strength: string;
+    mastery_confirmed_at: string | null;
+    mastery_confirmed_by: string | null;
+  }>>({});
+  const [evidenceLoaded, setEvidenceLoaded] = useState(false);
+  const evidenceAbortRef = useRef<AbortController | null>(null);
+  const childIdRef = useRef(childId);
+
+  const fetchEvidence = useCallback(async () => {
+    if (evidenceLoaded || !childId) return;
+    // Abort any in-flight fetch
+    evidenceAbortRef.current?.abort();
+    const controller = new AbortController();
+    evidenceAbortRef.current = controller;
+    const fetchChildId = childId; // capture for stale check
+    try {
+      const res = await montreeApi(`/api/montree/intelligence/evidence?child_id=${childId}`);
+      if (controller.signal.aborted || childIdRef.current !== fetchChildId) return; // stale
+      if (!res.ok) return;
+      const json = await res.json();
+      if (controller.signal.aborted || childIdRef.current !== fetchChildId) return; // stale
+      const map: typeof evidenceMap = {};
+      for (const w of json.works || []) {
+        map[w.work_name] = {
+          evidence_photo_count: w.evidence_photo_count || 0,
+          evidence_photo_days: w.evidence_photo_days || 0,
+          evidence_strength: w.evidence_strength || 'none',
+          mastery_confirmed_at: w.mastery_confirmed_at,
+          mastery_confirmed_by: w.mastery_confirmed_by,
+        };
+      }
+      setEvidenceMap(map);
+    } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return;
+      console.error('[Evidence] Fetch error:', err);
+    } finally {
+      if (!controller.signal.aborted && childIdRef.current === fetchChildId) {
+        setEvidenceLoaded(true);
+      }
+    }
+  }, [childId, evidenceLoaded]);
+
+  // Reset evidence cache when child changes + abort in-flight fetch
+  useEffect(() => {
+    childIdRef.current = childId;
+    evidenceAbortRef.current?.abort();
+    setEvidenceLoaded(false);
+    setEvidenceMap({});
+    setExpandedAdvice(null);
+  }, [childId]);
+
+  // Fetch evidence when any work card is expanded
+  useEffect(() => {
+    if (expandedIndex && !evidenceLoaded) {
+      fetchEvidence();
+    }
+  }, [expandedIndex, evidenceLoaded, fetchEvidence]);
 
   // Copy text to clipboard
   const copyText = async (text: string) => {
@@ -252,6 +316,15 @@ export default function FocusWorksSection({
                           📸 {t('focusWorks.capture')}
                         </button>
                       </div>
+
+                      {/* Evidence strength indicator */}
+                      {evidenceMap[focusWork.work_name] && (
+                        <EvidenceStrengthBadge
+                          photoCount={evidenceMap[focusWork.work_name].evidence_photo_count}
+                          photoDays={evidenceMap[focusWork.work_name].evidence_photo_days}
+                          masteryConfirmedAt={evidenceMap[focusWork.work_name].mastery_confirmed_at}
+                        />
+                      )}
 
                       {/* Guru Work Guide — homeschool parents only */}
                       {isParent && (

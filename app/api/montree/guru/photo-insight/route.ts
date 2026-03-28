@@ -777,6 +777,18 @@ export async function POST(request: NextRequest) {
             .catch((err) => console.error('[PhotoInsight/CLIP] Media update promise rejected:', err));
         }
 
+        // Teacher OS: increment evidence photo counter (fire-and-forget)
+        // Tracks how many photos exist per work across how many distinct days
+        if (clipWorkName && child_id) {
+          supabase.rpc('increment_evidence_photo', {
+            p_child_id: child_id,
+            p_work_name: clipWorkName.trim(),
+            p_photo_date: new Date().toISOString().slice(0, 10),
+          }).then(({ error }: { error: unknown }) => {
+            if (error) console.error('[Evidence] increment_evidence_photo RPC error:', error);
+          }).catch((err: unknown) => console.error('[Evidence] RPC rejection:', err));
+        }
+
         // NO auto-update progress — teacher picks status via PhotoInsightPopup
         // NO auto-add to shelf — teacher's status choice triggers shelf/progress updates
 
@@ -2021,6 +2033,17 @@ Match this description to the correct Montessori work. Use the visual identifica
       } catch (err) {
         console.error('[PhotoInsight] Media update exception:', err);
       }
+    }
+
+    // Teacher OS: increment evidence photo counter (fire-and-forget)
+    if (finalWorkName && child_id) {
+      supabase.rpc('increment_evidence_photo', {
+        p_child_id: child_id,
+        p_work_name: finalWorkName.trim(),
+        p_photo_date: new Date().toISOString().slice(0, 10),
+      }).then(({ error }: { error: unknown }) => {
+        if (error) console.error('[Evidence] increment_evidence_photo RPC error:', error);
+      }).catch((err: unknown) => console.error('[Evidence] RPC rejection:', err));
     }
 
     // Auto-update progress if confidence is high AND work is in classroom
