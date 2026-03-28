@@ -152,6 +152,67 @@ Wired the PhotoInsightPopup component into 3 pages: Gallery (full callbacks), Ca
 
 **Next Sprint:** Sprint 4 — TBD (wire startAnalysis trigger from sync-manager, or other Teacher OS features)
 
+### Session Work (Mar 28, 2026 — Teacher OS Sprints 4-14: Dashboard Intelligence Layer)
+
+**Teacher OS Sprints 4-14 — Full Dashboard Intelligence Layer — All Audited — ✅ PUSHED:**
+
+Built the complete Teacher OS dashboard intelligence system across 11 sprints, each with 3-cycle audit (3 parallel agents per cycle).
+
+**Sprint 4 — Skip-If-Tagged Optimization:** Enhanced photo-insight route to skip AI analysis when work is already tagged. Zero-cost path for pre-identified photos.
+
+**Sprint 5 — Attendance Widget (`components/montree/AttendanceWidget.tsx`):** Mark Present override button per child. Reads from `montree_attendance` table + `montree_attendance_view`. Today's attendance at a glance.
+
+**Sprint 6 — Stale Works Panel (`components/montree/StaleWorksPanel.tsx`):** Shows works not updated in 7+ days from `montree_stale_works_view`. Dismiss button persists via `/api/montree/intelligence/dismiss` endpoint. Grouped by child.
+
+**Sprint 7 — Conference Notes Panel (`components/montree/ConferenceNotesPanel.tsx`):** Draft/share/retract workflow for parent conference notes. Version history. API at `/api/montree/intelligence/conference-notes`.
+
+**Sprint 8 — Evidence Panel (`components/montree/EvidencePanel.tsx`):** Shows mastery evidence photos for children approaching mastery. Helps teachers make data-driven mastery decisions. API at `/api/montree/intelligence/evidence` + `/evidence-overview`.
+
+**Sprint 9 — Pulse Panel (`components/montree/PulsePanel.tsx`):** Weekly classroom health report. Lock system prevents concurrent generation (`montree_weekly_pulse_locks`). API at `/api/montree/pulse`.
+
+**Sprint 10 — Evidence Strength Badges:** Added `EvidenceStrengthBadge.tsx` component to `FocusWorksSection.tsx`. Visual indicator of evidence strength on each focus work card.
+
+**Sprint 11 — Cross-Feature Intelligence API (`/api/montree/intelligence/daily-brief`):** Consolidates all 5 features into a single API call. Returns attendance gaps, stale works, pending conference notes, evidence readiness, and pulse status. Priority-ranked action items.
+
+**Sprint 12 — Stale Works Dismissal API:** `/api/montree/intelligence/dismiss` endpoint with composite key `child_id:work_name`. Persists dismissals to `montree_stale_work_dismissals` table.
+
+**Sprint 13 — Daily Brief Widget (`components/montree/DailyBriefPanel.tsx`):** Collapsible summary panel above student grid. Shows top action items with priority badges (urgent/attention/info). Expandable detail sections.
+
+**Sprint 14 — Dashboard Layout Optimization:** Moved 5 detail panels below student grid (was above — caused excessive scrolling on mobile). Made Daily Brief action items clickable — scroll to corresponding panel via `getElementById('panel-{type}').scrollIntoView()`.
+
+**Files Created (18):**
+1. `app/api/montree/attendance/route.ts` — Attendance CRUD
+2. `app/api/montree/intelligence/daily-brief/route.ts` — Cross-feature intelligence
+3. `app/api/montree/intelligence/conference-notes/route.ts` — Conference notes CRUD
+4. `app/api/montree/intelligence/dismiss/route.ts` — Stale works dismissal
+5. `app/api/montree/intelligence/evidence-overview/route.ts` — Evidence summary
+6. `app/api/montree/intelligence/evidence/route.ts` — Evidence photos
+7. `app/api/montree/intelligence/stale-works/route.ts` — Stale works data
+8. `app/api/montree/pulse/route.ts` — Pulse report generation
+9. `components/montree/AttendanceWidget.tsx` — Attendance UI
+10. `components/montree/ConferenceNotesPanel.tsx` — Conference notes UI
+11. `components/montree/DailyBriefPanel.tsx` — Daily brief summary
+12. `components/montree/EvidencePanel.tsx` — Evidence photos UI
+13. `components/montree/EvidenceStrengthBadge.tsx` — Badge component
+14. `components/montree/PulsePanel.tsx` — Pulse report UI
+15. `components/montree/StaleWorksPanel.tsx` — Stale works UI
+16. `migrations/152_automation_foundation.sql` — Tables: milestones, pulse_locks, attendance
+17. `migrations/153_fix_guru_fks.sql` — Fix FK references on 4 guru tables
+18. `migrations/154_automation_columns.sql` — Columns: parent_questions, seen, seen_at, last_photo_at backfill
+
+**Files Modified (5):**
+1. `app/api/montree/guru/photo-insight/route.ts` — Skip-if-tagged optimization
+2. `app/montree/dashboard/page.tsx` — All panel wiring + layout optimization
+3. `components/montree/child/FocusWorksSection.tsx` — Evidence strength badges
+4. `lib/montree/i18n/en.ts` — 126 new keys
+5. `lib/montree/i18n/zh.ts` — 126 matching Chinese keys (perfect EN/ZH parity)
+
+**Migrations:** 152 ✅ RUN, 153 ✅ RUN, 154 ✅ RUN (with ::text cast fix for work_id type mismatch)
+**Deploy:** ✅ PUSHED — commit `c3770217`, Railway deploy `2bcecf7c` Active+Online
+**Handoffs:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT4_MAR28.md` through `HANDOFF_TEACHER_OS_SPRINT14_MAR28.md`
+
+**Next Sprint:** Sprint 15 — TBD
+
 ---
 
 ## PREVIOUS STATUS (Mar 27, 2026)
