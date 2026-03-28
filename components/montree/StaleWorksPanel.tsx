@@ -23,8 +23,8 @@ function getStalenessLevel(days: number): 'cooling' | 'stale' | 'attention' {
 }
 
 const LEVEL_CONFIG = {
-  attention: { color: 'bg-red-50', dot: 'bg-red-400', text: 'text-red-700', badge: 'bg-red-100 text-red-700' },
-  stale: { color: 'bg-amber-50', dot: 'bg-amber-400', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700' },
+  attention: { color: 'bg-amber-50', dot: 'bg-amber-400', text: 'text-amber-700', badge: 'bg-amber-100 text-amber-700' },
+  stale: { color: 'bg-blue-50', dot: 'bg-blue-300', text: 'text-blue-600', badge: 'bg-blue-100 text-blue-700' },
   cooling: { color: 'bg-emerald-50', dot: 'bg-emerald-400', text: 'text-emerald-600', badge: 'bg-emerald-100 text-emerald-700' },
 } as const;
 
@@ -147,13 +147,13 @@ export default function StaleWorksPanel() {
 
         <div className="flex items-center gap-2">
           {attentionCount > 0 && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-red-100 text-red-700">
-              {attentionCount} 🔴
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+              {attentionCount} 🟡
             </span>
           )}
           {staleCount > 0 && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
-              {staleCount} 🟡
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-blue-100 text-blue-600">
+              {staleCount} 🔵
             </span>
           )}
           {coolingCount > 0 && (

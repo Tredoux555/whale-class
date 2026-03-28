@@ -249,27 +249,21 @@ export async function GET(req: NextRequest) {
     // Build action items (priority-sorted)
     const actionItems: ActionItem[] = [];
 
-    if (attendance.absent > 0) {
-      actionItems.push({
-        type: 'attendance',
-        priority: attendance.absent >= 5 ? 'high' : 'medium',
-        message: `${attendance.absent} children absent today`,
-        count: attendance.absent,
-      });
-    }
+    // Attendance is NOT an action item — it's normal to not have logged everyone yet.
+    // The present/total stat is still shown in the expanded view.
 
     if (staleWorks.attention > 0) {
       actionItems.push({
         type: 'stale_works',
-        priority: 'high',
-        message: `${staleWorks.attention} works need attention (21+ days)`,
+        priority: 'medium',
+        message: `${staleWorks.attention} works to revisit (21+ days)`,
         count: staleWorks.attention,
       });
     } else if (staleWorks.total > 0) {
       actionItems.push({
         type: 'stale_works',
-        priority: 'medium',
-        message: `${staleWorks.total} works going stale`,
+        priority: 'low',
+        message: `${staleWorks.total} works cooling off`,
         count: staleWorks.total,
       });
     }
@@ -277,7 +271,7 @@ export async function GET(req: NextRequest) {
     if (conferenceNotes.old_drafts > 0) {
       actionItems.push({
         type: 'conference_notes',
-        priority: 'high',
+        priority: 'medium',
         message: `${conferenceNotes.old_drafts} draft notes older than 7 days`,
         count: conferenceNotes.old_drafts,
       });
