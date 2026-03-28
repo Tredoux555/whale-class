@@ -1,4 +1,7 @@
 // @ts-nocheck — audit page, will type-check incrementally
+// NOTE (Sprint 3): PhotoInsightPopup NOT wired here — audit page already has its own
+// per-photo correction UI (confirm/fix/teach/delete). The popup is per-child and this
+// page is classroom-wide. If needed later, could render one popup per visible child.
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';

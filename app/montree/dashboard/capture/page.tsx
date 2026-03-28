@@ -11,6 +11,7 @@ import CameraCapture from '@/components/montree/media/CameraCapture';
 import { compressImage, generateThumbnail } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
 import { startAnalysis } from '@/lib/montree/photo-insight-store';
+import PhotoInsightPopup from '@/components/montree/guru/PhotoInsightPopup';
 import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import EventPicker from '@/components/montree/media/EventPicker';
@@ -480,6 +481,14 @@ function CaptureContent() {
           selectedEventId={selectedEvent?.id || null}
           onSelect={(event) => setSelectedEvent(event)}
           onClose={() => setShowEventPicker(false)}
+        />
+      )}
+
+      {/* PhotoInsightPopup — Non-blocking toast for CLIP identifications during capture */}
+      {selectedChildIds.length === 1 && (
+        <PhotoInsightPopup
+          childId={selectedChildIds[0]}
+          classroomId={classroomId || undefined}
         />
       )}
     </div>
