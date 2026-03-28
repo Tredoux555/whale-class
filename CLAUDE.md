@@ -120,7 +120,7 @@ Built the non-blocking toast popup that appears after CLIP identifies a work. Te
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprint 3: Wire PhotoInsightPopup into Pages)
 
-**Teacher OS Sprint 3 — Wire PhotoInsightPopup into Pages — 3 Audit Cycles, Cycle 3 ALL CLEAN — ⚠️ NOT YET PUSHED:**
+**Teacher OS Sprint 3 — Wire PhotoInsightPopup into Pages — 3 Audit Cycles, Cycle 3 ALL CLEAN — ✅ PUSHED:**
 
 Wired the PhotoInsightPopup component into 3 pages: Gallery (full callbacks), Capture (standalone), Photo-Audit (skipped with comment — already has its own correction UI).
 
@@ -147,10 +147,8 @@ Wired the PhotoInsightPopup component into 3 pages: Gallery (full callbacks), Ca
 1. `app/montree/dashboard/[childId]/gallery/page.tsx` — 3 popup callbacks, 2 enhanced handlers, JSX render
 2. `app/montree/dashboard/capture/page.tsx` — Import + conditional popup render
 
-**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Deploy:** ✅ PUSHED — commit `3f4d04f1`. No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_TEACHER_OS_SPRINT3_MAR28.md`
-
-**Next Sprint:** Sprint 4 — TBD (wire startAnalysis trigger from sync-manager, or other Teacher OS features)
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprints 4-14: Dashboard Intelligence Layer)
 
