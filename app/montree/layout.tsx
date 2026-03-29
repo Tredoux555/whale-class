@@ -3,6 +3,7 @@
 // Enhanced metadata for SEO + bilingual i18n provider
 import type { Metadata, Viewport } from "next";
 import I18nClientWrapper from "@/components/montree/I18nClientWrapper";
+import VisitorTracker from "@/components/montree/VisitorTracker";
 
 export const metadata: Metadata = {
   title: {
@@ -62,6 +63,7 @@ export default function MontreeLayout({
 }) {
   return (
     <I18nClientWrapper>
+      <VisitorTracker />
       {children}
     </I18nClientWrapper>
   );

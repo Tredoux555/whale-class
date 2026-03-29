@@ -10,6 +10,7 @@ import SchoolsTab from '@/components/montree/super-admin/SchoolsTab';
 import LeadsTab from '@/components/montree/super-admin/LeadsTab';
 import FeedbackTab from '@/components/montree/super-admin/FeedbackTab';
 import DmPanel from '@/components/montree/super-admin/DmPanel';
+import VisitorsTab from '@/components/montree/super-admin/VisitorsTab';
 
 
 interface DmMessage {
@@ -20,7 +21,7 @@ interface DmMessage {
   created_at: string;
 }
 
-type TabType = 'schools' | 'feedback' | 'leads';
+type TabType = 'schools' | 'feedback' | 'leads' | 'visitors';
 
 const SESSION_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -503,6 +504,16 @@ export default function SuperAdminPage() {
               </span>
             )}
           </button>
+          <button
+            onClick={() => setActiveTab('visitors')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'visitors'
+                ? 'bg-emerald-500 text-white'
+                : 'bg-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            📍 Visitors
+          </button>
         </div>
 
         {/* Tab Content */}
@@ -556,6 +567,10 @@ export default function SuperAdminPage() {
             onFetchFeedback={adminData.fetchFeedback}
             onMarkRead={markFeedbackRead}
           />
+        )}
+
+        {activeTab === 'visitors' && (
+          <VisitorsTab saToken={saToken} />
         )}
 
 
