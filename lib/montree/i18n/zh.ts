@@ -1615,6 +1615,8 @@ export const zh = {
   'dashboard.fullscreenCoaching': '全屏蒙特梭利指导',
   'dashboard.classroomProgress': '教室进度',
   'dashboard.teacherTools': '教师工具',
+  'dashboard.classroomIntelligence': '教室智能',
+  'dashboard.classroomNotes': '教室笔记',
 
   // Audit Fix — Guru Quick Questions
   'guru.quickQuestion1': '{name}无法集中注意力，总是离开工作。我该怎么办？',

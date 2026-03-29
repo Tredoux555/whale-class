@@ -59,10 +59,44 @@ export default function DashboardPage() {
   const [guruFirstView, setGuruFirstView] = useState(false);
   const [showBulkImport, setShowBulkImport] = useState(false);
 
-  // ─── Inline search + tools state (must be before early returns) ───
+  // ─── Inline search + section collapse state (must be before early returns) ───
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [toolsOpen, setToolsOpen] = useState(false);
+
+  // Collapsible section states — persist in localStorage
+  const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return { intelligence: true, tools: false, notes: false };
+    try {
+      const saved = localStorage.getItem('montree_dashboard_sections');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { intelligence: true, tools: false, notes: false };
+  });
+
+  const toggleSection = useCallback((key: string) => {
+    setSectionsOpen(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem('montree_dashboard_sections', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
+  // Listen for DailyBriefPanel action item clicks to auto-expand intelligence section
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const key = (e as CustomEvent).detail;
+      if (key && typeof key === 'string') {
+        setSectionsOpen(prev => {
+          if (prev[key]) return prev; // already open
+          const next = { ...prev, [key]: true };
+          try { localStorage.setItem('montree_dashboard_sections', JSON.stringify(next)); } catch {}
+          return next;
+        });
+      }
+    };
+    window.addEventListener('montree:expand-section', handler);
+    return () => window.removeEventListener('montree:expand-section', handler);
+  }, []);
 
   // SWR-cached children fetch — instant on revisit, background refresh if stale
   const childrenUrl = session?.classroom?.id
@@ -389,40 +423,79 @@ export default function DashboardPage() {
               </div>
 
 
-              {/* ── Teacher OS Detail Panels (below student grid) ── */}
+              {/* ── Collapsible Sections (below student grid) ── */}
               {session?.classroom?.id && (
-                <div className="mb-4 space-y-3">
-                  <div id="panel-attendance"><AttendanceWidget /></div>
-                  <div id="panel-stale_works"><StaleWorksPanel /></div>
-                  <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
-                  <div id="panel-evidence"><EvidencePanel /></div>
-                  <div id="panel-pulse"><PulsePanel /></div>
-                </div>
-              )}
+                <div className="space-y-3">
 
-              {/* ── Teacher Tools (collapsible) ── */}
-              {session?.classroom?.id && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  <button
-                    onClick={() => setToolsOpen(!toolsOpen)}
-                    className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                  >
-                    <span className="flex items-center gap-2">
-                      <span className="text-base">🛠️</span>
-                      {t('dashboard.teacherTools') || 'Teacher Tools'}
-                    </span>
-                    <span className={`text-gray-400 transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`}>
-                      ▼
-                    </span>
-                  </button>
-                  {toolsOpen && (
-                    <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                      <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
-                      <BatchReportsCard classroomId={session.classroom.id} children={children} />
-                      <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />
-                      <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
-                    </div>
-                  )}
+                  {/* ─── 📊 Classroom Intelligence ─── */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('intelligence')}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">📊</span>
+                        {t('dashboard.classroomIntelligence') || 'Classroom Intelligence'}
+                      </span>
+                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
+                    {sectionsOpen.intelligence && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+                        <div id="panel-attendance"><AttendanceWidget /></div>
+                        <div id="panel-stale_works"><StaleWorksPanel /></div>
+                        <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
+                        <div id="panel-evidence"><EvidencePanel /></div>
+                        <div id="panel-pulse"><PulsePanel /></div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ─── 🛠️ Teacher Tools ─── */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('tools')}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">🛠️</span>
+                        {t('dashboard.teacherTools') || 'Teacher Tools'}
+                      </span>
+                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
+                    {sectionsOpen.tools && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+                        <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+                        <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                        <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ─── 📝 Classroom Notes ─── */}
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <button
+                      onClick={() => toggleSection('notes')}
+                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span className="text-base">📝</span>
+                        {t('dashboard.classroomNotes') || 'Classroom Notes'}
+                      </span>
+                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.notes ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </button>
+                    {sectionsOpen.notes && (
+                      <div className="px-4 pb-4 border-t border-gray-100 pt-3">
+                        <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               )}
             </>

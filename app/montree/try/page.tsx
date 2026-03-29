@@ -242,15 +242,15 @@ export default function TryMontreePage() {
               </div>
 
               <div>
-                <label className="block text-sm mb-2 text-emerald-300/70">{t('signup.emailOptional')}</label>
+                <label className="block text-sm mb-2 text-emerald-300/70">Email</label>
                 <input
                   type="email"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
-                  placeholder="e.g. sarah@email.com"
+                  placeholder="e.g. sarah@school.com"
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-white/50 focus:outline-none focus:border-emerald-400/50 focus:ring-1 focus:ring-emerald-400/30"
                 />
-                <p className="text-xs text-slate-500 mt-1">{t('signup.emailHint')}</p>
+                <p className="text-xs text-slate-400 mt-1">So we can help you get started and recover your code</p>
               </div>
 
               {error && (
