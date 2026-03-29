@@ -247,21 +247,16 @@ export async function buildChildContext(
       .gte('observed_at', thirtyDaysAgo.toISOString())
       .order('observed_at', { ascending: false })
       .limit(10),
-    // 5. Past guru interactions (exclude photo insight cache entries, filter by locale)
-    (() => {
-      let query = supabase
-        .from('montree_guru_interactions')
-        .select('asked_at, question, response_insight, outcome, context_snapshot')
-        .eq('child_id', childId)
-        .not('question', 'like', 'photo:%');
-      // Filter by locale: show interactions in the current language + pre-migration rows (NULL locale)
-      // Validate locale against whitelist (defense-in-depth — caller should also validate)
-      const validLocale = locale && ['en', 'zh'].includes(locale) ? locale : undefined;
-      if (validLocale) {
-        query = query.or(`locale.eq.${validLocale},locale.is.null`);
-      }
-      return query.order('asked_at', { ascending: false }).limit(5);
-    })(),
+    // 5. Past guru interactions (exclude photo insight cache entries)
+    // Note: No locale filter — conversation memory should persist across language switches.
+    // The Guru needs to remember ALL past interactions regardless of which language they were in.
+    supabase
+      .from('montree_guru_interactions')
+      .select('asked_at, question, response_insight, outcome, context_snapshot')
+      .eq('child_id', childId)
+      .not('question', 'like', 'photo:%')
+      .order('asked_at', { ascending: false })
+      .limit(5),
     // 6. Teacher notes from work sessions (only 10 used in prompt)
     supabase
       .from('montree_work_sessions')

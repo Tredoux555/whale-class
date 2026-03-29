@@ -195,8 +195,36 @@ export async function GET(req: NextRequest) {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'new');
 
+    // Enrich leads that have notes with login codes but no email —
+    // look up the teacher's email from the notes (contains "Code: XXXXX")
+    const enriched = data || [];
+    const leadsNeedingEmail = enriched.filter((l: Record<string, unknown>) => !l.email && l.notes && typeof l.notes === 'string' && l.notes.includes('Code:'));
+    if (leadsNeedingEmail.length > 0) {
+      const codeMap = new Map<string, string>();
+      for (const lead of leadsNeedingEmail) {
+        const match = (lead.notes as string).match(/Code:\s*([A-Z0-9]+)/i);
+        if (match) codeMap.set(match[1].toUpperCase(), lead.id as string);
+      }
+      if (codeMap.size > 0) {
+        const codes = Array.from(codeMap.keys());
+        const { data: teachers } = await supabase
+          .from('montree_teachers')
+          .select('login_code, email')
+          .in('login_code', codes);
+        if (teachers) {
+          for (const t of teachers) {
+            if (t.email && !t.email.endsWith('@montree.app')) {
+              const leadId = codeMap.get(t.login_code);
+              const lead = enriched.find((l: Record<string, unknown>) => l.id === leadId);
+              if (lead) (lead as Record<string, unknown>).email = t.email;
+            }
+          }
+        }
+      }
+    }
+
     return NextResponse.json({
-      leads: data || [],
+      leads: enriched,
       new_count: newCount || 0
     }, {
       headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' }

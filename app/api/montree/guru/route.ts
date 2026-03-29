@@ -336,6 +336,7 @@ export async function POST(request: NextRequest) {
     let classroomContext: ClassroomContext | null = null;
     let knowledge: KnowledgeResult;
     let childSettingsRecord: { settings: unknown } | null = null;
+    let wholeClassHistory: Array<{ asked_at: string; question: string; response_insight: string }> = [];
 
     // Classify question for selective knowledge injection + observability
     const questionCategory: QuestionCategory = classifyQuestion(question);
@@ -359,13 +360,24 @@ export async function POST(request: NextRequest) {
 
     if (isWholeClassMode) {
       console.log('[Guru] Whole-class mode — classroom_id:', classroom_id, 'auth.classroomId:', auth.classroomId);
-      // Parallelize: classroom context + knowledge retrieval are independent
-      const [classCtx, knowledgeResult] = await Promise.all([
+      // Parallelize: classroom context + knowledge retrieval + past whole-class interactions are all independent
+      const [classCtx, knowledgeResult, wholeClassHistoryResult] = await Promise.all([
         buildClassroomContext(supabase, classroom_id!),
         retrieveKnowledge(question, 4),
+        supabase
+          .from('montree_guru_interactions')
+          .select('asked_at, question, response_insight')
+          .eq('question_type', 'whole_class')
+          .eq('classroom_id', classroom_id!)
+          .not('question', 'like', 'photo:%')
+          .order('asked_at', { ascending: false })
+          .limit(5),
       ]);
       classroomContext = classCtx;
       knowledge = knowledgeResult;
+      // Store whole-class conversation history for memory injection
+      wholeClassHistory = wholeClassHistoryResult.data || [];
+      console.log('[Guru] Whole-class history fetched:', wholeClassHistory.length, 'interactions');
       console.log('[Guru] Classroom context result:', classroomContext?.child_count, 'children, name:', classroomContext?.classroom_name, 'error:', classroomContext?.error);
 
       // Check for query errors first (different from empty classroom)
@@ -521,8 +533,18 @@ export async function POST(request: NextRequest) {
     // Phase 1: Build multi-turn messages from past interactions for conversation memory
     const conversationMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
 
-    if (!isWholeClassMode && childContext?.past_interactions && childContext.past_interactions.length > 0) {
-      // Oldest first so conversation flows naturally. 3 entries = good context with ~1,000 fewer tokens vs 5.
+    if (isWholeClassMode && wholeClassHistory.length > 0) {
+      // Whole-class memory: inject past whole-class interactions (oldest first for natural flow)
+      const recent = wholeClassHistory.slice(0, 3);
+      const chronological = [...recent].reverse();
+      for (const interaction of chronological) {
+        if (interaction.question && interaction.response_insight) {
+          conversationMessages.push({ role: 'user', content: interaction.question });
+          conversationMessages.push({ role: 'assistant', content: interaction.response_insight });
+        }
+      }
+    } else if (!isWholeClassMode && childContext?.past_interactions && childContext.past_interactions.length > 0) {
+      // Per-child memory: inject past child-specific interactions (oldest first for natural flow)
       const recent = childContext.past_interactions.slice(0, 3);
       const chronological = [...recent].reverse();
       for (const interaction of chronological) {
@@ -682,8 +704,8 @@ export async function POST(request: NextRequest) {
             { role: 'user' as const, content: toolResults },
           ];
 
-          // If this is the last tool round OR we're approaching timeout, break and stream the final response
-          // Otherwise do another non-streaming round to check for more tools
+          // Check if this round needs more tools or if we can stream the final response
+          // Non-streaming call to check for more tool_use
           const nextResponse = await withTimeout(
             anthropic.messages.create({
               ...baseApiParams,
@@ -713,27 +735,14 @@ export async function POST(request: NextRequest) {
             const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
             console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: ${rounds}, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
 
-            // Stream the final text as SSE
-            const encoder = new TextEncoder();
-            const responseStream = new ReadableStream({
-              start(controller) {
-                // Send the full text as a single SSE event (tool rounds already consumed the time)
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
-                controller.close();
-
-                // Fire-and-forget: save interaction + self-learning
-                saveInteractionAndLearn(supabase, {
-                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
-                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-                  guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole, locale,
-                });
-              }
-            });
-
-            return new Response(responseStream, {
-              headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+            // Progressive text streaming — send text in small chunks for real-time feel
+            return createProgressiveSSEResponse(finalText, () => {
+              saveInteractionAndLearn(supabase, {
+                child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+                guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
+                isTeacher, isGreetingTrigger, isParentRole, locale,
+              });
             });
           }
 
@@ -748,33 +757,74 @@ export async function POST(request: NextRequest) {
 
         clearTimeout(masterTimeout);
 
-        // Check if the initial response had text (no tools used)
+        // Check if the initial response had text (no tools used) — stream it with true Anthropic streaming
         if (toolResponse.stop_reason !== 'tool_use') {
-          // No tools were used — initial response already has the final text.
-          // Send it as a single SSE chunk (no second API call needed).
-          const finalText = toolResponse.content
+          // No tools were used. Re-generate with streaming for real-time token display.
+          // We already have the non-streaming response as fallback.
+          const fallbackText = toolResponse.content
             .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
             .map(b => b.text)
             .join('\n');
 
-          const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
-          const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
-          const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
-          console.log(`[Guru Stream] Mode: ${guruMode}, model: ${guruTier}, rounds: 0, tokens: ${input_tokens}+${output_tokens}, est: $${estCost.toFixed(4)}`);
+          console.log(`[Guru Stream] No tools used, starting real-time stream. Mode: ${guruMode}, model: ${guruTier}`);
 
+          // Use true Anthropic streaming for the response
           const encoder = new TextEncoder();
-          const responseStream = new ReadableStream({
-            start(controller) {
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: finalText })}\n\n`));
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
-              controller.close();
+          let fullText = '';
+          let streamUsage = { input_tokens: 0, output_tokens: 0 };
 
-              saveInteractionAndLearn(supabase, {
-                child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
-                question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
-                guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
-                isTeacher, isGreetingTrigger, isParentRole, locale,
-              });
+          const responseStream = new ReadableStream({
+            async start(controller) {
+              try {
+                const messageStream = anthropic.messages.stream({
+                  ...baseApiParams,
+                  messages: currentMessages,
+                });
+
+                messageStream.on('text', (text) => {
+                  fullText += text;
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text })}\n\n`));
+                });
+
+                const finalMessage = await messageStream.finalMessage();
+                streamUsage = {
+                  input_tokens: finalMessage.usage?.input_tokens || 0,
+                  output_tokens: finalMessage.usage?.output_tokens || 0,
+                };
+
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+                controller.close();
+
+                const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+                const estCost = (streamUsage.input_tokens * costMultiplier.input + streamUsage.output_tokens * costMultiplier.output) / 1_000_000;
+                console.log(`[Guru Stream] Complete. Rounds: 0, tokens: ${streamUsage.input_tokens}+${streamUsage.output_tokens}, est: $${estCost.toFixed(4)}`);
+
+                saveInteractionAndLearn(supabase, {
+                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
+                  guruTier, estCost, responseText: fullText || fallbackText, knowledge, guruModel, startTime,
+                  isTeacher, isGreetingTrigger, isParentRole, locale,
+                });
+              } catch (streamErr) {
+                console.error('[Guru Stream] Streaming error, falling back:', streamErr);
+                // Fallback: send the non-streaming response we already have
+                if (!fullText && fallbackText) {
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: fallbackText })}\n\n`));
+                }
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+                try { controller.close(); } catch {}
+
+                const { input_tokens = 0, output_tokens = 0 } = toolResponse.usage || {};
+                const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
+                const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
+
+                saveInteractionAndLearn(supabase, {
+                  child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+                  question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
+                  guruTier, estCost, responseText: fullText || fallbackText, knowledge, guruModel, startTime,
+                  isTeacher, isGreetingTrigger, isParentRole, locale,
+                });
+              }
             }
           });
 
@@ -802,24 +852,14 @@ export async function POST(request: NextRequest) {
         const costMultiplier = guruModel === HAIKU_MODEL ? { input: 0.80, output: 4.00 } : { input: 3, output: 15 };
         const estCost = (input_tokens * costMultiplier.input + output_tokens * costMultiplier.output) / 1_000_000;
 
-        const encoder = new TextEncoder();
-        const responseStream = new ReadableStream({
-          start(controller) {
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: responseText })}\n\n`));
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
-            controller.close();
-
-            saveInteractionAndLearn(supabase, {
-              child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
-              question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-              guruTier, estCost, responseText, knowledge, guruModel, startTime,
-              isTeacher, isGreetingTrigger, isParentRole, locale,
-            });
-          }
-        });
-
-        return new Response(responseStream, {
-          headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+        // Progressive streaming for tool-maxed fallback
+        return createProgressiveSSEResponse(responseText, () => {
+          saveInteractionAndLearn(supabase, {
+            child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
+            question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
+            guruTier, estCost, responseText, knowledge, guruModel, startTime,
+            isTeacher, isGreetingTrigger, isParentRole, locale,
+          });
         });
       }
 
@@ -1183,9 +1223,26 @@ export async function GET(request: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Whole-class mode: return empty history (no per-child history to show)
+    // Whole-class mode: fetch classroom-level history by question_type + classroom_id
     if (childId === 'whole_class') {
-      return NextResponse.json({ success: true, history: [] });
+      const classroomId = searchParams.get('classroom_id') || auth.classroomId;
+      if (!classroomId) {
+        return NextResponse.json({ success: true, history: [] });
+      }
+      const { data: wcHistory, error: wcError } = await supabase
+        .from('montree_guru_interactions')
+        .select('id, asked_at, question, question_type, response_insight, response_action_plan, outcome')
+        .eq('question_type', 'whole_class')
+        .eq('classroom_id', classroomId)
+        .not('question', 'like', 'photo:%')
+        .order('asked_at', { ascending: false })
+        .limit(limit);
+
+      if (wcError) {
+        console.error('[Guru] Failed to fetch whole-class history:', wcError);
+        return NextResponse.json({ success: false, error: 'Failed to fetch history' }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, history: wcHistory || [] });
     }
 
     const access = await verifyChildBelongsToSchool(childId, auth.schoolId);

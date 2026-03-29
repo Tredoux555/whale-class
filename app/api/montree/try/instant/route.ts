@@ -263,6 +263,7 @@ export async function POST(req: NextRequest) {
           interest_type: 'try',
           status: 'new',
           name: userName,
+          email: email?.trim() || null,
           school_name: userSchoolName,
           notes: `Homeschool trial - Code: ${code}\nParent: ${userName}\nSchool: ${userSchoolName} (${school.id})`,
         });
@@ -348,6 +349,7 @@ export async function POST(req: NextRequest) {
           interest_type: 'try',
           status: 'new',
           name: userName,
+          email: email?.trim() || null,
           school_name: userSchoolName,
           notes: `Instant trial - Code: ${code}\nName: ${userName}\nTeacher ID: ${teacher.id}\nSchool: ${userSchoolName} (${school.id})`,
         });
@@ -432,6 +434,7 @@ export async function POST(req: NextRequest) {
           interest_type: 'try',
           status: 'new',
           name: userName,
+          email: email?.trim() || null,
           school_name: userSchoolName,
           notes: `Instant trial - Code: ${code}\nName: ${userName}\nPrincipal ID: ${principal.id}\nSchool: ${userSchoolName} (${school.id})`,
         });

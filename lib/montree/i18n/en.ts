@@ -1615,6 +1615,8 @@ export const en = {
   'dashboard.fullscreenCoaching': 'Full-screen Montessori coaching',
   'dashboard.classroomProgress': 'Classroom Progress',
   'dashboard.teacherTools': 'Teacher Tools',
+  'dashboard.classroomIntelligence': 'Classroom Intelligence',
+  'dashboard.classroomNotes': 'Classroom Notes',
 
   // Audit Fix — Guru Quick Questions
   'guru.quickQuestion1': "{name} can't focus and wanders away from work. What should I do?",

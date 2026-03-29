@@ -250,8 +250,13 @@ export default function DailyBriefPanel() {
                   <button
                     key={`${item.type}-${idx}`}
                     onClick={() => {
-                      const el = document.getElementById(`panel-${item.type}`);
-                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      // Auto-expand the intelligence section if collapsed
+                      window.dispatchEvent(new CustomEvent('montree:expand-section', { detail: 'intelligence' }));
+                      // Wait a tick for React to render the panels, then scroll
+                      requestAnimationFrame(() => {
+                        const el = document.getElementById(`panel-${item.type}`);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      });
                     }}
                     className={`w-full flex items-center gap-2 rounded-lg px-3 py-2 ${cfg.bg} border ${cfg.border} hover:opacity-80 transition-opacity text-left`}
                   >
