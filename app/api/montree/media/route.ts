@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
         { data: groupLinks, error: linkError },
       ] = await Promise.all([
         supabase.from('montree_children').select('classroom_id').eq('id', childId).maybeSingle(),
-        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags').eq('child_id', childId).order('captured_at', { ascending: false }),
-        supabase.from('montree_media_children').select('media_id').eq('child_id', childId),
+        supabase.from('montree_media').select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags').eq('child_id', childId).order('captured_at', { ascending: false }).limit(500),
+        supabase.from('montree_media_children').select('media_id').eq('child_id', childId).limit(500),
       ]);
 
       if (childError || !childData) {
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
           : Promise.resolve({ data: null }),
         groupMediaIds.length > 0
           ? supabase.from('montree_media')
-              .select('*')
+              .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags')
               .in('id', groupMediaIds)
               .order('captured_at', { ascending: false })
           : Promise.resolve({ data: null }),
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
     // Standard query for non-child-specific requests (simple query, no FK join)
     let query = supabase
       .from('montree_media')
-      .select('*', { count: 'exact' })
+      .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
       .order('captured_at', { ascending: false });
 
     if (schoolId) {

@@ -211,6 +211,60 @@ Built the complete Teacher OS dashboard intelligence system across 11 sprints, e
 
 **Next Sprint:** Sprint 15 — TBD
 
+### Session Work (Mar 28, 2026 — GMass Global Outreach Campaign: Batch 1)
+
+**GMass Global Outreach Campaign — Batch 1 Sent — ✅ 49 EMAILS SENT (⚠️ WRONG EMAIL BODY):**
+
+⚠️ **CRITICAL: Batch1 and bounce resend used a GENERIC product pitch, NOT the sacred email. See handoff for details. All future batches MUST use the sacred email exactly as written in `docs/handoffs/HANDOFF_GMASS_OUTREACH_CAMPAIGN_MAR28.md`.**
+
+⛔ **THE SACRED EMAIL IS BOTH A PRODUCT PITCH AND A PERSONAL LETTER. THE JOB-SEEKING ANGLE IS INTENTIONAL. DO NOT STRIP IT. DO NOT REWRITE IT. COPY-PASTE ONLY.**
+
+First batch of Montree's global Montessori school outreach campaign sent via GMass (Gmail mail merge Chrome extension). Campaign targets ~420 schools worldwide; this is the first 50-school batch to establish sender reputation.
+
+**Campaign Details:**
+- **Recipients:** 49 schools (Batch1, rows 16-65 in spreadsheet — 1 row had invalid email, GMass found 49 of 50)
+- **Subject:** Montree
+- **Personalization:** `{SchoolName}` merge tag in greeting
+- **Tracking:** Open tracking ✅, Click tracking ✅
+- **Daily sending limit:** 50 emails/day (all 49 sent immediately — under limit)
+
+**Auto Follow-ups Configured:**
+- Stage 1: 5 days after send, if No Reply — gentle reminder
+- Stage 2: 10 days after send, if No Reply — gracious close with demo offer
+- Stage 3: Disabled
+
+**Google Sheet:** `https://docs.google.com/spreadsheets/d/1or_2filM8ku5rvVYeXN0XJszQxeno23at1M-Hyn9jvA/edit`
+- Sheet: "Outreach List"
+- Columns: A=SchoolName, B=Email, C=Country, D=Region, E=Website, F=ContactPerson, G=Accreditation, H=AgeRange, I=DateSent, J=Status, K=FollowUp1Sent, L=FollowUp2Sent, M=Notes, N=Batch
+- Batch labels: Asia (rows 2-9, prior), Test (rows 10-12, wrong email), Test2 (rows 13-15, correct), **Batch1 (rows 16-65, ✅ SENT)**, **Batch2 (rows 66-165, 100 schools, Monday send)**, **Batch3 (rows 166-265, 100 schools, Wednesday send)**, **Batch4 (rows 266-421, 156 schools, Friday send)**
+
+**Batch Schedule:**
+- Batch1: 49 schools — ✅ SENT (⚠️ wrong email body)
+- Batch2: 100 schools (rows 66-165) — ✅ LABELED, Monday send
+- Batch3: 100 schools (rows 166-265) — ✅ LABELED, Wednesday send
+- Batch4: 156 schools (rows 266-421) — ✅ LABELED, Friday send
+- ⚠️ GMass free trial: 50 emails/campaign limit — may need to split batches into sub-campaigns
+
+**Monitor:** GMass Reports > [CAMPAIGNS] label, Opens, Bounces. Google Sheet auto-updates with reporting data.
+
+**Next Steps:** ✅ All batches labeled (Mar 29). Send Batch2 Monday, Batch3 Wednesday, Batch4 Friday. ⛔ MUST copy-paste the sacred email from handoff doc — do NOT compose a new one. Reply personally to any responses. Clean bounced emails from future batches.
+
+**Handoff:** `docs/handoffs/HANDOFF_GMASS_OUTREACH_CAMPAIGN_MAR28.md`
+
+### Session Work (Mar 28, 2026 — GMass Bounce Resolution)
+
+**GMass Bounce Resolution — 16 Bounces Resolved — ✅ 9 RESENT (Campaign ID 50490844):**
+
+16 of 49 Batch1 emails bounced (33%). Researched and replaced 10 email addresses with working alternatives, marked 6 as unfixable with notes. Re-sent via GMass — 9 delivered, 1 auto-suppressed by GMass bounce list.
+
+**10 Emails Replaced:** Etonkids campus emails use abbreviated prefixes (cdht, hq, pd, gz) not city names. Discovery Montessori CN/HK had domain variations. HKMA, QAIS, School in Tokyo, Sakura Montessori VN all had alternative contact addresses found via web research.
+
+**6 Unfixable:** 3 Etonkids campus emails (Lido, CBD, Tianjin — chain-wide issue), Nebula Academy (domain not resolving), MMI Singapore (domain not resolving — may have closed), ISSP Vietnam (no alternative found).
+
+**Google Sheet Updates:** Column B updated with 10 new emails. Column M updated with bounce notes for 6 unfixable rows. Column J marked "Resend" for 10 corrected rows. GMass filter `Status=Resend` used to target only corrected addresses.
+
+**Handoff:** `docs/handoffs/HANDOFF_GMASS_OUTREACH_CAMPAIGN_MAR28.md` (updated with Bounce Resolution section)
+
 ---
 
 ## PREVIOUS STATUS (Mar 27, 2026)

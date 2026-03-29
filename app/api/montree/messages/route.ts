@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 // GET: List messages for a classroom or parent
 export async function GET(request: NextRequest) {
@@ -119,14 +120,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify child exists
-    const { data: child, error: childError } = await supabase
-      .from('montree_children')
-      .select('id')
-      .eq('id', childId)
-      .single();
-
-    if (childError || !child) {
+    // Verify child belongs to authenticated user's school
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
       return NextResponse.json(
         { error: 'Child not found' },
         { status: 404 }

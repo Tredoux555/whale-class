@@ -278,7 +278,8 @@ export async function GET(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
         .eq('child_id', childId)
-        .eq('media_type', 'photo'),
+        .eq('media_type', 'photo')
+        .limit(1000),
       supabase
         .from('montree_media_children')
         .select(`
@@ -286,7 +287,8 @@ export async function GET(request: NextRequest) {
             id, storage_path, thumbnail_path, work_id, caption, captured_at
           )
         `)
-        .eq('child_id', childId),
+        .eq('child_id', childId)
+        .limit(1000),
     ]);
 
     // Combine and deduplicate photos
