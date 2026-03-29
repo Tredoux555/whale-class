@@ -12,7 +12,62 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 28, 2026)
+## CURRENT STATUS (Mar 29, 2026)
+
+### Session Work (Mar 29, 2026 — Visitor Tracking + 10x Health Check)
+
+**Visitor Tracking + 10x Health Check — Both Deployed — ✅ PUSHED:**
+
+Two features shipped: visitor tracking for outreach campaign monitoring + full app health check fixing primary lag source.
+
+**1. Visitor Tracking (3×3×3×3 Audited):**
+Site-wide visitor tracking for monitoring outreach email effectiveness. Every page visit logs location (city, country, region, timezone, lat/lng), ISP, device info, page path, referrer. Bot detection (~33 patterns). Super-admin dashboard 📍 Visitors tab with 4 views (Live feed, Countries, Cities, Pages).
+
+Architecture: `VisitorTracker.tsx` client component fires `navigator.sendBeacon` on route changes (30s debounce, renders null). `POST /api/montree/visitors/track` public endpoint with in-memory rate limit (1/fingerprint/30s), SHA256 fingerprinting, ip-api.com geolocation. `GET /api/montree/visitors` super-admin endpoint with pagination + aggregated stats (capped 50K rows).
+
+**2. 10x Health Check (5 Parallel Audit Agents, 14 Fixes):**
+Full app audit with 5 parallel agents (API performance, frontend, database, auth/security, middleware). ~70+ issues found, 14 highest-priority fixed across 12 files.
+
+**Primary lag fix:** `media/route.ts` was loading ALL photos into memory with `SELECT *` and no limit. Added `.limit(500)` + specific column selection. Reports preview also capped at 1000.
+
+**Security gaps closed:** Messages routes (`POST`, `GET`, `PATCH`) missing `verifyChildBelongsToSchool` — any authenticated user could read/write messages for children in other schools. Fixed.
+
+**Crash-safe error handling:** 6 guru/billing routes had `.single()` calls that crashed on 0 rows. All converted to `.maybeSingle()` with null checks and 404 returns: `reports/unreported`, `guru/concerns`, `guru/suggestions`, `guru/daily-plan`, `billing/checkout`, `billing/status`.
+
+**Silent failure prevention:** Pulse lock release and guru cache inserts had empty `.catch(() => {})`. Now all log errors.
+
+**Files Created (5):**
+1. `migrations/156_visitor_tracking.sql` — `montree_visitors` table + 5 indexes
+2. `app/api/montree/visitors/track/route.ts` — Public POST tracking endpoint
+3. `app/api/montree/visitors/route.ts` — Super-admin GET endpoint
+4. `components/montree/VisitorTracker.tsx` — Client beacon component
+5. `components/montree/super-admin/VisitorsTab.tsx` — Admin dashboard tab
+
+**Files Modified (14):**
+1. `app/montree/super-admin/page.tsx` — VisitorsTab import + 📍 tab
+2. `app/montree/layout.tsx` — Added `<VisitorTracker />`
+3. `app/api/montree/media/route.ts` — `.limit(500)` + specific columns (PRIMARY LAG FIX)
+4. `app/api/montree/reports/preview/route.ts` — `.limit(1000)` on photo queries
+5. `app/api/montree/messages/route.ts` — `verifyChildBelongsToSchool` on POST
+6. `app/api/montree/messages/[id]/route.ts` — School verification on PATCH + GET
+7. `app/api/montree/pulse/route.ts` — Error logging on lock release
+8. `app/api/montree/guru/end-of-day/route.ts` — `.catch()` on cache insert
+9. `app/api/montree/reports/unreported/route.ts` — `.maybeSingle()` + error check
+10. `app/api/montree/guru/concerns/route.ts` — Error checks + 404 returns
+11. `app/api/montree/guru/suggestions/route.ts` — `.maybeSingle()` + error check
+12. `app/api/montree/guru/daily-plan/route.ts` — `.maybeSingle()` + error checks
+13. `app/api/montree/billing/checkout/route.ts` — Null check + error logging
+14. `app/api/montree/billing/status/route.ts` — Null check + error logging
+
+**Migration:** 156 — ✅ RUN via Supabase SQL Editor (Mar 29)
+**Deploy:** ✅ PUSHED — commits `85404d4e` (visitor tracking) + `331bf527` (health check), Railway deployed Active+Online
+**Handoff:** `docs/handoffs/HANDOFF_HEALTH_CHECK_VISITOR_TRACKING_MAR29.md`
+
+**Remaining (lower priority):** N+1 admin import routes, missing indexes (teachers school_id+is_active, children classroom_id+is_active), ~14 more `.single()` calls in admin/onboarding, middleware DB role lookups cacheable in JWT, `ignoreBuildErrors: true` in next.config.ts.
+
+---
+
+## PREVIOUS STATUS (Mar 28, 2026)
 
 ### Session Work (Mar 28, 2026 — Teacher OS Sprint 0: Foundation Build)
 
