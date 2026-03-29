@@ -1578,6 +1578,425 @@ export async function executeTool(
       };
     }
 
+    // ---- V3 Intelligence Tools (Sprint 3) ----
+
+    case 'get_prioritized_recommendations': {
+      try {
+        const { generateShelfProposals, AREA_LABELS } = await import('./work-sequencer');
+        // Fetch child data for V3 scoring
+        const { data: child } = await supabase
+          .from('montree_children')
+          .select('name, date_of_birth')
+          .eq('id', childId)
+          .maybeSingle();
+
+        if (!child) return { success: false, message: 'Child not found' };
+
+        // Parallel data fetches
+        const [progressRes, observationsRes, focusRes] = await Promise.all([
+          supabase
+            .from('montree_child_progress')
+            .select('work_name, work_key, area, status, updated_at')
+            .eq('child_id', childId),
+          supabase
+            .from('montree_behavioral_observations')
+            .select('observation')
+            .eq('child_id', childId)
+            .order('created_at', { ascending: false })
+            .limit(50),
+          supabase
+            .from('montree_child_focus_works')
+            .select('work_name, area')
+            .eq('child_id', childId),
+        ]);
+
+        const progress = progressRes.data || [];
+        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+        const focusWorks = focusRes.data || [];
+
+        // Calculate child age in years
+        let childAgeYears: number | undefined;
+        if (child.date_of_birth) {
+          const dob = new Date(child.date_of_birth);
+          const now = new Date();
+          childAgeYears = (now.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+        }
+
+        // Build V3 scoring data
+        const strugglingWorkKeys = progress
+          .filter(p => p.status === 'struggling' || p.status === 'presented')
+          .map(p => p.work_key || p.work_name);
+
+        // Last observation date by area
+        const lastObsByArea: Record<string, string> = {};
+        for (const p of progress) {
+          if (p.updated_at && p.area) {
+            if (!lastObsByArea[p.area] || p.updated_at > lastObsByArea[p.area]) {
+              lastObsByArea[p.area] = p.updated_at;
+            }
+          }
+        }
+
+        // Call with positional parameters matching generateShelfProposals signature
+        const result = generateShelfProposals(
+          childId,
+          child.name,
+          progress.map(p => ({
+            work_name: p.work_name,
+            work_key: p.work_key || p.work_name,
+            area: p.area,
+            status: p.status,
+          })),
+          focusWorks,
+          {
+            childAgeYears,
+            observations,
+            strugglingWorkKeys,
+            lastObservationByArea: lastObsByArea,
+          }
+        );
+
+        const areaFilter = input.area_filter as string | undefined;
+        const limit = Math.min((input.limit as number) || 10, 20);
+
+        // Combine main proposals + bridge proposals
+        let allProposals = [...result.proposals, ...(result.bridge_proposals || [])];
+        if (areaFilter) {
+          allProposals = allProposals.filter(p => p.area === areaFilter);
+        }
+
+        // Sort by v3_score (descending), fall back to legacy score
+        allProposals.sort((a, b) => (b.v3_score ?? b.score) - (a.v3_score ?? a.score));
+        allProposals = allProposals.slice(0, limit);
+
+        if (allProposals.length === 0) {
+          return {
+            success: true,
+            message: `No recommendations found${areaFilter ? ` for ${AREA_LABELS[areaFilter] || areaFilter}` : ''}. The child may have all areas well covered.`
+          };
+        }
+
+        // Format output by tier
+        const byTier: Record<string, typeof allProposals> = {};
+        for (const p of allProposals) {
+          const tier = p.tier || 'available';
+          if (!byTier[tier]) byTier[tier] = [];
+          byTier[tier].push(p);
+        }
+
+        const lines: string[] = [];
+        lines.push(`V3 Prioritized Recommendations for ${child.name}${result.v3_active ? ' (V3 scoring active)' : ' (legacy scoring)'}:`);
+        for (const tier of ['urgent', 'recommended', 'available', 'deferred']) {
+          const items = byTier[tier];
+          if (!items || items.length === 0) continue;
+          lines.push(`\n${tier.toUpperCase()} (${items.length}):`);
+          for (const p of items) {
+            const score = p.v3_score ?? p.score;
+            const area = AREA_LABELS[p.area] || p.area;
+            const reasons = p.reasons?.join('; ') || p.reason;
+            const bridge = p.bridge_from_area ? ` [BRIDGE from ${AREA_LABELS[p.bridge_from_area] || p.bridge_from_area}]` : '';
+            lines.push(`  • ${p.proposed_work} (${area}, score ${score})${bridge}`);
+            lines.push(`    Why: ${reasons}`);
+          }
+        }
+
+        return {
+          success: true,
+          message: lines.join('\n'),
+          detail: JSON.stringify({ v3_active: result.v3_active, proposals: allProposals.map(p => ({ work: p.proposed_work, area: p.area, score: p.v3_score ?? p.score, tier: p.tier, reasons: p.reasons, bridge: p.bridge_from_area })) })
+        };
+      } catch (err) {
+        console.error(`[V3 Tool] get_prioritized_recommendations error for child ${childId}:`, err);
+        return { success: false, message: 'Failed to generate prioritized recommendations' };
+      }
+    }
+
+    case 'get_struggling_analysis': {
+      try {
+        const {
+          getExerciseSkills,
+          getSkillStrength,
+          findBridgeExercises,
+          analyzeNotes,
+        } = await import('./skill-graph');
+        const { AREA_LABELS } = await import('./work-sequencer');
+
+        // Fetch child data
+        const [childRes, progressRes, observationsRes] = await Promise.all([
+          supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
+          supabase.from('montree_child_progress').select('work_name, work_key, area, status').eq('child_id', childId),
+          supabase.from('montree_behavioral_observations').select('observation').eq('child_id', childId).order('created_at', { ascending: false }).limit(50),
+        ]);
+
+        const child = childRes.data;
+        if (!child) return { success: false, message: 'Child not found' };
+
+        const progress = progressRes.data || [];
+        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+
+        // Find struggling works
+        const exerciseName = input.exercise_name as string | undefined;
+        let strugglingWorks = progress.filter(p => p.status === 'struggling' || p.status === 'presented');
+        if (exerciseName) {
+          strugglingWorks = strugglingWorks.filter(p =>
+            p.work_name.toLowerCase().includes(exerciseName.toLowerCase())
+          );
+        }
+
+        if (strugglingWorks.length === 0) {
+          return {
+            success: true,
+            message: exerciseName
+              ? `${child.name} doesn't appear to be struggling with "${exerciseName}".`
+              : `${child.name} doesn't have any struggling exercises recorded.`
+          };
+        }
+
+        // Analyze notes for skill clues
+        const skillClues = analyzeNotes(observations);
+
+        const lines: string[] = [`Struggling Analysis for ${child.name}:`];
+
+        for (const work of strugglingWorks) {
+          const skills = getExerciseSkills(work.work_key || work.work_name);
+          lines.push(`\n📍 ${work.work_name} (${AREA_LABELS[work.area] || work.area})`);
+
+          if (skills) {
+            // Check which required skills are weak
+            const progressEntries = progress.map(p => ({ work_key: p.work_key || p.work_name, status: p.status as 'mastered' | 'practicing' | 'presented' | 'not_started' }));
+            const weakReqs: string[] = [];
+            for (const req of skills.skills_required) {
+              const skillResult = getSkillStrength(progressEntries, req);
+              if (skillResult.strength < 0.5) {
+                weakReqs.push(req);
+              }
+            }
+
+            if (weakReqs.length > 0) {
+              lines.push(`  Weak prerequisites: ${weakReqs.join(', ')}`);
+
+              // Find bridge exercises from other areas (pass progress so it skips mastered works)
+              const bridges = findBridgeExercises(weakReqs, work.area, progressEntries);
+              if (bridges.length > 0) {
+                lines.push(`  Cross-area bridges (exercises from OTHER areas that develop these skills):`);
+                for (const bridge of bridges.slice(0, 5)) {
+                  lines.push(`    - ${bridge.work_key} (${AREA_LABELS[bridge.from_area] || bridge.from_area}) — ${bridge.reason}`);
+                }
+              }
+            } else {
+              lines.push(`  Prerequisites look strong — struggle may be developmental timing or confidence.`);
+            }
+          } else {
+            lines.push(`  No V3 skill data for this exercise — recommend observing closely.`);
+          }
+        }
+
+        // Add note-based clues
+        if (skillClues.length > 0) {
+          lines.push(`\nClues from teacher observations:`);
+          for (const clue of skillClues.slice(0, 8)) {
+            lines.push(`  "${clue.matchedPatterns.join('/')}" suggests weak ${clue.skill} (${clue.label})`);
+          }
+        }
+
+        return {
+          success: true,
+          message: lines.join('\n'),
+          detail: JSON.stringify({
+            struggling_count: strugglingWorks.length,
+            skill_clues: skillClues.slice(0, 10),
+          })
+        };
+      } catch (err) {
+        console.error(`[V3 Tool] get_struggling_analysis error for child ${childId}:`, err);
+        return { success: false, message: 'Failed to analyze struggles' };
+      }
+    }
+
+    case 'get_attention_flags': {
+      try {
+        const {
+          analyzeNotes,
+        } = await import('./skill-graph');
+        const { AREA_LABELS } = await import('./work-sequencer');
+
+        const [childRes, progressRes, observationsRes] = await Promise.all([
+          supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
+          supabase.from('montree_child_progress').select('work_name, work_key, area, status, updated_at').eq('child_id', childId),
+          supabase.from('montree_behavioral_observations').select('observation').eq('child_id', childId).order('created_at', { ascending: false }).limit(50),
+        ]);
+
+        const child = childRes.data;
+        if (!child) return { success: false, message: 'Child not found' };
+
+        const progress = progressRes.data || [];
+        const observations = (observationsRes.data || []).map(o => o.observation).filter(Boolean);
+
+        const flags: { level: 'urgent' | 'attention' | 'info'; message: string }[] = [];
+        const now = Date.now();
+        const STALE_MS = 21 * 24 * 60 * 60 * 1000; // 21 days
+
+        // 1. Stale areas (>21 days without observation)
+        const lastObsByArea: Record<string, number> = {};
+        for (const p of progress) {
+          if (p.updated_at && p.area) {
+            const t = new Date(p.updated_at).getTime();
+            if (!isNaN(t) && (!lastObsByArea[p.area] || t > lastObsByArea[p.area])) {
+              lastObsByArea[p.area] = t;
+            }
+          }
+        }
+        const allAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+        for (const area of allAreas) {
+          const last = lastObsByArea[area];
+          if (!last) {
+            if (progress.length > 0) {
+              flags.push({ level: 'attention', message: `No activity recorded in ${AREA_LABELS[area] || area}` });
+            }
+          } else if (now - last > STALE_MS) {
+            const days = Math.floor((now - last) / (24 * 60 * 60 * 1000));
+            flags.push({ level: 'attention', message: `${AREA_LABELS[area] || area} stale — no observation in ${days} days` });
+          }
+        }
+
+        // 2. Prolonged struggles
+        const struggling = progress.filter(p => p.status === 'struggling');
+        for (const s of struggling) {
+          flags.push({ level: 'urgent', message: `Struggling with ${s.work_name} (${AREA_LABELS[s.area] || s.area})` });
+        }
+
+        // 3. Area imbalance (>60% in one area)
+        const obsByArea: Record<string, number> = {};
+        for (const p of progress) {
+          obsByArea[p.area] = (obsByArea[p.area] || 0) + 1;
+        }
+        const totalObs = progress.length;
+        if (totalObs >= 5) {
+          for (const area of allAreas) {
+            const count = obsByArea[area] || 0;
+            if (count / totalObs > 0.60) {
+              flags.push({ level: 'attention', message: `Area imbalance — ${Math.round(count / totalObs * 100)}% of work is in ${AREA_LABELS[area] || area}` });
+            }
+          }
+        }
+
+        // 4. Skill clues from observations
+        const skillClues = analyzeNotes(observations);
+        if (skillClues.length > 0) {
+          const topClues = skillClues.slice(0, 3);
+          for (const clue of topClues) {
+            flags.push({ level: 'info', message: `Observation clue: "${clue.matchedPatterns.join('/')}" suggests weak ${clue.skill}` });
+          }
+        }
+
+        // 5. No recent observations at all
+        if (progress.length === 0) {
+          flags.push({ level: 'urgent', message: 'No progress data recorded yet for this child' });
+        }
+
+        // Sort by level priority
+        const levelOrder = { urgent: 0, attention: 1, info: 2 };
+        flags.sort((a, b) => levelOrder[a.level] - levelOrder[b.level]);
+
+        if (flags.length === 0) {
+          return { success: true, message: `No attention flags for ${child.name} — everything looks on track!` };
+        }
+
+        const lines: string[] = [`Attention Flags for ${child.name} (${flags.length} total):`];
+        for (const f of flags) {
+          const icon = f.level === 'urgent' ? '🔴' : f.level === 'attention' ? '🟡' : '🔵';
+          lines.push(`  ${icon} [${f.level.toUpperCase()}] ${f.message}`);
+        }
+
+        return {
+          success: true,
+          message: lines.join('\n'),
+          detail: JSON.stringify({ flags })
+        };
+      } catch (err) {
+        console.error(`[V3 Tool] get_attention_flags error for child ${childId}:`, err);
+        return { success: false, message: 'Failed to generate attention flags' };
+      }
+    }
+
+    case 'get_skill_analysis': {
+      try {
+        const {
+          SKILL_EXERCISE_MAP,
+          getSkillStrength,
+        } = await import('./skill-graph');
+
+        const skillName = (input.skill_name as string || '').trim().toLowerCase();
+        if (!skillName) return { success: false, message: 'Missing skill_name parameter' };
+
+        const [childRes, progressRes] = await Promise.all([
+          supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
+          supabase.from('montree_child_progress').select('work_name, work_key, area, status').eq('child_id', childId),
+        ]);
+
+        const child = childRes.data;
+        if (!child) return { success: false, message: 'Child not found' };
+
+        const progress = progressRes.data || [];
+
+        // Find exercises that develop this skill
+        const developers = SKILL_EXERCISE_MAP[skillName];
+        if (!developers || developers.length === 0) {
+          return { success: true, message: `Unknown skill: "${skillName}". No exercises in the curriculum develop this skill.` };
+        }
+
+        // Calculate skill strength using work_key
+        const progressEntries = progress.map(p => ({
+          work_key: p.work_key || p.work_name,
+          status: p.status as 'mastered' | 'practicing' | 'presented' | 'not_started',
+        }));
+        const skillResult = getSkillStrength(progressEntries, skillName);
+
+        // Categorize exercises — build map keyed by work_key for lookup against SKILL_EXERCISE_MAP keys
+        const progressByKey = new Map(progress.map(p => [p.work_key || p.work_name, p]));
+        const mastered: string[] = [];
+        const practicing: string[] = [];
+        const presented: string[] = [];
+        const notStarted: string[] = [];
+
+        for (const exKey of developers) {
+          const p = progressByKey.get(exKey);
+          if (!p) {
+            notStarted.push(exKey);
+          } else if (p.status === 'mastered') {
+            mastered.push(p.work_name);
+          } else if (p.status === 'practicing') {
+            practicing.push(p.work_name);
+          } else {
+            presented.push(p.work_name);
+          }
+        }
+
+        const lines: string[] = [];
+        lines.push(`Skill Analysis: "${skillName}" for ${child.name}`);
+        lines.push(`Overall strength: ${Math.round(skillResult.strength * 100)}%`);
+        lines.push(`Exercises that develop this skill (${developers.length} total):`);
+
+        if (mastered.length > 0) lines.push(`  Mastered (${mastered.length}): ${mastered.join(', ')}`);
+        if (practicing.length > 0) lines.push(`  Practicing (${practicing.length}): ${practicing.join(', ')}`);
+        if (presented.length > 0) lines.push(`  Presented (${presented.length}): ${presented.join(', ')}`);
+        if (notStarted.length > 0) lines.push(`  Not started (${notStarted.length}): ${notStarted.join(', ')}`);
+
+        if (skillResult.strength < 0.5 && notStarted.length > 0) {
+          lines.push(`\nRecommendation: This skill needs strengthening. Consider presenting: ${notStarted.slice(0, 3).join(', ')}`);
+        }
+
+        return {
+          success: true,
+          message: lines.join('\n'),
+          detail: JSON.stringify({ skill: skillName, strength: skillResult.strength, mastered: mastered.length, practicing: practicing.length, presented: presented.length, not_started: notStarted.length })
+        };
+      } catch (err) {
+        console.error(`[V3 Tool] get_skill_analysis error for child ${childId}:`, err);
+        return { success: false, message: 'Failed to analyze skill' };
+      }
+    }
+
     default:
       console.warn(`[Tool Executor] Unknown tool requested: ${toolName}`, JSON.stringify(input).slice(0, 200));
       return { success: false, message: `Unknown tool: ${toolName}` };

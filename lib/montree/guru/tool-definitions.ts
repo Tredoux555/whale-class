@@ -1,6 +1,6 @@
 // lib/montree/guru/tool-definitions.ts
 // Anthropic tool-use definitions for Guru-driven home system
-// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools + 1 area analytics tool + 3 daily activity tools = 19 total
+// 9 action tools + 3 curriculum read-only tools + 1 custom work tool + 2 classroom tools + 1 area analytics tool + 3 daily activity tools + 4 V3 intelligence tools = 23 total
 
 import type { Tool } from '@anthropic-ai/sdk/resources/messages';
 
@@ -25,6 +25,12 @@ const MODE_TOOL_MAP: Record<string, GuruMode[]> = {
   get_classroom_overview:     [],  // empty = never auto-included, only via wholeClass flag
   group_students:             [],
   get_classroom_media_summary: [],
+
+  // V3 intelligence tools: available in NORMAL + CHECKIN modes (where teachers ask about progress)
+  get_prioritized_recommendations: ['NORMAL', 'CHECKIN', 'SETUP'],
+  get_struggling_analysis:         ['NORMAL', 'CHECKIN'],
+  get_attention_flags:             ['NORMAL', 'CHECKIN'],
+  get_skill_analysis:              ['NORMAL', 'CHECKIN'],
 };
 
 // Tool names that are ONLY injected in whole-class mode
@@ -547,6 +553,68 @@ export const GURU_TOOLS: Tool[] = [
         }
       },
       required: []
+    }
+  },
+
+  // ---- V3 Intelligence Tools (Sprint 3) ----
+
+  {
+    name: 'get_prioritized_recommendations',
+    description: "Get prioritized next-presentation recommendations for a child, scored by the V3 8-factor engine (unblocking, cross-area bridges, area gaps, skill reinforcement, age fit, curriculum flow). Returns exercises grouped into urgent/recommended/available tiers with detailed reasoning. Use when the teacher asks 'what should I present next?' or 'what does this child need?'",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        area_filter: {
+          type: "string",
+          enum: ["practical_life", "sensorial", "mathematics", "language", "cultural"],
+          description: "Optional: filter recommendations to a specific curriculum area."
+        },
+        limit: {
+          type: "integer",
+          description: "Maximum number of recommendations to return. Default 10."
+        }
+      },
+      required: []
+    }
+  },
+
+  {
+    name: 'get_struggling_analysis',
+    description: "Deep analysis of why a child is struggling with specific exercises. Traces back through the skill graph to find weak prerequisite skills, analyzes teacher observation notes for clues (e.g. 'difficulty gripping' → pincer_grip weakness), and suggests bridge exercises from OTHER areas that develop the missing skills. Use when the teacher says a child is having trouble or asks why something isn't clicking.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        exercise_name: {
+          type: "string",
+          description: "Optional: specific exercise name to analyze. If omitted, analyzes all struggling exercises."
+        }
+      },
+      required: []
+    }
+  },
+
+  {
+    name: 'get_attention_flags',
+    description: "Get attention flags for a child with skill-level granularity: stale areas (>21 days without observation), prolonged struggles (3+ attempts), area imbalance (>60% in one area), weak prerequisite skills blocking progress. Use for morning briefings, weekly planning, or when the teacher asks 'anything I should be worried about?'",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: []
+    }
+  },
+
+  {
+    name: 'get_skill_analysis',
+    description: "Analyze a specific skill across a child's profile: which exercises have developed it, current strength (based on mastery of skill-developing exercises), and exercises that could further develop it. Use when the teacher asks about a specific skill like 'how is her pincer grip?' or 'is he ready for writing?'",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        skill_name: {
+          type: "string",
+          description: "The skill to analyze (e.g. 'pincer_grip', 'concentration', 'phonemic_awareness', 'number_sequence')"
+        }
+      },
+      required: ["skill_name"]
     }
   }
 ];

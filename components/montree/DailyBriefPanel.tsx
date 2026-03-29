@@ -5,7 +5,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface ActionItem {
-  type: 'attendance' | 'stale_works' | 'conference_notes' | 'evidence' | 'pulse';
+  type: 'attendance' | 'stale_works' | 'conference_notes' | 'evidence' | 'pulse' | 'skill_intelligence';
   priority: 'high' | 'medium' | 'low';
   message: string;
   count: number;
@@ -44,6 +44,20 @@ interface PulseSummary {
   hours_since_last: number | null;
 }
 
+interface SkillIntelligenceFlag {
+  type: string;
+  severity: 'high' | 'medium' | 'low';
+  message: string;
+  childName?: string;
+  childId?: string;
+}
+
+interface SkillIntelligenceSummary {
+  total_flags: number;
+  high_flags: number;
+  flags: SkillIntelligenceFlag[];
+}
+
 interface DailyBrief {
   date: string;
   attendance: AttendanceSummary;
@@ -51,6 +65,7 @@ interface DailyBrief {
   conference_notes: ConferenceNotesSummary;
   evidence: EvidenceSummary;
   pulse: PulseSummary;
+  skill_intelligence: SkillIntelligenceSummary;
   action_items: ActionItem[];
 }
 
@@ -66,6 +81,7 @@ const TYPE_ICONS: Record<ActionItem['type'], string> = {
   conference_notes: '📝',
   evidence: '📷',
   pulse: '💓',
+  skill_intelligence: '🧠',
 };
 
 export default function DailyBriefPanel() {
@@ -188,7 +204,39 @@ export default function DailyBriefPanel() {
               <div className="text-base font-bold text-violet-700">{brief.evidence.ready_for_mastery}</div>
               <div className="text-[10px] text-violet-600 font-medium">{t('brief.ready')}</div>
             </div>
+            {brief.skill_intelligence && brief.skill_intelligence.total_flags > 0 && (
+              <div className="flex-1 bg-rose-50 rounded-lg px-2 py-1.5 text-center">
+                <div className="text-base font-bold text-rose-700">{brief.skill_intelligence.total_flags}</div>
+                <div className="text-[10px] text-rose-600 font-medium">{t('brief.skillInsights')}</div>
+              </div>
+            )}
           </div>
+
+          {/* Skill Intelligence flags */}
+          {brief.skill_intelligence && brief.skill_intelligence.flags.length > 0 && (
+            <div id="panel-skill_intelligence" className="space-y-1.5">
+              <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                <span>🧠</span> {t('brief.skillIntelTitle')}
+              </div>
+              {brief.skill_intelligence.flags.map((flag, idx) => {
+                const severityCfg = PRIORITY_CONFIG[flag.severity];
+                return (
+                  <div
+                    key={`skill-${idx}`}
+                    className={`flex items-start gap-2 rounded-lg px-3 py-2 ${severityCfg.bg} border ${severityCfg.border}`}
+                  >
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1 ${severityCfg.dot}`} />
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-xs ${severityCfg.text}`}>{flag.message}</div>
+                      {flag.childName && (
+                        <div className="text-[10px] text-gray-400 mt-0.5">{flag.childName}</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* Action items */}
           {totalActions > 0 && (
