@@ -199,7 +199,7 @@ export async function GET(request: NextRequest) {
       .gte('asked_at', `${today}T00:00:00Z`)
       .order('asked_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (cached?.response_insight) {
       return NextResponse.json({
@@ -211,13 +211,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch child data
-    const { data: child } = await supabase
+    const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select('id, name, age, classroom_id')
       .eq('id', childId)
       .single();
 
-    if (!child) {
+    if (childError || !child) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
     }
 
@@ -263,7 +263,7 @@ export async function GET(request: NextRequest) {
       .join('\n');
 
     // Cache as a guru interaction
-    const { data: saved } = await supabase
+    const { data: saved, error: saveError } = await supabase
       .from('montree_guru_interactions')
       .insert({
         child_id: childId,
@@ -279,7 +279,11 @@ export async function GET(request: NextRequest) {
         processing_time_ms: 0,
       })
       .select('id')
-      .single();
+      .maybeSingle();
+
+    if (saveError) {
+      console.error('[Guru Daily Plan] Save error:', saveError);
+    }
 
     return NextResponse.json({
       success: true,

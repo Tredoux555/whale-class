@@ -110,7 +110,9 @@ export async function POST(req: NextRequest) {
     if (progressErr) {
       console.error('[Pulse] Progress fetch error:', progressErr);
       // Release lock so teacher can retry
-      await supabase.rpc('complete_pulse_lock', { p_classroom_id: auth.classroomId }).catch(() => {});
+      await supabase.rpc('complete_pulse_lock', { p_classroom_id: auth.classroomId }).catch((err) => {
+        console.error('[Pulse] Lock release failed:', err);
+      });
       return NextResponse.json({ error: 'Failed to load progress data' }, { status: 500 });
     }
 

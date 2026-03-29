@@ -18,14 +18,21 @@ export async function GET(request: NextRequest) {
     const { data: school, error: schoolError } = await supabase
       .from('montree_schools')
       .select(`
-        id, name, 
+        id, name,
         subscription_plan, subscription_status,
         trial_ends_at, current_period_end, max_students
       `)
       .eq('id', schoolId)
       .single();
 
-    if (schoolError) throw schoolError;
+    if (schoolError) {
+      console.error('School lookup error:', schoolError);
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    if (!school) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
 
     // Get billing history
     const { data: history } = await supabase

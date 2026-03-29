@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       .eq('question_type', 'proactive_suggestion')
       .gte('asked_at', new Date(new Date().setDate(new Date().getDate() - 7)).toISOString())
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (cached?.response_insight) {
       return NextResponse.json({
@@ -68,14 +68,18 @@ export async function GET(request: NextRequest) {
     }
 
     // Get child info
-    const { data: child } = await supabase
+    const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select('name, age, classroom_id')
       .eq('id', childId)
       .single();
 
-    const childName = child?.name?.split(' ')[0] || 'Your child';
-    const childAge = child?.age || 4;
+    if (childError || !child) {
+      return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
+    }
+
+    const childName = child.name?.split(' ')[0] || 'Your child';
+    const childAge = child.age || 4;
 
     let prompt: string;
     let suggestionType: string;

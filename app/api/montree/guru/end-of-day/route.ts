@@ -101,8 +101,8 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
       .map(block => (block as { type: 'text'; text: string }).text)
       .join('');
 
-    // Cache in guru interactions
-    await supabase
+    // Cache in guru interactions (fire-and-forget)
+    supabase
       .from('montree_guru_interactions')
       .insert({
         child_id: childId,
@@ -116,6 +116,9 @@ Keep it warm, specific, and under 80 words total. Use the child's name. Do NOT u
           progress_count: todayProgress.length,
           works: todayProgress.map(p => p.work_name),
         },
+      })
+      .catch((err) => {
+        console.error('[Guru EndOfDay] Cache insert failed:', err);
       });
 
     return NextResponse.json({ success: true, nudge: nudgeText });

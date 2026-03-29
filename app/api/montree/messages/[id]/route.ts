@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
 interface Params {
   id: string;
@@ -24,11 +25,20 @@ export async function PATCH(
     // Get current message
     const { data: message, error: fetchError } = await supabase
       .from('montree_messages')
-      .select('id, is_read')
+      .select('id, is_read, child_id')
       .eq('id', id)
       .single();
 
     if (fetchError || !message) {
+      return NextResponse.json(
+        { error: 'Message not found' },
+        { status: 404 }
+      );
+    }
+
+    // Verify message's child belongs to authenticated user's school
+    const access = await verifyChildBelongsToSchool(message.child_id, auth.schoolId);
+    if (!access.allowed) {
       return NextResponse.json(
         { error: 'Message not found' },
         { status: 404 }
@@ -83,6 +93,15 @@ export async function GET(
       .single();
 
     if (error || !message) {
+      return NextResponse.json(
+        { error: 'Message not found' },
+        { status: 404 }
+      );
+    }
+
+    // Verify message's child belongs to authenticated user's school
+    const access = await verifyChildBelongsToSchool(message.child_id, auth.schoolId);
+    if (!access.allowed) {
       return NextResponse.json(
         { error: 'Message not found' },
         { status: 404 }

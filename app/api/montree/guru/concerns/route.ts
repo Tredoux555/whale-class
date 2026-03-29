@@ -27,13 +27,17 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = getSupabase();
-    const { data: child } = await supabase
+    const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select('settings')
       .eq('id', childId)
       .single();
 
-    const settings = (child?.settings as Record<string, unknown>) || {};
+    if (childError || !child) {
+      return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
+    }
+
+    const settings = (child.settings as Record<string, unknown>) || {};
 
     return NextResponse.json({
       success: true,
@@ -82,13 +86,17 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // Read existing settings, merge in concerns
-    const { data: child } = await supabase
+    const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select('settings')
       .eq('id', child_id)
       .single();
 
-    const existingSettings = (child?.settings as Record<string, unknown>) || {};
+    if (childError || !child) {
+      return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
+    }
+
+    const existingSettings = (child.settings as Record<string, unknown>) || {};
 
     const { error: updateError } = await supabase
       .from('montree_children')

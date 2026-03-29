@@ -27,7 +27,12 @@ export async function POST(request: NextRequest) {
       .eq('id', school_id)
       .single();
 
-    if (schoolError || !school) {
+    if (schoolError) {
+      console.error('School lookup error:', schoolError);
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    if (!school) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
     }
 
