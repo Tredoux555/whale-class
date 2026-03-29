@@ -51,6 +51,50 @@ Wired `generateClassroomAttentionFlags()` into the daily-brief API as a 6th para
 **Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_V3_GURU_INTEGRATION_MAR29.md` (integration plan)
 
+### Session Work (Mar 29, 2026 — Guru Memory Fix + Leads Email + Dashboard Sections)
+
+**Guru Conversation Memory Fix + Leads Email Collection + Dashboard Collapsible Sections — All 3 Features Shipped — ✅ PUSHED:**
+
+Three features shipped in this session:
+
+**1. Guru Conversation Memory Fix (3×3×3 Audited):**
+The Guru was immediately forgetting previous conversations in whole-class mode. 5 independent bugs identified and fixed across 3 files. All 5 bugs independently prevented whole-class conversation memory from working.
+
+| # | Severity | Bug | File |
+|---|----------|-----|------|
+| 1 | CRITICAL | GET handler returned `[]` for `child_id=whole_class` | route.ts |
+| 2 | CRITICAL | POST handler never fetched past whole-class interactions | route.ts |
+| 3 | CRITICAL | `conversationMessages` section explicitly skipped whole-class mode | route.ts |
+| 4 | CRITICAL | `buildClassroomContext` never fetched history | context-builder.ts |
+| 5 | HIGH | Locale filter in context-builder dropped cross-language history | context-builder.ts |
+
+Fixes: Added parallel query for whole-class history in POST handler's Promise.all (last 5 interactions by `question_type='whole_class'` + `classroom_id`). Hoisted `wholeClassHistory` to function scope. Updated `conversationMessages` section to populate history for whole-class mode (up to 3 past interactions as alternating user/assistant messages, oldest first). Fixed GET handler to query by `question_type` + `classroom_id`. Removed locale filter from past_interactions query in context-builder. Added `classroom_id` to GET request URL params + `classroomId` to useEffect dependency array in GuruChatThread.
+
+3×3×3 methodology: 3 cycles × 3 parallel agents = 9 independent audit agents. Cycle 1: Research — identified all 5 bugs. Cycle 2: 3 agents verified fix (1 LOW issue found: missing classroomId in useEffect deps — fixed). Cycle 3: 3 agents final verification — ALL CLEAN.
+
+**2. Leads Email Collection:**
+Trial signups collected email on the form but never stored it in `montree_leads.email`. The column existed, the TypeScript interface included it, the LeadsTab already rendered it with a mailto link — but the INSERT never populated it.
+
+Fixes: Added `email: email?.trim() || null` to all 3 lead insert blocks in `try/instant/route.ts` (homeschool_parent, teacher, principal). Changed email field from "Email (optional)" to "Email" with hint "So we can help you get started and recover your code". Added email enrichment in GET handler: for leads with no email but a login code in notes, looks up the teacher record by code and backfills the email (filters out placeholder `@montree.app` emails).
+
+**3. Dashboard Collapsible Sections:**
+Intelligence panels (Attendance, Stale Works, Conference Notes, Evidence, Pulse) now wrapped in collapsible sections with localStorage persistence per panel. Click header to toggle — chevron rotates on collapse.
+
+**Files Modified (10):**
+1. `app/api/montree/guru/route.ts` — Whole-class memory (4 edits)
+2. `lib/montree/guru/context-builder.ts` — Remove locale filter (1 edit)
+3. `components/montree/guru/GuruChatThread.tsx` — Client-side classroom_id (2 edits)
+4. `app/api/montree/try/instant/route.ts` — Email in lead inserts (3 edits)
+5. `app/montree/try/page.tsx` — Email field prominence (1 edit)
+6. `app/api/montree/leads/route.ts` — Email enrichment for existing leads (1 edit)
+7. `app/montree/dashboard/page.tsx` — Collapsible sections
+8. `components/montree/DailyBriefPanel.tsx` — Layout adjustment
+9. `lib/montree/i18n/en.ts` — 2 new keys
+10. `lib/montree/i18n/zh.ts` — 2 matching Chinese keys
+
+**Deploy:** ✅ PUSHED — commits `dd323a4f` + `861cf7eb`. No migrations needed. Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_GURU_MEMORY_LEADS_EMAIL_MAR29.md`
+
 ### Session Work (Mar 29, 2026 — Visitor Tracking + 10x Health Check)
 
 **Visitor Tracking + 10x Health Check — Both Deployed — ✅ PUSHED:**
