@@ -14,6 +14,43 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Mar 29, 2026)
 
+### Session Work (Mar 29, 2026 — V3 Guru Intelligence Integration)
+
+**V3 Guru Intelligence Integration — All 4 Sprints Complete — 3×3 Audited — ⚠️ NOT YET PUSHED:**
+
+Integrated the V3 research engine into the production guru system. V3 adds 8-factor priority scoring, cross-area bridge detection, 59-pattern note analysis, age-appropriateness filtering, and classroom attention flags — all as an overlay on the existing curriculum system.
+
+**Sprint 1: Skill Graph + Note Analysis (NEW FILE):**
+Created `lib/montree/guru/skill-graph.ts` (~900 lines). Contains: `SKILL_EXERCISE_MAP` (91 skills → exercises), `EXERCISE_SKILL_MAP` (exercises → skills), `getSkillStrength()`, `findBridgeExercises()` (cross-area bridge detection), `analyzeNotes()` (59 keyword patterns → skill weakness detection), `generateClassroomAttentionFlags()` (3 detection categories: prolonged struggles with bridges, area imbalance, note-based skill clues). Also `ChildDataForFlags` and `ClassroomAttentionFlag` interfaces exported.
+
+**Sprint 2: Enhanced Work Sequencer (ENHANCED):**
+Refactored `lib/montree/guru/work-sequencer.ts` with V3's 8-factor scoring system: +50 unblocking, +40 cross-area bridge, +30 area gap, +20 skill reinforcement, +15 age-appropriate, +10 curriculum flow, -10 age penalty, -30 age hard block. Extended `ShelfProposal` interface with `v3_score`, `v3_tier`, `v3_reasons[]`, `bridge_from_area?`. Graceful degradation to legacy 3-factor scoring when no skill data available. Age-appropriateness filter with 5 categories and 0.5-year grace windows.
+
+**Sprint 3: New Tools + Wiring (4 new tools):**
+Added 4 new tool definitions to `tool-definitions.ts`: `get_prioritized_recommendations` (V3-scored top-N), `get_struggling_analysis` (cross-area bridges), `get_attention_flags` (skill-level morning briefing), `get_skill_analysis` (per-skill strength). Added 4 execution handlers to `tool-executor.ts` using dynamic imports. Added ~20 lines cross-area reasoning instruction to `conversational-prompt.ts`. 3 audit cycles, all CLEAN.
+
+**Sprint 4: Attention Flags + Daily Brief (WIRED):**
+Wired `generateClassroomAttentionFlags()` into the daily-brief API as a 6th parallel query (non-fatal — wrapped in try-catch with empty defaults). Extended `DailyBriefPanel.tsx` with rose-colored stat box for skill insights + expandable flags section with severity-colored cards. Added `skill_intelligence` as 6th feature type to action items with scroll-to-panel linking. 3 i18n keys added (EN/ZH parity). 3 audit cycles, all CLEAN.
+
+**Files Created (1):**
+1. `lib/montree/guru/skill-graph.ts` — Skill-exercise mapping, bridge detection, note analysis, attention flags (~900 lines)
+
+**Files Modified (6):**
+1. `lib/montree/guru/work-sequencer.ts` — V3 8-factor scoring, age filter, bridge scoring, extended ShelfProposal
+2. `lib/montree/guru/tool-definitions.ts` — 4 new tool schemas
+3. `lib/montree/guru/tool-executor.ts` — 4 new execution handlers
+4. `lib/montree/guru/conversational-prompt.ts` — Cross-area reasoning instruction
+5. `app/api/montree/intelligence/daily-brief/route.ts` — 6th parallel query (skill intelligence)
+6. `components/montree/DailyBriefPanel.tsx` — Skill insights stat box + flags section
+
+**i18n (2 files):**
+1. `lib/montree/i18n/en.ts` — 3 new keys (brief.skillInsights, brief.skillIntelTitle, brief.action.skill_intelligence)
+2. `lib/montree/i18n/zh.ts` — 3 matching Chinese keys (perfect EN/ZH parity)
+
+**Audit Summary:** 4 sprints × 3 audit cycles each = 12 cycles total, 36 independent audit agents. All final cycles CLEAN.
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_V3_GURU_INTEGRATION_MAR29.md` (integration plan)
+
 ### Session Work (Mar 29, 2026 — Visitor Tracking + 10x Health Check)
 
 **Visitor Tracking + 10x Health Check — Both Deployed — ✅ PUSHED:**

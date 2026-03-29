@@ -1,16 +1,25 @@
 // GET  /api/montree/intelligence/daily-brief  — Teacher's daily action summary
 //
-// Single consolidated endpoint that pulls key metrics from all 5 Teacher OS features:
+// Single consolidated endpoint that pulls key metrics from all 6 Teacher OS features:
 //   1. Attendance  (present/absent today)
 //   2. Stale Works (works not updated 7+ days)
 //   3. Conference Notes (drafts needing action)
 //   4. Evidence (works ready for mastery confirmation)
 //   5. Pulse (last generation time)
+//   6. Skill Intelligence (V3 cross-area attention flags)
 //
 // All queries run in parallel for speed. Returns a compact action-oriented summary.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+
+interface SkillIntelligenceFlag {
+  type: string;
+  severity: 'high' | 'medium' | 'low';
+  message: string;
+  childName?: string;
+  childId?: string;
+}
 
 interface DailyBriefResponse {
   date: string;
@@ -42,11 +51,16 @@ interface DailyBriefResponse {
     last_generated_at: string | null;
     hours_since_last: number | null;
   };
+  skill_intelligence: {
+    total_flags: number;
+    high_flags: number;
+    flags: SkillIntelligenceFlag[];
+  };
   action_items: ActionItem[];
 }
 
 interface ActionItem {
-  type: 'attendance' | 'stale_works' | 'conference_notes' | 'evidence' | 'pulse';
+  type: 'attendance' | 'stale_works' | 'conference_notes' | 'evidence' | 'pulse' | 'skill_intelligence';
   priority: 'high' | 'medium' | 'low';
   message: string;
   count: number;
@@ -80,6 +94,7 @@ export async function GET(req: NextRequest) {
         conference_notes: { drafts: 0, shared: 0, old_drafts: 0 },
         evidence: { ready_for_mastery: 0, strong: 0, moderate: 0, weak: 0, confirmed: 0 },
         pulse: { last_generated_at: null, hours_since_last: null },
+        skill_intelligence: { total_flags: 0, high_flags: 0, flags: [] },
         action_items: [],
       });
     }
@@ -87,7 +102,7 @@ export async function GET(req: NextRequest) {
     const childIds = children.map((c: { id: string }) => c.id);
 
     // Run ALL 5 queries in parallel
-    const [attendanceResult, staleResult, notesResult, evidenceResult, pulseResult] = await Promise.allSettled([
+    const [attendanceResult, staleResult, notesResult, evidenceResult, pulseResult, skillResult] = await Promise.allSettled([
       // 1. Attendance — photos today + manual overrides
       (async () => {
         const [photosRes, overridesRes] = await Promise.all([
@@ -210,6 +225,73 @@ export async function GET(req: NextRequest) {
         }
         return { last_generated_at: lastAt, hours_since_last: hoursSince };
       })(),
+
+      // 6. Skill Intelligence — V3 cross-area attention flags
+      (async () => {
+        try {
+          const { generateClassroomAttentionFlags } = await import('@/lib/montree/guru/skill-graph');
+          // Fetch progress + observations for all children in parallel
+          const [progressRes, obsRes] = await Promise.all([
+            supabase
+              .from('montree_child_progress')
+              .select('child_id, work_key, work_name, area, status, updated_at')
+              .in('child_id', childIds)
+              .in('status', ['presented', 'practicing', 'mastered']),
+            supabase
+              .from('montree_behavioral_observations')
+              .select('child_id, observation')
+              .in('child_id', childIds)
+              .order('created_at', { ascending: false })
+              .limit(500),
+          ]);
+
+          if (progressRes.error) throw progressRes.error;
+
+          // Build ChildDataForFlags[] from children + progress + observations
+          const childMap = new Map<string, { name: string; progress: typeof progressRes.data; observations: string[] }>();
+          for (const child of children) {
+            childMap.set(child.id, { name: child.name, progress: [], observations: [] });
+          }
+          for (const p of (progressRes.data || [])) {
+            const entry = childMap.get(p.child_id);
+            if (entry) entry.progress.push(p);
+          }
+          for (const o of (obsRes.data || [])) {
+            const entry = childMap.get(o.child_id);
+            if (entry && o.observation) entry.observations.push(o.observation);
+          }
+
+          const childrenData = Array.from(childMap.entries()).map(([id, data]) => ({
+            childId: id,
+            childName: data.name,
+            progress: data.progress.map(p => ({
+              work_key: p.work_key || '',
+              work_name: p.work_name || '',
+              area: p.area || '',
+              status: p.status || '',
+              updated_at: p.updated_at || undefined,
+            })),
+            observations: data.observations,
+          }));
+
+          const flags = generateClassroomAttentionFlags(childrenData, 5);
+          const highFlags = flags.filter(f => f.severity === 'high').length;
+          return {
+            total_flags: flags.length,
+            high_flags: highFlags,
+            flags: flags.map(f => ({
+              type: f.type,
+              severity: f.severity,
+              message: f.message,
+              childName: f.childName,
+              childId: f.childId,
+            })),
+          };
+        } catch (err) {
+          console.error('[DailyBrief] Skill intelligence error (non-fatal):', err);
+          return { total_flags: 0, high_flags: 0, flags: [] };
+        }
+      })(),
     ]);
 
     // Extract results with graceful degradation + error logging
@@ -219,6 +301,7 @@ export async function GET(req: NextRequest) {
       { name: 'conference_notes', result: notesResult },
       { name: 'evidence', result: evidenceResult },
       { name: 'pulse', result: pulseResult },
+      { name: 'skill_intelligence', result: skillResult },
     ];
     for (const { name, result } of queryResults) {
       if (result.status === 'rejected') {
@@ -245,6 +328,10 @@ export async function GET(req: NextRequest) {
     const pulse = pulseResult.status === 'fulfilled'
       ? pulseResult.value
       : { last_generated_at: null, hours_since_last: null };
+
+    const skillIntelligence = skillResult.status === 'fulfilled'
+      ? skillResult.value
+      : { total_flags: 0, high_flags: 0, flags: [] };
 
     // Build action items (priority-sorted)
     const actionItems: ActionItem[] = [];
@@ -302,6 +389,22 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    if (skillIntelligence.high_flags > 0) {
+      actionItems.push({
+        type: 'skill_intelligence',
+        priority: 'high',
+        message: `${skillIntelligence.high_flags} skill insight${skillIntelligence.high_flags > 1 ? 's' : ''} need attention`,
+        count: skillIntelligence.high_flags,
+      });
+    } else if (skillIntelligence.total_flags > 0) {
+      actionItems.push({
+        type: 'skill_intelligence',
+        priority: 'medium',
+        message: `${skillIntelligence.total_flags} skill insight${skillIntelligence.total_flags > 1 ? 's' : ''} available`,
+        count: skillIntelligence.total_flags,
+      });
+    }
+
     // Sort: high → medium → low
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     actionItems.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
@@ -313,6 +416,7 @@ export async function GET(req: NextRequest) {
       conference_notes: conferenceNotes,
       evidence,
       pulse,
+      skill_intelligence: skillIntelligence,
       action_items: actionItems,
     };
 
