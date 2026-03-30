@@ -86,12 +86,15 @@ export async function GET(request: NextRequest) {
     const childToSchool: Record<string, string> = {};
     (allChildren || []).forEach(c => { childToSchool[c.id] = c.school_id; });
 
-    // Fetch recent interactions (last 30 days) for cost estimation
-    const { data: recentInteractions } = await supabase
+    // Single query for all interactions — filter in-memory for cost (30-day window)
+    const { data: allInteractionsRaw } = await supabase
       .from('montree_guru_interactions')
       .select('child_id, model_used, asked_at')
-      .gte('asked_at', thirtyDaysAgo)
-      .order('asked_at', { ascending: false });
+      .order('asked_at', { ascending: false })
+      .limit(5000);
+
+    const allInteractions = allInteractionsRaw || [];
+    const recentInteractions = allInteractions.filter(i => i.asked_at >= thirtyDaysAgo);
 
     // Fetch last media upload per school (activity signal)
     const { data: recentMedia } = await supabase
@@ -100,21 +103,22 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false })
       .limit(500);
 
-    // Build activity + cost maps
+    // Build activity map from ALL interactions (no time filter)
     const lastInteractionMap: Record<string, string> = {};
-    const costMap: Record<string, number> = {};
-    const interactionCountMap: Record<string, number> = {};
-
-    (recentInteractions || []).forEach(i => {
+    allInteractions.forEach(i => {
       const schoolId = childToSchool[i.child_id];
       if (!schoolId) return;
-
-      // Last interaction timestamp
       if (!lastInteractionMap[schoolId] || i.asked_at > lastInteractionMap[schoolId]) {
         lastInteractionMap[schoolId] = i.asked_at;
       }
+    });
 
-      // Cost estimation
+    // Build cost maps from recent interactions only (30-day window)
+    const costMap: Record<string, number> = {};
+    const interactionCountMap: Record<string, number> = {};
+    recentInteractions.forEach(i => {
+      const schoolId = childToSchool[i.child_id];
+      if (!schoolId) return;
       costMap[schoolId] = (costMap[schoolId] || 0) + estimateCost(i.model_used);
       interactionCountMap[schoolId] = (interactionCountMap[schoolId] || 0) + 1;
     });
@@ -209,6 +213,10 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to update school' }, { status: 500 });
     }
 
+    if (!data) {
+      return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
     return NextResponse.json({ school: data });
 
   } catch (error) {
@@ -264,6 +272,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'schoolIds required' }, { status: 400 });
     }
 
+    if (schoolIds.length > 20) {
+      return NextResponse.json({ error: 'Maximum 20 schools per delete request' }, { status: 400 });
+    }
+
     // Fetch school names for audit log
     const { data: schoolRecords } = await supabase
       .from('montree_schools')
@@ -308,7 +320,7 @@ export async function DELETE(request: NextRequest) {
           schoolId,
           name: schoolNameMap[schoolId] || 'unknown',
           success: false,
-          error: msg,
+          error: 'Delete failed',
         });
       }
     }
