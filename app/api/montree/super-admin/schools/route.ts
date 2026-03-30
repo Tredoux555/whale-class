@@ -89,9 +89,9 @@ export async function GET(request: NextRequest) {
     // Fetch recent interactions (last 30 days) for cost estimation
     const { data: recentInteractions } = await supabase
       .from('montree_guru_interactions')
-      .select('child_id, model_used, created_at')
-      .gte('created_at', thirtyDaysAgo)
-      .order('created_at', { ascending: false });
+      .select('child_id, model_used, asked_at')
+      .gte('asked_at', thirtyDaysAgo)
+      .order('asked_at', { ascending: false });
 
     // Fetch last media upload per school (activity signal)
     const { data: recentMedia } = await supabase
@@ -110,8 +110,8 @@ export async function GET(request: NextRequest) {
       if (!schoolId) return;
 
       // Last interaction timestamp
-      if (!lastInteractionMap[schoolId] || i.created_at > lastInteractionMap[schoolId]) {
-        lastInteractionMap[schoolId] = i.created_at;
+      if (!lastInteractionMap[schoolId] || i.asked_at > lastInteractionMap[schoolId]) {
+        lastInteractionMap[schoolId] = i.asked_at;
       }
 
       // Cost estimation
