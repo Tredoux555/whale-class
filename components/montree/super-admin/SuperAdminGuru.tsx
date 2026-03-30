@@ -1,5 +1,3 @@
-// /montree/admin/guru/page.tsx
-// Principal Admin Guru — conversational AI copilot for school operations
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -18,34 +16,30 @@ interface ToolCallInfo {
   result?: unknown;
 }
 
-// SSE event types matching chat/route.ts output
+// SSE event types matching route.ts output
 type StreamEvent =
   | { type: 'text'; text: string }
   | { type: 'tool_call'; tool: string; input: Record<string, unknown> }
   | { type: 'tool_result'; tool: string; success: boolean; result: unknown }
+  | { type: 'confirmation_required'; confirmation_id: string; description: string; tool: string; input: Record<string, unknown> }
   | { type: 'error'; error: string }
   | { type: 'done' };
 
-export default function PrincipalAdminGuruPage() {
+interface SuperAdminGuruProps {
+  saToken: string;
+}
+
+export default function SuperAdminGuru({ saToken }: SuperAdminGuruProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [schoolName, setSchoolName] = useState('');
+  const [confirmationPending, setConfirmationPending] = useState<{
+    confirmation_id: string;
+    description: string;
+    tool: string;
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  useEffect(() => {
-    // Read school name from localStorage for display
-    const schoolData = localStorage.getItem('montree_school');
-    if (schoolData) {
-      try {
-        const s = JSON.parse(schoolData);
-        setSchoolName(s.name || '');
-      } catch {
-        /* ignore */
-      }
-    }
-  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -57,9 +51,7 @@ export default function PrincipalAdminGuruPage() {
 
   // Build Anthropic-compatible MessageParam array from our messages
   const buildApiMessages = useCallback(
-    (
-      currentMessages: Message[]
-    ): Array<{ role: 'user' | 'assistant'; content: string }> => {
+    (currentMessages: Message[]): Array<{ role: 'user' | 'assistant'; content: string }> => {
       return currentMessages
         .filter((m) => m.content.trim())
         .map((m) => ({
@@ -71,52 +63,53 @@ export default function PrincipalAdminGuruPage() {
   );
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent, confirmationId?: string) => {
       e.preventDefault();
 
       const trimmedInput = input.trim();
-      if (!trimmedInput) return;
+      if (!trimmedInput && !confirmationId) return;
 
       // Build the updated messages array BEFORE setting state
-      const updatedMessages = [
-        ...messages,
-        { role: 'user' as const, content: trimmedInput },
-      ];
+      // This avoids stale closure issues where messages in fetch body lag behind UI
+      const updatedMessages = trimmedInput
+        ? [...messages, { role: 'user' as const, content: trimmedInput }]
+        : messages;
 
-      setMessages(updatedMessages);
+      // Add user message to UI
+      if (trimmedInput) {
+        setMessages(updatedMessages);
+      }
+
       setInput('');
       setLoading(true);
       abortControllerRef.current?.abort();
       abortControllerRef.current = new AbortController();
 
       try {
-        const response = await fetch('/api/montree/admin/guru/chat', {
+        const response = await fetch('/api/montree/super-admin/guru', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include', // Send httpOnly cookie
+          headers: {
+            'Content-Type': 'application/json',
+            'x-super-admin-token': saToken,
+          },
           body: JSON.stringify({
             messages: buildApiMessages(updatedMessages),
+            confirmation_id: confirmationId,
           }),
           signal: abortControllerRef.current.signal,
         });
 
         if (!response.ok) {
-          const errText = await response
-            .text()
-            .catch(() => response.statusText);
+          const errText = await response.text().catch(() => response.statusText);
           throw new Error(`API error (${response.status}): ${errText}`);
         }
 
-        if (!response.body) {
-          throw new Error('Response body is null — streaming not supported');
-        }
-        const reader = response.body.getReader();
+        const reader = response.body!.getReader();
         const decoder = new TextDecoder();
         let assistantContent = '';
         const toolCalls: ToolCallInfo[] = [];
         let buffer = '';
 
-        try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -136,19 +129,15 @@ export default function PrincipalAdminGuruPage() {
                 // Live-update the assistant message as text streams in
                 setMessages((prev) => {
                   const last = prev[prev.length - 1];
-                  if (
-                    last?.role === 'assistant' &&
-                    !last.toolCalls?.length
-                  ) {
+                  if (last?.role === 'assistant' && !last.toolCalls?.length) {
+                    // Update existing streaming message
                     return [
                       ...prev.slice(0, -1),
                       { ...last, content: assistantContent },
                     ];
                   }
-                  return [
-                    ...prev,
-                    { role: 'assistant', content: assistantContent },
-                  ];
+                  // Create new assistant message
+                  return [...prev, { role: 'assistant', content: assistantContent }];
                 });
               } else if (event.type === 'tool_call') {
                 toolCalls.push({
@@ -156,29 +145,28 @@ export default function PrincipalAdminGuruPage() {
                   input: event.input,
                 });
               } else if (event.type === 'tool_result') {
-                // Match to the most recent unresolved tool call with the same name
-                const tc = [...toolCalls]
-                  .reverse()
-                  .find(
-                    (t) =>
-                      t.name === event.tool &&
-                      t.success === undefined
-                  );
+                // Match result to the last tool call with this name
+                const tc = [...toolCalls].reverse().find((t) => t.name === event.tool && t.success === undefined);
                 if (tc) {
                   tc.success = event.success;
                   tc.result = event.result;
                 }
+              } else if (event.type === 'confirmation_required') {
+                setConfirmationPending({
+                  confirmation_id: event.confirmation_id,
+                  description: event.description,
+                  tool: event.tool,
+                });
               } else if (event.type === 'error') {
                 setMessages((prev) => [
                   ...prev,
-                  {
-                    role: 'assistant',
-                    content: `Error: ${event.error}`,
-                  },
+                  { role: 'assistant', content: `❌ Error: ${event.error}` },
                 ]);
               } else if (event.type === 'done') {
+                // Finalize — replace streaming message with final version including tool calls
                 if (assistantContent || toolCalls.length > 0) {
                   setMessages((prev) => {
+                    // Remove the streaming assistant message if present
                     const filtered = prev.filter(
                       (m, i) =>
                         !(
@@ -191,12 +179,8 @@ export default function PrincipalAdminGuruPage() {
                       ...filtered,
                       {
                         role: 'assistant',
-                        content:
-                          assistantContent || '(No text response)',
-                        toolCalls:
-                          toolCalls.length > 0
-                            ? [...toolCalls]
-                            : undefined,
+                        content: assistantContent || '(No text response)',
+                        toolCalls: toolCalls.length > 0 ? [...toolCalls] : undefined,
                       },
                     ];
                   });
@@ -216,24 +200,18 @@ export default function PrincipalAdminGuruPage() {
         if (buffer.trim()) {
           processLine(buffer);
         }
-        } finally {
-          reader.releaseLock();
-        }
       } catch (error) {
         if (error instanceof Error && error.name !== 'AbortError') {
           setMessages((prev) => [
             ...prev,
-            {
-              role: 'assistant',
-              content: `Connection error: ${error.message}`,
-            },
+            { role: 'assistant', content: `❌ Connection error: ${error.message}` },
           ]);
         }
       } finally {
         setLoading(false);
       }
     },
-    [input, messages, buildApiMessages]
+    [input, messages, saToken, buildApiMessages]
   );
 
   const handleCancel = () => {
@@ -243,6 +221,7 @@ export default function PrincipalAdminGuruPage() {
 
   const handleClearChat = () => {
     setMessages([]);
+    setConfirmationPending(null);
   };
 
   return (
@@ -250,13 +229,9 @@ export default function PrincipalAdminGuruPage() {
       {/* Header */}
       <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur p-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">
-            🧠 Admin Guru
-          </h2>
+          <h2 className="text-xl font-bold text-white">🧠 Super-Admin Guru</h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            {schoolName
-              ? `AI copilot for ${schoolName}`
-              : 'School operations copilot'}
+            Full-access AI copilot for platform operations
           </p>
         </div>
         {messages.length > 0 && (
@@ -274,20 +249,17 @@ export default function PrincipalAdminGuruPage() {
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full text-center">
             <div className="text-slate-400">
-              <p className="text-lg font-medium mb-2">
-                Welcome to Admin Guru
-              </p>
+              <p className="text-lg font-medium mb-2">Welcome to Super-Admin Guru</p>
               <p className="text-sm max-w-md">
-                Ask me about your school&apos;s data — classrooms,
-                teachers, students, progress, parent engagement, and
-                more.
+                Ask me to query schools, manage classrooms, analyze usage, run
+                outreach campaigns, or perform platform operations.
               </p>
               <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg mx-auto">
                 {[
-                  'Give me an overview of my school',
-                  'Which classrooms have the highest mastery rates?',
-                  'Show me teachers who haven\'t logged in this week',
-                  'How is parent engagement across classrooms?',
+                  'Show all schools with their student counts',
+                  'What are the total API costs this month?',
+                  'List recent visitor activity from China',
+                  'Show me the audit log for today',
                 ].map((example) => (
                   <button
                     key={example}
@@ -316,9 +288,7 @@ export default function PrincipalAdminGuruPage() {
                   : 'bg-slate-700 text-slate-100'
               }`}
             >
-              <p className="whitespace-pre-wrap text-sm">
-                {msg.content}
-              </p>
+              <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
 
               {/* Tool execution cards */}
               {msg.toolCalls && msg.toolCalls.length > 0 && (
@@ -335,14 +305,11 @@ export default function PrincipalAdminGuruPage() {
                               : 'bg-amber-400'
                           }`}
                         />
-                        <span className="font-mono font-bold">
-                          {tc.name}
-                        </span>
+                        <span className="font-mono font-bold">{tc.name}</span>
                       </div>
                       <details>
                         <summary className="cursor-pointer text-slate-300 hover:text-white">
-                          Input ({Object.keys(tc.input).length}{' '}
-                          fields)
+                          Input ({Object.keys(tc.input).length} fields)
                           {tc.result !== undefined && ' + Result'}
                         </summary>
                         <pre className="mt-1 bg-black/30 p-2 rounded overflow-x-auto text-slate-400 max-h-48 overflow-y-auto">
@@ -364,6 +331,31 @@ export default function PrincipalAdminGuruPage() {
           </div>
         ))}
 
+        {/* Confirmation modal */}
+        {confirmationPending && (
+          <div className="border-l-4 border-amber-500 bg-amber-500/10 p-4 rounded my-4">
+            <h3 className="font-bold text-amber-100 mb-2">⚠️ Confirmation Required</h3>
+            <p className="text-sm text-amber-50 mb-4">{confirmationPending.description}</p>
+            <div className="flex gap-2">
+              <button
+                onClick={(e) =>
+                  handleSubmit(e, confirmationPending.confirmation_id)
+                }
+                disabled={loading}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded font-medium disabled:opacity-50"
+              >
+                Confirm & Execute
+              </button>
+              <button
+                onClick={() => setConfirmationPending(null)}
+                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white text-sm rounded font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading && (
           <div className="flex justify-start">
             <div className="bg-slate-700 text-slate-100 rounded-lg p-3 flex items-center gap-2">
@@ -383,7 +375,7 @@ export default function PrincipalAdminGuruPage() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask the Guru about your school..."
+            placeholder="Ask the Guru..."
             disabled={loading}
             className="flex-1 bg-slate-700 text-white placeholder-slate-400 rounded-lg px-4 py-2 border border-slate-600 focus:border-emerald-500 focus:outline-none disabled:opacity-50"
           />
