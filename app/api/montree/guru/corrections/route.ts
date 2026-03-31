@@ -96,6 +96,36 @@ export async function POST(request: NextRequest) {
           console.error('[Corrections] increment_visual_memory_correct RPC failed on confirm (non-fatal):', memoryResult.reason);
         }
       }
+      // Replace stale cache with teacher-confirmed confidence so photos stay GREEN on refresh
+      // Without this, the audit page reads null confidence → classifies as amber
+      if (media_id && child_id) {
+        // Delete old entries first (both formats)
+        await Promise.allSettled([
+          supabase.from('montree_guru_interactions').delete().eq('question', `photo:${media_id}:${child_id}`),
+          supabase.from('montree_guru_interactions').delete().like('question', `photo:${media_id}:${child_id}:%`),
+        ]);
+        // Insert fresh confidence row
+        const { error: insErr } = await supabase
+          .from('montree_guru_interactions')
+          .insert({
+            child_id,
+            classroom_id: classroomId,
+            question_type: 'photo_insight',
+            question: `photo:${media_id}:${child_id}`,
+            response_insight: `Teacher confirmed: "${original_work_name}"`,
+            mode: 'teacher_confirmed',
+            model_used: 'teacher',
+            context_snapshot: {
+              sonnet_confidence: 1.0,
+              scenario: 'teacher_confirmed',
+              identified_work_name: original_work_name || null,
+              identified_area: original_area || null,
+              classification_method: 'teacher_confirmed',
+            },
+          });
+        if (insErr) console.error('[Corrections] Confirm confidence insert error (non-fatal):', insErr);
+        else console.log(`[Corrections] Confidence row inserted for confirmed photo:${media_id}:${child_id}`);
+      }
       console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
       return NextResponse.json({ success: true, confirmed: true });
     }
@@ -316,9 +346,11 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // Step 7: Invalidate stale photo-insight cache so next view gets fresh classification
-    // Without this, corrected photos keep showing the OLD wrong identification for up to 5 minutes
+    // Step 7: Replace stale photo-insight cache with teacher-confirmed confidence
+    // Delete old entries first, then insert a fresh row with confidence 1.0
+    // This ensures corrected photos show as GREEN on the audit page after refresh
     if (media_id && child_id) {
+      // Delete old cache entries (both new and old locale-suffixed format)
       parallelTasks.push(
         supabase
           .from('montree_guru_interactions')
@@ -327,15 +359,12 @@ export async function POST(request: NextRequest) {
           .then(({ error: delErr }) => {
             if (delErr) {
               console.error('[Corrections] Cache invalidation error (non-fatal):', delErr);
-            } else {
-              console.log(`[Corrections] Cache invalidated for photo:${media_id}:${child_id}`);
             }
           })
           .catch((err: unknown) => {
             console.error('[Corrections] Cache invalidation failed (non-fatal):', err);
           })
       );
-      // Also try old locale-suffixed format cache keys
       parallelTasks.push(
         supabase
           .from('montree_guru_interactions')
@@ -350,6 +379,35 @@ export async function POST(request: NextRequest) {
             console.error('[Corrections] Old-format cache invalidation failed (non-fatal):', err);
           })
       );
+      // Wait for deletes to complete before inserting the replacement row
+      await Promise.allSettled(parallelTasks);
+      parallelTasks.length = 0; // Reset — deletes are done
+
+      // Insert fresh confidence row so audit page classifies this photo as GREEN
+      const effectiveWorkName = corrected_work_name || original_work_name;
+      const effectiveArea = corrected_area || original_area;
+      const { error: confInsErr } = await supabase
+        .from('montree_guru_interactions')
+        .insert({
+          child_id,
+          classroom_id: classroomId,
+          question_type: 'photo_insight',
+          question: `photo:${media_id}:${child_id}`,
+          response_insight: `Teacher corrected: "${original_work_name}" → "${corrected_work_name}"`,
+          mode: 'teacher_corrected',
+          model_used: 'teacher',
+          context_snapshot: {
+            sonnet_confidence: 1.0,
+            scenario: 'teacher_corrected',
+            identified_work_name: effectiveWorkName || null,
+            identified_area: effectiveArea || null,
+            classification_method: 'teacher_corrected',
+            original_work_name: original_work_name || null,
+            corrected_work_name: corrected_work_name || null,
+          },
+        });
+      if (confInsErr) console.error('[Corrections] Confidence row insert error (non-fatal):', confInsErr);
+      else console.log(`[Corrections] Confidence row inserted for corrected photo:${media_id}:${child_id}`);
     }
 
     // Wait for all parallel tasks (none are fatal)

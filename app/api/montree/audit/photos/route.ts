@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
             .select('work_id:id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
             .in('id', workIds)
         : Promise.resolve({ data: [] }),
-      fetchConfidenceData(supabase, mediaRows, auth.schoolId),
+      fetchConfidenceData(supabase, mediaRows),
       // Fetch multi-child links from junction table
       mediaIds.length > 0
         ? supabase.from('montree_media_children').select('media_id, child_id').in('media_id', mediaIds)
@@ -230,7 +230,7 @@ export async function GET(request: NextRequest) {
 }
 
 // Helper: Fetch confidence data with two-format cache key approach
-async function fetchConfidenceData(supabase: any, mediaRows: any[], schoolId: string) {
+async function fetchConfidenceData(supabase: any, mediaRows: any[]) {
   const mediaWithChild = mediaRows.filter(m => m.child_id);
   const newKeys = mediaWithChild.map(m => `photo:${m.id}:${m.child_id}`);
 
@@ -244,8 +244,7 @@ async function fetchConfidenceData(supabase: any, mediaRows: any[], schoolId: st
     const { data } = await supabase
       .from('montree_guru_interactions')
       .select('question, context_snapshot')
-      .in('question', chunk)
-      .eq('school_id', schoolId);
+      .in('question', chunk);
     if (data) newFormat.push(...data);
   }
 
@@ -272,7 +271,6 @@ async function fetchConfidenceData(supabase: any, mediaRows: any[], schoolId: st
             .from('montree_guru_interactions')
             .select('question, context_snapshot')
             .like('question', `photo:${m.id}:${m.child_id}:%`)
-            .eq('school_id', schoolId)
             .limit(1)
             .maybeSingle()
         )
