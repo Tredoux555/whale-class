@@ -331,6 +331,31 @@ export default function AdminDashboard() {
           </div>
         </section>
 
+        {/* 10-Week Phonics Master Plan */}
+        <section className="mt-8">
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">🐳 10-Week Phonics Master Plan</h2>
+          <a
+            href="/guides/whale-phonics-master-plan.html"
+            target="_blank"
+            className="block bg-gradient-to-br from-blue-600/20 to-cyan-600/20 border border-blue-500/30 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-600/30 transition-all group"
+          >
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span className="text-4xl group-hover:scale-110 transition-transform">🐳</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-white">Whale Class — 10-Week Phonics Master Plan</h3>
+                <p className="text-blue-300/80 mt-1">Complete phonics gameplan • Week-by-week breakdown • Open in new tab</p>
+              </div>
+              <div className="text-white/60 group-hover:text-white group-hover:translate-x-2 transition-all">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+            </div>
+          </a>
+        </section>
+
         {/* Footer */}
         <div className="mt-12 text-center text-slate-600 text-sm">
           <p>🌳 Whale Montessori Platform • montree.xyz</p>

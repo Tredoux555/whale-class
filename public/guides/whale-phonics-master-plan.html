@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Whale Class — 10-Week Phonics Master Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --whale-blue: #1B4965;
+  --whale-light: #CAE9FF;
+  --whale-sky: #E8F4FD;
+  --ocean-deep: #0B2545;
+  --sand: #F5E6C8;
+  --coral: #E8927C;
+  --coral-light: #FFF0EC;
+  --green-leaf: #5B8C5A;
+  --green-light: #E8F5E8;
+  --purple-soft: #8B7EC8;
+  --purple-light: #F0EDFF;
+  --amber: #D4913D;
+  --amber-light: #FFF5E6;
+  --pink: #D4537E;
+  --pink-light: #FFF0F5;
+  --gray-100: #F7F6F3;
+  --gray-200: #EEEDEA;
+  --gray-300: #D5D4CF;
+  --gray-500: #8A8985;
+  --gray-700: #4A4A47;
+  --gray-900: #1D1D1B;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-900);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page-header {
+  background: linear-gradient(135deg, var(--whale-blue) 0%, var(--ocean-deep) 100%);
+  color: white;
+  padding: 48px 24px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -10%;
+  width: 120%;
+  height: 200%;
+  background: radial-gradient(ellipse at 30% 50%, rgba(202,233,255,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.page-header h1 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.page-header .subtitle {
+  font-size: 16px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+.page-header .whale-emoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Navigation */
+.nav-bar {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: sticky;
+  top: 8px;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+}
+
+.nav-btn {
+  font-family: 'Quicksand', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover { background: var(--whale-light); color: var(--whale-blue); }
+.nav-btn.active { background: var(--whale-blue); color: white; }
+
+/* Sections */
+.section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--whale-blue);
+  margin-bottom: 8px;
+}
+
+.section-desc {
+  font-size: 14px;
+  color: var(--gray-500);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* Week Cards */
+.week-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid var(--gray-200);
+  transition: border-color 0.2s;
+}
+
+.week-card:hover { border-color: var(--gray-300); }
+
+.week-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.week-num {
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gray-500);
+  min-width: 60px;
+}
+
+.week-theme {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.sound-pills {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+.pill.blue { background: var(--whale-light); color: var(--whale-blue); }
+.pill.green { background: var(--green-light); color: var(--green-leaf); }
+.pill.plus { background: none; color: var(--gray-500); padding: 3px 2px; font-weight: 400; }
+
+/* Sub-sections within week */
+.week-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .week-grid { grid-template-columns: 1fr; }
+}
+
+.sub-card {
+  background: var(--gray-100);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.sub-card-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.sub-card-label.box { color: var(--whale-blue); }
+.sub-card-label.digraph { color: var(--green-leaf); }
+.sub-card-label.circle { color: var(--purple-soft); }
+.sub-card-label.bingo { color: var(--coral); }
+.sub-card-label.ma { color: var(--amber); }
+.sub-card-label.dict { color: var(--pink); }
+.sub-card-label.song { color: var(--coral); }
+
+.sub-card-body {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.5;
+}
+
+.blend-group {
+  margin: 3px 0;
+}
+
+.blend-label {
+  font-weight: 700;
+  color: var(--whale-blue);
+  font-size: 12px;
+}
+
+.digraph-label-text {
+  font-weight: 700;
+  color: var(--green-leaf);
+  font-size: 12px;
+}
+
+.full-width-row {
+  margin-top: 12px;
+}
+
+.full-width-row .sub-card {
+  margin-bottom: 8px;
+}
+
+.song-card {
+  background: var(--amber-light);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.song-card .sub-card-body {
+  color: var(--amber);
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* Sentence Puzzles */
+.sentence-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  border: 1px solid var(--gray-200);
+}
+
+.sentence-full {
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.sentence-full .target {
+  text-decoration: underline;
+  text-decoration-color: var(--whale-blue);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2.5px;
+}
+
+.chunks {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.chunk {
+  background: var(--whale-sky);
+  border: 1px solid var(--whale-light);
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--whale-blue);
+}
+
+.ai-prompt-box {
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--gray-500);
+  line-height: 1.5;
+  position: relative;
+}
+
+.ai-prompt-box .prompt-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--purple-soft);
+  margin-bottom: 4px;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-family: 'Quicksand', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 6px;
+  background: white;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover { background: var(--whale-light); border-color: var(--whale-blue); color: var(--whale-blue); }
+.copy-btn.copied { background: var(--green-light); border-color: var(--green-leaf); color: var(--green-leaf); }
+
+/* Sequencing Cards */
+.story-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--gray-200);
+}
+
+.story-title {
+  font-family: 'Nunito', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--whale-blue);
+  margin-bottom: 14px;
+}
+
+.seq-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.seq-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.seq-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 600px) {
+  .seq-grid.cols-3, .seq-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.seq-card {
+  background: var(--gray-100);
+  border-radius: var(--radius);
+  padding: 10px;
+  text-align: center;
+}
+
+.seq-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--whale-blue);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.seq-img-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  background: var(--whale-sky);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--whale-blue);
+  margin-bottom: 8px;
+  padding: 6px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.seq-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+  line-height: 1.3;
+}
+
+.seq-text .target {
+  text-decoration: underline;
+  text-decoration-color: var(--whale-blue);
+  text-underline-offset: 2px;
+  text-decoration-thickness: 2px;
+}
+
+/* AI Prompts Section */
+.prompt-master {
+  background: var(--purple-light);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.prompt-master h3 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--purple-soft);
+  margin-bottom: 10px;
+}
+
+.prompt-master p {
+  font-size: 13px;
+  color: var(--gray-700);
+  line-height: 1.6;
+}
+
+.prompt-master code {
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--purple-soft);
+}
+
+.prompt-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 16px;
+}
+
+.prompt-table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--gray-200);
+}
+
+.prompt-table td {
+  font-size: 13px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--gray-200);
+  vertical-align: top;
+}
+
+.prompt-table tr:last-child td { border-bottom: none; }
+
+.prompt-table td:first-child {
+  font-weight: 600;
+  color: var(--whale-blue);
+  white-space: nowrap;
+  width: 80px;
+}
+
+.prompt-cell {
+  background: var(--gray-100);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--gray-700);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.prompt-cell:hover { background: var(--gray-200); }
+
+.prompt-cell::after {
+  content: 'click to copy';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.prompt-cell:hover::after { opacity: 1; }
+.prompt-cell.copied::after { content: 'copied!'; color: var(--green-leaf); opacity: 1; }
+
+/* Word Bank */
+.word-bank-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.word-bank-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  border: 1px solid var(--gray-200);
+}
+
+.word-bank-sound {
+  font-family: 'Nunito', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.word-bank-sound.blue-sound { color: var(--whale-blue); }
+.word-bank-sound.green-sound { color: var(--green-leaf); }
+
+.word-bank-type {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+}
+
+.word-list {
+  font-size: 14px;
+  color: var(--gray-700);
+  line-height: 1.8;
+}
+
+.word-list .word {
+  display: inline-block;
+  background: var(--gray-100);
+  padding: 2px 10px;
+  border-radius: 6px;
+  margin: 2px 3px;
+  font-weight: 500;
+}
+
+/* Object sourcing */
+.object-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+
+.object-table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--gray-500);
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.object-table td {
+  font-size: 13px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--gray-200);
+  vertical-align: top;
+}
+
+.object-table tr:last-child td { border-bottom: none; }
+
+/* Phase dividers */
+.phase-banner {
+  background: var(--whale-blue);
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin: 28px 0 16px;
+  font-family: 'Nunito', sans-serif;
+}
+
+.phase-banner h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.phase-banner p {
+  font-size: 13px;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+.phase-banner.green-phase {
+  background: linear-gradient(135deg, var(--green-leaf), #3D6B3C);
+}
+
+.phase-banner.gold-phase {
+  background: linear-gradient(135deg, var(--amber), #B87A2B);
+}
+
+/* Celebration card */
+.celebration-card {
+  background: linear-gradient(135deg, var(--whale-blue), var(--ocean-deep));
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.celebration-card h3 {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.celebration-card p {
+  font-size: 14px;
+  opacity: 0.85;
+  line-height: 1.6;
+}
+
+/* Print styles */
+@media print {
+  .nav-bar { display: none; }
+  .section { display: block !important; page-break-before: always; }
+  .page-header { padding: 24px; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="whale-emoji">🐋</div>
+  <h1>Whale Class Phonics Master Plan</h1>
+  <div class="subtitle">10-Week Blends, Digraphs & Phonograms — Beijing International School</div>
+</div>
+
+<div class="container">
+
+<div class="nav-bar" id="nav">
+  <button class="nav-btn active" onclick="showSection('overview')">Overview</button>
+  <button class="nav-btn" onclick="showSection('weekly')">Weekly Plan</button>
+  <button class="nav-btn" onclick="showSection('boxes')">Jewelry Boxes</button>
+  <button class="nav-btn" onclick="showSection('sentences')">Sentence Puzzles</button>
+  <button class="nav-btn" onclick="showSection('sequencing')">Sequencing Cards</button>
+  <button class="nav-btn" onclick="showSection('prompts')">AI Image Prompts</button>
+  <button class="nav-btn" onclick="showSection('words')">Word Bank</button>
+</div>
+
+<!-- ==================== OVERVIEW ==================== -->
+<div class="section active" id="overview">
+  <div class="section-title">Programme Overview</div>
+  <div class="section-desc">
+    A complete 10-week phonics programme for PreK 4 students (ages 2-6) who are well-versed in CVC words and ready to tackle blends, digraphs, and vowel phonograms. Designed for Chinese ESL learners in the Whale Class at Beijing International School.
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">Daily Cycle (Every Sound)</h3>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;text-align:center;">
+      <div class="sub-card" style="padding:12px 8px;">
+        <div style="font-size:20px;margin-bottom:4px;">🔵</div>
+        <div style="font-size:11px;font-weight:700;color:var(--whale-blue);">1. Circle</div>
+        <div style="font-size:11px;color:var(--gray-500);">Phonics game + song</div>
+      </div>
+      <div class="sub-card" style="padding:12px 8px;">
+        <div style="font-size:20px;margin-bottom:4px;">📦</div>
+        <div style="font-size:11px;font-weight:700;color:var(--whale-blue);">2. Box</div>
+        <div style="font-size:11px;color:var(--gray-500);">Object + label match</div>
+      </div>
+      <div class="sub-card" style="padding:12px 8px;">
+        <div style="font-size:20px;margin-bottom:4px;">🎯</div>
+        <div style="font-size:11px;font-weight:700;color:var(--whale-blue);">3. Bingo</div>
+        <div style="font-size:11px;color:var(--gray-500);">Picture recognition</div>
+      </div>
+      <div class="sub-card" style="padding:12px 8px;">
+        <div style="font-size:20px;margin-bottom:4px;">🔤</div>
+        <div style="font-size:11px;font-weight:700;color:var(--whale-blue);">4. Moveable Alphabet</div>
+        <div style="font-size:11px;color:var(--gray-500);">Build words</div>
+      </div>
+      <div class="sub-card" style="padding:12px 8px;">
+        <div style="font-size:20px;margin-bottom:4px;">📖</div>
+        <div style="font-size:11px;font-weight:700;color:var(--whale-blue);">5. Dictionary</div>
+        <div style="font-size:11px;color:var(--gray-500);">Write + draw</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">10-Week Structure</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;">
+      <strong>Weeks 1–4 — Blends + Digraphs:</strong> Each week introduces 1 jewelry box (3 blends × 2 objects = 6 objects) paired with 1 consonant digraph. Kids learn that blends = hear both letters, digraphs = one new sound.<br><br>
+      <strong>Weeks 5–7 — Phonograms + Review:</strong> Pivot to ending digraphs (ck, ng) and vowel teams (ee, oo, ai, oa, ea). The Apples and Bananas song becomes the anthem. No new blends — all energy on the GREEN level words from the dictionary.<br><br>
+      <strong>Weeks 8–10 — Mastery + Celebration:</strong> No new sounds. Reading push, free word building, decodable sentences, and a parent showcase where every child reads from their dictionary.
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">Key Terms</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;">
+      <strong>Blend</strong> — Two consonants pushed together where you can still hear both sounds: st, sp, sn, bl, cl, fl, br, cr, dr, tr, gr, pl. These are the BLUE level words in the Whale Class dictionary.<br><br>
+      <strong>Digraph</strong> — Two letters that combine to make one brand new sound: sh, ch, th, wh, ck, ng. "When two letters hold hands, they make a new sound!"<br><br>
+      <strong>Phonogram / Vowel Team</strong> — Two vowels that walk together: ee, oo, ai, oa, ea. "When two vowels go walking, the first one does the talking!" These are the GREEN level words in the dictionary.<br><br>
+      <strong>CVC</strong> — Consonant-Vowel-Consonant words (cat, dog, sun). The kids already know these well. These are the PINK level words in the dictionary.
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">Recurring Cast of Characters</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.6;margin-bottom:12px;">
+      These characters appear across the sentence puzzles and sequencing cards. Kids build emotional connection with them across the 10 weeks.
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      <span class="pill blue">🐌 Snail</span>
+      <span class="pill blue">🐋 Whale</span>
+      <span class="pill blue">🦀 Crab</span>
+      <span class="pill blue">🐑 Sheep</span>
+      <span class="pill blue">👑 King</span>
+      <span class="pill blue">🦆 Duck</span>
+      <span class="pill blue">🐝 Bee</span>
+      <span class="pill blue">🐐 Goat</span>
+      <span class="pill blue">🐉 Dragon</span>
+      <span class="pill blue">🐸 Frog</span>
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">Materials Needed</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;">
+      <strong>12 small jewelry boxes</strong> — for small object sorting (7 needed for new content, 5 for review/remix)<br>
+      <strong>42 small objects</strong> — sourced from 1688 or classroom supplies (see Jewelry Boxes tab for complete list)<br>
+      <strong>Whale Class Dictionaries</strong> — both BLANK (My Word Garden) and PRESCRIBED (Pink/Blue/Green) versions<br>
+      <strong>Bingo cards</strong> — printed with pictures matching each week's sounds<br>
+      <strong>Sentence puzzle strips</strong> — printed, cut into chunks, stored with matching box<br>
+      <strong>Sequencing cards</strong> — 3-4 cards per story, printed with AI-generated images<br>
+      <strong>Moveable alphabet</strong> — including double-letter tiles (sh, ch, th, wh, ee, oo, etc.)<br>
+      <strong>Labels</strong> — printed word labels for object-label matching in the boxes
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WEEKLY PLAN ==================== -->
+<div class="section" id="weekly">
+  <div class="section-title">Week-by-Week Plan</div>
+  <div class="section-desc">Each week: 1 jewelry box (3 blends × 2 objects) + 1 digraph/phonogram introduced in phonics circle. Full daily cycle: Circle → Box → Bingo → Moveable Alphabet → Dictionary.</div>
+
+  <div class="phase-banner">
+    <h2>Phase 1 — Blends + Consonant Digraphs</h2>
+    <p>Weeks 1–4 · Kids learn that blends = hear both letters, digraphs = one new sound</p>
+  </div>
+
+  <!-- WEEK 1 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 1</span>
+      <div class="sound-pills">
+        <span class="pill blue">st</span><span class="pill blue">sp</span><span class="pill blue">sn</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">sh</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">S-Blends + "Shhhh!"</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — S-Blends</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="blend-label">st:</span> star, stick</div>
+          <div class="blend-group"><span class="blend-label">sp:</span> spoon, spider</div>
+          <div class="blend-group"><span class="blend-label">sn:</span> snake, snail</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Digraph — sh</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> "Shhhh! Finger on lips!" Contrast with S-blends: "st/sp/sn = you hear the S. sh = brand new sound!"<br>
+          <strong>Bingo pics:</strong> shell, ship, shoe, shark, sheep, shop + the 6 blend objects
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">stop, spin, snap, ship, shop, shed</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">S page (blend words + sh words)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 2</span>
+      <div class="sound-pills">
+        <span class="pill blue">bl</span><span class="pill blue">cl</span><span class="pill blue">fl</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">ch</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">L-Blends + "Ch-ch-ch sneeze!"</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — L-Blends</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="blend-label">bl:</span> block, blanket (small)</div>
+          <div class="blend-group"><span class="blend-label">cl:</span> clip, clock</div>
+          <div class="blend-group"><span class="blend-label">fl:</span> flag, flower</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Digraph — ch</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> "Ch-ch-ch! Like a train! Or a sneeze!" Show how ch is different from cl — "cl you hear the C and the L, ch is one new sound."<br>
+          <strong>Bingo pics:</strong> cheese, cherry, chicken, chair, chin, chest + 6 blend objects
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">clap, flag, blob, chin, chop, chip</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">B, C, F pages</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 3</span>
+      <div class="sound-pills">
+        <span class="pill blue">br</span><span class="pill blue">cr</span><span class="pill blue">dr</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">th</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">R-Blends + "Tongue out!"</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — R-Blends</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="blend-label">br:</span> brush, brick</div>
+          <div class="blend-group"><span class="blend-label">cr:</span> crab, crayon</div>
+          <div class="blend-group"><span class="blend-label">dr:</span> drum, dragon</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Digraph — th</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> "Tongue out! Th is the only sound where your tongue peeks out!" Mirror game — kids watch their mouths. Big deal for Chinese ESL kids — this sound doesn't exist in Mandarin.<br>
+          <strong>Bingo pics:</strong> thumb, three, thin, thick, thorn, the + 6 blend objects
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">drip, crab, brim, thin, this, that</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">B, C, D, T pages</div>
+      </div>
+    </div>
+    <div class="song-card">
+      <div class="sub-card-label song">Song</div>
+      <div class="sub-card-body">"Th-th-th, tongue comes out! Th-th-th, that's what it's about!"</div>
+    </div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 4</span>
+      <div class="sound-pills">
+        <span class="pill blue">tr</span><span class="pill blue">gr</span><span class="pill blue">pl</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">wh</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">Mixed Blends + "Wh-wh-whale!"</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — Mixed Blends</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="blend-label">tr:</span> train, tree (mini)</div>
+          <div class="blend-group"><span class="blend-label">gr:</span> grapes, grasshopper</div>
+          <div class="blend-group"><span class="blend-label">pl:</span> plate, plum</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Digraph — wh</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> "Wh = question words! Who? What? When? Where? Why?" Question of the day game. 🐋 Whale week! Their class name starts with wh!<br>
+          <strong>Bingo pics:</strong> whale, wheel, whistle, wheat, whisker, white + 6 blend objects
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">trip, grab, plum, whale, when, whip</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">T, G, P, W pages</div>
+      </div>
+    </div>
+    <div class="song-card">
+      <div class="sub-card-label song">Song</div>
+      <div class="sub-card-body">"Wh-wh-whale! Wh-wh-what! Wh-wh-where is my Whale Class at!"</div>
+    </div>
+  </div>
+
+  <div class="phase-banner green-phase">
+    <h2>Phase 2 — Phonograms + Review</h2>
+    <p>Weeks 5–7 · No more new blends — all digraphs and vowel teams from here</p>
+  </div>
+
+  <!-- WEEK 5 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 5</span>
+      <div class="sound-pills">
+        <span class="pill green">ck</span><span class="pill green">ng</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">ee</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">Ending Sounds + "Eeeeee!" — Apples & Bananas debut!</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — Ending Sounds</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="digraph-label-text">ck:</span> duck, sock, lock</div>
+          <div class="blend-group"><span class="digraph-label-text">ng:</span> ring, king (figurine), wing</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Phonogram — ee</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> 🎵 APPLES AND BANANAS! "I like to EET EET EET EEPLES and BANEENEES!" Introduce ee as a long sound. "When two e's hold hands, they say their name: eeee!"<br>
+          <strong>Bingo pics:</strong> duck, sock, ring, king, bee, tree, feet, seed, jeep, sheep, teeth, creek
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">duck, ring, song, kick, bee, tree, feet, seed</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">D, R, K, S pages + GREEN ee words throughout</div>
+      </div>
+    </div>
+    <div class="song-card">
+      <div class="sub-card-label song">Song — EVERY DAY THIS WEEK</div>
+      <div class="sub-card-body">"I like to EET EET EET EEPLES and BANEENEES!" — Kids will be BEGGING for it.</div>
+    </div>
+  </div>
+
+  <!-- WEEK 6 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 6</span>
+      <div class="sound-pills">
+        <span class="pill green">oo</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">ai</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">oa</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">Vowel Teams — "When two vowels go walking..."</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — oo + ai</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="digraph-label-text">oo:</span> moon, spoon, boot</div>
+          <div class="blend-group"><span class="digraph-label-text">ai:</span> snail, train (reuse from wk4!), rain (spray bottle)</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Phonogram — oa</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> "When two vowels go walking, the first one does the talking!" ai says /ā/, oa says /ō/.<br>
+          <strong>Bingo pics:</strong> moon, zoo, pool, food, snail, rain, tail, boat, goat, coat, road, soap
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">moon, boot, zoo, rain, tail, boat, goat, coat</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">M, B, Z, R, T, G, C pages — big dictionary day!</div>
+      </div>
+    </div>
+    <div class="song-card">
+      <div class="sub-card-label song">Song</div>
+      <div class="sub-card-body">"I like to OOT OOT OOT OOPLES and BANOONOOS!" + "AAT AAT AAT AAPLES and BANAANAAS!"</div>
+    </div>
+  </div>
+
+  <!-- WEEK 7 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 7</span>
+      <div class="sound-pills">
+        <span class="pill green">ea</span>
+        <span class="pill plus">+</span>
+        <span class="pill green">review</span>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:12px;">Last new sound + Digraph Detective</div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Jewelry Box — ea</div>
+        <div class="sub-card-body">
+          <div class="blend-group"><span class="digraph-label-text">ea:</span> leaf, pea, bead</div>
+          <div style="font-size:12px;color:var(--gray-500);margin-top:6px;">Smaller box this week (3 objects). Use freed-up box for mixed digraph sorting from weeks 1-6.</div>
+        </div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label digraph">Review — All consonant digraphs</div>
+        <div class="sub-card-body">
+          <strong>Circle:</strong> Digraph Detective week! Read simple sentences: "The sheep sat on the chair." Kids find and underline the digraphs.<br>
+          <strong>Bingo:</strong> MEGA MIX — all sounds so far!
+        </div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">leaf, read, sea, bead, peach, beach + review words from all weeks</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary Pages</div>
+        <div class="sub-card-body">L, P, B, E pages + catch-up any gaps</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-banner gold-phase">
+    <h2>Phase 3 — Mastery & Celebration</h2>
+    <p>Weeks 8–10 · No new sounds — reading push, free building, and parent showcase</p>
+  </div>
+
+  <!-- WEEK 8 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 8</span>
+      <div class="sound-pills"><span class="pill green">Review all vowel teams + reading push</span></div>
+    </div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">All Boxes Available — Free Choice</div>
+        <div class="sub-card-body">All jewelry boxes on shelves. Kids choose independently. Focus shifts to reading: match objects to written labels without picture support. Can they read the word cold?</div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label circle">Phonogram Sentences</div>
+        <div class="sub-card-body">Build sentences together! "The goat is on the boat." "I see a bee in the tree." Each sentence uses at least 2 phonograms.<br><br><strong>Bingo:</strong> WORD bingo (not pictures!) — can they read the words?</div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">Free sentence building. Challenge: 3-word sentences minimum.</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary</div>
+        <div class="sub-card-body">Kids add any new words they discover on their own</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 9 -->
+  <div class="week-card">
+    <div class="week-header">
+      <span class="week-num">Week 9</span>
+      <div class="sound-pills"><span class="pill green">Consolidation + confidence</span></div>
+    </div>
+    <div class="week-grid">
+      <div class="sub-card">
+        <div class="sub-card-label box">Mixed Challenge Boxes</div>
+        <div class="sub-card-body">Remix objects across boxes — put a sheep next to a spoon next to a train. Can they sort by sound type? Blend vs digraph vs vowel team? This is the mastery test.</div>
+      </div>
+      <div class="sub-card">
+        <div class="sub-card-label circle">Decodable Reading</div>
+        <div class="sub-card-body">Simple decodable readers using ONLY sounds they've learned. "The sheep took the train in the rain."<br><br><strong>Game:</strong> Spelling bee (gentle!) — say a word, kids build it with moveable alphabet.</div>
+      </div>
+    </div>
+    <div class="full-width-row">
+      <div class="sub-card">
+        <div class="sub-card-label ma">Moveable Alphabet</div>
+        <div class="sub-card-body">Dictation — teacher says word, kids build it. The ultimate check.</div>
+      </div>
+      <div class="sub-card" style="margin-top:8px;">
+        <div class="sub-card-label dict">Dictionary</div>
+        <div class="sub-card-body">Final entries — aim for every child to have 30+ words</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEEK 10 -->
+  <div class="celebration-card">
+    <h3>🎓 Week 10 — Grand Celebration</h3>
+    <p>All 12 boxes displayed. Sound wall poster with every blend and digraph. Kids give parents a "tour" — pick 3 boxes, show the objects, read the words. Apples & Bananas finale with ALL vowel variations. Each child reads 5 words from their dictionary. Certificates: "I can read __ sounds!" 🐋 Every Whale takes their dictionary home — their first real book they can READ.</p>
+  </div>
+</div>
+
+<!-- ==================== JEWELRY BOXES ==================== -->
+<div class="section" id="boxes">
+  <div class="section-title">Jewelry Box Object List</div>
+  <div class="section-desc">Complete list of objects needed for each box. 7 boxes for new content (weeks 1-7), 5 spare for review and remix. Each box for weeks 1-4 contains 3 blends × 2 objects = 6 objects. Search "mini toys" or "small objects" on 1688 for sourcing.</div>
+
+  <table class="object-table">
+    <thead>
+      <tr>
+        <th>Week</th>
+        <th>Box Label</th>
+        <th>Sounds</th>
+        <th>Objects (2 per sound)</th>
+        <th>1688 Search Tips</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="font-weight:700;color:var(--whale-blue);">1</td>
+        <td>S-Blends</td>
+        <td><span class="pill blue" style="font-size:11px;">st</span> <span class="pill blue" style="font-size:11px;">sp</span> <span class="pill blue" style="font-size:11px;">sn</span></td>
+        <td>star, stick, spoon, spider, snake, snail</td>
+        <td>迷你玩具星星, 小勺子, 塑料蜘蛛, 迷你蛇, 树脂蜗牛</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--whale-blue);">2</td>
+        <td>L-Blends</td>
+        <td><span class="pill blue" style="font-size:11px;">bl</span> <span class="pill blue" style="font-size:11px;">cl</span> <span class="pill blue" style="font-size:11px;">fl</span></td>
+        <td>block, blanket (small), clip, clock, flag, flower</td>
+        <td>小积木块, 迷你毯子, 回形针, 迷你闹钟, 小国旗, 假花</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--whale-blue);">3</td>
+        <td>R-Blends</td>
+        <td><span class="pill blue" style="font-size:11px;">br</span> <span class="pill blue" style="font-size:11px;">cr</span> <span class="pill blue" style="font-size:11px;">dr</span></td>
+        <td>brush, brick, crab, crayon, drum, dragon</td>
+        <td>小刷子, 迷你砖块, 塑料螃蟹, 蜡笔, 迷你鼓, 小龙玩具</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--whale-blue);">4</td>
+        <td>Mixed Blends</td>
+        <td><span class="pill blue" style="font-size:11px;">tr</span> <span class="pill blue" style="font-size:11px;">gr</span> <span class="pill blue" style="font-size:11px;">pl</span></td>
+        <td>train, tree (mini), grapes, grasshopper, plate, plum</td>
+        <td>迷你火车, 小树模型, 塑料葡萄, 蚱蜢玩具, 小盘子, 假李子</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--green-leaf);">5</td>
+        <td>Ending Sounds</td>
+        <td><span class="pill green" style="font-size:11px;">ck</span> <span class="pill green" style="font-size:11px;">ng</span></td>
+        <td>duck, sock, lock, ring, king (figurine), wing</td>
+        <td>小鸭子, 迷你袜子, 小锁, 戒指, 国王人偶, 翅膀挂件</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--green-leaf);">6</td>
+        <td>oo + ai</td>
+        <td><span class="pill green" style="font-size:11px;">oo</span> <span class="pill green" style="font-size:11px;">ai</span></td>
+        <td>moon, spoon, boot, snail, train (reuse!), rain (spray bottle)</td>
+        <td>月亮挂件, 小勺子, 迷你靴子, 蜗牛(重复), 火车(重复), 小喷壶</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;color:var(--green-leaf);">7</td>
+        <td>ea</td>
+        <td><span class="pill green" style="font-size:11px;">ea</span></td>
+        <td>leaf, pea, bead</td>
+        <td>假树叶, 绿色小珠子(豌豆), 串珠</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="week-card" style="margin-top:16px;">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px;color:var(--whale-blue);">Total Objects Needed</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;">
+      <strong>Weeks 1-4:</strong> 24 objects (6 per box × 4 boxes)<br>
+      <strong>Week 5:</strong> 6 objects<br>
+      <strong>Week 6:</strong> 6 objects (2 reused from earlier weeks)<br>
+      <strong>Week 7:</strong> 3 objects<br>
+      <strong>TOTAL:</strong> 39 unique objects (some reusable across weeks)<br><br>
+      <strong>Labels needed:</strong> 39 printed word labels (one per object) for object-label matching activity. Print on card stock, laminate for durability. Use the Montree label maker or generate via the 3-part card system.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SENTENCE PUZZLES ==================== -->
+<div class="section" id="sentences">
+  <div class="section-title">Sentence Puzzles</div>
+  <div class="section-desc">Each sentence uses ONLY sounds taught up to that week (CVC + that week's blends/digraph). Target sounds are underlined. Cut sentences into chunks — kids arrange them like a puzzle, then reveal the matching AI picture. Print on card stock, store in envelope clipped to the matching jewelry box.</div>
+
+  <div class="phase-banner"><h2>Weeks 1–4 — Blends + Digraphs</h2></div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 1 · st sp sn + sh</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The <span class="target">sn</span>ail got <span class="target">st</span>uck on a <span class="target">sh</span>ip.</div>
+    <div class="chunks"><span class="chunk">The snail</span><span class="chunk">got stuck</span><span class="chunk">on a ship.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon snail with a shell, stuck to the mast of a pirate ship, looking confused. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">A <span class="target">sp</span>ider <span class="target">sp</span>un a web on the <span class="target">sh</span>elf.</div>
+    <div class="chunks"><span class="chunk">A spider</span><span class="chunk">spun a web</span><span class="chunk">on the shelf.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cute cartoon spider spinning a web between books on a shelf, looking proud. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 2 · bl cl fl + ch</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The <span class="target">cl</span>own did a <span class="target">fl</span>ip and sat on the <span class="target">ch</span>eese.</div>
+    <div class="chunks"><span class="chunk">The clown</span><span class="chunk">did a flip</span><span class="chunk">and sat on</span><span class="chunk">the cheese.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon clown mid-flip landing butt-first on a giant wedge of cheese, cheese squishing out the sides. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">A <span class="target">bl</span>ack cat ate a <span class="target">ch</span>ip on the <span class="target">fl</span>ag.</div>
+    <div class="chunks"><span class="chunk">A black cat</span><span class="chunk">ate a chip</span><span class="chunk">on the flag.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Black cartoon cat sitting on a big colourful flag, munching a potato chip, crumbs everywhere. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 3 · br cr dr + th</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The <span class="target">cr</span>ab hit the <span class="target">dr</span>um with a <span class="target">br</span>ush.</div>
+    <div class="chunks"><span class="chunk">The crab</span><span class="chunk">hit the drum</span><span class="chunk">with a brush.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon crab using its claw to hold a paintbrush, banging on a drum, musical notes flying. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full"><span class="target">Th</span>ree <span class="target">dr</span>agons <span class="target">br</span>ush <span class="target">th</span>eir teeth.</div>
+    <div class="chunks"><span class="chunk">Three dragons</span><span class="chunk">brush</span><span class="chunk">their teeth.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Three cute baby dragons in a row, each brushing their teeth with oversized toothbrushes, toothpaste foam everywhere. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 4 · tr gr pl + wh</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The <span class="target">wh</span>ale ate <span class="target">gr</span>apes on the <span class="target">tr</span>ain.</div>
+    <div class="chunks"><span class="chunk">The whale</span><span class="chunk">ate grapes</span><span class="chunk">on the train.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon whale squeezed into a train seat, eating grapes with its flippers, grapes rolling everywhere. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">A <span class="target">gr</span>een frog <span class="target">pl</span>ants a <span class="target">tr</span>ee and <span class="target">wh</span>istles.</div>
+    <div class="chunks"><span class="chunk">A green frog</span><span class="chunk">plants a tree</span><span class="chunk">and whistles.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Happy cartoon frog with a little gardening hat, planting a tiny tree in a pot, whistling with musical notes. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="phase-banner green-phase"><h2>Weeks 5–7 — Phonograms</h2></div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 5 · ck ng + ee</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The du<span class="target">ck</span> and the b<span class="target">ee</span> si<span class="target">ng</span> in a tr<span class="target">ee</span>.</div>
+    <div class="chunks"><span class="chunk">The duck</span><span class="chunk">and the bee</span><span class="chunk">sing in a tree.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon duck and bee sitting on a tree branch together, both singing with open mouths, musical notes around them. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The ki<span class="target">ng</span> got his so<span class="target">ck</span> stu<span class="target">ck</span> on his kn<span class="target">ee</span>.</div>
+    <div class="chunks"><span class="chunk">The king</span><span class="chunk">got his sock</span><span class="chunk">stuck on</span><span class="chunk">his knee.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon king with crown looking down confused at a sock stuck halfway up his knee, royal robe flowing. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 6 · oo ai oa</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The g<span class="target">oa</span>t took a b<span class="target">oa</span>t in the r<span class="target">ai</span>n to the m<span class="target">oo</span>n.</div>
+    <div class="chunks"><span class="chunk">The goat</span><span class="chunk">took a boat</span><span class="chunk">in the rain</span><span class="chunk">to the moon.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon goat sailing a little boat through rain clouds heading toward a smiling moon, raindrops falling. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">A sn<span class="target">ai</span>l on a tr<span class="target">ai</span>n ate f<span class="target">oo</span>d with a sp<span class="target">oo</span>n.</div>
+    <div class="chunks"><span class="chunk">A snail</span><span class="chunk">on a train</span><span class="chunk">ate food</span><span class="chunk">with a spoon.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon snail sitting at a tiny table on a moving train, eating soup with a spoon bigger than itself. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 7 · ea + review</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The sh<span class="target">ee</span>p had t<span class="target">ea</span> with a ch<span class="target">ee</span>ky crab.</div>
+    <div class="chunks"><span class="chunk">The sheep</span><span class="chunk">had tea</span><span class="chunk">with a cheeky crab.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon sheep and crab having a fancy tea party, crab holding teacup with pincer, pinky up. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">A b<span class="target">ea</span>d fell off a l<span class="target">ea</span>f and hit the whale.</div>
+    <div class="chunks"><span class="chunk">A bead</span><span class="chunk">fell off a leaf</span><span class="chunk">and hit the whale.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Tiny cartoon bead bouncing off a leaf and bonking a surprised whale on the head, whale looking up cross-eyed. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="phase-banner gold-phase"><h2>Weeks 8–10 — Challenge & Celebration</h2></div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Weeks 8–9 · Review + challenge</div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">Three sheep stood on a boat and ate green grapes in the rain.</div>
+    <div class="chunks"><span class="chunk">Three sheep</span><span class="chunk">stood on a boat</span><span class="chunk">and ate</span><span class="chunk">green grapes</span><span class="chunk">in the rain.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Three fluffy sheep balancing on a small boat, munching green grapes while rain pours down, all looking very pleased. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div class="sentence-card">
+    <div class="sentence-full">The king and the snail took the train to the moon to brush their teeth.</div>
+    <div class="chunks"><span class="chunk">The king</span><span class="chunk">and the snail</span><span class="chunk">took the train</span><span class="chunk">to the moon</span><span class="chunk">to brush their teeth.</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Cartoon king and snail sitting together on a rocket-train flying to the moon, both holding toothbrushes and grinning. Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 10 · Grand Finale</div>
+
+  <div class="sentence-card" style="border-color:var(--green-leaf);border-width:2px;">
+    <div class="sentence-full">The Whale Class can read! We are the best. Clap clap clap!</div>
+    <div class="chunks"><span class="chunk">The Whale Class</span><span class="chunk">can read!</span><span class="chunk">We are the best.</span><span class="chunk">Clap clap clap!</span></div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompt</div>
+      Group of happy diverse young children jumping and clapping around a giant friendly blue whale, confetti and stars everywhere, banner saying "We can read!" Bright, friendly children's book illustration style with clean outlines and soft colours. White background.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SEQUENCING CARDS ==================== -->
+<div class="section" id="sequencing">
+  <div class="section-title">Sequencing Cards</div>
+  <div class="section-desc">3-4 picture cards per story. Child arranges in order by picture logic, then reads sentences to confirm. Print cards as quarter-A4, laminate. Store in envelope with matching jewelry box. All words decodable with sounds taught up to that week.</div>
+
+  <!-- Week 1 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 1 · st sp sn + sh</div>
+
+  <div class="story-card">
+    <div class="story-title">The Snail and the Ship</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Snail on a rock by the sea</div><div class="seq-text">A <span class="target">sn</span>ail sat on a rock.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Snail spotting a ship</div><div class="seq-text">It <span class="target">sp</span>ot a big <span class="target">sh</span>ip.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Snail stuck on ship mast</div><div class="seq-text">The <span class="target">sn</span>ail got <span class="target">st</span>uck on the <span class="target">sh</span>ip!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (generate as 3 separate images — SAME character, SAME style)</div>
+      <strong>Card 1:</strong> Cute cartoon snail with a brown spiral shell sitting on a grey rock next to the ocean, looking happy, gentle waves in background. Children's book illustration, clean outlines, soft pastel colours, simple composition. White/light background.<br>
+      <strong>Card 2:</strong> Same cartoon snail on the rock, now looking up with big excited eyes at a wooden pirate ship on the horizon. Same style, same snail character design. White/light background.<br>
+      <strong>Card 3:</strong> Same cartoon snail happily stuck to the ship's tall wooden mast, sailing away on the ocean, little flag fluttering. Same style, same snail. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The Spider on the Shelf</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Spider standing on a mat</div><div class="seq-text">A <span class="target">sp</span>ider <span class="target">st</span>ood on the mat.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Spider spinning web on shelf</div><div class="seq-text">It <span class="target">sp</span>un a web on the <span class="target">sh</span>elf.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Spider sleeping in shell</div><div class="seq-text">The <span class="target">sp</span>ider had a nap in the <span class="target">sh</span>ell.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Tiny cute cartoon spider with 8 legs standing on a colourful doormat, looking up. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same spider happily spinning a white web between colourful books on a wooden shelf. Same style, same spider. White/light background.<br>
+      <strong>Card 3:</strong> Same spider curled up sleeping inside a large pink seashell on the shelf, tiny "z z z" floating above. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 2 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 2 · bl cl fl + ch</div>
+
+  <div class="story-card">
+    <div class="story-title">The Clown and the Cheese</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Clown with a flag</div><div class="seq-text">The <span class="target">cl</span>own had a big <span class="target">fl</span>ag.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Clown doing a flip</div><div class="seq-text">He did a <span class="target">fl</span>ip!</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Clown landed on cheese</div><div class="seq-text">He fell on the <span class="target">ch</span>eese. <span class="target">Bl</span>ob!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Happy cartoon clown with red nose and colourful outfit, waving a big colourful flag. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same clown mid-backflip in the air, hat flying off, big smile. Same style, same character. White/light background.<br>
+      <strong>Card 3:</strong> Same clown sitting in a squished giant yellow cheese wheel, looking surprised, cheese splattered around. Same style. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The Black Cat and the Chicken</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Cat and chicken meeting</div><div class="seq-text">A <span class="target">bl</span>ack cat met a <span class="target">ch</span>icken.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Cat and chicken clapping</div><div class="seq-text">They <span class="target">cl</span>ap and <span class="target">ch</span>at.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Picnic with chips</div><div class="seq-text">They had <span class="target">ch</span>ips on a <span class="target">bl</span>anket.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Black cartoon cat and white cartoon chicken waving hello to each other. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same black cat and white chicken clapping paws and wings together, chatting happily. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same cat and chicken sitting on a red blanket eating chips from a bowl, picnic style. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 3 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 3 · br cr dr + th</div>
+
+  <div class="story-card">
+    <div class="story-title">The Crab's Drum</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Crab finding a drum</div><div class="seq-text">The <span class="target">cr</span>ab got a <span class="target">dr</span>um.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Crab drumming with brush</div><div class="seq-text">He hit it with a <span class="target">br</span>ush.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Three crabs drumming</div><div class="seq-text"><span class="target">Th</span>ree <span class="target">cr</span>abs <span class="target">dr</span>um and <span class="target">dr</span>um!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Cute cartoon red crab looking excited next to a shiny drum on a sandy beach. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same red crab holding a paintbrush in its claw, hitting the drum, "BAM!" text. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Three of the same red crabs in a band, all drumming, musical notes flying everywhere. Same style. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The Dragon Brushes His Teeth</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Dragon with dirty teeth</div><div class="seq-text">The <span class="target">dr</span>agon had bad <span class="target">br</span>eath.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Dragon brushing teeth</div><div class="seq-text">He got a <span class="target">br</span>ush for his teeth.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Dragon grinning with clean teeth</div><div class="seq-text">Now <span class="target">th</span>e <span class="target">dr</span>agon has a big grin!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Green cartoon dragon breathing a stinky green cloud, little flies buzzing around. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same green dragon brushing teeth with a huge toothbrush, foam bubbles everywhere. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same green dragon grinning proudly showing sparkly clean white teeth, sparkle stars. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 4 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 4 · tr gr pl + wh</div>
+
+  <div class="story-card">
+    <div class="story-title">The Whale on the Train</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Whale at train platform</div><div class="seq-text">The <span class="target">wh</span>ale got on the <span class="target">tr</span>ain.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Whale eating grapes on train</div><div class="seq-text">He ate <span class="target">gr</span>apes on a <span class="target">pl</span>ate.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Whale stuck in train</div><div class="seq-text">The <span class="target">wh</span>ale is stuck! He is too big!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Friendly cartoon blue whale squeezing through train doors at a platform. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same blue whale taking up three seats on the train, delicately eating green grapes from a white plate with its flippers. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same blue whale stuck in the train, tail poking out one window, head out another, conductor looking alarmed. Same style. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The Frog Plants a Tree</div>
+    <div class="seq-grid cols-3">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Frog digging</div><div class="seq-text">The frog dug in the <span class="target">gr</span>ass.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Frog planting</div><div class="seq-text">He <span class="target">pl</span>ants a little <span class="target">tr</span>ee.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Big tree with frog on top</div><div class="seq-text">The <span class="target">tr</span>ee got big! The frog <span class="target">gr</span>ins.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (3 separate images)</div>
+      <strong>Card 1:</strong> Small green cartoon frog with a tiny shovel digging in green grass. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same green frog carefully placing a tiny seedling in the hole, looking gentle. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same green frog sitting on top of a huge tree, grinning proudly, birds around. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 5 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 5 · ck ng + ee</div>
+
+  <div class="story-card">
+    <div class="story-title">The Duck and the Bee</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Duck by a tree</div><div class="seq-text">A du<span class="target">ck</span> sat by a tr<span class="target">ee</span>.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Bee buzzing to duck</div><div class="seq-text">A b<span class="target">ee</span> sang a so<span class="target">ng</span>.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Both singing</div><div class="seq-text">The du<span class="target">ck</span> sang too. Si<span class="target">ng</span> si<span class="target">ng</span>!</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Animals cheering</div><div class="seq-text">All the animals cheered. Qu<span class="target">ack</span>!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Yellow cartoon duck relaxing under a green tree. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Cute cartoon bee with stripes flying towards the duck with musical notes. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same duck and bee side by side on a branch, both singing with mouths open, musical notes everywhere. Same style. White/light background.<br>
+      <strong>Card 4:</strong> Crowd of little cartoon animals (frog, snail, crab) clapping and cheering for the duck and bee. Same style. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The King Lost His Sock</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">King with one bare foot</div><div class="seq-text">The ki<span class="target">ng</span> lost his so<span class="target">ck</span>.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">King checking under bed</div><div class="seq-text">He che<span class="target">ck</span>ed under the bed.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Bee wearing the sock</div><div class="seq-text">The b<span class="target">ee</span> had it on her f<span class="target">ee</span>t!</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Both laughing</div><div class="seq-text">They both fell about laughi<span class="target">ng</span>.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Cartoon king in royal purple robes and gold crown looking at one bare foot, worried expression. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same king on hands and knees peering under a royal bed with golden frame. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Tiny cute bee wearing one huge colourful sock like a dress, looking cheeky and proud. Same style. White/light background.<br>
+      <strong>Card 4:</strong> Same king sitting on the floor laughing, same bee laughing too, the sock between them on the ground. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 6 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 6 · oo ai oa</div>
+
+  <div class="story-card">
+    <div class="story-title">The Goat Goes to the Moon</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Goat in rain</div><div class="seq-text">The g<span class="target">oa</span>t stood in the r<span class="target">ai</span>n.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Goat in a boat</div><div class="seq-text">He got in a b<span class="target">oa</span>t.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Boat flying to moon</div><div class="seq-text">The b<span class="target">oa</span>t went up to the m<span class="target">oo</span>n!</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Goat eating on moon</div><div class="seq-text">The g<span class="target">oa</span>t ate f<span class="target">oo</span>d on the m<span class="target">oo</span>n.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> White cartoon goat wearing a little coat standing in the rain, looking grumpy, raindrops falling. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same white goat climbing into a small brown wooden boat. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same boat with goat flying through fluffy clouds toward a glowing yellow moon. Same style. White/light background.<br>
+      <strong>Card 4:</strong> Same goat happily eating from a bowl on the moon's grey surface, Earth visible in the background. Same style. White/light background.
+    </div>
+  </div>
+
+  <div class="story-card">
+    <div class="story-title">The Snail's Train Ride</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Snail at platform</div><div class="seq-text">The sn<span class="target">ai</span>l w<span class="target">ai</span>ted for the tr<span class="target">ai</span>n.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Snail with spoon and book</div><div class="seq-text">He got a sp<span class="target">oo</span>n and a b<span class="target">oo</span>k.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Snail eating on train</div><div class="seq-text">He ate s<span class="target">oo</span>p on the tr<span class="target">ai</span>n.</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Snail asleep</div><div class="seq-text">Then he read his b<span class="target">oo</span>k and fell asleep!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Cute cartoon snail with brown spiral shell and a tiny suitcase waiting on a train platform. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same snail packing a comically large silver spoon and a tiny red book. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same snail at a little table on the train, eating soup from a bowl with the big spoon. Same style. White/light background.<br>
+      <strong>Card 4:</strong> Same snail curled up in its shell on the train seat, the red book resting on its face, "zzz" above. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 7 Stories -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 7 · ea + review</div>
+
+  <div class="story-card">
+    <div class="story-title">The Sheep's Tea Party</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Sheep setting up table</div><div class="seq-text">The sh<span class="target">ee</span>p set up t<span class="target">ea</span>.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Crab with leaf hat</div><div class="seq-text">The crab got a l<span class="target">ea</span>f as a hat.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Both having tea</div><div class="seq-text">They ate p<span class="target">ea</span>s and had t<span class="target">ea</span>.</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Both sleeping</div><div class="seq-text">Then they had a sn<span class="target">oo</span>ze in the tr<span class="target">ee</span>.</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Fluffy white cartoon sheep placing little teacups on a small round table. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Cute cartoon red crab arriving wearing a big green leaf as a fancy hat, looking very pleased with itself. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Same sheep and crab at the table — sheep sipping tea, crab eating green peas with its pincers. Same style. White/light background.<br>
+      <strong>Card 4:</strong> Same sheep and crab both asleep in tiny armchairs under a tree, teacups tipped over on the grass. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Weeks 8-9 -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Weeks 8–9 · All sounds — Challenge</div>
+
+  <div class="story-card">
+    <div class="story-title">The Great Whale Class Trip</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Characters at bus stop in rain</div><div class="seq-text">The whale, the sheep, and the crab stood in the rain.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">All on a train eating grapes</div><div class="seq-text">They got on a green train and ate grapes.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">At the beach</div><div class="seq-text">They swam in the sea and the crab found three shells.</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Asleep on train, snail driving</div><div class="seq-text">On the train back, they all fell asleep. The snail drove!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Cartoon blue whale, white sheep, and red crab standing at a rainy bus stop with tiny umbrellas. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same whale, sheep, and crab squished into green train seats, all eating green grapes. Same style. White/light background.<br>
+      <strong>Card 3:</strong> Beach scene — sheep on a towel, crab finding shells in the sand, whale happily floating in the shallows. Same style. White/light background.<br>
+      <strong>Card 4:</strong> All three asleep on the train — tiny cartoon snail wearing a conductor hat at the controls, looking determined. Same style. White/light background.
+    </div>
+  </div>
+
+  <!-- Week 10 -->
+  <div style="font-size:12px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;">Week 10 · Grand Finale</div>
+
+  <div class="story-card" style="border:2px solid var(--green-leaf);">
+    <div class="story-title" style="color:var(--green-leaf);">The Whale Class Readers</div>
+    <div class="seq-grid cols-4">
+      <div class="seq-card"><div class="seq-num">1</div><div class="seq-img-placeholder">Children looking at letters</div><div class="seq-text">We did not know how to read.</div></div>
+      <div class="seq-card"><div class="seq-num">2</div><div class="seq-img-placeholder">Children with boxes</div><div class="seq-text">We got boxes and had fun with the sounds.</div></div>
+      <div class="seq-card"><div class="seq-num">3</div><div class="seq-img-placeholder">Children reading</div><div class="seq-text">Now we can read! Look at us!</div></div>
+      <div class="seq-card"><div class="seq-num">4</div><div class="seq-img-placeholder">Children cheering</div><div class="seq-text">The Whale Class are the best readers!</div></div>
+    </div>
+    <div class="ai-prompt-box">
+      <div class="prompt-label">AI Image Prompts (4 separate images)</div>
+      <strong>Card 1:</strong> Diverse group of 6 young children (ages 4-5, mixed ethnicities including Asian children) looking puzzled at floating colourful alphabet letters above them. Children's book illustration, clean outlines, soft pastel colours. White/light background.<br>
+      <strong>Card 2:</strong> Same diverse group of children smiling, playing with small boxes of tiny objects, matching little word labels. Same style, same children. White/light background.<br>
+      <strong>Card 3:</strong> Same children sitting in a circle on the floor reading little books, amazed and excited faces. Same style, same children. White/light background.<br>
+      <strong>Card 4:</strong> Same children jumping and cheering, holding books up in the air, confetti and stars, a big friendly blue whale mascot celebrating with them. Same style. White/light background.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== AI IMAGE PROMPTS ==================== -->
+<div class="section" id="prompts">
+  <div class="section-title">AI Image Generation Guide</div>
+  <div class="section-desc">Master prompt template and all individual prompts for generating consistent artwork across the entire 10-week programme. Hand this section to Claude Desktop or any AI image generator.</div>
+
+  <div class="prompt-master">
+    <h3>Master Style Prompt — Prepend to EVERY image request</h3>
+    <p>Use this as a system prompt or prepend it to every individual image request to maintain consistency across all 60+ images in the programme.</p>
+    <div class="ai-prompt-box" style="margin-top:12px;background:white;">
+      <div class="prompt-label">Master Prompt — Copy This</div>
+      <strong>STYLE GUIDE FOR ALL IMAGES:</strong><br><br>
+      You are creating a consistent set of children's book illustrations for a kindergarten phonics programme called "Whale Class" at Beijing International School. ALL images must follow these rules:<br><br>
+      <strong>Art Style:</strong> Bright, friendly children's book illustration. Clean black outlines (not too thick). Soft pastel colour palette — think watercolour meets digital illustration. Simple compositions with one clear focal point. Characters are slightly chunky/rounded, making them feel approachable and toylike.<br><br>
+      <strong>Background:</strong> White or very light solid colour. NO complex scenery or detailed backgrounds. Objects/characters float or sit on a minimal ground line. This is so the images work well when printed on cards.<br><br>
+      <strong>Character Consistency:</strong> These characters appear across multiple images and MUST look the same each time:<br>
+      — <strong>Snail:</strong> Brown spiral shell, soft yellow-green body, two eye stalks, friendly smile<br>
+      — <strong>Whale:</strong> Friendly blue whale, slightly cartoonish, small flippers, gentle smile, spout on top<br>
+      — <strong>Crab:</strong> Red-orange crab, two big claws, four small legs each side, dot eyes, smiling<br>
+      — <strong>Sheep:</strong> Fluffy white wool, black face and legs, big round eyes, pink cheeks<br>
+      — <strong>King:</strong> Gold crown, purple royal robe, friendly round face, rosy cheeks<br>
+      — <strong>Duck:</strong> Yellow body, orange beak and feet, small wing bump, round body<br>
+      — <strong>Bee:</strong> Yellow and black stripes, small transparent wings, cute face, tiny<br>
+      — <strong>Goat:</strong> White fur, two small horns, little beard, gentle eyes<br>
+      — <strong>Dragon:</strong> Green body, small wings, friendly face, tiny teeth showing, chubby<br>
+      — <strong>Frog:</strong> Bright green, big round eyes, wide mouth, sitting pose<br><br>
+      <strong>Mood:</strong> Silly, warm, and joyful. These images reward children for reading — they should make kids laugh or smile. Exaggerated expressions are great.<br><br>
+      <strong>Technical:</strong> Square format (1:1 ratio). High resolution. No text in the images — text will be added separately on the printed cards. Each image should be clearly readable at approximately 7cm × 7cm print size.<br><br>
+      <strong>IMPORTANT:</strong> When generating a sequence of images (e.g. 3-4 cards telling a story), the characters MUST look identical across all cards in that sequence. Same colours, same proportions, same design. Only the pose and context changes.
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">How to Generate</h3>
+    <div style="font-size:13px;color:var(--gray-700);line-height:1.8;">
+      <strong>Step 1:</strong> Copy the Master Style Prompt above and paste it as context/system prompt.<br>
+      <strong>Step 2:</strong> For each story, generate the cards in sequence (Card 1, then Card 2, etc.) in the same session/conversation so the AI maintains character consistency.<br>
+      <strong>Step 3:</strong> Generate the sentence puzzle images separately — these are single standalone images, not sequences.<br>
+      <strong>Step 4:</strong> Save all images with naming convention: <code>w01_seq1_card1.png</code>, <code>w01_seq1_card2.png</code>, <code>w01_sent1.png</code> etc.<br><br>
+      <strong>Total images needed:</strong><br>
+      — Sequencing cards: 15 stories × 3-4 cards = ~54 images<br>
+      — Sentence puzzles: 16 sentences × 1 image = 16 images<br>
+      — <strong>Grand total: ~70 images</strong>
+    </div>
+  </div>
+
+  <div class="week-card">
+    <h3 style="font-family:'Nunito',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px;color:var(--whale-blue);">All Sentence Puzzle Prompts (Quick Reference)</h3>
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:12px;">Prepend the Master Style Prompt to each. Click any prompt to copy.</div>
+    <table class="prompt-table">
+      <thead><tr><th>Week</th><th>Sentence</th><th>Image Prompt</th></tr></thead>
+      <tbody>
+        <tr><td>Wk 1</td><td style="font-size:12px;">The snail got stuck on a ship.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon snail with brown spiral shell, stuck to the mast of a wooden pirate ship, looking confused. White background.</div></td></tr>
+        <tr><td>Wk 1</td><td style="font-size:12px;">A spider spun a web on the shelf.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cute cartoon spider spinning a web between colourful books on a wooden shelf, looking proud. White background.</div></td></tr>
+        <tr><td>Wk 2</td><td style="font-size:12px;">The clown did a flip and sat on the cheese.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon clown mid-flip landing butt-first on a giant yellow cheese wedge, cheese squishing out, surprised expression. White background.</div></td></tr>
+        <tr><td>Wk 2</td><td style="font-size:12px;">A black cat ate a chip on the flag.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Black cartoon cat sitting on a big colourful flag, munching a potato chip, crumbs everywhere. White background.</div></td></tr>
+        <tr><td>Wk 3</td><td style="font-size:12px;">The crab hit the drum with a brush.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon red crab using its claw to hold a paintbrush, banging on a drum, musical notes flying. White background.</div></td></tr>
+        <tr><td>Wk 3</td><td style="font-size:12px;">Three dragons brush their teeth.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Three cute baby green dragons in a row, each brushing their teeth with oversized toothbrushes, toothpaste foam everywhere. White background.</div></td></tr>
+        <tr><td>Wk 4</td><td style="font-size:12px;">The whale ate grapes on the train.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Friendly cartoon blue whale squeezed into a train seat, eating green grapes with its flippers, grapes rolling everywhere. White background.</div></td></tr>
+        <tr><td>Wk 4</td><td style="font-size:12px;">A green frog plants a tree and whistles.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Happy cartoon green frog with a little gardening hat, planting a tiny tree in a pot, whistling with musical notes. White background.</div></td></tr>
+        <tr><td>Wk 5</td><td style="font-size:12px;">The duck and the bee sing in a tree.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon yellow duck and striped bee sitting on a tree branch together, both singing with open mouths, musical notes around them. White background.</div></td></tr>
+        <tr><td>Wk 5</td><td style="font-size:12px;">The king got his sock stuck on his knee.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon king with gold crown and purple robe looking down confused at a colourful sock stuck halfway up his knee. White background.</div></td></tr>
+        <tr><td>Wk 6</td><td style="font-size:12px;">The goat took a boat in the rain to the moon.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon white goat sailing a little wooden boat through rain clouds heading toward a smiling yellow moon, raindrops falling. White background.</div></td></tr>
+        <tr><td>Wk 6</td><td style="font-size:12px;">A snail on a train ate food with a spoon.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon snail with brown shell sitting at a tiny table on a moving train, eating soup with a silver spoon bigger than itself. White background.</div></td></tr>
+        <tr><td>Wk 7</td><td style="font-size:12px;">The sheep had tea with a cheeky crab.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon white fluffy sheep and red crab having a fancy tea party, crab holding teacup with pincer, pinky up. White background.</div></td></tr>
+        <tr><td>Wk 7</td><td style="font-size:12px;">A bead fell off a leaf and hit the whale.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Tiny colourful cartoon bead bouncing off a green leaf and bonking a surprised blue whale on the head, whale looking up cross-eyed. White background.</div></td></tr>
+        <tr><td>Wk 8-9</td><td style="font-size:12px;">Three sheep stood on a boat and ate green grapes in the rain.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Three fluffy white cartoon sheep balancing on a small wooden boat, munching green grapes while rain pours down, all looking very pleased. White background.</div></td></tr>
+        <tr><td>Wk 8-9</td><td style="font-size:12px;">The king and the snail took the train to the moon to brush their teeth.</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Cartoon king with crown and snail sitting together on a rocket-train flying to the yellow moon, both holding toothbrushes and grinning. White background.</div></td></tr>
+        <tr><td>Wk 10</td><td style="font-size:12px;">The Whale Class can read!</td><td><div class="prompt-cell" onclick="copyPrompt(this)">Diverse group of happy young children (ages 4-5, mixed ethnicities including Asian children) jumping and clapping around a giant friendly blue whale, confetti and stars everywhere. White background.</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ==================== WORD BANK ==================== -->
+<div class="section" id="words">
+  <div class="section-title">Complete Word Bank</div>
+  <div class="section-desc">All words organised by sound. BLUE = blends (hear both letters). GREEN = digraphs/phonograms (one new sound). These align with the Whale Class Prescribed Dictionary (Pink/Blue/Green levels). Use for dictionary entries, bingo cards, moveable alphabet, and label making.</div>
+
+  <div class="word-bank-grid">
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">st</div>
+      <div class="word-bank-type">Blend · Week 1</div>
+      <div class="word-list"><span class="word">star</span><span class="word">stick</span><span class="word">stop</span><span class="word">step</span><span class="word">stem</span><span class="word">stun</span><span class="word">stag</span><span class="word">stub</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">sp</div>
+      <div class="word-bank-type">Blend · Week 1</div>
+      <div class="word-list"><span class="word">spoon</span><span class="word">spider</span><span class="word">spin</span><span class="word">spot</span><span class="word">spit</span><span class="word">span</span><span class="word">spud</span><span class="word">sped</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">sn</div>
+      <div class="word-bank-type">Blend · Week 1</div>
+      <div class="word-list"><span class="word">snake</span><span class="word">snail</span><span class="word">snap</span><span class="word">snip</span><span class="word">snug</span><span class="word">snob</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">bl</div>
+      <div class="word-bank-type">Blend · Week 2</div>
+      <div class="word-list"><span class="word">block</span><span class="word">blanket</span><span class="word">blob</span><span class="word">blot</span><span class="word">blip</span><span class="word">blab</span><span class="word">bled</span><span class="word">bliss</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">cl</div>
+      <div class="word-bank-type">Blend · Week 2</div>
+      <div class="word-list"><span class="word">clip</span><span class="word">clock</span><span class="word">clap</span><span class="word">clam</span><span class="word">clan</span><span class="word">clod</span><span class="word">club</span><span class="word">clot</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">fl</div>
+      <div class="word-bank-type">Blend · Week 2</div>
+      <div class="word-list"><span class="word">flag</span><span class="word">flower</span><span class="word">flat</span><span class="word">flip</span><span class="word">flog</span><span class="word">flab</span><span class="word">fled</span><span class="word">flit</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">br</div>
+      <div class="word-bank-type">Blend · Week 3</div>
+      <div class="word-list"><span class="word">brush</span><span class="word">brick</span><span class="word">brim</span><span class="word">brat</span><span class="word">bred</span><span class="word">brag</span><span class="word">bran</span><span class="word">brit</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">cr</div>
+      <div class="word-bank-type">Blend · Week 3</div>
+      <div class="word-list"><span class="word">crab</span><span class="word">crayon</span><span class="word">crop</span><span class="word">crib</span><span class="word">cram</span><span class="word">crest</span><span class="word">crisp</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">dr</div>
+      <div class="word-bank-type">Blend · Week 3</div>
+      <div class="word-list"><span class="word">drum</span><span class="word">dragon</span><span class="word">drip</span><span class="word">drag</span><span class="word">drop</span><span class="word">dress</span><span class="word">drill</span><span class="word">drab</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">tr</div>
+      <div class="word-bank-type">Blend · Week 4</div>
+      <div class="word-list"><span class="word">train</span><span class="word">tree</span><span class="word">trip</span><span class="word">trap</span><span class="word">trim</span><span class="word">trod</span><span class="word">trot</span><span class="word">tram</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">gr</div>
+      <div class="word-bank-type">Blend · Week 4</div>
+      <div class="word-list"><span class="word">grapes</span><span class="word">grasshopper</span><span class="word">grab</span><span class="word">grin</span><span class="word">grip</span><span class="word">grit</span><span class="word">grid</span><span class="word">gran</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound blue-sound">pl</div>
+      <div class="word-bank-type">Blend · Week 4</div>
+      <div class="word-list"><span class="word">plate</span><span class="word">plum</span><span class="word">plan</span><span class="word">plod</span><span class="word">plug</span><span class="word">plot</span><span class="word">plop</span><span class="word">plus</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">sh</div>
+      <div class="word-bank-type">Digraph · Week 1</div>
+      <div class="word-list"><span class="word">shell</span><span class="word">ship</span><span class="word">shoe</span><span class="word">shop</span><span class="word">shed</span><span class="word">shin</span><span class="word">shot</span><span class="word">shut</span><span class="word">shark</span><span class="word">sheep</span><span class="word">fish</span><span class="word">dish</span><span class="word">wish</span><span class="word">rush</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ch</div>
+      <div class="word-bank-type">Digraph · Week 2</div>
+      <div class="word-list"><span class="word">cheese</span><span class="word">cherry</span><span class="word">chicken</span><span class="word">chair</span><span class="word">chin</span><span class="word">chop</span><span class="word">chip</span><span class="word">chest</span><span class="word">chat</span><span class="word">check</span><span class="word">rich</span><span class="word">much</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">th</div>
+      <div class="word-bank-type">Digraph · Week 3</div>
+      <div class="word-list"><span class="word">thumb</span><span class="word">three</span><span class="word">thin</span><span class="word">thick</span><span class="word">thorn</span><span class="word">the</span><span class="word">this</span><span class="word">that</span><span class="word">them</span><span class="word">then</span><span class="word">with</span><span class="word">bath</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">wh</div>
+      <div class="word-bank-type">Digraph · Week 4</div>
+      <div class="word-list"><span class="word">whale</span><span class="word">wheel</span><span class="word">whistle</span><span class="word">wheat</span><span class="word">whip</span><span class="word">when</span><span class="word">what</span><span class="word">where</span><span class="word">which</span><span class="word">white</span><span class="word">why</span><span class="word">who</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ck</div>
+      <div class="word-bank-type">Ending Digraph · Week 5</div>
+      <div class="word-list"><span class="word">duck</span><span class="word">sock</span><span class="word">lock</span><span class="word">kick</span><span class="word">rock</span><span class="word">back</span><span class="word">neck</span><span class="word">sick</span><span class="word">luck</span><span class="word">pick</span><span class="word">tuck</span><span class="word">deck</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ng</div>
+      <div class="word-bank-type">Ending Digraph · Week 5</div>
+      <div class="word-list"><span class="word">ring</span><span class="word">king</span><span class="word">wing</span><span class="word">sing</span><span class="word">song</span><span class="word">long</span><span class="word">bang</span><span class="word">hung</span><span class="word">rang</span><span class="word">gong</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ee</div>
+      <div class="word-bank-type">Vowel Team · Week 5</div>
+      <div class="word-list"><span class="word">bee</span><span class="word">tree</span><span class="word">feet</span><span class="word">seed</span><span class="word">jeep</span><span class="word">sheep</span><span class="word">teeth</span><span class="word">creek</span><span class="word">see</span><span class="word">free</span><span class="word">feed</span><span class="word">keen</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">oo</div>
+      <div class="word-bank-type">Vowel Team · Week 6</div>
+      <div class="word-list"><span class="word">moon</span><span class="word">spoon</span><span class="word">boot</span><span class="word">zoo</span><span class="word">pool</span><span class="word">food</span><span class="word">roof</span><span class="word">cool</span><span class="word">room</span><span class="word">book</span><span class="word">look</span><span class="word">cook</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ai</div>
+      <div class="word-bank-type">Vowel Team · Week 6</div>
+      <div class="word-list"><span class="word">rain</span><span class="word">snail</span><span class="word">train</span><span class="word">tail</span><span class="word">mail</span><span class="word">sail</span><span class="word">wait</span><span class="word">paid</span><span class="word">main</span><span class="word">pain</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">oa</div>
+      <div class="word-bank-type">Vowel Team · Week 6</div>
+      <div class="word-list"><span class="word">boat</span><span class="word">goat</span><span class="word">coat</span><span class="word">road</span><span class="word">soap</span><span class="word">toad</span><span class="word">load</span><span class="word">oak</span><span class="word">oat</span><span class="word">foam</span></div>
+    </div>
+
+    <div class="word-bank-card">
+      <div class="word-bank-sound green-sound">ea</div>
+      <div class="word-bank-type">Vowel Team · Week 7</div>
+      <div class="word-list"><span class="word">leaf</span><span class="word">pea</span><span class="word">bead</span><span class="word">peach</span><span class="word">beach</span><span class="word">read</span><span class="word">sea</span><span class="word">tea</span><span class="word">eat</span><span class="word">seat</span><span class="word">heat</span><span class="word">bean</span></div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+
+function copyPrompt(el) {
+  const text = el.textContent.replace('click to copy', '').replace('copied!', '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 1500);
+  });
+}
+</script>
+
+</body>
+</html>
