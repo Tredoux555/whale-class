@@ -634,6 +634,7 @@ export default function WeekPage() {
         onOpenWheelPicker={openWheelPicker}
         onOpenQuickGuide={openQuickGuide}
         childId={childId}
+        childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name}
         getAreaConfig={getAreaConfig}
         isHomeschoolParent={isHomeschoolParent(session)}
         guruAreaDetails={guruSettings.areaDetails}

@@ -104,6 +104,7 @@ export async function POST(req: Request) {
         let pendingToolResults: ToolResultBlockParam[] = [];
         let fullAssistantText = '';
         let toolRound = 0;
+        let lastRoundHadToolUse = false;
 
         while (toolRound < MAX_TOOL_ROUNDS) {
           // Check total timeout
@@ -147,27 +148,40 @@ export async function POST(req: Request) {
             pendingToolResults = [];
             let hasToolUse = false;
             const toolsUsedThisRound: string[] = [];
+            const roundTextParts: string[] = [];
 
+            // First pass: collect all blocks to determine if this round has tool use
             for (const block of response.content) {
               if (block.type === 'text') {
+                roundTextParts.push(block.text);
                 fullAssistantText += block.text;
                 lastAssistantBlocks.push({ type: 'text', text: block.text });
-                controller.enqueue(sseEvent(encoder, {
-                  type: 'text',
-                  text: block.text,
-                }));
               } else if (block.type === 'tool_use') {
                 hasToolUse = true;
                 toolsUsedThisRound.push(block.name);
-
-                // Add tool_use to assistant blocks (needed for next round)
                 lastAssistantBlocks.push({
                   type: 'tool_use',
                   id: block.id,
                   name: block.name,
                   input: block.input,
                 } as any);
+              }
+            }
 
+            // Emit text as 'thinking' (during tool rounds) or 'text' (final answer)
+            if (roundTextParts.length > 0) {
+              const combinedText = roundTextParts.join('');
+              controller.enqueue(sseEvent(encoder, {
+                type: hasToolUse ? 'thinking' : 'text',
+                text: combinedText,
+              }));
+            }
+
+            lastRoundHadToolUse = hasToolUse;
+
+            // Now process tool_use blocks for execution
+            for (const block of response.content) {
+              if (block.type === 'tool_use') {
                 // Emit tool call event to client
                 controller.enqueue(sseEvent(encoder, {
                   type: 'tool_call',
@@ -265,6 +279,52 @@ export async function POST(req: Request) {
               error: `API error: ${errorMsg}`,
             }));
             break;
+          }
+        }
+
+        // Forced synthesis: if last round had tool use but no final text answer,
+        // make one more API call WITHOUT tools to force a summary
+        if (lastRoundHadToolUse) {
+          try {
+            const remaining = TOTAL_TIMEOUT_MS - (Date.now() - startTime);
+            const synthesisTimeout = Math.min(API_TIMEOUT_MS, Math.max(5000, remaining - 1000));
+
+            // Build messages including all tool results
+            const synthesisMessages: MessageParam[] = [...conversationMessages];
+            if (lastAssistantBlocks.length > 0 && pendingToolResults.length > 0) {
+              synthesisMessages.push({
+                role: 'assistant',
+                content: lastAssistantBlocks,
+              });
+              synthesisMessages.push({
+                role: 'user',
+                content: pendingToolResults as any,
+              });
+            }
+
+            const synthesisResponse = await client.messages.create(
+              {
+                model: MODEL,
+                max_tokens: 4096,
+                system: systemPrompt,
+                // No tools — forces a text-only response
+                messages: synthesisMessages,
+              },
+              { timeout: synthesisTimeout }
+            );
+
+            for (const block of synthesisResponse.content) {
+              if (block.type === 'text') {
+                fullAssistantText += block.text;
+                controller.enqueue(sseEvent(encoder, {
+                  type: 'text',
+                  text: block.text,
+                }));
+              }
+            }
+          } catch (synthError) {
+            // Non-fatal — fall back to whatever text accumulated during tool rounds
+            console.error('[Super-Admin Guru] Synthesis error:', synthError instanceof Error ? synthError.message : 'Unknown');
           }
         }
 

@@ -3635,6 +3635,7 @@ export const en = {
   'teacherNotes.deleteConfirm': 'Delete this note?',
   'teacherNotes.deleted': 'Note deleted',
   'teacherNotes.micNotSupported': 'Microphone not available — try using HTTPS',
+  'teacherNotes.transcribed': 'Note transcribed',
 
   // Pulse Generation
   'pulse.title': 'Classroom Pulse',
@@ -3697,6 +3698,19 @@ export const en = {
   'evidence.confirmFailed': 'Failed to confirm mastery',
   'evidence.moreReady': 'more ready',
   'evidence.noData': 'No active works with evidence yet',
+  // Background tasks
+  'bgTask.processing': 'processing',
+  'bgTask.allDone': 'All done',
+  'bgTask.cancel': 'Cancel',
+  'bgTask.dismiss': 'Dismiss',
+  'bgTask.transcribing': 'Transcribing voice note...',
+  'bgTask.extracting': 'Analyzing note...',
+  'bgTask.voiceNoteComplete': 'Voice note ready',
+  'bgTask.voiceNoteFailed': 'Voice note failed',
+  'bgTask.uploadingVideo': 'Uploading video...',
+  'bgTask.videoComplete': 'Video uploaded',
+  'bgTask.videoFailed': 'Video upload failed',
+
   'time.justNow': 'just now',
   'time.minutesAgo': '{count}m ago',
   'time.hoursAgo': '{count}h ago',

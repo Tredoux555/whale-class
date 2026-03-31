@@ -51,6 +51,63 @@ Wired `generateClassroomAttentionFlags()` into the daily-brief API as a 6th para
 **Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
 **Handoff:** `docs/handoffs/HANDOFF_V3_GURU_INTEGRATION_MAR29.md` (integration plan)
 
+### Session Work (Mar 30, 2026 — Principal Guru Answer Quality Fix)
+
+**Principal Guru Answer Quality Fix — 3×3×3 Audited (9 agents, ALL CLEAN) — ⚠️ NOT YET PUSHED:**
+
+The Principal Admin Guru was producing unusable output — raw intermediate narration of queries plus opaque tool call indicators, but no synthesized human-readable answer. Principal said: "This information means nothing to me."
+
+**Root causes (5):** System prompt had no formatting rules for final answers. Route emitted all text blocks identically (thinking and answers both as `type: 'text'`). No forced synthesis when tool rounds exhausted. Frontend rendered everything as plain pre-wrapped text. Tool calls showed raw function names.
+
+**Fix (3 files):**
+
+1. **`lib/montree/admin/guru-prompt.ts`** — Added "Response Format — CRITICAL" section with 6 rules: always end with clear answer, lead with answer not process, actionable recommendations, batch queries, format for scanning, highlight exceptions.
+
+2. **`app/api/montree/admin/guru/chat/route.ts`** — Restructured SSE streaming: text during tool rounds emits as `{ type: 'thinking' }`, final answer text as `{ type: 'text' }`. Added forced synthesis round — if all tool rounds exhaust without a text-only answer, one more API call WITHOUT tools forces a summary. Synthesis timeout bounded by remaining time budget (`Math.min(API_TIMEOUT_MS, Math.max(5000, remaining - 1000))`).
+
+3. **`app/montree/admin/guru/page.tsx`** — Complete rewrite (~740 lines). Human-readable tool labels for all 12 tools (`getToolLabel()`). Markdown renderer for tables, bold, bullets, headings. ThinkingBlock component (collapsible, auto-collapses when done). Message layout: tool progress steps → collapsible thinking → prominent formatted answer. Fixed message merging bugs (text events always merge with existing assistant message, done handler merges all accumulated fields).
+
+**Cycle 2 Fixes (5 bugs):**
+1. CRITICAL: Synthesis timeout not bounded by remaining time → bounded
+2. HIGH: Text event split messages when toolCalls existed → always merge
+3. HIGH: Done handler filter+replaced → merge with spread
+4. MEDIUM: renderMarkdown didn't handle whitespace-only → added trim check
+5. LOW: Table parseRow dropped empty cells → strip only outer pipes
+
+**Files Modified (3):**
+1. `lib/montree/admin/guru-prompt.ts` — Response Format CRITICAL section
+2. `app/api/montree/admin/guru/chat/route.ts` — SSE thinking/text distinction + forced synthesis
+3. `app/montree/admin/guru/page.tsx` — Complete rewrite (markdown, ThinkingBlock, tool labels, message merging)
+
+**Audit Summary:** 3 cycles × 3 agents = 9 independent audits. Cycle 1: build. Cycle 2: 6 findings (5 real, 1 false positive), all fixed. Cycle 3: ALL CLEAN ✅
+**Deploy:** ⚠️ NOT YET PUSHED. Part of Principal Admin Guru feature. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_PRINCIPAL_GURU_ANSWER_QUALITY_MAR30.md`
+
+### Session Work (Mar 30, 2026 — Super-Admin Guru Answer Quality Fix)
+
+**Super-Admin Guru Answer Quality Fix — Verified — ⚠️ NOT YET PUSHED:**
+
+Applied the same proven fix pattern from the Principal Admin Guru to the Super-Admin Guru. The Super-Admin Guru was showing raw intermediate thinking text and opaque tool call indicators instead of clear, synthesized answers with school names, teacher names, and login times.
+
+**Fix (3 files, same pattern as Principal Guru):**
+
+1. **`lib/montree/super-admin/guru-prompt.ts`** — Added "Response Format — CRITICAL" section with 6 rules: always end with clear answer, lead with answer not process, actionable insights, batch queries, format for scanning, highlight exceptions.
+
+2. **`app/api/montree/super-admin/guru/route.ts`** — Restructured SSE streaming: text during tool rounds emits as `{ type: 'thinking' }`, final answer text as `{ type: 'text' }`. Two-pass block processing (first collects + emits text, second executes tools). Added forced synthesis round — if all tool rounds exhaust without a text-only answer, one more API call WITHOUT tools forces a summary. Synthesis timeout bounded by remaining time budget.
+
+3. **`components/montree/super-admin/SuperAdminGuru.tsx`** — Complete rewrite (~540 lines). Human-readable tool labels for all 15 tools (`getToolLabel()`). Markdown renderer for tables, bold, bullets, headings. ThinkingBlock component (collapsible, auto-collapses when done). Message layout: tool progress steps → collapsible thinking → prominent formatted answer. All event handlers (including error) merge with existing assistant message.
+
+**Verification Fix (1 bug):**
+1. Error event handler created new message instead of merging → fixed to merge with existing assistant message
+
+**Files Modified (3):**
+1. `lib/montree/super-admin/guru-prompt.ts` — Response Format CRITICAL section
+2. `app/api/montree/super-admin/guru/route.ts` — SSE thinking/text distinction + forced synthesis
+3. `components/montree/super-admin/SuperAdminGuru.tsx` — Complete rewrite (markdown, ThinkingBlock, 15 tool labels, message merging, error merge fix)
+
+**Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_SUPER_ADMIN_GURU_ANSWER_QUALITY_MAR30.md`
+
 ### Session Work (Mar 30, 2026 — Principal Admin Guru)
 
 **Principal Admin Guru — 5 Files, 13 Audit Cycles, 3 Consecutive CLEAN — ⚠️ NOT YET PUSHED:**
@@ -84,6 +141,28 @@ Built a full-power conversational AI copilot for school principals. School-scope
 
 **Audit Summary:** 13 cycles, 39 independent audit agents. Cycles 1-8: research + initial builds. Cycle 9: 1 real bug (null check). Cycle 10: 4 real bugs (column name mismatches). Cycles 11-13: **3 CONSECUTIVE CLEAN** ✅
 **Deploy:** ⚠️ NOT YET PUSHED. No migrations needed.
+
+### Session Work (Mar 30, 2026 — Super-Admin Dashboard Fix)
+
+**Super-Admin Schools Dashboard Fix — 3×3×3 Audited — ✅ PUSHED:**
+
+Fixed 3 broken metrics on the super-admin schools dashboard: Location (always empty), Last Active (always "Never"), Est. Cost (always "$0.00"). Root cause: `montree_guru_interactions` uses `asked_at` as its timestamp column, but the schools API queried `created_at` — which doesn't exist. Supabase silently returns empty/null for non-existent columns instead of throwing.
+
+**5 Fixes Applied:**
+1. **CRITICAL: Column name fix** — `.select('child_id, model_used, created_at')` → `asked_at`, `.order('created_at')` → `asked_at`. Root cause of all dashboard zeros.
+2. **HIGH: Unbounded activity window** — "Last Active" was derived from 30-day-filtered query, hiding schools active 31+ days ago. Split into separate activity map (all interactions) and cost map (30-day window).
+3. **MEDIUM: Merged duplicate queries** — Two separate queries to `montree_guru_interactions` merged into single query with `.limit(5000)` + in-memory filter for 30-day subset. Halves DB round-trips.
+4. **MEDIUM: PATCH 404 check** — Added null check after `.maybeSingle()` — previously returned `{ school: null }` as 200 success.
+5. **LOW: DELETE hardening** — Array cap (max 20 schools per request) + error sanitization (was leaking internal error details).
+
+**Location field:** Confirmed as data gap, not code bug — `montree_schools` has no city/country columns. Location data lives in `montree_visitors` and `montree_leads` tables. Left as-is.
+
+**Files Modified (1):**
+1. `app/api/montree/super-admin/schools/route.ts` — 5 fixes across GET/PATCH/DELETE handlers
+
+**Audit Summary:** 3 cycles × 3 agents = 9 independent audit agents. Cycle 1: 5 findings (all fixed). Cycle 2: ALL CLEAN. Cycle 3: 1 optimization (query merge), then ALL CLEAN.
+**Deploy:** ✅ PUSHED — commit `0a92ac1a`. No migrations needed. Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_SUPER_ADMIN_DASHBOARD_FIX_MAR30.md`
 
 ### Session Work (Mar 29, 2026 — Guru Memory Fix + Leads Email + Dashboard Sections)
 

@@ -2,7 +2,7 @@
 // Native-feeling capture flow: Camera opens instantly → Take photo → Tag child → Upload
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
@@ -13,6 +13,12 @@ import { uploadVideo } from '@/lib/montree/media/upload';
 import { startAnalysis } from '@/lib/montree/photo-insight-store';
 import PhotoInsightPopup from '@/components/montree/guru/PhotoInsightPopup';
 import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
+import {
+  addTask,
+  getTaskSignal,
+  completeTask,
+  failTask,
+} from '@/lib/montree/background-task-store';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import EventPicker from '@/components/montree/media/EventPicker';
 
@@ -64,7 +70,7 @@ function CaptureContent() {
     preSelectedChildId ? [preSelectedChildId] : []
   );
   const [capturedMedia, setCapturedMedia] = useState<CapturedMedia | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  // Video uploads are now non-blocking via BackgroundTaskStore (no isUploading state needed)
   const [schoolId, setSchoolId] = useState<string>('');
   const [classroomId, setClassroomId] = useState<string>('');
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
@@ -140,32 +146,52 @@ function CaptureContent() {
       return;
     }
 
-    // For videos: still await the full upload (no Canvas compression needed, but large files)
+    // For videos: fire-and-forget upload via BackgroundTaskStore — navigate immediately
     if (isVideo) {
-      setIsUploading(true);
-      try {
-        const result = await uploadVideo(media.data as CapturedVideo, {
-          school_id: schoolId,
-          classroom_id: classroomId || undefined,
-          child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
-          child_ids: idsToTag.length > 1 ? idsToTag : undefined,
-          is_class_photo: isClassMode,
-          work_id: workId || undefined,
-          caption: workName || undefined,
-          tags: workArea ? [workArea] : undefined,
-          event_id: selectedEvent?.id || undefined,
-        });
-        if (result.success) {
-          toast.success(`${label} saved!`, { duration: 2000 });
-        } else {
-          toast.error(`${label} failed: ${result.error || 'Upload error'}`, { duration: 5000 });
-        }
-      } catch (err) {
-        console.error('Video upload error:', err);
-        toast.error(`${label} upload failed`, { duration: 5000 });
-      }
-      // Navigate after video upload
+      const videoBlob = 'blob' in (media.data as CapturedVideo)
+        ? (media.data as CapturedVideo).blob
+        : media.data as Blob;
+
+      toast.success(t('offline.photoSaved') || `${label} saved!`, { duration: 2000 });
       navigateAfterCapture(childIds);
+
+      // Register background task — returns immediately
+      const taskId = addTask({
+        type: 'video_upload',
+        label: t('bgTask.uploadingVideo'),
+      });
+
+      const signal = getTaskSignal(taskId);
+
+      // Async processing — NOT awaited
+      (async () => {
+        try {
+          const result = await uploadVideo(media.data as CapturedVideo, {
+            school_id: schoolId,
+            classroom_id: classroomId || undefined,
+            child_id: idsToTag.length === 1 ? idsToTag[0] : undefined,
+            child_ids: idsToTag.length > 1 ? idsToTag : undefined,
+            is_class_photo: isClassMode,
+            work_id: workId || undefined,
+            caption: workName || undefined,
+            tags: workArea ? [workArea] : undefined,
+            event_id: selectedEvent?.id || undefined,
+          });
+
+          if (signal?.aborted) return;
+
+          if (result.success) {
+            completeTask(taskId, { message: `✓ ${t('bgTask.videoComplete')}` });
+          } else {
+            failTask(taskId, result.error || t('bgTask.videoFailed'));
+          }
+        } catch (err) {
+          if (signal?.aborted) return;
+          console.error('Video upload error:', err);
+          failTask(taskId, t('bgTask.videoFailed'));
+        }
+      })();
+
       return;
     }
 
@@ -237,6 +263,19 @@ function CaptureContent() {
   };
 
   // ============================================
+  // POPUP HANDLERS (PhotoInsightPopup callbacks)
+  // ============================================
+
+  const handlePopupTagManually = useCallback((mediaId: string, childId: string) => {
+    // Navigate to child's gallery so they can use the full area picker + work wheel
+    router.push(`/montree/dashboard/${childId}/gallery?tagPhoto=${mediaId}`);
+  }, [router]);
+
+  const handlePopupStatusPicked = useCallback(() => {
+    // No-op on capture page — gallery handles progress refresh
+  }, []);
+
+  // ============================================
   // CAMERA HANDLERS
   // ============================================
 
@@ -297,21 +336,6 @@ function CaptureContent() {
   // ============================================
   // RENDER
   // ============================================
-
-  // Uploading overlay (only for video uploads which still block)
-  if (isUploading) {
-    return (
-      <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
-        <Toaster position="top-center" />
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-400 border-t-transparent" />
-          <p className="text-white text-lg font-medium">
-            {t('capture.uploading')}
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Step 1: Camera (opens immediately)
   if (step === 'camera') {
@@ -489,6 +513,8 @@ function CaptureContent() {
         <PhotoInsightPopup
           childId={selectedChildIds[0]}
           classroomId={classroomId || undefined}
+          onTagManually={handlePopupTagManually}
+          onStatusPicked={handlePopupStatusPicked}
         />
       )}
     </div>

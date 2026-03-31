@@ -1,11 +1,20 @@
 // components/montree/TeacherNotes.tsx
 // Classroom-level teacher notes with voice recording
+// NON-BLOCKING: Record → stop → immediately return to idle → transcribe in background
+// Uses BackgroundTaskStore for lifecycle tracking + BackgroundTaskBanner for status display.
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 import { toast } from 'sonner';
+import {
+  addTask,
+  getTaskSignal,
+  completeTask,
+  failTask,
+  deliverTranscript,
+} from '@/lib/montree/background-task-store';
 
 interface TeacherNotesProps {
   classroomId: string;
@@ -22,6 +31,8 @@ interface Note {
   created_at: string;
 }
 
+type MicState = 'idle' | 'recording';
+
 export default function TeacherNotes({ classroomId, teacherId, teacherName }: TeacherNotesProps) {
   const { t } = useI18n();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -30,9 +41,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
   const [saving, setSaving] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  // Voice recording state
-  const [isRecording, setIsRecording] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
+  // Only two states: idle or recording. Transcription happens in background.
+  const [micState, setMicState] = useState<MicState>('idle');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
@@ -55,109 +65,135 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
     fetchNotes();
   }, [fetchNotes]);
 
-  // Cleanup recording on unmount
+  // Cleanup on unmount: stop recording only (background tasks survive navigation)
   useEffect(() => {
     return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
       }
+      streamRef.current?.getTracks().forEach(track => track.stop());
     };
   }, []);
 
-  // Mounted ref to prevent state updates after unmount
-  const mountedRef = useRef(true);
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
+  // Fire-and-forget background transcription
+  const processInBackground = useCallback((blob: Blob) => {
+    // Register task in background store — returns immediately
+    const taskId = addTask({
+      type: 'voice_note',
+      label: t('bgTask.transcribing'),
+      childId: null as unknown as string, // classroom-level note, no child
+      childName: undefined,
+      onTranscript: (text: string) => {
+        setContent(prev => prev ? `${prev}\n${text}` : text);
+      },
+      onComplete: null,
+    });
+
+    const signal = getTaskSignal(taskId);
+
+    // Async processing — NOT awaited
+    (async () => {
+      try {
+        const formData = new FormData();
+        formData.append('audio', blob, 'recording.webm');
+
+        const res = await fetch('/api/montree/voice-notes/transcribe', {
+          method: 'POST',
+          body: formData,
+          signal,
+        });
+
+        if (!res.ok) {
+          let errorMessage = t('voiceNotes.transcribeError');
+          try {
+            const errorData = await res.json();
+            if (errorData.code === 'MISSING_API_KEY') {
+              errorMessage = t('voiceNotes.notConfigured');
+            }
+          } catch { /* ignore parse error */ }
+          throw new Error(errorMessage);
+        }
+
+        const data = await res.json();
+        const transcript = data.text || data.transcript;
+
+        if (!transcript || transcript.length < 3) {
+          failTask(taskId, t('voiceNotes.noSpeech'));
+          return;
+        }
+
+        // Deliver transcript to textarea via callback stored in task
+        deliverTranscript(taskId, transcript);
+
+        completeTask(taskId, {
+          message: `✓ ${t('teacherNotes.transcribed')}`,
+        });
+      } catch (err) {
+        if (signal?.aborted) return; // Task was cancelled
+        console.error('[teacher-notes] Background transcription error:', err);
+        const errorMsg = err instanceof Error ? err.message : t('bgTask.voiceNoteFailed');
+        failTask(taskId, errorMsg);
+      }
+    })();
+  }, [t]);
 
   const startRecording = useCallback(async () => {
     try {
-      // CRITICAL FIX: navigator.mediaDevices is undefined on HTTP pages or unsupported browsers
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        toast.error(t('teacherNotes.micNotSupported'));
         return;
       }
 
-      // CRITICAL FIX: getUserMedia can hang indefinitely on permission denial — add 10s timeout
       const stream = await Promise.race([
         navigator.mediaDevices.getUserMedia({ audio: true }),
         new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Microphone permission timeout')), 10_000)
+          setTimeout(() => reject(new Error('Mic timeout')), 10_000)
         ),
       ]);
       streamRef.current = stream;
+
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : '';
+
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
       chunksRef.current = [];
 
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-          ? 'audio/webm;codecs=opus'
-          : 'audio/webm',
-      });
-
-      mediaRecorder.ondataavailable = (e) => {
+      recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
 
-      mediaRecorder.onstop = async () => {
-        // Release mic
+      recorder.onstop = () => {
         stream.getTracks().forEach(track => track.stop());
         streamRef.current = null;
 
-        if (chunksRef.current.length === 0) return;
-
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const chunks = chunksRef.current;
         chunksRef.current = [];
 
-        // Guard: component may have unmounted while recording
-        if (!mountedRef.current) return;
+        if (chunks.length === 0) return;
 
-        // Transcribe via existing Whisper endpoint
-        setIsTranscribing(true);
-        try {
-          const formData = new FormData();
-          formData.append('audio', blob, 'recording.webm');
+        const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+        if (blob.size < 100) return; // Too short — silent discard
 
-          // CRITICAL FIX: Whisper transcription can hang — add 30s timeout via AbortController
-          const transcribeAbort = new AbortController();
-          const transcribeTimeout = setTimeout(() => transcribeAbort.abort(), 30_000);
-          const res = await montreeApi('/api/montree/voice-notes/transcribe', {
-            method: 'POST',
-            body: formData,
-            signal: transcribeAbort.signal,
-          });
-          clearTimeout(transcribeTimeout);
-
-          if (!mountedRef.current) return;
-
-          if (res.ok) {
-            const data = await res.json();
-            if (data.text) {
-              setContent(prev => prev ? `${prev}\n${data.text}` : data.text);
-            }
-          } else {
-            toast.error(t('common.error'));
-          }
-        } catch {
-          if (mountedRef.current) toast.error(t('common.error'));
-        } finally {
-          if (mountedRef.current) setIsTranscribing(false);
-        }
+        // Fire-and-forget: process in background, return mic to idle immediately
+        processInBackground(blob);
       };
 
-      mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.start(1000); // 1s chunks
-      setIsRecording(true);
+      recorder.start(1000);
+      setMicState('recording');
     } catch {
-      toast.error(t('common.error'));
+      // Silent fail — mic permission denied or unavailable
     }
-  }, [t]);
+  }, [processInBackground]);
 
+  // Stop recording → triggers onstop → fires processInBackground → returns to idle
   const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current = null;
     }
-    setIsRecording(false);
+    setMicState('idle'); // Return to idle IMMEDIATELY — no waiting
   }, []);
 
   const handleSave = useCallback(async () => {
@@ -251,12 +287,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
               maxLength={5000}
             />
             <div className="flex items-center gap-2">
-              {/* Voice record button */}
-              {isTranscribing ? (
-                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium animate-pulse">
-                  {t('teacherNotes.transcribing')}
-                </span>
-              ) : isRecording ? (
+              {/* Voice record button — only idle or recording, transcription happens in background */}
+              {micState === 'recording' ? (
                 <button
                   onClick={stopRecording}
                   className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors animate-pulse"
