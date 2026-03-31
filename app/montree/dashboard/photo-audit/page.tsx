@@ -409,7 +409,7 @@ export default function PhotoAuditPage() {
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
   const [counts, setCounts] = useState({ green: 0, amber: 0, red: 0, untagged: 0 });
   const [loading, setLoading] = useState(true);
-  const [zone, setZone] = useState<Zone>('all');
+  const [zone, setZone] = useState<Zone>('amber');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
@@ -634,9 +634,17 @@ export default function PhotoAuditPage() {
         }),
       });
       if (!res.ok) throw new Error('confirm failed');
+      const oldZone = photo.zone || 'amber';
       setPhotos(prev => prev.map(p =>
         p.id === photo.id ? { ...p, zone: 'green' as const, confidence: 1.0 } : p
       ));
+      setCounts(prev => ({
+        ...prev,
+        green: prev.green + 1,
+        ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
       toast.success(t('audit.confirmed'));
     } catch {
       toast.error(t('audit.confirmFailed'));
@@ -652,7 +660,15 @@ export default function PhotoAuditPage() {
     try {
       const res = await montreeApi(`/api/montree/media?id=${photo.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('delete failed');
+      const deletedZone = photo.zone || 'amber';
       setPhotos(prev => prev.filter(p => p.id !== photo.id));
+      setCounts(prev => ({
+        ...prev,
+        ...(deletedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+        ...(deletedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(deletedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(deletedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
       toast.success(t('audit.photoDeleted'));
     } catch {
@@ -717,11 +733,19 @@ export default function PhotoAuditPage() {
         }),
       });
       if (!res.ok) throw new Error('correction failed');
+      const oldZone = correctingPhoto.zone || 'amber';
       setPhotos(prev => prev.map(p =>
         p.id === correctingPhoto.id
           ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea, zone: 'green' as const, confidence: 1.0 }
           : p
       ));
+      setCounts(prev => ({
+        ...prev,
+        green: prev.green + 1,
+        ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
       toast.success(t('audit.corrected'));
     } catch {
       toast.error(t('audit.correctionFailed'));
@@ -771,6 +795,15 @@ export default function PhotoAuditPage() {
     }
     setBatchProcessing(false);
     setSelectedIds(new Set(failed));
+    // Recalculate counts from current photos state after batch updates
+    if (succeeded > 0) {
+      setPhotos(prev => {
+        const newCounts = { green: 0, amber: 0, red: 0, untagged: 0 };
+        prev.forEach(p => { if (p.zone && newCounts[p.zone as keyof typeof newCounts] !== undefined) newCounts[p.zone as keyof typeof newCounts]++; });
+        setCounts(newCounts);
+        return prev; // no mutation, just recalc counts
+      });
+    }
     if (failed.length === 0) {
       toast.success(t('audit.batchComplete'));
     } else {
