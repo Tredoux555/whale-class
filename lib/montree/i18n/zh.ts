@@ -3636,6 +3636,7 @@ export const zh = {
   'teacherNotes.deleteConfirm': '删除这条笔记？',
   'teacherNotes.deleted': '笔记已删除',
   'teacherNotes.micNotSupported': '麦克风不可用 — 请使用HTTPS',
+  'teacherNotes.transcribed': '笔记已转录',
 
   // 脉搏生成
   'pulse.title': '班级脉搏',
@@ -3698,6 +3699,20 @@ export const zh = {
   'evidence.confirmFailed': '确认掌握失败',
   'evidence.moreReady': '项更多',
   'evidence.noData': '暂无带有证据的活跃工作',
+
+  // Background tasks
+  'bgTask.processing': '处理中',
+  'bgTask.allDone': '全部完成',
+  'bgTask.cancel': '取消',
+  'bgTask.dismiss': '关闭',
+  'bgTask.transcribing': '正在转录语音笔记...',
+  'bgTask.extracting': '正在分析笔记...',
+  'bgTask.voiceNoteComplete': '语音笔记已完成',
+  'bgTask.voiceNoteFailed': '语音笔记失败',
+  'bgTask.uploadingVideo': '正在上传视频...',
+  'bgTask.videoComplete': '视频已上传',
+  'bgTask.videoFailed': '视频上传失败',
+
   'time.justNow': '刚刚',
   'time.minutesAgo': '{count}分钟前',
   'time.hoursAgo': '{count}小时前',

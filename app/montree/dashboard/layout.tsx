@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import DashboardHeader from '@/components/montree/DashboardHeader';
 import NetworkStatusBanner from '@/components/montree/NetworkStatusBanner';
+import BackgroundTaskBanner from '@/components/montree/BackgroundTaskBanner';
 import { registerSyncTriggers } from '@/lib/montree/offline/sync-triggers';
 import { FeaturesProvider } from '@/lib/montree/features';
 import { getSession } from '@/lib/montree/auth';
@@ -35,6 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <NetworkStatusBanner />
         <DashboardHeader />
         {children}
+        <BackgroundTaskBanner />
       </div>
     </FeaturesProvider>
   );

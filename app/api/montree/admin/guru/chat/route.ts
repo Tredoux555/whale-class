@@ -100,6 +100,7 @@ export async function POST(req: NextRequest) {
         let pendingToolResults: ToolResultBlockParam[] = [];
         let fullAssistantText = '';
         let toolRound = 0;
+        let lastRoundHadToolUse = false;
 
         while (toolRound < MAX_TOOL_ROUNDS) {
           // Check total timeout
@@ -145,24 +146,19 @@ export async function POST(req: NextRequest) {
               { timeout: API_TIMEOUT_MS }
             );
 
-            // Process response blocks
+            // Process response blocks — buffer text per round
             lastAssistantBlocks = [];
             pendingToolResults = [];
             let hasToolUse = false;
+            const roundTextParts: string[] = [];
 
             for (const block of response.content) {
               if (block.type === 'text') {
-                fullAssistantText += block.text;
+                roundTextParts.push(block.text);
                 lastAssistantBlocks.push({
                   type: 'text',
                   text: block.text,
                 });
-                controller.enqueue(
-                  sseEvent(encoder, {
-                    type: 'text',
-                    text: block.text,
-                  })
-                );
               } else if (block.type === 'tool_use') {
                 hasToolUse = true;
 
@@ -224,6 +220,25 @@ export async function POST(req: NextRequest) {
               }
             }
 
+            // Emit buffered text — as 'thinking' if this round had tool use, as 'text' if final
+            const roundText = roundTextParts.join('');
+            if (roundText) {
+              fullAssistantText += roundText;
+              if (hasToolUse) {
+                // Intermediate round — emit as thinking (visible but de-emphasized on client)
+                controller.enqueue(
+                  sseEvent(encoder, { type: 'thinking', text: roundText })
+                );
+              } else {
+                // Final round — no tool use, this is the real answer
+                controller.enqueue(
+                  sseEvent(encoder, { type: 'text', text: roundText })
+                );
+              }
+            }
+
+            lastRoundHadToolUse = hasToolUse;
+
             // If no tool use, model is done responding
             if (!hasToolUse) {
               break;
@@ -243,6 +258,65 @@ export async function POST(req: NextRequest) {
               })
             );
             break;
+          }
+        }
+
+        // Forced synthesis: if the last round had tool use (hit MAX_TOOL_ROUNDS or timeout),
+        // the model never got to write a final answer. Make one more call WITHOUT tools
+        // to force it to summarize everything it found.
+        if (
+          lastRoundHadToolUse &&
+          Date.now() - startTime < TOTAL_TIMEOUT_MS - 5000 // Leave 5s buffer
+        ) {
+          try {
+            const synthesisMessages: MessageParam[] = [
+              ...conversationMessages,
+            ];
+            // Append the last assistant blocks + tool results so model has full context
+            if (
+              lastAssistantBlocks.length > 0 &&
+              pendingToolResults.length > 0
+            ) {
+              synthesisMessages.push({
+                role: 'assistant',
+                content: lastAssistantBlocks,
+              });
+              synthesisMessages.push({
+                role: 'user',
+                content: pendingToolResults,
+              });
+            }
+
+            const synthesisResponse = await client.messages.create(
+              {
+                model: MODEL,
+                max_tokens: 4096,
+                system: systemPrompt,
+                // No tools — forces a text-only answer
+                messages: synthesisMessages,
+              },
+              {
+                timeout: Math.min(
+                  API_TIMEOUT_MS,
+                  Math.max(5000, TOTAL_TIMEOUT_MS - (Date.now() - startTime) - 1000)
+                ),
+              }
+            );
+
+            for (const block of synthesisResponse.content) {
+              if (block.type === 'text' && block.text) {
+                fullAssistantText += block.text;
+                controller.enqueue(
+                  sseEvent(encoder, { type: 'text', text: block.text })
+                );
+              }
+            }
+          } catch (synthError) {
+            console.error(
+              '[Principal Guru] Forced synthesis error:',
+              synthError instanceof Error ? synthError.message : synthError
+            );
+            // Non-fatal — we still have whatever text accumulated during tool rounds
           }
         }
 

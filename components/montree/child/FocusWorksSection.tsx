@@ -40,6 +40,7 @@ export interface FocusWorksSectionProps {
   onOpenWheelPicker: (area: string, workName?: string) => void;
   onOpenQuickGuide: (workName: string, chineseName?: string) => void;
   childId: string;
+  childName?: string;
   getAreaConfig: (area: string) => AreaConfig;
   isHomeschoolParent?: boolean;
   guruAreaDetails?: Record<string, AreaDetail> | null;
@@ -79,6 +80,7 @@ export default function FocusWorksSection({
   onOpenWheelPicker,
   onOpenQuickGuide,
   childId,
+  childName,
   getAreaConfig,
   isHomeschoolParent: isParent = false,
   guruAreaDetails,
@@ -346,6 +348,7 @@ export default function FocusWorksSection({
                           {!isParent && (
                             <ChildVoiceNote
                               childId={childId}
+                              childName={childName}
                               onTranscript={(text) => setNotes(prev => ({
                                 ...prev,
                                 [focusWork.work_name]: prev[focusWork.work_name] ? prev[focusWork.work_name] + ' ' + text : text,

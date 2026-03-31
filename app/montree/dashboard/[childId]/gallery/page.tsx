@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
@@ -100,9 +100,11 @@ interface SentReport {
 
 export default function GalleryPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const childId = params.childId as string;
   const { t, locale } = useI18n();
   const session = getSession();
+  const tagPhotoParam = searchParams.get('tagPhoto');
 
   // Core state
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
@@ -280,6 +282,18 @@ export default function GalleryPage() {
   useEffect(() => {
     loadCurriculum();
   }, [loadCurriculum]);
+
+  // Deep-link: if tagPhoto param is set (e.g. from capture page "Pick work" button),
+  // auto-open the area picker for that photo once curriculum is ready
+  const tagPhotoHandledRef = useRef(false);
+  useEffect(() => {
+    if (!tagPhotoParam || tagPhotoHandledRef.current) return;
+    tagPhotoHandledRef.current = true;
+    loadCurriculum().then(() => {
+      setAreaPickerPhotoId(tagPhotoParam);
+      setShowAreaPicker(true);
+    });
+  }, [tagPhotoParam, loadCurriculum]);
 
   // Batch-load all image URLs
   useEffect(() => {

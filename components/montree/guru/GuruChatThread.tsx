@@ -664,9 +664,8 @@ export default function GuruChatThread({
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={isWholeClassMode ? t('guru.wholeClassPlaceholder') : isTeacher ? t('guru.teacherAskPlaceholder') : t('guru.askPlaceholder').replace('{name}', firstName)}
-              disabled={sending}
               rows={1}
-              className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none disabled:opacity-50 ${
+              className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none ${
                 isTeacher
                   ? 'border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-violet-300 focus:ring-1 focus:ring-violet-200'
                   : 'border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10'
