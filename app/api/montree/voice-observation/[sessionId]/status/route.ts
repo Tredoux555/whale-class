@@ -18,7 +18,7 @@ export async function GET(
     const supabase = getSupabase();
 
     // Check-on-access cleanup
-    cleanupExpiredSessions(auth.schoolId).catch(() => {});
+    cleanupExpiredSessions(auth.schoolId).catch((err) => console.warn('[VoiceObs] Cleanup failed:', err));
 
     // Fetch session
     const { data: session } = await supabase

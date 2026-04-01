@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         .eq('password_hash', codeHash)
         .eq('role', 'principal')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (!principal) {
         // Fallback: try bcrypt for accounts created before SHA-256 fix

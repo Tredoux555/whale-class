@@ -23,6 +23,7 @@ export default function CurriculumTree({ childId, progress, onProgressUpdate }: 
     const fetchDetailedProgress = async () => {
       try {
         const res = await fetch(`/api/montree/progress/${childId}`);
+        if (!res.ok) throw new Error('Failed to fetch progress');
         const data = await res.json();
         setChildProgress(data);
       } catch (error) {
