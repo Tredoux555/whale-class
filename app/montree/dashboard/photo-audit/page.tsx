@@ -646,6 +646,7 @@ export default function PhotoAuditPage() {
         ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       toast.success(t('audit.confirmed'));
+      setZone('green');
     } catch {
       toast.error(t('audit.confirmFailed'));
     } finally {
@@ -747,6 +748,7 @@ export default function PhotoAuditPage() {
         ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       toast.success(t('audit.corrected'));
+      setZone('green');
     } catch {
       toast.error(t('audit.correctionFailed'));
     } finally {
@@ -803,6 +805,7 @@ export default function PhotoAuditPage() {
         setCounts(newCounts);
         return prev; // no mutation, just recalc counts
       });
+      setZone('green');
     }
     if (failed.length === 0) {
       toast.success(t('audit.batchComplete'));
