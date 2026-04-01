@@ -374,6 +374,12 @@ export default function SuperAdminPage() {
               📊 API Usage
             </Link>
             <Link
+              href="/montree/super-admin/job-tracker"
+              className="px-4 py-2 bg-rose-600 text-white rounded-lg font-medium hover:bg-rose-700 text-sm"
+            >
+              🎯 Job Tracker
+            </Link>
+            <Link
               href="/montree/super-admin/marketing"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 text-sm"
             >
