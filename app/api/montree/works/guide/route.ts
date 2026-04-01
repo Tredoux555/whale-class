@@ -33,13 +33,14 @@ export async function GET(request: NextRequest) {
 
     // 1. Try classroom curriculum first (if classroom_id provided)
     if (classroomId) {
-      const { data } = await supabase
+      const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
         .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters')
         .eq('classroom_id', classroomId)
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
         .maybeSingle();
+      if (classroomError) console.error('[Guide API] Classroom curriculum query error:', classroomError);
 
       if (data?.quick_guide || data?.presentation_steps) {
         guideData = data;
@@ -48,12 +49,13 @@ export async function GET(request: NextRequest) {
 
     // 2. Fall back to master Brain table if no data in classroom
     if (!guideData) {
-      const { data } = await supabase
+      const { data, error: masterError } = await supabase
         .from('montessori_works')
         .select('name, quick_guide, video_search_term, parent_explanation_detailed, direct_aims, materials_needed, presentation_steps, control_of_error, parent_why_it_matters')
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
         .maybeSingle();
+      if (masterError) console.error('[Guide API] Master works query error:', masterError);
 
       if (data) {
         guideData = {

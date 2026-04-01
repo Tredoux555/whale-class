@@ -207,7 +207,7 @@ async function tryTeacherLogin(supabase: ReturnType<typeof getSupabase>, code: s
     .select(fields)
     .eq('password_hash', codeHash)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   let teacher = hashMatch;
 
@@ -218,7 +218,7 @@ async function tryTeacherLogin(supabase: ReturnType<typeof getSupabase>, code: s
       .select(`${fields}, login_code`)
       .ilike('login_code', code)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (codeMatch) {
       if (codeMatch.password_hash) {
@@ -254,13 +254,13 @@ async function tryTeacherLogin(supabase: ReturnType<typeof getSupabase>, code: s
     .from('montree_classrooms')
     .select('id, name, icon, color')
     .eq('id', teacher.classroom_id)
-    .single();
+    .maybeSingle();
 
   const { data: school } = await supabase
     .from('montree_schools')
     .select('id, name, slug')
     .eq('id', teacher.school_id)
-    .single();
+    .maybeSingle();
 
   let onboarded = false;
   if (classroom) {
@@ -285,7 +285,7 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
     .select(fields)
     .eq('password_hash', codeHash)
     .eq('role', 'principal')
-    .single();
+    .maybeSingle();
 
   let principal = hashMatch;
 
@@ -296,7 +296,7 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
       .select(`${fields}, login_code`)
       .ilike('login_code', code)
       .eq('role', 'principal')
-      .single();
+      .maybeSingle();
 
     if (codeMatch) {
       if (codeMatch.password_hash) {
@@ -332,7 +332,7 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
     .from('montree_schools')
     .select('id, name, slug')
     .eq('id', principal.school_id)
-    .single();
+    .maybeSingle();
 
   if (!school) return null;
 
@@ -355,7 +355,7 @@ async function tryParentLogin(supabase: ReturnType<typeof getSupabase>, code: st
     .select('id, invite_code, child_id, expires_at, is_active, is_reusable, use_count, max_uses')
     .eq('invite_code', code)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (!invite) return null;
 
@@ -370,7 +370,7 @@ async function tryParentLogin(supabase: ReturnType<typeof getSupabase>, code: st
     .from('montree_children')
     .select('id, name, nickname, classroom_id')
     .eq('id', invite.child_id)
-    .single();
+    .maybeSingle();
 
   if (!child) return null;
 

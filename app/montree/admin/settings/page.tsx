@@ -75,6 +75,7 @@ export default function AdminSettingsPage() {
         return;
       }
 
+      if (!res.ok) throw new Error('Failed to load settings');
       const data = await res.json();
       setSchool(data.school);
       setPrincipal(data.principal);

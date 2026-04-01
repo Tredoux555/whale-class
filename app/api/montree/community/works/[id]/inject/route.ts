@@ -25,7 +25,7 @@ export async function POST(
       .select('*')
       .eq('id', workId)
       .eq('status', 'approved')
-      .single();
+      .maybeSingle();
 
     if (workError || !communityWork) {
       return NextResponse.json({ error: 'Work not found' }, { status: 404 });
@@ -36,7 +36,7 @@ export async function POST(
       .from('montree_teachers')
       .select('id, school_id, classroom_id, name')
       .ilike('login_code', teacher_code.trim())
-      .single();
+      .maybeSingle();
 
     if (teacherError || !teacher) {
       return NextResponse.json({ error: 'Teacher code not found. Check your code and try again.' }, { status: 404 });
@@ -52,7 +52,7 @@ export async function POST(
       .select('id')
       .eq('classroom_id', teacher.classroom_id)
       .eq('area_key', communityWork.area)
-      .single();
+      .maybeSingle();
 
     if (!areaData) {
       // Auto-seed areas for this classroom
@@ -73,7 +73,7 @@ export async function POST(
         .select('id')
         .eq('classroom_id', teacher.classroom_id)
         .eq('area_key', communityWork.area)
-        .single();
+        .maybeSingle();
 
       areaData = newArea;
     }
@@ -88,7 +88,7 @@ export async function POST(
       .select('id')
       .eq('classroom_id', teacher.classroom_id)
       .eq('name', communityWork.title)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({

@@ -71,6 +71,8 @@ export default function TeachersPage() {
         fetch(`/api/montree/admin/classrooms?school_id=${schoolId}`)
       ]);
       
+      if (!teachersRes.ok) throw new Error('Failed to load teachers');
+      if (!classroomsRes.ok) throw new Error('Failed to load classrooms');
       const teachersData = await teachersRes.json();
       const classroomsData = await classroomsRes.json();
       

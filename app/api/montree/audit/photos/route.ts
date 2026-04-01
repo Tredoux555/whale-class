@@ -123,8 +123,9 @@ export async function GET(request: NextRequest) {
       }
     }
     if (missingChildIds.length > 0) {
-      const { data: extraChildren } = await supabase
+      const { data: extraChildren, error: extraErr } = await supabase
         .from('montree_children').select('id, name').in('id', missingChildIds);
+      if (extraErr) console.error('[Photo Audit] Extra children fetch error:', extraErr);
       if (extraChildren) {
         for (const c of extraChildren) childMap.set(c.id, c.name);
       }

@@ -46,6 +46,7 @@ export default function FeaturesAdminPage() {
     if (!session?.classroom?.id) return;
     try {
       const res = await fetch(`/api/montree/features?classroom_id=${session.classroom.id}`);
+      if (!res.ok) throw new Error('Failed to load features');
       const data = await res.json();
       if (data.success) setFeatures(data.features || []);
     } catch (err) {
@@ -67,9 +68,10 @@ export default function FeaturesAdminPage() {
           enabled_by: session.teacher?.name || 'admin',
         }),
       });
+      if (!res.ok) throw new Error('Failed to toggle feature');
       const data = await res.json();
       if (data.success) {
-        setFeatures(prev => prev.map(f => 
+        setFeatures(prev => prev.map(f =>
           f.feature_key === featureKey ? { ...f, enabled, classroom_enabled: enabled } : f
         ));
         // Invalidate the shared features cache so other pages pick up the change
