@@ -69,13 +69,14 @@ export async function POST(request: NextRequest) {
     const groupMediaIds = (groupLinks || []).map((l: { media_id: string }) => l.media_id);
     let groupMedia: Record<string, unknown>[] = [];
     if (groupMediaIds.length > 0) {
-      const { data } = await supabase
+      const { data, error: groupErr } = await supabase
         .from('montree_media')
         .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, work_id, event_id, auto_crop')
         .in('id', groupMediaIds)
         .gte('captured_at', date_from)
         .lte('captured_at', date_to + 'T23:59:59.999Z')
         .order('captured_at', { ascending: true });
+      if (groupErr) console.error('[Albums] Group media fetch error:', groupErr);
       groupMedia = data || [];
     }
 

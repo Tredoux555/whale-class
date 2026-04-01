@@ -148,6 +148,9 @@ export default function PrincipalSetupPage() {
         body: JSON.stringify({ schoolId: school.id, classrooms }),
       });
 
+      if (!response.ok) {
+        throw new Error(t('principal.setup.error.noResponseBody'));
+      }
       if (!response.body) {
         throw new Error(t('principal.setup.error.noResponseBody'));
       }

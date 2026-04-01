@@ -46,7 +46,8 @@ export async function GET(req: NextRequest) {
       .from('montree_children')
       .select('id, name, photo_url')
       .eq('classroom_id', auth.classroomId)
-      .order('name');
+      .order('name')
+      .limit(200);
 
     if (childrenErr) {
       console.error('[Attendance] Children fetch error:', childrenErr);

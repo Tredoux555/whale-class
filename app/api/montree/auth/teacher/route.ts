@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         `)
         .eq('password_hash', codeHash)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (!data) {
         // Step 2: login_code column lookup (case-insensitive for backward compat)
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           `)
           .ilike('login_code', normalizedCode)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
         if (newData) {
           // If password_hash exists, verify it; if NULL (old setup routes), trust login_code match
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
         `)
         .eq('email', email.toLowerCase())
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error || !data) {
         await logAudit(supabase, {
@@ -194,14 +194,14 @@ export async function POST(request: NextRequest) {
       .from('montree_classrooms')
       .select('id, name, icon, color')
       .eq('id', teacher.classroom_id)
-      .single();
+      .maybeSingle();
 
     // Get school info
     const { data: school } = await supabase
       .from('montree_schools')
       .select('id, name, slug')
       .eq('id', teacher.school_id)
-      .single();
+      .maybeSingle();
 
     // Update last login
     await supabase
