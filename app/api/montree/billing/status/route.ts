@@ -1,13 +1,18 @@
 // /api/montree/billing/status/route.ts
 // Get billing status and history
 import { NextRequest, NextResponse } from 'next/server';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 
 export async function GET(request: NextRequest) {
   try {
+    // Verify authentication
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { searchParams } = new URL(request.url);
     const schoolId = searchParams.get('school_id');
-    
+
     if (!schoolId) {
       return NextResponse.json({ error: 'School ID required' }, { status: 400 });
     }
@@ -23,7 +28,7 @@ export async function GET(request: NextRequest) {
         trial_ends_at, current_period_end, max_students
       `)
       .eq('id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (schoolError) {
       console.error('School lookup error:', schoolError);

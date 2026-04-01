@@ -1643,7 +1643,9 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
                 p_learning: `Onboarding: Sonnet identified "${finalWorkName}" (${finalArea}) with confidence ${input.confidence.toFixed(2)} in classroom ${classroomId}`,
               }).then(({ error: brainErr }) => {
                 if (brainErr) console.error('[Brain] Onboarding learning append failed:', brainErr);
-              }).catch(() => {});
+              }).catch((err) => {
+                console.error('[Brain] Onboarding learning append RPC rejection (non-fatal):', err);
+              });
             }
           }
 

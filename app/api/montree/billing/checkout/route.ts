@@ -1,13 +1,18 @@
 // /api/montree/billing/checkout/route.ts
 // Create Stripe checkout session
 import { NextRequest, NextResponse } from 'next/server';
+import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getStripe, PRICE_IDS } from '@/lib/montree/stripe';
 import { getSupabase } from '@/lib/supabase-client';
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
     const { school_id, plan } = await request.json();
-    
+
     if (!school_id || !plan) {
       return NextResponse.json({ error: 'Missing school_id or plan' }, { status: 400 });
     }
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
       .from('montree_schools')
       .select('id, name, stripe_customer_id')
       .eq('id', school_id)
-      .single();
+      .maybeSingle();
 
     if (schoolError) {
       console.error('School lookup error:', schoolError);

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
           console.warn(`[Guru Webhook] Missing guru_tier in checkout metadata for teacher ${teacherId}, defaulting to sonnet`);
         }
 
-        await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+        const checkoutUpdateResult = await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
           .update({
             guru_plan: 'paid',
             guru_tier: guruTier,
@@ -75,7 +75,11 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', teacherId);
 
-        console.log(`[Guru Webhook] Checkout completed for teacher ${teacherId}, tier: ${guruTier}`);
+        if (checkoutUpdateResult.error) {
+          console.error(`[Guru Webhook] CRITICAL: Failed to update teacher ${teacherId} on checkout.session.completed:`, checkoutUpdateResult.error);
+        } else {
+          console.log(`[Guru Webhook] Checkout completed for teacher ${teacherId}, tier: ${guruTier}`);
+        }
         break;
       }
 
@@ -110,11 +114,15 @@ export async function POST(request: NextRequest) {
           updateData.guru_prompts_reset_at = new Date().toISOString();
         }
 
-        await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+        const subscriptionUpdateResult = await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
           .update(updateData)
           .eq('id', teacherId);
 
-        console.log(`[Guru Webhook] Subscription updated for teacher ${teacherId}: ${status}`);
+        if (subscriptionUpdateResult.error) {
+          console.error(`[Guru Webhook] CRITICAL: Failed to update teacher ${teacherId} on customer.subscription.updated:`, subscriptionUpdateResult.error);
+        } else {
+          console.log(`[Guru Webhook] Subscription updated for teacher ${teacherId}: ${status}`);
+        }
         break;
       }
 
@@ -127,7 +135,7 @@ export async function POST(request: NextRequest) {
         const teacherId = subscription.metadata?.teacher_id;
         if (!teacherId) break;
 
-        await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
+        const deleteUpdateResult = await (supabase.from('montree_teachers') as ReturnType<typeof supabase.from>)
           .update({
             guru_plan: 'free',
             guru_subscription_status: 'canceled',
@@ -135,7 +143,11 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', teacherId);
 
-        console.error(`[Guru Webhook] Subscription canceled for teacher ${teacherId}`);
+        if (deleteUpdateResult.error) {
+          console.error(`[Guru Webhook] CRITICAL: Failed to update teacher ${teacherId} on customer.subscription.deleted:`, deleteUpdateResult.error);
+        } else {
+          console.log(`[Guru Webhook] Subscription canceled for teacher ${teacherId}`);
+        }
         break;
       }
 
