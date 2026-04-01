@@ -71,6 +71,9 @@ export default function MediaPage() {
       }
 
       const response = await fetch(`/api/montree/media?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch media');
+      }
       const data = await response.json();
 
       if (data.success) {
@@ -86,6 +89,9 @@ export default function MediaPage() {
   const fetchChildren = useCallback(async () => {
     try {
       const response = await fetch('/api/montree/children');
+      if (!response.ok) {
+        throw new Error('Failed to fetch children');
+      }
       const data = await response.json();
       setChildren(data.children || []);
     } catch (err) {
@@ -149,6 +155,10 @@ export default function MediaPage() {
       const response = await fetch(`/api/montree/media?ids=${ids}`, {
         method: 'DELETE'
       });
+
+      if (!response.ok) {
+        throw new Error('Delete request failed');
+      }
 
       const data = await response.json();
 

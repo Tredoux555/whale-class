@@ -54,7 +54,8 @@ export async function GET(request: NextRequest) {
       definitions = defsResult.data;
       schoolFeatures = sfResult.data || [];
     } else {
-      const { data } = await supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true });
+      const { data, error } = await supabase.from('montree_feature_definitions').select('*').order('category', { ascending: true });
+      if (error) console.error('[Features] Definitions query error:', error);
       definitions = data;
     }
 

@@ -49,6 +49,10 @@ function TutorialContent() {
     async function fetchStudents() {
       try {
         const res = await fetch('/api/montree/children');
+        if (!res.ok) {
+          setStudents(DEMO_STUDENTS);
+          return;
+        }
         const data = await res.json();
         const children = data.children || [];
         // Use demo students if no real data

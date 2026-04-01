@@ -99,6 +99,10 @@ function ParentWeeklyReviewContent() {
       if (params.toString()) url += `?${params.toString()}`;
 
       const res = await fetch(url);
+      if (!res.ok) {
+        setError('Failed to load report');
+        return;
+      }
       const data = await res.json();
 
       if (!data.success) {

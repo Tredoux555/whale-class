@@ -244,11 +244,12 @@ async function fetchConfidenceData(supabase: any, mediaRows: any[]) {
   const IN_CHUNK_SIZE = 30; // ~70 chars per key × 30 = ~2.1KB per chunk (safe under 8KB limit)
   for (let i = 0; i < newKeys.length; i += IN_CHUNK_SIZE) {
     const chunk = newKeys.slice(i, i + IN_CHUNK_SIZE);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('montree_guru_interactions')
       .select('question, context_snapshot, asked_at')
       .in('question', chunk)
       .order('asked_at', { ascending: false });
+    if (error) console.error('[Photo Audit] Confidence new format query error:', error);
     if (data) newFormat.push(...data);
   }
 

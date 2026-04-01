@@ -44,6 +44,11 @@ export default function InviteParentModal({
     setLoading(true);
     try {
       const res = await fetch(`/api/montree/invites?childId=${childId}`);
+      if (!res.ok) {
+        console.error('Failed to load invites: HTTP', res.status);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       setInvites(data.invites || []);
     } catch (err) {
@@ -60,6 +65,11 @@ export default function InviteParentModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ childId, teacherId })
       });
+      if (!res.ok) {
+        console.error('Failed to create invite: HTTP', res.status);
+        setCreating(false);
+        return;
+      }
       const data = await res.json();
       if (data.invite) {
         setInvites(prev => [{ ...data.invite, status: 'active' }, ...prev]);
@@ -78,6 +88,11 @@ export default function InviteParentModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ childId, teacherId })
       });
+      if (!res.ok) {
+        console.error('Failed to reset code: HTTP', res.status);
+        setResetting(false);
+        return;
+      }
       const data = await res.json();
       if (data.invite) {
         // Mark old invites as revoked and add new one
