@@ -45,6 +45,7 @@ export default function MediaDetailModal({
       setLoading(true);
       try {
         const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}`);
+        if (!response.ok) throw new Error('Failed to fetch image URL');
         const data = await response.json();
         if (data.url) {
           setImageUrl(data.url);
@@ -74,6 +75,11 @@ export default function MediaDetailModal({
         }),
       });
 
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        toast.error(errData.error || t('media.failedToUpdate'));
+        return;
+      }
       const data = await response.json();
 
       if (data.success) {
@@ -97,6 +103,11 @@ export default function MediaDetailModal({
         method: 'DELETE',
       });
 
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        toast.error(errData.error || t('media.failedToDelete'));
+        return;
+      }
       const data = await response.json();
 
       if (data.success) {

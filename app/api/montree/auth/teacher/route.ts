@@ -8,6 +8,11 @@ import { verifyPassword, isLegacyHash, hashPassword, legacySha256 } from '@/lib/
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 
+// SQL injection defense helper for .ilike() queries
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
             id, name, email, classroom_id, school_id, is_active,
             password_hash, password_set_at, login_code, role
           `)
-          .ilike('login_code', normalizedCode)
+          .ilike('login_code', escapeIlike(normalizedCode))
           .eq('is_active', true)
           .maybeSingle();
 

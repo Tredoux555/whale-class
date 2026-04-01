@@ -9,6 +9,11 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { cookies } from 'next/headers';
 
+// SQL injection defense helper for .ilike() queries
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = getSupabase();
@@ -216,7 +221,7 @@ async function tryTeacherLogin(supabase: ReturnType<typeof getSupabase>, code: s
     const { data: codeMatch } = await supabase
       .from('montree_teachers')
       .select(`${fields}, login_code`)
-      .ilike('login_code', code)
+      .ilike('login_code', escapeIlike(code))
       .eq('is_active', true)
       .maybeSingle();
 
@@ -294,7 +299,7 @@ async function tryPrincipalLogin(supabase: ReturnType<typeof getSupabase>, code:
     const { data: codeMatch } = await supabase
       .from('montree_school_admins')
       .select(`${fields}, login_code`)
-      .ilike('login_code', code)
+      .ilike('login_code', escapeIlike(code))
       .eq('role', 'principal')
       .maybeSingle();
 

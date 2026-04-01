@@ -192,8 +192,15 @@ function ExpandedWorkDetails({
         body: formData,
       });
 
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        toast.error(errData.error || t('curriculum.failedToUpload'));
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return;
+      }
       const data = await res.json();
-      if (res.ok && data.photo_url) {
+      if (data.photo_url) {
         setCurrentPhotoUrl(data.photo_url);
         toast.success(t('curriculum.photoAdded'));
         onWorkUpdated?.();

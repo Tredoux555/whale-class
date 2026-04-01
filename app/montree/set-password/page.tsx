@@ -61,8 +61,15 @@ export default function SetPasswordPage() {
         })
       });
 
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        setError(errData.error || 'Failed to set password');
+        setLoading(false);
+        return;
+      }
+
       const data = await res.json();
-      
+
       if (data.success) {
         // Update session
         const updatedSession = {

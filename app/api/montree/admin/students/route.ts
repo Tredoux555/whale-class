@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       .select('id')
       .eq('id', classroom_id)
       .eq('school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Invalid classroom' }, { status: 400 });
@@ -129,7 +129,7 @@ export async function PATCH(request: NextRequest) {
       .from('montree_children')
       .select('id, classroom_id')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (!existingStudent) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
@@ -141,7 +141,7 @@ export async function PATCH(request: NextRequest) {
       .select('id')
       .eq('id', existingStudent.classroom_id)
       .eq('school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -154,7 +154,7 @@ export async function PATCH(request: NextRequest) {
         .select('id')
         .eq('id', classroom_id)
         .eq('school_id', schoolId)
-        .single();
+        .maybeSingle();
 
       if (!newClassroom) {
         return NextResponse.json({ error: 'Invalid classroom' }, { status: 400 });
@@ -204,7 +204,7 @@ export async function DELETE(request: NextRequest) {
       .from('montree_children')
       .select('id, classroom_id')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (!student) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
@@ -215,7 +215,7 @@ export async function DELETE(request: NextRequest) {
       .select('id')
       .eq('id', student.classroom_id)
       .eq('school_id', schoolId)
-      .single();
+      .maybeSingle();
 
     if (!classroom) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
