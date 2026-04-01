@@ -215,7 +215,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('id, name, age, classroom_id')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });

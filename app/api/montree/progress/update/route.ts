@@ -7,6 +7,11 @@ import { createClient } from '@supabase/supabase-js';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
+// Escape special SQL wildcard characters for safe ILIKE usage
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 // Normalize status to standard string format
 function normalizeStatus(status: unknown): string {
   if (typeof status === 'number') {
@@ -178,7 +183,7 @@ export async function POST(request: NextRequest) {
           .from('montree_classroom_curriculum_works')
           .select('id')
           .eq('classroom_id', classroomId)
-          .ilike('name', workNameToSave)
+          .ilike('name', escapeIlike(workNameToSave))
           .maybeSingle();
 
         if (!existingWork) {

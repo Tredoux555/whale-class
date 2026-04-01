@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('classroom_id')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     const classroomId = childData?.classroom_id;
     if (!classroomId) {

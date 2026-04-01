@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     // Step 1: Fetch child info + last report date in parallel (independent)
     const [{ data: child, error: childError }, { data: lastReport }] = await Promise.all([
-      supabase.from('montree_children').select('name').eq('id', childId).single(),
+      supabase.from('montree_children').select('name').eq('id', childId).maybeSingle(),
       supabase.from('montree_weekly_reports').select('generated_at').eq('child_id', childId)
         .order('generated_at', { ascending: false }).limit(1).maybeSingle(),
     ]);

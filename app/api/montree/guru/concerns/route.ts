@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('settings')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       .from('montree_children')
       .select('settings')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });

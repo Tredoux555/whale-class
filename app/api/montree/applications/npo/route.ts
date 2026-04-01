@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       .from('montree_npo_applications')
       .select('id')
       .eq('contact_email', contactEmail.trim().toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingApplication) {
       return NextResponse.json(

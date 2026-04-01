@@ -249,7 +249,7 @@ export async function POST(request: NextRequest) {
       .from('montree_classrooms')
       .select('school_id')
       .eq('id', classroomId)
-      .single();
+      .maybeSingle();
 
     if (classroomError || !classroomData?.school_id) {
       return NextResponse.json(

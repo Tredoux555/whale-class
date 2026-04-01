@@ -11,6 +11,11 @@ import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
 import { getGlossaryPromptSection } from '@/lib/montree/classifier/montessori-glossary-zh';
 import { randomUUID } from 'crypto';
 
+// Escape special SQL wildcard characters for safe ILIKE usage
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest) {
             .from('montree_classroom_curriculum_works')
             .select('id')
             .eq('classroom_id', child.classroom_id)
-            .ilike('name', trimmedName)
+            .ilike('name', escapeIlike(trimmedName))
             .eq('is_custom', true)
             .maybeSingle();
 

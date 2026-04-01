@@ -71,7 +71,8 @@ export async function GET(req: NextRequest) {
       .from('montree_child_progress')
       .select('child_id, work_name, area, status, evidence_photo_count, evidence_photo_days, mastery_confirmed_at')
       .in('child_id', childIds)
-      .in('status', ['presented', 'practicing', 'mastered']);
+      .in('status', ['presented', 'practicing', 'mastered'])
+      .limit(5000);
 
     if (progressErr) {
       console.error('[EvidenceOverview] Progress fetch error:', progressErr);

@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
         classroom:montree_classrooms!classroom_id (school_id)
       `)
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });

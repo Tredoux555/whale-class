@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       })
       .eq('id', teacherId)
       .select('id, name, has_completed_tutorial')
-      .single();
+      .single(); // UPDATE .single() is safe (exact match on id)
 
     if (error) throw error;
 

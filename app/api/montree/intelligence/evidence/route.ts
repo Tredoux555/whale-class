@@ -39,7 +39,8 @@ export async function GET(req: NextRequest) {
       .select('work_name, area, status, evidence_photo_count, evidence_photo_days, last_observation_at, mastery_confirmed_at, mastery_confirmed_by, updated_at')
       .eq('child_id', childId)
       .in('status', ['presented', 'practicing', 'mastered'])
-      .order('updated_at', { ascending: false });
+      .order('updated_at', { ascending: false })
+      .limit(500);
 
     if (progressErr) {
       console.error('[Evidence] Progress query error:', progressErr);

@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest) {
       .from('montree_children')
       .select('classroom_id, classroom:montree_classrooms!classroom_id(school_id)')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
@@ -57,7 +57,7 @@ export async function PATCH(request: NextRequest) {
       .select('id')
       .eq('child_id', child_id)
       .eq('week_start', weekStartStr)
-      .single();
+      .maybeSingle();
 
     let report = existingReport;
 

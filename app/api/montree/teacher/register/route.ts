@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       .from('montree_school_admins')
       .select('id')
       .eq('email', email.trim().toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingAdmin) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 400 });

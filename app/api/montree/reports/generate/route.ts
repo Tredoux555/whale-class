@@ -387,7 +387,7 @@ export async function POST(request: NextRequest) {
       .from('montree_children')
       .select('id, name, date_of_birth, classroom_id')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json(

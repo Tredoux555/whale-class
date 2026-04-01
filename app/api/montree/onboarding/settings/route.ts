@@ -9,7 +9,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('montree_onboarding_settings')
       .select('*')
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
 
