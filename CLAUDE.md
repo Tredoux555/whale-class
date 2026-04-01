@@ -12,7 +12,39 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Mar 31, 2026)
+## CURRENT STATUS (Apr 1, 2026)
+
+### Session Work (Apr 1, 2026 — Photo Audit Fixes + Teacher Notes Privacy)
+
+**Photo Audit Fixes + 429 Rate Limit Fix + Teacher Notes Privacy — ✅ PUSHED (commit `dd1a2c65`):**
+
+Three production fixes addressing broken photo confirmation workflow and a privacy issue.
+
+**Fix 1 (CRITICAL): Confirmed Photos Reverting to Amber on Reload:**
+Two bugs caused confirmed photos to lose their green status on page reload:
+- **Bug A — Race condition in corrections confirm action:** `Promise.allSettled([delete1, delete2])` for old cache rows ran in parallel with the subsequent insert, potentially deleting the freshly inserted confirmed row. Fixed: sequential awaits with individual error logging.
+- **Bug B — Confidence query returned rows in undefined order:** `fetchConfidenceData()` in audit/photos/route.ts queried `montree_guru_interactions` without ORDER BY. Old low-confidence rows could win over new teacher-confirmed rows. Fixed: added `.order('asked_at', { ascending: false })` so newest row always wins.
+
+**Fix 2 (CRITICAL): 429 Rate Limit Blocking Photo Confirmations:**
+Teachers got 429 Too Many Requests when confirming photos. Rate limit was 30 per 60 MINUTES (comment said "per minute" — wrong). A teacher reviewing 30+ photos in an hour got locked out. Fixed: increased to 200/hr — confirmations are DB-only with zero AI cost.
+
+**Fix 3 (MEDIUM): Teacher Notes Visible to All Teachers:**
+GET handler in teacher-notes/route.ts filtered by `classroom_id` but not `teacher_id`. All teachers in a classroom could see each other's notes. Fixed: added `.eq('teacher_id', auth.userId)`.
+
+**Cancelled Feature — Teacher Name Editing:**
+Fully implemented teacher name editing (PATCH endpoint, DashboardHeader UI, i18n keys) then cancelled by user since teacher identity is tied to login codes. All changes reverted cleanly.
+
+**Files Modified (3):**
+1. `app/api/montree/guru/corrections/route.ts` — Sequential deletes + rate limit 30→200/hr
+2. `app/api/montree/audit/photos/route.ts` — ORDER BY asked_at DESC in confidence query
+3. `app/api/montree/teacher-notes/route.ts` — Filter notes by teacher_id
+
+**Deploy:** ✅ PUSHED (commit `dd1a2c65`). Railway auto-deploying. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_AUDIT_FIXES_APR1.md`
+
+---
+
+## PREVIOUS STATUS (Mar 31, 2026)
 
 ### Session Work (Mar 31, 2026 — Git Push + 1688 Phonics Shopping)
 
