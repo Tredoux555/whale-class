@@ -3636,6 +3636,12 @@ export const en = {
   'teacherNotes.deleted': 'Note deleted',
   'teacherNotes.micNotSupported': 'Microphone not available — try using HTTPS',
   'teacherNotes.transcribed': 'Note transcribed',
+  'teacherNotes.stop': 'Stop',
+  'teacherNotes.recordVoice': 'Record voice note',
+  'teacherNotes.voiceNoteSaved': 'Voice note transcribed and saved',
+  'teacherNotes.autoSaveFailed': 'Auto-save failed — transcript copied to input',
+  'teacherNotes.updated': 'Note updated',
+  'teacherNotes.updateFailed': 'Failed to update note',
 
   // Pulse Generation
   'pulse.title': 'Classroom Pulse',
