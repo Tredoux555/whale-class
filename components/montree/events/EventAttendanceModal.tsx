@@ -64,8 +64,8 @@ export default function EventAttendanceModal({
 
     const controller = new AbortController();
     Promise.all([
-      fetch('/api/montree/events', { signal: controller.signal }).then(r => r.json()),
-      fetch(`/api/montree/children?classroom_id=${classroomId}`, { signal: controller.signal }).then(r => r.json()),
+      fetch('/api/montree/events', { signal: controller.signal }).then(r => { if (!r.ok) throw new Error('Failed to fetch events'); return r.json(); }),
+      fetch(`/api/montree/children?classroom_id=${classroomId}`, { signal: controller.signal }).then(r => { if (!r.ok) throw new Error('Failed to fetch children'); return r.json(); }),
     ])
       .then(([evtData, childData]) => {
         setEvents(evtData.events || []);

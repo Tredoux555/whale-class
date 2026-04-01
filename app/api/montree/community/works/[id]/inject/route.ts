@@ -5,6 +5,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 
+// SQL injection defense helper for .ilike() queries
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,7 +40,7 @@ export async function POST(
     const { data: teacher, error: teacherError } = await supabase
       .from('montree_teachers')
       .select('id, school_id, classroom_id, name')
-      .ilike('login_code', teacher_code.trim())
+      .ilike('login_code', escapeIlike(teacher_code.trim()))
       .maybeSingle();
 
     if (teacherError || !teacher) {

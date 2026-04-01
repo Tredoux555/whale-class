@@ -95,6 +95,7 @@ export default function WorkDetailSheet({
           signal: abortController.signal,
         });
         if (abortController.signal.aborted) return;
+        if (!res.ok) { setLoading(false); return; }
         const data = await res.json();
         setGuide(data);
       } catch {
