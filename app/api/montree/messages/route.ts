@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.limit(200);
 
     if (error) {
       console.error('Failed to fetch messages:', error);
