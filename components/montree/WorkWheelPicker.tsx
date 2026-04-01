@@ -405,7 +405,7 @@ export default function WorkWheelPicker({
             {/* Position Picker */}
             {showPositionPicker && (
               <div className="fixed inset-0 bg-black/90 flex flex-col z-50" onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }}>
-                <div className="flex-1 flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
+                <div className="h-full flex flex-col max-w-lg mx-auto w-full" onClick={e => e.stopPropagation()}>
                   <div className="pt-[max(1rem,env(safe-area-inset-top))] px-5 pb-3 shrink-0">
                     <div className="flex items-center justify-between text-white">
                       <button onClick={() => { setShowPositionPicker(false); setPositionSearch(''); }} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10">
@@ -434,7 +434,7 @@ export default function WorkWheelPicker({
                       )}
                     </div>
                   </div>
-                  <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+                  <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))] -webkit-overflow-scrolling-touch">
                     {works
                       .map((work, idx) => ({ work, idx }))
                       .filter(({ work }) => !positionSearch.trim() || work.name.toLowerCase().includes(positionSearch.toLowerCase()))
