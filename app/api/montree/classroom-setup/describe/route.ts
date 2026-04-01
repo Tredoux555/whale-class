@@ -10,6 +10,11 @@ import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
 
+// SQL injection defense helper for .ilike() queries
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 const DESCRIBE_TIMEOUT_MS = 45_000;
 
 export async function POST(request: NextRequest) {
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
         .from('montree_visual_memory')
         .select('visual_description')
         .eq('classroom_id', auth.classroomId)
-        .ilike('work_name', work_name.trim())
+        .ilike('work_name', escapeIlike(work_name.trim()))
         .maybeSingle();
       if (existing?.visual_description) {
         existingDescription = existing.visual_description;

@@ -48,6 +48,10 @@ export default function GuruOnboardingPicker({ childId, childName, onComplete }:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId, concerns: selected }),
       });
+      if (!res.ok) {
+        setError(t('guru.failedSave'));
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         onComplete(selected);

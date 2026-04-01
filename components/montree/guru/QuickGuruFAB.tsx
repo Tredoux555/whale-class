@@ -40,6 +40,10 @@ export default function QuickGuruFAB({ childId, childName }: QuickGuruFABProps) 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ child_id: childId, question: question.trim() }),
       });
+      if (!res.ok) {
+        setAnswer(t('guru.couldNotAnswer'));
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setAnswer(data.answer);
