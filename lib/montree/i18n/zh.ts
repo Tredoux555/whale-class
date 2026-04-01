@@ -3637,6 +3637,12 @@ export const zh = {
   'teacherNotes.deleted': '笔记已删除',
   'teacherNotes.micNotSupported': '麦克风不可用 — 请使用HTTPS',
   'teacherNotes.transcribed': '笔记已转录',
+  'teacherNotes.stop': '停止',
+  'teacherNotes.recordVoice': '录制语音笔记',
+  'teacherNotes.voiceNoteSaved': '语音笔记已转录并保存',
+  'teacherNotes.autoSaveFailed': '自动保存失败 — 文本已复制到输入框',
+  'teacherNotes.updated': '笔记已更新',
+  'teacherNotes.updateFailed': '更新笔记失败',
 
   // 脉搏生成
   'pulse.title': '班级脉搏',

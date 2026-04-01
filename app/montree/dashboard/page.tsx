@@ -65,12 +65,12 @@ export default function DashboardPage() {
 
   // Collapsible section states — persist in localStorage
   const [sectionsOpen, setSectionsOpen] = useState<Record<string, boolean>>(() => {
-    if (typeof window === 'undefined') return { intelligence: true, tools: false, notes: false };
+    if (typeof window === 'undefined') return { intelligence: true, tools: false };
     try {
       const saved = localStorage.getItem('montree_dashboard_sections');
       if (saved) return JSON.parse(saved);
     } catch {}
-    return { intelligence: true, tools: false, notes: false };
+    return { intelligence: true, tools: false };
   });
 
   const toggleSection = useCallback((key: string) => {
@@ -379,6 +379,13 @@ export default function DashboardPage() {
                 </p>
               </div>
 
+              {/* ── 📝 Classroom Notes (always visible, top of dashboard) ── */}
+              {session?.classroom?.id && (
+                <div className="mb-4">
+                  <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
+                </div>
+              )}
+
               {/* ── Daily Brief Panel ── */}
               {session?.classroom?.id && (
                 <div className="mb-4">
@@ -475,26 +482,6 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* ─── 📝 Classroom Notes ─── */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button
-                      onClick={() => toggleSection('notes')}
-                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">📝</span>
-                        {t('dashboard.classroomNotes') || 'Classroom Notes'}
-                      </span>
-                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.notes ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
-                    </button>
-                    {sectionsOpen.notes && (
-                      <div className="px-4 pb-4 border-t border-gray-100 pt-3">
-                        <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
-                      </div>
-                    )}
-                  </div>
 
                 </div>
               )}

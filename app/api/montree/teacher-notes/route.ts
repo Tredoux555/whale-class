@@ -137,6 +137,71 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// PATCH /api/montree/teacher-notes
+// Update a note's content (only by the teacher who created it)
+export async function PATCH(request: NextRequest) {
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const body = await request.json();
+    const { note_id, content } = body as {
+      note_id?: string;
+      content?: string;
+    };
+
+    if (!note_id || typeof note_id !== 'string') {
+      return NextResponse.json({ error: 'note_id is required' }, { status: 400 });
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return NextResponse.json({ error: 'content is required' }, { status: 400 });
+    }
+
+    if (content.trim().length > 5000) {
+      return NextResponse.json({ error: 'Note too long (max 5000 characters)' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
+
+    // Verify the note belongs to this teacher
+    const { data: note, error: noteError } = await supabase
+      .from('montree_teacher_notes')
+      .select('id, teacher_id, school_id')
+      .eq('id', note_id)
+      .maybeSingle();
+
+    if (noteError || !note) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+
+    if (note.school_id !== auth.schoolId || note.teacher_id !== auth.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
+
+    const { data: updatedNote, error: updateError } = await supabase
+      .from('montree_teacher_notes')
+      .update({ content: content.trim() })
+      .eq('id', note_id)
+      .select('id, content, created_at')
+      .maybeSingle();
+
+    if (updateError) {
+      console.error('Failed to update teacher note:', updateError.message);
+      return NextResponse.json({ error: 'Failed to update note' }, { status: 500 });
+    }
+
+    if (!updatedNote) {
+      return NextResponse.json({ error: 'Note not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ note: updatedNote });
+  } catch (error) {
+    console.error('Teacher notes PATCH error:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+
 // DELETE /api/montree/teacher-notes
 // Delete a note (only by the teacher who created it)
 export async function DELETE(request: NextRequest) {
