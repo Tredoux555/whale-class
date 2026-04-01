@@ -110,12 +110,12 @@ export default function NPOApplicationPage() {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || t('npo.submissionFailed' as TranslationKey));
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || t('npo.submissionFailed' as TranslationKey));
       }
 
+      const data = await res.json();
       setSubmittedEmail(contactEmail);
       setSubmitted(true);
     } catch (err) {

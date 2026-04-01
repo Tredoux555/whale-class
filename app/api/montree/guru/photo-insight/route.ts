@@ -698,8 +698,7 @@ export async function POST(request: NextRequest) {
         // Slim path: classroom curriculum lookup for work_id association
         // Escape SQL wildcards in work name for .ilike() safety
         const clipWorkNameEscaped = clipDecision.clipResult.work_name
-          .replace(/%/g, '\\%')
-          .replace(/_/g, '\\_');
+          .replace(/[%_\\]/g, '\\$&');
         const [clipClassroomLookup] = await Promise.all([
           // Look up work in THIS classroom's curriculum (case-insensitive, classroom-scoped)
           preChildClassroomId
@@ -1926,8 +1925,7 @@ Match this description to the correct Montessori work. Use the visual identifica
     // ========================================================
     // Escape SQL wildcards for .ilike() safety (same pattern as CLIP path)
     const finalWorkNameEscaped = finalWorkName
-      .replace(/%/g, '\\%')
-      .replace(/_/g, '\\_');
+      .replace(/[%_\\]/g, '\\$&');
     let inClassroom = false;
     let inChildShelf = false;
     let classroomWorkId: string | null = null;

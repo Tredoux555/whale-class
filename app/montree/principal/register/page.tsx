@@ -53,12 +53,12 @@ export default function PrincipalRegisterPage() {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || t('principalRegister.registrationFailed'));
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || t('principalRegister.registrationFailed'));
       }
 
+      const data = await res.json();
       // Store session
       localStorage.setItem('montree_principal', JSON.stringify(data.principal));
       localStorage.setItem('montree_school', JSON.stringify(data.school));

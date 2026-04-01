@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { legacySha256 } from '@/lib/montree/password';
+import { checkRateLimit } from '@/lib/rate-limiter';
 
 // Generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -37,6 +38,9 @@ interface ClassroomInput {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitError = await checkRateLimit(request, 'onboarding', 10, 60);
+    if (rateLimitError) return rateLimitError;
+
     const supabase = getSupabase();
     const body = await request.json();
     const { schoolName, ownerEmail, ownerName, classrooms } = body as {

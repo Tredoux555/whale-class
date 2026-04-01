@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { buildSocialMediaGuruContext } from '@/lib/social-media-guru/context-builder';
+import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
@@ -8,6 +9,10 @@ const anthropic = new Anthropic({
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth: super-admin only (this calls Claude API with our key)
+    const authError = verifySuperAdminPassword(request);
+    if (authError) return authError;
+
     const { message, conversationHistory } = await request.json();
 
     if (!message || typeof message !== 'string') {

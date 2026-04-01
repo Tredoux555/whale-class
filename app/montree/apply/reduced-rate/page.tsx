@@ -71,12 +71,12 @@ export default function ReducedRateApplicationPage() {
         }),
       });
 
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || t('reducedRate.submissionFailed' as TranslationKey));
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || t('reducedRate.submissionFailed' as TranslationKey));
       }
 
+      const data = await res.json();
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('reducedRate.submissionFailed' as TranslationKey));

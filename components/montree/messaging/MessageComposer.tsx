@@ -55,13 +55,13 @@ export function MessageComposer({
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        toast.error(data.error || t('messaging.failedToSend'));
+        const errData = await response.json().catch(() => ({}));
+        toast.error(errData.error || t('messaging.failedToSend'));
         return;
       }
 
+      const data = await response.json();
       toast.success(t('messaging.messageSent'));
       setSubject('');
       setMessage('');
