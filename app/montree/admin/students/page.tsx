@@ -75,6 +75,10 @@ export default function StudentsPage() {
         router.push('/montree/principal/login');
         return;
       }
+      if (!res.ok) {
+        console.error('Failed to fetch students:', res.status);
+        return;
+      }
       const data = await res.json();
       setStudents(data.students || []);
       setClassrooms(data.classrooms || []);
