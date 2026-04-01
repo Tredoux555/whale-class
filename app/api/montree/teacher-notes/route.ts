@@ -34,11 +34,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Fetch notes with teacher name
+    // Fetch notes — only the current teacher's own notes (private per teacher)
     const { data: notes, error: notesError } = await supabase
       .from('montree_teacher_notes')
       .select('id, teacher_id, content, transcription, created_at, montree_teachers(name)')
       .eq('classroom_id', classroomId)
+      .eq('teacher_id', auth.userId)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

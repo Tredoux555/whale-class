@@ -142,7 +142,8 @@ export async function GET(request: NextRequest) {
           console.warn('[Photo Audit] Malformed cache question format:', r.question);
           continue;
         }
-        // Prefer new-format (no locale suffix) over old-format — don't overwrite if already set
+        // Results are ordered by asked_at DESC, so the first (newest) row wins.
+        // Teacher-confirmed rows (confidence 1.0) always come first if they exist.
         if (confidenceMap.has(mediaId)) continue;
         const snapshot = r.context_snapshot || {};
         confidenceMap.set(mediaId, {
@@ -237,14 +238,16 @@ async function fetchConfidenceData(supabase: any, mediaRows: any[]) {
   if (newKeys.length === 0) return [];
 
   // Query 1: New format (exact match via .in(), chunked to avoid URL length limits)
+  // ORDER BY asked_at DESC so newest (e.g. teacher-confirmed) rows come first
   let newFormat: any[] = [];
   const IN_CHUNK_SIZE = 30; // ~70 chars per key × 30 = ~2.1KB per chunk (safe under 8KB limit)
   for (let i = 0; i < newKeys.length; i += IN_CHUNK_SIZE) {
     const chunk = newKeys.slice(i, i + IN_CHUNK_SIZE);
     const { data } = await supabase
       .from('montree_guru_interactions')
-      .select('question, context_snapshot')
-      .in('question', chunk);
+      .select('question, context_snapshot, asked_at')
+      .in('question', chunk)
+      .order('asked_at', { ascending: false });
     if (data) newFormat.push(...data);
   }
 
