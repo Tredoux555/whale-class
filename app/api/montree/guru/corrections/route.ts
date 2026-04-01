@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
 
-    // MEDIUM-003: Rate limit corrections — 30 per minute per IP
+    // Rate limit corrections — 200 per hour per IP (generous: confirmations are DB-only, no AI cost)
     const supabase = getSupabase();
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-    const rateResult = await checkRateLimit(supabase, ip, '/api/montree/guru/corrections', 30, 60);
+    const rateResult = await checkRateLimit(supabase, ip, '/api/montree/guru/corrections', 200, 60);
     if (!rateResult.allowed) {
       return NextResponse.json({ success: false, error: 'Rate limit exceeded' }, { status: 429 });
     }
@@ -98,12 +98,21 @@ export async function POST(request: NextRequest) {
       }
       // Replace stale cache with teacher-confirmed confidence so photos stay GREEN on refresh
       // Without this, the audit page reads null confidence → classifies as amber
+      // IMPORTANT: Sequential delete-then-insert (not parallel) to prevent duplicate rows
       if (media_id && child_id) {
-        // Delete old entries first (both formats)
-        await Promise.allSettled([
-          supabase.from('montree_guru_interactions').delete().eq('question', `photo:${media_id}:${child_id}`),
-          supabase.from('montree_guru_interactions').delete().like('question', `photo:${media_id}:${child_id}:%`),
-        ]);
+        // Delete old entries first (both formats) — await each to ensure completion
+        const { error: delErr1 } = await supabase
+          .from('montree_guru_interactions')
+          .delete()
+          .eq('question', `photo:${media_id}:${child_id}`);
+        if (delErr1) console.error('[Corrections] Delete exact-key error (non-fatal):', delErr1.message);
+
+        const { error: delErr2 } = await supabase
+          .from('montree_guru_interactions')
+          .delete()
+          .like('question', `photo:${media_id}:${child_id}:%`);
+        if (delErr2) console.error('[Corrections] Delete like-key error (non-fatal):', delErr2.message);
+
         // Insert fresh confidence row
         const { error: insErr } = await supabase
           .from('montree_guru_interactions')
