@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       .from('montree_community_backups')
       .select('id')
       .eq('backup_date', today)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       return NextResponse.json({ message: 'Backup already exists for today', date: today });

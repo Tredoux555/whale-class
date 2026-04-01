@@ -10,6 +10,11 @@ import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext } from '@/lib/montree/guru/context-builder';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
+// Escape special SQL wildcard characters for safe ILIKE usage
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -118,7 +123,7 @@ export async function POST(request: NextRequest) {
         .from('montree_classroom_curriculum_works')
         .select('quick_guide, presentation_steps, materials, direct_aims, indirect_aims, description, why_it_matters')
         .eq('classroom_id', childContext.classroom_id)
-        .ilike('name', work_name)
+        .ilike('name', `%${escapeIlike(work_name)}%`)
         .limit(1)
         .maybeSingle();
       workData = data;

@@ -33,7 +33,8 @@ export async function GET(req: NextRequest) {
       .select('child_id, work_name, area, status, updated_at, days_stale')
       .eq('classroom_id', auth.classroomId)
       .eq('school_id', auth.schoolId)
-      .order('days_stale', { ascending: false });
+      .order('days_stale', { ascending: false })
+      .limit(200);
 
     if (staleErr) {
       console.error('[StaleWorks] View query error:', staleErr);

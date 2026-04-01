@@ -24,7 +24,9 @@ export default function GuruSuggestionCard({ childId, childName }: GuruSuggestio
       return;
     }
 
-    fetch(`/api/montree/guru/suggestions?child_id=${childId}`)
+    const abortController = new AbortController();
+
+    fetch(`/api/montree/guru/suggestions?child_id=${childId}`, { signal: abortController.signal })
       .then(r => { if (!r.ok) throw new Error(`Suggestions: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success && data.suggestion) {
@@ -33,7 +35,12 @@ export default function GuruSuggestionCard({ childId, childName }: GuruSuggestio
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setLoading(false);
+      });
+
+    return () => abortController.abort();
   }, [childId]);
 
   const handleDismiss = () => {

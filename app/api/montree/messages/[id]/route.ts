@@ -27,7 +27,7 @@ export async function PATCH(
       .from('montree_messages')
       .select('id, is_read, child_id')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (fetchError || !message) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function GET(
       .from('montree_messages')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (error || !message) {
       return NextResponse.json(

@@ -405,6 +405,9 @@ export default function PhotoAuditPage() {
   const { t } = useI18n();
   const abortRef = useRef<AbortController | null>(null);
 
+  // Track photos confirmed in this session — prevents server refetch from overwriting optimistic green status
+  const confirmedIdsRef = useRef<Set<string>>(new Set());
+
   // Core state
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
   const [counts, setCounts] = useState({ green: 0, amber: 0, red: 0, untagged: 0 });
@@ -597,8 +600,25 @@ export default function PhotoAuditPage() {
       if (controller.signal.aborted) return;
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();
-      setPhotos(data.photos);
-      setCounts(data.counts);
+      // Merge confirmed status: photos confirmed in this session stay green
+      // even if server returns stale confidence data (race condition protection)
+      const mergedPhotos = (data.photos || []).map((p: AuditPhoto) =>
+        confirmedIdsRef.current.has(p.id)
+          ? { ...p, zone: 'green' as const, confidence: 1.0 }
+          : p
+      );
+      setPhotos(mergedPhotos);
+      // Recalculate counts to reflect merged confirmed statuses
+      if (confirmedIdsRef.current.size > 0) {
+        const recounted = { green: 0, amber: 0, red: 0, untagged: 0 };
+        mergedPhotos.forEach((p: AuditPhoto) => {
+          const z = p.zone as keyof typeof recounted;
+          if (recounted[z] !== undefined) recounted[z]++;
+        });
+        setCounts(recounted);
+      } else {
+        setCounts(data.counts);
+      }
     } catch (err: any) {
       if (err?.name === 'AbortError') return;
       setPhotos([]);
@@ -634,6 +654,8 @@ export default function PhotoAuditPage() {
         }),
       });
       if (!res.ok) throw new Error('confirm failed');
+      // Track confirmed ID so future refetches preserve green status
+      confirmedIdsRef.current.add(photo.id);
       const oldZone = photo.zone || 'amber';
       setPhotos(prev => prev.map(p =>
         p.id === photo.id ? { ...p, zone: 'green' as const, confidence: 1.0 } : p
@@ -646,7 +668,9 @@ export default function PhotoAuditPage() {
         ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       toast.success(t('audit.confirmed'));
-      setZone('green');
+      // DO NOT call setZone('green') here — it triggers a refetch that can overwrite
+      // the optimistic update with stale server data (race condition). The photo already
+      // shows as green in local state. Teacher stays on current tab to keep confirming.
     } catch {
       toast.error(t('audit.confirmFailed'));
     } finally {
@@ -785,6 +809,7 @@ export default function PhotoAuditPage() {
         });
         if (!res.ok) throw new Error();
         succeeded++;
+        confirmedIdsRef.current.add(photo.id);
         setPhotos(prev => prev.map(p =>
           p.id === photo.id ? { ...p, zone: 'green' as const, confidence: 1.0 } : p
         ));
@@ -805,7 +830,7 @@ export default function PhotoAuditPage() {
         setCounts(newCounts);
         return prev; // no mutation, just recalc counts
       });
-      setZone('green');
+      // DO NOT call setZone('green') — same race condition as single confirm
     }
     if (failed.length === 0) {
       toast.success(t('audit.batchComplete'));

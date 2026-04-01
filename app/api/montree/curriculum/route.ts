@@ -283,12 +283,20 @@ export async function POST(request: NextRequest) {
           .gt('sequence', after_sequence)
           .order('sequence', { ascending: false }); // Descending to avoid conflicts
 
-        // Shift each one
-        for (const work of worksToShift || []) {
-          await supabase
-            .from('montree_classroom_curriculum_works')
-            .update({ sequence: work.sequence + 1 })
-            .eq('id', work.id);
+        // Batch update all works in parallel (avoid N+1 query pattern)
+        if (worksToShift && worksToShift.length > 0) {
+          const updatePromises = worksToShift.map(work =>
+            supabase
+              .from('montree_classroom_curriculum_works')
+              .update({ sequence: work.sequence + 1 })
+              .eq('id', work.id)
+          );
+
+          const results = await Promise.allSettled(updatePromises);
+          const failures = results.filter(r => r.status === 'rejected');
+          if (failures.length > 0) {
+            console.error(`[Curriculum] ${failures.length} sequence updates failed during shift`);
+          }
         }
       }
 
@@ -427,11 +435,15 @@ export async function PATCH(request: NextRequest) {
       .update(updateData)
       .eq('id', work_id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error('Update error:', error);
       return NextResponse.json({ error: 'Failed to update work' }, { status: 500 });
+    }
+
+    if (!data) {
+      return NextResponse.json({ error: 'Work not found' }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, work: data });

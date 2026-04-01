@@ -9,6 +9,11 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { findCurriculumWorkByName } from '@/lib/montree/curriculum-loader';
 
+// Escape special SQL wildcard characters for safe ILIKE usage
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -32,9 +37,9 @@ export async function GET(request: NextRequest) {
         .from('montree_classroom_curriculum_works')
         .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters')
         .eq('classroom_id', classroomId)
-        .ilike('name', workName)
+        .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data?.quick_guide || data?.presentation_steps) {
         guideData = data;
@@ -46,9 +51,9 @@ export async function GET(request: NextRequest) {
       const { data } = await supabase
         .from('montessori_works')
         .select('name, quick_guide, video_search_term, parent_explanation_detailed, direct_aims, materials_needed, presentation_steps, control_of_error, parent_why_it_matters')
-        .ilike('name', workName)
+        .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (data) {
         guideData = {

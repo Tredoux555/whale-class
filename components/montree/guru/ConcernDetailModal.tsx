@@ -26,10 +26,12 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
   useEffect(() => {
     if (!concernId || !childId) return;
 
+    const abortController = new AbortController();
+
     setLoading(true);
     setError(null);
 
-    fetch(`/api/montree/guru/concern?child_id=${childId}&concern_id=${concernId}`)
+    fetch(`/api/montree/guru/concern?child_id=${childId}&concern_id=${concernId}`, { signal: abortController.signal })
       .then(r => { if (!r.ok) throw new Error(`Concern fetch: ${r.status}`); return r.json(); })
       .then(data => {
         if (data.success) {
@@ -39,11 +41,14 @@ export default function ConcernDetailModal({ childId, childName, concernId, onCl
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
         setError(t('guru.somethingWentWrong'));
         setLoading(false);
       });
-  }, [childId, concernId]);
+
+    return () => abortController.abort();
+  }, [childId, concernId, t]);
 
   // Helper to render inline bold text safely
   const renderInlineBold = (text: string) => {

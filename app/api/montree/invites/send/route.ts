@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       `)
       .eq('id', invite_id)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
     if (inviteError || !invite) {
       return NextResponse.json({ error: 'Invite not found' }, { status: 404 });

@@ -126,6 +126,12 @@ export default function ParentDashboardPage() {
   const loadChildren = async (parentId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/children?parentId=${parentId}`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadChildren failed:', res.status);
+        toast.error(t('parent.dashboard.failedToLoadChildren'));
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.children) {
         setChildren(data.children);
@@ -152,6 +158,12 @@ export default function ParentDashboardPage() {
     setLoadingReports(true);
     try {
       const res = await fetch(`/api/montree/parent/reports?childId=${childId}&locale=${locale}`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadReports failed:', res.status);
+        toast.error(t('parent.dashboard.failedToLoadReports'));
+        setLoadingReports(false);
+        return;
+      }
       const data = await res.json();
       if (data.reports) {
         setReports(data.reports);
@@ -167,6 +179,10 @@ export default function ParentDashboardPage() {
   const loadStats = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/stats?child_id=${childId}`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadStats failed:', res.status);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setStats(data.stats);
@@ -180,6 +196,10 @@ export default function ParentDashboardPage() {
   const loadAnnouncements = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/announcements?child_id=${childId}&limit=3`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadAnnouncements failed:', res.status);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setAnnouncements(data.announcements || []);
@@ -192,6 +212,10 @@ export default function ParentDashboardPage() {
   const loadPhotos = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/photos?child_id=${childId}&limit=4`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadPhotos failed:', res.status);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setPhotos(data.photos || []);
@@ -204,6 +228,10 @@ export default function ParentDashboardPage() {
   const loadMilestones = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/milestones?child_id=${childId}&limit=5`);
+      if (!res.ok) {
+        console.error('[ParentDashboard] loadMilestones failed:', res.status);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setMilestones(data.milestones || []);

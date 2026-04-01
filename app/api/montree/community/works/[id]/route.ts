@@ -126,7 +126,7 @@ export async function DELETE(
       .from('montree_community_works')
       .select('photos, videos, pdfs')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (work) {
       const paths: string[] = [];

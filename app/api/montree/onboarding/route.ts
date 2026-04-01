@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       .from('montree_schools')
       .select('id')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (existingSchool) {
       return NextResponse.json({ error: 'A school with this name already exists' }, { status: 400 });

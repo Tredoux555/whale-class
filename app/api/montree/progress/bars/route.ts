@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('classroom_id')
       .eq('id', childId)
-      .single();
+      .maybeSingle();
 
     if (childError || !child) {
       console.error('Child not found:', childError);

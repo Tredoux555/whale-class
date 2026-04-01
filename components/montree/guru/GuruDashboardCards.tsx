@@ -42,7 +42,9 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
       setDismissedSuggestion(true);
     }
 
-    fetch(`/api/montree/guru/dashboard-summary?child_id=${childId}`)
+    const abortController = new AbortController();
+
+    fetch(`/api/montree/guru/dashboard-summary?child_id=${childId}`, { signal: abortController.signal })
       .then(r => { if (!r.ok) throw new Error(`Dashboard summary failed: ${r.status}`); return r.json(); })
       .then(result => {
         if (result.success) {
@@ -50,7 +52,12 @@ export default function GuruDashboardCards({ childId, childName }: GuruDashboard
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setLoading(false);
+      });
+
+    return () => abortController.abort();
   }, [childId]);
 
   const fetchDailyPlan = async () => {

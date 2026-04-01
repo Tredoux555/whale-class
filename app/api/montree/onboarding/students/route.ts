@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       .from('montree_classrooms')
       .select('id, school_id, name')
       .eq('id', classroomId)
-      .single();
+      .maybeSingle();
 
     if (classroomError || !classroom) {
       console.error('Classroom not found:', classroomError);
