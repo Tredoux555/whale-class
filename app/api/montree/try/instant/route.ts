@@ -146,17 +146,9 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (schoolErr || !school) {
-      const errDetail = schoolErr ? {
-        message: schoolErr.message,
-        code: schoolErr.code,
-        details: schoolErr.details,
-        hint: schoolErr.hint,
-      } : 'no data returned';
-      console.error('SCHOOL FAIL:', JSON.stringify(errDetail, null, 2));
+      console.error('SCHOOL FAIL:', schoolErr?.message, schoolErr?.code, schoolErr?.details);
       return NextResponse.json({
         error: 'School creation failed',
-        debug: errDetail,
-        steps,
       }, { status: 500 });
     }
     steps.push('2-school-ok:' + school.id);
@@ -240,18 +232,10 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (teacherErr || !teacher) {
-        const errDetail = teacherErr ? {
-          message: teacherErr.message,
-          code: teacherErr.code,
-          details: teacherErr.details,
-          hint: teacherErr.hint,
-        } : 'no data returned';
-        console.error('HOMESCHOOL TEACHER FAIL:', JSON.stringify(errDetail, null, 2));
+        console.error('HOMESCHOOL TEACHER FAIL:', teacherErr?.message, teacherErr?.code, teacherErr?.details);
         await supabase.from('montree_schools').delete().eq('id', school.id);
         return NextResponse.json({
           error: 'Account creation failed',
-          debug: errDetail,
-          steps,
         }, { status: 500 });
       }
       steps.push('4-homeschool-parent-ok:' + teacher.id);
@@ -326,18 +310,10 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (teacherErr || !teacher) {
-        const errDetail = teacherErr ? {
-          message: teacherErr.message,
-          code: teacherErr.code,
-          details: teacherErr.details,
-          hint: teacherErr.hint,
-        } : 'no data returned';
-        console.error('TEACHER FAIL:', JSON.stringify(errDetail, null, 2));
+        console.error('TEACHER FAIL:', teacherErr?.message, teacherErr?.code, teacherErr?.details);
         await supabase.from('montree_schools').delete().eq('id', school.id);
         return NextResponse.json({
           error: 'Teacher creation failed',
-          debug: errDetail,
-          steps,
         }, { status: 500 });
       }
       steps.push('4-teacher-ok:' + teacher.id);
@@ -411,18 +387,10 @@ export async function POST(req: NextRequest) {
         .single();
 
       if (principalErr || !principal) {
-        const errDetail = principalErr ? {
-          message: principalErr.message,
-          code: principalErr.code,
-          details: principalErr.details,
-          hint: principalErr.hint,
-        } : 'no data returned';
-        console.error('PRINCIPAL FAIL:', JSON.stringify(errDetail, null, 2));
+        console.error('PRINCIPAL FAIL:', principalErr?.message, principalErr?.code, principalErr?.details);
         await supabase.from('montree_schools').delete().eq('id', school.id);
         return NextResponse.json({
           error: 'Principal creation failed',
-          debug: errDetail,
-          steps,
         }, { status: 500 });
       }
       steps.push('4-principal-ok:' + principal.id);
@@ -477,20 +445,9 @@ export async function POST(req: NextRequest) {
     }
 
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : String(err);
-    const name = err instanceof Error ? err.name : undefined;
-    const cause = err instanceof Error && err.cause ? String(err.cause) : undefined;
-    const stack = err instanceof Error && err.stack ? err.stack.split('\n').slice(0, 5) : undefined;
-    console.error('INSTANT TRIAL CRASH:', err);
+    console.error('INSTANT TRIAL CRASH:', err, 'Steps:', steps);
     return NextResponse.json({
       error: 'Unexpected error',
-      debug: {
-        message: message || String(err),
-        name,
-        cause,
-        stack,
-      },
-      steps,
     }, { status: 500 });
   }
 }

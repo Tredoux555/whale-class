@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
       // If no work_id provided, look it up from classroom curriculum by name
       if (!resolvedWorkId && corrected_work_name?.trim() && classroomId) {
         // Escape SQL wildcards in the work name to prevent unintended matches
-        const safeName = corrected_work_name.trim().replace(/[%_]/g, '\\$&');
+        const safeName = corrected_work_name.trim().replace(/[%_\\]/g, '\\$&');
         const { data: workRow } = await supabase
           .from('montree_classroom_curriculum_works')
           .select('id')

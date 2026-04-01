@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Mode 2: Filter by source work name + area (class-wide rematch)
     if (source_work_name && classroom_id) {
       // Escape SQL ILIKE wildcards to prevent wildcard injection (% and _ are special)
-      const escapedWorkName = source_work_name.replace(/%/g, '\\%').replace(/_/g, '\\_');
+      const escapedWorkName = source_work_name.replace(/[%_\\]/g, '\\$&');
       // SECURITY: Verify classroom belongs to teacher's school
       const { data: classroomCheck } = await supabase
         .from('montree_classrooms')

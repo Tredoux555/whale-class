@@ -102,12 +102,12 @@ export default function TeachersPage() {
         })
       });
       
-      const data = await res.json();
-      
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to add teacher');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to add teacher');
       }
-      
+
+      const data = await res.json();
       toast.success(t('admin.teachers.teacherAdded').replace('{code}', data.teacher.login_code));
       setShowAddModal(false);
       setFormName('');
