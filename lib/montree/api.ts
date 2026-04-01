@@ -43,7 +43,7 @@ export function clearToken(): void {
   // Remove legacy localStorage token
   localStorage.removeItem(TOKEN_KEY);
   // Clear httpOnly cookie via server (fire-and-forget)
-  fetch('/api/montree/auth/logout', { method: 'POST' }).catch(() => {});
+  fetch('/api/montree/auth/logout', { method: 'POST' }).catch((err) => console.error('[Auth] Logout failed:', err));
 }
 
 /**

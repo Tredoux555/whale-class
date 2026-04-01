@@ -256,7 +256,7 @@ export function prefetchUrl(url: string): void {
         evictOldest();
       }
     })
-    .catch(() => {}) // Swallow network errors silently
+    .catch((err) => console.warn('[Cache] Prefetch failed:', err))
     .finally(() => inflight.delete(url));
   inflight.set(url, promise);
 }

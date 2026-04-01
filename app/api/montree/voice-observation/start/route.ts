@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Cleanup expired sessions (check-on-access pattern — Railway has no cron)
-    cleanupExpiredSessions(auth.schoolId).catch(() => {});
+    cleanupExpiredSessions(auth.schoolId).catch((err) => console.warn('[VoiceObs] Cleanup failed:', err));
 
     const body = await request.json().catch(() => ({}));
     const language = (body as any)?.language || 'auto';
