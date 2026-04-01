@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       .from('montree_teachers')
       .select('role, guru_plan, guru_prompts_used, guru_subscription_status, guru_current_period_end, guru_tier')
       .eq('id', auth.userId)
-      .single();
+      .maybeSingle();
 
     if (!teacher) {
       return NextResponse.json({ success: false, error: 'Teacher not found' }, { status: 404 });

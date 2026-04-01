@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       .from('montree_children')
       .select('id, name, age, classroom_id')
       .eq('id', child_id)
-      .single();
+      .maybeSingle();
 
     if (!child) {
       return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });

@@ -6,6 +6,11 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 
+// SQL injection defense helper for .ilike() queries
+function escapeIlike(str: string): string {
+  return str.replace(/[%_\\]/g, '\\$&');
+}
+
 // GET: List observations for a child
 export async function GET(request: NextRequest) {
   try {
@@ -211,7 +216,8 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
       .from('montree_behavioral_observations')
       .select('behavior_function, time_of_day, behavior_description')
       .eq('child_id', childId)
-      .gte('observed_at', thirtyDaysAgo.toISOString()) as { data: ObservationRow[] | null };
+      .gte('observed_at', thirtyDaysAgo.toISOString())
+      .limit(500) as { data: ObservationRow[] | null };
 
     if (!observations || observations.length < 3) return;
 
@@ -238,7 +244,7 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
           .select('id')
           .eq('child_id', childId)
           .eq('pattern_type', 'behavioral')
-          .ilike('pattern_description', `%${func}%`)
+          .ilike('pattern_description', `%${escapeIlike(func)}%`)
           .eq('still_active', true)
           .maybeSingle();
 
@@ -264,7 +270,7 @@ async function detectPatterns(supabase: Record<string, unknown>, childId: string
           .select('id')
           .eq('child_id', childId)
           .eq('pattern_type', 'behavioral')
-          .ilike('pattern_description', `%${time.replace('_', ' ')}%`)
+          .ilike('pattern_description', `%${escapeIlike(time.replace('_', ' '))}%`)
           .eq('still_active', true)
           .maybeSingle();
 

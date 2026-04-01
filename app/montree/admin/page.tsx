@@ -71,6 +71,7 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/montree/admin/overview', { headers: getHeaders() });
       if (res.status === 401) { router.push('/montree/principal/login'); return; }
+      if (!res.ok) { console.error('Failed to load admin data:', res.status); return; }
       const data = await res.json();
       setSchool(data.school);
       setPrincipal(data.principal);
