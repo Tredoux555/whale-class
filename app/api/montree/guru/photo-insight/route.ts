@@ -468,7 +468,7 @@ export async function POST(request: NextRequest) {
     // Wrapped in try-catch: fallback is best-effort — if it fails, fall through to fresh analysis
     const effectiveCached = cached ?? (await (async () => {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('montree_guru_interactions')
           .select('response_insight, context_snapshot, asked_at')
           .eq('child_id', child_id)
@@ -477,6 +477,7 @@ export async function POST(request: NextRequest) {
           .order('asked_at', { ascending: false })
           .limit(1)
           .maybeSingle();
+        if (error) console.error('[Photo Insight] Cache fallback query error:', error);
         return data;
       } catch {
         // Non-fatal: old-format cache lookup failed — fall through to fresh analysis

@@ -29,6 +29,11 @@ export default function ParentCodesPage() {
   const fetchCodes = async () => {
     try {
       const res = await fetch('/api/montree/admin/parent-codes');
+      if (!res.ok) {
+        console.error('Failed to fetch codes: HTTP', res.status);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setCodes(data.codes || []);
@@ -46,6 +51,11 @@ export default function ParentCodesPage() {
       const res = await fetch('/api/montree/admin/parent-codes/generate-all', {
         method: 'POST',
       });
+      if (!res.ok) {
+        console.error('Failed to generate codes: HTTP', res.status);
+        setGenerating(false);
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         fetchCodes();

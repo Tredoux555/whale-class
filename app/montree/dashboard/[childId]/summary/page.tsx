@@ -91,6 +91,11 @@ export default function TeacherSummaryPage() {
 
       // Fetch child info
       const childRes = await fetch(`/api/montree/children?id=${childId}`);
+      if (!childRes.ok) {
+        setError(t('summary.childNotFound'));
+        setLoading(false);
+        return;
+      }
       const childData = await childRes.json();
 
       if (!childData.children || childData.children.length === 0) {
@@ -105,6 +110,11 @@ export default function TeacherSummaryPage() {
       const progressRes = await fetch(
         `/api/montree/progress?child_id=${childId}&from=${startDate.toISOString()}&to=${now.toISOString()}`
       );
+      if (!progressRes.ok) {
+        setError('Failed to load progress data');
+        setLoading(false);
+        return;
+      }
       const progressData = await progressRes.json();
       const progress: ProgressData[] = progressData.progress || [];
 

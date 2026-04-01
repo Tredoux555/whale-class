@@ -119,13 +119,14 @@ export async function POST(request: NextRequest) {
     // Fetch work guide from curriculum (non-critical — proceed without it)
     let workData = null;
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('montree_classroom_curriculum_works')
         .select('quick_guide, presentation_steps, materials, direct_aims, indirect_aims, description, why_it_matters')
         .eq('classroom_id', childContext.classroom_id)
         .ilike('name', `%${escapeIlike(work_name)}%`)
         .limit(1)
         .maybeSingle();
+      if (error) console.error('[Teaching Instructions] Curriculum guide query error:', error);
       workData = data;
     } catch (guideErr) {
       console.error('[Teaching Instructions] Curriculum guide fetch failed:', guideErr);

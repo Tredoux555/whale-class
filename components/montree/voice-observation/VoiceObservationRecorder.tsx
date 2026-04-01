@@ -76,6 +76,10 @@ export default function VoiceObservationRecorder({ state, onStart, onPause, onEn
           method: 'POST',
           body: formData,
         });
+        if (!resp.ok) {
+          toast.error(t('voiceObs.errorUpload') || 'Upload failed');
+          return;
+        }
         const data = await resp.json();
         if (data.success) {
           setChunksUploaded(prev => prev + 1);

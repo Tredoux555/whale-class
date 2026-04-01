@@ -87,6 +87,12 @@ export default function TeacherSetupPage() {
         }),
       });
 
+      if (!res.ok) {
+        setError(t('setup.validation.connectionError'));
+        setLoading(false);
+        return;
+      }
+
       const data = await res.json();
 
       if (data.success) {

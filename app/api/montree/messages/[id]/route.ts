@@ -54,9 +54,9 @@ export async function PATCH(
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (updateError) {
+    if (updateError || !updated) {
       console.error('Failed to mark message as read:', updateError);
       return NextResponse.json(
         { error: 'Failed to update message' },

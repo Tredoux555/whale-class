@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest) {
           content: {},
         })
         .select('id')
-        .single();
+        .maybeSingle();
 
       if (reportError || !newReport) {
         console.error('Report insert error:', reportError);

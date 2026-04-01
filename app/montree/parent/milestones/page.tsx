@@ -65,6 +65,10 @@ function ParentMilestonesContent() {
   const loadMilestones = async (childId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/milestones?child_id=${childId}`);
+      if (!res.ok) {
+        toast.error(t('parentMilestones.errorLoad'));
+        return;
+      }
       const data = await res.json();
 
       if (data.success) {

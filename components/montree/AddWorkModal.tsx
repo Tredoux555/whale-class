@@ -154,6 +154,12 @@ export default function AddWorkModal({
         }),
       });
 
+      if (!res.ok) {
+        toast.error(t('error.failedToGenerateDescription'));
+        setGenerating(false);
+        return;
+      }
+
       const data = await res.json();
       if (data.description || data.why_it_matters) {
         setForm(prev => ({
@@ -211,6 +217,12 @@ export default function AddWorkModal({
           ...(typeof afterSequence === 'number' ? { after_sequence: afterSequence } : {}),
         }),
       });
+
+      if (!res.ok) {
+        toast.error(t('error.failedToAddWork'));
+        setSaving(false);
+        return;
+      }
 
       const data = await res.json();
       if (data.success) {

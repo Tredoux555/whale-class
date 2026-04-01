@@ -52,6 +52,10 @@ export default function MediaCard({
         // Use storage_path for full quality images
         const path = media.storage_path;
         const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(path)}`);
+        if (!response.ok) {
+          setError(true);
+          return;
+        }
         const data = await response.json();
 
         if (data.url) {
