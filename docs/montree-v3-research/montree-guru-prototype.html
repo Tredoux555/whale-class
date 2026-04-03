@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Montree Guru</title>
+<style>
+:root {
+  --sand: #faf8f5;
+  --warm: #f5f0ea;
+  --cream: #ede8e0;
+  --bark: #3d3229;
+  --bark2: #5c4f42;
+  --bark3: #8a7b6b;
+  --leaf: #2d6a4f;
+  --leaf2: #40916c;
+  --leaf3: #e8f5ee;
+  --sun: #e9a820;
+  --sun2: #fef6e4;
+  --clay: #c05746;
+  --clay2: #fef0ed;
+  --sky: #4a7fb5;
+  --sky2: #eef4fb;
+  --radius: 16px;
+  --shadow: 0 1px 3px rgba(61,50,41,.08);
+  --shadow2: 0 4px 12px rgba(61,50,41,.1);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--sand);
+  color: var(--bark);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+html { height: -webkit-fill-available; }
+
+/* App container */
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  height: 100vh;
+  height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  box-shadow: -1px 0 0 var(--cream), 1px 0 0 var(--cream);
+}
+
+/* Header */
+.header {
+  padding: 16px 20px 12px;
+  background: white;
+  border-bottom: 1px solid var(--cream);
+  flex-shrink: 0;
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--leaf), var(--leaf2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: white;
+}
+.logo-text { font-size: 18px; font-weight: 700; color: var(--bark); letter-spacing: -0.3px; }
+.logo-sub { font-size: 11px; color: var(--bark3); font-weight: 400; }
+.record-btn {
+  padding: 8px 14px; border-radius: 10px; border: 1.5px solid var(--cream);
+  background: white; color: var(--bark2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 6px;
+}
+.record-btn:hover { border-color: var(--leaf2); color: var(--leaf); background: var(--leaf3); }
+.record-btn.active { border-color: var(--leaf); color: var(--leaf); background: var(--leaf3); }
+
+/* Child selector */
+.child-row {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.child-row::-webkit-scrollbar { display: none; }
+.child-pill {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid var(--cream); background: white; color: var(--bark2);
+  transition: all .15s; white-space: nowrap;
+}
+.child-pill:hover { border-color: var(--bark3); }
+.child-pill.active { background: var(--bark); color: white; border-color: var(--bark); }
+.child-pill .pill-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px;
+}
+
+/* Messages area */
+.messages {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Welcome state */
+.welcome {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; text-align: center; padding: 40px 20px;
+}
+.welcome-icon { font-size: 48px; margin-bottom: 16px; }
+.welcome h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--bark); }
+.welcome p { font-size: 14px; color: var(--bark3); line-height: 1.6; max-width: 360px; }
+
+/* Chat messages */
+.msg { margin-bottom: 16px; display: flex; gap: 10px; animation: fadeIn .25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.msg.user { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;
+}
+.msg.guru .msg-avatar { background: linear-gradient(135deg, var(--leaf), var(--leaf2)); color: white; }
+.msg.user .msg-avatar { background: var(--cream); color: var(--bark2); }
+.msg-bubble {
+  max-width: 82%; padding: 12px 16px; font-size: 14px; line-height: 1.65; border-radius: var(--radius);
+}
+.msg.guru .msg-bubble {
+  background: var(--warm); color: var(--bark); border-top-left-radius: 4px;
+}
+.msg.user .msg-bubble {
+  background: var(--bark); color: white; border-top-right-radius: 4px;
+}
+.msg-bubble strong { font-weight: 700; }
+.msg-bubble .rec-card {
+  background: white; border: 1px solid var(--cream); border-radius: 10px;
+  padding: 8px 12px; margin: 6px 0; display: flex; justify-content: space-between; align-items: center;
+}
+.rec-card .rc-name { font-weight: 600; font-size: 13px; }
+.rec-card .rc-area { font-size: 11px; color: var(--bark3); }
+.rec-card .rc-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+}
+.rc-urgent { background: var(--clay2); color: var(--clay); }
+.rc-recommended { background: var(--sun2); color: #b8860b; }
+.rc-available { background: var(--leaf3); color: var(--leaf); }
+.msg-bubble .flag-item {
+  padding: 6px 10px; margin: 4px 0; border-radius: 8px; font-size: 13px;
+  border-left: 3px solid var(--sun);
+}
+.flag-item.high { border-left-color: var(--clay); background: var(--clay2); }
+.flag-item.medium { border-left-color: var(--sun); background: var(--sun2); }
+.flag-item.low { border-left-color: var(--sky); background: var(--sky2); }
+.msg-bubble .bridge-item {
+  display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 13px;
+}
+.bridge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--leaf); flex-shrink: 0; }
+.bridge-area { color: var(--bark3); font-size: 11px; }
+.msg-bubble .skill-bar-wrap { margin: 3px 0; }
+.skill-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px; }
+.skill-bar { height: 5px; background: var(--cream); border-radius: 3px; overflow: hidden; }
+.skill-bar-fill { height: 100%; border-radius: 3px; }
+.sbf-strong { background: var(--leaf2); }
+.sbf-mid { background: var(--sun); }
+.sbf-weak { background: var(--clay); }
+
+/* Typing indicator */
+.typing { display: flex; gap: 4px; padding: 8px 0; }
+.typing-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--bark3);
+  animation: bounce 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) { animation-delay: .2s; }
+.typing-dot:nth-child(3) { animation-delay: .4s; }
+@keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+
+/* Suggestions */
+.suggestions {
+  padding: 4px 20px 8px; display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0;
+}
+.sug {
+  padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  border: 1.5px solid var(--cream); background: white; color: var(--bark2);
+  cursor: pointer; transition: all .15s; white-space: nowrap;
+}
+.sug:hover { border-color: var(--leaf2); color: var(--leaf); background: var(--leaf3); }
+
+/* Input area */
+.input-area {
+  padding: 12px 20px 16px; border-top: 1px solid var(--cream); flex-shrink: 0;
+  display: flex; gap: 8px; align-items: flex-end; background: white;
+}
+.input-field {
+  flex: 1; padding: 10px 16px; border-radius: 12px; border: 1.5px solid var(--cream);
+  font-size: 15px; color: var(--bark); outline: none; font-family: inherit;
+  resize: none; max-height: 100px; min-height: 42px; line-height: 1.4;
+  transition: border-color .15s; background: var(--sand);
+}
+.input-field:focus { border-color: var(--leaf2); background: white; }
+.input-field::placeholder { color: var(--bark3); }
+.send-btn {
+  width: 42px; height: 42px; border-radius: 12px; border: none;
+  background: var(--leaf); color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0;
+}
+.send-btn:hover { background: var(--leaf2); }
+.send-btn:disabled { background: var(--cream); color: var(--bark3); cursor: default; }
+.send-btn svg { width: 18px; height: 18px; }
+
+/* Record observation overlay */
+.overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(61,50,41,.4); z-index: 100;
+  display: none; align-items: flex-end; justify-content: center;
+  animation: fadeIn .2s ease;
+}
+.overlay.open { display: flex; }
+.sheet {
+  background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
+  max-height: 85vh; overflow-y: auto; padding: 20px;
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-handle {
+  width: 36px; height: 4px; border-radius: 2px; background: var(--cream);
+  margin: 0 auto 16px;
+}
+.sheet h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.sheet .sheet-sub { font-size: 13px; color: var(--bark3); margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--bark3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-select {
+  width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--cream);
+  font-size: 14px; color: var(--bark); background: var(--sand); font-family: inherit;
+  outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%238a7b6b'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+}
+.form-select:focus { border-color: var(--leaf2); background-color: white; }
+.form-input {
+  width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--cream);
+  font-size: 14px; color: var(--bark); background: var(--sand); font-family: inherit; outline: none;
+}
+.form-input:focus { border-color: var(--leaf2); background: white; }
+.form-textarea {
+  width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid var(--cream);
+  font-size: 14px; color: var(--bark); background: var(--sand); font-family: inherit;
+  outline: none; resize: vertical; min-height: 70px; line-height: 1.5;
+}
+.form-textarea:focus { border-color: var(--leaf2); background: white; }
+.form-textarea::placeholder { color: var(--bark3); }
+.status-row { display: flex; gap: 8px; }
+.status-btn {
+  flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--cream);
+  background: white; color: var(--bark3); cursor: pointer; font-size: 13px;
+  font-weight: 600; text-align: center; transition: all .15s; font-family: inherit;
+}
+.status-btn:hover { border-color: var(--bark3); }
+.status-btn.sel-m { border-color: var(--leaf); color: var(--leaf); background: var(--leaf3); }
+.status-btn.sel-p { border-color: var(--sun); color: #b8860b; background: var(--sun2); }
+.status-btn.sel-s { border-color: var(--clay); color: var(--clay); background: var(--clay2); }
+.submit-btn {
+  width: 100%; padding: 14px; border-radius: 12px; border: none;
+  background: var(--leaf); color: white; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: opacity .15s; font-family: inherit;
+}
+.submit-btn:hover { opacity: .9; }
+.submit-btn:disabled { opacity: .4; cursor: default; }
+
+/* Exercise autocomplete */
+.ac-wrap { position: relative; }
+.ac-list {
+  position: absolute; top: 100%; left: 0; right: 0; background: white;
+  border: 1.5px solid var(--cream); border-top: none; border-radius: 0 0 10px 10px;
+  max-height: 180px; overflow-y: auto; z-index: 10; display: none;
+  box-shadow: var(--shadow2);
+}
+.ac-list.open { display: block; }
+.ac-item {
+  padding: 8px 14px; cursor: pointer; font-size: 13px; transition: background .1s;
+  border-bottom: 1px solid var(--cream);
+}
+.ac-item:hover { background: var(--warm); }
+.ac-item:last-child { border-bottom: none; }
+.ac-name { font-weight: 600; }
+.ac-meta { font-size: 11px; color: var(--bark3); margin-top: 1px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--leaf); color: white; padding: 10px 24px; border-radius: 12px;
+  font-size: 14px; font-weight: 600; opacity: 0; transition: opacity .3s;
+  pointer-events: none; z-index: 200; box-shadow: var(--shadow2);
+}
+.toast.show { opacity: 1; }
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .app { max-width: 100%; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div class="logo">
+        <div class="logo-icon">&#127793;</div>
+        <div><div class="logo-text">Guru<span class="logo-sub"> by Montree</span></div></div>
+      </div>
+      <button class="record-btn" id="record-btn" onclick="toggleRecord()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="7" cy="7" r="5.5"/><line x1="7" y1="4.5" x2="7" y2="9.5"/><line x1="4.5" y1="7" x2="9.5" y2="7"/></svg>
+        Record
+      </button>
+    </div>
+    <div class="child-row" id="child-row"></div>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="suggestions" id="suggestions"></div>
+  <div class="input-area">
+    <textarea class="input-field" id="input" placeholder="Ask about a child..." rows="1" onkeydown="onKey(event)" oninput="autoGrow(this)"></textarea>
+    <button class="send-btn" onclick="send()" id="send-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Record observation sheet -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <h3>Record Observation</h3>
+    <p class="sheet-sub">What did you notice during the child's work?</p>
+    <div class="form-group">
+      <div class="form-label">Child</div>
+      <select class="form-select" id="rec-child"></select>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Exercise</div>
+      <div class="ac-wrap">
+        <input class="form-input" id="rec-exercise" placeholder="Start typing..." autocomplete="off" oninput="filterEx()" onfocus="filterEx()">
+        <input type="hidden" id="rec-exercise-id">
+        <div class="ac-list" id="ac-list"></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Status</div>
+      <div class="status-row">
+        <button class="status-btn" id="st-mastered" onclick="pickStatus('mastered')">Mastered</button>
+        <button class="status-btn" id="st-practicing" onclick="pickStatus('practicing')">Practicing</button>
+        <button class="status-btn" id="st-struggling" onclick="pickStatus('struggling')">Struggling</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label">Notes</div>
+      <textarea class="form-textarea" id="rec-notes" placeholder="e.g. Hand fatigues after 2 minutes, pencil slips..."></textarea>
+    </div>
+    <button class="submit-btn" onclick="submitObs()">Save Observation</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const EX={"PL001":{"n":"Walking on the Line","a":"practical_life","sa":"Movement","p":[],"s":["PL002","PL003","PL010"],"sd":["gross_motor_control","concentration","controlled_movement","self_regulation"],"sr":[],"ar":"2.5-3.5","mi":["Walks heel-to-toe without stepping off","Maintains balance while carrying an object","Sustains concentration for full circuit"]},"PL002":{"n":"Carrying a Tray","a":"practical_life","sa":"Movement","p":["PL001"],"s":["PL010","PL011","PL020"],"sd":["gross_motor_control","bilateral_coordination","controlled_movement","responsibility"],"sr":["gross_motor_control"],"ar":"2.5-3.5","mi":["Carries tray level without spilling","Navigates around furniture and people","Returns tray to shelf properly"]},"PL003":{"n":"Carrying a Chair","a":"practical_life","sa":"Movement","p":["PL001"],"s":["PL004"],"sd":["gross_motor_control","controlled_movement","care_of_environment","spatial_reasoning"],"sr":["gross_motor_control"],"ar":"2.5-3.5","mi":["Lifts and carries without dragging","Places quietly","Tucks in when leaving table"]},"PL004":{"n":"Rolling and Unrolling a Mat","a":"practical_life","sa":"Movement","p":["PL003"],"s":[],"sd":["fine_motor_control","bilateral_coordination","order_sense","respect_for_materials"],"sr":["gross_motor_control","controlled_movement"],"ar":"2.5-3.5","mi":["Rolls tightly and evenly","Unrolls without throwing","Returns to storage properly"]},"PL005":{"n":"Opening and Closing Containers","a":"practical_life","sa":"Fine Motor","p":[],"s":["PL006","PL012","PL030"],"sd":["fine_motor_control","wrist_rotation","bilateral_coordination","hand_eye_coordination","palmar_grasp"],"sr":[],"ar":"2.5-3","mi":["Opens various types (twist, snap, pop)","Closes securely","Works through set independently"]},"PL006":{"n":"Using Locks and Keys","a":"practical_life","sa":"Fine Motor","p":["PL005"],"s":[],"sd":["fine_motor_control","wrist_rotation","problem_solving","concentration"],"sr":["wrist_rotation","fine_motor_control"],"ar":"3-4","mi":["Matches key to lock","Turns key smoothly","Works through set independently"]},"PL007":{"n":"Using Tongs / Tweezers Transfer","a":"practical_life","sa":"Fine Motor - Transfer","p":["PL010","PL020"],"s":["PL008","PL009","PL040","PL080"],"sd":["pincer_grip","hand_eye_coordination","concentration","fine_motor_control"],"sr":["palmar_grasp","hand_eye_coordination"],"ar":"3-4","mi":["Picks up and transfers without dropping","Controls opening and closing consistently","Completes full transfer independently"]},"PL008":{"n":"Using a Dropper / Pipette Transfer","a":"practical_life","sa":"Fine Motor - Transfer","p":["PL007"],"s":["PL009"],"sd":["pincer_grip","fine_motor_control","concentration","controlled_movement"],"sr":["pincer_grip","hand_eye_coordination"],"ar":"3-4.5","mi":["Squeezes and releases with control","Transfers liquid without spilling","Fills target containers accurately"]},"PL009":{"n":"Bead Stringing / Threading","a":"practical_life","sa":"Fine Motor","p":["PL007","PL008"],"s":["PL035","PL042","PL043","PL047"],"sd":["pincer_grip","hand_eye_coordination","bilateral_coordination","concentration","finger_isolation"],"sr":["pincer_grip","hand_eye_coordination"],"ar":"3-4","mi":["Threads beads consistently","Maintains pattern if given one","Sustains concentration for 10+ minutes"]},"PL010":{"n":"Dry Pouring (Grains)","a":"practical_life","sa":"Pouring","p":["PL002","PL001"],"s":["PL007","PL011"],"sd":["pouring_control","wrist_rotation","bilateral_coordination","controlled_movement","concentration","palmar_grasp"],"sr":["bilateral_coordination","controlled_movement"],"ar":"2.5-3.5","mi":["Pours without spilling","Controls flow rate","Pours into multiple containers evenly"]},"PL011":{"n":"Wet Pouring (Water)","a":"practical_life","sa":"Pouring","p":["PL010","PL002"],"s":["PL012","PL013","PL060","PL066","M066"],"sd":["pouring_control","water_handling","wrist_rotation","self_correction","care_of_environment"],"sr":["pouring_control","controlled_movement"],"ar":"3-3.5","mi":["Pours without spilling","Knows to clean up spills","Pours to fill line accurately"]},"PL012":{"n":"Pouring with a Funnel","a":"practical_life","sa":"Pouring","p":["PL011","PL005"],"s":[],"sd":["pouring_control","hand_eye_coordination","tool_use","problem_solving"],"sr":["pouring_control","water_handling"],"ar":"3-4","mi":["Aligns funnel correctly","Pours steadily without overflow","Completes transfer without spills"]},"PL013":{"n":"Sponge Squeezing / Water Transfer","a":"practical_life","sa":"Pouring","p":["PL011"],"s":["PL061"],"sd":["grip_strength","water_handling","bilateral_coordination","concentration"],"sr":["water_handling","bilateral_coordination"],"ar":"3-3.5","mi":["Squeezes fully","Transfers water without excessive dripping","Wrings sponge dry"]},"PL020":{"n":"Spooning (Dry Transfer)","a":"practical_life","sa":"Fine Motor - Transfer","p":["PL002"],"s":["PL007","PL021"],"sd":["hand_eye_coordination","fine_motor_control","controlled_movement","concentration"],"sr":["bilateral_coordination"],"ar":"2.5-3.5","mi":["Transfers without spilling","Holds spoon correctly","Completes full transfer"]},"PL021":{"n":"Spooning (Wet / Food Serving)","a":"practical_life","sa":"Food Preparation","p":["PL020"],"s":["PL050","PL051"],"sd":["food_preparation","hand_eye_coordination","controlled_movement","self_care"],"sr":["hand_eye_coordination","controlled_movement"],"ar":"3-4","mi":["Serves appropriate portions","Transfers without dripping","Uses serving utensils correctly"]},"PL030":{"n":"Hand Washing","a":"practical_life","sa":"Care of Self","p":["PL005"],"s":["PL031","PL032"],"sd":["self_care","order_sense","independence","water_handling"],"sr":["wrist_rotation"],"ar":"2.5-3","mi":["Follows full sequence independently","Uses appropriate soap amount","Dries hands thoroughly"]},"PL031":{"n":"Face Washing","a":"practical_life","sa":"Care of Self","p":["PL030"],"s":[],"sd":["self_care","independence","order_sense"],"sr":["self_care","water_handling"],"ar":"3-4","mi":["Washes face thoroughly","Keeps area clean","Completes independently"]},"PL032":{"n":"Teeth Brushing","a":"practical_life","sa":"Care of Self","p":["PL030"],"s":[],"sd":["self_care","order_sense","fine_motor_control","independence"],"sr":["self_care","wrist_rotation"],"ar":"3-4","mi":["Follows sequence","Brushes all areas","Rinses and stores brush properly"]},"PL033":{"n":"Nose Blowing","a":"practical_life","sa":"Care of Self","p":[],"s":[],"sd":["self_care","independence"],"sr":[],"ar":"2.5-3.5","mi":["Uses tissue correctly","Disposes of tissue","Washes hands after"]},"PL034":{"n":"Hair Brushing / Combing","a":"practical_life","sa":"Care of Self","p":[],"s":["PL035"],"sd":["self_care","bilateral_coordination","independence","hand_eye_coordination"],"sr":[],"ar":"3-4","mi":["Brushes all sections","Handles tangles gently","Returns brush to mirror area"]},"PL035":{"n":"Braiding","a":"practical_life","sa":"Fine Motor","p":["PL034","PL009"],"s":[],"sd":["fine_motor_control","bilateral_coordination","pattern_recognition","concentration"],"sr":["fine_motor_control","bilateral_coordination"],"ar":"4-6","mi":["Maintains three-strand pattern","Even tension throughout","Completes independently"]},"PL040":{"n":"Dressing Frames - Buttons (Large)","a":"practical_life","sa":"Dressing Frames","p":["PL007"],"s":["PL041"],"sd":["fine_motor_control","bilateral_coordination","self_care","pincer_grip","independence"],"sr":["pincer_grip","bilateral_coordination"],"ar":"3-3.5","mi":["Buttons and unbuttons all buttons","Aligns fabric edges","Works top-to-bottom systematically"]},"PL041":{"n":"Dressing Frames - Buttons (Small)","a":"practical_life","sa":"Dressing Frames","p":["PL040"],"s":["PL044"],"sd":["fine_motor_control","pincer_grip","concentration","self_care"],"sr":["pincer_grip","fine_motor_control"],"ar":"3.5-4.5","mi":["Manages small buttons independently","Works efficiently","Transfers skill to own clothing"]},"PL042":{"n":"Dressing Frames - Lacing","a":"practical_life","sa":"Dressing Frames","p":["PL009"],"s":["PL043","PL047"],"sd":["fine_motor_control","bilateral_coordination","hand_eye_coordination","order_sense","patience"],"sr":["pincer_grip","hand_eye_coordination"],"ar":"3.5-4.5","mi":["Laces through all holes correctly","Maintains even tension","Crosses laces properly"]},"PL043":{"n":"Dressing Frames - Bow Tying","a":"practical_life","sa":"Dressing Frames","p":["PL042","PL009"],"s":[],"sd":["fine_motor_control","bilateral_coordination","memory_sequential","persistence","independence"],"sr":["fine_motor_control","bilateral_coordination","hand_eye_coordination"],"ar":"4-5.5","mi":["Ties a complete bow","Bow stays tied","Transfers to shoe tying"]},"PL044":{"n":"Dressing Frames - Snaps and Hooks","a":"practical_life","sa":"Dressing Frames","p":["PL041"],"s":["PL045"],"sd":["fine_motor_control","pincer_grip","self_care","problem_solving"],"sr":["pincer_grip","fine_motor_control"],"ar":"3.5-4.5","mi":["Opens and closes all fasteners","Uses appropriate force","Works independently"]},"PL045":{"n":"Dressing Frames - Zipper","a":"practical_life","sa":"Dressing Frames","p":["PL044"],"s":["PL046"],"sd":["fine_motor_control","bilateral_coordination","self_care","independence"],"sr":["fine_motor_control","bilateral_coordination"],"ar":"3.5-4.5","mi":["Engages zipper start","Zips and unzips smoothly","Manages on own jacket"]},"PL046":{"n":"Dressing Frames - Safety Pins","a":"practical_life","sa":"Dressing Frames","p":["PL045"],"s":[],"sd":["fine_motor_control","pincer_grip","concentration","tool_use"],"sr":["fine_motor_control","pincer_grip","concentration"],"ar":"4.5-6","mi":["Opens and closes pins safely","Pins fabric without pricking","Works carefully and independently"]},"PL047":{"n":"Sewing - Running Stitch","a":"practical_life","sa":"Fine Motor","p":["PL009","PL042"],"s":["PL048"],"sd":["fine_motor_control","hand_eye_coordination","concentration","pattern_recognition","patience"],"sr":["pincer_grip","hand_eye_coordination","bilateral_coordination"],"ar":"4-5.5","mi":["Even stitch length","Follows marked line","Threads needle independently"]},"PL048":{"n":"Sewing - Cross Stitch","a":"practical_life","sa":"Fine Motor","p":["PL047"],"s":[],"sd":["fine_motor_control","pattern_recognition","concentration","spatial_reasoning"],"sr":["fine_motor_control","pattern_recognition","hand_eye_coordination"],"ar":"5-6","mi":["Consistent X pattern","Follows grid accurately","Creates recognizable design"]},"PL050":{"n":"Banana Cutting / Slicing Soft Food","a":"practical_life","sa":"Food Preparation","p":["PL021"],"s":["PL051","PL052"],"sd":["food_preparation","tool_use","hand_eye_coordination","order_sense","independence"],"sr":["hand_eye_coordination","controlled_movement"],"ar":"3-4","mi":["Cuts safely with butter knife","Even slices","Follows preparation sequence (wash, peel, cut, serve)"]},"PL051":{"n":"Spreading (Butter, Jam)","a":"practical_life","sa":"Food Preparation","p":["PL021","PL050"],"s":[],"sd":["food_preparation","tool_use","bilateral_coordination","self_care"],"sr":["hand_eye_coordination","bilateral_coordination"],"ar":"3-4","mi":["Spreads evenly","Uses appropriate amount","Holds bread steady"]},"PL052":{"n":"Cutting with a Knife (Harder Foods)","a":"practical_life","sa":"Food Preparation","p":["PL050"],"s":["PL053"],"sd":["food_preparation","tool_use","hand_eye_coordination","controlled_movement","grip_strength"],"sr":["tool_use","hand_eye_coordination","controlled_movement"],"ar":"4-5.5","mi":["Uses safe cutting technique","Manages firmer foods","Curls fingers away from blade"]},"PL053":{"n":"Vegetable / Fruit Preparation (Full Sequence)","a":"practical_life","sa":"Food Preparation","p":["PL052"],"s":["PL054"],"sd":["food_preparation","order_sense","independence","concentration","responsibility"],"sr":["food_preparation","tool_use","order_sense"],"ar":"4.5-6","mi":["Completes wash-peel-cut-serve sequence","Cleans workspace after","Serves classmates"]},"PL054":{"n":"Simple Cooking (Following a Recipe)","a":"practical_life","sa":"Food Preparation","p":["PL053"],"s":[],"sd":["food_preparation","order_sense","reading_comprehension","estimation","cooperation"],"sr":["food_preparation","order_sense","independence"],"ar":"5-6","mi":["Follows recipe steps in order","Measures ingredients","Manages timing"]},"PL060":{"n":"Table Washing","a":"practical_life","sa":"Care of Environment","p":["PL011"],"s":["PL061","PL062","PL064","PL065"],"sd":["care_of_environment","order_sense","concentration","water_handling","gross_motor_control"],"sr":["water_handling","order_sense"],"ar":"3-4","mi":["Follows full sequence (wet, soap, scrub, rinse, dry)","Covers entire surface systematically","Leaves table clean and dry"]},"PL061":{"n":"Cloth Washing / Laundry","a":"practical_life","sa":"Care of Environment","p":["PL013","PL060"],"s":[],"sd":["care_of_environment","order_sense","grip_strength","water_handling","independence"],"sr":["water_handling","grip_strength","order_sense"],"ar":"3.5-5","mi":["Follows wash-rinse-wring-hang sequence","Wrings cloth effectively","Hangs to dry properly"]},"PL062":{"n":"Sweeping","a":"practical_life","sa":"Care of Environment","p":["PL060"],"s":["PL063"],"sd":["care_of_environment","gross_motor_control","bilateral_coordination","responsibility"],"sr":["gross_motor_control","bilateral_coordination"],"ar":"3-4","mi":["Sweeps debris into pile","Uses dustpan correctly","Cleans full area systematically"]},"PL063":{"n":"Mopping","a":"practical_life","sa":"Care of Environment","p":["PL062"],"s":[],"sd":["care_of_environment","gross_motor_control","bilateral_coordination","water_handling"],"sr":["gross_motor_control","water_handling","care_of_environment"],"ar":"3.5-5","mi":["Wrings mop properly","Covers floor area systematically","Leaves floor clean and dry"]},"PL064":{"n":"Polishing (Metal / Wood)","a":"practical_life","sa":"Care of Environment","p":["PL060"],"s":[],"sd":["care_of_environment","order_sense","concentration","controlled_movement","fine_motor_control"],"sr":["order_sense","concentration"],"ar":"3.5-5","mi":["Follows apply-rub-buff sequence","Uses circular motions","Achieves visible shine"]},"PL065":{"n":"Window Washing","a":"practical_life","sa":"Care of Environment","p":["PL060"],"s":[],"sd":["care_of_environment","gross_motor_control","order_sense","water_handling"],"sr":["water_handling","care_of_environment"],"ar":"3.5-5","mi":["Sprays and wipes systematically","Removes all streaks","Leaves window clean"]},"PL066":{"n":"Plant Care (Watering)","a":"practical_life","sa":"Care of Environment","p":["PL011"],"s":["PL067","C015"],"sd":["plant_care","care_of_environment","pouring_control","responsibility"],"sr":["pouring_control"],"ar":"3-4","mi":["Gives appropriate amount of water","Checks soil first","Maintains regular schedule"]},"PL067":{"n":"Plant Care (Leaf Polishing, Arranging Flowers)","a":"practical_life","sa":"Care of Environment","p":["PL066"],"s":[],"sd":["plant_care","care_of_environment","fine_motor_control","concentration","controlled_movement"],"sr":["fine_motor_control","plant_care"],"ar":"3.5-5","mi":["Polishes leaves gently without damage","Arranges flowers in vase","Handles plants with care"]},"PL070":{"n":"Grace and Courtesy - Greetings","a":"practical_life","sa":"Grace and Courtesy","p":[],"s":["PL071","PL072"],"sd":["grace_and_courtesy","oral_expression","confidence","empathy"],"sr":[],"ar":"2.5-3.5","mi":["Makes eye contact","Uses names","Greets adults and children appropriately"]},"PL071":{"n":"Grace and Courtesy - Please, Thank You, Excuse Me","a":"practical_life","sa":"Grace and Courtesy","p":["PL070"],"s":["PL073"],"sd":["grace_and_courtesy","oral_expression","self_regulation","empathy"],"sr":["grace_and_courtesy"],"ar":"2.5-4","mi":["Uses phrases spontaneously","Appropriate context","Consistent across situations"]},"PL072":{"n":"Grace and Courtesy - Walking Around a Mat","a":"practical_life","sa":"Grace and Courtesy","p":["PL070"],"s":[],"sd":["grace_and_courtesy","spatial_reasoning","respect_for_materials","self_regulation"],"sr":["controlled_movement"],"ar":"2.5-3.5","mi":["Consistently walks around mats","Reminds peers gently","Respects others workspace"]},"PL073":{"n":"Grace and Courtesy - Interrupting Politely","a":"practical_life","sa":"Grace and Courtesy","p":["PL071"],"s":["PL074"],"sd":["grace_and_courtesy","self_regulation","patience","oral_expression"],"sr":["grace_and_courtesy","self_regulation"],"ar":"3.5-5","mi":["Waits for pause","Places hand on shoulder gently","Waits to be acknowledged"]},"PL074":{"n":"Grace and Courtesy - Conflict Resolution","a":"practical_life","sa":"Grace and Courtesy","p":["PL073"],"s":[],"sd":["grace_and_courtesy","empathy","oral_expression","self_regulation","problem_solving"],"sr":["grace_and_courtesy","self_regulation","oral_expression"],"ar":"4-6","mi":["Uses I-statements","Listens to other perspective","Works toward resolution without adult"]},"PL080":{"n":"Cutting with Scissors (Paper Strips)","a":"practical_life","sa":"Fine Motor","p":["PL007"],"s":["PL081"],"sd":["cutting_skill","hand_eye_coordination","bilateral_coordination","fine_motor_control"],"sr":["hand_eye_coordination","bilateral_coordination"],"ar":"3-3.5","mi":["Holds scissors correctly","Cuts along straight line","Coordinates paper and scissors"]},"PL081":{"n":"Cutting with Scissors (Curves and Shapes)","a":"practical_life","sa":"Fine Motor","p":["PL080"],"s":["PL082"],"sd":["cutting_skill","hand_eye_coordination","controlled_movement","concentration"],"sr":["cutting_skill","hand_eye_coordination"],"ar":"3.5-4.5","mi":["Follows curved lines","Cuts out simple shapes","Smooth rather than jagged cuts"]},"PL082":{"n":"Paper Folding","a":"practical_life","sa":"Fine Motor","p":["PL081"],"s":[],"sd":["folding_skill","hand_eye_coordination","spatial_reasoning","fine_motor_control","order_sense"],"sr":["fine_motor_control","hand_eye_coordination"],"ar":"4-5.5","mi":["Aligns edges precisely","Creates sharp creases","Follows multi-step folding sequence"]},"S001":{"n":"Cylinder Blocks (Block 1 - Diameter varies)","a":"sensorial","sa":"Visual - Dimension","p":[],"s":["S002","S003","S004"],"sd":["visual_discrimination","dimension_perception","concentration","order_sense","pincer_grip","fine_motor_control"],"sr":[],"ar":"2.5-3.5","mi":["Places all cylinders correctly","Self-corrects using control of error","Works left to right"]},"S002":{"n":"Cylinder Blocks (Block 2 - Height and diameter vary)","a":"sensorial","sa":"Visual - Dimension","p":["S001"],"s":["S005"],"sd":["visual_discrimination","dimension_perception","comparison","concentration"],"sr":["visual_discrimination","pincer_grip"],"ar":"2.5-3.5","mi":["Places all cylinders correctly","Discriminates two dimensions simultaneously","Self-corrects"]},"S003":{"n":"Cylinder Blocks (Block 3 - Height varies)","a":"sensorial","sa":"Visual - Dimension","p":["S001"],"s":["S005"],"sd":["visual_discrimination","dimension_perception","seriation","concentration"],"sr":["visual_discrimination","pincer_grip"],"ar":"2.5-3.5","mi":["Places all cylinders correctly","Discriminates height accurately","Self-corrects"]},"S004":{"n":"Cylinder Blocks (Block 4 - Diameter and height inversely vary)","a":"sensorial","sa":"Visual - Dimension","p":["S001"],"s":["S005"],"sd":["visual_discrimination","dimension_perception","logical_reasoning","concentration"],"sr":["visual_discrimination","pincer_grip"],"ar":"3-4","mi":["Places all cylinders correctly","Manages inverse relationship","Self-corrects"]},"S005":{"n":"Cylinder Blocks (Combined - Two or More Blocks)","a":"sensorial","sa":"Visual - Dimension","p":["S002","S003","S004"],"s":[],"sd":["visual_discrimination","dimension_perception","concentration","problem_solving","logical_reasoning"],"sr":["visual_discrimination","dimension_perception","concentration"],"ar":"3.5-5","mi":["Completes two+ blocks mixed together","Uses systematic approach","Sustains concentration for extended period"]},"S010":{"n":"Pink Tower","a":"sensorial","sa":"Visual - Dimension","p":[],"s":["S011","S013","S040"],"sd":["visual_discrimination","dimension_perception","seriation","concentration","controlled_movement","hand_eye_coordination"],"sr":[],"ar":"2.5-3.5","mi":["Builds from largest to smallest","Centers each cube","Self-corrects if tower leans"]},"S011":{"n":"Brown/Broad Stair","a":"sensorial","sa":"Visual - Dimension","p":["S010"],"s":["S012","S013"],"sd":["visual_discrimination","dimension_perception","seriation","gross_motor_control","concentration"],"sr":[],"ar":"2.5-3.5","mi":["Arranges thickest to thinnest","Aligns edges","Self-corrects using visual comparison"]},"S012":{"n":"Red Rods","a":"sensorial","sa":"Visual - Dimension","p":["S011"],"s":["S013","M001","M010","M064"],"sd":["visual_discrimination","dimension_perception","seriation","gross_motor_control","concentration"],"sr":["visual_discrimination","seriation"],"ar":"3-4","mi":["Arranges longest to shortest","Aligns at one end","Self-corrects"]},"S013":{"n":"Pink Tower, Brown Stair, Red Rods Extensions","a":"sensorial","sa":"Visual - Dimension","p":["S010","S011","S012"],"s":[],"sd":["visual_discrimination","dimension_perception","spatial_reasoning","problem_solving","concentration"],"sr":["visual_discrimination","dimension_perception","seriation"],"ar":"3.5-5","mi":["Combines materials creatively","Builds patterns and structures","Demonstrates understanding of dimensional relationships"]},"S020":{"n":"Color Box 1 (Primary Colors)","a":"sensorial","sa":"Visual - Color","p":[],"s":["S021","S076"],"sd":["chromatic_sense","visual_discrimination","classification","vocabulary_enrichment"],"sr":[],"ar":"2.5-3","mi":["Matches pairs correctly","Names red, yellow, blue","Pairs without hesitation"]},"S021":{"n":"Color Box 2 (Secondary Colors)","a":"sensorial","sa":"Visual - Color","p":["S020"],"s":["S022"],"sd":["chromatic_sense","visual_discrimination","classification","vocabulary_enrichment"],"sr":["chromatic_sense"],"ar":"3-3.5","mi":["Matches all 11 pairs","Names all colors","Sorts confidently"]},"S022":{"n":"Color Box 3 (Grading Shades)","a":"sensorial","sa":"Visual - Color","p":["S021"],"s":[],"sd":["chromatic_sense","visual_discrimination","seriation","concentration","comparison"],"sr":["chromatic_sense","seriation"],"ar":"3.5-5","mi":["Grades 7 shades from darkest to lightest","Does multiple colors","Discriminates subtle shade differences"]},"S030":{"n":"Geometric Solids","a":"sensorial","sa":"Visual - Form","p":[],"s":["S031","S032","S075"],"sd":["stereognostic_sense","spatial_reasoning","vocabulary_enrichment","tactile_discrimination"],"sr":[],"ar":"3-4","mi":["Names basic solids (sphere, cube, cylinder, cone, prism)","Identifies by touch alone","Matches to base outlines"]},"S031":{"n":"Geometric Cabinet","a":"sensorial","sa":"Visual - Form","p":["S030"],"s":["S033","L012","M058","M061"],"sd":["visual_discrimination","spatial_reasoning","classification","vocabulary_enrichment","fine_motor_control"],"sr":["spatial_reasoning","visual_discrimination"],"ar":"3-5","mi":["Matches shapes to insets","Names shapes","Traces with two fingers (preparation for writing)"]},"S032":{"n":"Constructive Triangles","a":"sensorial","sa":"Visual - Form","p":["S030"],"s":[],"sd":["spatial_reasoning","visual_discrimination","problem_solving","logical_reasoning"],"sr":["spatial_reasoning"],"ar":"3.5-5.5","mi":["Combines triangles to form other shapes","Works through all boxes","Understands triangles compose other shapes"]},"S033":{"n":"Geometric Cabinet Cards (3 stages)","a":"sensorial","sa":"Visual - Form","p":["S031"],"s":[],"sd":["visual_discrimination","spatial_reasoning","abstraction","classification"],"sr":["visual_discrimination","spatial_reasoning"],"ar":"4-5.5","mi":["Matches shapes to progressively abstract cards","Full outline, thick line, thin line stages","Generalizes shape recognition"]},"S040":{"n":"Binomial Cube","a":"sensorial","sa":"Visual - Algebraic","p":["S010"],"s":["S041"],"sd":["spatial_reasoning","pattern_recognition","visual_discrimination","concentration","problem_solving"],"sr":["visual_discrimination","dimension_perception"],"ar":"3.5-5","mi":["Assembles using pattern on lid","Works layer by layer","Completes independently"]},"S041":{"n":"Trinomial Cube","a":"sensorial","sa":"Visual - Algebraic","p":["S040"],"s":[],"sd":["spatial_reasoning","pattern_recognition","visual_discrimination","concentration","problem_solving","persistence"],"sr":["spatial_reasoning","pattern_recognition","concentration"],"ar":"4-6","mi":["Assembles using color coding","Works systematically through layers","Completes without lid reference"]},"S050":{"n":"Touch Boards (Rough and Smooth)","a":"sensorial","sa":"Tactile","p":[],"s":["S051"],"sd":["tactile_discrimination","concentration","vocabulary_enrichment","controlled_movement"],"sr":[],"ar":"2.5-3.5","mi":["Identifies rough and smooth","Uses light fingertip touch","Describes textures verbally"]},"S051":{"n":"Touch Tablets (Grading Textures)","a":"sensorial","sa":"Tactile","p":["S050"],"s":["S052"],"sd":["tactile_discrimination","seriation","comparison","concentration"],"sr":["tactile_discrimination"],"ar":"3-4","mi":["Grades from roughest to smoothest","Matches pairs blindfolded","Discriminates subtle differences"]},"S052":{"n":"Fabric Matching","a":"sensorial","sa":"Tactile","p":["S051"],"s":[],"sd":["tactile_discrimination","classification","concentration","stereognostic_sense"],"sr":["tactile_discrimination"],"ar":"3.5-5","mi":["Matches fabric pairs blindfolded","Describes differences in texture","Works through full set"]},"S055":{"n":"Thermic Bottles","a":"sensorial","sa":"Thermic","p":[],"s":["S056"],"sd":["thermic_sense","comparison","seriation","vocabulary_enrichment"],"sr":[],"ar":"3-4","mi":["Matches pairs by temperature","Grades from cold to hot","Uses vocabulary: cold, cool, warm, hot"]},"S056":{"n":"Thermic Tablets","a":"sensorial","sa":"Thermic","p":["S055"],"s":[],"sd":["thermic_sense","comparison","classification","concentration"],"sr":["thermic_sense"],"ar":"3.5-5","mi":["Matches material pairs by thermal conductivity","Identifies wood, metal, felt, cork","Describes thermal differences"]},"S060":{"n":"Baric Tablets","a":"sensorial","sa":"Baric","p":[],"s":["M065"],"sd":["baric_sense","comparison","seriation","concentration"],"sr":[],"ar":"3.5-5","mi":["Distinguishes light, medium, heavy","Grades within each weight class","Works blindfolded"]},"S065":{"n":"Sound Cylinders","a":"sensorial","sa":"Auditory","p":[],"s":["S066"],"sd":["auditory_discrimination","comparison","concentration","memory_visual"],"sr":[],"ar":"3-4","mi":["Matches pairs by sound","Grades from quiet to loud","Works independently"]},"S066":{"n":"Bells","a":"sensorial","sa":"Auditory","p":["S065"],"s":["C033"],"sd":["auditory_discrimination","seriation","concentration","controlled_movement","phonemic_awareness"],"sr":["auditory_discrimination"],"ar":"3.5-6","mi":["Matches pairs by pitch","Grades scale","Names notes (older children)"]},"S070":{"n":"Smelling Bottles","a":"sensorial","sa":"Olfactory","p":[],"s":[],"sd":["olfactory_discrimination","classification","vocabulary_enrichment","concentration"],"sr":[],"ar":"3-5","mi":["Matches scent pairs","Describes scents","Sorts pleasant/unpleasant"]},"S071":{"n":"Tasting Bottles","a":"sensorial","sa":"Gustatory","p":[],"s":[],"sd":["gustatory_discrimination","classification","vocabulary_enrichment"],"sr":[],"ar":"3.5-5","mi":["Identifies sweet, sour, salty, bitter","Matches pairs","Uses taste vocabulary"]},"S075":{"n":"Mystery Bag (Stereognostic)","a":"sensorial","sa":"Stereognostic","p":["S030"],"s":[],"sd":["stereognostic_sense","tactile_discrimination","vocabulary_enrichment","concentration","memory_visual"],"sr":["tactile_discrimination"],"ar":"3-5","mi":["Identifies objects by touch alone","Names objects accurately","Describes attributes before revealing"]},"S076":{"n":"Sorting / Classification Exercises","a":"sensorial","sa":"Cognitive - Classification","p":["S020"],"s":[],"sd":["classification","logical_reasoning","visual_discrimination","vocabulary_enrichment"],"sr":["visual_discrimination"],"ar":"3-5","mi":["Sorts by one attribute","Sorts by two attributes","Creates own categories"]},"M001":{"n":"Number Rods","a":"mathematics","sa":"Numbers 1-10","p":["S012"],"s":["M002","M003"],"sd":["number_sense","one_to_one_correspondence","vocabulary_enrichment","seriation","concentration"],"sr":["seriation","visual_discrimination","dimension_perception"],"ar":"3.5-4.5","mi":["Arranges in order","Counts segments accurately","Associates quantity with rod"]},"M002":{"n":"Sandpaper Numerals","a":"mathematics","sa":"Numbers 1-10","p":["M001"],"s":["M003","M004"],"sd":["symbol_recognition","fine_motor_control","memory_visual","concentration"],"sr":["number_sense"],"ar":"3.5-4.5","mi":["Traces with correct formation","Names all numerals 0-9","Recognizes numerals out of order"]},"M003":{"n":"Number Rods and Cards","a":"mathematics","sa":"Numbers 1-10","p":["M001","M002"],"s":["M005"],"sd":["number_sense","symbol_recognition","one_to_one_correspondence"],"sr":["number_sense","symbol_recognition"],"ar":"3.5-4.5","mi":["Matches numeral cards to rods","Places cards in correct order","Associates symbol with quantity confidently"]},"M004":{"n":"Spindle Boxes","a":"mathematics","sa":"Numbers 0-9","p":["M002"],"s":["M005","M006"],"sd":["number_sense","one_to_one_correspondence","concentration","fine_motor_control"],"sr":["symbol_recognition","one_to_one_correspondence"],"ar":"3.5-4.5","mi":["Counts correct number of spindles","Understands zero as empty","Bundles with rubber band"]},"M005":{"n":"Cards and Counters","a":"mathematics","sa":"Numbers 1-10","p":["M003","M004"],"s":["M010","M020","C022","M050","M054","M062","M066","M069"],"sd":["number_sense","one_to_one_correspondence","classification","order_sense"],"sr":["number_sense","symbol_recognition","one_to_one_correspondence"],"ar":"4-5","mi":["Lays out 1-10 in order with correct counters","Identifies odd and even","Works independently"]},"M006":{"n":"Memory Game of Numbers","a":"mathematics","sa":"Numbers 1-10","p":["M004"],"s":[],"sd":["number_sense","memory_sequential","concentration","independence"],"sr":["number_sense","one_to_one_correspondence"],"ar":"4-5","mi":["Remembers quantity while walking to collect","Brings back exact number","Counts to verify"]},"M010":{"n":"Teen Boards (Seguin Board A - 11-19)","a":"mathematics","sa":"Teens and Tens","p":["M005","S012"],"s":["M011"],"sd":["number_sense","decimal_understanding","symbol_recognition","vocabulary_enrichment"],"sr":["number_sense","symbol_recognition"],"ar":"4-5","mi":["Slides numeral cards to form teens","Associates bead bars with teen numbers","Names all teen numbers"]},"M011":{"n":"Ten Boards (Seguin Board B - 10-99)","a":"mathematics","sa":"Teens and Tens","p":["M010"],"s":["M012","M020"],"sd":["number_sense","decimal_understanding","pattern_recognition","concentration"],"sr":["decimal_understanding","number_sense"],"ar":"4-5.5","mi":["Constructs numbers 10-99","Understands tens place pattern","Counts by tens fluently"]},"M012":{"n":"Hundred Board","a":"mathematics","sa":"Teens and Tens","p":["M011"],"s":["M013"],"sd":["number_sense","pattern_recognition","order_sense","concentration","symbol_recognition"],"sr":["decimal_understanding","number_sense"],"ar":"4.5-5.5","mi":["Places all tiles 1-100 correctly","Identifies number patterns","Self-corrects using control chart"]},"M013":{"n":"Skip Counting (Chains)","a":"mathematics","sa":"Teens and Tens","p":["M012"],"s":["M040"],"sd":["number_sense","pattern_recognition","concentration","memory_sequential"],"sr":["number_sense","pattern_recognition"],"ar":"5-6","mi":["Counts by 2s, 5s, 10s","Labels chain arrows correctly","Extends to other skip counts"]},"M020":{"n":"Golden Beads - Introduction to Quantity","a":"mathematics","sa":"Decimal System","p":["M005","M011"],"s":["M021"],"sd":["decimal_understanding","number_sense","comparison","vocabulary_enrichment"],"sr":["number_sense","one_to_one_correspondence"],"ar":"4-5","mi":["Identifies unit, ten, hundred, thousand by sight and touch","Understands each is 10x the previous","Fetches requested quantities accurately"]},"M021":{"n":"Golden Beads - Introduction to Symbol (Large Number Cards)","a":"mathematics","sa":"Decimal System","p":["M020"],"s":["M022"],"sd":["decimal_understanding","symbol_recognition","number_sense"],"sr":["decimal_understanding","symbol_recognition"],"ar":"4-5","mi":["Reads 4-digit numbers","Builds numbers with cards","Understands place value in card layout"]},"M022":{"n":"Golden Beads - Association (Quantity + Symbol)","a":"mathematics","sa":"Decimal System","p":["M021"],"s":["M023","M053"],"sd":["decimal_understanding","number_sense","symbol_recognition","logical_reasoning"],"sr":["decimal_understanding","symbol_recognition"],"ar":"4-5","mi":["Builds quantity and matches symbol","Reads symbol and builds quantity","Composes and decomposes 4-digit numbers"]},"M023":{"n":"Golden Beads - Static Addition","a":"mathematics","sa":"Decimal System - Operations","p":["M022"],"s":["M024","M025","M063","M068"],"sd":["decimal_understanding","number_sense","logical_reasoning","cooperation"],"sr":["decimal_understanding","number_sense"],"ar":"4.5-5.5","mi":["Combines quantities from two+ addends","Counts total in each category","Records result with number cards"]},"M024":{"n":"Golden Beads - Dynamic Addition (with Exchanging)","a":"mathematics","sa":"Decimal System - Operations","p":["M023"],"s":["M025","M026","M027","M028","M030","M052"],"sd":["decimal_understanding","number_sense","logical_reasoning","problem_solving"],"sr":["decimal_understanding","number_sense"],"ar":"4.5-5.5","mi":["Recognizes when exchange is needed (10+ in any category)","Exchanges correctly","Records result accurately"]},"M025":{"n":"Golden Beads - Static Subtraction","a":"mathematics","sa":"Decimal System - Operations","p":["M023","M024"],"s":["M026"],"sd":["decimal_understanding","number_sense","logical_reasoning"],"sr":["decimal_understanding","number_sense"],"ar":"4.5-5.5","mi":["Takes away from each category","Counts remainder accurately","Understands subtraction as taking away"]},"M026":{"n":"Golden Beads - Dynamic Subtraction (with Exchanging)","a":"mathematics","sa":"Decimal System - Operations","p":["M025","M024"],"s":["M030"],"sd":["decimal_understanding","number_sense","logical_reasoning","problem_solving"],"sr":["decimal_understanding"],"ar":"5-6","mi":["Recognizes when exchange is needed","Exchanges from next category correctly","Records result"]},"M027":{"n":"Golden Beads - Multiplication","a":"mathematics","sa":"Decimal System - Operations","p":["M024"],"s":["M040","M044"],"sd":["decimal_understanding","number_sense","logical_reasoning","concentration"],"sr":["decimal_understanding","number_sense"],"ar":"5-6","mi":["Sets up same quantity multiple times","Combines and exchanges","Understands multiplication as repeated addition"]},"M028":{"n":"Golden Beads - Division","a":"mathematics","sa":"Decimal System - Operations","p":["M024"],"s":["M041","M045"],"sd":["decimal_understanding","number_sense","logical_reasoning","concentration"],"sr":["decimal_understanding","number_sense"],"ar":"5-6","mi":["Distributes equally among skittles","Handles remainders","Understands division as sharing"]},"M030":{"n":"Stamp Game","a":"mathematics","sa":"Decimal System - Abstract","p":["M024","M026"],"s":["M035"],"sd":["decimal_understanding","abstraction","number_sense","concentration"],"sr":["decimal_understanding","number_sense"],"ar":"5-6","mi":["Performs all four operations","Exchanges accurately","Moves toward recording on paper"]},"M035":{"n":"Bead Frame (Small)","a":"mathematics","sa":"Decimal System - Abstract","p":["M030"],"s":[],"sd":["decimal_understanding","abstraction","number_sense","concentration"],"sr":["decimal_understanding","abstraction"],"ar":"5.5-6","mi":["Performs addition and subtraction on frame","Records on paper alongside","Understands positional notation"]},"M040":{"n":"Short Bead Chains (Squares)","a":"mathematics","sa":"Linear Counting","p":["M013","M027"],"s":["M041","M042"],"sd":["number_sense","pattern_recognition","concentration","memory_sequential"],"sr":["number_sense","pattern_recognition"],"ar":"5-6","mi":["Counts and labels each chain","Recognizes square numbers","Works independently through set"]},"M041":{"n":"Long Bead Chains (Cubes)","a":"mathematics","sa":"Linear Counting","p":["M040","M028"],"s":[],"sd":["number_sense","concentration","persistence","pattern_recognition"],"sr":["number_sense","pattern_recognition","concentration"],"ar":"5-6","mi":["Counts and labels full chain","Recognizes cube numbers","Sustains concentration for extended counting"]},"M042":{"n":"Addition Strip Board","a":"mathematics","sa":"Memorization","p":["M040"],"s":["M043"],"sd":["number_sense","memory_visual","pattern_recognition","abstraction"],"sr":["number_sense"],"ar":"5-6","mi":["Uses strips to find sums","Records in booklet","Begins memorizing basic facts"]},"M043":{"n":"Subtraction Strip Board","a":"mathematics","sa":"Memorization","p":["M042"],"s":[],"sd":["number_sense","memory_visual","logical_reasoning","abstraction"],"sr":["number_sense","abstraction"],"ar":"5-6","mi":["Uses strips for subtraction facts","Records in booklet","Connects to addition facts"]},"M044":{"n":"Multiplication Board","a":"mathematics","sa":"Memorization","p":["M027"],"s":[],"sd":["number_sense","memory_visual","pattern_recognition","concentration"],"sr":["number_sense"],"ar":"5-6","mi":["Uses board for multiplication facts","Records in booklet","Begins memorizing tables"]},"M045":{"n":"Division Board","a":"mathematics","sa":"Memorization","p":["M028"],"s":[],"sd":["number_sense","logical_reasoning","concentration"],"sr":["number_sense"],"ar":"5-6","mi":["Uses board for division facts","Records in booklet","Understands relationship to multiplication"]},"L001":{"n":"Sound Games (I Spy - Beginning Sounds)","a":"language","sa":"Phonemic Awareness","p":[],"s":["L002","L010"],"sd":["phonemic_awareness","auditory_discrimination","concentration","vocabulary_enrichment"],"sr":[],"ar":"2.5-3.5","mi":["Identifies beginning sounds in words","Finds objects starting with given sound","Distinguishes similar sounds"]},"L002":{"n":"Sound Games (Ending and Middle Sounds)","a":"language","sa":"Phonemic Awareness","p":["L001"],"s":["L011","L020"],"sd":["phonemic_awareness","auditory_discrimination","analysis","concentration"],"sr":["phonemic_awareness"],"ar":"3-4","mi":["Identifies ending sounds","Identifies middle vowel sounds","Segments words into individual sounds"]},"L005":{"n":"Vocabulary Enrichment - Classified Cards","a":"language","sa":"Spoken Language","p":[],"s":["L006","L030"],"sd":["vocabulary_enrichment","classification","oral_expression","visual_discrimination"],"sr":[],"ar":"2.5-6","mi":["Names objects in category","Sorts cards by category","Describes attributes of objects"]},"L006":{"n":"Vocabulary Enrichment - Opposites, Comparatives, Superlatives","a":"language","sa":"Spoken Language","p":["L005"],"s":[],"sd":["vocabulary_enrichment","comparison","oral_expression","logical_reasoning"],"sr":["vocabulary_enrichment"],"ar":"3.5-5","mi":["Uses opposite pairs correctly","Applies comparative forms","Uses superlative forms appropriately"]},"L007":{"n":"Storytelling and Conversation","a":"language","sa":"Spoken Language","p":[],"s":["L040","L070","L072"],"sd":["oral_expression","story_comprehension","memory_sequential","confidence","vocabulary_enrichment"],"sr":[],"ar":"3-6","mi":["Tells stories with beginning, middle, end","Listens to others","Asks and answers questions about stories"]},"L010":{"n":"Sandpaper Letters (Consonants)","a":"language","sa":"Writing Preparation","p":["L001"],"s":["L011","L012","L068"],"sd":["symbol_sound_association","fine_motor_control","tactile_discrimination","memory_visual","letter_formation"],"sr":["phonemic_awareness","fine_motor_control"],"ar":"3-4.5","mi":["Traces with correct formation","Associates letter with sound","Recognizes out of order"]},"L011":{"n":"Sandpaper Letters (Vowels)","a":"language","sa":"Writing Preparation","p":["L010","L002"],"s":["L020"],"sd":["symbol_sound_association","fine_motor_control","tactile_discrimination","phonemic_awareness"],"sr":["symbol_sound_association","phonemic_awareness"],"ar":"3.5-4.5","mi":["Traces with correct formation","Distinguishes vowel sounds","Recognizes all vowels"]},"L012":{"n":"Metal Insets","a":"language","sa":"Writing Preparation","p":["L010","S031"],"s":["L025"],"sd":["handwriting_control","fine_motor_control","tripod_grip","concentration","controlled_movement"],"sr":["fine_motor_control","pincer_grip","hand_eye_coordination"],"ar":"3.5-5.5","mi":["Traces inset and frame with control","Fills with parallel lines","Uses tripod grip consistently","Stays within boundaries"]},"L020":{"n":"Moveable Alphabet - Word Building (CVC Words)","a":"language","sa":"Writing - Encoding","p":["L011","L002"],"s":["L021","L030","L050"],"sd":["word_building","phonemic_awareness","symbol_sound_association","blending","concentration"],"sr":["phonemic_awareness","symbol_sound_association"],"ar":"3.5-4.5","mi":["Builds 3-letter phonetic words","Sounds out while building","Works independently"]},"L021":{"n":"Moveable Alphabet - Phrases and Sentences","a":"language","sa":"Writing - Encoding","p":["L020"],"s":["L025","L035"],"sd":["word_building","sentence_construction","creative_writing","concentration"],"sr":["word_building","phonemic_awareness"],"ar":"4-5.5","mi":["Builds multi-word phrases","Includes function words","Expresses ideas in writing"]},"L025":{"n":"Handwriting - Letter Formation on Paper","a":"language","sa":"Writing - Handwriting","p":["L012","L021"],"s":["L026"],"sd":["letter_formation","handwriting_control","fine_motor_control","concentration"],"sr":["handwriting_control","tripod_grip","letter_formation"],"ar":"4-5.5","mi":["Forms letters on lined paper","Consistent size and spacing","Writes from left to right"]},"L026":{"n":"Handwriting - Words and Sentences","a":"language","sa":"Writing - Handwriting","p":["L025"],"s":["L040","L069"],"sd":["handwriting_control","creative_writing","sentence_construction","concentration"],"sr":["letter_formation","handwriting_control","word_building"],"ar":"4.5-6","mi":["Writes words and sentences legibly","Appropriate spacing between words","Writes independently to express ideas"]},"L030":{"n":"Phonetic Object Box / Reading CVC Words","a":"language","sa":"Reading - Decoding","p":["L020","L005"],"s":["L031"],"sd":["phonetic_decoding","blending","reading_fluency","concentration"],"sr":["symbol_sound_association","blending"],"ar":"4-5","mi":["Reads 3-letter phonetic words","Matches word to object","Sounds out and blends independently"]},"L031":{"n":"Phonetic Reading - Short Vowel Books","a":"language","sa":"Reading - Decoding","p":["L030"],"s":["L032","L033","L034","L058"],"sd":["reading_fluency","phonetic_decoding","reading_comprehension","concentration"],"sr":["phonetic_decoding","blending"],"ar":"4-5","mi":["Reads simple phonetic sentences","Demonstrates comprehension","Reads with increasing fluency"]},"L032":{"n":"Phonogram Introduction (Double Letters)","a":"language","sa":"Reading - Phonograms","p":["L031"],"s":["L033","L054","L056"],"sd":["phonemic_awareness","symbol_sound_association","reading_fluency","memory_visual"],"sr":["phonetic_decoding","reading_fluency"],"ar":"4.5-5.5","mi":["Reads sh, ch, th, ck, etc.","Traces sandpaper phonograms","Incorporates into reading"]},"L033":{"n":"Puzzle Words (Sight Words)","a":"language","sa":"Reading - Sight Words","p":["L031","L032"],"s":["L034"],"sd":["reading_fluency","memory_visual","reading_comprehension"],"sr":["phonetic_decoding"],"ar":"4.5-5.5","mi":["Reads common irregular words","Recognizes on sight","Uses in context"]},"L034":{"n":"Reading Classification / Labeling","a":"language","sa":"Reading - Comprehension","p":["L031","L033"],"s":["L035","L059","L062"],"sd":["reading_comprehension","classification","vocabulary_enrichment"],"sr":["phonetic_decoding","reading_fluency"],"ar":"4.5-5.5","mi":["Reads labels and matches to objects","Reads definitions and matches to pictures","Works through classified reading material"]},"L035":{"n":"Grammar - Parts of Speech (Noun, Article, Adjective)","a":"language","sa":"Grammar","p":["L021","L034"],"s":["L036","L060","L064"],"sd":["grammar_awareness","classification","reading_comprehension","logical_reasoning"],"sr":["reading_fluency","word_building"],"ar":"4.5-6","mi":["Identifies nouns, articles, adjectives","Uses grammar symbols correctly","Applies to own sentences"]},"L036":{"n":"Grammar - Verb, Adverb, Preposition","a":"language","sa":"Grammar","p":["L035"],"s":["L037","L065","L066","L067"],"sd":["grammar_awareness","classification","reading_comprehension","logical_reasoning"],"sr":["grammar_awareness","reading_fluency"],"ar":"5-6","mi":["Identifies verbs and adverbs","Uses command cards","Understands prepositions through movement"]},"L037":{"n":"Grammar - Conjunction, Pronoun, Interjection","a":"language","sa":"Grammar","p":["L036"],"s":[],"sd":["grammar_awareness","reading_comprehension","logical_reasoning","sentence_construction"],"sr":["grammar_awareness"],"ar":"5.5-6","mi":["Identifies all nine parts of speech","Parses sentences with grammar symbols","Constructs varied sentence types"]},"L040":{"n":"Creative Writing / Journaling","a":"language","sa":"Writing - Expression","p":["L026","L007"],"s":["L071"],"sd":["creative_writing","sentence_construction","handwriting_control","oral_expression","concentration"],"sr":["handwriting_control","sentence_construction","oral_expression"],"ar":"5-6","mi":["Writes original stories or accounts","Illustrates and writes","Shares writing with class"]},"C001":{"n":"Globe - Land and Water","a":"culture","sa":"Geography","p":[],"s":["C002","C005","C055","C057","C059"],"sd":["spatial_reasoning","vocabulary_enrichment","visual_discrimination","tactile_discrimination"],"sr":[],"ar":"3-4","mi":["Identifies land (rough) and water (smooth)","Understands Earth is a sphere","Uses vocabulary: land, water, ocean, continent"]},"C002":{"n":"Globe - Continents (Colored)","a":"culture","sa":"Geography","p":["C001"],"s":["C003","C043"],"sd":["spatial_reasoning","vocabulary_enrichment","visual_discrimination","memory_visual"],"sr":["spatial_reasoning"],"ar":"3-4.5","mi":["Names all 7 continents","Associates color with continent","Locates on globe"]},"C003":{"n":"Puzzle Maps - World","a":"culture","sa":"Geography","p":["C002"],"s":["C004"],"sd":["spatial_reasoning","visual_discrimination","fine_motor_control","vocabulary_enrichment"],"sr":["spatial_reasoning","visual_discrimination"],"ar":"3-5","mi":["Places all continents correctly","Names while placing","Works independently"]},"C004":{"n":"Puzzle Maps - Individual Continents","a":"culture","sa":"Geography","p":["C003"],"s":["C005","C006","C046","C047"],"sd":["spatial_reasoning","vocabulary_enrichment","visual_discrimination","concentration"],"sr":["spatial_reasoning"],"ar":"3.5-5.5","mi":["Names major countries","Assembles map independently","Shows interest in specific countries"]},"C005":{"n":"Land and Water Forms","a":"culture","sa":"Geography","p":["C001","C004"],"s":["C045","C049"],"sd":["spatial_reasoning","vocabulary_enrichment","comparison","tactile_discrimination"],"sr":["spatial_reasoning"],"ar":"3.5-5","mi":["Names pairs (island/lake, peninsula/gulf, etc.)","Creates with clay or sand","Identifies in photos or real life"]},"C006":{"n":"Flags","a":"culture","sa":"Geography","p":["C004"],"s":["C044"],"sd":["visual_discrimination","vocabulary_enrichment","memory_visual","fine_motor_control"],"sr":["visual_discrimination"],"ar":"4-6","mi":["Matches flags to countries","Colors flag designs accurately","Knows flags of studied countries"]},"C010":{"n":"Living vs Non-Living","a":"culture","sa":"Science - Biology","p":[],"s":["C011","C012","C042","C050","C051"],"sd":["classification","logical_reasoning","vocabulary_enrichment","observation"],"sr":[],"ar":"3-4","mi":["Sorts objects correctly","Explains criteria for living things","Applies to novel examples"]},"C011":{"n":"Plant vs Animal","a":"culture","sa":"Science - Biology","p":["C010"],"s":["C013","C014"],"sd":["classification","comparison","vocabulary_enrichment","logical_reasoning"],"sr":["classification"],"ar":"3-4.5","mi":["Identifies key differences","Sorts cards correctly","Names characteristics of each"]},"C012":{"n":"Parts of a Plant (Botany Puzzles)","a":"culture","sa":"Science - Botany","p":["C010"],"s":["C015","C060","C061"],"sd":["vocabulary_enrichment","classification","spatial_reasoning","analysis"],"sr":["classification"],"ar":"3-5","mi":["Names root, stem, leaf, flower, fruit, seed","Assembles puzzle correctly","Matches part to function"]},"C013":{"n":"Parts of Animals (Zoology Puzzles)","a":"culture","sa":"Science - Zoology","p":["C011"],"s":["C016","C065","C066"],"sd":["vocabulary_enrichment","classification","spatial_reasoning","analysis"],"sr":["classification"],"ar":"3-5","mi":["Names body parts for different animal classes","Assembles puzzles correctly","Compares body structures across species"]},"C014":{"n":"Vertebrate / Invertebrate Classification","a":"culture","sa":"Science - Zoology","p":["C011"],"s":["C016","C067"],"sd":["classification","logical_reasoning","vocabulary_enrichment"],"sr":["classification"],"ar":"4-5.5","mi":["Sorts animals correctly","Names vertebrate classes (fish, amphibian, reptile, bird, mammal)","Explains backbone criterion"]},"C015":{"n":"Seed Germination / Plant Growth Experiments","a":"culture","sa":"Science - Botany","p":["C012","PL066"],"s":["C064"],"sd":["plant_care","order_sense","concentration","logical_reasoning","responsibility"],"sr":["plant_care","order_sense"],"ar":"4-6","mi":["Plants and cares for seeds","Observes and records growth stages","Understands needs of plants"]},"C016":{"n":"Animal Classification Cards (Detailed)","a":"culture","sa":"Science - Zoology","p":["C013","C014"],"s":[],"sd":["classification","reading_comprehension","vocabulary_enrichment","logical_reasoning"],"sr":["classification","reading_fluency"],"ar":"5-6","mi":["Reads and matches description cards","Classifies into detailed subgroups","Compares habitats and adaptations"]},"C020":{"n":"Calendar and Days of the Week","a":"culture","sa":"Time","p":[],"s":["C021","C040"],"sd":["order_sense","vocabulary_enrichment","memory_sequential","number_sense"],"sr":[],"ar":"3-4","mi":["Names days in order","Identifies today, yesterday, tomorrow","Tracks date on calendar"]},"C021":{"n":"Months and Seasons","a":"culture","sa":"Time","p":["C020"],"s":["C022","C041","C042","C058"],"sd":["order_sense","vocabulary_enrichment","memory_sequential","classification"],"sr":["order_sense"],"ar":"3.5-5","mi":["Names months in order","Associates months with seasons","Understands yearly cycle"]},"C022":{"n":"Clock / Telling Time","a":"culture","sa":"Time","p":["C021","M005"],"s":["M067"],"sd":["number_sense","spatial_reasoning","vocabulary_enrichment"],"sr":["number_sense","order_sense"],"ar":"5-6","mi":["Reads hour and half-hour","Understands clock face structure","Relates to daily schedule"]},"C030":{"n":"Art - Drawing and Painting","a":"culture","sa":"Art","p":[],"s":["C031","C069","C070","C071","C072","C073"],"sd":["fine_motor_control","hand_eye_coordination","creative_writing","concentration"],"sr":[],"ar":"3-6","mi":["Holds drawing tools correctly","Uses color purposefully","Expresses ideas through art"]},"C031":{"n":"Art - Clay Modeling","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["fine_motor_control","grip_strength","spatial_reasoning","concentration"],"sr":["fine_motor_control"],"ar":"3-6","mi":["Forms recognizable shapes","Uses tools appropriately","Plans and executes designs"]},"C032":{"n":"Music - Rhythm and Movement","a":"culture","sa":"Music","p":[],"s":["C033","C074","C075"],"sd":["auditory_discrimination","gross_motor_control","concentration","cooperation"],"sr":[],"ar":"3-6","mi":["Claps rhythm patterns","Moves to beat","Participates in group music"]},"C033":{"n":"Music - Bells (Extension from Sensorial)","a":"culture","sa":"Music","p":["S066","C032"],"s":["C076"],"sd":["auditory_discrimination","pattern_recognition","concentration","memory_sequential"],"sr":["auditory_discrimination"],"ar":"4.5-6","mi":["Plays simple melodies","Reads basic notation","Composes short sequences"]},"M050":{"n":"Snake Game (Addition)","a":"mathematics","sa":"Transition - Golden Beads to Abstraction","p":["M005"],"s":["M051"],"sd":["number_sense","decimal_understanding","one_to_one_correspondence","problem_solving"],"sr":["number_sense","one_to_one_correspondence","decimal_understanding"],"ar":"4.5-5.5","mi":["Identifies tens in colored bead bars","Strings bars to find sums","Recognizes pattern of tens formation"]},"M051":{"n":"Snake Game (Subtraction)","a":"mathematics","sa":"Transition - Golden Beads to Abstraction","p":["M050"],"s":[],"sd":["number_sense","decimal_understanding","logical_reasoning","problem_solving"],"sr":["number_sense","decimal_understanding"],"ar":"5-6","mi":["Uses negative snake game correctly","Understands regrouping concept","Solves multi-step subtraction"]},"M052":{"n":"Dot Game (Addition Transition)","a":"mathematics","sa":"Transition - Golden Beads to Abstraction","p":["M024"],"s":[],"sd":["abstraction","decimal_understanding","logical_reasoning","problem_solving"],"sr":["number_sense","decimal_understanding","symbol_recognition"],"ar":"5-6","mi":["Represents quantities with dots","Performs multi-digit addition","Understands place value through visual representation"]},"M053":{"n":"Bank Game","a":"mathematics","sa":"Transition - Golden Beads to Abstraction","p":["M022"],"s":[],"sd":["number_sense","decimal_understanding","cooperation","logical_reasoning","problem_solving"],"sr":["decimal_understanding","number_sense"],"ar":"4.5-5.5","mi":["Requests and exchanges quantities collaboratively","Understands decimal relationships","Practices with group dynamics"]},"M054":{"n":"Fraction Skittles (Introduction to Fractions)","a":"mathematics","sa":"Fractions","p":["M005"],"s":["M055"],"sd":["number_sense","part_whole_understanding","comparison","observation"],"sr":["number_sense","one_to_one_correspondence"],"ar":"4-5","mi":["Understands concept of parts and whole","Divides wholes into equal parts","Names fraction verbally"]},"M055":{"n":"Fraction Insets (Circle Fractions 1/1 to 1/10)","a":"mathematics","sa":"Fractions","p":["M054"],"s":["M056"],"sd":["number_sense","part_whole_understanding","visual_discrimination","spatial_reasoning"],"sr":["number_sense","part_whole_understanding"],"ar":"4.5-5.5","mi":["Identifies fraction pieces by size","Names fractions 1/1 through 1/10","Matches fraction pieces to wholes"]},"M056":{"n":"Fraction Equivalence","a":"mathematics","sa":"Fractions","p":["M055"],"s":["M057"],"sd":["number_sense","part_whole_understanding","equivalence_understanding","logical_reasoning"],"sr":["number_sense","part_whole_understanding"],"ar":"5-6","mi":["Discovers equivalent fractions","Compares fraction sizes","Understands multiple representations of same value"]},"M057":{"n":"Fraction Operations (Addition and Subtraction)","a":"mathematics","sa":"Fractions","p":["M056"],"s":[],"sd":["number_sense","part_whole_understanding","logical_reasoning","problem_solving"],"sr":["number_sense","part_whole_understanding"],"ar":"5.5-6","mi":["Adds and subtracts like fractions","Records work clearly","Understands fraction operations conceptually"]},"M058":{"n":"Constructive Triangles (First Box - Triangular)","a":"mathematics","sa":"Geometry","p":["S031"],"s":["M059"],"sd":["spatial_reasoning","geometric_understanding","visual_discrimination","problem_solving"],"sr":["spatial_reasoning","visual_discrimination"],"ar":"3.5-5","mi":["Constructs triangles with equal sides","Discovers angle relationships","Understands triangle properties"]},"M059":{"n":"Constructive Triangles (Second Box - Rectangular)","a":"mathematics","sa":"Geometry","p":["M058"],"s":["M060"],"sd":["spatial_reasoning","geometric_understanding","visual_discrimination","problem_solving"],"sr":["spatial_reasoning","geometric_understanding"],"ar":"4-5","mi":["Constructs right triangles","Forms rectangles from triangles","Discovers geometric relationships"]},"M060":{"n":"Constructive Triangles (Third to Fifth Boxes)","a":"mathematics","sa":"Geometry","p":["M059"],"s":[],"sd":["spatial_reasoning","geometric_understanding","visual_discrimination","problem_solving"],"sr":["spatial_reasoning","geometric_understanding"],"ar":"4.5-5.5","mi":["Constructs complex geometric shapes","Discovers congruence and equivalence","Understands advanced geometric relationships"]},"M061":{"n":"Geometric Stick Material","a":"mathematics","sa":"Geometry","p":["S031"],"s":[],"sd":["spatial_reasoning","geometric_understanding","angle_understanding","problem_solving"],"sr":["spatial_reasoning","visual_discrimination"],"ar":"4.5-6","mi":["Creates geometric shapes with sticks","Understands angles and sides","Explores 2D and 3D constructions"]},"M062":{"n":"Coins Introduction","a":"mathematics","sa":"Money","p":["M005"],"s":["M063"],"sd":["number_sense","practical_application","comparison","vocabulary_enrichment"],"sr":["number_sense","one_to_one_correspondence"],"ar":"4.5-5.5","mi":["Identifies coin denominations","Understands coin values","Counts coins accurately"]},"M063":{"n":"Making Change","a":"mathematics","sa":"Money","p":["M062","M023"],"s":[],"sd":["number_sense","practical_application","logical_reasoning","problem_solving"],"sr":["number_sense","addition_skills"],"ar":"5-6","mi":["Exchanges coins for equivalent value","Makes change for purchases","Solves money problems"]},"M064":{"n":"Linear Measurement (Ruler)","a":"mathematics","sa":"Measurement","p":["S012"],"s":[],"sd":["measurement_skill","number_sense","spatial_reasoning","practical_application"],"sr":["number_sense","spatial_reasoning"],"ar":"4.5-5.5","mi":["Uses ruler correctly","Measures lengths accurately","Records measurements in appropriate units"]},"M065":{"n":"Weight Measurement (Balance Scale)","a":"mathematics","sa":"Measurement","p":["S060"],"s":[],"sd":["measurement_skill","comparison","baric_sense","practical_application"],"sr":["baric_sense","comparison"],"ar":"4.5-5.5","mi":["Uses balance scale correctly","Compares weights accurately","Understands equivalence of weight"]},"M066":{"n":"Volume and Capacity (Pouring Measurement)","a":"mathematics","sa":"Measurement","p":["PL011","M005"],"s":[],"sd":["measurement_skill","number_sense","practical_application","volume_understanding"],"sr":["number_sense","pouring_control"],"ar":"5-6","mi":["Measures volume with standard containers","Compares capacities","Solves volume problems"]},"M067":{"n":"Elapsed Time Concepts","a":"mathematics","sa":"Time","p":["C022"],"s":[],"sd":["number_sense","addition_skills","practical_application","problem_solving"],"sr":["number_sense","addition_skills"],"ar":"5.5-6","mi":["Calculates time intervals","Understands duration concept","Solves elapsed time problems"]},"M068":{"n":"Story Problems (Concrete)","a":"mathematics","sa":"Word Problems","p":["M023"],"s":[],"sd":["number_sense","logical_reasoning","problem_solving","reading_comprehension"],"sr":["number_sense","addition_skills","reading_comprehension"],"ar":"5-6","mi":["Reads and understands story problems","Identifies operation needed","Solves and records solutions"]},"M069":{"n":"Colored Bead Stair (1-9 Sequence)","a":"mathematics","sa":"Numbers 1-10","p":["M005"],"s":[],"sd":["number_sense","seriation","one_to_one_correspondence","pattern_recognition"],"sr":["number_sense","one_to_one_correspondence"],"ar":"4-5","mi":["Sequences beads by color and quantity","Recognizes color pattern","Builds 1-9 stairs independently"]},"C040":{"n":"Personal Timeline","a":"culture","sa":"Time - History","p":["C020"],"s":[],"sd":["memory_sequential","order_sense","vocabulary_enrichment","observation"],"sr":["order_sense"],"ar":"3.5-5","mi":["Sequences own life events in order","Identifies major milestones (birth, first steps, etc.)","Creates personal timeline with images/dates"]},"C041":{"n":"Birthday Celebration (Walking Around the Sun)","a":"culture","sa":"Time - History","p":["C021"],"s":[],"sd":["spatial_reasoning","order_sense","vocabulary_enrichment","memory_sequential"],"sr":["spatial_reasoning"],"ar":"3-6","mi":["Understands Earth's movement around the sun","Celebrates birthday with sun walk ceremony","Understands months and yearly cycles"]},"C042":{"n":"Timeline of Life","a":"culture","sa":"Time - History","p":["C010","C021"],"s":[],"sd":["memory_sequential","order_sense","logical_reasoning","vocabulary_enrichment"],"sr":["order_sense","classification"],"ar":"5-6","mi":["Sequences human life stages (baby, child, adult, elder)","Compares timelines of different organisms","Understands concept of lifespan"]},"C043":{"n":"Fundamental Human Needs","a":"culture","sa":"Time - History","p":["C002"],"s":[],"sd":["classification","logical_reasoning","vocabulary_enrichment","synthesis"],"sr":["classification"],"ar":"4.5-6","mi":["Identifies food, shelter, clothing as basic needs","Classifies objects by need category","Understands how needs are met across cultures"]},"C044":{"n":"History of Writing and Numbers","a":"culture","sa":"Time - History","p":["C006"],"s":[],"sd":["vocabulary_enrichment","symbol_recognition","logical_reasoning","observation"],"sr":["symbol_recognition"],"ar":"5-6","mi":["Understands writing developed over time","Traces numerals through history (Roman, Arabic, etc.)","Recognizes ancient writing systems"]},"C045":{"n":"Land and Water Form Cards (Matching)","a":"culture","sa":"Geography","p":["C005"],"s":[],"sd":["visual_discrimination","vocabulary_enrichment","classification","spatial_reasoning"],"sr":["visual_discrimination"],"ar":"4-5","mi":["Matches cards showing continents, islands, peninsulas","Matches landforms with water features (straits, bays, gulfs)","Uses correct geographical vocabulary"]},"C046":{"n":"Pin Maps - Countries and Cities","a":"culture","sa":"Geography","p":["C004"],"s":[],"sd":["spatial_reasoning","vocabulary_enrichment","fine_motor_control","memory_visual"],"sr":["spatial_reasoning"],"ar":"4.5-6","mi":["Places pins on country and city locations","Identifies major cities within countries","Builds geographical understanding of political divisions"]},"C047":{"n":"Continent Study Folders","a":"culture","sa":"Geography","p":["C004"],"s":["C048"],"sd":["vocabulary_enrichment","spatial_reasoning","observation","memory_visual"],"sr":["spatial_reasoning"],"ar":"5-6","mi":["Gathers information about each continent","Organizes facts about geography, animals, people","Creates independent research portfolio"]},"C048":{"n":"Cultural Folders - Food, Housing, Clothing","a":"culture","sa":"Geography","p":["C047"],"s":[],"sd":["classification","vocabulary_enrichment","observation","synthesis"],"sr":["classification"],"ar":"5-6","mi":["Compares food across cultures and climates","Understands how housing adapts to environment","Explores clothing in different cultures and climates"]},"C049":{"n":"Physical Features - Mountains, Rivers, Oceans","a":"culture","sa":"Geography","p":["C005"],"s":[],"sd":["vocabulary_enrichment","spatial_reasoning","observation","classification"],"sr":["spatial_reasoning"],"ar":"4.5-5.5","mi":["Identifies and names major mountains and mountain ranges","Traces river paths on maps","Understands ocean currents and major oceans"]},"C050":{"n":"Sink or Float","a":"culture","sa":"Science - Physical","p":["C010"],"s":["C052"],"sd":["observation","classification","logical_reasoning","problem_solving"],"sr":["observation"],"ar":"3-4.5","mi":["Predicts whether objects float or sink","Tests predictions through experimentation","Classifies objects by buoyancy"]},"C051":{"n":"Magnetic and Non-Magnetic","a":"culture","sa":"Science - Physical","p":["C010"],"s":[],"sd":["observation","classification","vocabulary_enrichment","problem_solving"],"sr":["observation"],"ar":"3-4.5","mi":["Tests objects with magnets","Classifies as magnetic or non-magnetic","Understands magnetic properties"]},"C052":{"n":"States of Matter - Solid, Liquid, Gas","a":"culture","sa":"Science - Physical","p":["C050"],"s":["C053","C057"],"sd":["observation","classification","vocabulary_enrichment","logical_reasoning"],"sr":["observation"],"ar":"4-5","mi":["Identifies solids, liquids, and gases","Understands that materials can change states","Demonstrates state changes (water to ice, etc.)"]},"C053":{"n":"Simple Machines - Lever and Inclined Plane","a":"culture","sa":"Science - Physical","p":["C052"],"s":[],"sd":["vocabulary_enrichment","logical_reasoning","problem_solving","observation"],"sr":["logical_reasoning"],"ar":"5-6","mi":["Understands lever principle","Uses inclined planes to move objects","Identifies simple machines in environment"]},"C054":{"n":"Color Mixing Experiments","a":"culture","sa":"Science - Physical","p":[],"s":[],"sd":["observation","chromatic_sense","problem_solving","creativity"],"sr":["chromatic_sense"],"ar":"3.5-5","mi":["Mixes primary colors to create secondary colors","Predicts color results","Experiments with color variations"]},"C055":{"n":"Layers of the Earth","a":"culture","sa":"Science - Earth","p":["C001"],"s":["C056"],"sd":["spatial_reasoning","vocabulary_enrichment","classification","analysis"],"sr":["spatial_reasoning"],"ar":"4.5-5.5","mi":["Names crust, mantle, core","Understands Earth's structure","Uses model or diagram accurately"]},"C056":{"n":"Volcano Model","a":"culture","sa":"Science - Earth","p":["C055"],"s":[],"sd":["observation","vocabulary_enrichment","scientific_experimentation","problem_solving"],"sr":["observation"],"ar":"5-6","mi":["Builds working volcano model","Demonstrates eruption process","Understands volcanic phenomena"]},"C057":{"n":"Water Cycle","a":"culture","sa":"Science - Earth","p":["C052","C001"],"s":[],"sd":["vocabulary_enrichment","spatial_reasoning","synthesis","observation"],"sr":["spatial_reasoning"],"ar":"5-6","mi":["Understands evaporation, condensation, precipitation","Traces water cycle on diagram","Recognizes cycle in environment"]},"C058":{"n":"Weather Observation and Recording","a":"culture","sa":"Science - Earth","p":["C021"],"s":[],"sd":["observation","vocabulary_enrichment","memory_sequential","scientific_method"],"sr":["observation"],"ar":"4-5.5","mi":["Observes and records daily weather","Uses weather vocabulary","Tracks patterns over time"]},"C059":{"n":"Rocks and Minerals Collection","a":"culture","sa":"Science - Earth","p":["C001"],"s":[],"sd":["observation","classification","vocabulary_enrichment","memory_visual"],"sr":["observation"],"ar":"4.5-5.5","mi":["Collects and organizes rock samples","Uses descriptive vocabulary (color, texture, hardness)","Classifies by properties"]},"C060":{"n":"Parts of a Flower","a":"culture","sa":"Science - Botany","p":["C012"],"s":[],"sd":["vocabulary_enrichment","spatial_reasoning","classification","observation"],"sr":["classification"],"ar":"3.5-5","mi":["Names petals, sepals, stamen, pistil","Identifies flower parts on specimens","Understands flower function"]},"C061":{"n":"Parts of a Leaf - Detailed Study","a":"culture","sa":"Science - Botany","p":["C012"],"s":["C062","C063"],"sd":["vocabulary_enrichment","spatial_reasoning","observation","analysis"],"sr":["observation"],"ar":"4-5.5","mi":["Identifies veins, stems, blade, petiole","Compares different leaf shapes and arrangements","Understands leaf function"]},"C062":{"n":"Leaf Collection and Pressing","a":"culture","sa":"Science - Botany","p":["C061"],"s":[],"sd":["classification","fine_motor_control","observation","care_of_environment"],"sr":["fine_motor_control"],"ar":"4-5.5","mi":["Collects leaf specimens","Presses and preserves leaves","Organizes collection by type"]},"C063":{"n":"Tree Study","a":"culture","sa":"Science - Botany","p":["C061"],"s":[],"sd":["vocabulary_enrichment","observation","classification","memory_visual"],"sr":["observation"],"ar":"4.5-5.5","mi":["Identifies local tree species","Understands tree parts and growth","Recognizes seasonal changes"]},"C064":{"n":"Plant Lifecycle Cards","a":"culture","sa":"Science - Botany","p":["C015"],"s":[],"sd":["vocabulary_enrichment","order_sense","memory_sequential","synthesis"],"sr":["order_sense"],"ar":"4.5-5.5","mi":["Sequences plant lifecycle stages","Understands germination through seed production","Compares lifecycles of different plants"]},"C065":{"n":"Parts of a Fish, Bird, and Amphibian","a":"culture","sa":"Science - Zoology","p":["C013"],"s":[],"sd":["vocabulary_enrichment","classification","spatial_reasoning","analysis"],"sr":["classification"],"ar":"3.5-5","mi":["Names specific body parts of different animals","Understands adaptations for each environment","Compares structural similarities and differences"]},"C066":{"n":"Animal Lifecycle Cards","a":"culture","sa":"Science - Zoology","p":["C013"],"s":[],"sd":["vocabulary_enrichment","order_sense","memory_sequential","synthesis"],"sr":["order_sense"],"ar":"4-5.5","mi":["Sequences animal lifecycles (eggs, larvae, adult)","Understands complete and incomplete metamorphosis","Compares different animal lifecycles"]},"C067":{"n":"Habitat Classification","a":"culture","sa":"Science - Zoology","p":["C014"],"s":["C068"],"sd":["classification","vocabulary_enrichment","logical_reasoning","observation"],"sr":["classification"],"ar":"4.5-5.5","mi":["Classifies animals by habitat","Understands habitat requirements","Identifies animals in various environments"]},"C068":{"n":"Animal Adaptations","a":"culture","sa":"Science - Zoology","p":["C067"],"s":[],"sd":["vocabulary_enrichment","logical_reasoning","analysis","synthesis"],"sr":["logical_reasoning"],"ar":"5-6","mi":["Understands physical adaptations to environment","Connects structure to function","Explains survival strategies"]},"C069":{"n":"Printmaking - Sponge and Leaf Prints","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["fine_motor_control","creativity","hand_eye_coordination","problem_solving"],"sr":["fine_motor_control"],"ar":"3-5","mi":["Uses sponges to create patterns","Makes prints with natural materials","Experiments with color variation"]},"C070":{"n":"Collage and Mixed Media","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["fine_motor_control","creativity","hand_eye_coordination","spatial_reasoning"],"sr":["fine_motor_control"],"ar":"3-5","mi":["Tears and arranges paper pieces","Combines different materials","Creates cohesive artistic composition"]},"C071":{"n":"Weaving - Paper and Loom","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["fine_motor_control","spatial_reasoning","patience","hand_eye_coordination"],"sr":["fine_motor_control"],"ar":"4-6","mi":["Weaves paper through slots","Uses loom for textile creation","Produces neat, organized weaving"]},"C072":{"n":"Art Appreciation - Famous Artworks","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["vocabulary_enrichment","observation","memory_visual","synthesis"],"sr":["observation"],"ar":"4.5-6","mi":["Identifies famous artworks and artists","Discusses artistic techniques and styles","Expresses personal responses to art"]},"C073":{"n":"Color Wheel and Color Theory","a":"culture","sa":"Art","p":["C030"],"s":[],"sd":["chromatic_sense","vocabulary_enrichment","problem_solving","creativity"],"sr":["chromatic_sense"],"ar":"4.5-6","mi":["Creates and understands color wheel","Applies complementary and analogous color schemes","Discusses color theory in artwork"]},"C074":{"n":"Singing and Group Songs","a":"culture","sa":"Music","p":["C032"],"s":[],"sd":["auditory_discrimination","oral_expression","cooperation","vocabulary_enrichment"],"sr":["auditory_discrimination"],"ar":"3-6","mi":["Sings songs with clear pronunciation","Participates in group singing","Remembers lyrics and melodies"]},"C075":{"n":"Simple Instruments - Maracas and Tambourine","a":"culture","sa":"Music","p":["C032"],"s":[],"sd":["auditory_discrimination","fine_motor_control","rhythm_sense","coordination"],"sr":["fine_motor_control"],"ar":"3-5","mi":["Shakes instruments with control","Keeps basic rhythm","Responds to musical cues"]},"C076":{"n":"Musical Notation Introduction","a":"culture","sa":"Music","p":["C033"],"s":["C077"],"sd":["symbol_recognition","vocabulary_enrichment","order_sense","auditory_discrimination"],"sr":["symbol_recognition"],"ar":"5-6","mi":["Recognizes notes on staff","Understands basic notation symbols","Matches notes to sounds"]},"C077":{"n":"Composer Study","a":"culture","sa":"Music","p":["C076"],"s":[],"sd":["vocabulary_enrichment","memory_visual","observation","synthesis"],"sr":["memory_visual"],"ar":"5.5-6","mi":["Learns about famous composers","Listens to compositions across styles","Understands composer contributions to music"]},"L050":{"n":"Pink Series - Object Box","a":"language","sa":"Reading - Pink Series","p":["L020"],"s":["L051"],"sd":["phonetic_decoding","symbol_sound_association","blending","word_building","concentration"],"sr":["symbol_sound_association","phonemic_awareness"],"ar":"3.5-4.5","mi":["Reads and matches phonetic 3-letter words","Connects written words to real objects","Blends sounds independently","Shows understanding of word-to-object correspondence"]},"L051":{"n":"Pink Series - Reading Lists","a":"language","sa":"Reading - Pink Series","p":["L050"],"s":["L052"],"sd":["phonetic_decoding","reading_fluency","blending","reading_comprehension"],"sr":["phonetic_decoding","blending"],"ar":"4-4.5","mi":["Reads lists of phonetic words with fluency","Demonstrates understanding of word meaning","Applies blending skills to new words","Shows growing reading confidence"]},"L052":{"n":"Blue Series - Object Box","a":"language","sa":"Reading - Blue Series","p":["L051"],"s":["L053"],"sd":["phonetic_decoding","blending","reading_fluency","symbol_recognition"],"sr":["phonetic_decoding","symbol_sound_association","blending"],"ar":"4-5","mi":["Reads 4+ letter phonetic words","Blends consonant clusters and digraphs","Matches complex words to objects","Demonstrates phonetic word attack strategies"]},"L053":{"n":"Blue Series - Reading Lists","a":"language","sa":"Reading - Blue Series","p":["L052"],"s":["L054","L055"],"sd":["phonetic_decoding","reading_fluency","reading_comprehension","vocabulary_enrichment"],"sr":["phonetic_decoding","blending"],"ar":"4.5-5","mi":["Reads lists of complex phonetic words fluently","Blends digraphs and consonant clusters automatically","Understands word meanings in context","Reads with increasing speed and confidence"]},"L054":{"n":"Green Series - Object Box","a":"language","sa":"Reading - Green Series","p":["L032","L053"],"s":["L055"],"sd":["phonetic_decoding","blending","reading_fluency","pattern_recognition"],"sr":["phonetic_decoding","symbol_sound_association","pattern_recognition"],"ar":"4.5-5.5","mi":["Reads words with phonograms","Recognizes common letter combinations","Applies phonogram knowledge to decode words","Matches phonogram words to objects"]},"L055":{"n":"Green Series - Reading Booklets","a":"language","sa":"Reading - Green Series","p":["L054"],"s":["L060"],"sd":["reading_comprehension","reading_fluency","story_comprehension","vocabulary_enrichment"],"sr":["phonetic_decoding","blending"],"ar":"5-5.5","mi":["Reads multi-page booklets with understanding","Follows narrative sequence","Answers comprehension questions","Shows enjoyment in independent reading"]},"L056":{"n":"Phonogram Charts","a":"language","sa":"Phonograms","p":["L032"],"s":["L057"],"sd":["pattern_recognition","symbol_recognition","reading_fluency","observation"],"sr":["symbol_sound_association","phonemic_awareness"],"ar":"4.5-5.5","mi":["Identifies common phonograms in words","Recognizes phonogram patterns","Applies phonogram knowledge to new words","Demonstrates understanding of phonogram variations"]},"L057":{"n":"Phonogram Dictionary","a":"language","sa":"Phonograms","p":["L056"],"s":["L060"],"sd":["reading_fluency","vocabulary_enrichment","pattern_recognition","independence"],"sr":["pattern_recognition","reading_fluency"],"ar":"5-6","mi":["Uses phonogram dictionary independently","Finds words by phonogram patterns","Understands multiple pronunciations","Applies dictionary skills to reading"]},"L058":{"n":"Command Cards","a":"language","sa":"Reading - Applications","p":["L031"],"s":["L060"],"sd":["reading_comprehension","phonetic_decoding","fine_motor_control","logical_reasoning"],"sr":["phonetic_decoding","reading_comprehension"],"ar":"4-5","mi":["Reads action commands accurately","Follows written directions","Demonstrates comprehension through action","Reads and performs complex commands"]},"L059":{"n":"Total Reading","a":"language","sa":"Reading - Applications","p":["L034"],"s":["L061"],"sd":["reading_comprehension","observation","vocabulary_enrichment","independence"],"sr":["reading_fluency","reading_comprehension"],"ar":"4.5-5.5","mi":["Reads environmental labels independently","Understands and uses classroom labels","Applies reading to real classroom situations","Shows understanding that print has meaning"]},"L060":{"n":"Reading Analysis","a":"language","sa":"Reading - Analysis","p":["L035","L055"],"s":["L062","L061"],"sd":["reading_comprehension","analysis","grammar_awareness","logical_reasoning"],"sr":["reading_fluency","sentence_construction","grammar_awareness"],"ar":"5-6","mi":["Analyzes sentences using grammar symbols","Identifies parts of speech","Demonstrates understanding of sentence structure","Shows analytical thinking about text"]},"L061":{"n":"Research and Reports","a":"language","sa":"Reading - Applications","p":["L060"],"s":[],"sd":["reading_comprehension","problem_solving","creative_writing","synthesis","organization"],"sr":["reading_fluency","reading_comprehension","creative_writing"],"ar":"5.5-6","mi":["Researches topics independently","Takes information from multiple sources","Writes organized reports","Presents findings to group"]},"L062":{"n":"Article Introduction","a":"language","sa":"Grammar - Function of Words","p":["L034"],"s":["L063"],"sd":["grammar_awareness","symbol_recognition","classification","sentence_construction"],"sr":["grammar_awareness","reading_fluency"],"ar":"4.5-5","mi":["Identifies articles in sentences","Uses grammar symbols for articles","Understands article function in sentences","Applies article knowledge to writing"]},"L063":{"n":"Adjective Exploration","a":"language","sa":"Grammar - Function of Words","p":["L062"],"s":["L065"],"sd":["grammar_awareness","vocabulary_enrichment","classification","observation"],"sr":["grammar_awareness","reading_fluency"],"ar":"4.5-5.5","mi":["Identifies adjectives in text","Understands descriptive function of adjectives","Uses adjectives in own writing","Explores adjective variations"]},"L064":{"n":"Verb Commands","a":"language","sa":"Grammar - Function of Words","p":["L035"],"s":["L065"],"sd":["grammar_awareness","vocabulary_enrichment","observation","sentence_construction"],"sr":["grammar_awareness","reading_fluency"],"ar":"5-5.5","mi":["Identifies action verbs","Understands verb function in sentences","Uses verbs in own writing","Recognizes verb tense variations"]},"L065":{"n":"Adverb Extension","a":"language","sa":"Grammar - Function of Words","p":["L036"],"s":["L067"],"sd":["grammar_awareness","vocabulary_enrichment","classification","sentence_construction"],"sr":["grammar_awareness","reading_fluency"],"ar":"5.5-6","mi":["Identifies adverbs in sentences","Understands adverb function (how, when, where)","Uses adverbs in own writing","Demonstrates understanding of adverb placement"]},"L066":{"n":"Preposition Work","a":"language","sa":"Grammar - Function of Words","p":["L036"],"s":["L067"],"sd":["grammar_awareness","spatial_reasoning","vocabulary_enrichment","sentence_construction"],"sr":["grammar_awareness","spatial_reasoning"],"ar":"5.5-6","mi":["Identifies prepositions in sentences","Understands spatial relationships prepositions express","Uses prepositions in own writing","Demonstrates understanding of position concepts"]},"L067":{"n":"Sentence Analysis","a":"language","sa":"Grammar - Analysis","p":["L036"],"s":["L061"],"sd":["grammar_awareness","analysis","symbol_recognition","sentence_construction"],"sr":["grammar_awareness","reading_fluency","analysis"],"ar":"5.5-6","mi":["Identifies subject and predicate","Analyzes sentence structure","Uses grammar symbols for sentence parts","Demonstrates understanding of sentence function"]},"L068":{"n":"Chalkboard Writing","a":"language","sa":"Writing Preparation","p":["L010"],"s":["L026"],"sd":["letter_formation","gross_motor_control","controlled_movement","fine_motor_control"],"sr":["gross_motor_control","fine_motor_control"],"ar":"3.5-4.5","mi":["Forms letters at large scale with control","Maintains letter shape and proportion","Gains confidence in letter formation","Prepares for pencil work"]},"L069":{"n":"Copywork","a":"language","sa":"Writing - Expression","p":["L026"],"s":["L040"],"sd":["letter_formation","handwriting_control","fine_motor_control","observation","reading_fluency"],"sr":["letter_formation","handwriting_control","reading_fluency"],"ar":"5-6","mi":["Copies poetry and quotes accurately","Maintains letter formation and size","Shows fluent, controlled penmanship","Demonstrates care and precision in writing"]},"L070":{"n":"Poetry Introduction and Recitation","a":"language","sa":"Literature - Poetry","p":["L007"],"s":["L071"],"sd":["oral_expression","memory_sequential","pattern_recognition","vocabulary_enrichment","phonemic_awareness"],"sr":["oral_expression","concentration"],"ar":"3.5-6","mi":["Memorizes simple poems","Recites poetry with expression","Recognizes rhythm and rhyme","Develops appreciation for language patterns"]},"L071":{"n":"Poetry Appreciation and Writing","a":"language","sa":"Literature - Poetry","p":["L070","L040"],"s":[],"sd":["creative_writing","vocabulary_enrichment","pattern_recognition","synthesis","self_expression"],"sr":["creative_writing","vocabulary_enrichment","oral_expression"],"ar":"5-6","mi":["Writes original poetry","Uses figurative language","Demonstrates understanding of poetic devices","Shows personal voice in writing"]},"L072":{"n":"Question Game","a":"language","sa":"Spoken Language","p":["L007"],"s":["L073"],"sd":["oral_expression","vocabulary_enrichment","concentration","logical_reasoning"],"sr":["oral_expression","concentration"],"ar":"3.5-5","mi":["Asks and answers who/what/where/when questions","Formulates clear questions","Understands question vocabulary","Participates in structured dialogue"]},"L073":{"n":"Oral Presentations","a":"language","sa":"Spoken Language","p":["L072"],"s":[],"sd":["oral_expression","confidence","order_sense","synthesis","memory_sequential"],"sr":["oral_expression","vocabulary_enrichment","order_sense"],"ar":"4.5-6","mi":["Presents ideas clearly to group","Maintains audience attention","Shows confidence in public speaking","Organizes information logically"]}};
+const EXERCISES={};for(const[id,e]of Object.entries(EX))EXERCISES[id]={name:e.n,area:e.a,sub_area:e.sa,prerequisites:e.p,successors:e.s,skills_developed:e.sd,skills_required:e.sr,typical_age_range:e.ar,mastery_indicators:e.mi||[]};
+const EXLIST=Object.entries(EXERCISES).map(([id,e])=>({id,...e}));
+
+// Note patterns
+const NP=[
+{p:["grip","pincer","hold","grasp","tripod"],s:["pincer_grip","fine_motor_control","tripod_grip"],l:"grip/grasp difficulty"},
+{p:["fatigue","tires","tired hand","shaking"],s:["grip_strength","fine_motor_control"],l:"hand fatigue"},
+{p:["drops","dropping","spill","knocks over"],s:["hand_eye_coordination","controlled_movement"],l:"object control difficulty"},
+{p:["seriate","arrangement","order","sequence","length","height","gradient"],s:["seriation","order_sense","dimension_perception"],l:"seriation/ordering difficulty"},
+{p:["count","counting","loses count","miscounts","skip"],s:["one_to_one_correspondence","number_sense"],l:"counting difficulty"},
+{p:["concentrate","focus","distract","attention","wanders","off task"],s:["concentration","self_regulation"],l:"concentration difficulty"},
+{p:["letter","reversal","backward","mirror","mixes up","mix up","confuse b and d"],s:["letter_formation","symbol_recognition"],l:"letter formation difficulty"},
+{p:["blend","blending","put sounds together","combine sounds"],s:["blending","phonetic_decoding"],l:"blending difficulty"},
+{p:["write","writing","pencil control","trace","formation"],s:["handwriting_control","tripod_grip"],l:"writing difficulty"},
+{p:["read","decode","sound it out","sounding out"],s:["phonetic_decoding","reading_fluency"],l:"reading difficulty"},
+{p:["balance","stumble","clumsy","trip","fall","coordination"],s:["gross_motor_control"],l:"gross motor difficulty"},
+{p:["frustrated","gives up","stuck","won't try","refuses"],s:["problem_solving","persistence"],l:"persistence difficulty"},
+{p:["scissors","cutting","cut along"],s:["cutting_skill","bilateral_coordination"],l:"cutting difficulty"},
+{p:["pour","pouring","overflow","spills water"],s:["pouring_control","hand_eye_coordination"],l:"pouring difficulty"},
+{p:["temperature","hot","cold","warm","thermic"],s:["thermic_sense"],l:"thermic difficulty"},
+{p:["dress","button","zip","shoe","lace","tie"],s:["self_care","independence"],l:"self-care difficulty"},
+{p:["color","colour","shade","hue","tint"],s:["color_discrimination","visual_perception"],l:"color discrimination difficulty"},
+{p:["shape","geometric","identify shape","triangle","square","circle"],s:["shape_recognition","visual_perception"],l:"shape recognition difficulty"},
+{p:["pattern","repeat","extend","AB pattern"],s:["pattern_recognition","logical_thinking"],l:"pattern recognition difficulty"},
+{p:["sort","classify","group","categorize","category"],s:["classification","logical_thinking"],l:"classification difficulty"},
+{p:["map","continent","country","globe","geography"],s:["geography_knowledge","cultural_awareness"],l:"geography difficulty"},
+{p:["time","clock","calendar","day","month","season"],s:["time_sense","temporal_awareness"],l:"temporal awareness difficulty"},
+{p:["loud","quiet","volume","sound","listen","hear"],s:["auditory_discrimination","sound_awareness"],l:"auditory difficulty"},
+{p:["texture","rough","smooth","feel","tactile"],s:["tactile_discrimination","sensory_refinement"],l:"tactile discrimination difficulty"},
+{p:["weight","heavy","light","baric"],s:["baric_sense","sensory_refinement"],l:"weight discrimination difficulty"},
+{p:["smell","scent","nose","olfactory"],s:["olfactory_discrimination"],l:"olfactory difficulty"},
+{p:["taste","flavor","tongue","gustatory","bitter","sweet"],s:["gustatory_discrimination"],l:"gustatory difficulty"},
+{p:["symbol","numeral","recognize number","identify number"],s:["symbol_recognition","number_sense"],l:"number symbol difficulty"},
+{p:["addition","add","plus","sum","more"],s:["addition_concept","mathematical_operations"],l:"addition difficulty"},
+{p:["subtraction","subtract","minus","take away","less"],s:["subtraction_concept","mathematical_operations"],l:"subtraction difficulty"},
+{p:["place value","tens","units","ones","hundred"],s:["place_value","decimal_system"],l:"place value difficulty"},
+{p:["quantity","amount","how many","more than","less than"],s:["quantity_discrimination","number_sense"],l:"quantity concept difficulty"},
+{p:["memory","remember","forget","recall","retain"],s:["memory_visual","concentration"],l:"memory difficulty"},
+{p:["vocabulary","word","name","label","what is this"],s:["vocabulary_enrichment","oral_expression"],l:"vocabulary difficulty"},
+{p:["sentence","speak","talk","express","communicate","verbal"],s:["oral_expression","sentence_construction"],l:"oral expression difficulty"},
+{p:["story","narrative","retell","sequence of events"],s:["comprehension","story_sense"],l:"narrative difficulty"},
+{p:["rhyme","rhyming","sound alike"],s:["phonological_awareness","auditory_discrimination"],l:"rhyming difficulty"},
+{p:["syllable","clap","break word"],s:["syllable_awareness","phonological_awareness"],l:"syllable difficulty"},
+{p:["beginning sound","initial sound","first sound","onset"],s:["phonemic_awareness","sound_symbol_association"],l:"beginning sound difficulty"},
+{p:["moveable alphabet","spelling","compose"],s:["word_building","phonetic_encoding"],l:"word building difficulty"},
+{p:["social","share","turn","friend","peer","together"],s:["social_awareness","cooperation"],l:"social interaction difficulty"},
+{p:["independent","alone","by himself","by herself","own","self"],s:["independence","self_regulation"],l:"independence difficulty"},
+{p:["care","gentle","careful","respect","material"],s:["care_of_environment","responsibility"],l:"material handling difficulty"},
+{p:["ground","plant","seed","garden","nature","leaf","tree"],s:["plant_care","nature_awareness"],l:"nature awareness difficulty"},
+{p:["animal","pet","insect","fish","bird","feed"],s:["animal_care","nature_awareness"],l:"animal awareness difficulty"},
+{p:["clean","sweep","dust","mop","tidy","wipe"],s:["cleaning","care_of_environment"],l:"cleaning skill difficulty"},
+{p:["food","cook","prepare","slice","peel","spread"],s:["food_preparation","practical_skills"],l:"food prep difficulty"},
+{p:["water","transfer","wet","dry","squeeze","wring"],s:["water_handling","controlled_movement"],l:"water handling difficulty"},
+{p:["fold","folding","crease","napkin","cloth"],s:["folding_skill","fine_motor_control"],l:"folding difficulty"},
+{p:["thread","sew","needle","lace","string","bead"],s:["threading_skill","hand_eye_coordination"],l:"threading difficulty"},
+{p:["3d","solid","cube","sphere","prism","cone"],s:["solid_recognition","spatial_awareness"],l:"3D shape difficulty"},
+{p:["dimension","big","small","thick","thin","long","short","tall"],s:["dimension_perception","visual_discrimination"],l:"dimension difficulty"},
+{p:["music","sing","rhythm","beat","instrument","melody"],s:["musical_awareness","rhythm_sense"],l:"music difficulty"},
+{p:["art","draw","paint","create","design","color in"],s:["creative_expression","fine_motor_control"],l:"art/creative difficulty"},
+{p:["left","right","direction","orient","position","spatial"],s:["spatial_awareness","laterality"],l:"spatial/directional difficulty"},
+{p:["eye track","follow","visual track","scanning"],s:["visual_tracking","eye_hand_coordination"],l:"visual tracking difficulty"},
+{p:["transfer","move","carry","transport"],s:["controlled_movement","coordination"],l:"transfer difficulty"},
+{p:["wrist","rotation","turn","twist","screw","unscrew"],s:["wrist_rotation","fine_motor_control"],l:"wrist rotation difficulty"}
+];
+function aN(t){if(!t)return[];const l=t.toLowerCase(),c=[];for(const p of NP)for(const k of p.p)if(l.includes(k)){c.push({keyword:k,skills:p.s,label:p.l});break;}return c;}
+function pR(r){if(!r)return{min:2.5,max:6};const p=r.split("-");return{min:parseFloat(p[0])||2.5,max:parseFloat(p[1])||6};}
+function aF(age,ex){const r=pR(ex.typical_age_range);if(age>=r.min&&age<=r.max+.5)return"ideal";if(age<r.min&&age>=r.min-.5)return"slightly_young";if(age<r.min-.5)return"too_young";if(age>r.max+.5&&age<=r.max+1.5)return"slightly_old";return"too_old";}
+
+function gP(child){
+const m=new Set,p=new Set,s=new Set,all=new Set,lo={};
+for(const o of child.observations){all.add(o.exercise);if(!lo[o.exercise]||o.date>lo[o.exercise].date)lo[o.exercise]=o;}
+for(const[id,o]of Object.entries(lo)){if(o.status==="mastered")m.add(id);else if(o.status==="practicing")p.add(id);else if(o.status==="struggling")s.add(id);}
+const ss={};for(const id of m){const e=EXERCISES[id];if(e)for(const sk of e.skills_developed)ss[sk]=(ss[sk]||0)+1;}
+const ac={};for(const id of[...m,...p,...s]){const e=EXERCISES[id];if(e)ac[e.area]=(ac[e.area]||0)+1;}
+const lb={};for(const o of child.observations){const e=EXERCISES[o.exercise];if(e&&(!lb[e.area]||o.date>lb[e.area]))lb[e.area]=o.date;}
+return{mastered:m,practicing:p,struggling:s,allObserved:all,latestObs:lo,skillStrength:ss,areaCoverage:ac,lastObsByArea:lb};
+}
+
+function gI(child){
+const pr=gP(child),ins=[];
+for(const exId of pr.struggling){const ex=EXERCISES[exId];if(!ex)continue;
+const nt=child.observations.filter(o=>o.exercise===exId).map(o=>o.notes).filter(Boolean).join(" ");
+const weak=[];for(const sk of ex.skills_required){const st=pr.skillStrength[sk]||0;if(st<3)weak.push({skill:sk,strength:st});}
+const clues=aN(nt),nc=[];
+for(const c of clues){nc.push(c.label);for(const sk of c.skills)if(!weak.find(w=>w.skill===sk))weak.push({skill:sk,strength:pr.skillStrength[sk]||0});}
+if(weak.length>0){const wn=weak.map(w=>w.skill),br=[];
+for(const[oid,oe]of Object.entries(EXERCISES)){if(pr.mastered.has(oid)||oid===exId)continue;
+const dv=oe.skills_developed.filter(s=>wn.includes(s));
+if(dv.length>0&&(oe.prerequisites.every(pp=>pr.mastered.has(pp))||oe.prerequisites.length===0))
+br.push({id:oid,name:oe.name,area:oe.area,skills:dv,cross:oe.area!==ex.area,score:dv.length*2+(oe.area!==ex.area?3:0)});}
+br.sort((a,b)=>b.score-a.score);
+ins.push({type:"struggling",exercise:{id:exId,name:ex.name,area:ex.area},weakSkills:weak,noteClues:nc,bridges:br,crossBridges:br.filter(b=>b.cross),sameBridges:br.filter(b=>!b.cross)});}}
+for(const exId of pr.practicing){const ex=EXERCISES[exId];if(!ex)continue;
+const un=ex.prerequisites.filter(pp=>!pr.mastered.has(pp));
+if(un.length>0)ins.push({type:"premature",exercise:{id:exId,name:ex.name,area:ex.area},unmet:un.map(pp=>({id:pp,name:EXERCISES[pp]?.name}))});}
+return ins;
+}
+
+function gF(child){
+const pr=gP(child),fl=[],td=new Date("2026-03-29"),areas=["practical_life","sensorial","mathematics","language","culture"];
+for(const a of areas){const lo=pr.lastObsByArea[a];if(!lo)fl.push({type:"no_obs",area:a,severity:"medium",msg:"No observations in "+a.replace(/_/g," ")});
+else{const d=Math.floor((td-new Date(lo))/864e5);if(d>21)fl.push({type:"stale",area:a,days:d,severity:d>60?"high":"medium",msg:"No "+a.replace(/_/g," ")+" observations in "+d+" days"});}}
+for(const exId of pr.struggling){const obs=child.observations.filter(o=>o.exercise===exId);if(obs.length>=3)fl.push({type:"prolonged",severity:"high",msg:"Prolonged struggle: "+(EXERCISES[exId]?.name||exId)+" ("+obs.length+" sessions)"});}
+for(const exId of pr.practicing){const obs=child.observations.filter(o=>o.exercise===exId).sort((a,b)=>b.date.localeCompare(a.date));
+if(obs.length>=2){const d=Math.floor((td-new Date(obs[0].date))/864e5);if(d>14)fl.push({type:"stalled",severity:"medium",msg:"Stalled practice: "+(EXERCISES[exId]?.name||exId)+" ("+d+" days)"});}}
+return fl;
+}
+
+function gR(child){
+const pr=gP(child),ins=gI(child),fl=gF(child),areas=["practical_life","sensorial","mathematics","language","culture"];
+const ready=[];for(const[id,ex]of Object.entries(EXERCISES)){
+if(pr.mastered.has(id)||pr.practicing.has(id)||pr.struggling.has(id))continue;
+const pm=ex.prerequisites.length>0&&ex.prerequisites.every(pp=>pr.mastered.has(pp));
+const rt=ex.prerequisites.length===0&&!pr.allObserved.has(id);
+if(pm||rt)ready.push({id,...ex,isRoot:rt});}
+const ub=new Set;for(const exId of pr.struggling){const ex=EXERCISES[exId];if(ex)for(const pp of ex.prerequisites)if(!pr.mastered.has(pp))ub.add(pp);}
+const bi=new Set;for(const i of ins.filter(i=>i.type==="struggling"))for(const b of i.bridges)bi.add(b.id);
+const tot=Object.values(pr.areaCoverage).reduce((a,b)=>a+b,0);
+const ga=new Set,sa=new Set;
+for(const a of areas){const c=pr.areaCoverage[a]||0;if(tot>=5&&c/tot<.1)ga.add(a);if(!pr.lastObsByArea[a])ga.add(a);}
+for(const f of fl.filter(f=>f.type==="stale"||f.type==="no_obs"))sa.add(f.area);
+const ws=new Set;for(const i of ins.filter(i=>i.type==="struggling"))for(const w of i.weakSkills)ws.add(w.skill);
+const sc=ready.map(ex=>{let score=0;const reasons=[];
+if(ub.has(ex.id)){score+=50;reasons.push("Unblocks struggling exercise");}
+if(bi.has(ex.id)){score+=40;reasons.push("Bridge for weak skill");}
+if(ga.has(ex.area)||sa.has(ex.area)){score+=30;reasons.push("Fills gap in "+ex.area.replace(/_/g," "));}
+const dw=ex.skills_developed.filter(s=>ws.has(s));
+if(dw.length>0){score+=10+dw.length*5;reasons.push("Reinforces: "+dw.map(s=>s.replace(/_/g," ")).join(", "));}
+const af=aF(child.age,ex);
+if(af==="ideal"){score+=15;reasons.push("Age-appropriate");}
+else if(af==="slightly_young"){score+=5;reasons.push("Slightly young but reachable");}
+else if(af==="slightly_old"||af==="too_old"){score-=10;reasons.push("Below age range");}
+else if(af==="too_young"){score-=30;reasons.push("Above age range");}
+const sn=ex.successors?ex.successors.length:0;score+=Math.min(sn*3,10);
+if(sn>0)reasons.push("Unlocks "+sn+" successor"+(sn>1?"s":""));
+if(ex.isRoot&&pr.mastered.size>5){score-=5;reasons.push("Root exercise");}
+return{id:ex.id,name:ex.name,area:ex.area,score,reasons,ageFit:af,tier:score>=40?"urgent":score>=20?"recommended":score>=0?"available":"deferred"};});
+sc.sort((a,b)=>b.score-a.score);
+return sc.filter(e=>e.ageFit!=="too_young");
+}
+
+// ===== RICH GURU RESPONSES =====
+function guru(query, child) {
+  if (!child) return { text: "Pick a child above and I'll tell you everything I know about how they're doing." };
+  const q = query.toLowerCase(), pr = gP(child), ins = gI(child), fl = gF(child), recs = gR(child);
+  const name = child.name;
+
+  // Overview
+  if (q.match(/\b(hi|hello|hey|overview|how is|how's|tell me about|summary|update|doing|progress)\b/)) {
+    let t = name + " has mastered " + pr.mastered.size + " exercises and is practicing " + pr.practicing.size + ".";
+    if (pr.struggling.size > 0) t += " There " + (pr.struggling.size === 1 ? "is" : "are") + " " + pr.struggling.size + " exercise" + (pr.struggling.size > 1 ? "s" : "") + " where " + name + " is struggling.";
+    t += "\n\n";
+    const strs = ins.filter(i => i.type === "struggling");
+    if (strs.length > 0) {
+      t += "The main concern is **" + strs[0].exercise.name + "** \u2014 I\'m seeing " + strs[0].noteClues.slice(0,2).join(" and ") + " from your notes. ";
+      if (strs[0].crossBridges.length > 0) t += "I\'d suggest stepping back to **" + strs[0].crossBridges[0].name + "** to build the underlying skills.";
+      t += "\n\n";
+    }
+    if (fl.length > 0) {
+      t += "A few things to keep an eye on:";
+      return { text: t, flags: fl.slice(0, 3), topRec: recs[0] };
+    }
+    if (recs[0]) t += "When you\'re ready for a new presentation, I\'d start with **" + recs[0].name + "** \u2014 " + recs[0].reasons[0].toLowerCase() + ".";
+    return { text: t };
+  }
+
+  // Recommendations
+  if (q.match(/\b(present|next|recommend|suggest|what should|priorit|ready for|introduce|show|give)\b/)) {
+    const urgent = recs.filter(r => r.tier === "urgent").slice(0, 4);
+    const recommended = recs.filter(r => r.tier === "recommended").slice(0, 3);
+    let t = "Here\'s what I\'d focus on for " + name + ":";
+    if (urgent.length > 0 && urgent[0].score >= 60) {
+      t += "\n\nMy top pick is **" + urgent[0].name + "** \u2014 " + urgent[0].reasons.slice(0, 2).join(", ").toLowerCase() + ".";
+    }
+    return { text: t, recs: [...urgent, ...recommended].slice(0, 5) };
+  }
+
+  // Struggling
+  if (q.match(/\b(struggl|difficult|trouble|concern|worry|problem|issue|stuck|fail|weak|help|behind)\b/)) {
+    const strs = ins.filter(i => i.type === "struggling");
+    if (strs.length === 0) return { text: name + " isn\'t struggling with anything right now \u2014 great news! Keep observing for natural moments to introduce new challenges." };
+    const s = strs[0];
+    let t = name + " has been struggling with **" + s.exercise.name + "** for " + child.observations.filter(o => o.exercise === s.exercise.id && o.status === "struggling").length + " sessions.\n\n";
+    t += "From your notes, I\'m picking up " + s.noteClues.join(", ") + ".\n\n";
+    t += "The underlying skills that need strengthening:";
+    const bridges = s.crossBridges.slice(0, 4);
+    if (bridges.length > 0) {
+      t += "\n\nHere are exercises from other areas that build these skills:";
+      return { text: t, skills: s.weakSkills.slice(0, 5), bridges };
+    }
+    return { text: t, skills: s.weakSkills.slice(0, 5) };
+  }
+
+  // Skills
+  if (q.match(/\b(skill|strength|strong|good at|excels|master|capable)\b/)) {
+    const top = Object.entries(pr.skillStrength).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    if (top.length === 0) return { text: name + " is still building their foundation. Keep presenting and observing!" };
+    let t = name + "\'s strongest skills, based on mastered exercises:";
+    return { text: t, skillBars: top };
+  }
+
+  // Gaps / area balance
+  if (q.match(/\b(area|coverage|balance|gap|missing|lacking|neglect|spread)\b/)) {
+    const areas = ["practical_life","sensorial","mathematics","language","culture"];
+    let t = "Here\'s how " + name + "\'s work is spread across areas:\n\n";
+    for (const a of areas) {
+      const ct = pr.areaCoverage[a] || 0;
+      const icon = ct === 0 ? "\u26a0\ufe0f" : "\u2705";
+      t += icon + " **" + a.replace(/_/g, " ") + "**: " + ct + " exercises\n";
+    }
+    const gaps = areas.filter(a => !pr.areaCoverage[a]);
+    if (gaps.length > 0) t += "\nI\'d prioritize introducing work in " + gaps.map(g => "**" + g.replace(/_/g, " ") + "**").join(" and ") + ".";
+    return { text: t };
+  }
+
+  // Flags
+  if (q.match(/\b(flag|alert|attention|watch|monitor|check|worry|worri)\b/)) {
+    if (fl.length === 0) return { text: "Nothing flagged for " + name + " right now. Looking good!" };
+    let t = "Here\'s what I\'d keep an eye on:";
+    return { text: t, flags: fl };
+  }
+
+  // Age / readiness
+  if (q.match(/\b(age|old enough|ready|readiness|too young|too old|appropriate|mature)\b/)) {
+    let t = name + " is " + child.age + " years old.\n\n";
+    const ideal = recs.filter(r => r.ageFit === "ideal").slice(0, 4);
+    if (ideal.length > 0) {
+      t += "These are right in " + name + "\'s sweet spot age-wise:";
+      return { text: t, recs: ideal };
+    }
+    t += "All current recommendations are age-appropriate.";
+    return { text: t };
+  }
+
+  // Exercise lookup
+  const words = q.split(/\s+/).filter(w => w.length > 3);
+  let best = null, bestScore = 0;
+  for (const ex of EXLIST) {
+    const nm = ex.name.toLowerCase(); let sc = 0;
+    for (const w of words) if (nm.includes(w)) sc += 2;
+    if (q.includes(ex.id.toLowerCase())) sc += 10;
+    if (sc > bestScore) { bestScore = sc; best = ex; }
+  }
+  if (best && bestScore >= 2) {
+    const af = aF(child.age, best);
+    let t = "**" + best.name + "** (" + best.area.replace(/_/g, " ") + ")\n\n";
+    t += "Age range: " + best.typical_age_range + " \u2014 fit for " + name + ": " + af.replace(/_/g, " ") + "\n\n";
+    t += "**Develops:** " + best.skills_developed.map(s => s.replace(/_/g, " ")).join(", ") + "\n";
+    if (best.prerequisites.length > 0) {
+      t += "\n**Prerequisites:**\n";
+      for (const p of best.prerequisites) t += (pr.mastered.has(p) ? "\u2705 " : "\u274c ") + (EXERCISES[p]?.name || p) + "\n";
+    }
+    if (best.mastery_indicators.length > 0) t += "\n**Look for:** " + best.mastery_indicators.join("; ");
+    return { text: t };
+  }
+
+  // Fallback
+  return { text: "I can help with " + name + "\'s development. You might ask:\n\n\u2022 \"How is " + name + " doing?\"\n\u2022 \"What should I present next?\"\n\u2022 \"What\'s " + name + " struggling with?\"\n\u2022 \"Any gaps in coverage?\"\n\u2022 \"Tell me about the Pink Tower\"" };
+}
+
+// ===== RENDER RICH MESSAGES =====
+function renderResponse(resp) {
+  let h = formatText(resp.text);
+  if (resp.flags) {
+    for (const f of resp.flags) {
+      const sev = f.severity === "high" ? "high" : f.type === "stalled" ? "medium" : "low";
+      h += '<div class="flag-item ' + sev + '">' + f.msg + '</div>';
+    }
+  }
+  if (resp.skills) {
+    for (const s of resp.skills) {
+      const pct = Math.min(s.strength / 5 * 100, 100);
+      const cls = s.strength >= 3 ? "sbf-strong" : s.strength >= 1 ? "sbf-mid" : "sbf-weak";
+      h += '<div class="skill-bar-wrap"><div class="skill-bar-label"><span>' + s.skill.replace(/_/g, " ") + '</span><span>' + s.strength + '</span></div><div class="skill-bar"><div class="skill-bar-fill ' + cls + '" style="width:' + Math.max(pct, 8) + '%"></div></div></div>';
+    }
+  }
+  if (resp.skillBars) {
+    const mx = resp.skillBars[0][1];
+    for (const [sk, str] of resp.skillBars) {
+      const pct = Math.round(str / Math.max(mx, 5) * 100);
+      const cls = str >= 4 ? "sbf-strong" : str >= 2 ? "sbf-mid" : "sbf-weak";
+      h += '<div class="skill-bar-wrap"><div class="skill-bar-label"><span>' + sk.replace(/_/g, " ") + '</span><span>' + str + '</span></div><div class="skill-bar"><div class="skill-bar-fill ' + cls + '" style="width:' + Math.max(pct, 8) + '%"></div></div></div>';
+    }
+  }
+  if (resp.bridges) {
+    for (const b of resp.bridges) {
+      h += '<div class="bridge-item"><span class="bridge-dot"></span><strong>' + b.name + '</strong> <span class="bridge-area">' + b.area.replace(/_/g, " ") + ' \u2014 ' + b.skills.map(s => s.replace(/_/g, " ")).join(", ") + '</span></div>';
+    }
+  }
+  if (resp.recs) {
+    for (const r of resp.recs) {
+      const bc = r.tier === "urgent" ? "rc-urgent" : r.tier === "recommended" ? "rc-recommended" : "rc-available";
+      h += '<div class="rec-card"><div><div class="rc-name">' + r.name + '</div><div class="rc-area">' + r.area.replace(/_/g, " ") + ' \u2014 ' + r.reasons[0].toLowerCase() + '</div></div><div class="rc-badge ' + bc + '">' + r.tier + '</div></div>';
+    }
+  }
+  if (resp.topRec) {
+    const r = resp.topRec;
+    h += '<div style="margin-top:8px"><div style="font-size:12px;color:var(--bark3);margin-bottom:4px">Top recommendation:</div>';
+    h += '<div class="rec-card"><div><div class="rc-name">' + r.name + '</div><div class="rc-area">' + r.reasons[0].toLowerCase() + '</div></div><div class="rc-badge rc-urgent">' + r.score + '</div></div></div>';
+  }
+  return h;
+}
+
+function formatText(t) {
+  return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+}
+
+// ===== SAMPLE DATA =====
+const CH=[
+{name:"Priya",age:4.2,observations:[
+{exercise:"PL001",date:"2026-03-01",status:"mastered",notes:"Confident on the line"},
+{exercise:"PL002",date:"2026-03-01",status:"mastered",notes:"Carries tray steadily"},
+{exercise:"PL005",date:"2026-03-02",status:"mastered",notes:"Opens all container types"},
+{exercise:"PL010",date:"2026-03-02",status:"mastered",notes:"Pours grains cleanly"},
+{exercise:"PL020",date:"2026-03-03",status:"mastered",notes:"Spoons accurately"},
+{exercise:"PL011",date:"2026-03-05",status:"mastered",notes:"Pours water confidently"},
+{exercise:"PL030",date:"2026-03-05",status:"mastered",notes:"Full hand washing sequence"},
+{exercise:"PL070",date:"2026-03-07",status:"mastered",notes:"Greets everyone warmly"},
+{exercise:"S001",date:"2026-03-10",status:"mastered",notes:"All cylinder blocks correct"},
+{exercise:"S010",date:"2026-03-10",status:"mastered",notes:"Builds tower confidently"},
+{exercise:"S020",date:"2026-03-12",status:"mastered",notes:"Names primary colors"},
+{exercise:"L001",date:"2026-03-14",status:"mastered",notes:"Strong beginning sound ID"},
+{exercise:"L005",date:"2026-03-15",status:"mastered",notes:"Rich vocabulary"},
+{exercise:"L010",date:"2026-03-18",status:"practicing",notes:"Traces most consonants, some reversals"},
+{exercise:"L012",date:"2026-03-20",status:"struggling",notes:"Difficulty gripping metal inset knob, can't maintain tripod grip"},
+{exercise:"L012",date:"2026-03-22",status:"struggling",notes:"Still struggling with grip. Hand fatigues quickly."},
+{exercise:"L012",date:"2026-03-25",status:"struggling",notes:"Third attempt. Grip remains weak. Pencil slips."},
+{exercise:"PL007",date:"2026-03-08",status:"practicing",notes:"Uses tongs but drops frequently. Grip not strong enough."},
+{exercise:"C001",date:"2026-03-08",status:"mastered",notes:"Land and water confident"}]},
+{name:"Marcus",age:4.8,observations:[
+{exercise:"PL001",date:"2025-09-01",status:"mastered",notes:""},{exercise:"PL002",date:"2025-09-01",status:"mastered",notes:""},
+{exercise:"PL005",date:"2025-09-05",status:"mastered",notes:""},{exercise:"PL010",date:"2025-09-05",status:"mastered",notes:""},
+{exercise:"PL011",date:"2025-09-10",status:"mastered",notes:""},{exercise:"PL020",date:"2025-09-10",status:"mastered",notes:""},
+{exercise:"PL007",date:"2025-09-15",status:"mastered",notes:""},{exercise:"PL030",date:"2025-09-20",status:"mastered",notes:""},
+{exercise:"PL060",date:"2025-09-25",status:"mastered",notes:""},{exercise:"PL070",date:"2025-09-25",status:"mastered",notes:""},
+{exercise:"S001",date:"2025-10-01",status:"mastered",notes:""},{exercise:"S010",date:"2025-10-05",status:"mastered",notes:""},
+{exercise:"S020",date:"2025-10-10",status:"mastered",notes:""},{exercise:"L001",date:"2025-10-20",status:"mastered",notes:""},
+{exercise:"L010",date:"2025-11-01",status:"mastered",notes:""},{exercise:"L005",date:"2025-11-15",status:"mastered",notes:""},
+{exercise:"M001",date:"2025-12-01",status:"practicing",notes:"Struggles with seriation of rods."},
+{exercise:"M001",date:"2025-12-15",status:"practicing",notes:"Visual comparison of lengths is weak."},
+{exercise:"M001",date:"2026-01-10",status:"practicing",notes:"Can't reliably seriate the rods by length."}]},
+{name:"Liam",age:5.1,observations:[
+{exercise:"PL001",date:"2026-01-10",status:"mastered",notes:""},{exercise:"PL002",date:"2026-01-10",status:"mastered",notes:""},
+{exercise:"PL005",date:"2026-01-10",status:"mastered",notes:""},{exercise:"PL010",date:"2026-01-12",status:"mastered",notes:""},
+{exercise:"PL011",date:"2026-01-12",status:"mastered",notes:""},{exercise:"PL020",date:"2026-01-12",status:"mastered",notes:""},
+{exercise:"PL007",date:"2026-01-15",status:"mastered",notes:"Excellent pincer grip"},{exercise:"PL030",date:"2026-01-15",status:"mastered",notes:""},
+{exercise:"PL040",date:"2026-01-18",status:"mastered",notes:""},{exercise:"PL060",date:"2026-01-20",status:"mastered",notes:""},
+{exercise:"PL070",date:"2026-01-20",status:"mastered",notes:""},{exercise:"S001",date:"2026-01-22",status:"mastered",notes:""},
+{exercise:"S010",date:"2026-01-22",status:"mastered",notes:""},{exercise:"S011",date:"2026-01-24",status:"mastered",notes:""},
+{exercise:"S012",date:"2026-01-26",status:"mastered",notes:""},{exercise:"S030",date:"2026-01-28",status:"mastered",notes:""},
+{exercise:"S031",date:"2026-01-28",status:"mastered",notes:"Traces all shapes"},{exercise:"S020",date:"2026-02-01",status:"mastered",notes:""},
+{exercise:"S021",date:"2026-02-01",status:"mastered",notes:""},{exercise:"L001",date:"2026-02-05",status:"mastered",notes:""},
+{exercise:"L002",date:"2026-02-05",status:"mastered",notes:"Strong phonemic awareness"},{exercise:"L010",date:"2026-02-08",status:"mastered",notes:""},
+{exercise:"L011",date:"2026-02-10",status:"mastered",notes:""},{exercise:"L005",date:"2026-02-12",status:"mastered",notes:""},
+{exercise:"L012",date:"2026-02-15",status:"mastered",notes:"Beautiful inset work"},{exercise:"L020",date:"2026-02-18",status:"mastered",notes:""},
+{exercise:"L021",date:"2026-02-20",status:"mastered",notes:""},{exercise:"L030",date:"2026-02-25",status:"mastered",notes:""},
+{exercise:"L031",date:"2026-03-01",status:"mastered",notes:"Reading with comprehension"},
+{exercise:"M001",date:"2026-03-01",status:"mastered",notes:""},{exercise:"M002",date:"2026-03-05",status:"mastered",notes:""},
+{exercise:"M003",date:"2026-03-08",status:"mastered",notes:""},{exercise:"M004",date:"2026-03-10",status:"mastered",notes:""},
+{exercise:"M005",date:"2026-03-12",status:"mastered",notes:"Odd/even understood"},{exercise:"M010",date:"2026-03-15",status:"mastered",notes:""},
+{exercise:"M011",date:"2026-03-18",status:"practicing",notes:"Working on tens, loses count in 70s-90s"},
+{exercise:"C001",date:"2026-03-25",status:"mastered",notes:""},{exercise:"C002",date:"2026-03-25",status:"mastered",notes:""}]},
+{name:"Amara",age:3.4,observations:[
+{exercise:"PL001",date:"2026-02-01",status:"mastered",notes:""},{exercise:"PL002",date:"2026-02-05",status:"mastered",notes:""},
+{exercise:"PL005",date:"2026-02-05",status:"mastered",notes:"Loves the containers"},{exercise:"PL003",date:"2026-02-10",status:"mastered",notes:""},
+{exercise:"PL070",date:"2026-02-12",status:"mastered",notes:"Very polite"},
+{exercise:"PL010",date:"2026-02-15",status:"practicing",notes:"Some spilling"},
+{exercise:"S010",date:"2026-02-20",status:"practicing",notes:"Doesn't always center cubes"},
+{exercise:"L001",date:"2026-02-25",status:"practicing",notes:"Getting beginning sounds"},
+{exercise:"C010",date:"2026-03-01",status:"mastered",notes:"Understands living vs non-living"},
+{exercise:"C020",date:"2026-03-05",status:"practicing",notes:"Learning days of the week"}]}
+];
+
+// ===== APP STATE =====
+let sel = null, hist = {}, recStatus = '';
+
+function initChildRow() {
+  const row = document.getElementById('child-row');
+  let h = '';
+  for (const c of CH) {
+    const pr = gP(c), ac = sel?.name === c.name ? ' active' : '';
+    const dot = pr.struggling.size > 0 ? 'var(--clay)' : 'var(--leaf2)';
+    h += '<div class="child-pill' + ac + '" onclick="pickChild(\'' + c.name + '\')">';
+    h += '<span class="pill-dot" style="background:' + dot + '"></span>';
+    h += c.name + ' <span style="color:' + (sel?.name === c.name ? 'rgba(255,255,255,.6)' : 'var(--bark3)') + ';font-weight:400">' + c.age + 'y</span>';
+    h += '</div>';
+  }
+  row.innerHTML = h;
+}
+
+function pickChild(name) {
+  sel = CH.find(c => c.name === name);
+  initChildRow();
+  renderMessages();
+  updateSuggestions();
+  document.getElementById('input').placeholder = 'Ask about ' + name + '...';
+}
+
+function renderMessages() {
+  const el = document.getElementById('messages');
+  const name = sel ? sel.name : null;
+  if (!name) {
+    el.innerHTML = '<div class="welcome"><div class="welcome-icon">\u{1F331}</div><h2>Welcome to Guru</h2><p>Select a child above to get started. I can answer questions about their progress, recommend next presentations, and help you understand what they need.</p></div>';
+    return;
+  }
+  if (!hist[name]) hist[name] = [];
+  let h = '';
+  if (hist[name].length === 0) {
+    h += msgHTML('guru', 'Hi! I\'m ready to help with <strong>' + name + '</strong>. What would you like to know?');
+  } else {
+    for (const m of hist[name]) {
+      if (m.role === 'user') h += msgHTML('user', formatText(m.text));
+      else h += msgHTML('guru', m.html || formatText(m.text));
+    }
+  }
+  el.innerHTML = h;
+  el.scrollTop = el.scrollHeight;
+}
+
+function msgHTML(role, content) {
+  const av = role === 'guru' ? '\u{1F331}' : '\u{1F9D1}\u200D\u{1F3EB}';
+  return '<div class="msg ' + role + '"><div class="msg-avatar">' + av + '</div><div class="msg-bubble">' + content + '</div></div>';
+}
+
+function updateSuggestions() {
+  const el = document.getElementById('suggestions');
+  if (!sel) { el.innerHTML = ''; return; }
+  const name = sel.name;
+  const sugs = [
+    "How is " + name + " doing?",
+    "What should I present next?",
+    "Any struggles?",
+    "Check area balance",
+    "What are " + name + "'s strengths?"
+  ];
+  el.innerHTML = sugs.map(s => '<div class="sug" onclick="tapSug(this,\'' + s.replace(/'/g, "\\'") + '\')">' + s + '</div>').join('');
+}
+
+function tapSug(el, text) {
+  document.getElementById('input').value = text;
+  send();
+}
+
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+}
+
+function autoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function send() {
+  const input = document.getElementById('input');
+  const text = input.value.trim();
+  if (!text || !sel) return;
+  const name = sel.name;
+  if (!hist[name]) hist[name] = [];
+  hist[name].push({ role: 'user', text });
+  input.value = ''; input.style.height = 'auto';
+  renderMessages();
+  // Hide suggestions after first message
+  document.getElementById('suggestions').innerHTML = '';
+
+  // Typing indicator
+  const msgs = document.getElementById('messages');
+  const typing = document.createElement('div');
+  typing.className = 'msg guru';
+  typing.innerHTML = '<div class="msg-avatar">\u{1F331}</div><div class="msg-bubble"><div class="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>';
+  msgs.appendChild(typing);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    const resp = guru(text, sel);
+    const html = renderResponse(resp);
+    hist[name].push({ role: 'guru', text: resp.text, html });
+    renderMessages();
+    // Show new suggestions
+    updateSuggestions();
+  }, 300 + Math.random() * 500);
+}
+
+// ===== RECORD OBSERVATION =====
+function toggleRecord() {
+  const overlay = document.getElementById('overlay');
+  const btn = document.getElementById('record-btn');
+  if (overlay.classList.contains('open')) { closeRecord(); return; }
+  overlay.classList.add('open');
+  btn.classList.add('active');
+  // Populate child select
+  const cs = document.getElementById('rec-child');
+  cs.innerHTML = '<option value="">Select child...</option>' + CH.map(c => '<option value="' + c.name + '"' + (sel?.name === c.name ? ' selected' : '') + '>' + c.name + ' (' + c.age + 'y)</option>').join('');
+  recStatus = '';
+}
+
+function closeRecord() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('record-btn').classList.remove('active');
+}
+
+function closeOverlay(e) {
+  if (e.target === document.getElementById('overlay')) closeRecord();
+}
+
+function pickStatus(s) {
+  recStatus = s;
+  ['mastered','practicing','struggling'].forEach(x => {
+    document.getElementById('st-' + x).className = 'status-btn' + (x === s ? ' sel-' + x[0] : '');
+  });
+}
+
+function filterEx() {
+  const input = document.getElementById('rec-exercise');
+  const dd = document.getElementById('ac-list');
+  const q = input.value.toLowerCase();
+  if (q.length < 1) { dd.classList.remove('open'); return; }
+  const matches = EXLIST.filter(e => e.name.toLowerCase().includes(q) || e.area.includes(q) || e.id.toLowerCase().includes(q)).slice(0, 8);
+  if (!matches.length) { dd.classList.remove('open'); return; }
+  dd.innerHTML = matches.map(e => '<div class="ac-item" onclick="pickEx(\'' + e.id + '\',\'' + e.name.replace(/'/g, "\\'") + '\')"><div class="ac-name">' + e.name + '</div><div class="ac-meta">' + e.area.replace(/_/g,' ') + ' \u00b7 ' + (e.typical_age_range||'2.5-6') + '</div></div>').join('');
+  dd.classList.add('open');
+}
+
+function pickEx(id, name) {
+  document.getElementById('rec-exercise').value = name;
+  document.getElementById('rec-exercise-id').value = id;
+  document.getElementById('ac-list').classList.remove('open');
+}
+
+function submitObs() {
+  const childName = document.getElementById('rec-child').value;
+  const exId = document.getElementById('rec-exercise-id').value;
+  const notes = document.getElementById('rec-notes').value;
+  if (!childName) { toast('Select a child'); return; }
+  if (!exId) { toast('Select an exercise'); return; }
+  if (!recStatus) { toast('Pick a status'); return; }
+  const child = CH.find(c => c.name === childName);
+  child.observations.push({ exercise: exId, date: new Date().toISOString().split('T')[0], status: recStatus, notes });
+  toast('Saved! ' + childName + ' \u2014 ' + document.getElementById('rec-exercise').value);
+  closeRecord();
+  initChildRow();
+  if (sel?.name === childName) renderMessages();
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Close autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ac-wrap')) { const dd = document.getElementById('ac-list'); if (dd) dd.classList.remove('open'); }
+});
+
+// Init
+initChildRow();
+renderMessages();
+updateSuggestions();
+</script>
+</body>
+</html>
