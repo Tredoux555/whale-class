@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
     const weekEndDate = new Date(parsed.getTime() + 7 * 24 * 60 * 60 * 1000);
     const weekEnd = weekEndDate.toISOString().slice(0, 10);
 
-    // Step 1: Fetch children + notes + progress in parallel
-    const [childrenRes, notesRes, progressRes] = await Promise.all([
+    // Step 1: Fetch children + notes in parallel
+    const [childrenRes, notesRes] = await Promise.all([
       // 1. All children in classroom
       supabase
         .from('montree_children')
@@ -70,16 +70,6 @@ export async function POST(request: NextRequest) {
         .eq('classroom_id', classroomId)
         .eq('week_start', weekStart)
         .eq('doc_type', docType),
-
-      // 3. Progress data for auto-generation (summary only)
-      docType === 'summary'
-        ? supabase
-            .from('montree_child_progress')
-            .select('child_id, work_name, area, status, updated_at')
-            .eq('classroom_id', classroomId)
-            .gte('updated_at', weekStart)
-            .lt('updated_at', weekEnd)
-        : Promise.resolve({ data: null, error: null }),
     ]);
 
     if (childrenRes.error) {
@@ -92,14 +82,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
     }
 
+    const children = childrenRes.data || [];
+    const notes = notesRes.data || [];
+    const childIds = children.map((c: { id: string; name: string }) => c.id);
+
+    // Step 1b: Fetch progress data using child IDs (montree_child_progress has no classroom_id column)
+    let progressRes: { data: unknown[] | null; error: { message: string } | null } = { data: null, error: null };
+    if (docType === 'summary' && childIds.length > 0) {
+      progressRes = await supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, area, status, updated_at')
+        .in('child_id', childIds)
+        .gte('updated_at', weekStart)
+        .lt('updated_at', weekEnd);
+    }
+
     // Progress errors are non-fatal — auto-generation degrades gracefully to empty summaries
     if (progressRes.error) {
       console.error('weekly-admin-docs/generate progress error:', progressRes.error.message);
     }
-
-    const children = childrenRes.data || [];
-    const notes = notesRes.data || [];
-    const childIds = children.map((c: { id: string; name: string }) => c.id);
 
     // Step 2: Fetch focus works using child IDs (table has no classroom_id column)
     let focusWorksRes: { data: unknown; error: unknown } = { data: null, error: null };

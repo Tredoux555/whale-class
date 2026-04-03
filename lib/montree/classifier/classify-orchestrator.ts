@@ -82,9 +82,18 @@ export async function tryClassify(
 
   // Try lazy initialization (serialized via Promise lock, with TTL-based retry)
   if (!isClassifierReady()) {
-    // Check if permanently failed (max attempts exceeded)
+    // Check if permanently failed (max attempts exceeded) — allow retry after 30 min cooldown
     if (initFailed && initAttemptCount >= INIT_MAX_ATTEMPTS) {
-      return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'init_permanently_failed' };
+      const timeSinceLastFailure = Date.now() - initFailedAt;
+      if (timeSinceLastFailure < 30 * 60 * 1000) {
+        return { classified: false, clipResult: null, action: 'full_two_pass', reason: 'init_permanently_failed' };
+      }
+      // Reset after 30 min cooldown to allow retry
+      console.log('[ClassifyOrchestrator] 30-min cooldown expired — resetting init state for retry');
+      initAttemptCount = 0;
+      initFailed = false;
+      initPromise = null;
+      resetInitError();
     }
 
     // Check if recently failed (within TTL)

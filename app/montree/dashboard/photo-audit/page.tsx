@@ -653,7 +653,11 @@ export default function PhotoAuditPage() {
           action: 'confirm',
         }),
       });
-      if (!res.ok) throw new Error('confirm failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('[Photo Audit] Confirm failed:', res.status, errData);
+        throw new Error(errData?.error || 'confirm failed');
+      }
       // Track confirmed ID so future refetches preserve green status
       confirmedIdsRef.current.add(photo.id);
       const oldZone = photo.zone || 'amber';
@@ -671,8 +675,8 @@ export default function PhotoAuditPage() {
       // DO NOT call setZone('green') here — it triggers a refetch that can overwrite
       // the optimistic update with stale server data (race condition). The photo already
       // shows as green in local state. Teacher stays on current tab to keep confirming.
-    } catch {
-      toast.error(t('audit.confirmFailed'));
+    } catch (err: any) {
+      toast.error(err?.message || t('audit.confirmFailed'));
     } finally {
       setProcessingId(null);
     }
@@ -740,6 +744,10 @@ export default function PhotoAuditPage() {
   const handleWorkSelected = async (work: any, _status?: string, areaOverride?: string) => {
     if (!correctingPhoto) return;
     const effectiveArea = areaOverride || pickerArea;
+    if (!effectiveArea) {
+      toast.error('Please select an area first');
+      return;
+    }
     setProcessingId(correctingPhoto.id);
     try {
       const res = await fetch('/api/montree/guru/corrections', {
@@ -757,8 +765,13 @@ export default function PhotoAuditPage() {
           corrected_area: effectiveArea,
         }),
       });
-      if (!res.ok) throw new Error('correction failed');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        console.error('[Photo Audit] Correction failed:', res.status, errData);
+        throw new Error(errData?.error || 'correction failed');
+      }
       const oldZone = correctingPhoto.zone || 'amber';
+      confirmedIdsRef.current.add(correctingPhoto.id);
       setPhotos(prev => prev.map(p =>
         p.id === correctingPhoto.id
           ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea, zone: 'green' as const, confidence: 1.0 }
@@ -772,9 +785,10 @@ export default function PhotoAuditPage() {
         ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       toast.success(t('audit.corrected'));
-      setZone('green');
-    } catch {
-      toast.error(t('audit.correctionFailed'));
+      // DO NOT call setZone('green') here — it triggers a refetch that overwrites
+      // optimistic updates with stale server data (race condition).
+    } catch (err: any) {
+      toast.error(err?.message || t('audit.correctionFailed'));
     } finally {
       setProcessingId(null);
       setPickerArea('');
