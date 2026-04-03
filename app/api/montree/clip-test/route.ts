@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         .from('montree_visual_memory')
         .select('work_name, work_key, visual_description, description_confidence')
         .eq('classroom_id', classroomId)
-        .gt('times_used', 0);
+        .gte('times_used', 0);
 
       if (vmData) {
         visualMemories = vmData.map((vm) => ({
