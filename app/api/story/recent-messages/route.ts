@@ -54,12 +54,13 @@ export async function GET(req: NextRequest) {
 
     const messages = (rows || []).map(row => {
       let content = row.content || row.message_content || null;
-      
-      // Decrypt text messages
-      if (row.message_type === 'text' && content) {
+
+      // Decrypt message content (text messages AND media captions are encrypted)
+      if (content) {
         try {
           content = decryptMessage(content);
         } catch {
+          // If decryption fails, use raw content (may be plaintext)
           content = row.content || row.message_content || '';
         }
       }
