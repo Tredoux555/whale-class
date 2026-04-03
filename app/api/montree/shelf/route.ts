@@ -74,8 +74,13 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('settings')
       .eq('id', childId)
-      .single();
-    const settings = (childData?.settings as Record<string, unknown>) || {};
+      .maybeSingle();
+
+    if (!childData) {
+      return NextResponse.json({ success: false, error: 'Child not found' }, { status: 404 });
+    }
+
+    const settings = (childData.settings as Record<string, unknown>) || {};
     const guruReasons = (settings.guru_area_reasons as Record<string, string>) || {};
 
     // 4. Build shelf response — merge focus works with progress + chinese names (fuzzy) + reasons

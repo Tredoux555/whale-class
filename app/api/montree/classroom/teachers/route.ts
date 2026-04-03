@@ -115,9 +115,9 @@ export async function POST(request: NextRequest) {
         is_active: true,
       })
       .select('id, name, login_code, role, created_at')
-      .single();
+      .maybeSingle();
 
-    if (insertError) {
+    if (insertError || !teacher) {
       // Login code collision — extremely rare, retry once
       if (insertError.code === '23505' && insertError.message?.includes('login_code')) {
         let retryCode = '';
@@ -136,11 +136,11 @@ export async function POST(request: NextRequest) {
             is_active: true,
           })
           .select('id, name, login_code, role, created_at')
-          .single();
+          .maybeSingle();
 
-        if (retryError) {
-          console.error('Failed to create teacher (retry):', retryError.message);
-          return NextResponse.json({ error: 'Failed to create teacher' }, { status: 500 });
+        if (retryError || !retryTeacher) {
+          console.error('Failed to create teacher (retry):', retryError?.message);
+          return NextResponse.json({ error: 'Insert failed' }, { status: 500 });
         }
 
         return NextResponse.json({ teacher: retryTeacher }, { status: 201 });
