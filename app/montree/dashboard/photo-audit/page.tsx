@@ -896,7 +896,7 @@ export default function PhotoAuditPage() {
       }));
 
       try {
-        const res = await fetch('/api/montree/guru/clip-test', {
+        const res = await fetch('/api/montree/clip-test', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
