@@ -9,7 +9,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest, type VerifiedRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
-import { tryClassify, type VisualMemory } from '@/lib/montree/classifier';
+import { tryClassify } from '@/lib/montree/classifier/classify-orchestrator';
+import type { VisualMemory } from '@/lib/montree/classifier';
 
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
