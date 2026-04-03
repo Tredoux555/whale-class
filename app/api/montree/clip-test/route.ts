@@ -15,6 +15,18 @@ import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { tryClassify } from '@/lib/montree/classifier/classify-orchestrator';
 import type { VisualMemory } from '@/lib/montree/classifier';
 
+/**
+ * GET handler — lightweight diagnostic to confirm route is reachable at runtime.
+ * Hit https://montree.xyz/api/montree/clip-test in a browser to test.
+ */
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    route: '/api/montree/clip-test',
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
