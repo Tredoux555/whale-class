@@ -3566,6 +3566,7 @@ export const zh = {
   'audit.clipTestProgress': 'CLIP测试中',
   'audit.clipTestComplete': 'CLIP测试完成',
   'audit.clipTestNone': '没有待测试的琥珀色照片',
+  'audit.clipTestCancelled': 'CLIP测试已取消',
   'audit.clipResult': 'CLIP结果：',
   'audit.clipNoMatch': '未匹配',
 
