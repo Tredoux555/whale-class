@@ -49,9 +49,18 @@ export interface VisualMemory {
 
 // ============================================================
 // Lazy-loaded singleton state
+// SigLIP has SEPARATE text and vision encoders. The generic
+// `pipeline('feature-extraction', ...)` defaults to the vision
+// encoder and crashes on text input ("Missing pixel_values").
+// We load each encoder independently:
+//   - SiglipTextModel + AutoTokenizer  → text embeddings
+//   - SiglipVisionModel + AutoProcessor → image embeddings
 // ============================================================
 
-let pipeline: any = null;
+let tokenizer: any = null;   // AutoTokenizer instance for text
+let textModel: any = null;   // SiglipTextModel instance
+let processor: any = null;   // AutoProcessor instance for images
+let visionModel: any = null; // SiglipVisionModel instance
 let textEmbeddings: Map<string, Float32Array> = new Map(); // work_key -> embedding
 let negativeEmbeddings: Map<string, Float32Array[]> = new Map(); // work_key -> array of negative embeddings
 let confusionPairMap: Map<string, ConfusionPair[]> = new Map(); // work_key -> confusion pairs (cached)
@@ -104,6 +113,59 @@ function cosineSimilarity(a: Float32Array, b: Float32Array): number {
   return dot / (normA * normB);
 }
 
+// ============================================================
+// Helper: L2 normalize a vector (unit length)
+// pooler_output from SiglipTextModel/SiglipVisionModel is NOT
+// pre-normalized — we must do it manually.
+// ============================================================
+
+function l2Normalize(vec: Float32Array): Float32Array {
+  let norm = 0;
+  for (let i = 0; i < vec.length; i++) {
+    norm += vec[i] * vec[i];
+  }
+  norm = Math.sqrt(norm);
+  if (norm === 0) return vec;
+  const result = new Float32Array(vec.length);
+  for (let i = 0; i < vec.length; i++) {
+    result[i] = vec[i] / norm;
+  }
+  return result;
+}
+
+// ============================================================
+// Helper: Compute text embedding via SiglipTextModel
+// ============================================================
+
+async function embedText(text: string): Promise<Float32Array | null> {
+  if (!tokenizer || !textModel) return null;
+  try {
+    const inputs = tokenizer(text, { padding: 'max_length', truncation: true });
+    const { pooler_output } = await textModel(inputs);
+    if (!pooler_output?.data) return null;
+    return l2Normalize(new Float32Array(pooler_output.data));
+  } catch (err) {
+    console.warn('[CLIP] embedText error:', err instanceof Error ? err.message : String(err));
+    return null;
+  }
+}
+
+// ============================================================
+// Helper: Compute image embedding via SiglipVisionModel
+// ============================================================
+
+async function embedImage(imageUrl: string): Promise<Float32Array | null> {
+  if (!processor || !visionModel) return null;
+  const transformers = await getTransformersModule();
+  const { RawImage } = transformers;
+  const image = await RawImage.fromURL(imageUrl);
+  console.log(`[CLIP] Image loaded: ${image.width}x${image.height}, computing embedding...`);
+  const imageInputs = await processor(image);
+  const { pooler_output } = await visionModel(imageInputs);
+  if (!pooler_output?.data) return null;
+  return l2Normalize(new Float32Array(pooler_output.data));
+}
+
 // NOTE: downloadImageAsBuffer() removed — no longer needed after switching to RawImage.fromURL()
 // which handles image download, decode, and tensor creation in one step.
 
@@ -154,8 +216,8 @@ async function ensureClassroomEmbeddings(
         return;
       }
 
-      if (!pipeline) {
-        console.warn('[CLIP] Pipeline not ready for classroom embedding build');
+      if (!tokenizer || !textModel) {
+        console.warn('[CLIP] Text model not ready for classroom embedding build');
         resolve(new Map());
         return;
       }
@@ -173,9 +235,9 @@ async function ensureClassroomEmbeddings(
         for (const vm of memoriesWithDescriptions) {
           try {
             const prompt = `${vm.work_name}. ${vm.visual_description}`.slice(0, 512);
-            const embedding = await pipeline(prompt, { pooling: 'mean', normalize: true });
-            if (embedding?.data) {
-              embMap.set(vm.work_key, new Float32Array(embedding.data));
+            const emb = await embedText(prompt);
+            if (emb) {
+              embMap.set(vm.work_key, emb);
             }
           } catch (err) {
             console.warn(`[CLIP] Failed to embed visual memory for ${vm.work_key}:`, err instanceof Error ? err.message : String(err));
@@ -301,28 +363,32 @@ export async function initClassifier(): Promise<void> {
 
       console.log(`[CLIP] Loaded ${allWorks.length} works across ${areas.length} areas`);
 
-      // Load transformers module
+      // Load transformers module and initialize separate text/vision models
+      // SigLIP has separate encoders — the generic pipeline('feature-extraction')
+      // defaults to vision encoder and crashes on text input with "Missing pixel_values"
       const transformers = await getTransformersModule();
-      const { pipeline: createPipeline } = transformers;
+      const { AutoTokenizer, SiglipTextModel, AutoProcessor, SiglipVisionModel } = transformers;
 
-      // Initialize the feature-extraction pipeline for embeddings
-      console.log(`[CLIP] Loading model: ${CLIP_MODEL}`);
-      pipeline = await createPipeline('feature-extraction', CLIP_MODEL);
-      console.log('[CLIP] Model loaded successfully');
+      console.log(`[CLIP] Loading text model: ${CLIP_MODEL}`);
+      tokenizer = await AutoTokenizer.from_pretrained(CLIP_MODEL);
+      textModel = await SiglipTextModel.from_pretrained(CLIP_MODEL);
+      console.log('[CLIP] Text model loaded successfully');
+
+      console.log(`[CLIP] Loading vision model: ${CLIP_MODEL}`);
+      processor = await AutoProcessor.from_pretrained(CLIP_MODEL);
+      visionModel = await SiglipVisionModel.from_pretrained(CLIP_MODEL);
+      console.log('[CLIP] Vision model loaded successfully');
 
       // Pre-compute text embeddings for areas using rich AREA_SIGNATURES descriptions
       console.log('[CLIP] Pre-computing area embeddings...');
       for (const area of areas) {
         const richDescription = AREA_SIGNATURES[area.area_key] || `A Montessori ${area.name} work or material`;
-        const areaEmbedding = await pipeline(richDescription, {
-          pooling: 'mean',
-          normalize: true,
-        });
-        if (!areaEmbedding?.data) {
+        const areaEmb = await embedText(richDescription);
+        if (!areaEmb) {
           console.warn(`[CLIP] Failed to compute area embedding for ${area.area_key} — skipping`);
           continue;
         }
-        areaEmbeddings.set(area.area_key, new Float32Array(areaEmbedding.data));
+        areaEmbeddings.set(area.area_key, areaEmb);
       }
       console.log(`[CLIP] Pre-computed ${areaEmbeddings.size} area embeddings`);
 
@@ -344,15 +410,12 @@ export async function initClassifier(): Promise<void> {
           // 512 chars preserves ~90% of visual descriptions (256 was losing ~60% of critical disambiguation text)
           prompt = `${work.name}. ${work.description || work.materials?.join(', ') || ''}`.slice(0, 512);
         }
-        const embedding = await pipeline(prompt, {
-          pooling: 'mean',
-          normalize: true,
-        });
-        if (!embedding?.data) {
+        const emb = await embedText(prompt);
+        if (!emb) {
           console.warn(`[CLIP] Failed to compute embedding for ${work.work_key} — skipping`);
           continue;
         }
-        textEmbeddings.set(work.work_key, new Float32Array(embedding.data));
+        textEmbeddings.set(work.work_key, emb);
         embeddingCount++;
 
         // Log progress every 50 works
@@ -372,9 +435,9 @@ export async function initClassifier(): Promise<void> {
         const negEmbeds: Float32Array[] = [];
         for (const desc of negDescs) {
           try {
-            const negEmbed = await pipeline(desc, { pooling: 'mean', normalize: true });
-            if (negEmbed?.data) {
-              negEmbeds.push(new Float32Array(negEmbed.data));
+            const negEmb = await embedText(desc);
+            if (negEmb) {
+              negEmbeds.push(negEmb);
               negativeCount++;
             }
           } catch { /* skip individual negative embedding failures */ }
@@ -400,7 +463,10 @@ export async function initClassifier(): Promise<void> {
       await Promise.race([initWork(), initTimeoutPromise]);
     } catch (error) {
       // Cleanup partial state to prevent memory leak
-      pipeline = null;
+      tokenizer = null;
+      textModel = null;
+      processor = null;
+      visionModel = null;
       textEmbeddings.clear();
       negativeEmbeddings.clear();
       confusionPairMap.clear();
@@ -431,7 +497,7 @@ export async function classifyImage(
   imageUrl: string,
   classroomOverrides?: Map<string, Float32Array>,
 ): Promise<ClassifyResult | null> {
-  if (!initialized || !pipeline) {
+  if (!initialized || !visionModel || !processor) {
     console.warn('[CLIP] Classifier not initialized, skipping classification');
     return null;
   }
@@ -472,26 +538,15 @@ async function classifyImageInternal(
   classroomOverrides?: Map<string, Float32Array>,
 ): Promise<ClassifyResult | null> {
   try {
-    // Use RawImage.fromURL() to properly download, decode, and create an image
-    // tensor that SigLIP's feature-extraction pipeline can process.
-    // Previous approaches failed:
-    //   - Raw Buffer: "Missing inputs: pixel_values" (Buffer not auto-converted)
-    //   - Direct URL string: feature-extraction pipeline treats strings as TEXT input
-    // RawImage handles: fetch → decode → create proper image tensor → resize to 224x224
+    // Use separate SiglipVisionModel + AutoProcessor to compute image embeddings.
+    // The generic pipeline('feature-extraction') defaults to vision encoder for SigLIP
+    // and crashes on text input — so we use separate models for text vs images.
     console.log(`[CLIP] Downloading image via RawImage: ${imageUrl.slice(0, 100)}...`);
-    const transformers = await getTransformersModule();
-    const { RawImage } = transformers;
-    const image = await RawImage.fromURL(imageUrl);
-    console.log(`[CLIP] Image loaded: ${image.width}x${image.height}, computing embedding...`);
-    const imageEmbedding = await pipeline(image, {
-      pooling: 'mean',
-      normalize: true,
-    });
-    if (!imageEmbedding?.data) {
-      console.warn('[CLIP] Pipeline returned null/undefined embedding');
+    const imageVec = await embedImage(imageUrl);
+    if (!imageVec) {
+      console.warn('[CLIP] Vision model returned null/undefined embedding');
       return null;
     }
-    const imageVec = new Float32Array(imageEmbedding.data);
 
     // Stage 1: Classify area
     console.log('[CLIP] Stage 1: Classifying area...');
@@ -730,7 +785,7 @@ export async function classifyImageWithMemory(
 // ============================================================
 
 export function isClassifierReady(): boolean {
-  return initialized && pipeline !== null && textEmbeddings.size > 0;
+  return initialized && tokenizer !== null && textModel !== null && processor !== null && visionModel !== null && textEmbeddings.size > 0;
 }
 
 export function getClassifierStats(): {
