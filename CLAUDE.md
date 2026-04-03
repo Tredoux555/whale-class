@@ -12,7 +12,51 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Apr 1, 2026)
+## CURRENT STATUS (Apr 2, 2026)
+
+### Session Work (Apr 2, 2026 — Health Check Audit Cycles 7-9)
+
+**Security and Reliability Fixes — ✅ PUSHED (commit `6211ed1d`):**
+
+12 files modified across 5 categories of fixes.
+
+**Fix 1: .ilike() SQL Injection Escaping (4 routes):**
+Wildcard characters (`%`, `_`, `\`) passed into Supabase `.ilike()` calls must be escaped to prevent SQL injection. Added `.replace(/[%_\\]/g, '\\$&')` before every `.ilike()` call:
+1. `app/api/montree/guru/corrections/route.ts` — work_name lookup
+2. `app/api/montree/media/batch-retag/route.ts` — work_name lookup
+3. `app/api/montree/guru/photo-insight/route.ts` — 2 locations (CLIP path + two-pass path)
+
+**Fix 2: Missing Auth Guards (2 unauthenticated POST routes):**
+Both routes accepted POST with zero authentication — any unauthenticated request could trigger AI API calls at Montree's cost:
+1. `app/api/montree/social-guru/route.ts` — Added `verifySuperAdminPassword(request)` guard
+2. `app/api/montree/photo-bank/route.ts` — Added `verifySuperAdminPassword(request)` guard
+
+**Fix 3: Error Detail Sanitization (try/instant route):**
+`app/api/montree/try/instant/route.ts` had 5 error handlers that leaked internal debug details to the client (exception message, name, cause, stack, partial steps). All 5 replaced with `console.error(...)` server-side + generic `{ error: 'Unexpected error' }` to client.
+
+**Fix 4: JSON-before-OK Pattern (5 frontend files):**
+`response.json()` was called BEFORE checking `response.ok`, causing crashes when the server returns HTML error pages (500s, 502s) instead of JSON. Fixed all 5:
+1. `components/montree/messaging/MessageComposer.tsx`
+2. `app/montree/principal/register/page.tsx`
+3. `app/montree/admin/teachers/page.tsx`
+4. `app/montree/apply/npo/page.tsx`
+5. `app/montree/apply/reduced-rate/page.tsx`
+
+Pattern: check `if (!response.ok)` first → `await response.json().catch(() => ({}))` in the error branch → then `await response.json()` in the success branch.
+
+**Fix 5: Pre-Auth Rate Limiting (1 route):**
+`app/api/montree/onboarding/route.ts` creates schools during onboarding BEFORE any user account exists, so `verifySchoolRequest()` cannot be used. Added direct `checkRateLimit(request, 'onboarding', 10, 60)` at top of POST handler (10 requests per 60 seconds per IP).
+
+**Deploy:** ✅ PUSHED (commit `6211ed1d`). Railway auto-deploying. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_HEALTH_CHECK_APR2.md`
+
+**⚠️ Audit Cycles SUSPENDED:** User explicitly halted further cycles ("STOP! Stop launching cycles! Enough!"). Cycles 10+ must NOT be resumed without explicit user re-authorization. Further `.ilike()` occurrences and JSON-before-OK patterns may remain in the codebase — to be addressed in a future session if authorized.
+
+**⚠️ Unexpected Model Switch:** Session was discovered to be running on Haiku unexpectedly. All 12 file modifications were completed and pushed to production before discovery. Zero files were modified after the switch was discovered. When starting a new session, verify which model Cowork is using and switch back to Sonnet if needed.
+
+---
+
+## PREVIOUS STATUS (Apr 1, 2026)
 
 ### Session Work (Apr 1, 2026 — Photo Audit Fixes + Teacher Notes Privacy)
 
