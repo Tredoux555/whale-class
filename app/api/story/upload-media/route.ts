@@ -75,14 +75,20 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    await supabase.from('story_message_history').insert({
+    const { error: insertError } = await supabase.from('story_message_history').insert({
       week_start_date: weekStartDate,
       message_type: fileType,
       media_url: mediaUrl,
       media_filename: file.name,
       author: username,
-      expires_at: expiresAt.toISOString()
+      expires_at: expiresAt.toISOString(),
+      is_expired: false,
     });
+
+    if (insertError) {
+      console.error('[Upload Media] DB insert error:', insertError);
+      return NextResponse.json({ error: 'Failed to save media record' }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,
