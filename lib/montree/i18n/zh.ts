@@ -3562,6 +3562,12 @@ export const zh = {
   'audit.rerunResult': 'AI现在认为：',
   'audit.rerunNoMatch': '未识别到工作',
   'audit.rerunRunning': '正在运行AI分类...',
+  'audit.clipTestBtn': '运行CLIP',
+  'audit.clipTestProgress': 'CLIP测试中',
+  'audit.clipTestComplete': 'CLIP测试完成',
+  'audit.clipTestNone': '没有待测试的琥珀色照片',
+  'audit.clipResult': 'CLIP结果：',
+  'audit.clipNoMatch': '未匹配',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',

@@ -461,7 +461,10 @@ export default function PhotoAuditPage() {
   const [showReclassifyConfirm, setShowReclassifyConfirm] = useState(false);
   const reclassifyCancelledRef = useRef(false);
 
-  // Re-run single photo through full pipeline
+  // CLIP batch test state
+  const [clipTesting, setClipTesting] = useState(false);
+  const [clipProgress, setClipProgress] = useState({ current: 0, total: 0, matched: 0, noMatch: 0, errors: 0 });
+  const clipCancelledRef = useRef(false);
   const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
@@ -857,77 +860,111 @@ export default function PhotoAuditPage() {
   };
 
   // ================================================================
-  // RE-RUN SINGLE PHOTO — Run full photo-insight pipeline on an existing photo
-  // Same path as camera capture: CLIP → Haiku → Sonnet fallback
+  // CLIP TEST ALL — Batch run CLIP-only on all amber photos
   // ================================================================
-  const handleRerun = async (photo: AuditPhoto) => {
-    if (!photo.child_id) {
-      toast.error('No child associated with this photo');
+  const amberPhotosForClip = photos.filter(p => p.zone === 'amber' && p.child_id);
+
+  const handleClipTestAll = async () => {
+    clipCancelledRef.current = false;
+    const photosToTest = amberPhotosForClip;
+
+    if (photosToTest.length === 0) {
+      toast.info(t('audit.clipTestNone'));
       return;
     }
-    // Set loading state for this specific photo
-    setRerunResults(prev => ({
-      ...prev,
-      [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: true, error: null },
-    }));
-    try {
-      const res = await fetch('/api/montree/guru/photo-insight', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          media_id: photo.id,
-          child_id: photo.child_id,
-          force_reanalyze: true,
-          force_onboarding: true,
-        }),
-      });
-      if (res.status === 429) {
-        setRerunResults(prev => ({
-          ...prev,
-          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Rate limited' },
-        }));
-        toast.error(t('audit.reclassifyRateLimited'));
-        return;
+
+    setClipTesting(true);
+    setClipProgress({ current: 0, total: photosToTest.length, matched: 0, noMatch: 0, errors: 0 });
+    // Clear previous results
+    setRerunResults({});
+
+    const results = { matched: 0, noMatch: 0, errors: 0 };
+
+    for (let i = 0; i < photosToTest.length; i++) {
+      if (clipCancelledRef.current) {
+        toast.info(`CLIP test cancelled. ${i} of ${photosToTest.length} processed.`);
+        break;
       }
-      if (!res.ok) {
-        setRerunResults(prev => ({
-          ...prev,
-          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Failed' },
-        }));
-        return;
-      }
-      const data = await res.json();
-      const resultWorkName = data.work_name || null;
-      const resultArea = data.area || null;
-      const resultConfidence = data.confidence ?? data.match_score ?? null;
-      const resultScenario = data.scenario || null;
+
+      const photo = photosToTest[i];
+      setClipProgress(prev => ({ ...prev, current: i + 1 }));
+
+      // Set loading state for this photo
       setRerunResults(prev => ({
         ...prev,
-        [photo.id]: { work_name: resultWorkName, area: resultArea, confidence: resultConfidence, scenario: resultScenario, loading: false, error: null },
+        [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: true, error: null },
       }));
 
-      // Also update the photo in local state with the new classification
-      if (resultWorkName) {
-        setPhotos(prev => prev.map(p =>
-          p.id === photo.id
-            ? {
-                ...p,
-                work_name: resultWorkName,
-                area: resultArea || p.area,
-                confidence: resultConfidence ?? p.confidence,
-                zone: (resultConfidence && resultConfidence >= 0.95) ? 'green' as const : 'amber' as const,
-              }
-            : p
-        ));
+      try {
+        const res = await fetch('/api/montree/guru/clip-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id }),
+        });
+
+        if (!res.ok) {
+          results.errors++;
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: `HTTP ${res.status}` },
+          }));
+          continue;
+        }
+
+        const data = await res.json();
+        const clip = data.clipResult;
+
+        if (data.classified && clip) {
+          results.matched++;
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: {
+              work_name: clip.work_name || clip.work_key || null,
+              area: clip.area_key || null,
+              confidence: clip.confidence ?? null,
+              scenario: `CLIP ${data.action}`,
+              loading: false,
+              error: null,
+            },
+          }));
+        } else {
+          results.noMatch++;
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: {
+              work_name: null,
+              area: null,
+              confidence: clip?.confidence ?? null,
+              scenario: data.reason || 'no_match',
+              loading: false,
+              error: null,
+            },
+          }));
+        }
+
+        setClipProgress(prev => ({
+          ...prev,
+          matched: results.matched,
+          noMatch: results.noMatch,
+          errors: results.errors,
+        }));
+      } catch (err) {
+        console.error(`[CLIP Test] Error on photo ${photo.id}:`, err);
+        results.errors++;
+        setRerunResults(prev => ({
+          ...prev,
+          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Network error' },
+        }));
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          toast.error(t('audit.reclassifyNetworkError'));
+          break;
+        }
       }
-    } catch (err) {
-      setRerunResults(prev => ({
-        ...prev,
-        [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Network error' },
-      }));
-      toast.error(t('audit.reclassifyNetworkError'));
     }
+
+    setClipTesting(false);
+    toast.success(t('audit.clipTestComplete') + `: ${results.matched} matched, ${results.noMatch} no match, ${results.errors} errors`);
   };
 
   // ================================================================
@@ -1327,7 +1364,15 @@ export default function PhotoAuditPage() {
               </button>
             ))}
           </div>
-          {nonGreenCount > 0 && !reclassifying && (
+          {amberPhotosForClip.length > 0 && !clipTesting && !reclassifying && (
+            <button
+              onClick={handleClipTestAll}
+              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap"
+            >
+              🔬 {t('audit.clipTestBtn')} ({amberPhotosForClip.length})
+            </button>
+          )}
+          {nonGreenCount > 0 && !reclassifying && !clipTesting && (
             <button
               onClick={() => setShowReclassifyConfirm(true)}
               className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors whitespace-nowrap"
@@ -1336,6 +1381,34 @@ export default function PhotoAuditPage() {
             </button>
           )}
         </div>
+
+        {/* CLIP test progress bar */}
+        {clipTesting && (
+          <div className="mt-2 p-2 bg-indigo-50 rounded-lg border border-indigo-200">
+            <div className="flex items-center justify-between text-xs text-indigo-700 mb-1">
+              <span className="font-medium">
+                {t('audit.clipTestProgress')} {clipProgress.current}/{clipProgress.total}...
+              </span>
+              <button
+                onClick={() => { clipCancelledRef.current = true; }}
+                className="px-2 py-0.5 rounded text-xs bg-white text-gray-600 border hover:bg-gray-50"
+              >
+                {t('audit.reclassifyCancel') || 'Cancel'}
+              </button>
+            </div>
+            <div className="w-full bg-indigo-100 rounded-full h-2">
+              <div
+                className="bg-indigo-500 rounded-full h-2 transition-all duration-300"
+                style={{ width: `${clipProgress.total > 0 ? Math.round((clipProgress.current / clipProgress.total) * 100) : 0}%` }}
+              />
+            </div>
+            <div className="flex gap-3 mt-1 text-[10px] text-gray-500">
+              <span className="text-emerald-600">{clipProgress.matched} matched</span>
+              <span className="text-gray-500">{clipProgress.noMatch} no match</span>
+              {clipProgress.errors > 0 && <span className="text-red-500">{clipProgress.errors} errors</span>}
+            </div>
+          </div>
+        )}
 
         {/* Reclassify progress bar (shown during batch processing) */}
         {reclassifying && (
@@ -1397,7 +1470,6 @@ export default function PhotoAuditPage() {
               onUseAsReference={() => handleTeachAI(photo)}
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
-              onRerun={() => handleRerun(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
@@ -1739,7 +1811,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onRerun, rerunResult, onSaveNote, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onSaveNote, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1748,7 +1820,6 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
-  onRerun: () => void;
   rerunResult: { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null } | null;
   onSaveNote: (caption: string) => void;
   processing: boolean;
@@ -1851,26 +1922,29 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
           {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
         </div>
-        {/* Re-run result display */}
+        {/* CLIP result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
-          <div className="mt-1 p-1.5 rounded bg-violet-50 border border-violet-200">
-            <p className="text-[9px] font-semibold text-violet-600 mb-0.5">{t('audit.rerunResult')}</p>
+          <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
+            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">{t('audit.clipResult')}</p>
             {rerunResult.work_name ? (
               <>
-                <p className="text-[10px] font-medium text-violet-800 truncate">{rerunResult.work_name}</p>
-                <p className="text-[9px] text-violet-500">
+                <p className="text-[10px] font-medium text-indigo-800 truncate">{rerunResult.work_name}</p>
+                <p className="text-[9px] text-indigo-500">
                   {rerunResult.area && <span className="capitalize">{rerunResult.area.replace(/_/g, ' ')}</span>}
                   {rerunResult.confidence !== null && <span> · {Math.round(rerunResult.confidence * 100)}%</span>}
                 </p>
               </>
             ) : (
-              <p className="text-[10px] text-violet-500 italic">{t('audit.rerunNoMatch')}</p>
+              <p className="text-[10px] text-indigo-500 italic">
+                {t('audit.clipNoMatch')}
+                {rerunResult.confidence !== null && ` (${Math.round(rerunResult.confidence * 100)}%)`}
+              </p>
             )}
           </div>
         )}
         {rerunResult?.loading && (
-          <div className="mt-1 p-1.5 rounded bg-violet-50 border border-violet-200">
-            <p className="text-[10px] text-violet-600 animate-pulse">{t('audit.rerunRunning')}</p>
+          <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
+            <p className="text-[10px] text-indigo-600 animate-pulse">{t('audit.rerunRunning')}</p>
           </div>
         )}
         {rerunResult?.error && (
@@ -1905,14 +1979,6 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               🧠 {t('audit.teach')}
             </button>
           )}
-          <button
-            onClick={onRerun}
-            disabled={processing || (rerunResult?.loading ?? false)}
-            className="text-[10px] py-1 px-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
-            title={t('audit.rerunTitle')}
-          >
-            {rerunResult?.loading ? '...' : `🔄`}
-          </button>
           <button
             onClick={onDelete}
             disabled={processing}
