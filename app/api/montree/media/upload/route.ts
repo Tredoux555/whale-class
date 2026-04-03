@@ -147,14 +147,14 @@ export async function POST(request: NextRequest) {
       .from('montree_media')
       .insert(mediaRecord)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (dbError) {
-      console.error('DB error:', dbError.message, dbError.code);
+    if (dbError || !media) {
+      console.error('DB error:', dbError?.message, dbError?.code);
       // Try to clean up uploaded file
       await supabase.storage.from('montree-media').remove([storagePath]);
       return NextResponse.json({
-        error: 'Database error'
+        error: 'Insert failed'
       }, { status: 500 });
     }
 

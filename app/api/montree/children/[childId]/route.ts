@@ -134,9 +134,9 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       .update(updates)
       .eq('id', childId)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (updateError) {
+    if (updateError || !updatedChild) {
       console.error('Update child error:', updateError);
       return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
