@@ -882,7 +882,7 @@ export default function PhotoAuditPage() {
 
     for (let i = 0; i < photosToTest.length; i++) {
       if (clipCancelledRef.current) {
-        toast.info(`CLIP test cancelled. ${i} of ${photosToTest.length} processed.`);
+        toast.info(t('audit.clipTestCancelled') || `CLIP test cancelled. ${i} of ${photosToTest.length} processed.`);
         break;
       }
 
@@ -909,20 +909,33 @@ export default function PhotoAuditPage() {
             ...prev,
             [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: `HTTP ${res.status}` },
           }));
+          setClipProgress(prev => ({ ...prev, errors: results.errors }));
           continue;
         }
 
-        const data = await res.json();
-        const clip = data.clipResult;
+        let data: Record<string, unknown>;
+        try {
+          data = await res.json();
+        } catch {
+          results.errors++;
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'JSON error' },
+          }));
+          setClipProgress(prev => ({ ...prev, errors: results.errors }));
+          continue;
+        }
+
+        const clip = data.clipResult as Record<string, unknown> | null;
 
         if (data.classified && clip) {
           results.matched++;
           setRerunResults(prev => ({
             ...prev,
             [photo.id]: {
-              work_name: clip.work_name || clip.work_key || null,
-              area: clip.area_key || null,
-              confidence: clip.confidence ?? null,
+              work_name: (clip.work_name as string) || (clip.work_key as string) || null,
+              area: (clip.area_key as string) || null,
+              confidence: (clip.confidence as number) ?? null,
               scenario: `CLIP ${data.action}`,
               loading: false,
               error: null,
@@ -935,8 +948,8 @@ export default function PhotoAuditPage() {
             [photo.id]: {
               work_name: null,
               area: null,
-              confidence: clip?.confidence ?? null,
-              scenario: data.reason || 'no_match',
+              confidence: (clip?.confidence as number) ?? null,
+              scenario: (data.reason as string) || 'no_match',
               loading: false,
               error: null,
             },
