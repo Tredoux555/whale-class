@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const [mediaRes, childRes] = await Promise.all([
       supabase
         .from('montree_media')
-        .select('url, storage_path')
+        .select('storage_path')
         .eq('id', media_id)
         .maybeSingle(),
       supabase
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     // CRITICAL: Convert storage_path to full public URL for CLIP pipeline
     // (same pattern as photo-insight/route.ts — raw paths won't work)
     const storagePath = mediaRes.data.storage_path;
-    const photoUrl = mediaRes.data.url || (storagePath ? getPublicUrl('montree-media', storagePath) : null);
+    const photoUrl = storagePath ? getPublicUrl('montree-media', storagePath) : null;
     const classroomId = childRes.data.classroom_id;
 
     if (!photoUrl) {
