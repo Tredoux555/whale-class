@@ -24,19 +24,19 @@ const MEDIA_CONFIG = {
   },
   image: {
     mimePrefix: 'image/',
-    allowedExts: [],
-    allowedMimes: [],
+    allowedExts: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'bmp', 'svg'],
+    allowedMimes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif', 'image/bmp', 'image/svg+xml'],
     maxSize: 10 * 1024 * 1024, // 10MB
     defaultExt: 'jpg',
-    filenamePrefix: 'admin',
+    filenamePrefix: 'admin_img',
   },
   video: {
     mimePrefix: 'video/',
-    allowedExts: [],
-    allowedMimes: [],
+    allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v'],
+    allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v'],
     maxSize: 100 * 1024 * 1024, // 100MB
     defaultExt: 'mp4',
-    filenamePrefix: 'video',
+    filenamePrefix: 'admin_video',
   },
 } as const;
 
@@ -205,7 +205,7 @@ export async function POST(req: NextRequest) {
       message_type: mediaType,
       message_content: encryptedCaption,
       media_url: mediaUrl,
-      media_filename: mediaType === 'image' ? filename : file.name,
+      media_filename: file.name || filename,
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
