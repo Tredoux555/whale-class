@@ -461,6 +461,9 @@ export default function PhotoAuditPage() {
   const [showReclassifyConfirm, setShowReclassifyConfirm] = useState(false);
   const reclassifyCancelledRef = useRef(false);
 
+  // Re-run single photo through full pipeline
+  const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
+
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
   const curriculumAbortRef = useRef<AbortController | null>(null);
@@ -850,6 +853,80 @@ export default function PhotoAuditPage() {
       toast.success(t('audit.batchComplete'));
     } else {
       toast.error(t('audit.batchPartial', { succeeded, total: ids.length }));
+    }
+  };
+
+  // ================================================================
+  // RE-RUN SINGLE PHOTO — Run full photo-insight pipeline on an existing photo
+  // Same path as camera capture: CLIP → Haiku → Sonnet fallback
+  // ================================================================
+  const handleRerun = async (photo: AuditPhoto) => {
+    if (!photo.child_id) {
+      toast.error('No child associated with this photo');
+      return;
+    }
+    // Set loading state for this specific photo
+    setRerunResults(prev => ({
+      ...prev,
+      [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: true, error: null },
+    }));
+    try {
+      const res = await fetch('/api/montree/guru/photo-insight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          media_id: photo.id,
+          child_id: photo.child_id,
+          force_reanalyze: true,
+          force_onboarding: true,
+        }),
+      });
+      if (res.status === 429) {
+        setRerunResults(prev => ({
+          ...prev,
+          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Rate limited' },
+        }));
+        toast.error(t('audit.reclassifyRateLimited'));
+        return;
+      }
+      if (!res.ok) {
+        setRerunResults(prev => ({
+          ...prev,
+          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Failed' },
+        }));
+        return;
+      }
+      const data = await res.json();
+      const resultWorkName = data.work_name || null;
+      const resultArea = data.area || null;
+      const resultConfidence = data.confidence ?? data.match_score ?? null;
+      const resultScenario = data.scenario || null;
+      setRerunResults(prev => ({
+        ...prev,
+        [photo.id]: { work_name: resultWorkName, area: resultArea, confidence: resultConfidence, scenario: resultScenario, loading: false, error: null },
+      }));
+
+      // Also update the photo in local state with the new classification
+      if (resultWorkName) {
+        setPhotos(prev => prev.map(p =>
+          p.id === photo.id
+            ? {
+                ...p,
+                work_name: resultWorkName,
+                area: resultArea || p.area,
+                confidence: resultConfidence ?? p.confidence,
+                zone: (resultConfidence && resultConfidence >= 0.95) ? 'green' as const : 'amber' as const,
+              }
+            : p
+        ));
+      }
+    } catch (err) {
+      setRerunResults(prev => ({
+        ...prev,
+        [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Network error' },
+      }));
+      toast.error(t('audit.reclassifyNetworkError'));
     }
   };
 
@@ -1320,6 +1397,8 @@ export default function PhotoAuditPage() {
               onUseAsReference={() => handleTeachAI(photo)}
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
+              onRerun={() => handleRerun(photo)}
+              rerunResult={rerunResults[photo.id] || null}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               t={t}
@@ -1660,7 +1739,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onSaveNote, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onRerun, rerunResult, onSaveNote, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1669,6 +1748,8 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
+  onRerun: () => void;
+  rerunResult: { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null } | null;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   t: (key: string) => string;
@@ -1770,6 +1851,33 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
           {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
         </div>
+        {/* Re-run result display */}
+        {rerunResult && !rerunResult.loading && !rerunResult.error && (
+          <div className="mt-1 p-1.5 rounded bg-violet-50 border border-violet-200">
+            <p className="text-[9px] font-semibold text-violet-600 mb-0.5">{t('audit.rerunResult')}</p>
+            {rerunResult.work_name ? (
+              <>
+                <p className="text-[10px] font-medium text-violet-800 truncate">{rerunResult.work_name}</p>
+                <p className="text-[9px] text-violet-500">
+                  {rerunResult.area && <span className="capitalize">{rerunResult.area.replace(/_/g, ' ')}</span>}
+                  {rerunResult.confidence !== null && <span> · {Math.round(rerunResult.confidence * 100)}%</span>}
+                </p>
+              </>
+            ) : (
+              <p className="text-[10px] text-violet-500 italic">{t('audit.rerunNoMatch')}</p>
+            )}
+          </div>
+        )}
+        {rerunResult?.loading && (
+          <div className="mt-1 p-1.5 rounded bg-violet-50 border border-violet-200">
+            <p className="text-[10px] text-violet-600 animate-pulse">{t('audit.rerunRunning')}</p>
+          </div>
+        )}
+        {rerunResult?.error && (
+          <div className="mt-1 p-1.5 rounded bg-red-50 border border-red-200">
+            <p className="text-[10px] text-red-500">{rerunResult.error}</p>
+          </div>
+        )}
         <div className="flex gap-1 mt-1.5">
           {photo.zone !== 'green' && photo.work_id && (
             <button
@@ -1797,6 +1905,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               🧠 {t('audit.teach')}
             </button>
           )}
+          <button
+            onClick={onRerun}
+            disabled={processing || (rerunResult?.loading ?? false)}
+            className="text-[10px] py-1 px-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
+            title={t('audit.rerunTitle')}
+          >
+            {rerunResult?.loading ? '...' : `🔄`}
+          </button>
           <button
             onClick={onDelete}
             disabled={processing}

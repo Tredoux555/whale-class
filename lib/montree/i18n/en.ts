@@ -3557,6 +3557,10 @@ export const en = {
   'audit.reclassifyComplete': 'Reclassification complete!',
   'audit.reclassifyRateLimited': 'Rate limited — try again in a few minutes',
   'audit.reclassifyNetworkError': 'Connection lost',
+  'audit.rerunTitle': 'Re-run AI classification on this photo',
+  'audit.rerunResult': 'AI now thinks:',
+  'audit.rerunNoMatch': 'No work identified',
+  'audit.rerunRunning': 'Running AI classification...',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

@@ -3558,6 +3558,10 @@ export const zh = {
   'audit.reclassifyComplete': '重新分类完成！',
   'audit.reclassifyRateLimited': '已限速——请几分钟后重试',
   'audit.reclassifyNetworkError': '网络连接断开',
+  'audit.rerunTitle': '重新运行AI分类',
+  'audit.rerunResult': 'AI现在认为：',
+  'audit.rerunNoMatch': '未识别到工作',
+  'audit.rerunRunning': '正在运行AI分类...',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': '训练AI',
