@@ -2073,17 +2073,8 @@ Match this description to the correct Montessori work. Use the visual identifica
           visual_description: visualDescription.slice(0, 500),
           two_pass: true,
           suggested_crop: input.suggested_crop ?? null,
-          // CLIP diagnostic data (present when CLIP was attempted but fell through)
-          clip_attempted: !!clipDecision,
-          clip_action: clipDecision?.action ?? null,
-          clip_reason: clipDecision?.reason ?? null,
-          clip_confidence: clipDecision?.clipResult?.confidence ?? null,
-          clip_raw_confidence: clipDecision?.clipResult?.raw_confidence ?? null,
-          clip_work_name: clipDecision?.clipResult?.work_name ?? null,
-          // Misclassification tracking (Step 5 — also in two-pass fallback for diagnostic completeness)
-          negative_penalty_applied: clipDecision?.clipResult?.negative_penalty_applied ?? false,
-          confusion_pair_matched: clipDecision?.clipResult?.confusion_pair_matched ?? null,
-          differentiation_injected: false, // CLIP not used in two-pass fallback path
+          // CLIP removed Apr 4, 2026 — SigLIP unable to discriminate 329 works
+          clip_attempted: false,
           custom_work_proposal: customWorkProposal, // null if not generated or failed
           onboarding_mode: isOnboardingMode,
           onboarding_sonnet_used: useOnboardingPath && modelUsed === AI_MODEL,
