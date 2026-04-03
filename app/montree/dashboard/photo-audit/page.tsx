@@ -1296,7 +1296,9 @@ export default function PhotoAuditPage() {
 
   const selectAllVisible = () => {
     const visible = filteredPhotos.map(p => p.id);
-    setSelectedIds(new Set(visible));
+    // Toggle: if all are selected, deselect; otherwise select all
+    const allSelected = visible.every(id => selectedIds.has(id));
+    setSelectedIds(allSelected ? new Set() : new Set(visible));
   };
 
   const clearSelection = () => setSelectedIds(new Set());
@@ -1389,10 +1391,11 @@ export default function PhotoAuditPage() {
             <div className="flex items-center gap-1 flex-shrink-0">
               <button
                 onClick={selectAllVisible}
-                className="px-2 py-1.5 rounded-l-full text-sm font-medium bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors whitespace-nowrap border border-indigo-200"
-                title="Select All"
+                className="px-3 py-1.5 rounded-l-full text-sm font-medium bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors whitespace-nowrap border border-indigo-200"
               >
-                ☑️
+                {clipEligiblePhotos.every(p => selectedIds.has(p.id)) && selectedIds.size > 0
+                  ? 'Deselect All'
+                  : 'Select All'}
               </button>
               <button
                 onClick={handleClipTestAll}
@@ -1525,33 +1528,6 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Batch action bar */}
-      {selectedIds.size > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg px-4 py-3 z-20">
-          <div className="flex items-center justify-between max-w-2xl mx-auto">
-            <span className="text-sm font-medium">
-              {t('audit.selected', { count: selectedIds.size })}
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={clearSelection}
-                className="px-3 py-1.5 text-sm rounded border text-gray-600"
-              >
-                {t('audit.clearSelection')}
-              </button>
-              <button
-                onClick={handleBatchConfirm}
-                disabled={batchProcessing}
-                className="px-3 py-1.5 text-sm rounded bg-emerald-600 text-white disabled:opacity-50"
-              >
-                {batchProcessing
-                  ? `${batchProgress.current}/${batchProgress.total}...`
-                  : t('audit.confirmSelected')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Select All bar (when no selection) */}
       {selectedIds.size === 0 && filteredPhotos.length > 0 && !loading && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-20">
