@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       const trimmedMessage = message.trim();
       const encryptedMessage = encryptMessage(trimmedMessage);
 
-      await supabase.from('story_message_history').insert({
+      const { error: textInsertError } = await supabase.from('story_message_history').insert({
         week_start_date: weekStartDate,
         message_type: 'text',
         message_content: encryptedMessage,
@@ -112,6 +112,11 @@ export async function POST(req: NextRequest) {
         expires_at: expiresAt.toISOString(),
         is_expired: false,
       });
+
+      if (textInsertError) {
+        console.error('[Send] Text message DB insert failed:', textInsertError);
+        return NextResponse.json({ error: 'Failed to save message' }, { status: 500 });
+      }
 
       // Upsert current week's secret story
       const { data: existing } = await supabase
@@ -184,7 +189,7 @@ export async function POST(req: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from('story-uploads')
       .upload(filePath, arrayBuffer, {
-        contentType: file.type || `${config.mimePrefix}*`,
+        contentType: file.type || `${config.mimePrefix}${config.defaultExt}`,
         upsert: false,
       });
 
@@ -200,7 +205,7 @@ export async function POST(req: NextRequest) {
     const mediaUrl = urlData.publicUrl;
     const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
 
-    await supabase.from('story_message_history').insert({
+    const { error: mediaInsertError } = await supabase.from('story_message_history').insert({
       week_start_date: weekStartDate,
       message_type: mediaType,
       message_content: encryptedCaption,
@@ -210,6 +215,11 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt.toISOString(),
       is_expired: false,
     });
+
+    if (mediaInsertError) {
+      console.error('[Send] Media message DB insert failed:', mediaInsertError);
+      return NextResponse.json({ error: 'Failed to save media message' }, { status: 500 });
+    }
 
     return NextResponse.json({
       success: true,

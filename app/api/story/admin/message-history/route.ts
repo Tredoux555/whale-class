@@ -55,13 +55,14 @@ export async function GET(req: NextRequest) {
       // Handle both column names: content OR message_content
       let content = row.content || row.message_content || null;
       
-      if (row.message_type === 'text' && content) {
+      // Decrypt ALL message content — text messages AND media captions are encrypted
+      if (content) {
         try {
           content = decryptMessage(content);
         } catch (e) {
-          console.error('[MessageHistory] Decrypt failed:', e);
-          // Return raw content if decryption fails (might not be encrypted)
-          content = row.content || row.message_content || '[Content unavailable]';
+          console.error('[MessageHistory] Decrypt failed for', row.message_type, ':', e);
+          // Return raw content if decryption fails (might be plaintext from before encryption)
+          content = row.content || row.message_content || '';
         }
       }
 
