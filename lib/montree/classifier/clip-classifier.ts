@@ -141,9 +141,29 @@ async function embedText(text: string): Promise<Float32Array | null> {
   if (!tokenizer || !textModel) return null;
   try {
     const inputs = tokenizer(text, { padding: 'max_length', truncation: true });
-    const { pooler_output } = await textModel(inputs);
-    if (!pooler_output?.data) return null;
-    return l2Normalize(new Float32Array(pooler_output.data));
+    const result = await textModel(inputs);
+    // SiglipTextModel may return pooler_output or only last_hidden_state depending on version
+    const embedding = result.pooler_output ?? result.text_embeds ?? result.last_hidden_state;
+    if (!embedding?.data) {
+      console.warn('[CLIP] embedText: no usable output key. Available keys:', Object.keys(result));
+      return null;
+    }
+    // If we got last_hidden_state (3D: [batch, seq, hidden]), mean-pool across seq dimension
+    if (embedding.dims?.length === 3) {
+      const [, seqLen, hiddenSize] = embedding.dims;
+      const data = embedding.data;
+      const pooled = new Float32Array(hiddenSize);
+      for (let i = 0; i < seqLen; i++) {
+        for (let j = 0; j < hiddenSize; j++) {
+          pooled[j] += data[i * hiddenSize + j];
+        }
+      }
+      for (let j = 0; j < hiddenSize; j++) {
+        pooled[j] /= seqLen;
+      }
+      return l2Normalize(pooled);
+    }
+    return l2Normalize(new Float32Array(embedding.data));
   } catch (err) {
     console.warn('[CLIP] embedText error:', err instanceof Error ? err.message : String(err));
     return null;
@@ -156,14 +176,39 @@ async function embedText(text: string): Promise<Float32Array | null> {
 
 async function embedImage(imageUrl: string): Promise<Float32Array | null> {
   if (!processor || !visionModel) return null;
-  const transformers = await getTransformersModule();
-  const { RawImage } = transformers;
-  const image = await RawImage.fromURL(imageUrl);
-  console.log(`[CLIP] Image loaded: ${image.width}x${image.height}, computing embedding...`);
-  const imageInputs = await processor(image);
-  const { pooler_output } = await visionModel(imageInputs);
-  if (!pooler_output?.data) return null;
-  return l2Normalize(new Float32Array(pooler_output.data));
+  try {
+    const transformers = await getTransformersModule();
+    const { RawImage } = transformers;
+    const image = await RawImage.fromURL(imageUrl);
+    console.log(`[CLIP] Image loaded: ${image.width}x${image.height}, computing embedding...`);
+    const imageInputs = await processor(image);
+    const result = await visionModel(imageInputs);
+    // SiglipVisionModel may return pooler_output, image_embeds, or only last_hidden_state
+    const embedding = result.pooler_output ?? result.image_embeds ?? result.last_hidden_state;
+    if (!embedding?.data) {
+      console.warn('[CLIP] embedImage: no usable output key. Available keys:', Object.keys(result));
+      return null;
+    }
+    // If we got last_hidden_state (3D: [batch, patches, hidden]), mean-pool across patches
+    if (embedding.dims?.length === 3) {
+      const [, patchCount, hiddenSize] = embedding.dims;
+      const data = embedding.data;
+      const pooled = new Float32Array(hiddenSize);
+      for (let i = 0; i < patchCount; i++) {
+        for (let j = 0; j < hiddenSize; j++) {
+          pooled[j] += data[i * hiddenSize + j];
+        }
+      }
+      for (let j = 0; j < hiddenSize; j++) {
+        pooled[j] /= patchCount;
+      }
+      return l2Normalize(pooled);
+    }
+    return l2Normalize(new Float32Array(embedding.data));
+  } catch (err) {
+    console.error('[CLIP] embedImage error:', err instanceof Error ? err.message : String(err));
+    return null;
+  }
 }
 
 // NOTE: downloadImageAsBuffer() removed — no longer needed after switching to RawImage.fromURL()
@@ -379,6 +424,19 @@ export async function initClassifier(): Promise<void> {
       visionModel = await SiglipVisionModel.from_pretrained(CLIP_MODEL);
       console.log('[CLIP] Vision model loaded successfully');
 
+      // Diagnostic: log output keys from both models so we know which keys to use
+      try {
+        const testTextInputs = tokenizer('test', { padding: 'max_length', truncation: true });
+        const testTextResult = await textModel(testTextInputs);
+        console.log('[CLIP] Text model output keys:', Object.keys(testTextResult));
+        for (const key of Object.keys(testTextResult)) {
+          const val = testTextResult[key];
+          if (val?.dims) console.log(`[CLIP]   ${key}: dims=${JSON.stringify(val.dims)}, dtype=${val.type}`);
+        }
+      } catch (err) {
+        console.warn('[CLIP] Text model diagnostic failed:', err instanceof Error ? err.message : String(err));
+      }
+
       // Pre-compute text embeddings for areas using rich AREA_SIGNATURES descriptions
       console.log('[CLIP] Pre-computing area embeddings...');
       for (const area of areas) {
@@ -454,9 +512,21 @@ export async function initClassifier(): Promise<void> {
       }
       console.log(`[CLIP] Pre-computed ${negativeCount} negative embeddings across ${negativeEmbeddings.size} works`);
 
+      // CRITICAL GUARD: If we computed zero embeddings, init is broken — fail loudly
+      // This prevents the silent "init succeeds but everything returns null" failure mode
+      if (areaEmbeddings.size === 0) {
+        throw new Error(`CLIP init produced 0 area embeddings (expected 5). embedText() is likely returning null — check text model output keys above.`);
+      }
+      if (textEmbeddings.size === 0) {
+        throw new Error(`CLIP init produced 0 work embeddings (expected ~270). embedText() is likely returning null — check text model output keys above.`);
+      }
+      if (textEmbeddings.size < 100) {
+        console.warn(`[CLIP] WARNING: Only ${textEmbeddings.size} work embeddings computed (expected ~270) — some works will be unrecognizable`);
+      }
+
       initialized = true;
       const elapsed = Date.now() - startTime;
-      console.log(`[CLIP] Initialization complete (${elapsed}ms)`);
+      console.log(`[CLIP] Initialization complete (${elapsed}ms) — ${areaEmbeddings.size} areas, ${textEmbeddings.size} works, ${negativeEmbeddings.size} negative sets`);
     };
 
     try {
@@ -541,12 +611,14 @@ async function classifyImageInternal(
     // Use separate SiglipVisionModel + AutoProcessor to compute image embeddings.
     // The generic pipeline('feature-extraction') defaults to vision encoder for SigLIP
     // and crashes on text input — so we use separate models for text vs images.
+    console.log(`[CLIP] classifyImageInternal — embeddings available: ${textEmbeddings.size} works, ${areaEmbeddings.size} areas`);
     console.log(`[CLIP] Downloading image via RawImage: ${imageUrl.slice(0, 100)}...`);
     const imageVec = await embedImage(imageUrl);
     if (!imageVec) {
-      console.warn('[CLIP] Vision model returned null/undefined embedding');
+      console.warn('[CLIP] Vision model returned null/undefined embedding — image download or model inference failed');
       return null;
     }
+    console.log(`[CLIP] Image embedding computed: ${imageVec.length} dimensions`);
 
     // Stage 1: Classify area
     console.log('[CLIP] Stage 1: Classifying area...');

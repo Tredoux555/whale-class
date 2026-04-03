@@ -19,6 +19,7 @@ import {
   isClassifierReady,
   initClassifier,
   resetInitError,
+  getClassifierStats,
   type ClassifyResult,
   type VisualMemory,
 } from './clip-classifier';
@@ -203,12 +204,15 @@ export function isClipAvailable(): boolean {
 
 /** Get diagnostic info */
 export function getClipDiagnostics(): Record<string, unknown> {
+  const stats = getClassifierStats();
   return {
     enabled: CLIP_ENABLED,
     canary_percent: CANARY_PERCENT,
     ready: isClassifierReady(),
     init_attempted: initAttempted,
     init_failed: initFailed,
+    init_attempt_count: initAttemptCount,
+    classifier_stats: stats,
     thresholds: {
       confident: CLIP_CONFIDENT,
       very_confident: CLIP_VERY_CONFIDENT,
