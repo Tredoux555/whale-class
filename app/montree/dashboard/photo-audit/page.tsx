@@ -904,10 +904,16 @@ export default function PhotoAuditPage() {
         });
 
         if (!res.ok) {
+          let errMsg = `HTTP ${res.status}`;
+          try {
+            const errData = await res.json();
+            errMsg = errData.error || errMsg;
+            if (errData.dbError) errMsg += ` (${errData.dbError})`;
+          } catch { /* ignore */ }
           results.errors++;
           setRerunResults(prev => ({
             ...prev,
-            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: `HTTP ${res.status}` },
+            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: errMsg },
           }));
           setClipProgress(prev => ({ ...prev, errors: results.errors }));
           continue;

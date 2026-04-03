@@ -63,10 +63,12 @@ export async function POST(request: NextRequest) {
     ]);
 
     if (mediaRes.error || !mediaRes.data) {
-      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
+      console.error('[CLIP Test] Photo not found:', media_id, 'error:', mediaRes.error?.message);
+      return NextResponse.json({ error: 'Photo not found', media_id, dbError: mediaRes.error?.message ?? null }, { status: 422 });
     }
     if (childRes.error || !childRes.data) {
-      return NextResponse.json({ error: 'Child not found' }, { status: 404 });
+      console.error('[CLIP Test] Child not found:', child_id, 'schoolId:', schoolId, 'error:', childRes.error?.message);
+      return NextResponse.json({ error: 'Child not found', child_id, schoolId, dbError: childRes.error?.message ?? null }, { status: 422 });
     }
 
     // CRITICAL: Convert storage_path to full public URL for CLIP pipeline
