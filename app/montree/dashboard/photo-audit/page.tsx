@@ -860,13 +860,15 @@ export default function PhotoAuditPage() {
   };
 
   // ================================================================
-  // CLIP TEST ALL — Batch run CLIP-only on all amber photos
+  // CLIP TEST — Run CLIP-only on selected photos (or all non-green if none selected)
   // ================================================================
-  const amberPhotosForClip = photos.filter(p => p.zone === 'amber' && p.child_id);
+  const clipEligiblePhotos = photos.filter(p => p.zone !== 'green' && p.child_id);
+  const clipSelectedPhotos = clipEligiblePhotos.filter(p => selectedIds.has(p.id));
+  const photosForClip = clipSelectedPhotos.length > 0 ? clipSelectedPhotos : clipEligiblePhotos;
 
   const handleClipTestAll = async () => {
     clipCancelledRef.current = false;
-    const photosToTest = amberPhotosForClip;
+    const photosToTest = photosForClip;
 
     if (photosToTest.length === 0) {
       toast.info(t('audit.clipTestNone'));
@@ -1383,21 +1385,22 @@ export default function PhotoAuditPage() {
               </button>
             ))}
           </div>
-          {amberPhotosForClip.length > 0 && !clipTesting && !reclassifying && (
-            <button
-              onClick={handleClipTestAll}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap"
-            >
-              🔬 {t('audit.clipTestBtn')} ({amberPhotosForClip.length})
-            </button>
-          )}
-          {nonGreenCount > 0 && !reclassifying && !clipTesting && (
-            <button
-              onClick={() => setShowReclassifyConfirm(true)}
-              className="flex-shrink-0 px-3 py-1.5 rounded-full text-sm font-medium bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors whitespace-nowrap"
-            >
-              🔄 {t('audit.reclassifyAll') || 'Reclassify All'}
-            </button>
+          {clipEligiblePhotos.length > 0 && !clipTesting && !reclassifying && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <button
+                onClick={selectAllVisible}
+                className="px-2 py-1.5 rounded-l-full text-sm font-medium bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors whitespace-nowrap border border-indigo-200"
+                title="Select All"
+              >
+                ☑️
+              </button>
+              <button
+                onClick={handleClipTestAll}
+                className="px-3 py-1.5 rounded-r-full text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap border border-indigo-200 border-l-0"
+              >
+                🔬 Run CLIP ({selectedIds.size > 0 ? selectedIds.size : photosForClip.length})
+              </button>
+            </div>
           )}
         </div>
 
@@ -1643,35 +1646,7 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Reclassify Confirmation Dialog */}
-      {showReclassifyConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowReclassifyConfirm(false)}>
-          <div className="bg-white rounded-xl p-5 max-w-sm w-full" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-2">{t('audit.reclassifyConfirm') || 'Reclassify Photos'}</h3>
-            <p className="text-sm text-gray-600 mb-3">
-              {t('audit.reclassifyDescription') || `This will reclassify ${nonGreenCount} photos using Sonnet vision.`}
-            </p>
-            <div className="space-y-1 text-sm text-gray-500 mb-4">
-              <p>{t('audit.reclassifyCost') || 'Estimated cost'}: ~${estimatedCost}</p>
-              <p>{t('audit.reclassifyTime') || 'Estimated time'}: ~{estimatedMinutes} {t('audit.minutes') || 'minutes'}</p>
-              <p className="text-xs text-gray-400">{t('audit.reclassifyCancelNote') || 'You can cancel anytime — progress is saved.'}</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleReclassifyAll}
-                className="flex-1 py-2 rounded-lg bg-violet-600 text-white font-medium text-sm hover:bg-violet-700"
-              >
-                {t('audit.reclassifyStart') || 'Start Reclassifying'}
-              </button>
-              <button
-                onClick={() => setShowReclassifyConfirm(false)}
-                className="flex-1 py-2 rounded-lg border text-gray-600 font-medium text-sm hover:bg-gray-50"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Reclassify All modal removed — use CLIP with photo selection instead */}
 
       {/* PhotoCropModal */}
       {cropPhoto && cropPhoto.url && (
