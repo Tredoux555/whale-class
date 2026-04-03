@@ -1,18 +1,44 @@
 // /montree/dashboard/notes/page.tsx
 // Dedicated page for classroom teacher notes + voice recording
+// Teachers can write class-wide notes or tag a specific child
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, recoverSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { montreeApi } from '@/lib/montree/api';
 import TeacherNotes from '@/components/montree/TeacherNotes';
+
+interface Child {
+  id: string;
+  name: string;
+}
 
 export default function NotesPage() {
   const router = useRouter();
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const [children, setChildren] = useState<Child[]>([]);
+
+  const fetchChildren = useCallback(async (classId: string) => {
+    try {
+      const res = await montreeApi(`/api/montree/children?classroom_id=${classId}`);
+      if (res.ok) {
+        const data = await res.json();
+        const kids: Child[] = (data.children || []).map((c: Record<string, unknown>) => ({
+          id: c.id as string,
+          name: c.name as string,
+        }));
+        // Sort alphabetically
+        kids.sort((a, b) => a.name.localeCompare(b.name));
+        setChildren(kids);
+      }
+    } catch {
+      // Silent fail — notes still work without children list
+    }
+  }, []);
 
   useEffect(() => {
     async function init() {
@@ -24,9 +50,15 @@ export default function NotesPage() {
       }
       setSession(s);
       setLoading(false);
+
+      // Fetch children for the child tag selector
+      const classId = s.classroom?.id;
+      if (classId) {
+        fetchChildren(classId);
+      }
     }
     init();
-  }, [router]);
+  }, [router, fetchChildren]);
 
   if (loading || !session) {
     return (
@@ -66,6 +98,7 @@ export default function NotesPage() {
           classroomId={classroomId}
           teacherId={teacherId}
           teacherName={teacherName}
+          children={children}
         />
       </div>
     </div>

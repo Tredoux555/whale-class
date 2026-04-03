@@ -16,16 +16,24 @@ import {
   deliverTranscript,
 } from '@/lib/montree/background-task-store';
 
+interface Child {
+  id: string;
+  name: string;
+}
+
 interface TeacherNotesProps {
   classroomId: string;
   teacherId: string;
   teacherName: string;
+  children?: Child[];
 }
 
 interface Note {
   id: string;
   teacher_id: string;
   teacher_name: string;
+  child_id: string | null;
+  child_name: string | null;
   content: string;
   transcription: string | null;
   created_at: string;
@@ -33,12 +41,13 @@ interface Note {
 
 type MicState = 'idle' | 'recording';
 
-export default function TeacherNotes({ classroomId, teacherId, teacherName }: TeacherNotesProps) {
+export default function TeacherNotes({ classroomId, teacherId, teacherName, children = [] }: TeacherNotesProps) {
   const { t } = useI18n();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   // Edit state
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
@@ -89,6 +98,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
           classroom_id: classroomId,
           content: transcript.trim(),
           transcription: transcript.trim(),
+          child_id: selectedChildId || null,
         }),
       });
 
@@ -106,7 +116,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
       setContent(prev => prev ? `${prev}\n${transcript}` : transcript);
       toast.error(t('teacherNotes.autoSaveFailed'));
     }
-  }, [classroomId, fetchNotes, t]);
+  }, [classroomId, selectedChildId, fetchNotes, t]);
 
   // Fire-and-forget background transcription + auto-save
   const processInBackground = useCallback((blob: Blob) => {
@@ -239,12 +249,14 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
         body: JSON.stringify({
           classroom_id: classroomId,
           content: content.trim(),
+          child_id: selectedChildId || null,
         }),
       });
 
       if (res.ok) {
         toast.success(t('teacherNotes.saved'));
         setContent('');
+        setSelectedChildId(null);
         fetchNotes();
       } else {
         const data = await res.json();
@@ -353,12 +365,44 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
       </div>
 
       <div className="px-4 py-3 space-y-3">
+        {/* Child selector — pill row */}
+        {children.length > 0 && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              onClick={() => setSelectedChildId(null)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                selectedChildId === null
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+              }`}
+            >
+              📋 {t('teacherNotes.classNote')}
+            </button>
+            {children.map((child) => (
+              <button
+                key={child.id}
+                onClick={() => setSelectedChildId(child.id)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  selectedChildId === child.id
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                }`}
+              >
+                {child.name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Input area — compact inline row */}
         <div className="flex items-center gap-2">
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={t('teacherNotes.placeholder')}
+            placeholder={selectedChildId
+              ? t('teacherNotes.childNotePlaceholder', { name: children.find(c => c.id === selectedChildId)?.name || '' })
+              : t('teacherNotes.placeholder')
+            }
             className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none resize-y"
             maxLength={5000}
             onKeyDown={(e) => {
@@ -456,10 +500,25 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName }: Te
                         </div>
                       )}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400">
+                    <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400 flex-wrap">
                       <span className="font-medium text-gray-500">{note.teacher_name}</span>
                       <span>·</span>
                       <span>{formatTime(note.created_at)}</span>
+                      {note.child_name ? (
+                        <>
+                          <span>·</span>
+                          <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                            👶 {note.child_name}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span>·</span>
+                          <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-medium">
+                            📋 {t('teacherNotes.classNote')}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </>
                 )}

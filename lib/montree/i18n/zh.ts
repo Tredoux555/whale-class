@@ -3644,6 +3644,8 @@ export const zh = {
   'teacherNotes.autoSaveFailed': '自动保存失败 — 文本已复制到输入框',
   'teacherNotes.updated': '笔记已更新',
   'teacherNotes.updateFailed': '更新笔记失败',
+  'teacherNotes.classNote': '班级笔记',
+  'teacherNotes.childNotePlaceholder': '关于{name}的快速笔记...',
 
   // 脉搏生成
   'pulse.title': '班级脉搏',
