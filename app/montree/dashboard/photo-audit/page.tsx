@@ -1957,6 +1957,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               <p className="text-[10px] text-indigo-500 italic">
                 {t('audit.clipNoMatch')}
                 {rerunResult.confidence !== null && ` (${Math.round(rerunResult.confidence * 100)}%)`}
+                {rerunResult.scenario && <span className="block text-[8px] text-indigo-400 mt-0.5">reason: {rerunResult.scenario}</span>}
               </p>
             )}
           </div>
