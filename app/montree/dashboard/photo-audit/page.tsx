@@ -542,7 +542,7 @@ export default function PhotoAuditPage() {
   // Child tagging handlers
   const handleOpenChildTagger = (photo: AuditPhoto) => {
     setTaggingPhoto(photo);
-    setTaggingSelection(new Set(photo.child_ids || (photo.child_id ? [photo.child_id] : [])));
+    setTaggingSelection(new Set(photo.child_ids?.length ? photo.child_ids : (photo.child_id ? [photo.child_id] : [])));
   };
 
   const handleToggleChild = (childId: string) => {
