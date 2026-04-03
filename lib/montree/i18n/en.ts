@@ -3643,6 +3643,8 @@ export const en = {
   'teacherNotes.autoSaveFailed': 'Auto-save failed — transcript copied to input',
   'teacherNotes.updated': 'Note updated',
   'teacherNotes.updateFailed': 'Failed to update note',
+  'teacherNotes.classNote': 'Class Note',
+  'teacherNotes.childNotePlaceholder': 'Quick note about {name}...',
 
   // Pulse Generation
   'pulse.title': 'Classroom Pulse',

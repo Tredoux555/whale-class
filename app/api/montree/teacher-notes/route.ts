@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     // Fetch notes — only the current teacher's own notes (private per teacher)
     const { data: notes, error: notesError } = await supabase
       .from('montree_teacher_notes')
-      .select('id, teacher_id, content, transcription, created_at, montree_teachers(name)')
+      .select('id, teacher_id, child_id, content, transcription, created_at, montree_teachers(name), montree_children(name)')
       .eq('classroom_id', classroomId)
       .eq('teacher_id', auth.userId)
       .order('created_at', { ascending: false })
@@ -48,12 +48,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
     }
 
-    // Flatten teacher name from join
+    // Flatten teacher name and child name from joins
     const formatted = (notes || []).map((n: Record<string, unknown>) => {
       const teacher = n.montree_teachers as { name: string } | null;
+      const child = n.montree_children as { name: string } | null;
       return {
         id: n.id,
         teacher_id: n.teacher_id,
+        child_id: n.child_id || null,
+        child_name: child?.name || null,
         teacher_name: teacher?.name || 'Unknown',
         content: n.content,
         transcription: n.transcription,
@@ -79,10 +82,11 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { classroom_id, content, transcription } = body as {
+    const { classroom_id, content, transcription, child_id } = body as {
       classroom_id?: string;
       content?: string;
       transcription?: string;
+      child_id?: string | null;
     };
 
     if (!classroom_id || typeof classroom_id !== 'string') {
@@ -122,8 +126,9 @@ export async function POST(request: NextRequest) {
         school_id: auth.schoolId,
         content: content.trim(),
         transcription: transcription?.trim() || null,
+        child_id: child_id || null,
       })
-      .select('id, content, transcription, created_at');
+      .select('id, content, transcription, child_id, created_at');
 
     if (insertError) {
       console.error('Failed to create teacher note:', insertError.message);
