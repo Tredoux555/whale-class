@@ -332,6 +332,14 @@ export default function DashboardHeader() {
 
           {/* Primary tools — always visible */}
           <Link
+            href="/montree/dashboard/notes"
+            data-guide="nav-notes"
+            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
+            title={t('nav.notes')}
+          >
+            📝
+          </Link>
+          <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
             className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"

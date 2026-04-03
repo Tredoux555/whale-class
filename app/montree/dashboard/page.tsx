@@ -28,7 +28,7 @@ const GuruChatThread = dynamic(() => import('@/components/montree/guru/GuruChatT
 const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/WeeklyAdminCard'), { ssr: false });
 const BatchReportsCard = dynamic(() => import('@/components/montree/reports/BatchReportsCard'), { ssr: false });
 const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
-const TeacherNotes = dynamic(() => import('@/components/montree/TeacherNotes'), { ssr: false });
+
 const ShelfAutopilotCard = dynamic(() => import('@/components/montree/ShelfAutopilotCard'), { ssr: false });
 const AttendanceWidget = dynamic(() => import('@/components/montree/AttendanceWidget'), { ssr: false });
 const StaleWorksPanel = dynamic(() => import('@/components/montree/StaleWorksPanel'), { ssr: false });
@@ -379,12 +379,7 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* ── 📝 Classroom Notes (always visible, top of dashboard) ── */}
-              {session?.classroom?.id && (
-                <div className="mb-4">
-                  <TeacherNotes classroomId={session.classroom.id} teacherId={session.teacher?.id || ''} teacherName={session.teacher?.name || ''} />
-                </div>
-              )}
+              {/* 📝 Teacher Notes moved to /montree/dashboard/notes (nav icon in header) */}
 
               {/* ── Daily Brief Panel ── */}
               {session?.classroom?.id && (

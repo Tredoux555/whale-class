@@ -213,6 +213,7 @@ export const en = {
   'nav.curriculum': 'Curriculum',
   'nav.guru': 'Guru',
   'nav.capture': 'Capture',
+  'nav.notes': 'Notes',
   'nav.inbox': 'Inbox',
   'nav.labels': 'Print Labels',
   'nav.week': 'Week',

@@ -213,6 +213,7 @@ export const zh = {
   'nav.curriculum': '课程',
   'nav.guru': '导师',
   'nav.capture': '拍照',
+  'nav.notes': '笔记',
   'nav.inbox': '消息',
   'nav.labels': '打印标签',
   'nav.week': '本周',
