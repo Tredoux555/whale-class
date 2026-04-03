@@ -793,8 +793,8 @@ export async function POST(request: NextRequest) {
         // NO auto-add to shelf — teacher's status choice triggers shelf/progress updates
 
         // ONBOARDING BONUS: When CLIP is confident during onboarding, generate visual memory
-        // Trigger on CLIP confidence ≥ 0.80 (fire-and-forget, non-blocking)
-        if (preChildClassroomId && clipWorkName && clipAreaKey && clipConfidence >= 0.80 && photoUrl) {
+        // SigLIP sigmoid: 0.40+ is "very confident" (equivalent to old CLIP 0.80+)
+        if (preChildClassroomId && clipWorkName && clipAreaKey && clipConfidence >= 0.40 && photoUrl) {
           getClassroomOnboardingStatus(preChildClassroomId).then(status => {
             if (!status.isOnboarding) return;
             console.log(`[PhotoInsight/CLIP] Onboarding bonus: generating visual memory for "${clipWorkName}" from confident CLIP hit`);
