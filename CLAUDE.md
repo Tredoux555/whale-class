@@ -9,10 +9,107 @@ Production: `https://montree.xyz` (migrated from teacherpotato.xyz — old domai
 Deploy: Railway auto-deploys on push to `main`
 Git remote: `git@github.com:Tredoux555/whale-class.git` (SSH — Cowork VM key "Cowork VM Feb 15" added Feb 15, 2026; old "Cowork VM" Feb 11 key is stale)
 Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note space in "Master Brain")
+**⚠️ Git Push — ALWAYS use Desktop Commander FIRST:** `mcp__Desktop_Commander__start_process` with command `cd ~/Desktop/Master\ Brain/ACTIVE/whale && git push origin main 2>&1` and `timeout_ms: 30000`. Do NOT try Cowork VM SSH keys, GitHub PATs, or `scripts/push-to-github.py` — Desktop Commander on the user's Mac is the only reliable push method.
 
 ---
 
-## CURRENT STATUS (Apr 2, 2026)
+## CURRENT STATUS (Apr 3, 2026)
+
+### Session Work (Apr 3, 2026 — CLIP Fix + Story Photo Fix + Child Tagger Bug)
+
+**Three issues worked on — 1 deployed, 1 diagnosed, 1 critical unresolved:**
+
+**1. CLIP Classifier "No Match" — ⚠️ CRITICAL UNRESOLVED:**
+Commit `e2192214` (prior session) rewrote CLIP from broken single `pipeline('feature-extraction')` to separate `SiglipTextModel` + `SiglipVisionModel`. Server deploys and starts, but ALL photos return "No match" with `clip_no_result`. The classifier's `classifyImageInternal()` returns null every time.
+
+**Most likely cause (70%):** Initialization failure cached permanently. When `initClassifier()` fails (model download timeout, OOM, ONNX issues), `initializationError` is set and permanently cached — ALL subsequent calls immediately re-throw the cached error with no retry. The orchestrator catches this and returns null.
+
+**Diagnostic steps for next session:**
+1. Check Railway logs for `[CLIP] Initialization failed:` vs `[CLIP] Initialization complete`
+2. If init fails: Remove permanent error cache, add TTL-based retry (5 min cooldown)
+3. If init succeeds: Add logging to `embedImage()`, `findBestMatch()`, area/work scoring to trace null path
+4. Verify `pooler_output` exists in model output: `console.log(Object.keys(result))` in embedText/embedImage
+5. Check Railway memory usage during model loading (~100MB+ ONNX models)
+
+**Key files:** `lib/montree/classifier/clip-classifier.ts` (init + classify), `lib/montree/classifier/classify-orchestrator.ts` (routing), `app/api/montree/guru/photo-insight/route.ts` (caller)
+
+**2. Story User Photo Upload — ✅ FIXED + PUSHED (commit `33929652`):**
+Photos sent from mobile user didn't appear for the other user. Admin-sent photos worked fine.
+
+**Root cause:** `app/api/story/upload-media/route.ts` had TWO bugs:
+- **Bug 1:** DB insert error silently swallowed — `await supabase.from(...).insert({...})` with NO error destructuring. If insert failed, endpoint returned `{ success: true }` anyway.
+- **Bug 2:** Missing `is_expired: false` in insert object (admin route had it, user route didn't).
+
+**Fix:** Added `const { error: insertError } = await supabase...` + `is_expired: false` + error check returning 500.
+
+**Files Modified (1):**
+1. `app/api/story/upload-media/route.ts` — Error handling + is_expired field
+
+**3. Child Tagger Modal Pre-Selection — BUG DIAGNOSED, NOT YET FIXED:**
+"Tag Children" modal opens with Austin unchecked even though he's already tagged on the photo. Root cause: `photo.child_ids` returns `[]` (empty array) from the API when no junction table entries exist, but `photo.child_id` IS set. Empty array `[]` is truthy in JS, so `photo.child_ids || (photo.child_id ? [photo.child_id] : [])` uses the empty array instead of falling back.
+
+**Fix (apply next session):** Change line 544 of `photo-audit/page.tsx` to:
+```typescript
+setTaggingSelection(new Set(
+  photo.child_ids?.length ? photo.child_ids : (photo.child_id ? [photo.child_id] : [])
+));
+```
+
+**Deploy:** Story fix pushed (commit `33929652`). CLIP and child tagger fixes pending.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_STORY_FIX_APR3.md`
+
+### 🔴 NEXT SESSION PRIORITY #1: Fix CLIP Classifier
+CLIP returning "No match" on ALL photos is the #1 blocker. Teachers are using the system LIVE. Follow diagnostic steps above. Check Railway logs FIRST.
+
+---
+
+### Session Work (Apr 3, 2026 — Teacher Notes Relocation + Child Tagging)
+
+**Two changes to the Teacher Notes system — ✅ PUSHED (commits `1424a924` + `d7fa9c22`):**
+
+**Request A: Relocate Teacher Notes to Dedicated Page:**
+Moved Teacher Notes from the dashboard surface into a dedicated page at `/montree/dashboard/notes` with a 📝 icon in the DashboardHeader nav bar. Teachers now access notes from the nav without cluttering the main dashboard.
+
+**Request B: Child Tagging on Notes:**
+Teachers can now tag a note to a specific child via pill selector buttons above the textarea input. Notes can be either "Class Note" (default, existing behavior) or tagged to a specific child for quick observations without navigating to the full child profile.
+
+**UI Details:**
+- Child pill selector appears above textarea when children are loaded
+- "Class Note" pill (emerald when active) = existing behavior, no child_id
+- Child name pills (amber when active) = tags note to that child
+- Note badges: amber `👶 {name}` for child-tagged notes, emerald `📋 Class Note` for class notes
+- Placeholder text changes dynamically: "Quick note about {name}..." when child selected
+- Selection resets to "Class Note" after each successful save
+
+**Files Created (2):**
+1. `app/montree/dashboard/notes/page.tsx` — Dedicated Teacher Notes page (fetches children list, passes to component)
+2. `migrations/157_teacher_notes_child_id.sql` — Adds `child_id` column + partial index
+
+**Files Modified (4):**
+1. `components/montree/TeacherNotes.tsx` — Child pill selector UI, `child_id` in save/auto-save, child name badges on notes, dynamic placeholder
+2. `app/api/montree/teacher-notes/route.ts` — GET: FK join `montree_children(name)` for child names in response. POST: accepts `child_id` in body
+3. `components/montree/DashboardHeader.tsx` — Added 📝 nav icon linking to `/montree/dashboard/notes`
+4. `app/montree/dashboard/page.tsx` — Removed inline TeacherNotes render (moved to dedicated page)
+
+**i18n (2 files):**
+1. `lib/montree/i18n/en.ts` — 2 new keys: `teacherNotes.classNote`, `teacherNotes.childNotePlaceholder`
+2. `lib/montree/i18n/zh.ts` — 2 matching Chinese keys (perfect EN/ZH parity)
+
+**Migration 157 (`migrations/157_teacher_notes_child_id.sql`) — ✅ RUN (Apr 3, 2026):**
+```sql
+ALTER TABLE montree_teacher_notes
+  ADD COLUMN IF NOT EXISTS child_id UUID REFERENCES montree_children(id) ON DELETE SET NULL DEFAULT NULL;
+CREATE INDEX IF NOT EXISTS idx_teacher_notes_child
+  ON montree_teacher_notes (child_id) WHERE child_id IS NOT NULL;
+```
+Run via Supabase SQL Editor. Child tagging is fully live.
+
+**Deploy:** ✅ Code pushed (commit `d7fa9c22`). Railway auto-deploying.
+**Handoff:** `docs/handoffs/HANDOFF_TEACHER_NOTES_CHILD_TAGGING_APR3.md`
+
+---
+
+## PREVIOUS STATUS (Apr 2, 2026)
 
 ### Session Work (Apr 2, 2026 — Health Check Audit Cycles 7-9)
 
