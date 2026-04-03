@@ -13,12 +13,8 @@ import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
-import { tryClassify, type ClassifyDecision } from '@/lib/montree/classifier/classify-orchestrator';
-import type { VisualMemory } from '@/lib/montree/classifier';
-import { getClassroomOnboardingStatus, invalidateOnboardingCache } from '@/lib/montree/classifier/classroom-embeddings';
-import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier/clip-classifier';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
-// import { getConfusionDifferentiation } from '@/lib/montree/classifier/clip-classifier'; // TEMP: commented out — function exists locally but not yet pushed to git. Re-enable after pushing clip-classifier.ts with confusion pair support.
+import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 // import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
 
 // ================================================================
@@ -653,9 +649,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Photo URL not accessible' }, { status: 400 });
     }
 
-    // Pre-fetch child's classroom_id for CLIP visual memory + downstream classroom lookups
+    // Pre-fetch child's classroom_id for downstream classroom lookups
     let preChildClassroomId: string | null = null;
-    let preVisualMemories: VisualMemory[] = [];
     try {
       const { data: preChild } = await supabase
         .from('montree_children')
@@ -663,245 +658,15 @@ export async function POST(request: NextRequest) {
         .eq('id', child_id)
         .maybeSingle();
       preChildClassroomId = preChild?.classroom_id || null;
-
-      // Fetch visual memories for this classroom (used by CLIP visual memory boost)
-      if (preChildClassroomId) {
-        const { data: memories } = await supabase
-          .from('montree_visual_memory')
-          .select('work_name, work_key, visual_description, description_confidence')
-          .eq('classroom_id', preChildClassroomId)
-          .gte('times_used', 0);
-        // Map description_confidence → confidence to match VisualMemory interface
-        preVisualMemories = (memories || []).map(m => ({
-          work_name: m.work_name,
-          work_key: m.work_key,
-          visual_description: m.visual_description,
-          confidence: m.description_confidence ?? 0.5,
-        }));
-      }
     } catch {
-      // Non-fatal — CLIP still works without classroom context
-      console.warn('[PhotoInsight] Failed to pre-fetch classroom/visual memory for CLIP');
+      console.warn('[PhotoInsight] Failed to pre-fetch classroom_id');
     }
 
     // ================================================================
-    // TIER 0: CLIP CLASSIFICATION (free, ~150ms)
-    // Try CLIP first. If confident, use slim Haiku enrichment (~$0.0006)
-    // instead of full two-pass (~$0.006). Falls through gracefully on failure.
-    // ================================================================
-    let clipDecision: ClassifyDecision | null = null;
-    try {
-      clipDecision = await tryClassify(photoUrl, preChildClassroomId, preVisualMemories);
-      if (clipDecision.action === 'slim_enrich' && clipDecision.clipResult) {
-        console.log(`[PhotoInsight] CLIP identified: "${clipDecision.clipResult.work_name}" — using slim enrichment`);
-
-        // Slim path: classroom curriculum lookup for work_id association
-        // Escape SQL wildcards in work name for .ilike() safety
-        const clipWorkNameEscaped = clipDecision.clipResult.work_name
-          .replace(/[%_\\]/g, '\\$&');
-        const [clipClassroomLookup] = await Promise.all([
-          // Look up work in THIS classroom's curriculum (case-insensitive, classroom-scoped)
-          preChildClassroomId
-            ? supabase.from('montree_classroom_curriculum_works')
-                .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key, classroom_id)')
-                .ilike('name', clipWorkNameEscaped)
-                .eq('montree_classroom_curriculum_areas.classroom_id', preChildClassroomId)
-                .eq('is_active', true)
-                .limit(1)
-                .maybeSingle()
-            : supabase.from('montree_classroom_curriculum_works')
-                .select('id, name, area:montree_classroom_curriculum_areas!area_id(area_key)')
-                .ilike('name', clipWorkNameEscaped)
-                .eq('is_active', true)
-                .limit(1)
-                .maybeSingle(),
-        ]);
-
-        const clipWorkName = clipDecision.clipResult.work_name;
-        const clipAreaKey = clipDecision.clipResult.area_key;
-        const clipConfidence = clipDecision.clipResult.confidence;
-
-        // ================================================================
-        // TEACHER OS SPRINT 1: Return CLIP results directly to client
-        // No Haiku verification — teacher confirms/corrects via popup
-        // Two-pass pipeline remains as fallback when CLIP fails
-        // ================================================================
-
-        // Classroom + shelf lookups
-        let classroomWorkId = clipClassroomLookup.data?.id || null;
-
-        // Fallback: if .ilike() on name didn't find it, try work_key from CLIP result
-        if (!classroomWorkId && clipDecision?.clipResult?.work_key && preChildClassroomId) {
-          try {
-            const { data: byKey } = await supabase
-              .from('montree_classroom_curriculum_works')
-              .select('id')
-              .eq('classroom_id', preChildClassroomId)
-              .eq('work_key', clipDecision.clipResult.work_key)
-              .eq('is_active', true)
-              .limit(1)
-              .maybeSingle();
-            if (byKey?.id) {
-              classroomWorkId = byKey.id;
-              console.log(`[PhotoInsight/CLIP] work_key fallback matched: "${clipDecision.clipResult.work_key}" → ${classroomWorkId}`);
-            }
-          } catch (err) {
-            console.error('[PhotoInsight/CLIP] work_key fallback lookup failed:', err);
-          }
-        }
-
-        const inClassroom = !!classroomWorkId;
-
-        let inChildShelf = false;
-        if (child_id) {
-          const { data: shelfData } = await supabase
-            .from('montree_child_focus_works')
-            .select('id')
-            .eq('child_id', child_id)
-            .eq('work_name', clipWorkName)
-            .limit(1)
-            .maybeSingle();
-          inChildShelf = !!shelfData?.id;
-        }
-
-        // Scenario determination (backward compat for v1 consumers)
-        const scenario: 'A' | 'B' | 'C' | 'D' = !inClassroom ? 'B' : (!inChildShelf ? 'C' : 'D');
-
-        // Tag media with CLIP-identified work (fire-and-forget)
-        // Teacher OS: tag immediately so photo is associated with work even before teacher confirms status
-        const mediaUpdate: Record<string, unknown> = { updated_at: new Date().toISOString() };
-        if (classroomWorkId) mediaUpdate.work_id = classroomWorkId;
-        if (Object.keys(mediaUpdate).length > 1) {
-          supabase.from('montree_media').update(mediaUpdate).eq('id', media_id)
-            .then(({ error }) => { if (error) console.error('[PhotoInsight/CLIP] Media update error:', error); })
-            .catch((err) => console.error('[PhotoInsight/CLIP] Media update promise rejected:', err));
-        }
-
-        // Teacher OS: increment evidence photo counter (fire-and-forget)
-        // Tracks how many photos exist per work across how many distinct days
-        if (clipWorkName && child_id) {
-          supabase.rpc('increment_evidence_photo', {
-            p_child_id: child_id,
-            p_work_name: clipWorkName.trim(),
-            p_photo_date: new Date().toISOString().slice(0, 10),
-          }).then(({ error }: { error: unknown }) => {
-            if (error) console.error('[Evidence] increment_evidence_photo RPC error:', error);
-          }).catch((err: unknown) => console.error('[Evidence] RPC rejection:', err));
-        }
-
-        // NO auto-update progress — teacher picks status via PhotoInsightPopup
-        // NO auto-add to shelf — teacher's status choice triggers shelf/progress updates
-
-        // ONBOARDING BONUS: When CLIP is confident during onboarding, generate visual memory
-        // SigLIP sigmoid: 0.40+ is "very confident" (equivalent to old CLIP 0.80+)
-        if (preChildClassroomId && clipWorkName && clipAreaKey && clipConfidence >= 0.40 && photoUrl) {
-          getClassroomOnboardingStatus(preChildClassroomId).then(status => {
-            if (!status.isOnboarding) return;
-            console.log(`[PhotoInsight/CLIP] Onboarding bonus: generating visual memory for "${clipWorkName}" from confident CLIP hit`);
-            if (!anthropic) return;
-            anthropic.messages.create({
-              model: HAIKU_MODEL,
-              max_tokens: 300,
-              messages: [{
-                role: 'user',
-                content: [
-                  { type: 'image', source: { type: 'url', url: photoUrl } },
-                  { type: 'text', text: `Describe this Montessori material "${clipWorkName}" in exactly 150 tokens. Focus on: physical appearance, colors, materials (wood/metal/plastic/fabric), size, shape, distinctive features, and how a child interacts with it. Be specific enough that this description could identify the same material in future photos.` },
-                ],
-              }],
-            }).then(vmResponse => {
-              const vmDesc = vmResponse.content.find(b => b.type === 'text')?.text?.trim();
-              if (!vmDesc || vmDesc.length < 20) return;
-              const vmWorkKey = clipDecision?.clipResult?.work_key || clipWorkName.toLowerCase().replace(/[^a-z0-9]+/g, '_');
-              supabase.from('montree_visual_memory').upsert({
-                classroom_id: preChildClassroomId,
-                work_name: clipWorkName,
-                work_key: vmWorkKey,
-                area: clipAreaKey,
-                is_custom: false,
-                visual_description: vmDesc,
-                source: 'clip_onboarding_bonus',
-                source_media_id: media_id,
-                photo_url: photoUrl,
-                description_confidence: 0.8,
-                updated_at: new Date().toISOString(),
-              }, { onConflict: 'classroom_id,work_name' }).then(({ error }) => {
-                if (error) console.error('[PhotoInsight/CLIP] Onboarding visual memory upsert error:', error);
-                else {
-                  invalidateClassroomEmbeddings(preChildClassroomId!);
-                  invalidateOnboardingCache(preChildClassroomId!);
-                  console.log(`[PhotoInsight/CLIP] Onboarding visual memory stored for "${clipWorkName}"`);
-                }
-              }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM promise rejected:', err));
-            }).catch(err => console.error('[PhotoInsight/CLIP] Onboarding VM Haiku call failed:', err));
-          }).catch(() => {}); // Non-fatal: onboarding check failure is fine
-        }
-
-        // Save interaction (analytics + cache)
-        supabase.from('montree_guru_interactions').insert({
-          child_id,
-          question_type: 'photo_insight',
-          question: `photo:${media_id}:${child_id}`,
-          response_insight: `CLIP identified: ${clipWorkName} (${(clipConfidence * 100).toFixed(0)}% confidence)`,
-          mode: 'clip_direct',
-          model_used: 'clip_siglip',
-          context_snapshot: {
-            classification_method: 'clip_direct',
-            clip_model: 'siglip-base-patch16-224',
-            clip_confidence: clipConfidence,
-            clip_raw_confidence: clipDecision.clipResult?.raw_confidence ?? clipConfidence,
-            clip_area_confidence: clipDecision.clipResult?.area_confidence ?? null,
-            clip_runner_up: clipDecision.clipResult?.runner_up ?? null,
-            clip_classification_ms: clipDecision.clipResult?.classification_ms ?? null,
-            identified_work_name: clipWorkName,
-            identified_area: clipAreaKey,
-            curriculum_match_score: clipConfidence,
-            scenario,
-            in_classroom: inClassroom,
-            in_child_shelf: inChildShelf,
-            negative_penalty_applied: clipDecision.clipResult?.negative_penalty_applied ?? false,
-            confusion_pair_matched: clipDecision.clipResult?.confusion_pair_matched ?? null,
-          },
-        }).then(({ error }) => {
-          if (error) console.error('[PhotoInsight/CLIP] Interaction save error:', error);
-        }).catch((err) => console.error('[PhotoInsight/CLIP] Interaction save promise rejected:', err));
-
-        console.log(`[PhotoInsight] CLIP direct: "${clipWorkName}" (confidence: ${clipConfidence.toFixed(2)}, in_classroom: ${inClassroom}, scenario: ${scenario})`);
-
-        // Return CLIP result directly — teacher decides status via PhotoInsightPopup
-        return NextResponse.json({
-          success: true,
-          work_name: clipWorkName,
-          area: clipAreaKey,
-          confidence: clipConfidence,
-          match_score: clipConfidence,
-          candidates: clipDecision.clipResult?.runner_up
-            ? [{ name: clipDecision.clipResult.runner_up.work_name, area: clipAreaKey, score: clipDecision.clipResult.runner_up.confidence }]
-            : [],
-          in_classroom: inClassroom,
-          in_child_shelf: inChildShelf,
-          classroom_work_id: classroomWorkId,
-          clip_confidence: clipConfidence,
-          classification_method: 'clip_direct',
-          // Teacher OS: no mastery evidence from route — teacher picks via popup
-          mastery_evidence: null,
-          suggested_crop: null,
-          // Backward compat fields (v1 consumers during migration)
-          auto_updated: false,
-          needs_confirmation: true,
-          scenario,
-          insight: `Identified: ${clipWorkName}`,
-        }, {
-          headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
-        });
-      }
-    } catch (clipErr) {
-      console.error('[PhotoInsight] CLIP orchestration error — falling through:', clipErr);
-      // Non-fatal: fall through to existing two-pass
-    }
-    // ================================================================
-    // END TIER 0 — If we reach here, CLIP didn't produce a confident result
-    // Continue with the existing two-pass Haiku describe→match pipeline
+    // CLIP/SigLIP REMOVED (Apr 4, 2026)
+    // SigLIP-base was unable to discriminate between 329 Montessori works.
+    // All photo identification now uses the Haiku two-pass pipeline below.
+    // Sonnet reserved for "Teach the AI" (classroom-setup/describe) only.
     // ================================================================
 
     // Parallel queries: child context + current works (single child query, no duplicate)
