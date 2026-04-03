@@ -28,9 +28,9 @@ import {
 const CLIP_ENABLED_RAW = (process.env.CLIP_CLASSIFIER_ENABLED || 'true').toLowerCase();
 const CLIP_ENABLED = CLIP_ENABLED_RAW !== 'false' && CLIP_ENABLED_RAW !== '0' && CLIP_ENABLED_RAW !== 'no';
 
-// Confidence thresholds
-const CLIP_CONFIDENT = 0.75;    // Above this: use slim enrichment (skip full two-pass)
-const CLIP_VERY_CONFIDENT = 0.90; // Above this: skip enrichment entirely for simple tagging
+// Confidence thresholds — SigLIP cosine similarity is 0.01-0.15 range (NOT 0.3-0.9 like CLIP)
+const CLIP_CONFIDENT = 0.03;    // Above this: use slim enrichment (skip full two-pass)
+const CLIP_VERY_CONFIDENT = 0.08; // Above this: skip enrichment entirely for simple tagging
 
 // Canary rollout: percentage of requests that try CLIP (0-100)
 // Start at 100% (CLIP failure is graceful — always falls back to two-pass)

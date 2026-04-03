@@ -15,11 +15,13 @@ import { getSignatureByKey, getConfusionPairsForWork, getNegativeDescriptions, A
 import type { ConfusionPair } from '@/lib/montree/classifier/work-signatures';
 
 const CLIP_MODEL = 'Xenova/siglip-base-patch16-224';
-const CLIP_CONFIDENCE_THRESHOLD = 0.75; // Below this, fall back to Haiku vision
-const VISUAL_MEMORY_BOOST = 0.15; // Confidence boost for works with visual memory
-const VISUAL_MEMORY_BOOST_CAP = 0.99; // Cap boosted confidence at this value
+// SigLIP uses sigmoid similarity — cosine similarity values are MUCH lower than CLIP models
+// (0.01-0.15 range typical, vs 0.3-0.9 for CLIP). Thresholds must be calibrated for SigLIP.
+const CLIP_CONFIDENCE_THRESHOLD = 0.01; // Below this, fall back to Haiku vision (SigLIP scale)
+const VISUAL_MEMORY_BOOST = 0.02; // SigLIP scale: confidence boost for works with visual memory
+const VISUAL_MEMORY_BOOST_CAP = 0.30; // Cap boosted confidence (SigLIP scale)
 const CLASSIFICATION_TIMEOUT_MS = 30_000; // 30s max for entire classification
-const NEGATIVE_EMBEDDING_MARGIN = 0.12; // Minimum gap required between positive and negative scores
+const NEGATIVE_EMBEDDING_MARGIN = 0.02; // SigLIP scale: minimum gap between positive and negative scores
 const NEGATIVE_EMBEDDING_WEIGHT = 0.25; // Weight for margin-deficit penalty
 
 export interface ClassifyResult {
@@ -633,27 +635,33 @@ async function classifyImageInternal(
       }
     }
 
-    if (bestAreaConfidence < 0.5) {
-      // Area confidence too low — barely better than random (5 areas = 20% baseline)
-      console.log(`[CLIP] Area confidence too low: ${bestAreaConfidence.toFixed(3)}`);
+    // SigLIP cosine similarity scores are naturally low (0.03-0.15 range).
+    // Skip absolute area threshold — just pick best area and let work matching + cross-area fallback handle it.
+    // Log for calibration data.
+    console.log(`[CLIP] Stage 1 best area: ${bestAreaKey} (similarity: ${bestAreaConfidence.toFixed(4)})`);
+    if (bestAreaConfidence <= 0) {
+      console.log(`[CLIP] Area confidence is zero/negative — no area embeddings matched`);
       return null;
     }
 
     console.log(`[CLIP] Stage 1 result: ${bestAreaKey} (confidence: ${bestAreaConfidence.toFixed(3)})`);
 
     // Stage 2: Classify work within area
-    console.log(`[CLIP] Stage 2: Classifying work within ${bestAreaKey}...`);
+    console.log(`[CLIP] Stage 2: Classifying work within ${bestAreaKey} (${(worksByArea.get(bestAreaKey) || []).length} works)...`);
     const areaWorks = worksByArea.get(bestAreaKey) || [];
     let bestWork: CurriculumWork | null = null;
     let bestWorkConfidence = 0;
     let runnerUpWork: CurriculumWork | null = null;
     let runnerUpConfidence = 0;
 
+    // Collect all scores for calibration logging
+    const areaScores: { name: string; score: number }[] = [];
     for (const work of areaWorks) {
       const workVec = classroomOverrides?.get(work.work_key) || textEmbeddings.get(work.work_key);
       if (!workVec) continue;
 
       const similarity = cosineSimilarity(imageVec, workVec);
+      areaScores.push({ name: work.name, score: similarity });
 
       if (similarity > bestWorkConfidence) {
         // Previous best becomes runner-up
@@ -669,9 +677,15 @@ async function classifyImageInternal(
       }
     }
 
+    // Log top-5 for calibration data
+    areaScores.sort((a, b) => b.score - a.score);
+    const top5 = areaScores.slice(0, 5).map(s => `${s.name}:${s.score.toFixed(4)}`).join(', ');
+    console.log(`[CLIP] Stage 2 top-5 in ${bestAreaKey}: ${top5}`);
+
     // Cross-area fallback: if within-area confidence is low, search ALL 329 works
     // This prevents cascade lock-in where wrong area classification excludes the correct work
-    const CROSS_AREA_FALLBACK_THRESHOLD = 0.70;
+    // SigLIP scores are much lower than CLIP — always do cross-area search for now
+    const CROSS_AREA_FALLBACK_THRESHOLD = 0.50; // Effectively always triggers with SigLIP scores
     if (bestWorkConfidence < CROSS_AREA_FALLBACK_THRESHOLD) {
       console.log(`[CLIP] Within-area confidence ${bestWorkConfidence.toFixed(3)} < ${CROSS_AREA_FALLBACK_THRESHOLD} — searching ALL works`);
 
@@ -732,7 +746,7 @@ async function classifyImageInternal(
           const negSim = cosineSimilarity(imageVec, negVec);
           if (negSim > maxNegSimilarity) maxNegSimilarity = negSim;
         }
-        if (maxNegSimilarity > 0.3) { // Only penalize if negative match is meaningful
+        if (maxNegSimilarity > 0.005) { // SigLIP scale: penalize if negative match is non-trivial
           const confidenceGap = bestWorkConfidence - maxNegSimilarity;
           if (confidenceGap < NEGATIVE_EMBEDDING_MARGIN) {
             const marginDeficit = NEGATIVE_EMBEDDING_MARGIN - confidenceGap;
@@ -823,10 +837,9 @@ export async function classifyImageWithMemory(
   }
 
   // Boost confidence if the matched work has visual memory
-  // SAFETY: Only apply boost if base confidence is already meaningful (>= 0.60)
-  // This prevents a weak match (e.g., 0.50) from being boosted above the threshold (0.75)
-  // which would cause a false positive identification
-  const VISUAL_MEMORY_MIN_BASE = 0.60;
+  // SAFETY: Only apply boost if base confidence is already meaningful
+  // SigLIP scale: 0.02+ is a real signal (vs 0.60 for CLIP)
+  const VISUAL_MEMORY_MIN_BASE = 0.02;
   if (memoryMap.has(result.work_key)) {
     if (result.confidence >= VISUAL_MEMORY_MIN_BASE) {
       const boostedConfidence = Math.min(result.confidence + VISUAL_MEMORY_BOOST, VISUAL_MEMORY_BOOST_CAP);
