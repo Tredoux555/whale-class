@@ -346,61 +346,93 @@ export default function StoryViewer() {
     }
   };
 
-  // Handle file upload
+  // Handle file upload (with pre-validation, retry, and detailed errors)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Pre-upload validation — catch size issues before wasting bandwidth
+    const isVideo = file.type.startsWith('video/') || /\.(mov|mp4|webm|avi|mkv|m4v|3gp)$/i.test(file.name);
+    const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
+    const maxSize = isVideo ? 100 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 50 * 1024 * 1024;
+    const maxLabel = isVideo ? '100MB' : '50MB';
+
+    if (file.size > maxSize) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      setUploadError(`File is too large (${sizeMB}MB). Maximum size is ${maxLabel}. Try a shorter video or lower quality.`);
+      return;
+    }
+
     setIsUploadingMedia(true);
     setUploadError('');
 
-    try {
-      const session = getSession();
-
-      // Compress images for faster mobile upload
-      const uploadFile = await compressImage(file);
-
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-
-      // 3-min timeout — mobile video uploads on slow networks need time
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180_000);
-
-      const res = await fetch('/api/story/upload-media', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${session}` },
-        body: formData,
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      // Safe JSON parse — server may return HTML on 502/504 timeout
-      let data: { error?: string };
+    // Retry wrapper for transient network failures
+    const MAX_RETRIES = 2;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       try {
-        data = await res.json();
-      } catch {
-        data = { error: `Server error (${res.status})` };
-      }
+        const session = getSession();
 
-      if (res.ok) {
-        await loadMedia();
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+        // Compress images for faster mobile upload
+        const uploadFile = await compressImage(file);
+
+        const formData = new FormData();
+        formData.append('file', uploadFile);
+
+        // 3-min timeout — mobile video uploads on slow networks need time
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 180_000);
+
+        const res = await fetch('/api/story/upload-media', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session}` },
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        // Safe JSON parse — server may return HTML on 502/504 timeout
+        let data: { error?: string };
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: `Server error (${res.status})` };
         }
-      } else {
-        setUploadError(data.error || 'Upload failed');
+
+        if (res.ok) {
+          await loadMedia();
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+          setIsUploadingMedia(false);
+          return; // Success — exit retry loop
+        } else {
+          // Server returned an error — don't retry (it's a validation or server error)
+          setUploadError(data.error || 'Upload failed');
+          setIsUploadingMedia(false);
+          return;
+        }
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          setUploadError('Upload timed out — please try a smaller file or use WiFi.');
+          setIsUploadingMedia(false);
+          return; // Timeout — don't retry
+        }
+
+        // Transient network error — retry if attempts remain
+        if (attempt < MAX_RETRIES) {
+          console.warn(`[Upload] Attempt ${attempt + 1} failed, retrying...`, err);
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1))); // 1s, 2s backoff
+          continue;
+        }
+
+        // All retries exhausted — show detailed error
+        const errMsg = err instanceof Error ? err.message : 'Unknown error';
+        console.error('[Upload] All attempts failed:', errMsg);
+        setUploadError(`Upload failed: ${errMsg}. Check your connection and try again.`);
       }
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        setUploadError('Upload timed out — please try a smaller file or use WiFi.');
-      } else {
-        setUploadError('Upload failed. Please check your connection and try again.');
-      }
-    } finally {
-      setIsUploadingMedia(false);
     }
+    setIsUploadingMedia(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -83,6 +83,14 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
       const session = getSession();
 
       if (selectedVideo) {
+        // Pre-upload size check
+        if (selectedVideo.size > 100 * 1024 * 1024) {
+          const sizeMB = (selectedVideo.size / (1024 * 1024)).toFixed(1);
+          setMessageError(`Video is too large (${sizeMB}MB). Maximum is 100MB. Try a shorter video or lower quality.`);
+          setSendingMessage(false);
+          return;
+        }
+
         setUploadingVideo(true);
         const formData = new FormData();
         formData.append('file', selectedVideo);
@@ -193,7 +201,9 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
       if (err instanceof DOMException && err.name === 'AbortError') {
         setMessageError('Upload timed out — try a smaller file or use WiFi.');
       } else {
-        setMessageError('Connection error — check your network and try again.');
+        const errMsg = err instanceof Error ? err.message : 'Unknown error';
+        console.error('[Admin Send] Upload failed:', errMsg);
+        setMessageError(`Upload failed: ${errMsg}. Check your connection and try again.`);
       }
     } finally {
       setSendingMessage(false);
