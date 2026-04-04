@@ -34,7 +34,8 @@ export default function DashboardHeader() {
   const { t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const { isEnabled } = useFeatures();
-  const [aiBudget, setAiBudget] = useState<{ spent: number; budget: number; percentage: number } | null>(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   // Teacher selector state
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
@@ -63,38 +64,6 @@ export default function DashboardHeader() {
     const sess = getSession();
     if (!sess) return;
     setSession(sess);
-
-    // HIGH FIX: AbortController prevents hanging fetches on unmount/navigation
-    const abortController = new AbortController();
-
-    // Feature flags now handled by FeaturesProvider + useFeatures() hook
-    // Only AI budget still fetched here (not part of feature toggle system)
-    if (sess.school?.id) {
-      // Fetch AI budget for pill display (teachers only, 60s cache)
-      const budgetCacheKey = `montree_ai_budget_${sess.school.id}`;
-      let budgetCached = false;
-      try {
-        const cached = sessionStorage.getItem(budgetCacheKey);
-        if (cached) {
-          const { data: bd, ts } = JSON.parse(cached);
-          if (Date.now() - ts < 60_000) { setAiBudget(bd); budgetCached = true; }
-        }
-      } catch {}
-      if (!budgetCached) {
-        montreeApi(`/api/montree/admin/ai-budget?school_id=${sess.school.id}`, { signal: abortController.signal })
-          .then((res) => res.ok ? res.json() : null)
-          .then((data) => {
-            if (abortController.signal.aborted) return;
-            if (!data?.summary) return;
-            const bd = { spent: Number(data.summary.spent) || 0, budget: Number(data.summary.budget) || 50, percentage: Number(data.summary.percentage) || 0 };
-            setAiBudget(bd);
-            try { sessionStorage.setItem(budgetCacheKey, JSON.stringify({ data: bd, ts: Date.now() })); } catch {}
-          })
-          .catch(() => {});
-      }
-    }
-
-    return () => abortController.abort();
   }, []);
 
   // Fetch students for search bar (cached in sessionStorage, 5 min TTL)
@@ -165,6 +134,9 @@ export default function DashboardHeader() {
       if (teacherMenuRef.current && !teacherMenuRef.current.contains(e.target as Node)) {
         setShowTeacherMenu(false);
         setShowAddTeacher(false);
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -325,108 +297,153 @@ export default function DashboardHeader() {
           )}
         </div>
 
-        {/* Right: Action icons — overflow-x-auto prevents wrapping on narrow screens */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto flex-shrink min-w-0">
-          {/* Language toggle — always visible, far left */}
+        {/* Right: Action icons — daily drivers always visible, rest in "More" dropdown */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink min-w-0">
+          {/* Language toggle — always visible */}
           <LanguageToggle />
 
-          {/* Primary tools — always visible */}
-          <Link
-            href="/montree/dashboard/notes"
-            data-guide="nav-notes"
-            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-            title={t('nav.notes')}
-          >
-            📝
-          </Link>
+          {/* === DAILY DRIVERS — always visible === */}
           <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
-            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+              pathname === '/montree/dashboard/capture' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+            }`}
             title={t('capture.takePhoto')}
           >
             📸
           </Link>
+          {!isHome && (
+            <Link
+              href="/montree/dashboard/photo-audit"
+              data-guide="nav-setup"
+              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+                pathname === '/montree/dashboard/photo-audit' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+              }`}
+              title={t('audit.title')}
+            >
+              🔍
+            </Link>
+          )}
           <Link
             href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
             data-tutorial="guru-link"
             data-guide="nav-guru"
-            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+              pathname === '/montree/dashboard/guru' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+            }`}
             title={t('nav.guru')}
           >
             🧠
           </Link>
-          {!isHome && (
-            <>
-              <Link
-                href="/montree/dashboard/curriculum"
-                data-guide="nav-curriculum"
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-                title={t('nav.curriculum')}
-              >
-                📚
-              </Link>
-              <Link
-                href="/montree/dashboard/classroom-overview"
-                data-guide="nav-overview"
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-                title={t('nav.classroomOverview')}
-              >
-                📋
-              </Link>
-              <Link
-                href="/montree/dashboard/albums"
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-                title={t('albums.title')}
-              >
-                🖼️
-              </Link>
-              <Link
-                href="/montree/dashboard/classroom-builder"
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-                title="Classroom Builder"
-              >
-                🏗️
-              </Link>
-              <Link
-                href="/montree/dashboard/photo-audit"
-                data-guide="nav-setup"
-                className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-                title={t('audit.title')}
-              >
-                🔍
-              </Link>
-            </>
-          )}
-          {isEnabled('raz_reading_tracker') && (
-            <Link
-              href="/montree/dashboard/raz"
-              data-guide="nav-raz"
-              className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium flex-shrink-0"
-              title={t('nav.razReadingTracker')}
-            >
-              📖
-            </Link>
-          )}
+
+          {/* Inbox — always visible */}
           <InboxButton
             conversationId={session.teacher.id}
             userName={session.teacher.name || 'Teacher'}
             data-tutorial="inbox-button"
           />
-          {/* AI Budget pill — teachers only */}
-          {aiBudget && !isHome && (
-            <span
-              className={`px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 whitespace-nowrap ${
-                aiBudget.percentage >= 100 ? 'bg-red-500/90 text-white' :
-                aiBudget.percentage >= 80 ? 'bg-orange-400/90 text-white' :
-                aiBudget.percentage >= 60 ? 'bg-yellow-400/90 text-gray-900' :
-                'bg-white/20 text-white'
-              }`}
-              title={`${t('aiBudget.label')}: $${aiBudget.spent.toFixed(2)} / $${aiBudget.budget.toFixed(0)}`}
-            >
-              {t('aiBudget.label')}: ${aiBudget.spent.toFixed(2)}
-            </span>
+
+          {/* === MORE MENU — tools you need less often === */}
+          {!isHome && (
+            <div ref={moreMenuRef} className="relative flex-shrink-0">
+              <button
+                onClick={() => setShowMoreMenu(!showMoreMenu)}
+                className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+                  showMoreMenu ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+                }`}
+                title={t('nav.more') || 'More tools'}
+              >
+                ⋯
+              </button>
+
+              {showMoreMenu && (
+                <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] min-w-[200px] py-1">
+                  <Link
+                    href="/montree/dashboard/notes"
+                    data-guide="nav-notes"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/notes' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">📝</span>
+                    <span>{t('nav.notes')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/curriculum"
+                    data-guide="nav-curriculum"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/curriculum' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">📚</span>
+                    <span>{t('nav.curriculum')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/classroom-overview"
+                    data-guide="nav-overview"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/classroom-overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">📋</span>
+                    <span>{t('nav.classroomOverview')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/albums"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/albums' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">🖼️</span>
+                    <span>{t('albums.title')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/students"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/students' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">✏️</span>
+                    <span>{t('students.manageStudents') || 'Manage Students'}</span>
+                  </Link>
+                  {isEnabled('raz_reading_tracker') && (
+                    <Link
+                      href="/montree/dashboard/raz"
+                      data-guide="nav-raz"
+                      onClick={() => setShowMoreMenu(false)}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        pathname === '/montree/dashboard/raz' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="text-base">📖</span>
+                      <span>{t('nav.razReadingTracker')}</span>
+                    </Link>
+                  )}
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-100 my-1" />
+
+                  <Link
+                    href="/montree/dashboard/classroom-builder"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/classroom-builder' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">🏗️</span>
+                    <span>{t('nav.classroomBuilder') || 'Classroom Setup'}</span>
+                  </Link>
+                </div>
+              )}
+            </div>
           )}
+
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}
             className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm flex-shrink-0 whitespace-nowrap"

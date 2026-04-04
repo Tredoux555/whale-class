@@ -226,12 +226,17 @@ export const zh = {
   'nav.logout': '退出',
   'nav.searchStudents': '跳转到学生...',
   'nav.classroomOverview': '班级总览',
+  'nav.more': '更多工具',
+  'nav.classroomBuilder': '教室设置',
   'nav.noStudentsFound': '未找到学生',
   'nav.currentStudent': '当前',
 
   // Students Page
   'students.title': '学生',
   'students.children': '儿童',
+  'students.student': '学生',
+  'students.child': '儿童',
+  'students.manageStudents': '管理学生',
   'students.addStudent': '添加学生',
   'students.addChild': '添加儿童',
   'students.edit': '编辑',
