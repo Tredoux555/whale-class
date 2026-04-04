@@ -874,12 +874,22 @@ export async function POST(request: NextRequest) {
 
                 // Stream thinking deltas (extended thinking) — sent before text
                 if (useThinking) {
+                  let thinkingTokenCount = 0;
                   messageStream.on('event', (event: Record<string, unknown>) => {
                     if (event.type === 'content_block_delta') {
                       const delta = event.delta as Record<string, unknown> | undefined;
                       if (delta?.type === 'thinking_delta' && typeof delta.thinking === 'string') {
+                        thinkingTokenCount++;
                         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', text: delta.thinking })}\n\n`));
                       }
+                    }
+                  });
+                  // Log after stream completes (in finalMessage handler below)
+                  messageStream.on('end', () => {
+                    if (thinkingTokenCount > 0) {
+                      console.log(`[Guru Stream] Thinking: ${thinkingTokenCount} tokens streamed`);
+                    } else {
+                      console.log('[Guru Stream] No thinking tokens received (thinking may not have been used)');
                     }
                   });
                 }
