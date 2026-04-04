@@ -36,6 +36,7 @@ const ConferenceNotesPanel = dynamic(() => import('@/components/montree/Conferen
 const PulsePanel = dynamic(() => import('@/components/montree/PulsePanel'), { ssr: false });
 const EvidencePanel = dynamic(() => import('@/components/montree/EvidencePanel'), { ssr: false });
 const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
+const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner'), { ssr: false });
 
 
 interface Child {
@@ -380,6 +381,9 @@ export default function DashboardPage() {
               </div>
 
               {/* 📝 Teacher Notes moved to /montree/dashboard/notes (nav icon in header) */}
+
+              {/* ── Birthday Banner ── */}
+              {session?.classroom?.id && <BirthdayBanner />}
 
               {/* ── Daily Brief Panel ── */}
               {session?.classroom?.id && (
