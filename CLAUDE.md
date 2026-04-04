@@ -15,19 +15,27 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 4, 2026)
 
-**Photo Bank "Export to Tool" — ✅ PUSHED (commit `12e521d1`):**
-Teachers select photos in Picture Bank → floating bar → "Export to" dropdown → sessionStorage → target tool loads photos. 4 targets: Three-Part Cards, Vocabulary Flashcards, Picture Bingo, Phonics Fast. 6 files modified.
+**Story Mobile Video Uploads Fixed — ✅ PUSHED (commit `6bcd3f46`):**
+5 root causes fixed: server timeouts too short (60s/120s → 300s), missing iOS MIME types (3gpp, 3gpp2, x-m4v), no AbortController on admin uploads (infinite hang), unsafe `res.json()` on 502 HTML responses, client timeout too short (90s → 180s). Files: admin/send route, upload-media route, useAdminMessage hook, Story page, MessageComposer.
 
-**CLIP/SigLIP Classifier Permanently Removed — ✅ PUSHED (commit `2117c993`):**
-Classifier produced noise-level scores (0.0004–0.0143). All code, deps, i18n keys removed. Production photo ID is now exclusively Haiku two-pass pipeline (~$0.006/photo). `@xenova/transformers` removed from package.json.
+**Guru Progressive Thinking Display — ✅ PUSHED (commit `06f4d337`):**
+Shows "Thinking..." → "Building context..." (3s) → "Generating response..." (8s) instead of static dots. Disappears once SSE streaming starts. `thinkingPhase` state in GuruChatThread.tsx.
 
-**Photo-Bank Upload Fix — ✅ PUSHED (commit `2117c993`):**
-POST endpoint auth changed from `verifySuperAdminPassword` → `verifySchoolRequest` (teacher-facing page).
+**Guru Model String + Error Messages — ✅ PUSHED (commit `e53a8299`):**
+Model updated from `claude-sonnet-4-20250514` → `claude-sonnet-4-6`. Error responses now expose actual API error text. Photo audit "Correct" now permanent via `teacher_confirmed` boolean on `montree_media`.
 
-**Story Login Activity Tracking — ✅ PUSHED (commit `17fc9bbe`):**
-7 bugs fixed in Story admin dashboard login tracking: polling for Activity Log tab, `logout_at` field added, stale session cleanup, logout inference, unbounded query limits, heartbeat logging, dead code removal.
+**Paperwork Tracker Panel — ✅ PUSHED (commit `101896b8`):**
+New dashboard intelligence panel. Tracks which weekly paperwork packet (weeks 1-37) each child is on. Children grouped by status (behind/slightly behind/on track). Week badge tappable to edit.
 
-**⚠️ Guru Not Connecting:** User needs to verify `ANTHROPIC_API_KEY` on Railway dashboard. Not a code issue.
+**Circle Time Cards Merged — ✅ PUSHED (commit `b68a7c4c`):**
+Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex / 2×2 circle time) in all 3 Picture Bingo modes.
+
+**⚠️ PENDING MIGRATIONS (must run in Supabase SQL Editor):**
+```sql
+ALTER TABLE montree_children ADD COLUMN IF NOT EXISTS paperwork_current_week integer NOT NULL DEFAULT 1;
+ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS teacher_confirmed boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_montree_media_teacher_confirmed ON montree_media (teacher_confirmed) WHERE teacher_confirmed = false;
+```
 
 ---
 
@@ -248,7 +256,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 157 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id).
+All migrations through 157 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id). **Migrations 158 (paperwork_current_week on montree_children) and 159 (teacher_confirmed on montree_media) are PENDING — must be run in Supabase SQL Editor.**
 
 ---
 
