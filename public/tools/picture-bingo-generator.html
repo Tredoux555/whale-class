@@ -449,6 +449,65 @@
   .calling-header h2 { font-size: 26px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
   .calling-header p { font-size: 12px; color: #999; margin-top: 3px; }
 
+  /*
+    CIRCLE TIME CALLING CARDS — Large 2x2 grid for holding up in class
+    Picture + word on the same side, no duplex needed
+  */
+  .circle-time-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+    margin: 0 auto;
+    max-width: 190mm;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .circle-time-card {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .circle-time-card .ct-inner {
+    background: white;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .circle-time-card .ct-inner img {
+    width: 100%;
+    flex: 1;
+    object-fit: cover;
+    display: block;
+    min-height: 0;
+  }
+
+  .circle-time-card .ct-inner .ct-word {
+    font-size: 26px;
+    font-weight: 800;
+    font-family: 'Nunito', 'Comic Sans MS', cursive;
+    color: #1f2937;
+    padding: 8px 4px;
+    text-align: center;
+    flex-shrink: 0;
+    line-height: 1.2;
+    background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .circle-header { text-align: center; margin-bottom: 4mm; }
+  .circle-header h2 { font-size: 24px; color: #1f2937; font-family: 'Nunito', system-ui, sans-serif; font-weight: 700; }
+  .circle-header p { font-size: 11px; color: #999; margin-top: 2px; }
+
   .section-label {
     text-align: center;
     padding: 14px 16px;
@@ -483,6 +542,7 @@
     <button class="mode-tab active" onclick="switchMode('preset')">CVC Word Sets</button>
     <button class="mode-tab" onclick="switchMode('custom')">Custom Bingo</button>
     <button class="mode-tab" onclick="switchMode('bank')">📸 Picture Bank</button>
+    <button class="mode-tab" onclick="switchMode('circle')">🔵 Circle Time Cards</button>
   </div>
 
   <!-- PRESET MODE -->
@@ -679,6 +739,66 @@
     </div>
   </div>
 
+  <!-- CIRCLE TIME MODE -->
+  <div id="mode-circle" class="mode-content">
+    <div class="controls">
+      <div class="control-group">
+        <label>Picture Source</label>
+        <select id="circleSource">
+          <option value="preset">CVC Word Sets</option>
+          <option value="custom">Custom Uploads</option>
+          <option value="bank">Picture Bank</option>
+        </select>
+      </div>
+      <div class="control-group" id="circleWordSetGroup">
+        <label>Word Set</label>
+        <select id="circleWordSet">
+          <option value="short-a">Short A</option>
+          <option value="short-e">Short E</option>
+          <option value="short-i">Short I</option>
+          <option value="short-o">Short O</option>
+          <option value="short-u">Short U</option>
+          <option value="all" selected>All CVC</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Border Color</label>
+        <div class="color-picker-row">
+          <input type="color" id="circleBorderColor" value="#1e40af">
+          <input type="text" id="circleBorderColorText" value="#1e40af">
+        </div>
+      </div>
+      <div class="control-group">
+        <label>Border Width</label>
+        <select id="circleBorderWidth">
+          <option value="1.5">Thin</option>
+          <option value="2.5">Medium</option>
+          <option value="4" selected>Thick</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Corners</label>
+        <select id="circleCornerRadius">
+          <option value="0">Square</option>
+          <option value="4">Slight</option>
+          <option value="8">Rounded</option>
+          <option value="14" selected>Very Round</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="generateCircleTimeCards()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">Generate Circle Time Cards</button>
+        <button class="btn btn-print" onclick="window.print()">Print All</button>
+      </div>
+    </div>
+
+    <div class="how-to" style="border-color:rgba(59,130,246,0.2); background:rgba(59,130,246,0.06);">
+      <strong style="color:#1d4ed8;">Circle Time Calling Cards:</strong>
+      Large cards (4 per A4 page) with picture + word — perfect for holding up during circle time.
+      Single-sided print, cut along borders. Select your picture source above.<br>
+      <strong style="color:#1d4ed8;">Tip:</strong> Use "Picture Bank" source to use photos you've already selected there.
+    </div>
+  </div>
+
   <div class="info-bar" id="info">
     Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for duplex cut-out cards.
   </div>
@@ -691,22 +811,25 @@ const IMAGE_BASE = '/images/pink-series';
 
 // ===== MODE SWITCHING =====
 function switchMode(mode) {
+  const modes = ['preset', 'custom', 'bank', 'circle'];
   document.querySelectorAll('.mode-tab').forEach((t, i) => {
-    t.classList.toggle('active',
-      (mode === 'preset' && i === 0) || (mode === 'custom' && i === 1) || (mode === 'bank' && i === 2)
-    );
+    t.classList.toggle('active', modes[i] === mode);
   });
-  document.getElementById('mode-preset').classList.toggle('active', mode === 'preset');
-  document.getElementById('mode-custom').classList.toggle('active', mode === 'custom');
-  document.getElementById('mode-bank').classList.toggle('active', mode === 'bank');
+  modes.forEach(m => {
+    const el = document.getElementById('mode-' + m);
+    if (el) el.classList.toggle('active', m === mode);
+  });
   document.getElementById('output').innerHTML = '';
   if (mode === 'preset') {
     document.getElementById('info').innerHTML = 'Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for duplex cut-out cards.';
   } else if (mode === 'custom') {
     document.getElementById('info').innerHTML = 'Upload images to build custom bingo boards. File names become the words.';
-  } else {
+  } else if (mode === 'bank') {
     document.getElementById('info').innerHTML = 'Search the Montree Picture Bank. Click pictures to add them, then generate bingo boards.';
     if (!bankCategoriesLoaded) bankSearch(); // Load on first visit
+  } else if (mode === 'circle') {
+    document.getElementById('info').innerHTML = 'Generate large calling cards (4 per page) for <strong>Circle Time</strong>. Picture + word on same side.';
+    updateCircleSourceVisibility();
   }
 }
 
@@ -724,6 +847,14 @@ function syncColor(colorId, textId) {
 syncColor('borderColor', 'borderColorText');
 syncColor('customBorderColor', 'customBorderColorText');
 syncColor('bankBorderColor', 'bankBorderColorText');
+syncColor('circleBorderColor', 'circleBorderColorText');
+
+// Circle Time source switching — show/hide word set dropdown
+document.getElementById('circleSource').addEventListener('change', updateCircleSourceVisibility);
+function updateCircleSourceVisibility() {
+  const source = document.getElementById('circleSource').value;
+  document.getElementById('circleWordSetGroup').style.display = source === 'preset' ? '' : 'none';
+}
 
 // ===== DRAG & DROP FOR CUSTOM UPLOAD =====
 const uploadZone = document.getElementById('customUploadZone');
@@ -1305,6 +1436,102 @@ function importFromPhotoBankExport() {
     });
   } catch (err) {
     console.error('Failed to parse photoBankExport:', err);
+  }
+}
+
+// ===== CIRCLE TIME CALLING CARDS =====
+function generateCircleTimeCards() {
+  const source = document.getElementById('circleSource').value;
+  let items, imgFn, title;
+
+  if (source === 'preset') {
+    // Temporarily swap wordSet select to the circle version
+    const origSel = document.getElementById('wordSet');
+    const circleSel = document.getElementById('circleWordSet');
+    const origVal = origSel.value;
+    origSel.value = circleSel.value;
+    items = getWordPool();
+    origSel.value = origVal;
+    imgFn = item => `${IMAGE_BASE}/${item.img}`;
+    title = 'CVC ' + circleSel.options[circleSel.selectedIndex].text;
+  } else if (source === 'custom') {
+    if (customItems.length === 0) { alert('Switch to the Custom Bingo tab first and upload some images!'); return; }
+    items = customItems;
+    imgFn = item => item.imgData;
+    title = 'Custom';
+  } else {
+    if (bankItems.length === 0) { alert('Switch to the Picture Bank tab first and select some pictures!'); return; }
+    items = bankItems;
+    imgFn = item => item.imgData;
+    title = 'Picture Bank';
+  }
+
+  generateCircleTimeCardsCore(items, title, imgFn);
+}
+
+function generateCircleTimeCardsCore(wordPool, title, imgFn) {
+  const output = document.getElementById('output');
+  const borderColor = document.getElementById('circleBorderColor').value;
+  const borderW = parseFloat(document.getElementById('circleBorderWidth').value);
+  const radius = parseInt(document.getElementById('circleCornerRadius').value);
+  output.innerHTML = '';
+
+  document.getElementById('info').innerHTML =
+    `<strong>Generated ${wordPool.length} Circle Time cards</strong> — 4 per page, single-sided. ` +
+    `<strong>Print and cut along borders.</strong>`;
+
+  const label = document.createElement('div');
+  label.className = 'section-label';
+  label.style.cssText = 'color:#1d4ed8; border-color:#3b82f6;';
+  label.textContent = `Circle Time Calling Cards — ${wordPool.length} cards (${Math.ceil(wordPool.length / 4)} pages)`;
+  output.appendChild(label);
+
+  const cardsPerPage = 4;
+  const callCardBorderW = borderW * 2;
+  const cardStyle = `background:${borderColor}; padding:${callCardBorderW}mm; border-radius:${radius}px;`;
+  const innerStyle = `border-radius:${Math.max(0, radius - 1)}px;`;
+  const emptyStyle = `background:transparent;`;
+  const pages = Math.ceil(wordPool.length / cardsPerPage);
+
+  for (let p = 0; p < pages; p++) {
+    const start = p * cardsPerPage;
+    const end = Math.min(start + cardsPerPage, wordPool.length);
+    const pageItems = wordPool.slice(start, end);
+
+    // Pad to fill 2x2 grid
+    while (pageItems.length < cardsPerPage) pageItems.push(null);
+
+    const page = document.createElement('div');
+    page.className = 'page';
+    page.innerHTML = `
+      <div class="circle-header">
+        <h2>🔵 Circle Time Cards — ${title}</h2>
+        <p>Page ${p + 1} of ${pages} · Print single-sided, cut along borders</p>
+      </div>
+    `;
+
+    const grid = document.createElement('div');
+    grid.className = 'circle-time-grid';
+
+    for (const item of pageItems) {
+      const card = document.createElement('div');
+      card.className = 'circle-time-card';
+      if (item) {
+        card.setAttribute('style', cardStyle);
+        card.innerHTML = `
+          <div class="ct-inner" style="${innerStyle}">
+            <img src="${imgFn(item)}" alt="${item.word}" loading="lazy">
+            <div class="ct-word">${item.word}</div>
+          </div>
+        `;
+      } else {
+        card.setAttribute('style', emptyStyle);
+      }
+      grid.appendChild(card);
+    }
+
+    page.appendChild(grid);
+    output.appendChild(page);
   }
 }
 
