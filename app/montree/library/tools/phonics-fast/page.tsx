@@ -38,6 +38,23 @@ function getGenerators(t: any) {
 export default function PhonicsHubPage() {
   const { t } = useI18n();
   const [activeTab, setActiveTab] = useState<string>(ALL_PHASES[0]?.id || 'pink1');
+  const [exportBanner, setExportBanner] = useState<number>(0);
+
+  // Detect photos exported from Picture Bank — Phonics Fast already resolves photos
+  // from the Photo Bank API via resolvePhotoBankImages(), so we just show a confirmation
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('photoBankExport');
+      if (!raw) return;
+      sessionStorage.removeItem('photoBankExport');
+      const { photos } = JSON.parse(raw) as { photos: Array<{ id: string; label: string; public_url: string; filename: string }> };
+      if (photos && photos.length > 0) {
+        setExportBanner(photos.length);
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, []);
 
   // Compute word counts dynamically from ALL_PHASES
   const { totalWords, phaseCounts } = useMemo(() => {
@@ -116,6 +133,26 @@ export default function PhonicsHubPage() {
           </button>
         </div>
       </div>
+
+      {/* Export banner — shown when arriving from Picture Bank export */}
+      {exportBanner > 0 && (
+        <div className="max-w-5xl mx-auto px-4 pt-4">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-emerald-600 text-lg">✅</span>
+              <span className="text-emerald-800 text-sm font-medium">
+                {exportBanner} photo{exportBanner !== 1 ? 's' : ''} from the Picture Bank will automatically appear in your phonics materials below.
+              </span>
+            </div>
+            <button
+              onClick={() => setExportBanner(0)}
+              className="text-emerald-400 hover:text-emerald-600 text-lg leading-none"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-5xl mx-auto px-4 py-6">

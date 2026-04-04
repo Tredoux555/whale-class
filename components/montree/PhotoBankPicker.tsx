@@ -24,6 +24,10 @@ interface PhotoBankCategory {
 interface PhotoBankPickerProps {
   /** Called when user clicks a photo to select it. Receives the photo data URL and label. */
   onSelectPhoto: (dataUrl: string, label: string, filename: string) => void;
+  /** Called with raw PhotoBankPhoto object on click (skips data URL conversion). When set, overrides onSelectPhoto behavior. */
+  onRawSelect?: (photo: PhotoBankPhoto) => void;
+  /** Set of photo IDs to show as selected (green checkmark overlay) */
+  selectedIds?: Set<string>;
   /** Max height for the gallery grid (default: 400px) */
   maxHeight?: number;
   /** Whether to show the category filter bar */
@@ -34,8 +38,12 @@ interface PhotoBankPickerProps {
   searchPlaceholder?: string;
 }
 
+export type { PhotoBankPhoto };
+
 export default function PhotoBankPicker({
   onSelectPhoto,
+  onRawSelect,
+  selectedIds,
   maxHeight = 400,
   showCategories = true,
   multiSelect = false,
@@ -147,8 +155,12 @@ export default function PhotoBankPicker({
     };
   }, [searchQuery, selectedCategory, fetchPhotos, fetchMultiWord]);
 
-  // Handle photo selection — fetch full image and convert to dataURL
+  // Handle photo selection — if onRawSelect is provided, call it directly (no data URL conversion)
   const handleSelectPhoto = async (photo: PhotoBankPhoto) => {
+    if (onRawSelect) {
+      onRawSelect(photo);
+      return;
+    }
     setLoadingPhoto(photo.id);
     try {
       const response = await fetch(photo.public_url);
@@ -342,7 +354,9 @@ export default function PhotoBankPicker({
                     gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
                     gap: '8px',
                   }}>
-                    {wordPhotos.map((photo) => (
+                    {wordPhotos.map((photo) => {
+                      const isSelected = selectedIds?.has(photo.id);
+                      return (
                       <div
                         key={photo.id}
                         draggable
@@ -354,16 +368,16 @@ export default function PhotoBankPicker({
                           borderRadius: '8px',
                           overflow: 'hidden',
                           cursor: loadingPhoto === photo.id ? 'wait' : 'pointer',
-                          border: '2px solid transparent',
+                          border: isSelected ? '2px solid #10b981' : '2px solid transparent',
                           transition: 'all 0.15s ease',
                           opacity: loadingPhoto === photo.id ? 0.6 : 1,
                         }}
                         onMouseOver={(e) => {
-                          e.currentTarget.style.borderColor = '#10b981';
+                          if (!isSelected) e.currentTarget.style.borderColor = '#10b981';
                           e.currentTarget.style.transform = 'scale(1.02)';
                         }}
                         onMouseOut={(e) => {
-                          e.currentTarget.style.borderColor = 'transparent';
+                          if (!isSelected) e.currentTarget.style.borderColor = 'transparent';
                           e.currentTarget.style.transform = 'scale(1)';
                         }}
                       >
@@ -382,6 +396,17 @@ export default function PhotoBankPicker({
                         }}>
                           {photo.label}
                         </div>
+                        {isSelected && (
+                          <div style={{
+                            position: 'absolute', top: '4px', right: '4px',
+                            width: '22px', height: '22px', borderRadius: '50%',
+                            backgroundColor: '#10b981', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                          }}>
+                            <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>✓</span>
+                          </div>
+                        )}
                         {loadingPhoto === photo.id && (
                           <div style={{
                             position: 'absolute', inset: 0,
@@ -396,7 +421,8 @@ export default function PhotoBankPicker({
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -410,7 +436,9 @@ export default function PhotoBankPicker({
               gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
               gap: '8px',
             }}>
-              {photos.map((photo) => (
+              {photos.map((photo) => {
+                const isSelected = selectedIds?.has(photo.id);
+                return (
                 <div
                   key={photo.id}
                   draggable
@@ -422,16 +450,16 @@ export default function PhotoBankPicker({
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: loadingPhoto === photo.id ? 'wait' : 'pointer',
-                    border: '2px solid transparent',
+                    border: isSelected ? '2px solid #10b981' : '2px solid transparent',
                     transition: 'all 0.15s ease',
                     opacity: loadingPhoto === photo.id ? 0.6 : 1,
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.borderColor = '#10b981';
+                    if (!isSelected) e.currentTarget.style.borderColor = '#10b981';
                     e.currentTarget.style.transform = 'scale(1.02)';
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.borderColor = 'transparent';
+                    if (!isSelected) e.currentTarget.style.borderColor = 'transparent';
                     e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
@@ -464,6 +492,18 @@ export default function PhotoBankPicker({
                   }}>
                     {photo.label}
                   </div>
+                  {/* Selected checkmark */}
+                  {isSelected && (
+                    <div style={{
+                      position: 'absolute', top: '4px', right: '4px',
+                      width: '22px', height: '22px', borderRadius: '50%',
+                      backgroundColor: '#10b981', display: 'flex',
+                      alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                    }}>
+                      <span style={{ color: '#fff', fontSize: '13px', fontWeight: '700' }}>✓</span>
+                    </div>
+                  )}
                   {/* Loading spinner */}
                   {loadingPhoto === photo.id && (
                     <div style={{
@@ -485,7 +525,8 @@ export default function PhotoBankPicker({
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Load More */}

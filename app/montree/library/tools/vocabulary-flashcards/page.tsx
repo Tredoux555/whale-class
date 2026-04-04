@@ -1,7 +1,7 @@
 // @ts-nocheck
 "use client";
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { escapeHtml, sanitizeImageUrl } from '@/lib/sanitize';
 import JSZip from 'jszip';
@@ -22,6 +22,43 @@ const VocabularyFlashcardGenerator = () => {
   const [generating, setGenerating] = useState(false);
   const [dragOverZone, setDragOverZone] = useState(false);
   const [processing, setProcessing] = useState(false);
+
+  // Import photos exported from Picture Bank via sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('photoBankExport');
+      if (!raw) return;
+      sessionStorage.removeItem('photoBankExport');
+      const { photos } = JSON.parse(raw) as { photos: Array<{ id: string; label: string; public_url: string; filename: string }> };
+      if (!photos || photos.length === 0) return;
+
+      const loadPhotos = async () => {
+        const newCards: FlashCard[] = [];
+        for (const photo of photos) {
+          try {
+            const res = await fetch(photo.public_url);
+            const blob = await res.blob();
+            const imageData = await blobToBase64(blob);
+            const word = (photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || '').toLowerCase().trim();
+            if (!word) continue;
+            newCards.push({ id: Date.now() + Math.random(), image: imageData, word });
+          } catch (err) {
+            console.error('Failed to import photo bank image:', err);
+          }
+        }
+        if (newCards.length > 0) {
+          setCards(prev => {
+            const newWords = new Set(newCards.map(c => c.word));
+            const kept = prev.filter(c => !newWords.has(c.word));
+            return [...kept, ...newCards];
+          });
+        }
+      };
+      loadPhotos();
+    } catch (err) {
+      console.error('Failed to parse photoBankExport:', err);
+    }
+  }, []);
 
   // Extract word from filename: "cat.jpg" → "cat", "my-dog.png" → "my dog"
   const wordFromFilename = (filename: string): string => {

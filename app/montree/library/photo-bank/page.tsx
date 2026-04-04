@@ -4,16 +4,77 @@
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
+import type { PhotoBankPhoto } from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 
+interface SelectedPhoto {
+  id: string;
+  label: string;
+  public_url: string;
+  filename: string;
+}
+
+const EXPORT_TARGETS = [
+  { key: 'card-generator', label: '🃏 Three-Part Cards', href: '/montree/library/tools/card-generator' },
+  { key: 'vocabulary-flashcards', label: '📸 Vocabulary Flashcards', href: '/montree/library/tools/vocabulary-flashcards' },
+  { key: 'picture-bingo', label: '🖼️ Picture Bingo', href: '/tools/picture-bingo-generator.html' },
+  { key: 'phonics-fast', label: '📚 Phonics Fast', href: '/montree/library/tools/phonics-fast' },
+] as const;
+
 export default function PhotoBankPage() {
+  const router = useRouter();
   const [uploadMode, setUploadMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
   const [uploadResults, setUploadResults] = useState<Array<{ success: boolean; filename: string; error?: string }>>([]);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Selection state for Export-to feature
+  const [selectedPhotos, setSelectedPhotos] = useState<Map<string, SelectedPhoto>>(new Map());
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const selectedIds = React.useMemo(() => new Set(selectedPhotos.keys()), [selectedPhotos]);
+
+  const handleRawSelect = useCallback((photo: PhotoBankPhoto) => {
+    setSelectedPhotos(prev => {
+      const next = new Map(prev);
+      if (next.has(photo.id)) {
+        next.delete(photo.id);
+      } else {
+        next.set(photo.id, {
+          id: photo.id,
+          label: photo.label,
+          public_url: photo.public_url,
+          filename: photo.filename,
+        });
+      }
+      return next;
+    });
+  }, []);
+
+  const handleExport = useCallback((href: string) => {
+    const photos = Array.from(selectedPhotos.values());
+    if (photos.length === 0) return;
+    try {
+      sessionStorage.setItem('photoBankExport', JSON.stringify({ photos }));
+    } catch (err) {
+      console.error('Failed to save export data to sessionStorage:', err);
+      return;
+    }
+    setShowExportMenu(false);
+    // For static HTML pages (picture bingo), use window.location; for Next.js pages, use router
+    if (href.startsWith('/tools/')) {
+      window.location.href = href;
+    } else {
+      router.push(href);
+    }
+  }, [selectedPhotos, router]);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedPhotos(new Map());
+    setShowExportMenu(false);
+  }, []);
 
   // CRITICAL: Prevent browser from opening dropped files as new tabs
   // This must be on the window level to catch ALL drag events on the page
@@ -244,12 +305,14 @@ export default function PhotoBankPage() {
           >
             <PhotoBankPicker
               onSelectPhoto={(dataUrl, label) => {
-                // On the full page, clicking opens in new tab for download
+                // Fallback: download if no raw select mode
                 const link = document.createElement('a');
                 link.href = dataUrl;
                 link.download = `${label.replace(/\s+/g, '_')}.png`;
                 link.click();
               }}
+              onRawSelect={handleRawSelect}
+              selectedIds={selectedIds}
               maxHeight={600}
               showCategories={true}
               searchPlaceholder="Search pictures... (e.g. &quot;cat&quot;, &quot;apple&quot;, &quot;short a&quot;)"
@@ -264,6 +327,114 @@ export default function PhotoBankPage() {
           Contribute pictures to help teachers worldwide
         </p>
       </div>
+
+      {/* Floating Export-to bar — shown when photos are selected */}
+      {selectedPhotos.size > 0 && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            background: 'linear-gradient(135deg, #0D3330 0%, #134e4a 100%)',
+            borderTop: '1px solid rgba(16,185,129,0.3)',
+            boxShadow: '0 -4px 20px rgba(0,0,0,0.4)',
+            padding: '12px 16px',
+          }}
+        >
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+            {/* Selection count + clear */}
+            <div className="flex items-center gap-3 shrink-0">
+              <span style={{
+                backgroundColor: 'rgba(16,185,129,0.25)',
+                color: '#6ee7b7',
+                padding: '4px 12px',
+                borderRadius: '16px',
+                fontSize: '13px',
+                fontWeight: '600',
+              }}>
+                {selectedPhotos.size} selected
+              </span>
+              <button
+                onClick={handleClearSelection}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'rgba(255,255,255,0.4)',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                }}
+              >
+                Clear
+              </button>
+            </div>
+
+            {/* Export-to button + dropdown */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                style={{
+                  padding: '8px 20px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(16,185,129,0.4)',
+                  backgroundColor: 'rgba(16,185,129,0.2)',
+                  color: '#6ee7b7',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                Export to... ▾
+              </button>
+
+              {showExportMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: '100%',
+                    right: 0,
+                    marginBottom: '8px',
+                    backgroundColor: '#1a3a38',
+                    border: '1px solid rgba(16,185,129,0.3)',
+                    borderRadius: '12px',
+                    padding: '6px',
+                    minWidth: '220px',
+                    boxShadow: '0 -8px 24px rgba(0,0,0,0.4)',
+                  }}
+                >
+                  {EXPORT_TARGETS.map((target) => (
+                    <button
+                      key={target.key}
+                      onClick={() => handleExport(target.href)}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        color: '#d1fae5',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'background-color 0.1s',
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.15)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                    >
+                      {target.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
