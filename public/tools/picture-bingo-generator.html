@@ -542,7 +542,6 @@
     <button class="mode-tab active" onclick="switchMode('preset')">CVC Word Sets</button>
     <button class="mode-tab" onclick="switchMode('custom')">Custom Bingo</button>
     <button class="mode-tab" onclick="switchMode('bank')">📸 Picture Bank</button>
-    <button class="mode-tab" onclick="switchMode('circle')">🔵 Circle Time Cards</button>
   </div>
 
   <!-- PRESET MODE -->
@@ -595,6 +594,13 @@
           <option value="14">Very Round</option>
         </select>
       </div>
+      <div class="control-group">
+        <label>Calling Card Size</label>
+        <select id="callingCardSize">
+          <option value="4x4">4×4 Small (duplex)</option>
+          <option value="2x2">2×2 Large (circle time)</option>
+        </select>
+      </div>
       <div class="btn-group">
         <button class="btn btn-primary" onclick="generate()">Generate Bingo Boards</button>
         <button class="btn btn-calling" onclick="generateCallingCards()">Generate Calling Cards</button>
@@ -605,7 +611,7 @@
     <div class="how-to">
       <strong>How to play:</strong>
       1) Print the <strong>Bingo Boards</strong> — each board has pictures with words (single-sided, one page per board).<br>
-      2) Print the <strong>Calling Cards</strong> duplex (flip on short edge) — picture on front, word on back. Cut along borders.<br>
+      2) Print the <strong>Calling Cards</strong> — 4×4 Small prints duplex (picture front, word back). 2×2 Large prints single-sided (picture + word) for circle time.<br>
       3) The caller draws a card, shows the picture. Players find and cover the matching picture on their board.
     </div>
   </div>
@@ -647,6 +653,13 @@
           <option value="4">Slight</option>
           <option value="8" selected>Rounded</option>
           <option value="14">Very Round</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>Calling Card Size</label>
+        <select id="customCallingCardSize">
+          <option value="4x4">4×4 Small (duplex)</option>
+          <option value="2x2">2×2 Large (circle time)</option>
         </select>
       </div>
     </div>
@@ -717,6 +730,13 @@
           <option value="14">Very Round</option>
         </select>
       </div>
+      <div class="control-group">
+        <label>Calling Card Size</label>
+        <select id="bankCallingCardSize">
+          <option value="4x4">4×4 Small (duplex)</option>
+          <option value="2x2">2×2 Large (circle time)</option>
+        </select>
+      </div>
     </div>
 
     <div id="bankStatus" style="text-align:center; padding:8px; color:#666; font-size:13px;">Search or browse pictures from the Montree Picture Bank. Click to add.</div>
@@ -739,66 +759,6 @@
     </div>
   </div>
 
-  <!-- CIRCLE TIME MODE -->
-  <div id="mode-circle" class="mode-content">
-    <div class="controls">
-      <div class="control-group">
-        <label>Picture Source</label>
-        <select id="circleSource">
-          <option value="preset">CVC Word Sets</option>
-          <option value="custom">Custom Uploads</option>
-          <option value="bank">Picture Bank</option>
-        </select>
-      </div>
-      <div class="control-group" id="circleWordSetGroup">
-        <label>Word Set</label>
-        <select id="circleWordSet">
-          <option value="short-a">Short A</option>
-          <option value="short-e">Short E</option>
-          <option value="short-i">Short I</option>
-          <option value="short-o">Short O</option>
-          <option value="short-u">Short U</option>
-          <option value="all" selected>All CVC</option>
-        </select>
-      </div>
-      <div class="control-group">
-        <label>Border Color</label>
-        <div class="color-picker-row">
-          <input type="color" id="circleBorderColor" value="#1e40af">
-          <input type="text" id="circleBorderColorText" value="#1e40af">
-        </div>
-      </div>
-      <div class="control-group">
-        <label>Border Width</label>
-        <select id="circleBorderWidth">
-          <option value="1.5">Thin</option>
-          <option value="2.5">Medium</option>
-          <option value="4" selected>Thick</option>
-        </select>
-      </div>
-      <div class="control-group">
-        <label>Corners</label>
-        <select id="circleCornerRadius">
-          <option value="0">Square</option>
-          <option value="4">Slight</option>
-          <option value="8">Rounded</option>
-          <option value="14" selected>Very Round</option>
-        </select>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="generateCircleTimeCards()" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">Generate Circle Time Cards</button>
-        <button class="btn btn-print" onclick="window.print()">Print All</button>
-      </div>
-    </div>
-
-    <div class="how-to" style="border-color:rgba(59,130,246,0.2); background:rgba(59,130,246,0.06);">
-      <strong style="color:#1d4ed8;">Circle Time Calling Cards:</strong>
-      Large cards (4 per A4 page) with picture + word — perfect for holding up during circle time.
-      Single-sided print, cut along borders. Select your picture source above.<br>
-      <strong style="color:#1d4ed8;">Tip:</strong> Use "Picture Bank" source to use photos you've already selected there.
-    </div>
-  </div>
-
   <div class="info-bar" id="info">
     Click <strong>Generate Bingo Boards</strong> for player boards, or <strong>Generate Calling Cards</strong> for duplex cut-out cards.
   </div>
@@ -811,7 +771,7 @@ const IMAGE_BASE = '/images/pink-series';
 
 // ===== MODE SWITCHING =====
 function switchMode(mode) {
-  const modes = ['preset', 'custom', 'bank', 'circle'];
+  const modes = ['preset', 'custom', 'bank'];
   document.querySelectorAll('.mode-tab').forEach((t, i) => {
     t.classList.toggle('active', modes[i] === mode);
   });
@@ -827,9 +787,6 @@ function switchMode(mode) {
   } else if (mode === 'bank') {
     document.getElementById('info').innerHTML = 'Search the Montree Picture Bank. Click pictures to add them, then generate bingo boards.';
     if (!bankCategoriesLoaded) bankSearch(); // Load on first visit
-  } else if (mode === 'circle') {
-    document.getElementById('info').innerHTML = 'Generate large calling cards (4 per page) for <strong>Circle Time</strong>. Picture + word on same side.';
-    updateCircleSourceVisibility();
   }
 }
 
@@ -847,14 +804,6 @@ function syncColor(colorId, textId) {
 syncColor('borderColor', 'borderColorText');
 syncColor('customBorderColor', 'customBorderColorText');
 syncColor('bankBorderColor', 'bankBorderColorText');
-syncColor('circleBorderColor', 'circleBorderColorText');
-
-// Circle Time source switching — show/hide word set dropdown
-document.getElementById('circleSource').addEventListener('change', updateCircleSourceVisibility);
-function updateCircleSourceVisibility() {
-  const source = document.getElementById('circleSource').value;
-  document.getElementById('circleWordSetGroup').style.display = source === 'preset' ? '' : 'none';
-}
 
 // ===== DRAG & DROP FOR CUSTOM UPLOAD =====
 const uploadZone = document.getElementById('customUploadZone');
@@ -1188,10 +1137,14 @@ function generateCallingCards() {
   const borderColor = document.getElementById('borderColor').value;
   const borderW = parseFloat(document.getElementById('borderWidth').value);
   const radius = parseInt(document.getElementById('cornerRadius').value);
+  const cardSize = document.getElementById('callingCardSize').value;
+  const imgFn = item => `${IMAGE_BASE}/${item.img}`;
 
-  generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius,
-    item => `${IMAGE_BASE}/${item.img}`
-  );
+  if (cardSize === '2x2') {
+    generateCircleTimeCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn);
+  } else {
+    generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn);
+  }
 }
 
 // ===== CUSTOM MODE =====
@@ -1215,10 +1168,14 @@ function generateCustomCallingCards() {
   const borderColor = document.getElementById('customBorderColor').value;
   const borderW = parseFloat(document.getElementById('customBorderWidth').value);
   const radius = parseInt(document.getElementById('customCornerRadius').value);
+  const cardSize = document.getElementById('customCallingCardSize').value;
+  const imgFn = item => item.imgData;
 
-  generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius,
-    item => item.imgData
-  );
+  if (cardSize === '2x2') {
+    generateCircleTimeCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn);
+  } else {
+    generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn);
+  }
 }
 
 // ===== PICTURE BANK MODE =====
@@ -1397,7 +1354,14 @@ function generateBankCallingCards() {
   const borderColor = document.getElementById('bankBorderColor').value;
   const borderW = parseFloat(document.getElementById('bankBorderWidth').value);
   const radius = parseInt(document.getElementById('bankCornerRadius').value);
-  generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, item => item.imgData);
+  const cardSize = document.getElementById('bankCallingCardSize').value;
+  const imgFn = item => item.imgData;
+
+  if (cardSize === '2x2') {
+    generateCircleTimeCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn);
+  } else {
+    generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn);
+  }
 }
 
 // Import photos exported from Picture Bank page via sessionStorage
@@ -1439,41 +1403,9 @@ function importFromPhotoBankExport() {
   }
 }
 
-// ===== CIRCLE TIME CALLING CARDS =====
-function generateCircleTimeCards() {
-  const source = document.getElementById('circleSource').value;
-  let items, imgFn, title;
-
-  if (source === 'preset') {
-    // Temporarily swap wordSet select to the circle version
-    const origSel = document.getElementById('wordSet');
-    const circleSel = document.getElementById('circleWordSet');
-    const origVal = origSel.value;
-    origSel.value = circleSel.value;
-    items = getWordPool();
-    origSel.value = origVal;
-    imgFn = item => `${IMAGE_BASE}/${item.img}`;
-    title = 'CVC ' + circleSel.options[circleSel.selectedIndex].text;
-  } else if (source === 'custom') {
-    if (customItems.length === 0) { alert('Switch to the Custom Bingo tab first and upload some images!'); return; }
-    items = customItems;
-    imgFn = item => item.imgData;
-    title = 'Custom';
-  } else {
-    if (bankItems.length === 0) { alert('Switch to the Picture Bank tab first and select some pictures!'); return; }
-    items = bankItems;
-    imgFn = item => item.imgData;
-    title = 'Picture Bank';
-  }
-
-  generateCircleTimeCardsCore(items, title, imgFn);
-}
-
-function generateCircleTimeCardsCore(wordPool, title, imgFn) {
+// ===== CIRCLE TIME CALLING CARDS (2×2 large, single-sided) =====
+function generateCircleTimeCardsCore(wordPool, title, borderColor, borderW, radius, imgFn) {
   const output = document.getElementById('output');
-  const borderColor = document.getElementById('circleBorderColor').value;
-  const borderW = parseFloat(document.getElementById('circleBorderWidth').value);
-  const radius = parseInt(document.getElementById('circleCornerRadius').value);
   output.innerHTML = '';
 
   document.getElementById('info').innerHTML =
