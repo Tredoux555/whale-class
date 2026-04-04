@@ -603,15 +603,13 @@ export default function PhotoAuditPage() {
       if (controller.signal.aborted) return;
       if (!res.ok) throw new Error('fetch failed');
       const data = await res.json();
-      // Merge confirmed status: photos confirmed in this session stay green
-      // even if server returns stale confidence data (race condition protection)
-      const mergedPhotos = (data.photos || []).map((p: AuditPhoto) =>
-        confirmedIdsRef.current.has(p.id)
-          ? { ...p, zone: 'green' as const, confidence: 1.0 }
-          : p
+      // Filter out photos confirmed in this session — they're "done" and should
+      // not reappear even if the server returns stale confidence data (race condition)
+      const mergedPhotos = (data.photos || []).filter((p: AuditPhoto) =>
+        !confirmedIdsRef.current.has(p.id)
       );
       setPhotos(mergedPhotos);
-      // Recalculate counts to reflect merged confirmed statuses
+      // Recalculate counts excluding confirmed photos
       if (confirmedIdsRef.current.size > 0) {
         const recounted = { green: 0, amber: 0, red: 0, untagged: 0 };
         mergedPhotos.forEach((p: AuditPhoto) => {
@@ -661,23 +659,19 @@ export default function PhotoAuditPage() {
         console.error('[Photo Audit] Confirm failed:', res.status, errData);
         throw new Error(errData?.error || 'confirm failed');
       }
-      // Track confirmed ID so future refetches preserve green status
+      // "Correct" = done signal. Remove photo from list entirely.
       confirmedIdsRef.current.add(photo.id);
       const oldZone = photo.zone || 'amber';
-      setPhotos(prev => prev.map(p =>
-        p.id === photo.id ? { ...p, zone: 'green' as const, confidence: 1.0 } : p
-      ));
+      setPhotos(prev => prev.filter(p => p.id !== photo.id));
       setCounts(prev => ({
         ...prev,
-        green: prev.green + 1,
         ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
         ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
         ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       toast.success(t('audit.confirmed'));
-      // DO NOT call setZone('green') here — it triggers a refetch that can overwrite
-      // the optimistic update with stale server data (race condition). The photo already
-      // shows as green in local state. Teacher stays on current tab to keep confirming.
+      // Photo is removed from view. On next refresh, server has confidence=1.0
+      // so it won't appear in non-green zones.
     } catch (err: any) {
       toast.error(err?.message || t('audit.confirmFailed'));
     } finally {
@@ -773,23 +767,14 @@ export default function PhotoAuditPage() {
         console.error('[Photo Audit] Correction failed:', res.status, errData);
         throw new Error(errData?.error || 'correction failed');
       }
-      const oldZone = correctingPhoto.zone || 'amber';
-      confirmedIdsRef.current.add(correctingPhoto.id);
+      // "Fix" = update work info but keep photo in place for further actions (Teach, Correct).
+      // Don't change zone or counts — teacher still needs to Teach AI and/or click Correct.
       setPhotos(prev => prev.map(p =>
         p.id === correctingPhoto.id
-          ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea, zone: 'green' as const, confidence: 1.0 }
+          ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea }
           : p
       ));
-      setCounts(prev => ({
-        ...prev,
-        green: prev.green + 1,
-        ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
-        ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
-        ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
-      }));
       toast.success(t('audit.corrected'));
-      // DO NOT call setZone('green') here — it triggers a refetch that overwrites
-      // optimistic updates with stale server data (race condition).
     } catch (err: any) {
       toast.error(err?.message || t('audit.correctionFailed'));
     } finally {
@@ -827,9 +812,15 @@ export default function PhotoAuditPage() {
         if (!res.ok) throw new Error();
         succeeded++;
         confirmedIdsRef.current.add(photo.id);
-        setPhotos(prev => prev.map(p =>
-          p.id === photo.id ? { ...p, zone: 'green' as const, confidence: 1.0 } : p
-        ));
+        // Remove confirmed photo from list
+        setPhotos(prev => prev.filter(p => p.id !== photo.id));
+        const oldZone = photo.zone || 'amber';
+        setCounts(prev => ({
+          ...prev,
+          ...(oldZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+          ...(oldZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+          ...(oldZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+        }));
       } catch {
         failed.push(ids[i]);
       }
@@ -839,16 +830,6 @@ export default function PhotoAuditPage() {
     }
     setBatchProcessing(false);
     setSelectedIds(new Set(failed));
-    // Recalculate counts from current photos state after batch updates
-    if (succeeded > 0) {
-      setPhotos(prev => {
-        const newCounts = { green: 0, amber: 0, red: 0, untagged: 0 };
-        prev.forEach(p => { if (p.zone && newCounts[p.zone as keyof typeof newCounts] !== undefined) newCounts[p.zone as keyof typeof newCounts]++; });
-        setCounts(newCounts);
-        return prev; // no mutation, just recalc counts
-      });
-      // DO NOT call setZone('green') — same race condition as single confirm
-    }
     if (failed.length === 0) {
       toast.success(t('audit.batchComplete'));
     } else {
@@ -1180,10 +1161,11 @@ export default function PhotoAuditPage() {
     }));
   }, [pickerArea, curriculum]);
 
-  // Filter photos by zone
+  // Filter photos by zone — exclude green (confirmed) from all views
   const filteredPhotos = useMemo(() => {
-    if (zone === 'all') return photos;
-    return photos.filter(p => p.zone === zone);
+    const nonGreen = photos.filter(p => p.zone !== 'green');
+    if (zone === 'all') return nonGreen;
+    return nonGreen.filter(p => p.zone === zone);
   }, [photos, zone]);
 
   // Paginate
@@ -1197,13 +1179,12 @@ export default function PhotoAuditPage() {
   // Reset page on zone change
   useEffect(() => { setPage(0); }, [zone]);
 
-  // Zone tab config
+  // Zone tab config — Green tab removed; confirmed photos simply disappear from view
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number }[] = [
-    { key: 'all', label: t('audit.all'), color: 'bg-gray-100 text-gray-700', count: counts.green + counts.amber + counts.red + counts.untagged },
+    { key: 'all', label: t('audit.all'), color: 'bg-gray-100 text-gray-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'red', label: t('audit.red'), color: 'bg-red-100 text-red-700', count: counts.red },
     { key: 'amber', label: t('audit.amber'), color: 'bg-amber-100 text-amber-700', count: counts.amber },
     { key: 'untagged', label: t('audit.untagged'), color: 'bg-gray-200 text-gray-600', count: counts.untagged },
-    { key: 'green', label: t('audit.green'), color: 'bg-emerald-100 text-emerald-700', count: counts.green },
   ];
 
   // ─── JSX ───
@@ -1746,7 +1727,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           </div>
         )}
         <div className="flex gap-1 mt-1.5">
-          {photo.zone !== 'green' && photo.work_id && (
+          {photo.work_id && (
             <button
               onClick={onConfirm}
               disabled={processing}
