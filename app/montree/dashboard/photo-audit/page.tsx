@@ -425,6 +425,8 @@ export default function PhotoAuditPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchProcessing, setBatchProcessing] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  // Work status tracking for P/P/M buttons (keyed by `${childId}:${workName}`)
+  const [workStatuses, setWorkStatuses] = useState<Record<string, string>>({});
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
 
   // "Teach AI" / "Use as Reference" state
@@ -680,6 +682,41 @@ export default function PhotoAuditPage() {
       toast.error(err?.message || t('audit.confirmFailed'));
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  // Set work status (Presented/Practicing/Mastered) from photo audit
+  const handleSetStatus = async (photo: AuditPhoto, status: 'presented' | 'practicing' | 'mastered') => {
+    if (!photo.work_name || !photo.child_id) return;
+    const key = `${photo.child_id}:${photo.work_name}`;
+    const prevStatus = workStatuses[key];
+    // Optimistic update
+    setWorkStatuses(prev => ({ ...prev, [key]: status }));
+    try {
+      const res = await montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: photo.child_id,
+          work_name: photo.work_name,
+          work_id: photo.work_id || undefined,
+          area: photo.area || undefined,
+          status,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || 'Failed to update status');
+      }
+      toast.success(`${photo.child_name || 'Child'}: ${photo.work_name} → ${status}`);
+    } catch (err: any) {
+      // Revert optimistic update
+      setWorkStatuses(prev => {
+        const next = { ...prev };
+        if (prevStatus) next[key] = prevStatus; else delete next[key];
+        return next;
+      });
+      toast.error(err?.message || 'Failed to update status');
     }
   };
 
@@ -1546,6 +1583,8 @@ export default function PhotoAuditPage() {
               onAcceptResult={() => handleAcceptResult(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
+              workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
+              onSetStatus={(status) => handleSetStatus(photo, status)}
               t={t}
             />
           ))}
@@ -1869,7 +1908,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onSaveNote, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onSaveNote, processing, workStatus, onSetStatus, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1882,6 +1921,8 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onAcceptResult: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
+  workStatus: string | null;
+  onSetStatus: (status: 'presented' | 'practicing' | 'mastered') => void;
   t: (key: string) => string;
 }) {
   const [noteText, setNoteText] = useState(photo.caption || '');
@@ -2039,7 +2080,32 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             )}
           </div>
         )}
-        <div className="flex gap-1 mt-1.5">
+        {/* Work status: Presented / Practicing / Mastered */}
+        {photo.work_name && photo.child_id && (
+          <div className="flex gap-1 mt-1.5">
+            {(['presented', 'practicing', 'mastered'] as const).map(s => {
+              const active = workStatus === s;
+              const cfg = s === 'presented'
+                ? { icon: '🌱', label: 'P', bg: active ? 'bg-amber-200 text-amber-800 ring-1 ring-amber-400' : 'bg-amber-50 text-amber-600 hover:bg-amber-100' }
+                : s === 'practicing'
+                ? { icon: '🔄', label: 'Pr', bg: active ? 'bg-blue-200 text-blue-800 ring-1 ring-blue-400' : 'bg-blue-50 text-blue-600 hover:bg-blue-100' }
+                : { icon: '⭐', label: 'M', bg: active ? 'bg-emerald-200 text-emerald-800 ring-1 ring-emerald-400' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' };
+              return (
+                <button
+                  key={s}
+                  onClick={() => onSetStatus(s)}
+                  disabled={processing}
+                  className={`flex-1 text-[10px] py-1 rounded font-medium transition-all disabled:opacity-50 ${cfg.bg}`}
+                  title={s.charAt(0).toUpperCase() + s.slice(1)}
+                >
+                  {cfg.icon} {cfg.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {/* Correction actions */}
+        <div className="flex gap-1 mt-1">
           {photo.work_id && (
             <button
               onClick={onConfirm}
