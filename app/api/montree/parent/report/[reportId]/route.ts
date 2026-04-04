@@ -266,6 +266,13 @@ export async function GET(
         })),
       })) || null;
 
+      // Extract AI narrative if present
+      const narrative = (savedContent as Record<string, unknown>)?.narrative as {
+        summary?: string;
+        generated_at?: string;
+        model?: string;
+      } | null;
+
       return NextResponse.json({
         report: {
           ...report,
@@ -275,6 +282,8 @@ export async function GET(
           recommendations: savedContent.recommendations || report.recommendations || null,
           closing: savedContent.closing || null,
           areas_explored: mappedAreasExplored,
+          // AI-generated narrative (from batch-narratives endpoint)
+          narrative: narrative || null,
           child,
           works_completed: worksCompleted,
           all_photos: allPhotos,
