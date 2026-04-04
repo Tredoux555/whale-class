@@ -687,8 +687,8 @@ export async function POST(request: NextRequest) {
                 saveInteractionAndLearn(supabase, {
                   child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                   question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-                  guruTier, estCost: 0, responseText: finalText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole, locale,
+                  guruTier, estCost: 0, responseText: finalText, hybridRouted: useHaikuForQuestion,
+                  knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
                 });
               }
             });
@@ -740,8 +740,8 @@ export async function POST(request: NextRequest) {
               saveInteractionAndLearn(supabase, {
                 child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                 question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-                guruTier, estCost, responseText: finalText, knowledge, guruModel, startTime,
-                isTeacher, isGreetingTrigger, isParentRole, locale,
+                guruTier, estCost, responseText: finalText, hybridRouted: useHaikuForQuestion,
+                knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
               });
             });
           }
@@ -802,8 +802,8 @@ export async function POST(request: NextRequest) {
                 saveInteractionAndLearn(supabase, {
                   child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                   question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
-                  guruTier, estCost, responseText: fullText || fallbackText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole, locale,
+                  guruTier, estCost, responseText: fullText || fallbackText, hybridRouted: useHaikuForQuestion,
+                  knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
                 });
               } catch (streamErr) {
                 console.error('[Guru Stream] Streaming error, falling back:', streamErr);
@@ -821,8 +821,8 @@ export async function POST(request: NextRequest) {
                 saveInteractionAndLearn(supabase, {
                   child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
                   question, guruMode, questionCategory, toolsEnabled, modeTools, rounds: 0, actionsTaken: [],
-                  guruTier, estCost, responseText: fullText || fallbackText, knowledge, guruModel, startTime,
-                  isTeacher, isGreetingTrigger, isParentRole, locale,
+                  guruTier, estCost, responseText: fullText || fallbackText, hybridRouted: useHaikuForQuestion,
+                  knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
                 });
               }
             }
@@ -857,8 +857,8 @@ export async function POST(request: NextRequest) {
           saveInteractionAndLearn(supabase, {
             child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
             question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-            guruTier, estCost, responseText, knowledge, guruModel, startTime,
-            isTeacher, isGreetingTrigger, isParentRole, locale,
+            guruTier, estCost, responseText, hybridRouted: useHaikuForQuestion,
+            knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
           });
         });
       }
@@ -954,8 +954,8 @@ export async function POST(request: NextRequest) {
           saveInteractionAndLearn(supabase, {
             child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
             question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-            guruTier, estCost: 0, responseText, knowledge, guruModel, startTime,
-            isTeacher, isGreetingTrigger, isParentRole, locale,
+            guruTier, estCost: 0, responseText, hybridRouted: useHaikuForQuestion,
+            knowledge, guruModel, startTime, isTeacher, isGreetingTrigger, isParentRole, locale,
           });
 
           return NextResponse.json({ success: true, insight: responseText, conversational: true });
@@ -1032,8 +1032,8 @@ export async function POST(request: NextRequest) {
       const { data: saved } = await saveInteractionAndLearnSync(supabase, {
         child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
         question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-        guruTier, estCost, responseText, knowledge, guruModel, startTime, processingTime,
-        isTeacher, isGreetingTrigger, isParentRole, locale,
+        guruTier, estCost, responseText, hybridRouted: useHaikuForQuestion,
+        knowledge, guruModel, startTime, processingTime, isTeacher, isGreetingTrigger, isParentRole, locale,
       });
 
       // Actions are internal (saved in context_snapshot) — never exposed to the parent
@@ -1307,6 +1307,7 @@ function saveInteractionAndLearn(supabase: any, opts: {
   toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
   actionsTaken: Array<{ tool: string } & ToolResult>;
   guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
+  hybridRouted: boolean;
   knowledge: KnowledgeResult; guruModel: string; startTime: number;
   isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
   locale?: string;
@@ -1327,6 +1328,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
   toolsEnabled: boolean; modeTools: unknown[]; rounds: number;
   actionsTaken: Array<{ tool: string } & ToolResult>;
   guruTier: 'haiku' | 'sonnet'; estCost: number; responseText: string;
+  hybridRouted: boolean;
   knowledge: KnowledgeResult; guruModel: string; startTime: number; processingTime?: number;
   isTeacher: boolean; isGreetingTrigger: boolean; isParentRole: boolean;
   locale?: string;
@@ -1334,7 +1336,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
   const {
     child_id, isWholeClassMode, teacherId, classroom_id, childContext, classroomContext,
     question, guruMode, questionCategory, toolsEnabled, modeTools, rounds, actionsTaken,
-    guruTier, estCost, responseText, knowledge, guruModel, startTime,
+    guruTier, estCost, responseText, hybridRouted, knowledge, guruModel, startTime,
     isTeacher, isGreetingTrigger, locale: interactionLocale,
   } = opts;
   const processingTime = opts.processingTime || (Date.now() - startTime);
@@ -1359,7 +1361,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
         tool_rounds: rounds,
         actions_taken: actionsTaken.length,
         guru_tier: guruTier,
-        hybrid_routed: useHaikuForQuestion,
+        hybrid_routed: hybridRouted,
         est_cost: estCost,
       } : {
         child_name: childContext?.name,
@@ -1373,7 +1375,7 @@ async function saveInteractionAndLearnSync(supabase: any, opts: {
         tool_rounds: rounds,
         actions_taken: actionsTaken.length,
         guru_tier: guruTier,
-        hybrid_routed: useHaikuForQuestion,
+        hybrid_routed: hybridRouted,
         est_cost: estCost,
       },
       response_insight: responseText,
