@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 
-// Allow large uploads on slow mobile networks (iPhone photos 8-15MB on 4G)
-export const maxDuration = 120;
+// Allow large uploads on slow mobile networks (videos up to 100MB on 4G)
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
-const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
+const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'];
 const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/flac', 'audio/webm'];
 
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
@@ -20,7 +20,7 @@ function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'a
   
   const ext = filename.split('.').pop()?.toLowerCase();
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
-  const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv'];
+  const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', '3gp', '3g2'];
   const audioExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac', 'weba'];
   
   if (ext && imageExts.includes(ext)) return 'image';

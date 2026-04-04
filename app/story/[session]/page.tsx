@@ -363,9 +363,9 @@ export default function StoryViewer() {
       const formData = new FormData();
       formData.append('file', uploadFile);
 
-      // 90s timeout — mobile uploads on slow networks need time
+      // 3-min timeout — mobile video uploads on slow networks need time
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 90_000);
+      const timeoutId = setTimeout(() => controller.abort(), 180_000);
 
       const res = await fetch('/api/story/upload-media', {
         method: 'POST',
@@ -376,7 +376,13 @@ export default function StoryViewer() {
 
       clearTimeout(timeoutId);
 
-      const data = await res.json();
+      // Safe JSON parse — server may return HTML on 502/504 timeout
+      let data: { error?: string };
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: `Server error (${res.status})` };
+      }
 
       if (res.ok) {
         await loadMedia();
