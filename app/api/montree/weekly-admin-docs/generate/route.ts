@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 import {
   generateWeeklySummary,
   generateWeeklyPlan,
@@ -14,6 +15,12 @@ import {
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Feature gate: weekly_admin_docs must be enabled for this school
+  const supabaseCheck = getSupabase();
+  if (!await isFeatureEnabled(supabaseCheck, auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled for this school' }, { status: 403 });
+  }
 
   try {
     const body = await request.json();

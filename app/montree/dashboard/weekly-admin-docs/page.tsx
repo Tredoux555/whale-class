@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
-// Feature flag removed — weekly admin docs is a core teacher tool, always available
+import { useFeatures } from '@/hooks/useFeatures';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -35,7 +35,7 @@ type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area|'_
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
   const { t } = useI18n();
-  // Feature flag removed — always accessible for teachers
+  const { isEnabled, loading: featuresLoading } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,8 +67,13 @@ export default function WeeklyAdminDocsPage() {
       router.push('/montree/dashboard');
       return;
     }
+    // Gate: redirect if feature not enabled (wait for features to load first)
+    if (!featuresLoading && !isEnabled('weekly_admin_docs')) {
+      router.push('/montree/dashboard');
+      return;
+    }
     setSession(sess);
-  }, [router]);
+  }, [router, featuresLoading, isEnabled]);
 
   // Fetch children + existing notes when session or week changes
   const fetchData = useCallback(async () => {
@@ -137,8 +142,10 @@ export default function WeeklyAdminDocsPage() {
   }, [session?.classroom?.id, weekStart, t]);
 
   useEffect(() => {
+    // Wait for features to load and verify enabled before fetching data
+    if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, featuresLoading, isEnabled]);
 
   // ─── Save Notes ────────────────────────────────────────────
 

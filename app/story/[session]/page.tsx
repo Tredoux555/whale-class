@@ -354,8 +354,8 @@ export default function StoryViewer() {
     // Pre-upload validation — catch size issues before wasting bandwidth
     const isVideo = file.type.startsWith('video/') || /\.(mov|mp4|webm|avi|mkv|m4v|3gp)$/i.test(file.name);
     const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
-    const maxSize = isVideo ? 100 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 50 * 1024 * 1024;
-    const maxLabel = isVideo ? '100MB' : '50MB';
+    const maxSize = isVideo ? 300 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 50 * 1024 * 1024;
+    const maxLabel = isVideo ? '300MB' : '50MB';
 
     if (file.size > maxSize) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
@@ -378,9 +378,9 @@ export default function StoryViewer() {
         const formData = new FormData();
         formData.append('file', uploadFile);
 
-        // 3-min timeout — mobile video uploads on slow networks need time
+        // 5-min timeout — mobile video uploads on slow networks need time (matches server maxDuration)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 180_000);
+        const timeoutId = setTimeout(() => controller.abort(), 300_000);
 
         const res = await fetch('/api/story/upload-media', {
           method: 'POST',

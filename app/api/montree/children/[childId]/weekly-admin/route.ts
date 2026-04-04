@@ -6,6 +6,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getSupabase } from '@/lib/supabase-client';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { enrichWithChineseNames } from '@/lib/montree/curriculum-loader';
@@ -232,6 +233,11 @@ export async function POST(
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
+  // Feature gate
+  if (!await isFeatureEnabled(getSupabase(), auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
+  }
+
   const { childId } = await params;
 
   // Verify child belongs to school
@@ -391,6 +397,11 @@ export async function GET(
 ) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Feature gate
+  if (!await isFeatureEnabled(getSupabase(), auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
+  }
 
   const { childId } = await params;
 

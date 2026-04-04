@@ -40,7 +40,7 @@ interface AuditPhoto {
   caption: string | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'haiku_test';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -462,7 +462,7 @@ export default function PhotoAuditPage() {
   const reclassifyCancelledRef = useRef(false);
 
   // Rerun results for batch reclassify
-  const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
+  const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null }>>({});
   // Haiku batch run state
   const [haikusRunning, setHaikusRunning] = useState(false);
   const [haikuProgress, setHaikuProgress] = useState({ current: 0, total: 0 });
@@ -989,7 +989,7 @@ export default function PhotoAuditPage() {
     // Mark all selected as loading
     const loadingResults: Record<string, any> = {};
     photosToProcess.forEach(p => {
-      loadingResults[p.id] = { work_name: null, work_id: null, area: null, confidence: null, scenario: null, loading: true, error: null };
+      loadingResults[p.id] = { work_name: null, work_id: null, area: null, confidence: null, scenario: null, visual_description: null, model_used: null, loading: true, error: null };
     });
     setRerunResults(prev => ({ ...prev, ...loadingResults }));
 
@@ -1013,6 +1013,7 @@ export default function PhotoAuditPage() {
       setHaikuProgress({ current: i + 1, total: photosToProcess.length });
 
       try {
+        const isTestMode = zone === 'haiku_test';
         const res = await fetch('/api/montree/guru/photo-insight', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1021,6 +1022,7 @@ export default function PhotoAuditPage() {
             media_id: photo.id,
             child_id: photo.child_id,
             force_reanalyze: true,
+            ...(isTestMode && { haiku_only: true }),
           }),
         });
 
@@ -1031,7 +1033,7 @@ export default function PhotoAuditPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id, force_reanalyze: true }),
+            body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id, force_reanalyze: true, ...(isTestMode && { haiku_only: true }) }),
           });
           if (!retry.ok) {
             setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Rate limited' } }));
@@ -1047,13 +1049,26 @@ export default function PhotoAuditPage() {
               area: retryData.area || null,
               confidence: retryData.confidence ?? null,
               scenario: retryData.scenario || null,
+              visual_description: retryData.visual_description || null,
+              model_used: retryData.model_used || null,
               loading: false,
               error: null,
             },
           }));
           if (retryData.work_name) classified++; else failed++;
         } else if (!res.ok) {
-          setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: `Error ${res.status}` } }));
+          // In test mode, error responses may still contain visual_description (Pass 1)
+          let errVisualDesc = null;
+          let errMsg = `Error ${res.status}`;
+          try {
+            const errData = await res.json();
+            errVisualDesc = errData.visual_description || null;
+            if (errData.error) errMsg = errData.error;
+          } catch { /* non-JSON response */ }
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: { ...prev[photo.id], loading: false, error: errMsg, visual_description: errVisualDesc },
+          }));
           failed++;
         } else {
           const data = await res.json();
@@ -1065,6 +1080,8 @@ export default function PhotoAuditPage() {
               area: data.area || null,
               confidence: data.confidence ?? null,
               scenario: data.scenario || null,
+              visual_description: data.visual_description || null,
+              model_used: data.model_used || null,
               loading: false,
               error: null,
             },
@@ -1333,8 +1350,9 @@ export default function PhotoAuditPage() {
     }));
   }, [pickerArea, curriculum]);
 
-  // Filter photos by zone — exclude green (confirmed) from all views
+  // Filter photos by zone — exclude green (confirmed) from all views, except haiku_test which shows ALL
   const filteredPhotos = useMemo(() => {
+    if (zone === 'haiku_test') return photos; // Show ALL photos including green for diagnostic testing
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
     return nonGreen.filter(p => p.zone === zone);
@@ -1348,8 +1366,14 @@ export default function PhotoAuditPage() {
   }, [filteredPhotos, page]);
   const totalPages = Math.ceil(filteredPhotos.length / PAGE_SIZE);
 
-  // Reset page on zone change
-  useEffect(() => { setPage(0); }, [zone]);
+  // Reset page on zone change; clear test results when entering haiku_test
+  useEffect(() => {
+    setPage(0);
+    if (zone === 'haiku_test') {
+      setRerunResults({});
+      setSelectedIds(new Set());
+    }
+  }, [zone]);
 
   // Zone tab config — Green tab removed; confirmed photos simply disappear from view
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number }[] = [
@@ -1357,6 +1381,7 @@ export default function PhotoAuditPage() {
     { key: 'red', label: t('audit.red'), color: 'bg-red-100 text-red-700', count: counts.red },
     { key: 'amber', label: t('audit.amber'), color: 'bg-amber-100 text-amber-700', count: counts.amber },
     { key: 'untagged', label: t('audit.untagged'), color: 'bg-gray-200 text-gray-600', count: counts.untagged },
+    { key: 'haiku_test', label: '🧪 Haiku Test', color: 'bg-violet-100 text-violet-700', count: photos.length },
   ];
 
   // ─── JSX ───
@@ -1453,6 +1478,53 @@ export default function PhotoAuditPage() {
         <div className="text-center py-20 text-gray-400">
           <p className="text-4xl mb-2">📷</p>
           <p>{t('audit.noPhotos')}</p>
+        </div>
+      )}
+
+      {/* Haiku Test mode banner */}
+      {zone === 'haiku_test' && !loading && filteredPhotos.length > 0 && (
+        <div className="mx-3 mt-2 p-3 rounded-xl bg-violet-50 border border-violet-200">
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <p className="text-sm font-semibold text-violet-800">🧪 Haiku Diagnostic Test</p>
+              <p className="text-xs text-violet-600 mt-0.5">
+                Re-run Haiku two-pass scan to check if the AI has learned your works. Haiku only — no Sonnet fallback.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => {
+                // Select ALL photos that have a child_id
+                const testableIds = new Set(filteredPhotos.filter(p => p.child_id).map(p => p.id));
+                setSelectedIds(testableIds);
+              }}
+              disabled={haikusRunning}
+              className="px-3 py-1.5 text-xs rounded-lg bg-violet-600 text-white font-medium disabled:opacity-50"
+            >
+              Select All ({filteredPhotos.filter(p => p.child_id).length})
+            </button>
+            <button
+              onClick={() => {
+                setRerunResults({});
+                setSelectedIds(new Set());
+              }}
+              disabled={haikusRunning}
+              className="px-3 py-1.5 text-xs rounded-lg border border-violet-300 text-violet-600 font-medium disabled:opacity-50"
+            >
+              Clear Results
+            </button>
+            {Object.keys(rerunResults).length > 0 && (
+              <span className="text-xs text-violet-500 self-center ml-auto">
+                {Object.values(rerunResults).filter(r => !r.loading && !r.error && r.work_name).length} matched
+                {' · '}
+                {Object.values(rerunResults).filter(r => !r.loading && !r.error && !r.work_name).length} unmatched
+                {Object.values(rerunResults).some(r => r.model_used && !r.model_used.includes('haiku')) && (
+                  <span className="text-amber-500 ml-1">(some fell back to Sonnet)</span>
+                )}
+              </span>
+            )}
+          </div>
         </div>
       )}
 
@@ -1806,7 +1878,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
-  rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null } | null;
+  rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
@@ -1912,7 +1984,18 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {/* Re-run classification result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
           <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
-            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">Haiku Result</p>
+            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">
+              Haiku Result
+              {rerunResult.model_used && <span className="font-normal text-indigo-400 ml-1">({rerunResult.model_used.includes('haiku') ? 'Haiku' : 'Sonnet'})</span>}
+            </p>
+            {/* Pass 1: What Haiku "sees" — visual description */}
+            {rerunResult.visual_description && (
+              <div className="mb-1.5 p-1 rounded bg-violet-50 border border-violet-200/50">
+                <p className="text-[8px] font-semibold text-violet-500 mb-0.5">👁 Pass 1 — What AI Sees:</p>
+                <p className="text-[9px] text-violet-700 leading-snug">{rerunResult.visual_description}</p>
+              </div>
+            )}
+            {/* Pass 2: Match result */}
             {rerunResult.work_name ? (
               <>
                 <p className="text-[10px] font-medium text-indigo-800 truncate">{rerunResult.work_name}</p>
@@ -1947,6 +2030,13 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {rerunResult?.error && (
           <div className="mt-1 p-1.5 rounded bg-red-50 border border-red-200">
             <p className="text-[10px] text-red-500">{rerunResult.error}</p>
+            {/* In test mode, show Pass 1 description even when matching failed */}
+            {rerunResult.visual_description && (
+              <div className="mt-1 p-1 rounded bg-violet-50 border border-violet-200/50">
+                <p className="text-[8px] font-semibold text-violet-500 mb-0.5">👁 Pass 1 — What AI Sees:</p>
+                <p className="text-[9px] text-violet-700 leading-snug">{rerunResult.visual_description}</p>
+              </div>
+            )}
           </div>
         )}
         <div className="flex gap-1 mt-1.5">

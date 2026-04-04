@@ -5,12 +5,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 
 // ─── GET: Fetch notes for a classroom + week ─────────────────
 
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Feature gate
+  if (!await isFeatureEnabled(getSupabase(), auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
+  }
 
   const { searchParams } = new URL(request.url);
   const classroomId = searchParams.get('classroom_id') || auth.classroomId;
@@ -79,6 +85,11 @@ interface NoteInput {
 export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Feature gate
+  if (!await isFeatureEnabled(getSupabase(), auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
+  }
 
   try {
     const body = await request.json();

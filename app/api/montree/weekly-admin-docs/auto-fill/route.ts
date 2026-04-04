@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 
@@ -32,6 +33,11 @@ interface ChildSuggestion {
 export async function GET(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
+
+  // Feature gate
+  if (!await isFeatureEnabled(getSupabase(), auth.schoolId, 'weekly_admin_docs')) {
+    return NextResponse.json({ error: 'Weekly admin docs feature is not enabled' }, { status: 403 });
+  }
 
   try {
     const { searchParams } = new URL(request.url);

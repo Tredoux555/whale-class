@@ -9,8 +9,8 @@ async function safeJson(res: Response): Promise<{ error?: string; [k: string]: u
   }
 }
 
-// 3-minute timeout for video uploads on mobile
-const UPLOAD_TIMEOUT_MS = 180_000;
+// 5-minute timeout for video uploads on mobile (matches server maxDuration)
+const UPLOAD_TIMEOUT_MS = 300_000;
 
 export const useAdminMessage = (getSession: () => string | null, onMessageSent: () => Promise<void>) => {
   const [adminMessage, setAdminMessage] = useState('');
@@ -84,9 +84,9 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
 
       if (selectedVideo) {
         // Pre-upload size check
-        if (selectedVideo.size > 100 * 1024 * 1024) {
+        if (selectedVideo.size > 300 * 1024 * 1024) {
           const sizeMB = (selectedVideo.size / (1024 * 1024)).toFixed(1);
-          setMessageError(`Video is too large (${sizeMB}MB). Maximum is 100MB. Try a shorter video or lower quality.`);
+          setMessageError(`Video is too large (${sizeMB}MB). Maximum is 300MB. Try a shorter video or lower quality.`);
           setSendingMessage(false);
           return;
         }
