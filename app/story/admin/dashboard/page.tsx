@@ -127,6 +127,14 @@ export default function AdminDashboard() {
   }, [activeTab, loadOnlineUsers]);
 
   useEffect(() => {
+    if (activeTab === 'logs') {
+      loadLoginLogs();
+      const interval = setInterval(loadLoginLogs, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [activeTab, loadLoginLogs]);
+
+  useEffect(() => {
     if (activeTab === 'messages') {
       loadMessages();
       const interval = setInterval(() => loadMessages(), 10000);

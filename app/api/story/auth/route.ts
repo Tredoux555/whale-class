@@ -26,25 +26,6 @@ async function logLogin(username: string, ip: string, userAgent: string, token: 
   }
 }
 
-// Diagnostic: verify story_login_logs table columns match code expectations
-async function verifyLoginLogsTable(): Promise<boolean> {
-  try {
-    const supabase = getSupabase();
-    // Try a SELECT with the columns we need — if any column is missing, this will fail
-    const { error } = await supabase
-      .from('story_login_logs')
-      .select('login_at, session_token, logout_at')
-      .limit(1);
-    if (error) {
-      console.error('[Auth] LOGIN LOGS TABLE SCHEMA MISMATCH — columns login_at/session_token/logout_at may not exist:', error.message);
-      return false;
-    }
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export async function POST(req: NextRequest) {
   if (!process.env.STORY_JWT_SECRET) {
     return NextResponse.json({ error: 'Auth not configured' }, { status: 500 });

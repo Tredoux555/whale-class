@@ -5,11 +5,13 @@ export async function POST(req: NextRequest) {
   try {
     const username = await verifyUserToken(req.headers.get('authorization'));
     if (!username) {
+      console.warn('[Heartbeat] Auth failed — no valid user token');
       return NextResponse.json({ ok: true }); // Don't 401 heartbeats
     }
 
     const sessionToken = getSessionToken(req.headers.get('authorization'));
     if (!sessionToken) {
+      console.warn('[Heartbeat] No session token for user:', username);
       return NextResponse.json({ ok: true });
     }
 

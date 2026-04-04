@@ -8,6 +8,7 @@ export interface LoginLog {
   id: number;
   username: string;
   login_at: string;
+  logout_at: string | null;
   ip_address: string | null;
   user_agent: string | null;
 }
