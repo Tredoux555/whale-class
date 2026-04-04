@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { verifyChildBelongsToSchool, clearChildAccessCache } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL, MAX_TOKENS, getModelForTier } from '@/lib/ai/anthropic';
 import { buildChildContext, ChildContext } from '@/lib/montree/guru/context-builder';
 import { buildClassroomContext, formatClassroomContextForPrompt, type ClassroomContext } from '@/lib/montree/guru/classroom-context-builder';
@@ -133,9 +133,46 @@ export async function POST(request: NextRequest) {
     // Whole-class mode: skip child access check, validate classroom instead
     const isWholeClassMode = child_id === 'whole_class';
     if (!isWholeClassMode) {
-      const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
+      let access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
       if (!access.allowed) {
-        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        // SELF-HEALING: JWT schoolId may be stale (365-day tokens).
+        // Re-check teacher's CURRENT school from DB and retry.
+        console.warn(`[Guru] Access denied with JWT schoolId=${auth.schoolId} for child=${child_id}, userId=${auth.userId}. Attempting self-heal...`);
+        const { data: freshTeacher } = await getSupabase()
+          .from('montree_teachers')
+          .select('school_id')
+          .eq('id', auth.userId)
+          .maybeSingle();
+        if (freshTeacher && freshTeacher.school_id && freshTeacher.school_id !== auth.schoolId) {
+          console.warn(`[Guru] Stale JWT detected! JWT schoolId=${auth.schoolId}, DB schoolId=${freshTeacher.school_id}. Retrying access check...`);
+          // Clear the failed cache entry and retry with the correct school
+          clearChildAccessCache(child_id, auth.schoolId);
+          access = await verifyChildBelongsToSchool(child_id, freshTeacher.school_id);
+          if (access.allowed) {
+            // Override auth.schoolId for the rest of this request
+            (auth as any).schoolId = freshTeacher.school_id;
+            console.log(`[Guru] Self-heal SUCCESS — teacher ${auth.userId} now using schoolId=${freshTeacher.school_id}`);
+          }
+        }
+        if (!access.allowed) {
+          // Also check if child simply exists and get its actual school for diagnostics
+          const { data: childInfo } = await getSupabase()
+            .from('montree_children')
+            .select('id, classroom_id, montree_classrooms(school_id)')
+            .eq('id', child_id)
+            .maybeSingle();
+          console.error(`[Guru] Access DENIED final. JWT schoolId=${auth.schoolId}, userId=${auth.userId}, child=${child_id}, childSchool=${childInfo?.montree_classrooms ? (childInfo.montree_classrooms as any).school_id : 'NOT_FOUND'}, freshTeacherSchool=${freshTeacher?.school_id || 'NOT_FOUND'}`);
+          return NextResponse.json({
+            success: false,
+            error: 'Access denied',
+            debug: {
+              jwtSchoolId: auth.schoolId,
+              childSchool: childInfo?.montree_classrooms ? (childInfo.montree_classrooms as any).school_id : null,
+              teacherSchool: freshTeacher?.school_id || null,
+              hint: 'JWT schoolId does not match child school. Try logging out and back in.',
+            }
+          }, { status: 403 });
+        }
       }
     } else {
       // Ensure classroom_id is provided for whole-class mode
@@ -143,14 +180,25 @@ export async function POST(request: NextRequest) {
       if (!effectiveClassroomId) {
         return NextResponse.json({ success: false, error: 'classroom_id is required for whole-class mode' }, { status: 400 });
       }
-      // Verify the classroom belongs to this teacher's school
+      // Verify the classroom belongs to this teacher's school (with self-healing)
       const { data: classroomCheck } = await getSupabase()
         .from('montree_classrooms')
         .select('school_id')
         .eq('id', effectiveClassroomId)
         .maybeSingle();
       if (!classroomCheck || classroomCheck.school_id !== auth.schoolId) {
-        return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        // Self-heal for whole-class mode too
+        const { data: freshTeacher } = await getSupabase()
+          .from('montree_teachers')
+          .select('school_id')
+          .eq('id', auth.userId)
+          .maybeSingle();
+        if (freshTeacher && classroomCheck && classroomCheck.school_id === freshTeacher.school_id) {
+          (auth as any).schoolId = freshTeacher.school_id;
+          console.log(`[Guru] Self-heal whole-class mode — teacher ${auth.userId} now using schoolId=${freshTeacher.school_id}`);
+        } else {
+          return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        }
       }
       classroom_id = effectiveClassroomId;
     }
@@ -581,7 +629,7 @@ export async function POST(request: NextRequest) {
 
       // Model selection based on hybrid routing (computed earlier, before prompt building)
       const guruModel = useHaikuForQuestion ? HAIKU_MODEL : (getModelForTier(guruTier) || AI_MODEL);
-      const guruMaxTokens = guruModel === HAIKU_MODEL ? 3072 : 4096;
+      const guruMaxTokens = guruModel === HAIKU_MODEL ? 3072 : 8192; // Sonnet 8K for rich responses to long observations
 
       // Tools enabled for SETUP, INTAKE, CHECKIN, NORMAL modes
       // REFLECTION = pure conversation, no tools
