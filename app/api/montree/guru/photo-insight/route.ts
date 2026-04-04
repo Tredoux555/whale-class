@@ -433,6 +433,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { child_id, media_id } = body;
     const force_onboarding = body.force_onboarding === true;
+    const haiku_only = body.haiku_only === true; // Diagnostic mode: skip Sonnet fallback
     // Validate locale against allowed values
     const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';
 
@@ -1210,6 +1211,7 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
     let finalWorkKey: string | null = null;
     let matchScore: number = 0;
     let modelUsed: string = HAIKU_MODEL;
+    let visualDescription = ''; // Hoisted — assigned inside if(!input) Pass 1 block, read in final JSON response
     let haikuAttempted = true;
     let haikuAccepted = false;
 
@@ -1253,7 +1255,7 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
     // SONNET DIRECT PATH (onboarding mode only)
     // Uses Sonnet with BOTH tools: tag_photo AND PROPOSE_CUSTOM_WORK_TOOL
     // Sonnet decides which tool to use based on what it sees in the photo
-    if (useOnboardingPath && !input) {
+    if (useOnboardingPath && !input && !haiku_only) {
       console.log('[PhotoInsight] Routing to Sonnet direct path (onboarding engine)');
       haikuAttempted = false; // We're skipping Haiku entirely
 
@@ -1486,7 +1488,7 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
     if (!input) {
     const describeAbort = new AbortController();
     let describeTimeout: ReturnType<typeof setTimeout> | undefined;
-    let visualDescription = '';
+    visualDescription = '';
     // Chain route-level abort to this sub-operation
     const onRouteAbortDescribe = () => describeAbort.abort();
     routeAbort.signal.addEventListener('abort', onRouteAbortDescribe, { once: true });
@@ -1618,7 +1620,8 @@ Match this description to the correct Montessori work. Use the visual identifica
     } // END: if (!input) — skip two-pass when onboarding Sonnet already succeeded
 
     // === FALLBACK: If two-pass failed, try single-pass Sonnet (old approach) ===
-    if (!input || !matchResult) {
+    // Skip Sonnet fallback in haiku_only diagnostic mode
+    if ((!input || !matchResult) && !haiku_only) {
       console.log('[PhotoInsight] Two-pass failed — falling back to single-pass Sonnet');
       const apiAbortController = new AbortController();
       let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
@@ -1681,8 +1684,13 @@ Match this description to the correct Montessori work. Use the visual identifica
 
     // Defensive guard: if all passes failed, bail
     if (!input || !matchResult) {
-      console.error('[PhotoInsight] All passes failed to produce a result');
-      return NextResponse.json({ success: false, error: 'Failed to analyze photo' }, { status: 500 });
+      console.error(`[PhotoInsight] ${haiku_only ? 'Haiku-only' : 'All'} passes failed to produce a result`);
+      return NextResponse.json({
+        success: false,
+        error: haiku_only ? 'Haiku could not identify this photo (no Sonnet fallback in test mode)' : 'Failed to analyze photo',
+        visual_description: visualDescription || null, // Return Pass 1 description even on failure (useful for diagnostics)
+        model_used: modelUsed,
+      }, { status: 500 });
     }
 
     // ========================================================
@@ -2109,6 +2117,9 @@ Match this description to the correct Montessori work. Use the visual identifica
       suggested_crop: input.suggested_crop ?? null,
       // Custom work proposal for Scenario A (null if not generated)
       custom_work_proposal: customWorkProposal,
+      // Pass 1 visual description (for Haiku Test diagnostic tab)
+      visual_description: visualDescription || null,
+      model_used: modelUsed,
     });
 
   } catch (error) {

@@ -8,7 +8,7 @@ import {
   getAdminLoginLogId,
 } from '@/lib/story/story-admin-auth';
 
-// Allow large uploads (video up to 100MB — mobile 4G can take 2-3 min)
+// Allow large uploads (video up to 300MB — mobile 4G can take a few min)
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +34,7 @@ const MEDIA_CONFIG = {
     mimePrefix: 'video/',
     allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp', '3g2'],
     allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'],
-    maxSize: 100 * 1024 * 1024, // 100MB
+    maxSize: 300 * 1024 * 1024, // 300MB
     defaultExt: 'mp4',
     filenamePrefix: 'admin_video',
   },

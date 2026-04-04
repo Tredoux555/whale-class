@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 
-// Allow large uploads on slow mobile networks (videos up to 100MB on 4G)
+// Allow large uploads on slow mobile networks (videos up to 300MB)
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
@@ -10,7 +10,7 @@ const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvi
 const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/flac', 'audio/webm'];
 
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 300 * 1024 * 1024; // 300MB — iPhone videos can be large
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024;
 
 function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'audio' | null {
