@@ -10,6 +10,8 @@ interface ChatBubbleProps {
   isUser: boolean;
   timestamp?: string;
   imageUrl?: string;
+  thinking?: string;       // Extended thinking text from AI
+  isThinkingLive?: boolean; // true while thinking is still streaming in
 }
 
 function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string): string {
@@ -72,9 +74,15 @@ function renderInlineBold(text: string) {
   });
 }
 
-function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
+function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinkingLive }: ChatBubbleProps) {
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
+  const [thinkingExpanded, setThinkingExpanded] = useState(false);
+
+  // Auto-expand while thinking is live, collapse once text starts
+  const showThinking = thinking && thinking.trim().length > 0;
+  const isExpanded = isThinkingLive || thinkingExpanded;
+
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       {/* Guru avatar */}
@@ -85,6 +93,46 @@ function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
       )}
 
       <div className={`max-w-[80%] ${isUser ? 'order-1' : ''}`}>
+        {/* Thinking block — collapsible, shown above the response */}
+        {!isUser && showThinking && (
+          <div className="mb-1.5">
+            <button
+              onClick={() => setThinkingExpanded(!thinkingExpanded)}
+              className="flex items-center gap-1.5 text-[11px] text-[#0D3330]/50 hover:text-[#0D3330]/70 transition-colors mb-1 ml-1"
+            >
+              <svg
+                className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="flex items-center gap-1">
+                {isThinkingLive ? (
+                  <>
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+                    {t('guru.thinkingLive') || 'Thinking...'}
+                  </>
+                ) : (
+                  <>{t('guru.viewThinking') || 'View thinking'}</>
+                )}
+              </span>
+            </button>
+            {isExpanded && (
+              <div className="bg-[#0D3330]/[0.03] border border-[#0D3330]/[0.06] rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto">
+                <p className="text-[11px] leading-relaxed text-[#0D3330]/50 whitespace-pre-wrap font-mono">
+                  {thinking}
+                  {isThinkingLive && (
+                    <span className="inline-block w-1.5 h-3 bg-[#0D3330]/30 animate-pulse rounded-sm ml-0.5" />
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div
           className={`rounded-2xl px-4 py-3 ${
             isUser
@@ -103,6 +151,9 @@ function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
             <p className="text-sm leading-relaxed">{content}</p>
           ) : content ? (
             <div className="space-y-0.5">{renderMarkdown(content)}</div>
+          ) : isThinkingLive ? (
+            /* Show nothing in the text bubble while thinking is live — the thinking block is visible above */
+            <span className="text-[11px] text-[#0D3330]/30 italic">{t('guru.thinkingGenerating') || 'Generating response...'}</span>
           ) : (
             <span className="inline-block w-2 h-4 bg-[#0D3330]/40 animate-pulse rounded-sm" />
           )}

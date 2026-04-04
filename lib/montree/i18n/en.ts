@@ -2752,6 +2752,8 @@ export const en = {
   'guru.thinking': 'Thinking...',
   'guru.thinkingContext': 'Building context...',
   'guru.thinkingGenerating': 'Generating response...',
+  'guru.thinkingLive': 'Thinking...',
+  'guru.viewThinking': 'View thinking',
   'guru.observing': 'Observing...',
   'guru.whatDoesGuruSee': 'What does the Guru see?',
   'guru.couldNotAnalyzePhoto': 'Couldn\'t analyze this photo right now.',
