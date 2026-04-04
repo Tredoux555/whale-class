@@ -35,6 +35,7 @@ const StaleWorksPanel = dynamic(() => import('@/components/montree/StaleWorksPan
 const ConferenceNotesPanel = dynamic(() => import('@/components/montree/ConferenceNotesPanel'), { ssr: false });
 const PulsePanel = dynamic(() => import('@/components/montree/PulsePanel'), { ssr: false });
 const EvidencePanel = dynamic(() => import('@/components/montree/EvidencePanel'), { ssr: false });
+const PaperworkPanel = dynamic(() => import('@/components/montree/PaperworkPanel'), { ssr: false });
 const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
 const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner'), { ssr: false });
 
@@ -453,6 +454,7 @@ export default function DashboardPage() {
                         <div id="panel-stale_works"><StaleWorksPanel /></div>
                         <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
                         <div id="panel-evidence"><EvidencePanel /></div>
+                        <div id="panel-paperwork"><PaperworkPanel /></div>
                         <div id="panel-pulse"><PulsePanel /></div>
                       </div>
                     )}
