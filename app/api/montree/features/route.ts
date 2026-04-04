@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 // GET - Check which features are enabled for a classroom
 export async function GET(request: NextRequest) {
@@ -96,10 +97,16 @@ export async function GET(request: NextRequest) {
 }
 
 // POST - Toggle a feature on/off for a school or classroom
+// Accepts either teacher auth (montree-auth cookie) or super-admin auth (x-super-admin-token header)
 export async function POST(request: NextRequest) {
   try {
-    const auth = await verifySchoolRequest(request);
-    if (auth instanceof NextResponse) return auth;
+    // Try super-admin auth first (for super-admin panel feature toggles)
+    const superAdminCheck = await verifySuperAdminAuth(request.headers);
+    if (!superAdminCheck.valid) {
+      // Fall back to regular school auth
+      const auth = await verifySchoolRequest(request);
+      if (auth instanceof NextResponse) return auth;
+    }
 
     const supabase = getSupabase();
     const body = await request.json();

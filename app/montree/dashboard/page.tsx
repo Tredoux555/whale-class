@@ -386,8 +386,8 @@ export default function DashboardPage() {
               {/* ── Birthday Banner ── */}
               {session?.classroom?.id && <BirthdayBanner />}
 
-              {/* ── Daily Brief Panel ── */}
-              {session?.classroom?.id && (
+              {/* ── Daily Brief Panel (feature-gated) ── */}
+              {session?.classroom?.id && isEnabled('daily_brief') && (
                 <div className="mb-4">
                   <DailyBriefPanel />
                 </div>
@@ -430,58 +430,62 @@ export default function DashboardPage() {
               </div>
 
 
-              {/* ── Collapsible Sections (below student grid) ── */}
-              {session?.classroom?.id && (
+              {/* ── Collapsible Sections (below student grid) — feature-gated ── */}
+              {session?.classroom?.id && (isEnabled('intelligence_panels') || isEnabled('teacher_tools')) && (
                 <div className="space-y-3">
 
                   {/* ─── 📊 Classroom Intelligence ─── */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button
-                      onClick={() => toggleSection('intelligence')}
-                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">📊</span>
-                        {t('dashboard.classroomIntelligence') || 'Classroom Intelligence'}
-                      </span>
-                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
-                    </button>
-                    {sectionsOpen.intelligence && (
-                      <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                        <div id="panel-attendance"><AttendanceWidget /></div>
-                        <div id="panel-stale_works"><StaleWorksPanel /></div>
-                        <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
-                        <div id="panel-evidence"><EvidencePanel /></div>
-                        <div id="panel-paperwork"><PaperworkPanel /></div>
-                        <div id="panel-pulse"><PulsePanel /></div>
-                      </div>
-                    )}
-                  </div>
+                  {isEnabled('intelligence_panels') && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                      <button
+                        onClick={() => toggleSection('intelligence')}
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-base">📊</span>
+                          {t('dashboard.classroomIntelligence') || 'Classroom Intelligence'}
+                        </span>
+                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+                      {sectionsOpen.intelligence && (
+                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+                          <div id="panel-attendance"><AttendanceWidget /></div>
+                          <div id="panel-stale_works"><StaleWorksPanel /></div>
+                          <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
+                          <div id="panel-evidence"><EvidencePanel /></div>
+                          {isEnabled('paperwork_tracker') && <div id="panel-paperwork"><PaperworkPanel /></div>}
+                          <div id="panel-pulse"><PulsePanel /></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* ─── 🛠️ Teacher Tools ─── */}
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <button
-                      onClick={() => toggleSection('tools')}
-                      className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="flex items-center gap-2">
-                        <span className="text-base">🛠️</span>
-                        {t('dashboard.teacherTools') || 'Teacher Tools'}
-                      </span>
-                      <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
-                        ▼
-                      </span>
-                    </button>
-                    {sectionsOpen.tools && (
-                      <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                        <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
-                        <BatchReportsCard classroomId={session.classroom.id} children={children} />
-                        <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />
-                      </div>
-                    )}
-                  </div>
+                  {isEnabled('teacher_tools') && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                      <button
+                        onClick={() => toggleSection('tools')}
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-base">🛠️</span>
+                          {t('dashboard.teacherTools') || 'Teacher Tools'}
+                        </span>
+                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
+                          ▼
+                        </span>
+                      </button>
+                      {sectionsOpen.tools && (
+                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
+                          <WeeklyAdminCard classroomId={session.classroom.id} children={children} />
+                          <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                          {isEnabled('shelf_autopilot') && <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
 
                 </div>

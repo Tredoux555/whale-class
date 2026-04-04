@@ -550,6 +550,7 @@ export default function SuperAdminPage() {
             batchDeleting={leadOps.batchDeleting}
             batchDeleteProgress={leadOps.batchDeleteProgress}
             onClearBatchProgress={leadOps.clearBatchDeleteProgress}
+            sessionToken={saToken}
           />
         )}
 

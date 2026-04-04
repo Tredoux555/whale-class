@@ -27,7 +27,13 @@ export type FeatureKey =
   | 'english_corner'
   | 'educational_games'
   | 'tts_voice'
-  | 'photo_crop';
+  | 'photo_crop'
+  // Dashboard sections (gated for minimalist default)
+  | 'daily_brief'
+  | 'intelligence_panels'
+  | 'teacher_tools'
+  | 'shelf_autopilot'
+  | 'paperwork_tracker';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
