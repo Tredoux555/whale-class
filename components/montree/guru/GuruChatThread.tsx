@@ -44,6 +44,7 @@ export default function GuruChatThread({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false); // true once SSE tokens start arriving
   const [pendingImage, setPendingImage] = useState<{ url: string; uploading: boolean } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -274,19 +275,32 @@ export default function GuruChatThread({
       // Check for non-streaming error responses (rate limits, auth errors, etc.)
       if (!res.ok) {
         clearTimeout(timeout);
+        let errorContent = '';
         try {
           const data = await res.json();
           if (data.error === 'guru_daily_limit_reached' || data.error === 'guru_trial_expired') {
             onGuruLimitReached?.();
-            toast.error(t('guru.limitReachedUpgrade'));
+            errorContent = t('guru.limitReachedUpgrade');
           } else if (data.error === 'ai_budget_reached') {
-            toast.error(t('aiBudget.budgetReached'), { duration: 8000 });
+            errorContent = t('aiBudget.budgetReached');
+          } else if (res.status === 503) {
+            errorContent = '⚠️ Guru is temporarily offline. The AI service may not be configured — please check that ANTHROPIC_API_KEY is set in your deployment environment.';
           } else {
-            toast.error(data.error || t('guru.failedResponse'));
+            errorContent = data.error || data.message || t('guru.failedResponse');
           }
         } catch {
-          toast.error(t('guru.failedResponse'));
+          errorContent = res.status === 503
+            ? '⚠️ Guru is temporarily offline. The AI service may not be configured.'
+            : t('guru.failedResponse');
         }
+        // Show error as a persistent chat message instead of a fleeting toast
+        const errorMsg: ChatMessage = {
+          id: `guru-error-${Date.now()}`,
+          content: errorContent,
+          isUser: false,
+          timestamp: new Date().toISOString(),
+        };
+        setMessages(prev => [...prev, errorMsg]);
         setSending(false);
         return;
       }
@@ -297,14 +311,10 @@ export default function GuruChatThread({
         // Streaming response — read SSE events and update message incrementally
         const guruMsgId = `guru-${Date.now()}`;
         let streamedText = '';
+        let firstTokenReceived = false;
 
-        // Add empty guru message bubble that we'll fill incrementally
-        setMessages(prev => [...prev, {
-          id: guruMsgId,
-          content: '',
-          isUser: false,
-          timestamp: new Date().toISOString(),
-        }]);
+        // Don't add the bubble yet — the "Thinking..." indicator covers this phase.
+        // The bubble is created when the first token arrives (see firstTokenReceived below).
 
         // Helper: flush accumulated buffer to state with debounce
         const flushStreamBuffer = () => {
@@ -350,6 +360,17 @@ export default function GuruChatThread({
               try {
                 const event = JSON.parse(jsonStr);
                 if (event.type === 'text' && event.text) {
+                  // On first token, create the message bubble and switch to streaming mode
+                  if (!firstTokenReceived) {
+                    firstTokenReceived = true;
+                    setIsStreaming(true);
+                    setMessages(prev => [...prev, {
+                      id: guruMsgId,
+                      content: '',
+                      isUser: false,
+                      timestamp: new Date().toISOString(),
+                    }]);
+                  }
                   // Accumulate text in buffer instead of updating state immediately
                   streamBufferRef.current += event.text;
                   // Schedule a debounced flush
@@ -377,10 +398,20 @@ export default function GuruChatThread({
 
         clearTimeout(timeout);
 
-        // If we got no text at all, show an error
+        setIsStreaming(false);
+
+        // If we got no text at all, show an error as a chat message
         if (!streamedText.trim()) {
-          setMessages(prev => prev.filter(msg => msg.id !== guruMsgId));
-          toast.error(t('guru.failedResponse'));
+          // Remove empty streaming bubble if it was created
+          setMessages(prev => {
+            const filtered = prev.filter(msg => msg.id !== guruMsgId);
+            return [...filtered, {
+              id: `guru-error-${Date.now()}`,
+              content: t('guru.failedResponse'),
+              isUser: false,
+              timestamp: new Date().toISOString(),
+            }];
+          });
         }
       } else {
         // Fallback: non-streaming JSON response (shouldn't happen but handle gracefully)
@@ -412,6 +443,7 @@ export default function GuruChatThread({
       }
     } finally {
       setSending(false);
+      setIsStreaming(false);
     }
   };
 
@@ -586,17 +618,22 @@ export default function GuruChatThread({
           />
         ))}
 
-        {/* Typing indicator */}
-        {sending && (
+        {/* Thinking indicator — shows while waiting for first token, hides once streaming starts */}
+        {sending && !isStreaming && (
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-violet-600' : 'bg-[#0D3330]'} flex items-center justify-center`}>
               <span className="text-sm">{themeClasses.guruIcon}</span>
             </div>
             <div className={`bg-white border ${isTeacher ? 'border-violet-200' : 'border-[#0D3330]/10'} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm`}>
-              <div className="flex gap-1.5">
-                <div className={`w-2 h-2 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-bounce`} style={{ animationDelay: '0ms' }} />
-                <div className={`w-2 h-2 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-bounce`} style={{ animationDelay: '150ms' }} />
-                <div className={`w-2 h-2 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-bounce`} style={{ animationDelay: '300ms' }} />
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '150ms' }} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '300ms' }} />
+                </div>
+                <span className={`text-xs ${isTeacher ? 'text-violet-400' : 'text-[#0D3330]/40'}`}>
+                  {t('guru.thinking') || 'Thinking...'}
+                </span>
               </div>
             </div>
           </div>

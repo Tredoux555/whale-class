@@ -2744,6 +2744,7 @@ export const en = {
   'guru.imageTooLarge': 'Image too large (max 10MB)',
   'guru.unableLoadClassroom': 'Unable to load classroom data. Please go back and try again, or select a specific student.',
   'guru.timeout': 'The Guru took too long. Please try again.',
+  'guru.thinking': 'Thinking...',
   'guru.observing': 'Observing...',
   'guru.whatDoesGuruSee': 'What does the Guru see?',
   'guru.couldNotAnalyzePhoto': 'Couldn\'t analyze this photo right now.',
