@@ -1,5 +1,17 @@
 import { useState, useCallback } from 'react';
 
+// Safe JSON parse — server may return HTML on 502/504 timeout
+async function safeJson(res: Response): Promise<{ error?: string; [k: string]: unknown }> {
+  try {
+    return await res.json();
+  } catch {
+    return { error: `Server error (${res.status})` };
+  }
+}
+
+// 3-minute timeout for video uploads on mobile
+const UPLOAD_TIMEOUT_MS = 180_000;
+
 export const useAdminMessage = (getSession: () => string | null, onMessageSent: () => Promise<void>) => {
   const [adminMessage, setAdminMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -76,13 +88,18 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedVideo);
         formData.append('caption', adminMessage.trim());
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
         const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
-          body: formData
+          body: formData,
+          signal: controller.signal,
         });
 
-        const data = await res.json();
+        clearTimeout(timeoutId);
+        const data = await safeJson(res);
         setUploadingVideo(false);
 
         if (res.ok) {
@@ -100,13 +117,18 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedAudio);
         formData.append('caption', adminMessage.trim());
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
         const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
-          body: formData
+          body: formData,
+          signal: controller.signal,
         });
 
-        const data = await res.json();
+        clearTimeout(timeoutId);
+        const data = await safeJson(res);
         setUploadingAudio(false);
 
         if (res.ok) {
@@ -124,13 +146,18 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
         formData.append('file', selectedImage);
         formData.append('caption', adminMessage.trim());
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
         const res = await fetch('/api/story/admin/send', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${session}` },
-          body: formData
+          body: formData,
+          signal: controller.signal,
         });
 
-        const data = await res.json();
+        clearTimeout(timeoutId);
+        const data = await safeJson(res);
         setUploadingImage(false);
 
         if (res.ok) {
@@ -152,7 +179,7 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
           },
           body: JSON.stringify({ message: adminMessage.trim() })
         });
-        const data = await res.json();
+        const data = await safeJson(res);
         if (res.ok) {
           setAdminMessage('');
           setMessageSent(true);
@@ -162,8 +189,12 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
           setMessageError(data.error || 'Failed to send');
         }
       }
-    } catch {
-      setMessageError('Connection error');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setMessageError('Upload timed out — try a smaller file or use WiFi.');
+      } else {
+        setMessageError('Connection error — check your network and try again.');
+      }
     } finally {
       setSendingMessage(false);
       setUploadingImage(false);

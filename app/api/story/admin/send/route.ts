@@ -8,8 +8,8 @@ import {
   getAdminLoginLogId,
 } from '@/lib/story/story-admin-auth';
 
-// Allow large uploads (video up to 100MB)
-export const maxDuration = 60;
+// Allow large uploads (video up to 100MB — mobile 4G can take 2-3 min)
+export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
 // File type validation rules
@@ -32,8 +32,8 @@ const MEDIA_CONFIG = {
   },
   video: {
     mimePrefix: 'video/',
-    allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v'],
-    allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v'],
+    allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp', '3g2'],
+    allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'],
     maxSize: 100 * 1024 * 1024, // 100MB
     defaultExt: 'mp4',
     filenamePrefix: 'admin_video',
@@ -47,8 +47,10 @@ function detectMediaType(file: File): MediaType | null {
   if (mime.startsWith('video/')) return 'video';
   if (mime.startsWith('image/')) return 'image';
   if (mime.startsWith('audio/')) return 'audio';
-  // Fallback: check extension for audio (some browsers report wrong MIME)
+  // Fallback: check extension (mobile browsers sometimes report wrong/empty MIME)
   const ext = file.name.split('.').pop()?.toLowerCase();
+  if (ext && MEDIA_CONFIG.video.allowedExts.includes(ext)) return 'video';
+  if (ext && MEDIA_CONFIG.image.allowedExts.includes(ext)) return 'image';
   if (ext && MEDIA_CONFIG.audio.allowedExts.includes(ext)) return 'audio';
   return null;
 }

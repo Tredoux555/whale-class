@@ -127,7 +127,7 @@ export function MessageComposer({
             🎬 Add Video
             <input
               type="file"
-              accept="video/*,.mp4,.mov,.webm,.avi"
+              accept="video/*,.mp4,.mov,.webm,.avi,.m4v,.3gp"
               onChange={onVideoSelect}
               className="hidden"
             />
