@@ -19,6 +19,7 @@ interface ChatMessage {
   isUser: boolean;
   timestamp: string;
   imageUrl?: string;
+  thinking?: string; // Extended thinking text from AI
 }
 
 interface GuruChatThreadProps {
@@ -53,6 +54,9 @@ export default function GuruChatThread({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const streamBufferRef = useRef('');
   const streamFlushTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const thinkingBufferRef = useRef('');
+  const thinkingFlushTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isThinking, setIsThinking] = useState(false); // true while AI is thinking (before text)
   const firstName = childName.split(' ')[0];
 
   // Auto-scroll to bottom when messages change
@@ -322,16 +326,39 @@ export default function GuruChatThread({
         // Streaming response — read SSE events and update message incrementally
         const guruMsgId = `guru-${Date.now()}`;
         let streamedText = '';
+        let streamedThinking = '';
         let firstTokenReceived = false;
+        let firstThinkingReceived = false;
+        let bubbleCreated = false;
 
-        // Don't add the bubble yet — the "Thinking..." indicator covers this phase.
-        // The bubble is created when the first token arrives (see firstTokenReceived below).
+        // Helper: flush accumulated thinking buffer to state
+        const flushThinkingBuffer = () => {
+          if (thinkingBufferRef.current) {
+            streamedThinking += thinkingBufferRef.current;
+            if (bubbleCreated) {
+              setMessages(prev => prev.map(msg =>
+                msg.id === guruMsgId ? { ...msg, thinking: streamedThinking } : msg
+              ));
+            }
+            thinkingBufferRef.current = '';
+          }
+        };
 
-        // Helper: flush accumulated buffer to state with debounce
+        // Helper: schedule thinking flush with 80ms debounce
+        const scheduleThinkingFlush = () => {
+          if (thinkingFlushTimerRef.current) {
+            clearTimeout(thinkingFlushTimerRef.current);
+          }
+          thinkingFlushTimerRef.current = setTimeout(() => {
+            flushThinkingBuffer();
+            thinkingFlushTimerRef.current = null;
+          }, 80);
+        };
+
+        // Helper: flush accumulated text buffer to state with debounce
         const flushStreamBuffer = () => {
           if (streamBufferRef.current) {
             streamedText += streamBufferRef.current;
-            // Update the message content with accumulated text
             setMessages(prev => prev.map(msg =>
               msg.id === guruMsgId ? { ...msg, content: streamedText } : msg
             ));
@@ -339,7 +366,7 @@ export default function GuruChatThread({
           }
         };
 
-        // Helper: schedule flush with 100ms debounce
+        // Helper: schedule text flush with 100ms debounce
         const scheduleFlush = () => {
           if (streamFlushTimerRef.current) {
             clearTimeout(streamFlushTimerRef.current);
@@ -348,6 +375,20 @@ export default function GuruChatThread({
             flushStreamBuffer();
             streamFlushTimerRef.current = null;
           }, 100);
+        };
+
+        // Helper: ensure the message bubble exists
+        const ensureBubble = () => {
+          if (!bubbleCreated) {
+            bubbleCreated = true;
+            setMessages(prev => [...prev, {
+              id: guruMsgId,
+              content: '',
+              isUser: false,
+              timestamp: new Date().toISOString(),
+              thinking: '',
+            }]);
+          }
         };
 
         const reader = res.body.getReader();
@@ -370,21 +411,31 @@ export default function GuruChatThread({
               const jsonStr = line.slice(6); // Remove 'data: ' prefix
               try {
                 const event = JSON.parse(jsonStr);
-                if (event.type === 'text' && event.text) {
-                  // On first token, create the message bubble and switch to streaming mode
+                if (event.type === 'thinking' && event.text) {
+                  // Extended thinking — stream AI's thought process
+                  if (!firstThinkingReceived) {
+                    firstThinkingReceived = true;
+                    setIsThinking(true);
+                    setIsStreaming(true);
+                    ensureBubble();
+                  }
+                  thinkingBufferRef.current += event.text;
+                  scheduleThinkingFlush();
+                } else if (event.type === 'text' && event.text) {
+                  // On first text token, transition from thinking to response
                   if (!firstTokenReceived) {
                     firstTokenReceived = true;
+                    setIsThinking(false);
                     setIsStreaming(true);
-                    setMessages(prev => [...prev, {
-                      id: guruMsgId,
-                      content: '',
-                      isUser: false,
-                      timestamp: new Date().toISOString(),
-                    }]);
+                    ensureBubble();
+                    // Final flush of any remaining thinking
+                    if (thinkingFlushTimerRef.current) {
+                      clearTimeout(thinkingFlushTimerRef.current);
+                      thinkingFlushTimerRef.current = null;
+                    }
+                    flushThinkingBuffer();
                   }
-                  // Accumulate text in buffer instead of updating state immediately
                   streamBufferRef.current += event.text;
-                  // Schedule a debounced flush
                   scheduleFlush();
                 } else if (event.type === 'error') {
                   toast.error(t('guru.failedResponse'));
@@ -400,7 +451,12 @@ export default function GuruChatThread({
           reader.releaseLock();
         }
 
-        // Final flush of any remaining buffered text
+        // Final flush of any remaining buffered text and thinking
+        if (thinkingFlushTimerRef.current) {
+          clearTimeout(thinkingFlushTimerRef.current);
+          thinkingFlushTimerRef.current = null;
+        }
+        flushThinkingBuffer();
         if (streamFlushTimerRef.current) {
           clearTimeout(streamFlushTimerRef.current);
           streamFlushTimerRef.current = null;
@@ -410,6 +466,7 @@ export default function GuruChatThread({
         clearTimeout(timeout);
 
         setIsStreaming(false);
+        setIsThinking(false);
 
         // If we got no text at all, show an error as a chat message
         if (!streamedText.trim()) {
@@ -630,10 +687,12 @@ export default function GuruChatThread({
             isUser={msg.isUser}
             timestamp={msg.timestamp}
             imageUrl={msg.imageUrl}
+            thinking={msg.thinking}
+            isThinkingLive={isThinking && msg.id === messages[messages.length - 1]?.id && !msg.isUser}
           />
         ))}
 
-        {/* Thinking indicator — shows while waiting for first token, hides once streaming starts */}
+        {/* Thinking indicator — shows while waiting for first SSE event (before thinking or text arrives) */}
         {sending && !isStreaming && (
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-violet-600' : 'bg-[#0D3330]'} flex items-center justify-center`}>

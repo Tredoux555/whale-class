@@ -35,6 +35,44 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   ]);
 }
 
+// Helper: stream pre-computed text progressively via SSE (for post-tool responses)
+function createProgressiveSSEResponse(text: string, onDone: () => void): Response {
+  const encoder = new TextEncoder();
+  const CHUNK_SIZE = 12; // characters per chunk — fast but smooth
+  const CHUNK_DELAY_MS = 15; // ms between chunks
+
+  const responseStream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Stream text in small chunks for a real-time feel
+        for (let i = 0; i < text.length; i += CHUNK_SIZE) {
+          const chunk = text.slice(i, i + CHUNK_SIZE);
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text: chunk })}\n\n`));
+          if (i + CHUNK_SIZE < text.length) {
+            await new Promise(resolve => setTimeout(resolve, CHUNK_DELAY_MS));
+          }
+        }
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+        controller.close();
+        // Fire-and-forget save
+        onDone();
+      } catch (err) {
+        console.error('[Guru] Progressive SSE error:', err);
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'text', text })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'done' })}\n\n`));
+          controller.close();
+        } catch {}
+        onDone();
+      }
+    }
+  });
+
+  return new Response(responseStream, {
+    headers: { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' },
+  });
+}
+
 export interface GuruRequest {
   child_id: string;
   question: string;
@@ -816,18 +854,35 @@ export async function POST(request: NextRequest) {
 
           console.log(`[Guru Stream] No tools used, starting real-time stream. Mode: ${guruMode}, model: ${guruTier}`);
 
-          // Use true Anthropic streaming for the response
+          // Use true Anthropic streaming for the response (with extended thinking for Sonnet)
           const encoder = new TextEncoder();
           let fullText = '';
           let streamUsage = { input_tokens: 0, output_tokens: 0 };
 
+          // Enable extended thinking for Sonnet models (not Haiku — unsupported)
+          const useThinking = guruModel !== HAIKU_MODEL;
+          const streamParams = {
+            ...baseApiParams,
+            messages: currentMessages,
+            ...(useThinking ? { thinking: { type: 'enabled' as const, budget_tokens: 5000 } } : {}),
+          };
+
           const responseStream = new ReadableStream({
             async start(controller) {
               try {
-                const messageStream = anthropic.messages.stream({
-                  ...baseApiParams,
-                  messages: currentMessages,
-                });
+                const messageStream = anthropic.messages.stream(streamParams);
+
+                // Stream thinking deltas (extended thinking) — sent before text
+                if (useThinking) {
+                  messageStream.on('event', (event: Record<string, unknown>) => {
+                    if (event.type === 'content_block_delta') {
+                      const delta = event.delta as Record<string, unknown> | undefined;
+                      if (delta?.type === 'thinking_delta' && typeof delta.thinking === 'string') {
+                        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'thinking', text: delta.thinking })}\n\n`));
+                      }
+                    }
+                  });
+                }
 
                 messageStream.on('text', (text) => {
                   fullText += text;

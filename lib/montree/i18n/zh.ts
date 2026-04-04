@@ -2753,6 +2753,8 @@ export const zh = {
   'guru.thinking': '思考中...',
   'guru.thinkingContext': '正在构建上下文...',
   'guru.thinkingGenerating': '正在生成回复...',
+  'guru.thinkingLive': '正在思考...',
+  'guru.viewThinking': '查看思维过程',
   'guru.observing': '正在观察...',
   'guru.whatDoesGuruSee': 'Guru看到什么了？',
   'guru.couldNotAnalyzePhoto': '暂无法分析此照片。',
