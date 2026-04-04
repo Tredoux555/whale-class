@@ -2745,6 +2745,8 @@ export const en = {
   'guru.unableLoadClassroom': 'Unable to load classroom data. Please go back and try again, or select a specific student.',
   'guru.timeout': 'The Guru took too long. Please try again.',
   'guru.thinking': 'Thinking...',
+  'guru.thinkingContext': 'Building context...',
+  'guru.thinkingGenerating': 'Generating response...',
   'guru.observing': 'Observing...',
   'guru.whatDoesGuruSee': 'What does the Guru see?',
   'guru.couldNotAnalyzePhoto': 'Couldn\'t analyze this photo right now.',

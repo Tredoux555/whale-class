@@ -45,6 +45,8 @@ export default function GuruChatThread({
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false); // true once SSE tokens start arriving
+  const [thinkingPhase, setThinkingPhase] = useState(0); // 0=thinking, 1=building context, 2=generating
+  const thinkingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [pendingImage, setPendingImage] = useState<{ url: string; uploading: boolean } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -232,6 +234,15 @@ export default function GuruChatThread({
     setInputText('');
     setPendingImage(null); // Clear pending image
     setSending(true);
+    setThinkingPhase(0);
+    // Progress through thinking phases so user sees activity
+    if (thinkingTimerRef.current) clearTimeout(thinkingTimerRef.current);
+    thinkingTimerRef.current = setTimeout(() => {
+      setThinkingPhase(1);
+      thinkingTimerRef.current = setTimeout(() => {
+        setThinkingPhase(2);
+      }, 5000);
+    }, 3000);
 
     // Reset textarea height
     if (textareaRef.current) {
@@ -444,6 +455,10 @@ export default function GuruChatThread({
     } finally {
       setSending(false);
       setIsStreaming(false);
+      if (thinkingTimerRef.current) {
+        clearTimeout(thinkingTimerRef.current);
+        thinkingTimerRef.current = null;
+      }
     }
   };
 
@@ -631,8 +646,12 @@ export default function GuruChatThread({
                   <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '150ms' }} />
                   <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className={`text-xs ${isTeacher ? 'text-violet-400' : 'text-[#0D3330]/40'}`}>
-                  {t('guru.thinking') || 'Thinking...'}
+                <span className={`text-xs ${isTeacher ? 'text-violet-400' : 'text-[#0D3330]/40'} transition-opacity duration-300`}>
+                  {thinkingPhase === 0
+                    ? (t('guru.thinking') || 'Thinking...')
+                    : thinkingPhase === 1
+                    ? (t('guru.thinkingContext') || 'Building context...')
+                    : (t('guru.thinkingGenerating') || 'Generating response...')}
                 </span>
               </div>
             </div>

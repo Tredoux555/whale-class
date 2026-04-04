@@ -2746,6 +2746,8 @@ export const zh = {
   'guru.unableLoadClassroom': '无法加载教室数据。请返回仪表板重试，或选择一个特定学生。',
   'guru.timeout': 'Guru响应超时，请重试。',
   'guru.thinking': '思考中...',
+  'guru.thinkingContext': '正在构建上下文...',
+  'guru.thinkingGenerating': '正在生成回复...',
   'guru.observing': '正在观察...',
   'guru.whatDoesGuruSee': 'Guru看到什么了？',
   'guru.couldNotAnalyzePhoto': '暂无法分析此照片。',
