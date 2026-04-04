@@ -461,10 +461,7 @@ export default function PhotoAuditPage() {
   const [showReclassifyConfirm, setShowReclassifyConfirm] = useState(false);
   const reclassifyCancelledRef = useRef(false);
 
-  // CLIP batch test state
-  const [clipTesting, setClipTesting] = useState(false);
-  const [clipProgress, setClipProgress] = useState({ current: 0, total: 0, matched: 0, noMatch: 0, errors: 0 });
-  const clipCancelledRef = useRef(false);
+  // Rerun results for batch reclassify
   const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
@@ -857,135 +854,6 @@ export default function PhotoAuditPage() {
     } else {
       toast.error(t('audit.batchPartial', { succeeded, total: ids.length }));
     }
-  };
-
-  // ================================================================
-  // CLIP TEST — Run CLIP-only on selected photos (or all non-green if none selected)
-  // ================================================================
-  const clipEligiblePhotos = photos.filter(p => p.zone !== 'green' && p.child_id);
-  const clipSelectedPhotos = clipEligiblePhotos.filter(p => selectedIds.has(p.id));
-  const photosForClip = clipSelectedPhotos.length > 0 ? clipSelectedPhotos : clipEligiblePhotos;
-
-  const handleClipTestAll = async () => {
-    clipCancelledRef.current = false;
-    const photosToTest = photosForClip;
-
-    if (photosToTest.length === 0) {
-      toast.info(t('audit.clipTestNone'));
-      return;
-    }
-
-    setClipTesting(true);
-    setClipProgress({ current: 0, total: photosToTest.length, matched: 0, noMatch: 0, errors: 0 });
-    // Clear previous results
-    setRerunResults({});
-
-    const results = { matched: 0, noMatch: 0, errors: 0 };
-
-    for (let i = 0; i < photosToTest.length; i++) {
-      if (clipCancelledRef.current) {
-        toast.info(t('audit.clipTestCancelled') || `CLIP test cancelled. ${i} of ${photosToTest.length} processed.`);
-        break;
-      }
-
-      const photo = photosToTest[i];
-      setClipProgress(prev => ({ ...prev, current: i + 1 }));
-
-      // Set loading state for this photo
-      setRerunResults(prev => ({
-        ...prev,
-        [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: true, error: null },
-      }));
-
-      try {
-        const res = await fetch('/api/montree/clip-test', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id }),
-        });
-
-        if (!res.ok) {
-          let errMsg = `HTTP ${res.status}`;
-          try {
-            const errData = await res.json();
-            errMsg = errData.error || errMsg;
-            if (errData.dbError) errMsg += ` (${errData.dbError})`;
-          } catch { /* ignore */ }
-          results.errors++;
-          setRerunResults(prev => ({
-            ...prev,
-            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: errMsg },
-          }));
-          setClipProgress(prev => ({ ...prev, errors: results.errors }));
-          continue;
-        }
-
-        let data: Record<string, unknown>;
-        try {
-          data = await res.json();
-        } catch {
-          results.errors++;
-          setRerunResults(prev => ({
-            ...prev,
-            [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'JSON error' },
-          }));
-          setClipProgress(prev => ({ ...prev, errors: results.errors }));
-          continue;
-        }
-
-        const clip = data.clipResult as Record<string, unknown> | null;
-
-        if (data.classified && clip) {
-          results.matched++;
-          setRerunResults(prev => ({
-            ...prev,
-            [photo.id]: {
-              work_name: (clip.work_name as string) || (clip.work_key as string) || null,
-              area: (clip.area_key as string) || null,
-              confidence: (clip.confidence as number) ?? null,
-              scenario: `CLIP ${data.action}`,
-              loading: false,
-              error: null,
-            },
-          }));
-        } else {
-          results.noMatch++;
-          setRerunResults(prev => ({
-            ...prev,
-            [photo.id]: {
-              work_name: null,
-              area: null,
-              confidence: (clip?.confidence as number) ?? null,
-              scenario: (data.reason as string) || 'no_match',
-              loading: false,
-              error: null,
-            },
-          }));
-        }
-
-        setClipProgress(prev => ({
-          ...prev,
-          matched: results.matched,
-          noMatch: results.noMatch,
-          errors: results.errors,
-        }));
-      } catch (err) {
-        console.error(`[CLIP Test] Error on photo ${photo.id}:`, err);
-        results.errors++;
-        setRerunResults(prev => ({
-          ...prev,
-          [photo.id]: { work_name: null, area: null, confidence: null, scenario: null, loading: false, error: 'Network error' },
-        }));
-        if (err instanceof TypeError && err.message.includes('fetch')) {
-          toast.error(t('audit.reclassifyNetworkError'));
-          break;
-        }
-      }
-    }
-
-    setClipTesting(false);
-    toast.success(t('audit.clipTestComplete') + `: ${results.matched} matched, ${results.noMatch} no match, ${results.errors} errors`);
   };
 
   // ================================================================
@@ -1387,53 +1255,7 @@ export default function PhotoAuditPage() {
               </button>
             ))}
           </div>
-          {clipEligiblePhotos.length > 0 && !clipTesting && !reclassifying && (
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <button
-                onClick={selectAllVisible}
-                className="px-3 py-1.5 rounded-l-full text-sm font-medium bg-indigo-50 text-indigo-500 hover:bg-indigo-100 transition-colors whitespace-nowrap border border-indigo-200"
-              >
-                {clipEligiblePhotos.every(p => selectedIds.has(p.id)) && selectedIds.size > 0
-                  ? 'Deselect All'
-                  : 'Select All'}
-              </button>
-              <button
-                onClick={handleClipTestAll}
-                className="px-3 py-1.5 rounded-r-full text-sm font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap border border-indigo-200 border-l-0"
-              >
-                🔬 Run CLIP ({selectedIds.size > 0 ? selectedIds.size : photosForClip.length})
-              </button>
-            </div>
-          )}
         </div>
-
-        {/* CLIP test progress bar */}
-        {clipTesting && (
-          <div className="mt-2 p-2 bg-indigo-50 rounded-lg border border-indigo-200">
-            <div className="flex items-center justify-between text-xs text-indigo-700 mb-1">
-              <span className="font-medium">
-                {t('audit.clipTestProgress')} {clipProgress.current}/{clipProgress.total}...
-              </span>
-              <button
-                onClick={() => { clipCancelledRef.current = true; }}
-                className="px-2 py-0.5 rounded text-xs bg-white text-gray-600 border hover:bg-gray-50"
-              >
-                {t('audit.reclassifyCancel') || 'Cancel'}
-              </button>
-            </div>
-            <div className="w-full bg-indigo-100 rounded-full h-2">
-              <div
-                className="bg-indigo-500 rounded-full h-2 transition-all duration-300"
-                style={{ width: `${clipProgress.total > 0 ? Math.round((clipProgress.current / clipProgress.total) * 100) : 0}%` }}
-              />
-            </div>
-            <div className="flex gap-3 mt-1 text-[10px] text-gray-500">
-              <span className="text-emerald-600">{clipProgress.matched} matched</span>
-              <span className="text-gray-500">{clipProgress.noMatch} no match</span>
-              {clipProgress.errors > 0 && <span className="text-red-500">{clipProgress.errors} errors</span>}
-            </div>
-          </div>
-        )}
 
         {/* Reclassify progress bar (shown during batch processing) */}
         {reclassifying && (

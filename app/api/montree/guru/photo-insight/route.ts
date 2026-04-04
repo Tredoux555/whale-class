@@ -2073,8 +2073,7 @@ Match this description to the correct Montessori work. Use the visual identifica
           visual_description: visualDescription.slice(0, 500),
           two_pass: true,
           suggested_crop: input.suggested_crop ?? null,
-          // CLIP removed Apr 4, 2026 — SigLIP unable to discriminate 329 works
-          clip_attempted: false,
+          clip_attempted: false, // CLIP permanently disabled Apr 4, 2026
           custom_work_proposal: customWorkProposal, // null if not generated or failed
           onboarding_mode: isOnboardingMode,
           onboarding_sonnet_used: useOnboardingPath && modelUsed === AI_MODEL,
