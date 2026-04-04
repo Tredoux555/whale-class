@@ -462,7 +462,11 @@ export default function PhotoAuditPage() {
   const reclassifyCancelledRef = useRef(false);
 
   // Rerun results for batch reclassify
-  const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
+  const [rerunResults, setRerunResults] = useState<Record<string, { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null }>>({});
+  // Haiku batch run state
+  const [haikusRunning, setHaikusRunning] = useState(false);
+  const [haikuProgress, setHaikuProgress] = useState({ current: 0, total: 0 });
+  const haikuCancelledRef = useRef(false);
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
@@ -964,6 +968,174 @@ export default function PhotoAuditPage() {
     );
   };
 
+  // ================================================================
+  // RUN HAIKU — Batch classify selected photos via Haiku two-pass pipeline
+  // ================================================================
+  const handleRunHaiku = async () => {
+    const ids = Array.from(selectedIds);
+    const photosToProcess = ids
+      .map(id => photos.find(p => p.id === id))
+      .filter((p): p is AuditPhoto => !!p && !!p.child_id);
+
+    if (photosToProcess.length === 0) {
+      toast.error('Select photos with a child assigned');
+      return;
+    }
+
+    setHaikusRunning(true);
+    setHaikuProgress({ current: 0, total: photosToProcess.length });
+    haikuCancelledRef.current = false;
+
+    // Mark all selected as loading
+    const loadingResults: Record<string, any> = {};
+    photosToProcess.forEach(p => {
+      loadingResults[p.id] = { work_name: null, work_id: null, area: null, confidence: null, scenario: null, loading: true, error: null };
+    });
+    setRerunResults(prev => ({ ...prev, ...loadingResults }));
+
+    let classified = 0;
+    let failed = 0;
+
+    for (let i = 0; i < photosToProcess.length; i++) {
+      if (haikuCancelledRef.current) {
+        // Mark remaining as cancelled
+        for (let j = i; j < photosToProcess.length; j++) {
+          setRerunResults(prev => ({
+            ...prev,
+            [photosToProcess[j].id]: { ...prev[photosToProcess[j].id], loading: false, error: 'Cancelled' },
+          }));
+        }
+        toast.info(`Haiku cancelled after ${i} of ${photosToProcess.length}`);
+        break;
+      }
+
+      const photo = photosToProcess[i];
+      setHaikuProgress({ current: i + 1, total: photosToProcess.length });
+
+      try {
+        const res = await fetch('/api/montree/guru/photo-insight', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            media_id: photo.id,
+            child_id: photo.child_id,
+            force_reanalyze: true,
+          }),
+        });
+
+        if (res.status === 429) {
+          // Rate limited — wait 5s and retry
+          await new Promise(r => setTimeout(r, 5000));
+          const retry = await fetch('/api/montree/guru/photo-insight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id, force_reanalyze: true }),
+          });
+          if (!retry.ok) {
+            setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Rate limited' } }));
+            failed++;
+            continue;
+          }
+          const retryData = await retry.json();
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: {
+              work_name: retryData.work_name || null,
+              work_id: retryData.classroom_work_id || null,
+              area: retryData.area || null,
+              confidence: retryData.confidence ?? null,
+              scenario: retryData.scenario || null,
+              loading: false,
+              error: null,
+            },
+          }));
+          if (retryData.work_name) classified++; else failed++;
+        } else if (!res.ok) {
+          setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: `Error ${res.status}` } }));
+          failed++;
+        } else {
+          const data = await res.json();
+          setRerunResults(prev => ({
+            ...prev,
+            [photo.id]: {
+              work_name: data.work_name || null,
+              work_id: data.classroom_work_id || null,
+              area: data.area || null,
+              confidence: data.confidence ?? null,
+              scenario: data.scenario || null,
+              loading: false,
+              error: null,
+            },
+          }));
+          if (data.work_name) classified++; else failed++;
+        }
+      } catch (err: any) {
+        console.error(`[Haiku] Error for ${photo.id}:`, err);
+        setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Network error' } }));
+        failed++;
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          toast.error('Connection lost');
+          break;
+        }
+      }
+
+      // Delay between requests (respect rate limits: ~10/min for Haiku)
+      if (i < photosToProcess.length - 1) {
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    }
+
+    setHaikusRunning(false);
+    setSelectedIds(new Set());
+    toast.success(`Haiku done: ${classified} classified, ${failed} unmatched`);
+  };
+
+  // Accept a Haiku rerun result — apply the match as a correction
+  const handleAcceptResult = async (photo: AuditPhoto) => {
+    const result = rerunResults[photo.id];
+    if (!result || !result.work_name || !result.work_id) return;
+
+    setProcessingId(photo.id);
+    try {
+      const res = await fetch('/api/montree/guru/corrections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_id: photo.id,
+          child_id: photo.child_id,
+          original_work_name: photo.work_name || 'Unknown',
+          original_work_id: photo.work_id || '',
+          original_area: photo.area || '',
+          original_confidence: photo.confidence || 0,
+          corrected_work_name: result.work_name,
+          corrected_work_id: result.work_id,
+          corrected_area: result.area || 'practical_life',
+        }),
+      });
+      if (!res.ok) throw new Error('correction failed');
+
+      // Update photo locally with the new work info (keep in place for Teach/Correct)
+      setPhotos(prev => prev.map(p =>
+        p.id === photo.id
+          ? { ...p, work_id: result.work_id!, work_name: result.work_name!, area: result.area }
+          : p
+      ));
+      // Clear the rerun result for this photo
+      setRerunResults(prev => {
+        const next = { ...prev };
+        delete next[photo.id];
+        return next;
+      });
+      toast.success(`Applied: ${result.work_name}`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to apply');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   // "Teach AI" — shows choice: Use Full Photo or Crop to Work
   const handleTeachAI = (photo: AuditPhoto) => {
     if (!photo.url || !photo.work_name || !photo.work_id) return;
@@ -1299,6 +1471,7 @@ export default function PhotoAuditPage() {
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
               rerunResult={rerunResults[photo.id] || null}
+              onAcceptResult={() => handleAcceptResult(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               t={t}
@@ -1330,18 +1503,58 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
-      {/* Batch action bar */}
-      {/* Select All bar (when no selection) */}
-      {selectedIds.size === 0 && filteredPhotos.length > 0 && !loading && (
+      {/* Floating action bar */}
+      {filteredPhotos.length > 0 && !loading && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-20">
-          <div className="flex items-center justify-center">
-            <button
-              onClick={selectAllVisible}
-              className="px-4 py-1.5 text-sm rounded border text-gray-600"
-            >
-              {t('audit.selectAll')} ({filteredPhotos.length})
-            </button>
-          </div>
+          {selectedIds.size === 0 ? (
+            /* No selection — just Select All */
+            <div className="flex items-center justify-center">
+              <button
+                onClick={selectAllVisible}
+                className="px-4 py-1.5 text-sm rounded border text-gray-600"
+              >
+                {t('audit.selectAll')} ({filteredPhotos.length})
+              </button>
+            </div>
+          ) : (
+            /* Photos selected — show action buttons */
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-500 mr-1">{selectedIds.size} selected</span>
+              <button
+                onClick={handleRunHaiku}
+                disabled={haikusRunning || batchProcessing}
+                className="px-4 py-1.5 text-sm rounded-lg bg-indigo-600 text-white font-medium disabled:opacity-50"
+              >
+                {haikusRunning ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="animate-spin h-3.5 w-3.5 border-2 border-white border-t-transparent rounded-full" />
+                    Haiku {haikuProgress.current}/{haikuProgress.total}
+                  </span>
+                ) : '🤖 Run Haiku'}
+              </button>
+              <button
+                onClick={handleBatchConfirm}
+                disabled={haikusRunning || batchProcessing}
+                className="px-4 py-1.5 text-sm rounded-lg bg-emerald-600 text-white font-medium disabled:opacity-50"
+              >
+                {batchProcessing ? `Confirming...` : `✓ Batch Confirm`}
+              </button>
+              {haikusRunning && (
+                <button
+                  onClick={() => { haikuCancelledRef.current = true; }}
+                  className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-600"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                onClick={clearSelection}
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 text-gray-500"
+              >
+                Deselect
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1584,7 +1797,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onSaveNote, processing, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onSaveNote, processing, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1593,7 +1806,8 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
-  rerunResult: { work_name: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null } | null;
+  rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; loading: boolean; error: string | null } | null;
+  onAcceptResult: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   t: (key: string) => string;
@@ -1698,7 +1912,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {/* Re-run classification result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
           <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
-            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">{t('audit.rerunResult')}</p>
+            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">Haiku Result</p>
             {rerunResult.work_name ? (
               <>
                 <p className="text-[10px] font-medium text-indigo-800 truncate">{rerunResult.work_name}</p>
@@ -1706,12 +1920,21 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
                   {rerunResult.area && <span className="capitalize">{rerunResult.area.replace(/_/g, ' ')}</span>}
                   {rerunResult.confidence !== null && <span> · {Math.round(rerunResult.confidence * 100)}%</span>}
                 </p>
+                {rerunResult.work_id && (
+                  <button
+                    onClick={onAcceptResult}
+                    disabled={processing}
+                    className="mt-1 w-full text-[10px] py-1 rounded bg-indigo-600 text-white font-medium disabled:opacity-50"
+                  >
+                    {processing ? '...' : '✓ Accept this match'}
+                  </button>
+                )}
               </>
             ) : (
               <p className="text-[10px] text-indigo-500 italic">
-                {t('audit.rerunNoMatch')}
+                No match found
                 {rerunResult.confidence !== null && ` (${Math.round(rerunResult.confidence * 100)}%)`}
-                {rerunResult.scenario && <span className="block text-[8px] text-indigo-400 mt-0.5">reason: {rerunResult.scenario}</span>}
+                {rerunResult.scenario && <span className="block text-[8px] text-indigo-400 mt-0.5">scenario: {rerunResult.scenario}</span>}
               </p>
             )}
           </div>
