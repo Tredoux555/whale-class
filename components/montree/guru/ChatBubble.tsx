@@ -2,7 +2,7 @@
 // Single chat message bubble for the Guru conversational thread
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 
 interface ChatBubbleProps {
@@ -78,10 +78,16 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
+  const thinkingRef = useRef<HTMLDivElement>(null);
 
-  // Auto-expand while thinking is live, collapse once text starts
   const showThinking = thinking && thinking.trim().length > 0;
-  const isExpanded = isThinkingLive || thinkingExpanded;
+
+  // Auto-scroll thinking block as it streams
+  useEffect(() => {
+    if (isThinkingLive && thinkingRef.current) {
+      thinkingRef.current.scrollTop = thinkingRef.current.scrollHeight;
+    }
+  }, [thinking, isThinkingLive]);
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
@@ -92,42 +98,55 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
         </div>
       )}
 
-      <div className={`max-w-[80%] ${isUser ? 'order-1' : ''}`}>
-        {/* Thinking block — collapsible, shown above the response */}
+      <div className={`max-w-[85%] ${isUser ? 'order-1' : ''}`}>
+        {/* THINKING BLOCK — visible while live, collapsible after done */}
         {!isUser && showThinking && (
-          <div className="mb-1.5">
-            <button
-              onClick={() => setThinkingExpanded(!thinkingExpanded)}
-              className="flex items-center gap-1.5 text-[11px] text-[#0D3330]/50 hover:text-[#0D3330]/70 transition-colors mb-1 ml-1"
-            >
-              <svg
-                className={`w-3 h-3 transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
+          <div className="mb-2">
+            {isThinkingLive ? (
+              /* LIVE THINKING — fully visible, auto-scrolling, prominent */
+              <div
+                ref={thinkingRef}
+                className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200/50 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm max-h-64 overflow-y-auto"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="flex items-center gap-1">
-                {isThinkingLive ? (
-                  <>
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-                    {t('guru.thinkingLive') || 'Thinking...'}
-                  </>
-                ) : (
-                  <>{t('guru.viewThinking') || 'View thinking'}</>
-                )}
-              </span>
-            </button>
-            {isExpanded && (
-              <div className="bg-[#0D3330]/[0.03] border border-[#0D3330]/[0.06] rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto">
-                <p className="text-[11px] leading-relaxed text-[#0D3330]/50 whitespace-pre-wrap font-mono">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                  <span className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider">
+                    Thinking
+                  </span>
+                </div>
+                <p className="text-[13px] leading-relaxed text-violet-900/70 whitespace-pre-wrap">
                   {thinking}
-                  {isThinkingLive && (
-                    <span className="inline-block w-1.5 h-3 bg-[#0D3330]/30 animate-pulse rounded-sm ml-0.5" />
-                  )}
+                  <span className="inline-block w-1.5 h-4 bg-violet-400/60 animate-pulse rounded-sm ml-0.5 align-middle" />
                 </p>
+              </div>
+            ) : (
+              /* COMPLETED THINKING — collapsed with toggle */
+              <div>
+                <button
+                  onClick={() => setThinkingExpanded(!thinkingExpanded)}
+                  className="flex items-center gap-1.5 text-[11px] text-violet-500/70 hover:text-violet-600 transition-colors mb-1 ml-1"
+                >
+                  <svg
+                    className={`w-3 h-3 transition-transform duration-200 ${thinkingExpanded ? 'rotate-90' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                  <span>{t('guru.viewThinking') || 'View thinking'}</span>
+                </button>
+                {thinkingExpanded && (
+                  <div
+                    ref={thinkingRef}
+                    className="bg-violet-50/50 border border-violet-200/30 rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto"
+                  >
+                    <p className="text-[12px] leading-relaxed text-violet-900/50 whitespace-pre-wrap">
+                      {thinking}
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>
