@@ -15,6 +15,37 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## CURRENT STATUS (Apr 4, 2026)
 
+### Session Work (Apr 4, 2026 — Photo Bank Export-to-Tool Feature)
+
+**Photo Bank "Export to Tool" — ✅ PUSHED (commit `12e521d1`), 3x3x3 Audited:**
+
+Teachers can now select photos in the Picture Bank and export them directly into 4 generator tools. Eliminates manual download→re-upload workflow.
+
+**Flow:** Select photos (green checkmarks) → floating bottom bar → "Export to" dropdown → sessionStorage transfer → target tool loads photos on mount.
+
+**4 Export Targets:**
+- 🃏 Three-Part Cards — photos load as card originals with dimensions
+- 📸 Vocabulary Flashcards — photos load as flashcards, deduplicates by word
+- 🖼️ Picture Bingo — switches to bank mode, photos appear in bank grid (ES5-compatible)
+- 📚 Phonics Fast — banner only (photos auto-resolve via existing `resolvePhotoBankImages()` API)
+
+**sessionStorage format:** `{ photos: [{ id, label, public_url, filename }] }` — stores public URLs (not data URLs) to avoid ~5MB limit. Each tool converts to data URL on mount via fetch→blob→FileReader.
+
+**Files Modified (6):**
+1. `components/montree/PhotoBankPicker.tsx` — New `onRawSelect` + `selectedIds` props, green border + checkmark overlay, `PhotoBankPhoto` type export
+2. `app/montree/library/photo-bank/page.tsx` — Selection state (Map + Set), handleRawSelect toggle, handleExport with try-catch, floating export bar with dropdown
+3. `components/card-generator/CardGenerator.tsx` — useEffect reads sessionStorage, fetch→blob→dataURL→Card objects
+4. `app/montree/library/tools/vocabulary-flashcards/page.tsx` — useEffect reads sessionStorage, blobToBase64, dedup by word
+5. `public/tools/picture-bingo-generator.html` — `importFromPhotoBankExport()` in ES5 syntax, duplicate detection, renderBankItems()
+6. `app/montree/library/tools/phonics-fast/page.tsx` — useEffect reads sessionStorage, dismissible emerald confirmation banner
+
+**3x3x3 Audit:** Cycle 1 (Build) → Cycle 2 (3 parallel audit agents, 1 fix: try-catch on sessionStorage.setItem) → Cycle 3 (3 parallel verification agents, ALL CLEAN).
+
+**Deploy:** ✅ PUSHED (commit `12e521d1`). Railway auto-deploying. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_PHOTO_BANK_EXPORT_APR4.md`
+
+---
+
 ### Session Work (Apr 4, 2026 — CLIP Permanent Removal + Photo-Bank Upload Fix)
 
 **CLIP/SigLIP Classifier Permanently Removed — ✅ PUSHED (commit `2117c993`):**
