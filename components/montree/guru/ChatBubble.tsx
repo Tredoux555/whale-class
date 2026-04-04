@@ -101,8 +101,10 @@ function ChatBubble({ content, isUser, timestamp, imageUrl }: ChatBubbleProps) {
           )}
           {isUser ? (
             <p className="text-sm leading-relaxed">{content}</p>
-          ) : (
+          ) : content ? (
             <div className="space-y-0.5">{renderMarkdown(content)}</div>
+          ) : (
+            <span className="inline-block w-2 h-4 bg-[#0D3330]/40 animate-pulse rounded-sm" />
           )}
         </div>
 
