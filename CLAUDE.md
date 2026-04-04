@@ -15,27 +15,23 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 4, 2026)
 
+**Feature-Gated Dashboard — ✅ PUSHED + MIGRATED (commit `039b435d`, migration 160):**
+Dashboard sections (Daily Brief, Intelligence, Teacher Tools, Shelf Autopilot, Paperwork Tracker) gated by existing feature flag system. New schools see clean minimal view. Whale Class has everything enabled. Super-admin ⚙️ gear button per school opens feature toggle modal. Features POST route now accepts super-admin auth.
+
 **Story Mobile Video Uploads Fixed — ✅ PUSHED (commit `6bcd3f46`):**
-5 root causes fixed: server timeouts too short (60s/120s → 300s), missing iOS MIME types (3gpp, 3gpp2, x-m4v), no AbortController on admin uploads (infinite hang), unsafe `res.json()` on 502 HTML responses, client timeout too short (90s → 180s). Files: admin/send route, upload-media route, useAdminMessage hook, Story page, MessageComposer.
+5 root causes fixed: server timeouts too short (60s/120s → 300s), missing iOS MIME types (3gpp, 3gpp2, x-m4v), no AbortController on admin uploads (infinite hang), unsafe `res.json()` on 502 HTML responses, client timeout too short (90s → 180s).
 
 **Guru Progressive Thinking Display — ✅ PUSHED (commit `06f4d337`):**
-Shows "Thinking..." → "Building context..." (3s) → "Generating response..." (8s) instead of static dots. Disappears once SSE streaming starts. `thinkingPhase` state in GuruChatThread.tsx.
+Shows "Thinking..." → "Building context..." (3s) → "Generating response..." (8s) instead of static dots. Disappears once SSE streaming starts.
 
 **Guru Model String + Error Messages — ✅ PUSHED (commit `e53a8299`):**
 Model updated from `claude-sonnet-4-20250514` → `claude-sonnet-4-6`. Error responses now expose actual API error text. Photo audit "Correct" now permanent via `teacher_confirmed` boolean on `montree_media`.
 
 **Paperwork Tracker Panel — ✅ PUSHED (commit `101896b8`):**
-New dashboard intelligence panel. Tracks which weekly paperwork packet (weeks 1-37) each child is on. Children grouped by status (behind/slightly behind/on track). Week badge tappable to edit.
+New dashboard intelligence panel. Tracks which weekly paperwork packet (weeks 1-37) each child is on.
 
 **Circle Time Cards Merged — ✅ PUSHED (commit `b68a7c4c`):**
 Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex / 2×2 circle time) in all 3 Picture Bingo modes.
-
-**⚠️ PENDING MIGRATIONS (must run in Supabase SQL Editor):**
-```sql
-ALTER TABLE montree_children ADD COLUMN IF NOT EXISTS paperwork_current_week integer NOT NULL DEFAULT 1;
-ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS teacher_confirmed boolean NOT NULL DEFAULT false;
-CREATE INDEX IF NOT EXISTS idx_montree_media_teacher_confirmed ON montree_media (teacher_confirmed) WHERE teacher_confirmed = false;
-```
 
 ---
 
@@ -49,6 +45,7 @@ CREATE INDEX IF NOT EXISTS idx_montree_media_teacher_confirmed ON montree_media 
 - **All client-facing photo URLs** use Cloudflare-cached proxy (`getProxyUrl()`). Server-to-server URLs use direct Supabase.
 - **Cross-pollination security:** Every route accepting `child_id` MUST call `verifyChildBelongsToSchool()`. No exceptions.
 - **i18n:** 1,490+ keys, perfect EN/ZH parity. Custom React Context system (`useI18n()` hook).
+- **Feature flags:** `montree_feature_definitions` + `montree_school_features` + `montree_classroom_features`. `FeaturesProvider` context in dashboard layout. `useFeatures()` hook with `isEnabled(key)`. Fail-closed (all off if fetch fails). Dashboard sections gated: `daily_brief`, `intelligence_panels`, `teacher_tools`, `shelf_autopilot`, `paperwork_tracker`. New schools get clean minimal view. Super-admin ⚙️ button per school to toggle.
 
 ---
 
@@ -256,7 +253,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 157 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id). **Migrations 158 (paperwork_current_week on montree_children) and 159 (teacher_confirmed on montree_media) are PENDING — must be run in Supabase SQL Editor.**
+All migrations through 160 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled).
 
 ---
 
