@@ -135,6 +135,16 @@ export async function POST(request: NextRequest) {
         if (insErr) console.error('[Corrections] Confirm confidence insert error (non-fatal):', insErr);
         else console.log(`[Corrections] Confidence row inserted for confirmed photo:${media_id}:${child_id}`);
       }
+      // Set teacher_confirmed flag directly on the media row — this is the definitive signal
+      // that the photo has been audited. The audit page excludes teacher_confirmed photos.
+      if (media_id) {
+        const { error: confirmErr } = await supabase
+          .from('montree_media')
+          .update({ teacher_confirmed: true })
+          .eq('id', media_id);
+        if (confirmErr) console.error('[Corrections] Set teacher_confirmed error (non-fatal):', confirmErr.message);
+      }
+
       console.log(`[Corrections] Confirmed correct: "${original_work_name}" (classroom ${classroomId})`);
       return NextResponse.json({ success: true, confirmed: true });
     }

@@ -1167,7 +1167,9 @@ export async function POST(request: NextRequest) {
     if (typeof masterTimeout !== 'undefined' && masterTimeout !== null) {
       clearTimeout(masterTimeout);
     }
-    console.error('[Guru] Error:', error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const errName = error instanceof Error ? error.name : 'unknown';
+    console.error(`[Guru] Error (${errName}): ${errMsg}`, error);
 
     // Check for specific error types
     if (error instanceof Error) {
@@ -1179,22 +1181,30 @@ export async function POST(request: NextRequest) {
           { status: 504 }
         );
       }
-      if (error.message.includes('rate_limit')) {
+      if (error.message.includes('rate_limit') || error.message.includes('429')) {
         return NextResponse.json(
           { success: false, error: 'Rate limit exceeded. Please try again in a moment.' },
           { status: 429 }
         );
       }
-      if (error.message.includes('invalid_api_key')) {
+      if (error.message.includes('invalid_api_key') || error.message.includes('authentication')) {
         return NextResponse.json(
-          { success: false, error: 'AI service configuration error.' },
+          { success: false, error: 'AI service configuration error. Check ANTHROPIC_API_KEY.' },
           { status: 503 }
+        );
+      }
+      // Model errors (invalid model, not found, etc.)
+      if (error.message.includes('model') || error.message.includes('not_found') || error.message.includes('404')) {
+        return NextResponse.json(
+          { success: false, error: `AI model error: ${error.message.slice(0, 200)}` },
+          { status: 502 }
         );
       }
     }
 
+    // Include truncated error detail so the frontend can show what went wrong
     return NextResponse.json(
-      { success: false, error: 'Failed to get response. Please try again.' },
+      { success: false, error: `Guru error: ${errMsg.slice(0, 300)}` },
       { status: 500 }
     );
   }

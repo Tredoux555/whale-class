@@ -38,12 +38,13 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 1), 200);
     const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
 
-    // Step 3: Query media
+    // Step 3: Query media — exclude teacher_confirmed photos (they're done, never show again)
     let mediaQuery = supabase
       .from('montree_media')
       .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
+      .neq('teacher_confirmed', true)
       .gte('created_at', dateFrom)
       .lte('created_at', dateTo)
       .order('created_at', { ascending: false })

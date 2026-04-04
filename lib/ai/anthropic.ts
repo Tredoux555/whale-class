@@ -10,8 +10,8 @@ export const anthropic = process.env.ANTHROPIC_API_KEY
 
 export const AI_ENABLED = !!anthropic;
 
-// Model to use (Claude Sonnet for balance of speed/quality)
-export const AI_MODEL = 'claude-sonnet-4-20250514';
+// Model to use — claude-sonnet-4-6 is the current stable alias (auto-updates)
+export const AI_MODEL = 'claude-sonnet-4-6';
 
 // Haiku model for fast, cheap operations
 export const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
