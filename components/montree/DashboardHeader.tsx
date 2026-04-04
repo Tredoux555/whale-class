@@ -326,6 +326,16 @@ export default function DashboardHeader() {
             </Link>
           )}
           <Link
+            href="/montree/dashboard/notes"
+            data-guide="nav-notes"
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+              pathname === '/montree/dashboard/notes' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+            }`}
+            title={t('nav.notes')}
+          >
+            📝
+          </Link>
+          <Link
             href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
             data-tutorial="guru-link"
             data-guide="nav-guru"
@@ -337,7 +347,7 @@ export default function DashboardHeader() {
             🧠
           </Link>
 
-          {/* Inbox — always visible */}
+          {/* Inbox — always visible (opens slide-out panel) */}
           <InboxButton
             conversationId={session.teacher.id}
             userName={session.teacher.name || 'Teacher'}
@@ -359,17 +369,6 @@ export default function DashboardHeader() {
 
               {showMoreMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] min-w-[200px] py-1">
-                  <Link
-                    href="/montree/dashboard/notes"
-                    data-guide="nav-notes"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/notes' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📝</span>
-                    <span>{t('nav.notes')}</span>
-                  </Link>
                   <Link
                     href="/montree/dashboard/curriculum"
                     data-guide="nav-curriculum"
