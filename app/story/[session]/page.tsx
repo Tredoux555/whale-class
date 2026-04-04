@@ -305,6 +305,47 @@ export default function StoryViewer() {
     }
   };
 
+  // Compress image before upload (mobile photos can be 8-15MB)
+  const compressImage = async (file: File): Promise<File> => {
+    // Only compress images, skip video/audio
+    if (!file.type.startsWith('image/')) return file;
+    // Skip small images (under 2MB)
+    if (file.size < 2 * 1024 * 1024) return file;
+    // Skip GIFs (animation would be lost)
+    if (file.type === 'image/gif') return file;
+
+    try {
+      const bitmap = await createImageBitmap(file);
+      const maxDim = 2048;
+      let width = bitmap.width;
+      let height = bitmap.height;
+
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = new OffscreenCanvas(width, height);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+
+      ctx.drawImage(bitmap, 0, 0, width, height);
+      bitmap.close();
+
+      const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.82 });
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const newName = ext && ['heic', 'heif'].includes(ext)
+        ? file.name.replace(/\.[^.]+$/, '.jpg')
+        : file.name;
+
+      return new File([blob], newName, { type: 'image/jpeg' });
+    } catch {
+      // If compression fails, send original
+      return file;
+    }
+  };
+
   // Handle file upload
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -315,14 +356,25 @@ export default function StoryViewer() {
 
     try {
       const session = getSession();
+
+      // Compress images for faster mobile upload
+      const uploadFile = await compressImage(file);
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', uploadFile);
+
+      // 90s timeout — mobile uploads on slow networks need time
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90_000);
 
       const res = await fetch('/api/story/upload-media', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${session}` },
-        body: formData
+        body: formData,
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
 
@@ -334,8 +386,12 @@ export default function StoryViewer() {
       } else {
         setUploadError(data.error || 'Upload failed');
       }
-    } catch {
-      setUploadError('Upload failed. Please try again.');
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setUploadError('Upload timed out — please try a smaller file or use WiFi.');
+      } else {
+        setUploadError('Upload failed. Please check your connection and try again.');
+      }
     } finally {
       setIsUploadingMedia(false);
     }
@@ -589,7 +645,10 @@ export default function StoryViewer() {
                 Supports: Images, Videos, and Audio (expires in 24 hours)
               </p>
               {isUploadingMedia && (
-                <p className="mt-2 text-sm text-indigo-600 animate-pulse">Uploading...</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-indigo-600">Uploading — please keep this page open...</p>
+                </div>
               )}
               {uploadError && (
                 <p className="mt-2 text-sm text-red-500">{uploadError}</p>
