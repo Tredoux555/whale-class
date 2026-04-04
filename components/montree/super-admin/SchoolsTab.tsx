@@ -2,8 +2,11 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { School } from './types';
 import { getCountryFlag, formatLocation } from '@/lib/ip-geolocation';
+
+const SchoolFeaturesModal = dynamic(() => import('./SchoolFeaturesModal'), { ssr: false });
 
 interface SchoolsTabProps {
   schools: School[];
@@ -20,6 +23,7 @@ interface SchoolsTabProps {
   batchDeleting: boolean;
   batchDeleteProgress: { completed: number; total: number; results: Array<{ name: string; success: boolean }> } | null;
   onClearBatchProgress: () => void;
+  sessionToken?: string;
 }
 
 type SortField = 'name' | 'students' | 'last_active' | 'cost' | 'created';
@@ -69,6 +73,7 @@ export default function SchoolsTab({
   batchDeleting,
   batchDeleteProgress,
   onClearBatchProgress,
+  sessionToken,
 }: SchoolsTabProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
@@ -76,6 +81,7 @@ export default function SchoolsTab({
   const [sortDir, setSortDir] = useState<SortDir>('desc');
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
 
   // Filter + sort
   const filteredSchools = useMemo(() => {
@@ -464,6 +470,12 @@ export default function SchoolsTab({
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => setFeaturesSchool({ id: school.id, name: school.name })}
+                            className="px-2 py-1 bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 rounded text-xs font-medium"
+                          >
+                            ⚙️
+                          </button>
+                          <button
                             onClick={() => onLoginAs(school.id)}
                             className="px-2 py-1 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 rounded text-xs font-medium"
                           >
@@ -484,6 +496,16 @@ export default function SchoolsTab({
             </table>
           </div>
         </div>
+      )}
+
+      {/* Feature toggles modal */}
+      {featuresSchool && sessionToken && (
+        <SchoolFeaturesModal
+          schoolId={featuresSchool.id}
+          schoolName={featuresSchool.name}
+          sessionToken={sessionToken}
+          onClose={() => setFeaturesSchool(null)}
+        />
       )}
     </>
   );
