@@ -3725,6 +3725,17 @@ export const en = {
   'bgTask.videoComplete': 'Video uploaded',
   'bgTask.videoFailed': 'Video upload failed',
 
+  // Paperwork Tracker
+  'paperwork.title': 'Paperwork Tracker',
+  'paperwork.targetWeek': 'Target week',
+  'paperwork.onTrack': 'on track',
+  'paperwork.onTrackLabel': 'On Track',
+  'paperwork.slightlyBehind': 'Slightly Behind',
+  'paperwork.behind': 'Behind',
+  'paperwork.advanceWeek': 'Advance to next week',
+  'paperwork.tapToEdit': 'Tap to set week manually',
+  'paperwork.updateFailed': 'Failed to update paperwork week',
+
   'time.justNow': 'just now',
   'time.minutesAgo': '{count}m ago',
   'time.hoursAgo': '{count}h ago',

@@ -3727,6 +3727,17 @@ export const zh = {
   'bgTask.videoComplete': '视频已上传',
   'bgTask.videoFailed': '视频上传失败',
 
+  // Paperwork Tracker
+  'paperwork.title': '作业进度',
+  'paperwork.targetWeek': '目标周',
+  'paperwork.onTrack': '进度正常',
+  'paperwork.onTrackLabel': '进度正常',
+  'paperwork.slightlyBehind': '稍微落后',
+  'paperwork.behind': '落后',
+  'paperwork.advanceWeek': '推进到下一周',
+  'paperwork.tapToEdit': '点击手动设置周数',
+  'paperwork.updateFailed': '更新作业周数失败',
+
   'time.justNow': '刚刚',
   'time.minutesAgo': '{count}分钟前',
   'time.hoursAgo': '{count}小时前',
