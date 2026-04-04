@@ -157,7 +157,7 @@ const nextConfig: NextConfig = {
 
   // Turbopack: Resolve fflate dynamic Worker issue (jspdf dependency)
   // fflate/lib/node.cjs uses dynamic Worker creation that Turbopack can't statically analyze
-  serverExternalPackages: ['jspdf', 'fflate', '@xenova/transformers', 'onnxruntime-node', 'sharp'],
+  serverExternalPackages: ['jspdf', 'fflate', 'onnxruntime-node', 'sharp'],
 };
 
 // Only apply PWA for web builds
