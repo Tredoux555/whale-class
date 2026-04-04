@@ -33,6 +33,18 @@ export async function POST(request: NextRequest) {
 
     const locale = (requestLocale as 'en' | 'zh') || getLocaleFromRequest(request.url);
 
+    // Verify classroom belongs to this school (cross-pollination guard)
+    const { data: classroomOwnership } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', classroom_id)
+      .eq('school_id', auth.schoolId)
+      .maybeSingle();
+
+    if (!classroomOwnership) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
     // Get all parent draft reports for this week
     const { data: draftsRaw } = await supabase
       .from('montree_weekly_reports')
@@ -111,13 +123,17 @@ export async function POST(request: NextRequest) {
         published++;
 
         // Also mark teacher report for this child as approved
-        await supabase
+        const { error: teacherUpdateErr } = await supabase
           .from('montree_weekly_reports')
           .update({ status: 'approved', approved_at: now })
           .eq('child_id', draft.child_id)
           .eq('week_number', week_number)
           .eq('report_year', report_year)
           .eq('report_type', 'teacher');
+
+        if (teacherUpdateErr) {
+          console.error(`Teacher report approval failed for ${draft.child_id}:`, teacherUpdateErr.message);
+        }
 
         // Send emails
         const parentEmails = linksByChild.get(draft.child_id) || [];

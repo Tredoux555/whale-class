@@ -3,7 +3,7 @@
 // Replaces BatchNarrativesCard + BatchReportsCard
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
@@ -49,6 +49,10 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
   } | null>(null);
   const [error, setError] = useState('');
   const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const { week_start, week_end } = getWeekDates();
 
