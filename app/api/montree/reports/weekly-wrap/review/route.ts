@@ -24,6 +24,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Verify classroom belongs to this school (cross-pollination guard)
+    const { data: classroomCheck } = await supabase
+      .from('montree_classrooms')
+      .select('id')
+      .eq('id', classroom_id)
+      .eq('school_id', auth.schoolId)
+      .maybeSingle();
+
+    if (!classroomCheck) {
+      return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
+    }
+
     // Get all reports for this week (both teacher and parent)
     const { data: reportsRaw } = await supabase
       .from('montree_weekly_reports')

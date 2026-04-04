@@ -482,7 +482,7 @@ export default function DashboardPage() {
                       {sectionsOpen.tools && (
                         <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                           {isEnabled('weekly_admin_docs') && <WeeklyAdminCard classroomId={session.classroom.id} children={children} />}
-                          <WeeklyWrapCard classroomId={session.classroom.id} children={children} />
+                          {isEnabled('teacher_tools') && <WeeklyWrapCard classroomId={session.classroom.id} children={children} />}
                           <BatchNarrativesCard classroomId={session.classroom.id} children={children} />
                           <BatchReportsCard classroomId={session.classroom.id} children={children} />
                           {isEnabled('shelf_autopilot') && <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />}
