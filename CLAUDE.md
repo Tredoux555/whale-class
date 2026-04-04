@@ -13,27 +13,95 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## CURRENT STATUS (Apr 3, 2026)
+## CURRENT STATUS (Apr 4, 2026)
 
-### Session Work (Apr 3, 2026 — CLIP Fix + Story Photo Fix + Child Tagger Bug)
+### Session Work (Apr 4, 2026 — CLIP Permanent Removal + Photo-Bank Upload Fix)
 
-**Three issues worked on — 1 deployed, 1 diagnosed, 1 critical unresolved:**
+**CLIP/SigLIP Classifier Permanently Removed — ✅ PUSHED (commit `2117c993`):**
 
-**1. CLIP Classifier "No Match" — ⚠️ CRITICAL UNRESOLVED:**
-Commit `e2192214` (prior session) rewrote CLIP from broken single `pipeline('feature-extraction')` to separate `SiglipTextModel` + `SiglipVisionModel`. Server deploys and starts, but ALL photos return "No match" with `clip_no_result`. The classifier's `classifyImageInternal()` returns null every time.
+The CLIP/SigLIP zero-shot classifier was producing noise-level similarity scores (0.0004–0.0143) across all 329 works — completely unable to discriminate. All code, dependencies, and i18n keys removed. Production photo identification is now exclusively the Haiku two-pass pipeline (~$0.006/photo).
 
-**Most likely cause (70%):** Initialization failure cached permanently. When `initClassifier()` fails (model download timeout, OOM, ONNX issues), `initializationError` is set and permanently cached — ALL subsequent calls immediately re-throw the cached error with no retry. The orchestrator catches this and returns null.
+**This session cleanup (commit `2117c993`):**
+- `photo-enrich/route.ts` — Removed `clip_confidence` from AMBER zone condition, context_snapshot, response JSON. Changed `classification_method` to `'haiku_enriched'`
+- `photo-insight/route.ts` — Updated CLIP comment to "permanently disabled Apr 4, 2026"
+- `photo-audit/page.tsx` — Replaced deleted i18n keys (`clipResult` → `rerunResult`, `clipNoMatch` → `rerunNoMatch`)
+- `en.ts` + `zh.ts` — Removed 7 dead CLIP i18n keys (perfect EN/ZH parity maintained)
+- `package.json` — Removed `@xenova/transformers` dependency
+- `next.config.ts` — Removed `'@xenova/transformers'` from `serverExternalPackages`
 
-**Diagnostic steps for next session:**
-1. Check Railway logs for `[CLIP] Initialization failed:` vs `[CLIP] Initialization complete`
-2. If init fails: Remove permanent error cache, add TTL-based retry (5 min cooldown)
-3. If init succeeds: Add logging to `embedImage()`, `findBestMatch()`, area/work scoring to trace null path
-4. Verify `pooler_output` exists in model output: `console.log(Object.keys(result))` in embedText/embedImage
-5. Check Railway memory usage during model loading (~100MB+ ONNX models)
+**Prior session cleanup (commits `83fe0f99` + `f7f01770`):**
+- `clip-classifier.ts` — Overwritten to ~48 line stub (preserves `VisualMemory`/`ClassifyResult` interfaces still imported elsewhere)
+- `classify-orchestrator.ts` — Overwritten to 56-line stub, always returns `full_two_pass`
+- `index.ts` — Removed dead CLIP function exports
+- `photo-audit/page.tsx` — Removed CLIP test button and batch testing UI (~200 lines)
 
-**Key files:** `lib/montree/classifier/clip-classifier.ts` (init + classify), `lib/montree/classifier/classify-orchestrator.ts` (routing), `app/api/montree/guru/photo-insight/route.ts` (caller)
+**Photo-Bank Upload Fix — ✅ PUSHED (commit `2117c993`):**
 
-**2. Story User Photo Upload — ✅ FIXED + PUSHED (commit `33929652`):**
+Teachers got "Network error" on every photo upload at `/montree/library/photo-bank`. Root cause: POST endpoint required `verifySuperAdminPassword` auth (added during Apr 2 health check) but frontend sends no super-admin headers — it's a teacher-facing page. Changed to `verifySchoolRequest` (httpOnly cookie auth teachers already have).
+
+**Files Modified (1):**
+1. `app/api/montree/photo-bank/route.ts` — POST auth: `verifySuperAdminPassword` → `verifySchoolRequest`
+
+**3-Cycle Audit Results:**
+- Cycle 1: 1 CRITICAL — deleted i18n keys still referenced in photo-audit → FIXED
+- Cycle 2: CLEAN
+- Cycle 3: 1 LOW — stale `@xenova/transformers` in next.config.ts → FIXED
+
+**Deploy:** ✅ PUSHED (commit `2117c993`). Railway auto-deploying. No migrations needed.
+**Handoff:** `docs/handoffs/HANDOFF_CLIP_REMOVAL_PHOTOBANK_FIX_APR4.md`
+
+**⚠️ Guru Not Connecting:** User needs to verify `ANTHROPIC_API_KEY` on Railway dashboard. Not a code issue — diagnosed in this session as an env var problem.
+
+---
+
+### ✅ CLIP/SigLIP — PERMANENTLY REMOVED (Apr 4, 2026)
+Classifier stub files remain only for `VisualMemory`/`ClassifyResult` type exports. All functions are no-ops. Production uses Haiku two-pass exclusively. The Apr 3 threshold recalibration (commits `a7fe2c8a` + `7d5cec1a`) is now moot — those thresholds are in dead stub code.
+
+---
+
+## PREVIOUS STATUS (Apr 3, 2026)
+
+### Session Work (Apr 3, 2026 — CLIP SigLIP Threshold Fix)
+
+**CLIP Classifier "No Match" — ✅ ROOT CAUSE FOUND + FIXED + PUSHED (commits `a7fe2c8a` + `7d5cec1a`):**
+
+ALL photos returning "No match" (`clip_no_result`). Classifier initialized fine (329 works, 5 areas), image embeddings computed (768 dims). Root cause: **SigLIP uses sigmoid similarity, NOT contrastive loss like CLIP.** Cosine similarity scores are naturally 0.01-0.15 range (vs 0.3-0.9 for CLIP). Every threshold was calibrated for CLIP scale.
+
+**Diagnostic evidence from Railway logs:** Area confidences were 0.063, 0.045, 0.045 — killed at the 0.5 area gate on Stage 1. Every photo failed before even reaching work matching.
+
+**10 thresholds recalibrated across 2 files:**
+
+| Threshold | Old (CLIP) | New (SigLIP) | File |
+|---|---|---|---|
+| `CLIP_CONFIDENCE_THRESHOLD` | 0.75 | 0.01 | clip-classifier.ts |
+| Area gate | 0.5 absolute | removed (pick best) | clip-classifier.ts |
+| `CROSS_AREA_FALLBACK_THRESHOLD` | 0.70 | 0.50 | clip-classifier.ts |
+| `NEGATIVE_EMBEDDING_MARGIN` | 0.12 | 0.02 | clip-classifier.ts |
+| Negative penalty gate | 0.3 | 0.005 | clip-classifier.ts |
+| `VISUAL_MEMORY_BOOST` | 0.15 | 0.02 | clip-classifier.ts |
+| `VISUAL_MEMORY_MIN_BASE` | 0.60 | 0.02 | clip-classifier.ts |
+| `VISUAL_MEMORY_BOOST_CAP` | 0.99 | 0.30 | clip-classifier.ts |
+| `CLIP_CONFIDENT` | 0.75 | 0.03 | classify-orchestrator.ts |
+| `CLIP_VERY_CONFIDENT` | 0.90 | 0.08 | classify-orchestrator.ts |
+
+**Additional fixes in commit `a7fe2c8a` (prior push this session):**
+- Init guard: throws if 0 area/work embeddings computed (prevents silent init "success" with empty maps)
+- Enhanced `classifyImageInternal` logging (embedding dimensions, image download status, null paths)
+- Child tagger modal pre-selection fix (empty array truthy bug)
+- Orchestrator diagnostics enhanced with `classifier_stats` and `init_attempt_count`
+
+**Calibration logging added:** Top-5 work scores per area logged for every classification, enabling data-driven threshold tuning from production logs.
+
+**Files Modified (2):**
+1. `lib/montree/classifier/clip-classifier.ts` — 10 threshold changes, top-5 calibration logging, init guard, diagnostic logging
+2. `lib/montree/classifier/classify-orchestrator.ts` — 2 threshold changes, enhanced diagnostics
+
+**Deploy:** ✅ PUSHED (commits `a7fe2c8a` + `7d5cec1a`). Railway auto-deploying. No migrations needed.
+**Next:** Monitor Railway logs for `[CLIP] Stage 2 top-5` entries to see actual score distributions and tune thresholds.
+
+### Session Work (Apr 3, 2026 — Story Photo Fix + Child Tagger Bug)
+
+**Story User Photo Upload — ✅ FIXED + PUSHED (commit `33929652`):**
 Photos sent from mobile user didn't appear for the other user. Admin-sent photos worked fine.
 
 **Root cause:** `app/api/story/upload-media/route.ts` had TWO bugs:
@@ -45,21 +113,21 @@ Photos sent from mobile user didn't appear for the other user. Admin-sent photos
 **Files Modified (1):**
 1. `app/api/story/upload-media/route.ts` — Error handling + is_expired field
 
-**3. Child Tagger Modal Pre-Selection — BUG DIAGNOSED, NOT YET FIXED:**
-"Tag Children" modal opens with Austin unchecked even though he's already tagged on the photo. Root cause: `photo.child_ids` returns `[]` (empty array) from the API when no junction table entries exist, but `photo.child_id` IS set. Empty array `[]` is truthy in JS, so `photo.child_ids || (photo.child_id ? [photo.child_id] : [])` uses the empty array instead of falling back.
+**Child Tagger Modal Pre-Selection — ✅ FIXED + PUSHED (commit `a7fe2c8a`):**
+"Tag Children" modal opened with Austin unchecked even though he was already tagged. Root cause: `photo.child_ids` returns `[]` (empty array) from API when no junction table entries exist, but `photo.child_id` IS set. Empty array `[]` is truthy in JS.
 
-**Fix (apply next session):** Change line 544 of `photo-audit/page.tsx` to:
-```typescript
-setTaggingSelection(new Set(
-  photo.child_ids?.length ? photo.child_ids : (photo.child_id ? [photo.child_id] : [])
-));
-```
+**Fix:** `photo.child_ids?.length ? photo.child_ids : (photo.child_id ? [photo.child_id] : [])`
 
-**Deploy:** Story fix pushed (commit `33929652`). CLIP and child tagger fixes pending.
-**Handoff:** `docs/handoffs/HANDOFF_CLIP_STORY_FIX_APR3.md`
+**Files Modified (1):**
+1. `app/montree/dashboard/photo-audit/page.tsx` — Line 545, empty array length check
 
-### 🔴 NEXT SESSION PRIORITY #1: Fix CLIP Classifier
-CLIP returning "No match" on ALL photos is the #1 blocker. Teachers are using the system LIVE. Follow diagnostic steps above. Check Railway logs FIRST.
+**Deploy:** All fixes pushed. Railway auto-deploying.
+
+### ✅ CLIP Classifier "No Match" — FIXED (Apr 3, 2026)
+Root cause: SigLIP similarity scale (0.01-0.15) vs CLIP (0.3-0.9). All 10 thresholds recalibrated. Commits `a7fe2c8a` + `7d5cec1a`. Top-5 calibration logging added for data-driven tuning.
+
+### 🟡 NEXT: Monitor CLIP accuracy from Railway logs
+Check `[CLIP] Stage 2 top-5` log entries to see actual score distributions. Tune `CLIP_CONFIDENT` (currently 0.03) and `CLIP_VERY_CONFIDENT` (currently 0.08) based on real data. Current thresholds are intentionally permissive to collect calibration data.
 
 ---
 
