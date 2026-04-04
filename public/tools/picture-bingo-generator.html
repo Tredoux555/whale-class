@@ -1269,8 +1269,50 @@ function generateBankCallingCards() {
   generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, item => item.imgData);
 }
 
+// Import photos exported from Picture Bank page via sessionStorage
+function importFromPhotoBankExport() {
+  try {
+    var raw = sessionStorage.getItem('photoBankExport');
+    if (!raw) return;
+    sessionStorage.removeItem('photoBankExport');
+    var data = JSON.parse(raw);
+    var photos = data && data.photos;
+    if (!photos || photos.length === 0) return;
+
+    // Switch to Picture Bank tab so user sees the imported items
+    switchMode('bank');
+
+    photos.forEach(function(photo) {
+      // Skip duplicates
+      if (bankItems.some(function(item) { return item._bankLabel === photo.label && item._bankUrl === photo.public_url; })) return;
+
+      fetch(photo.public_url)
+        .then(function(res) { return res.blob(); })
+        .then(function(blob) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            bankItems.push({
+              word: photo.label,
+              imgData: e.target.result,
+              _bankLabel: photo.label,
+              _bankUrl: photo.public_url
+            });
+            renderBankItems();
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(function(err) { console.error('Failed to import photo bank image:', err); });
+    });
+  } catch (err) {
+    console.error('Failed to parse photoBankExport:', err);
+  }
+}
+
 // Auto-generate preset on load
-window.addEventListener('DOMContentLoaded', generate);
+window.addEventListener('DOMContentLoaded', function() {
+  generate();
+  importFromPhotoBankExport();
+});
 </script>
 </body>
 </html>

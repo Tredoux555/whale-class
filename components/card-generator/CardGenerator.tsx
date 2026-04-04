@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Card, CropData } from './types';
 import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
@@ -56,6 +56,44 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
       setCards(initialCards);
     }
   }, [initialCards]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Import photos exported from Picture Bank via sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('photoBankExport');
+      if (!raw) return;
+      sessionStorage.removeItem('photoBankExport');
+      const { photos } = JSON.parse(raw) as { photos: Array<{ id: string; label: string; public_url: string; filename: string }> };
+      if (!photos || photos.length === 0) return;
+
+      photos.forEach((photo) => {
+        fetch(photo.public_url)
+          .then(res => res.blob())
+          .then(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const dataUrl = reader.result as string;
+              const img = new Image();
+              img.onload = () => {
+                setCards(prev => [...prev, {
+                  id: Date.now() + Math.random(),
+                  originalImage: dataUrl,
+                  croppedImage: dataUrl,
+                  label: photo.label || photo.filename?.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ') || 'Photo',
+                  width: img.width,
+                  height: img.height,
+                }]);
+              };
+              img.src = dataUrl;
+            };
+            reader.readAsDataURL(blob);
+          })
+          .catch(err => console.error('Failed to import photo bank image:', err));
+      });
+    } catch (err) {
+      console.error('Failed to parse photoBankExport:', err);
+    }
+  }, []);
 
   // Card dimensions in pixels (assuming 96 DPI for screen)
   // 10cm image + 0.5cm border on each side = 11cm total width
