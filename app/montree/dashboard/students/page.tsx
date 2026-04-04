@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, setSession as saveSession, type MontreeSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { montreeApi } from '@/lib/montree/api';
 import { toast, Toaster } from 'sonner';
 import ProfilePhotoCapture from '@/components/montree/student/ProfilePhotoCapture';
 import StudentFormGuide from '@/components/montree/onboarding/StudentFormGuide';
@@ -406,16 +407,19 @@ export default function StudentsPage() {
 
       if (editingStudent) {
         // Update existing student
-        const res = await fetch(`/api/montree/children/${editingStudent.id}`, {
+        const res = await montreeApi(`/api/montree/children/${editingStudent.id}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'x-school-id': session.school?.id || '' },
           body: JSON.stringify({
             name: formData.name,
             age: formData.age,
             enrolled_at: enrolledAt,
           }),
         });
-        if (!res.ok) throw new Error(t('students.failedToUpdate'));
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({ error: 'Unknown error' }));
+          console.error('Student update failed:', res.status, errData);
+          throw new Error(errData.error || t('students.failedToUpdate'));
+        }
         toast.success(`${formData.name} ${t('students.updated')}`);
       } else {
         // Add new student - use /api/montree/children POST
@@ -537,9 +541,8 @@ export default function StudentsPage() {
   const handleDelete = async (studentId: string) => {
     if (!session?.classroom?.id) return;
     try {
-      const res = await fetch(`/api/montree/children/${studentId}`, {
+      const res = await montreeApi(`/api/montree/children/${studentId}`, {
         method: 'DELETE',
-        headers: { 'x-school-id': session.school?.id || '' },
       });
       if (!res.ok) throw new Error('Failed to delete');
       toast.success(t('common.removed'));
@@ -607,7 +610,7 @@ export default function StudentsPage() {
           <button
             data-tutorial="add-student-button"
             onClick={openAddForm}
-            className="px-3 py-1.5 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600"
+            className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600"
           >
             + {t('common.add')} {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
           </button>
@@ -707,7 +710,7 @@ export default function StudentsPage() {
             <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
               <h2 className="font-bold text-lg text-slate-800">
                 {editingStudent
-                  ? `${t('common.edit')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`
+                  ? `${t('common.edit')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
                   : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </h2>
               <button onClick={closeForm} className="text-slate-400 hover:text-slate-600 text-xl">
@@ -828,7 +831,7 @@ export default function StudentsPage() {
                 className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-medium disabled:opacity-50"
               >
                 {saving ? t('common.loading') : editingStudent
-                  ? `${t('common.update')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`
+                  ? `${t('common.update')} ${isHomeschoolParent(session) ? t('students.child') || 'Child' : t('students.student') || 'Student'}`
                   : `${t('common.add')} ${isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}`}
               </button>
             </div>

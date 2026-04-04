@@ -228,6 +228,8 @@ export const en = {
   'nav.noStudentsFound': 'No students found',
   'nav.currentStudent': 'current',
   'nav.classroomOverview': 'Classroom Overview',
+  'nav.more': 'More tools',
+  'nav.classroomBuilder': 'Classroom Setup',
 
   // Print / Classroom Overview
   'print.classOverview': 'Classroom Overview',
@@ -239,6 +241,9 @@ export const en = {
   // Students Page
   'students.title': 'Students',
   'students.children': 'Children',
+  'students.student': 'Student',
+  'students.child': 'Child',
+  'students.manageStudents': 'Manage Students',
   'students.addStudent': 'Add Student',
   'students.addChild': 'Add Child',
   'students.edit': 'Edit',
