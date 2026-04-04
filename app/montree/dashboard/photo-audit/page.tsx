@@ -1714,10 +1714,10 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
           {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
         </div>
-        {/* CLIP result display */}
+        {/* Re-run classification result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
           <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
-            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">{t('audit.clipResult')}</p>
+            <p className="text-[9px] font-semibold text-indigo-600 mb-0.5">{t('audit.rerunResult')}</p>
             {rerunResult.work_name ? (
               <>
                 <p className="text-[10px] font-medium text-indigo-800 truncate">{rerunResult.work_name}</p>
@@ -1728,7 +1728,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               </>
             ) : (
               <p className="text-[10px] text-indigo-500 italic">
-                {t('audit.clipNoMatch')}
+                {t('audit.rerunNoMatch')}
                 {rerunResult.confidence !== null && ` (${Math.round(rerunResult.confidence * 100)}%)`}
                 {rerunResult.scenario && <span className="block text-[8px] text-indigo-400 mt-0.5">reason: {rerunResult.scenario}</span>}
               </p>
