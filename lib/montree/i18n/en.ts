@@ -3561,13 +3561,6 @@ export const en = {
   'audit.rerunResult': 'AI now thinks:',
   'audit.rerunNoMatch': 'No work identified',
   'audit.rerunRunning': 'Running AI classification...',
-  'audit.clipTestBtn': 'Run CLIP',
-  'audit.clipTestProgress': 'CLIP testing',
-  'audit.clipTestComplete': 'CLIP test complete',
-  'audit.clipTestNone': 'No amber photos to test',
-  'audit.clipTestCancelled': 'CLIP test cancelled',
-  'audit.clipResult': 'CLIP result:',
-  'audit.clipNoMatch': 'No match',
 
   // Classroom Setup — "Teach the AI"
   'setup.title': 'Teach the AI',

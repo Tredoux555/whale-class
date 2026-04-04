@@ -1,19 +1,14 @@
 // lib/montree/classifier/index.ts
-// Barrel exports for the CLIP-based Montessori work classifier
+// Barrel exports for the Montessori work classifier system
 
+// Stub exports from disabled CLIP classifier (interfaces only)
 export {
-  initClassifier,
-  classifyImage,
-  classifyImageWithMemory,
-  isClassifierReady,
-  getClassifierStats,
-  resetInitError,
-  getConfusionDifferentiation,
-  invalidateClassroomEmbeddings,
   type ClassifyResult,
   type VisualMemory,
+  invalidateClassroomEmbeddings,
 } from './clip-classifier';
 
+// Work signature data (valuable for future Haiku Visual ID Guide enrichment)
 export {
   WORK_SIGNATURES,
   AREA_SIGNATURES,
@@ -27,6 +22,7 @@ export {
   type ConfusionPair,
 } from './work-signatures';
 
+// Classify orchestrator (always routes to Haiku two-pass)
 export {
   tryClassify,
   isClipAvailable,
@@ -34,6 +30,7 @@ export {
   type ClassifyDecision,
 } from './classify-orchestrator';
 
+// Classroom onboarding status (used by photo-insight to decide Sonnet vs Haiku)
 export {
   getClassroomOnboardingStatus,
   invalidateOnboardingCache,
@@ -41,6 +38,7 @@ export {
   type OnboardingStatus,
 } from './classroom-embeddings';
 
+// Chinese glossary for Haiku prompts
 export {
   MONTESSORI_GLOSSARY_ZH,
   getGlossaryPromptSection,

@@ -2,7 +2,6 @@
 // Picture Bank API — Search, browse, and upload pictures for the Montree picture library
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
-import { verifySuperAdminPassword } from '@/lib/verify-super-admin';
 
 const BUCKET = 'photo-bank';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -80,9 +79,12 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth: super-admin only (uploads to public photo bank)
-    const authError = verifySuperAdminPassword(request);
-    if (authError) return authError;
+    // Auth: teacher-level (any authenticated school user can upload)
+    // Was super-admin-only but photo-bank is used by teachers from library page
+    // verifySchoolRequest checks httpOnly cookie — sufficient for upload protection
+    const { verifySchoolRequest } = await import('@/lib/montree/verify-request');
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
     const formData = await request.formData();

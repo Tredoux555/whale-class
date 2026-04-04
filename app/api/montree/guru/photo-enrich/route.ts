@@ -63,7 +63,6 @@ interface EnrichRequest {
   work_key: string;
   work_name: string;
   area_key: string;
-  clip_confidence: number;
   locale?: string;
 }
 
@@ -126,7 +125,6 @@ export async function POST(request: NextRequest) {
 
     const body = (await request.json()) as EnrichRequest;
     const { media_id, child_id, work_key, work_name, area_key } = body;
-    const clip_confidence = Math.max(0, Math.min(1, Number(body.clip_confidence) || 0));
     const locale = ['en', 'zh'].includes(body.locale) ? body.locale : 'en';
 
     if (!media_id || !child_id || !work_key || !work_name || !area_key) {
@@ -290,13 +288,11 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
         scenario = 'D'; // All good
       }
 
-      // Auto-update: GREEN zone only (Haiku ≥0.95 AND CLIP ≥0.80 AND in_classroom)
-      // CLIP models rarely exceed 0.85 — using 0.95 would make auto-updates never fire
-      const CLIP_GREEN_THRESHOLD = 0.80;
+      // Auto-update: GREEN zone (Haiku confidence ≥0.95 AND in_classroom)
       let auto_updated = false;
       let needs_confirmation = false;
 
-      if (confidence_final >= AUTO_UPDATE_THRESHOLD && clip_confidence >= CLIP_GREEN_THRESHOLD && in_classroom) {
+      if (confidence_final >= AUTO_UPDATE_THRESHOLD && in_classroom) {
         // GREEN zone: auto-update progress (upgrade-only protection)
         const { data: currentProgress } = await supabase
           .from('montree_child_progress')
@@ -333,7 +329,7 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
             console.error('[PhotoEnrich] Progress upsert exception:', progressErr);
           }
         }
-      } else if (confidence_final >= 0.5 && clip_confidence >= 0.5 && in_classroom) {
+      } else if (confidence_final >= 0.5 && in_classroom) {
         needs_confirmation = true; // AMBER zone
       }
 
@@ -346,8 +342,7 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
 
       // Save interaction (for analytics + caching)
       const context_snapshot = {
-        classification_method: 'clip_enriched',
-        clip_confidence,
+        classification_method: 'haiku_enriched',
         haiku_confidence: confidence_final,
         identified_work_name: work_name,
         identified_area: area_key,
@@ -381,7 +376,6 @@ Suggest a crop if it would nicely frame the child and material together.${langIn
         auto_updated,
         needs_confirmation,
         confidence: confidence_final,
-        clip_confidence,
         scenario,
         in_classroom,
         in_child_shelf,
