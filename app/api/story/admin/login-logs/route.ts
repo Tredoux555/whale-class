@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const supabase = getSupabase();
     const { data: rows, error } = await supabase
       .from('story_login_logs')
-      .select('id, username, login_at, ip_address, user_agent')
+      .select('id, username, login_at, logout_at, ip_address, user_agent')
       .order('login_at', { ascending: false })
       .limit(limit);
 
@@ -24,6 +24,7 @@ export async function GET(req: NextRequest) {
       id: row.id,
       username: row.username,
       login_at: row.login_at,
+      logout_at: row.logout_at || null,
       ip_address: row.ip_address,
       user_agent: row.user_agent
     }));

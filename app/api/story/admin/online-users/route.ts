@@ -60,12 +60,51 @@ export async function GET(req: NextRequest) {
 
     const onlineUsers = Array.from(userMap.values());
 
-    // Get total unique users
+    // Get total unique users — fetch with high limit to avoid Supabase 1000-row default
     const { data: allLogs } = await supabase
       .from('story_login_logs')
-      .select('username');
+      .select('username')
+      .limit(10000);
 
     const uniqueUsers = new Set((allLogs || []).map(r => r.username));
+
+    // Clean up stale online sessions (no heartbeat in >2 minutes)
+    const { error: cleanupError } = await supabase
+      .from('story_online_sessions')
+      .update({ is_online: false })
+      .eq('is_online', true)
+      .lt('last_seen_at', twoMinutesAgo);
+
+    if (cleanupError) {
+      console.error('[OnlineUsers] Stale session cleanup error:', cleanupError.message);
+    }
+
+    // Infer logout for login logs where user has no active heartbeat
+    // Only process users NOT currently in the onlineUsers list
+    const onlineUsernames = new Set(onlineUsers.map(u => u.username));
+    const { data: staleLogins } = await supabase
+      .from('story_login_logs')
+      .select('id, username')
+      .is('logout_at', null)
+      .lt('login_at', twoMinutesAgo)
+      .limit(100);
+
+    if (staleLogins && staleLogins.length > 0) {
+      const idsToLogout = staleLogins
+        .filter(row => !onlineUsernames.has(row.username))
+        .map(row => row.id);
+
+      if (idsToLogout.length > 0) {
+        const { error: logoutInferError } = await supabase
+          .from('story_login_logs')
+          .update({ logout_at: new Date().toISOString() })
+          .in('id', idsToLogout);
+
+        if (logoutInferError) {
+          console.error('[OnlineUsers] Logout inference error:', logoutInferError.message);
+        }
+      }
+    }
 
     return NextResponse.json({
       onlineUsers,
