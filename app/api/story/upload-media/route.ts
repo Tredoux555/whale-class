@@ -44,9 +44,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    const fileType = getFileType(file.type, file.name);
+    // Detect file type — browsers may send empty/wrong MIME for .mov, .m4v, etc.
+    const effectiveMime = file.type || '';
+    const fileType = getFileType(effectiveMime, file.name);
     if (!fileType) {
-      return NextResponse.json({ error: 'Unsupported file type' }, { status: 400 });
+      console.warn(`[Upload Media] Unsupported file: ${file.name}, MIME: "${file.type}", size: ${file.size}`);
+      return NextResponse.json({ error: `Unsupported file type: ${file.name} (${file.type || 'unknown'})` }, { status: 400 });
     }
 
     const maxSizes = { image: MAX_IMAGE_SIZE, video: MAX_VIDEO_SIZE, audio: MAX_AUDIO_SIZE };
@@ -61,16 +64,25 @@ export async function POST(req: NextRequest) {
     const filename = `${timestamp}-${username}.${ext}`;
     const storagePath = `story-media/${weekStartDate}/${filename}`;
 
-    const arrayBuffer = await file.arrayBuffer();
+    // Read file into buffer — log size for diagnostics
+    console.log(`[Upload Media] Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB, ${file.type || 'unknown MIME'}) as ${fileType} to ${storagePath}`);
+
+    let arrayBuffer: ArrayBuffer;
+    try {
+      arrayBuffer = await file.arrayBuffer();
+    } catch (bufferErr) {
+      console.error('[Upload Media] Failed to read file buffer:', bufferErr);
+      return NextResponse.json({ error: 'Failed to read file — it may be too large for server memory' }, { status: 500 });
+    }
     const buffer = new Uint8Array(arrayBuffer);
-    
+
     const { error: uploadError } = await supabase.storage
       .from('story-uploads')
-      .upload(storagePath, buffer, { contentType: file.type, upsert: false });
+      .upload(storagePath, buffer, { contentType: file.type || `${fileType === 'video' ? 'video/mp4' : fileType === 'audio' ? 'audio/mpeg' : 'image/jpeg'}`, upsert: false });
 
     if (uploadError) {
-      console.error('[Upload Media] Upload error:', uploadError);
-      return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
+      console.error('[Upload Media] Supabase storage error:', uploadError.message || uploadError);
+      return NextResponse.json({ error: `Upload to storage failed: ${uploadError.message || 'unknown error'}` }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage.from('story-uploads').getPublicUrl(storagePath);
