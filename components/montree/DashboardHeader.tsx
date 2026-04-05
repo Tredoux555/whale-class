@@ -31,7 +31,7 @@ interface TeacherOption {
 export default function DashboardHeader() {
   const router = useRouter();
   const pathname = usePathname();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const { isEnabled } = useFeatures();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
