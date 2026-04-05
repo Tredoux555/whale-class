@@ -11,6 +11,7 @@ import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import PhotoCropper from '@/components/montree/shared/PhotoCropper';
 
 const TeacherReportView = dynamic(
   () => import('@/components/montree/reports/TeacherReportView'),
@@ -126,6 +127,8 @@ export default function WeeklyWrapPage() {
   const [sending, setSending] = useState(false);
   const [sendingChildId, setSendingChildId] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  // Crop state
+  const [croppingPhoto, setCroppingPhoto] = useState<{ childId: string; photo: Photo } | null>(null);
 
   // Load session
   useEffect(() => {
@@ -400,6 +403,39 @@ export default function WeeklyWrapPage() {
 
   const hasEdits = (childId: string) => {
     return narrativeEdits[childId] !== undefined || photoEdits[childId] !== undefined;
+  };
+
+  // Crop a photo — uploads cropped version, updates URL with cache-bust
+  const handleCropComplete = async (blob: Blob, width: number, height: number) => {
+    if (!croppingPhoto) return;
+    const { childId, photo } = croppingPhoto;
+    setCroppingPhoto(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', blob, 'cropped.jpg');
+      formData.append('media_id', photo.id);
+      formData.append('width', String(width));
+      formData.append('height', String(height));
+
+      const res = await montreeApi('/api/montree/media/crop', {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) throw new Error('Crop failed');
+
+      // Update the photo URL with a cache-bust param so the new crop shows
+      const bust = `?t=${Date.now()}`;
+      const baseUrl = photo.url.split('?')[0];
+      const newUrl = baseUrl + bust;
+
+      // Update in photoEdits (or create edit entry)
+      const current = photoEdits[childId] ?? reports.find(r => r.child_id === childId)?.parent_photos ?? [];
+      const updated = current.map(p => p.id === photo.id ? { ...p, url: newUrl } : p);
+      setPhotoEdits(prev => ({ ...prev, [childId]: updated }));
+    } catch (err: any) {
+      alert(err?.message || 'Failed to crop photo');
+    }
   };
 
   // Send all to parents
@@ -825,8 +861,13 @@ export default function WeeklyWrapPage() {
                             className="w-full object-contain max-h-[400px] bg-gray-50"
                             loading="lazy"
                           />
-                          {/* Reorder / delete controls */}
-                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Crop / reorder / delete controls */}
+                          <div className="absolute top-2 right-2 flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setCroppingPhoto({ childId: r.child_id, photo }); }}
+                              className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                              title={locale === 'zh' ? '裁剪' : 'Crop'}
+                            >✂️</button>
                             {idx > 0 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'up'); }}
@@ -1157,6 +1198,15 @@ export default function WeeklyWrapPage() {
             </Link>
           </div>
         </div>
+      )}
+
+      {/* Photo cropper modal */}
+      {croppingPhoto && (
+        <PhotoCropper
+          imageUrl={croppingPhoto.photo.url}
+          onCrop={handleCropComplete}
+          onCancel={() => setCroppingPhoto(null)}
+        />
       )}
     </div>
   );
