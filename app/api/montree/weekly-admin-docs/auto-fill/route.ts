@@ -28,6 +28,7 @@ interface ChildSuggestion {
   summaryEnglish: string;
   summaryChinese: string;
   planAreas: Record<string, string>;
+  planAreasZh: Record<string, string>;
 }
 
 export async function GET(request: NextRequest) {
@@ -107,6 +108,31 @@ export async function GET(request: NextRequest) {
     const childIds = children.map((c: { id: string }) => c.id);
     const childIdSet = new Set(childIds);
 
+    // Load area UUID → canonical key mapping (UUIDs may appear in Weekly Wrap data)
+    const { data: areasRaw } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id, area_key')
+      .eq('classroom_id', classroomId);
+    const areaIdToKey = new Map<string, string>();
+    for (const a of (areasRaw || []) as Array<{ id: string; area_key: string }>) {
+      areaIdToKey.set(a.id, a.area_key);
+    }
+
+    // Helper: resolve any area string (UUID, canonical, or label) to canonical key
+    const CANONICAL_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const resolveArea = (raw: string): string => {
+      if (!raw) return '';
+      if (CANONICAL_AREAS.includes(raw)) return raw;
+      if (areaIdToKey.has(raw)) return areaIdToKey.get(raw)!;
+      const lower = raw.toLowerCase().replace(/[^a-z]/g, '');
+      if (lower.includes('practical') || lower.includes('life')) return 'practical_life';
+      if (lower.includes('sensor')) return 'sensorial';
+      if (lower.includes('math') || lower.includes('number')) return 'mathematics';
+      if (lower.includes('lang') || lower.includes('reading') || lower.includes('writing')) return 'language';
+      if (lower.includes('cultur') || lower.includes('science') || lower.includes('geography')) return 'cultural';
+      return raw;
+    };
+
     // Step 2: Fetch Weekly Wrap reports + focus works + photos in parallel
     // Weekly Wrap parent reports are the PRIMARY data source (rich AI-analyzed works by area)
     // Photos are the FALLBACK when Weekly Wrap hasn't been run yet
@@ -155,8 +181,11 @@ export async function GET(request: NextRequest) {
       const areaMap = new Map<string, string[]>();
       for (const work of report.content.works) {
         if (!work.name || !work.area) continue;
-        if (!areaMap.has(work.area)) areaMap.set(work.area, []);
-        const existing = areaMap.get(work.area)!;
+        // Resolve UUID areas to canonical keys
+        const resolvedArea = resolveArea(work.area);
+        if (!resolvedArea) continue;
+        if (!areaMap.has(resolvedArea)) areaMap.set(resolvedArea, []);
+        const existing = areaMap.get(resolvedArea)!;
         if (!existing.includes(work.name)) existing.push(work.name);
       }
       if (areaMap.size > 0) {
@@ -223,6 +252,25 @@ export async function GET(request: NextRequest) {
       if (w.name_zh) workNameToZh.set(w.name, w.name_zh);
     }
 
+    // Fuzzy Chinese name lookup: handles variants like "Chalk Board Writing - No lines" → "粉笔板书写"
+    const getZhWorkName = (enName: string): string => {
+      // Exact match
+      const exact = workNameToZh.get(enName);
+      if (exact) return exact;
+      // Strip " - suffix" variants
+      const base = enName.replace(/\s*-\s*.+$/, '').trim();
+      if (base !== enName) {
+        const baseMatch = workNameToZh.get(base);
+        if (baseMatch) return baseMatch;
+      }
+      // Normalize spaces (e.g. "chalk board" → "chalkboard")
+      const collapsed = base.toLowerCase().replace(/\s+/g, '');
+      for (const [k, v] of workNameToZh) {
+        if (k.toLowerCase().replace(/\s+/g, '') === collapsed) return v;
+      }
+      return enName; // fallback to English
+    };
+
     const photoWorksByChild = new Map<string, Map<string, string[]>>();
     for (const photo of mediaRows) {
       const work = workIdToName.get(photo.work_id);
@@ -260,7 +308,7 @@ export async function GET(request: NextRequest) {
           const works = childWorks.get(area);
           if (works && works.length > 0) {
             enLines.push(`${AREA_LABELS[area].en}: ${works.join(', ')}`);
-            const zhWorks = works.map(w => workNameToZh.get(w) || w);
+            const zhWorks = works.map(w => getZhWorkName(w));
             zhLines.push(`${AREA_LABELS[area].zh}：${zhWorks.join('、')}`);
           }
         }
@@ -271,16 +319,22 @@ export async function GET(request: NextRequest) {
         summaryChinese = '本周没有记录到活动。';
       }
 
-      // --- Plan Areas ---
+      // --- Plan Areas (English + Chinese) ---
       const planAreas: Record<string, string> = {};
+      const planAreasZh: Record<string, string> = {};
       for (const area of AREAS) {
         const focusWork = childFocus?.get(area);
         if (focusWork) {
           const areaWorks = childWorks?.get(area) || [];
           const isPracticing = areaWorks.includes(focusWork);
-          planAreas[area] = isPracticing ? `${focusWork}-P` : focusWork;
+          const suffix = isPracticing ? '-P' : '';
+          planAreas[area] = `${focusWork}${suffix}`;
+          // Chinese work name (with same P suffix, fuzzy matched)
+          const zhName = getZhWorkName(focusWork);
+          planAreasZh[area] = `${zhName}${suffix}`;
         } else {
           planAreas[area] = '';
+          planAreasZh[area] = '';
         }
       }
 
@@ -290,6 +344,7 @@ export async function GET(request: NextRequest) {
         summaryEnglish,
         summaryChinese,
         planAreas,
+        planAreasZh,
       };
     });
 

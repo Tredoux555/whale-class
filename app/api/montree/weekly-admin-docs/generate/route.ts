@@ -129,8 +129,12 @@ export async function POST(request: NextRequest) {
 
         for (const area of areas) {
           const areaNote = childNotesMap?.get(area);
+          // Use Chinese work name when locale is zh and chinese_text exists
+          const workText = locale === 'zh'
+            ? (areaNote?.chinese_text || areaNote?.english_text || '')
+            : (areaNote?.english_text || '');
           planAreas[area] = {
-            en: areaNote?.english_text || '',
+            en: workText,
           };
         }
 

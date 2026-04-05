@@ -357,16 +357,17 @@ export default function WeeklyAdminDocsPage() {
         return next;
       });
 
-      // Fill plan area cells (always overwrite with fresh data)
+      // Fill plan area cells (always overwrite with fresh data, include Chinese names)
       setPlanNotes((prev) => {
         const next = { ...prev };
         for (const suggestion of data.children) {
           if (!next[suggestion.childId]) next[suggestion.childId] = {};
+          const zhAreas = suggestion.planAreasZh || {};
           for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
             if (workName) filledCount++;
             next[suggestion.childId][area] = {
               english_text: workName as string,
-              chinese_text: '',
+              chinese_text: (zhAreas[area] as string) || '',
             };
           }
         }
@@ -597,26 +598,29 @@ function PlanCard({
   notes: Record<string, NoteData>;
   onUpdate: (childId: string, area: string, field: 'english_text' | 'chinese_text', value: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const chineseNote = notes['_chinese'] || { english_text: '', chinese_text: '' };
   const notesEntry = notes['_notes'] || { english_text: '', chinese_text: '' };
 
   return (
     <div className="space-y-3">
-      {/* Per-area English work names */}
+      {/* Per-area work names (English or Chinese based on locale) */}
       <div className="grid grid-cols-5 gap-2">
         {AREAS.map((area) => {
           const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
+          // Show Chinese work name when locale is zh and chinese_text exists
+          const displayField = (locale === 'zh' && areaNote.chinese_text) ? 'chinese_text' : 'english_text';
+          const displayValue = areaNote[displayField] || '';
           return (
             <div key={area.key}>
               <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
-                {area.label}
+                {locale === 'zh' ? area.zh : area.label}
               </div>
               <input
                 type="text"
-                value={areaNote.english_text}
-                onChange={(e) => onUpdate(childId, area.key, 'english_text', e.target.value)}
-                placeholder={area.zh}
+                value={displayValue}
+                onChange={(e) => onUpdate(childId, area.key, displayField, e.target.value)}
+                placeholder={locale === 'zh' ? area.zh : area.label}
                 className="w-full px-2 py-1.5 border rounded text-xs"
               />
             </div>
