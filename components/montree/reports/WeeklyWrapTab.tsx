@@ -240,6 +240,14 @@ export default function WeeklyWrapTab({ classroomId }: WeeklyWrapTabProps) {
         }
       }
 
+      // Process any remaining buffer after stream ends
+      if (buffer.trim()) {
+        try {
+          const evt = JSON.parse(buffer);
+          if (evt.type === 'complete') setGenProgress('');
+        } catch { /* skip */ }
+      }
+
       // Refresh data
       await fetchReports();
       setSelectionMode(false);
@@ -521,7 +529,7 @@ export default function WeeklyWrapTab({ classroomId }: WeeklyWrapTabProps) {
                     {r.flags.length > 0 && (
                       <div className="space-y-1">
                         {r.flags.map((f, i) => (
-                          <div key={i} className="flex items-start gap-1.5 text-[11px] bg-amber-50 rounded-lg p-2">
+                          <div key={`${f.level}-${i}-${f.issue.slice(0, 30)}`} className="flex items-start gap-1.5 text-[11px] bg-amber-50 rounded-lg p-2">
                             <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
                             <p className="text-gray-700 leading-relaxed">{cleanUUIDs(f.issue)}</p>
                           </div>
