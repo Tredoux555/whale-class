@@ -344,44 +344,30 @@ export default function WeeklyAdminDocsPage() {
       // Fill BOTH tabs simultaneously (Summary + Plan) regardless of active tab
       let filledCount = 0;
 
-      // Fill summary fields (both English and Chinese)
-      for (const suggestion of data.children) {
-        const existing = summaryNotes[suggestion.childId];
-        if (!existing?.english_text && suggestion.summaryEnglish) filledCount++;
-      }
+      // Fill summary fields (both English and Chinese — always overwrite with fresh data)
       setSummaryNotes((prev) => {
         const next = { ...prev };
         for (const suggestion of data.children) {
-          const existing = next[suggestion.childId];
-          if (!existing?.english_text || !existing?.chinese_text) {
-            next[suggestion.childId] = {
-              english_text: existing?.english_text || suggestion.summaryEnglish || '',
-              chinese_text: existing?.chinese_text || suggestion.summaryChinese || '',
-            };
-          }
+          if (suggestion.summaryEnglish || suggestion.summaryChinese) filledCount++;
+          next[suggestion.childId] = {
+            english_text: suggestion.summaryEnglish || '',
+            chinese_text: suggestion.summaryChinese || '',
+          };
         }
         return next;
       });
 
-      // Fill plan area cells
-      for (const suggestion of data.children) {
-        for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
-          const existing = planNotes[suggestion.childId]?.[area];
-          if (!existing?.english_text && workName) filledCount++;
-        }
-      }
+      // Fill plan area cells (always overwrite with fresh data)
       setPlanNotes((prev) => {
         const next = { ...prev };
         for (const suggestion of data.children) {
           if (!next[suggestion.childId]) next[suggestion.childId] = {};
           for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
-            const existing = next[suggestion.childId][area];
-            if (!existing?.english_text && workName) {
-              next[suggestion.childId][area] = {
-                english_text: workName as string,
-                chinese_text: existing?.chinese_text || '',
-              };
-            }
+            if (workName) filledCount++;
+            next[suggestion.childId][area] = {
+              english_text: workName as string,
+              chinese_text: '',
+            };
           }
         }
         return next;
