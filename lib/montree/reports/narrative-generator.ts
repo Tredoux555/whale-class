@@ -112,7 +112,8 @@ Rules:
 - No emojis, no headers, no bullet points — just warm prose
 - Write it as if you are the teacher who watched these moments happen
 
-Return ONLY the paragraph, nothing else.`;
+Return ONLY the paragraph, nothing else.
+${locale === 'zh' ? '\n⚠️ 关键要求：你必须完全用中文（普通话）书写这段话。不要使用任何英文。用温暖的中文语气给家长写信。' : ''}`;
 }
 
 // ── Fallback (template-based, no API needed) ──
@@ -183,9 +184,14 @@ export async function generateWeeklyNarrative(
   try {
     const prompt = buildNarrativePrompt(input);
 
+    const systemMessage = input.locale === 'zh'
+      ? '你是一位温暖的蒙台梭利幼儿园老师，正在给家长写每周更新。你必须完全用中文（普通话）书写。不要使用任何英文。'
+      : 'You are a warm Montessori teacher writing a weekly update for parents.';
+
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 300,
+      system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
     });
 
