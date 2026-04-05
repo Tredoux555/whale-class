@@ -10,11 +10,7 @@ import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
-import PhotoInsightButton from '@/components/montree/guru/PhotoInsightButton';
-import PhotoInsightPopup from '@/components/montree/guru/PhotoInsightPopup';
-import TeachGuruWorkModal from '@/components/montree/guru/TeachGuruWorkModal';
 import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
-import type { TeacherStatusChoice } from '@/lib/montree/photo-insight-store';
 import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
@@ -153,8 +149,6 @@ export default function GalleryPage() {
   // Photo detail expansion
   const [expandedPhoto, setExpandedPhoto] = useState<string | null>(null);
 
-  // Teach Guru Work modal state
-  const [teachModalData, setTeachModalData] = useState<{ workName: string; area: string | null; mediaId: string } | null>(null);
 
   // Lightbox state
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -645,42 +639,6 @@ export default function GalleryPage() {
     }
   };
 
-  const handleProgressUpdate = useCallback(() => {
-    fetchPhotos();
-  }, [fetchPhotos]);
-
-  // ── PhotoInsightPopup callbacks ──
-  const handlePopupStatusPicked = useCallback((_mediaId: string, _childId: string, _status: TeacherStatusChoice, _workName: string) => {
-    // Refresh gallery photos to reflect any changes
-    fetchPhotos();
-  }, [fetchPhotos]);
-
-  const handlePopupCorrect = useCallback((mediaId: string, _childId: string, originalWorkName: string | null, originalArea: string | null) => {
-    // Open the existing WorkWheelPicker for correction
-    const area = originalArea || '';
-    setPickerArea(area);
-    setPickerPhotoId(mediaId);
-    setPickerCurrentWork(originalWorkName || undefined);
-    // Ensure curriculum is loaded before opening picker
-    loadCurriculum().then(() => {
-      setPickerOpen(true);
-    }).catch((err) => {
-      console.error('[Gallery] Failed to load curriculum for popup correction:', err);
-      toast.error(t('gallery.workUpdateError'));
-    });
-  }, [loadCurriculum]);
-
-  const handlePopupTagManually = useCallback((mediaId: string, _childId: string) => {
-    // Open area picker → work picker for unidentified photos
-    setAreaPickerPhotoId(mediaId);
-    // Ensure curriculum is loaded before opening picker
-    loadCurriculum().then(() => {
-      setShowAreaPicker(true);
-    }).catch((err) => {
-      console.error('[Gallery] Failed to load curriculum for manual tagging:', err);
-      toast.error(t('gallery.workUpdateError'));
-    });
-  }, [loadCurriculum]);
 
   // Use refs to avoid stale closures + recreation on every keystroke
   const notesDraftRef = useRef(notesDraft);
@@ -1045,19 +1003,6 @@ export default function GalleryPage() {
               )}
             </button>
           )}
-
-          {/* Smart Capture / Photo Insight — AI confirm/reject UI */}
-          <div className="pt-1 border-t border-gray-50">
-            <PhotoInsightButton
-              mediaId={photo.id}
-              childId={childId}
-              classroomId={session?.classroom?.id}
-              onProgressUpdate={handleProgressUpdate}
-              onTeachWork={(data) => setTeachModalData(data)}
-              onAddToClassroom={() => fetchPhotos()}
-              onAddToShelf={() => fetchPhotos()}
-            />
-          </div>
 
           {/* Lesson Notes — observation textarea */}
           <div className="pt-1 border-t border-gray-50">
@@ -1474,26 +1419,6 @@ export default function GalleryPage() {
           />
         );
       })()}
-
-      {/* Teach Guru Work Modal */}
-      {teachModalData && session?.classroom?.id && (
-        <TeachGuruWorkModal
-          isOpen={true}
-          onClose={() => setTeachModalData(null)}
-          initialWorkName={teachModalData.workName}
-          initialArea={teachModalData.area}
-          mediaId={teachModalData.mediaId}
-          classroomId={session.classroom.id}
-          childId={childId}
-          onWorkSaved={(work) => {
-            if (teachModalData) {
-              updateEntryAfterCorrection(teachModalData.mediaId, childId, work.name, work.area);
-            }
-            setTeachModalData(null);
-            fetchPhotos();
-          }}
-        />
-      )}
 
       {/* ══════════════════════════════════════════════
           REPORT PREVIEW MODAL
@@ -2040,14 +1965,6 @@ export default function GalleryPage() {
         />
       )}
 
-      {/* PhotoInsightPopup — Toast popups for CLIP identifications */}
-      <PhotoInsightPopup
-        childId={childId}
-        classroomId={session?.classroom?.id}
-        onStatusPicked={handlePopupStatusPicked}
-        onCorrect={handlePopupCorrect}
-        onTagManually={handlePopupTagManually}
-      />
     </div>
   );
 }
