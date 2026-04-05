@@ -8,12 +8,12 @@ import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
+const AREA_LABELS: Record<string, { en: string; zh: string }> = {
+  practical_life: { en: 'Practical Life', zh: '日常生活' },
+  sensorial: { en: 'Sensorial', zh: '感官' },
+  mathematics: { en: 'Mathematics', zh: '数学' },
+  language: { en: 'Language', zh: '语言' },
+  cultural: { en: 'Cultural', zh: '文化' },
 };
 
 interface FocusWorkRow {
@@ -26,6 +26,7 @@ interface ChildSuggestion {
   childId: string;
   childName: string;
   summaryEnglish: string;
+  summaryChinese: string;
   planAreas: Record<string, string>;
 }
 
@@ -194,17 +195,32 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Resolve work_ids from photos
+    // Resolve work_ids from photos (include name_zh for Chinese locale)
     const workIds = [...new Set(mediaRows.map(m => m.work_id).filter(Boolean))];
-    const workIdToName = new Map<string, { name: string; area: string }>();
+    const workIdToName = new Map<string, { name: string; name_zh: string | null; area: string }>();
     if (workIds.length > 0) {
       const { data: worksData } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, area_key')
+        .select('id, name, name_zh, area_key')
         .in('id', workIds);
-      for (const w of (worksData || []) as Array<{ id: string; name: string; area_key: string }>) {
-        workIdToName.set(w.id, { name: w.name, area: w.area_key });
+      for (const w of (worksData || []) as Array<{ id: string; name: string; name_zh: string | null; area_key: string }>) {
+        workIdToName.set(w.id, { name: w.name, name_zh: w.name_zh, area: w.area_key });
       }
+    }
+
+    // Build work name → Chinese name lookup from all curriculum works
+    const workNameToZh = new Map<string, string>();
+    for (const w of workIdToName.values()) {
+      if (w.name_zh) workNameToZh.set(w.name, w.name_zh);
+    }
+    // Also load all curriculum works for Chinese name mapping (Weekly Wrap works may not be in photos)
+    const { data: allCurrWorks } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('name, name_zh')
+      .eq('classroom_id', classroomId)
+      .not('name_zh', 'is', null);
+    for (const w of (allCurrWorks || []) as Array<{ name: string; name_zh: string | null }>) {
+      if (w.name_zh) workNameToZh.set(w.name, w.name_zh);
     }
 
     const photoWorksByChild = new Map<string, Map<string, string[]>>();
@@ -234,21 +250,25 @@ export async function GET(request: NextRequest) {
       // Prefer Weekly Wrap data, fall back to photos
       const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
 
-      // --- Summary English (area-by-area) ---
+      // --- Summary (area-by-area, both languages) ---
       let summaryEnglish = '';
+      let summaryChinese = '';
       if (childWorks && childWorks.size > 0) {
-        const lines: string[] = [];
+        const enLines: string[] = [];
+        const zhLines: string[] = [];
         for (const area of AREAS) {
           const works = childWorks.get(area);
           if (works && works.length > 0) {
-            lines.push(`${AREA_LABELS[area]}: ${works.join(', ')}`);
+            enLines.push(`${AREA_LABELS[area].en}: ${works.join(', ')}`);
+            const zhWorks = works.map(w => workNameToZh.get(w) || w);
+            zhLines.push(`${AREA_LABELS[area].zh}：${zhWorks.join('、')}`);
           }
         }
-        summaryEnglish = lines.length > 0
-          ? lines.join('\n')
-          : "No recorded activities this week.";
+        summaryEnglish = enLines.length > 0 ? enLines.join('\n') : 'No recorded activities this week.';
+        summaryChinese = zhLines.length > 0 ? zhLines.join('\n') : '本周没有记录到活动。';
       } else {
-        summaryEnglish = "No recorded activities this week.";
+        summaryEnglish = 'No recorded activities this week.';
+        summaryChinese = '本周没有记录到活动。';
       }
 
       // --- Plan Areas ---
@@ -268,6 +288,7 @@ export async function GET(request: NextRequest) {
         childId: child.id,
         childName: child.name,
         summaryEnglish,
+        summaryChinese,
         planAreas,
       };
     });
