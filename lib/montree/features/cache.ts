@@ -4,7 +4,7 @@
 
 import type { MontreeFeature } from './types';
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds — short TTL so feature toggles take effect quickly
 const STORAGE_KEY_PREFIX = 'montree_features_';
 
 interface CacheEntry {
@@ -80,7 +80,7 @@ export async function fetchFeatures(schoolId: string): Promise<MontreeFeature[]>
 
   const request = (async () => {
     try {
-      const res = await fetch(`/api/montree/features?school_id=${schoolId}`);
+      const res = await fetch(`/api/montree/features?school_id=${schoolId}`, { cache: 'no-store' });
       if (!res.ok) throw new Error(`Features fetch: ${res.status}`);
       const data = await res.json();
       const features: MontreeFeature[] = data.features || [];
