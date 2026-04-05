@@ -342,6 +342,16 @@ export default function DashboardHeader() {
           >
             📋
           </Link>
+          <Link
+            href="/montree/dashboard/photo-audit"
+            data-guide="nav-setup"
+            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+              pathname === '/montree/dashboard/photo-audit' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+            }`}
+            title={t('audit.title')}
+          >
+            🔍
+          </Link>
 
           {/* === MORE MENU — everything else === */}
           {!isHome && (
@@ -369,17 +379,6 @@ export default function DashboardHeader() {
                   >
                     <span className="text-base">🧠</span>
                     <span>{t('nav.guru')}</span>
-                  </Link>
-                  <Link
-                    href="/montree/dashboard/photo-audit"
-                    data-guide="nav-setup"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/photo-audit' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">🔍</span>
-                    <span>{t('audit.title')}</span>
                   </Link>
                   <Link
                     href="/montree/dashboard/curriculum"
