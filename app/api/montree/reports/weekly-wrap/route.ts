@@ -22,7 +22,7 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
-const MAX_CONCURRENT = 5;
+const MAX_CONCURRENT = 3; // Sonnet — lower concurrency to respect rate limits
 
 export async function POST(request: NextRequest) {
   try {
@@ -511,6 +511,7 @@ export async function POST(request: NextRequest) {
     function buildSummary(results: Array<{ success: boolean; skipped?: boolean; tokens_used?: { input: number; output: number } }>) {
       const totalInputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.input || 0), 0);
       const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
+      // Sonnet pricing: $3/MTok input, $15/MTok output
       const estimatedCost = (totalInputTokens * 3 + totalOutputTokens * 15) / 1_000_000;
       return {
         success: true,
