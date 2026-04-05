@@ -10,6 +10,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
+import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 
 const TeacherReportView = dynamic(
   () => import('@/components/montree/reports/TeacherReportView'),
@@ -113,6 +114,8 @@ export default function WeeklyWrapPage() {
   const [shelfUpdatingId, setShelfUpdatingId] = useState<string | null>(null);
   const [shelfUpdatedIds, setShelfUpdatedIds] = useState<Set<string>>(new Set());
   const [teacherNotes, setTeacherNotes] = useState<Record<string, string>>({});
+  // Interactive shelf state: child_id → array of {area, work, status}
+  const [shelfWorks, setShelfWorks] = useState<Record<string, Array<{ area: string; work: string; status: string }>>>({});
 
   // Parent Reports state
   const [expandedParent, setExpandedParent] = useState<string | null>(null);
@@ -241,6 +244,70 @@ export default function WeeklyWrapPage() {
     }
   };
 
+  // ─── Shelf helpers ───
+
+  const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
+  const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+    not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
+    presented: { label: locale === 'zh' ? '已展示' : 'Presented', bg: 'bg-amber-300', text: 'text-amber-800' },
+    practicing: { label: locale === 'zh' ? '练习中' : 'Practicing', bg: 'bg-blue-400', text: 'text-blue-800' },
+    mastered: { label: locale === 'zh' ? '已掌握' : 'Mastered', bg: 'bg-emerald-400', text: 'text-emerald-800' },
+  };
+
+  // Initialize shelf from recommendations when first expanded
+  const getShelfForChild = (r: ReportResult) => {
+    if (shelfWorks[r.child_id]) return shelfWorks[r.child_id];
+    // Initialize from recommendations with 'presented' default
+    const initial = r.recommendations.map(rec => ({
+      area: normalizeArea(rec.area),
+      work: rec.work,
+      status: 'presented',
+    }));
+    // Ensure all 5 areas represented
+    const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    for (const area of AREAS) {
+      if (!initial.find(w => w.area === area)) {
+        initial.push({ area, work: '', status: 'not_started' });
+      }
+    }
+    // Sort by canonical area order
+    initial.sort((a, b) => AREAS.indexOf(a.area) - AREAS.indexOf(b.area));
+    return initial;
+  };
+
+  const handleShelfStatusCycle = async (childId: string, idx: number) => {
+    const shelf = shelfWorks[childId] || getShelfForChild(reports.find(r => r.child_id === childId)!);
+    const work = shelf[idx];
+    if (!work.work) return; // No work assigned, can't cycle
+
+    const currentIdx = STATUS_FLOW.indexOf(work.status as any) ?? 0;
+    const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length];
+
+    // Optimistic update
+    const updated = [...shelf];
+    updated[idx] = { ...work, status: nextStatus };
+    setShelfWorks(prev => ({ ...prev, [childId]: updated }));
+
+    // Persist to DB
+    try {
+      const res = await montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_id: childId,
+          work_name: work.work,
+          area: work.area,
+          status: nextStatus,
+          is_focus: true,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+    } catch {
+      // Revert on failure
+      setShelfWorks(prev => ({ ...prev, [childId]: shelf }));
+    }
+  };
+
   // ─── Parent Reports Actions ───
 
   const getEffectiveNarrative = (r: ReportResult) => {
@@ -346,32 +413,63 @@ export default function WeeklyWrapPage() {
     const isApproved = approvedIds.has(r.child_id);
     const isShelfUpdated = shelfUpdatedIds.has(r.child_id);
 
-    // Group works by area from parent_works (these are the actual works done this week)
+    // Group works by area from parent_works (actual works done this week)
     const worksByArea: Record<string, string[]> = {};
     for (const w of r.parent_works) {
-      const area = w.area || 'other';
+      const area = normalizeArea(w.area || 'other');
       if (!worksByArea[area]) worksByArea[area] = [];
       if (!worksByArea[area].includes(w.name)) {
         worksByArea[area].push(w.name);
       }
     }
-    const areaEntries = Object.entries(worksByArea);
+    const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const areaEntries = AREA_ORDER
+      .filter(a => worksByArea[a] && worksByArea[a].length > 0)
+      .map(a => [a, worksByArea[a]] as [string, string[]]);
+    // Add any "other" areas
+    for (const [a, ws] of Object.entries(worksByArea)) {
+      if (!AREA_ORDER.includes(a)) areaEntries.push([a, ws]);
+    }
     const totalWorks = areaEntries.reduce((s, [, ws]) => s + ws.length, 0);
 
-    // Collapsed preview: "Language: X, Y · Practical Life: Z"
+    // Shelf for this child
+    const shelf = getShelfForChild(r);
+
+    // Collapsed preview
     const previewText = areaEntries
       .map(([area, works]) => {
-        const style = AREA_COLORS[area] || AREA_COLORS.cultural;
         const label = area.replace('_', ' ');
         return `${label}: ${works.slice(0, 2).join(', ')}${works.length > 2 ? ` +${works.length - 2}` : ''}`;
       })
       .join(' · ');
 
+    // Build recommendation sentence
+    const recAreas: Record<string, string[]> = {};
+    for (const rec of r.recommendations) {
+      const a = normalizeArea(rec.area);
+      if (!recAreas[a]) recAreas[a] = [];
+      recAreas[a].push(rec.work);
+    }
+    // Find areas with no activity this week (for the "focus more on" phrasing)
+    const weakAreas = AREA_ORDER.filter(a => !worksByArea[a] || worksByArea[a].length === 0);
+    const recSentenceParts: string[] = [];
+    for (const [area, works] of Object.entries(recAreas)) {
+      const areaLabel = area.replace('_', ' ');
+      recSentenceParts.push(`${areaLabel} works such as ${works.join(' and ')}`);
+    }
+
     return (
       <div key={r.child_id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {/* Header row */}
         <button
-          onClick={() => setExpandedTeacher(isExpanded ? null : r.child_id)}
+          onClick={() => {
+            const next = isExpanded ? null : r.child_id;
+            setExpandedTeacher(next);
+            // Init shelf on first expand
+            if (next && !shelfWorks[r.child_id]) {
+              setShelfWorks(prev => ({ ...prev, [r.child_id]: getShelfForChild(r) }));
+            }
+          }}
           className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
         >
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
@@ -401,59 +499,102 @@ export default function WeeklyWrapPage() {
 
         {/* Expanded */}
         {isExpanded && (
-          <div className="px-4 pb-4 border-t border-gray-100 space-y-3">
-            {/* Works grouped by area */}
-            {areaEntries.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {areaEntries.map(([area, works]) => {
-                  const style = AREA_COLORS[area] || AREA_COLORS.cultural;
-                  const label = (r.area_analyses.find(a => a.area === area)?.area_label)
-                    || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-                  return (
-                    <div key={area}>
-                      <p className={`text-xs font-semibold ${style.text} mb-1`}>
-                        {style.emoji} {label}
-                      </p>
-                      <p className="text-sm text-gray-700 pl-5">
-                        {works.join(', ')}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+          <div className="px-4 pb-4 border-t border-gray-100 space-y-4">
 
-            {totalWorks === 0 && (
-              <p className="mt-3 text-sm text-gray-400 italic">
-                {locale === 'zh' ? '本周无记录活动' : 'No recorded activities this week'}
+            {/* ── This Week Summary ── */}
+            <div className="mt-3">
+              <p className="text-sm font-semibold text-gray-800 mb-2">
+                {locale === 'zh'
+                  ? `本周 ${firstName} 的活动：`
+                  : `This week ${firstName} did:`}
               </p>
-            )}
+              {areaEntries.length > 0 ? (
+                <div className="space-y-1.5 pl-1">
+                  {areaEntries.map(([area, works]) => {
+                    const label = (r.area_analyses.find(a => a.area === area)?.area_label)
+                      || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    return (
+                      <div key={area} className="flex items-start gap-2">
+                        <AreaBadge area={area} size="sm" />
+                        <p className="text-sm text-gray-700">
+                          <span className="font-medium">{label}:</span>{' '}
+                          {works.join(', ')}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 italic pl-1">
+                  {locale === 'zh' ? '本周无记录活动' : 'No recorded activities this week'}
+                </p>
+              )}
+            </div>
 
-            {/* Flags — compact */}
+            {/* Flags */}
             {r.flags.length > 0 && (
               <div className="space-y-1">
                 {r.flags.map((f, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs bg-amber-50 rounded-lg p-2">
                     <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
-                    <p className="text-gray-700">{f.issue}</p>
+                    <p className="text-gray-700">{cleanUUIDs(f.issue)}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* Recommendations */}
-            {r.recommendations.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                  {locale === 'zh' ? '推荐下周' : 'Recommended Next'}
-                </p>
-                <p className="text-sm text-gray-600 pl-1">
-                  {r.recommendations.map(rec => rec.work).join(', ')}
-                </p>
-              </div>
+            {/* ── Recommendation Sentence ── */}
+            {recSentenceParts.length > 0 && (
+              <p className="text-sm text-gray-600 italic leading-relaxed">
+                {locale === 'zh'
+                  ? `下周建议 ${firstName} 多做 ${recSentenceParts.join('、')}`
+                  : `Next week I recommend ${firstName} focuses more on ${recSentenceParts.join(' and ')}`}
+              </p>
             )}
 
-            {/* Teacher Notes + Voice */}
+            {/* ── Recommended Shelf (Interactive — mirrors This Week's Focus) ── */}
+            <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+              <h3 className="font-bold text-gray-800 text-sm mb-2">
+                {locale === 'zh' ? '下周重点' : "Next Week's Focus"}
+              </h3>
+              <div className="space-y-2">
+                {shelf.map((item, idx) => {
+                  const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.not_started;
+                  return (
+                    <div
+                      key={`${r.child_id}-shelf-${item.area}`}
+                      className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50"
+                    >
+                      {/* Area badge */}
+                      <AreaBadge area={item.area} size="lg" />
+
+                      {/* Work name */}
+                      <div className="flex-1 min-w-0">
+                        {item.work ? (
+                          <p className="font-medium text-gray-800 text-sm truncate">{item.work}</p>
+                        ) : (
+                          <p className="font-medium text-gray-400 text-sm italic">
+                            {locale === 'zh' ? '无推荐' : 'No recommendation'}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Status badge — tap to cycle */}
+                      {item.work && (
+                        <button
+                          onClick={() => handleShelfStatusCycle(r.child_id, idx)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all active:scale-90 ${statusCfg.bg} ${statusCfg.text}`}
+                        >
+                          {statusCfg.label}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Teacher Notes + Voice ── */}
             <div className="pt-2 border-t border-gray-100">
               <div className="flex items-center gap-2 mb-1.5">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
