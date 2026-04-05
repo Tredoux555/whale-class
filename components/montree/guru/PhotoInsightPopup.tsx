@@ -307,19 +307,29 @@ function PopupCard({
   if (isIdentified && workName && area) {
     return (
       <div className="pointer-events-auto bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden relative">
-        {/* Header: work name + area badge + confidence + close */}
+        {/* Header: tappable work name (opens correction picker) + area badge + close */}
         <div className="px-4 pt-3 pb-2 flex items-start gap-3">
           <AreaBadge area={area} size="sm" />
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 text-sm leading-tight truncate">
-              {workName}
-            </p>
+          <button
+            className="flex-1 min-w-0 text-left active:bg-gray-50 rounded -mx-1 px-1 -my-0.5 py-0.5 transition-colors"
+            onClick={onCorrect}
+            disabled={isProcessing}
+          >
+            <div className="flex items-center gap-1.5">
+              <p className="font-semibold text-gray-900 text-sm leading-tight truncate">
+                {workName}
+              </p>
+              {/* Pencil icon — signals tappability */}
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400 flex-shrink-0">
+                <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
             <p className="text-xs text-gray-500 mt-0.5">
               {Math.round(confidence * 100)}% {t('popup.sure')}
               {' · '}
               {t('popup.pickStatus')}
             </p>
-          </div>
+          </button>
           {/* Close/dismiss button */}
           <button
             onClick={onDismiss}
@@ -360,21 +370,14 @@ function PopupCard({
           />
         </div>
 
-        {/* Bottom row: Save + Wrong? Fix */}
-        <div className="px-3 pb-3 flex items-center justify-between">
+        {/* Bottom row: Just Save (centered) */}
+        <div className="px-3 pb-3 flex items-center justify-center">
           <button
             onClick={() => onStatusPick('save')}
             disabled={isProcessing}
             className="text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
           >
             {t('popup.justSave')}
-          </button>
-          <button
-            onClick={onCorrect}
-            disabled={isProcessing}
-            className="text-xs font-medium text-rose-600 hover:text-rose-800 disabled:opacity-50"
-          >
-            {t('popup.wrongFix')}
           </button>
         </div>
 

@@ -2,7 +2,7 @@
 // Native-feeling capture flow: Camera opens instantly → Take photo → Tag child → Upload
 'use client';
 
-import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
@@ -10,7 +10,7 @@ import { useI18n } from '@/lib/montree/i18n';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import { compressImage, generateThumbnail } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
-import { startAnalysis } from '@/lib/montree/photo-insight-store';
+import { startAnalysis, updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import PhotoInsightPopup from '@/components/montree/guru/PhotoInsightPopup';
 import { enqueuePhoto, syncQueue } from '@/lib/montree/offline';
 import {
@@ -21,6 +21,19 @@ import {
 } from '@/lib/montree/background-task-store';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import EventPicker from '@/components/montree/media/EventPicker';
+import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import AreaBadge from '@/components/montree/shared/AreaBadge';
+import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
+
+// Curriculum work type (matches WorkWheelPicker Work interface)
+interface CaptureWork {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
+  sequence?: number;
+  dbSequence?: number;
+}
 
 // ============================================
 // TYPES
@@ -76,6 +89,19 @@ function CaptureContent() {
   const [workId, setWorkId] = useState<string | null>(workIdFromUrl);
   const [selectedEvent, setSelectedEvent] = useState<MontreeEvent | null>(null);
   const [showEventPicker, setShowEventPicker] = useState(false);
+
+  // ---- Correction flow state (WorkWheelPicker inline) ----
+  const [curriculum, setCurriculum] = useState<Record<string, CaptureWork[]>>({});
+  const curriculumLoadedRef = useRef(false);
+  const curriculumLoadingRef = useRef(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerArea, setPickerArea] = useState('');
+  const [pickerMediaId, setPickerMediaId] = useState<string | null>(null);
+  const [pickerChildId, setPickerChildId] = useState<string | null>(null);
+  const [pickerCurrentWork, setPickerCurrentWork] = useState<string | undefined>(undefined);
+  const [showAreaPicker, setShowAreaPicker] = useState(false);
+  const [areaPickerMediaId, setAreaPickerMediaId] = useState<string | null>(null);
+  const [areaPickerChildId, setAreaPickerChildId] = useState<string | null>(null);
 
   // ============================================
   // INIT: Session + Children + Work lookup
@@ -263,13 +289,113 @@ function CaptureContent() {
   };
 
   // ============================================
+  // CURRICULUM LOADER (lazy — only when correction picker opens)
+  // ============================================
+
+  const loadCurriculum = useCallback(async () => {
+    if (curriculumLoadedRef.current || curriculumLoadingRef.current) return;
+    curriculumLoadingRef.current = true;
+    try {
+      const url = classroomId
+        ? `/api/montree/works/search?classroom_id=${classroomId}`
+        : '/api/montree/works/search';
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed to load curriculum');
+      const data = await res.json();
+      const byArea: Record<string, CaptureWork[]> = {};
+      for (const w of data.works || []) {
+        const areaKey = w.area?.area_key || 'unknown';
+        if (!byArea[areaKey]) byArea[areaKey] = [];
+        byArea[areaKey].push({
+          id: w.id,
+          name: w.name,
+          name_chinese: w.name_chinese,
+          sequence: w.sequence,
+          dbSequence: w.sequence,
+        });
+      }
+      setCurriculum(byArea);
+      curriculumLoadedRef.current = true;
+    } catch (err) {
+      console.error('[Capture] Failed to load curriculum:', err);
+    } finally {
+      curriculumLoadingRef.current = false;
+    }
+  }, [classroomId]);
+
+  const getPickerWorks = (): CaptureWork[] => {
+    return curriculum[pickerArea] || [];
+  };
+
+  // ============================================
   // POPUP HANDLERS (PhotoInsightPopup callbacks)
   // ============================================
 
+  const handlePopupCorrect = useCallback((mediaId: string, childId: string, originalWorkName: string | null, originalArea: string | null) => {
+    // If we have an area, go straight to work picker. Otherwise show area picker first.
+    if (originalArea && originalArea !== 'unknown') {
+      setPickerArea(originalArea);
+      setPickerMediaId(mediaId);
+      setPickerChildId(childId);
+      setPickerCurrentWork(originalWorkName || undefined);
+      loadCurriculum().then(() => {
+        setPickerOpen(true);
+      }).catch(() => {
+        toast.error('Failed to load works');
+      });
+    } else {
+      // No area — show area picker first
+      setAreaPickerMediaId(mediaId);
+      setAreaPickerChildId(childId);
+      loadCurriculum().then(() => {
+        setShowAreaPicker(true);
+      }).catch(() => {
+        toast.error('Failed to load works');
+      });
+    }
+  }, [loadCurriculum]);
+
+  const handleAreaSelected = useCallback((area: string) => {
+    setShowAreaPicker(false);
+    setPickerArea(area);
+    setPickerMediaId(areaPickerMediaId);
+    setPickerChildId(areaPickerChildId);
+    setPickerCurrentWork(undefined);
+    setPickerOpen(true);
+    setAreaPickerMediaId(null);
+    setAreaPickerChildId(null);
+  }, [areaPickerMediaId, areaPickerChildId]);
+
+  const handleWorkSelected = useCallback(async (work: CaptureWork) => {
+    if (!pickerMediaId || !pickerChildId) return;
+    setPickerOpen(false);
+    try {
+      // Update media record with corrected work
+      const res = await fetch('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pickerMediaId, work_id: work.id }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      // Update popup store — resets popup to show corrected work for P/Pr/M selection
+      updateEntryAfterCorrection(pickerMediaId, pickerChildId, work.name, pickerArea);
+      toast.success('Work updated');
+    } catch {
+      toast.error('Failed to update work');
+    }
+  }, [pickerMediaId, pickerChildId, pickerArea]);
+
   const handlePopupTagManually = useCallback((mediaId: string, childId: string) => {
-    // Navigate to child's gallery so they can use the full area picker + work wheel
-    router.push(`/montree/dashboard/${childId}/gallery?tagPhoto=${mediaId}`);
-  }, [router]);
+    // Open area picker first (no pre-set area for unidentified photos)
+    setAreaPickerMediaId(mediaId);
+    setAreaPickerChildId(childId);
+    loadCurriculum().then(() => {
+      setShowAreaPicker(true);
+    }).catch(() => {
+      // Fallback: navigate to gallery
+      router.push(`/montree/dashboard/${childId}/gallery?tagPhoto=${mediaId}`);
+    });
+  }, [loadCurriculum, router]);
 
   const handlePopupStatusPicked = useCallback(() => {
     // No-op on capture page — gallery handles progress refresh
@@ -513,10 +639,64 @@ function CaptureContent() {
         <PhotoInsightPopup
           childId={selectedChildIds[0]}
           classroomId={classroomId || undefined}
+          onCorrect={handlePopupCorrect}
           onTagManually={handlePopupTagManually}
           onStatusPicked={handlePopupStatusPicked}
         />
       )}
+
+      {/* Area Picker Modal — shown when area is unknown (tap to pick area, then work) */}
+      {showAreaPicker && (
+        <div
+          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          onClick={() => { setShowAreaPicker(false); setAreaPickerMediaId(null); setAreaPickerChildId(null); }}
+        >
+          <div
+            className="bg-white rounded-t-2xl w-full max-w-lg pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 px-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">{t('gallery.chooseArea') || 'Choose Area'}</h3>
+              <button
+                onClick={() => { setShowAreaPicker(false); setAreaPickerMediaId(null); setAreaPickerChildId(null); }}
+                className="p-2 text-gray-500"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {AREA_ORDER.filter(a => a !== 'special_events').map(area => {
+                const config = AREA_CONFIG[area] || { name: area, icon: '?', color: '#888' };
+                return (
+                  <button
+                    key={area}
+                    onClick={() => handleAreaSelected(area)}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors text-left"
+                  >
+                    <AreaBadge area={area} size="md" />
+                    <span className="font-medium text-gray-800">{config.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Work Wheel Picker — inline correction without navigating away */}
+      <WorkWheelPicker
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        area={pickerArea}
+        works={getPickerWorks()}
+        currentWorkName={pickerCurrentWork}
+        onSelectWork={(work) => handleWorkSelected(work as CaptureWork)}
+        onWorkAdded={() => {
+          curriculumLoadedRef.current = false;
+          setCurriculum({});
+          loadCurriculum();
+        }}
+      />
     </div>
   );
 }
