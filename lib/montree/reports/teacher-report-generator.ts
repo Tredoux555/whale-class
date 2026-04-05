@@ -258,7 +258,8 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
 - CRITICAL: In recommendations[].work, write ONLY the exact work name (e.g. "Carrying a Mat", "Number Rods", "Color Box 1"). Do NOT prefix with "Present", "Continue", "Introduce". Do NOT append descriptions like "as the foundational..." or "with increased frequency...". Those belong in the reasoning field.
 - In recommendations[].area, use ONLY the canonical area_key: practical_life, sensorial, mathematics, language, or cultural. Do NOT use UUIDs or capitalized names.
 - The key_insight must mention specific works and specific areas — no generics
-- Return ONLY valid JSON, no other text`;
+- Return ONLY valid JSON, no other text
+${locale === 'zh' ? '\n⚠️ 关键要求：你的整个回答必须完全用中文（普通话）书写。JSON中每个字段的值都必须是中文。不要使用英文。这是最重要的规则。' : ''}`;
 }
 
 // ── Fallback Template (no API) ──
@@ -393,9 +394,14 @@ export async function generateTeacherReport(
   try {
     const prompt = buildTeacherReportPrompt(input);
 
+    const systemMessage = input.locale === 'zh'
+      ? '你是一位拥有30年AMI培训经验的资深蒙台梭利教育顾问。你必须完全用中文（普通话）回答。所有JSON字段的值都必须是中文。不要使用任何英文。'
+      : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
+
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 8192,
+      system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
     });
 
