@@ -71,6 +71,18 @@ type Tab = 'teacher' | 'parents';
 
 // ─── Area styling ───
 
+// Strip raw UUIDs from AI-generated text (e.g. "in 8ed822b1-1968-..." → "")
+function cleanUUIDs(text: string): string {
+  // Remove UUIDs and surrounding "in <UUID>" patterns
+  return text
+    .replace(/\s+in\s+[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+    .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/,\s*,/g, ',')
+    .replace(/,\s*\./g, '.')
+    .trim();
+}
+
 const AREA_COLORS: Record<string, { emoji: string; bg: string; text: string }> = {
   practical_life: { emoji: '🧹', bg: 'bg-pink-50', text: 'text-pink-700' },
   sensorial: { emoji: '👁️', bg: 'bg-purple-50', text: 'text-purple-700' },
@@ -361,7 +373,7 @@ export default function WeeklyWrapPage() {
             </div>
             {/* Key insight preview */}
             {r.key_insight && !isExpanded && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{r.key_insight}</p>
+              <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{cleanUUIDs(r.key_insight)}</p>
             )}
           </div>
 
@@ -377,7 +389,7 @@ export default function WeeklyWrapPage() {
                 <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">
                   {locale === 'zh' ? '本周总结' : 'Weekly Summary'}
                 </p>
-                <p className="text-sm text-gray-700 leading-relaxed">{r.key_insight}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{cleanUUIDs(r.key_insight)}</p>
               </div>
             )}
 
@@ -433,7 +445,7 @@ export default function WeeklyWrapPage() {
                       <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 rounded-lg px-2 py-1.5">
                         <span>{style.emoji}</span>
                         <span className="font-medium text-gray-700">{rec.work}</span>
-                        <span className="text-gray-400 hidden sm:inline">— {rec.reasoning}</span>
+                        <span className="text-gray-400 hidden sm:inline">— {cleanUUIDs(rec.reasoning)}</span>
                       </div>
                     );
                   })}
@@ -461,7 +473,7 @@ export default function WeeklyWrapPage() {
                   disabled={approvingId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                 >
-                  {approvingId === r.child_id ? 'Approving...' : (locale === 'zh' ? '同意' : 'Agree ✓')}
+                  {approvingId === r.child_id ? (locale === 'zh' ? '审批中...' : 'Approving...') : (locale === 'zh' ? '同意' : 'Agree ✓')}
                 </button>
               ) : (
                 <div className="flex-1 py-2 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-semibold text-center">
@@ -582,90 +594,100 @@ export default function WeeklyWrapPage() {
               )}
             </div>
 
-            {/* Photos section */}
+            {/* Photos — full width, vertical stack, with descriptions */}
             {photos.length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
                   {locale === 'zh' ? '照片' : 'Photos'} ({photos.length})
                 </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {photos.map((photo, idx) => (
-                    <div key={photo.id} className="relative group rounded-lg overflow-hidden border border-gray-100">
-                      <img
-                        src={photo.url}
-                        alt={photo.work_name || 'Activity photo'}
-                        className="w-full h-32 object-cover"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                <div className="space-y-4">
+                  {photos.map((photo, idx) => {
+                    // Match photo to its work description
+                    const matchedWork = photo.work_name
+                      ? r.parent_works.find(w =>
+                          w.name.toLowerCase() === photo.work_name!.toLowerCase() ||
+                          w.name.toLowerCase().includes(photo.work_name!.toLowerCase()) ||
+                          photo.work_name!.toLowerCase().includes(w.name.toLowerCase())
+                        )
+                      : undefined;
+                    const areaStyle = matchedWork
+                      ? (AREA_COLORS[matchedWork.area] || AREA_COLORS.cultural)
+                      : { emoji: '📸', bg: 'bg-gray-50', text: 'text-gray-600' };
 
-                      {/* Photo info overlay */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                        {photo.work_name && (
-                          <p className="text-[10px] text-white font-medium truncate">{photo.work_name}</p>
-                        )}
-                        {photo.caption && (
-                          <p className="text-[10px] text-white/80 truncate">{photo.caption}</p>
-                        )}
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {idx > 0 && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'up'); }}
-                            className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-xs shadow hover:bg-white"
-                            title="Move up"
-                          >
-                            ↑
-                          </button>
-                        )}
-                        {idx < photos.length - 1 && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'down'); }}
-                            className="w-6 h-6 bg-white/90 rounded-full flex items-center justify-center text-xs shadow hover:bg-white"
-                            title="Move down"
-                          >
-                            ↓
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); handleRemovePhoto(r.child_id, photo.id); }}
-                          className="w-6 h-6 bg-red-500/90 rounded-full flex items-center justify-center text-white text-xs shadow hover:bg-red-600"
-                          title="Remove photo"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Works descriptions */}
-            {r.parent_works.length > 0 && (
-              <details className="text-xs">
-                <summary className="text-emerald-600 cursor-pointer hover:underline font-medium py-1">
-                  {locale === 'zh' ? '活动描述' : 'Activity Descriptions'} ({r.parent_works.length})
-                </summary>
-                <div className="mt-2 space-y-2">
-                  {r.parent_works.map((w, i) => {
-                    const style = AREA_COLORS[w.area] || AREA_COLORS.cultural;
                     return (
-                      <div key={i} className={`${style.bg} rounded-lg p-2`}>
-                        <p className={`font-medium ${style.text}`}>{style.emoji} {w.name}</p>
-                        {w.parent_description && (
-                          <p className="text-gray-600 mt-0.5">{w.parent_description}</p>
-                        )}
-                        {w.why_it_matters && (
-                          <p className="text-gray-500 mt-0.5 italic">{w.why_it_matters}</p>
-                        )}
+                      <div key={photo.id} className="rounded-xl overflow-hidden border border-gray-200 bg-white">
+                        {/* Full-width photo */}
+                        <div className="relative group">
+                          <img
+                            src={photo.url}
+                            alt={photo.work_name || (locale === 'zh' ? '活动照片' : 'Activity photo')}
+                            className="w-full object-contain max-h-[400px] bg-gray-50"
+                            loading="lazy"
+                          />
+                          {/* Reorder / delete controls */}
+                          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {idx > 0 && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'up'); }}
+                                className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                                title={locale === 'zh' ? '上移' : 'Move up'}
+                              >↑</button>
+                            )}
+                            {idx < photos.length - 1 && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'down'); }}
+                                className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
+                                title={locale === 'zh' ? '下移' : 'Move down'}
+                              >↓</button>
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleRemovePhoto(r.child_id, photo.id); }}
+                              className="w-7 h-7 bg-red-500/90 rounded-full flex items-center justify-center text-white text-sm shadow-md hover:bg-red-600"
+                              title={locale === 'zh' ? '删除' : 'Remove'}
+                            >✕</button>
+                          </div>
+                        </div>
+
+                        {/* Description below photo */}
+                        <div className="px-4 py-3 space-y-1.5">
+                          {/* Work name + area badge */}
+                          <div className="flex items-center gap-2">
+                            {photo.work_name && (
+                              <p className="font-semibold text-gray-900 text-sm">{photo.work_name}</p>
+                            )}
+                            {matchedWork && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${areaStyle.bg} ${areaStyle.text}`}>
+                                {areaStyle.emoji} {matchedWork.area.replace('_', ' ')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Parent-friendly description: what the child is doing */}
+                          {matchedWork?.parent_description && (
+                            <p className="text-sm text-gray-600 leading-relaxed">
+                              {matchedWork.parent_description}
+                            </p>
+                          )}
+
+                          {/* Why it matters */}
+                          {matchedWork?.why_it_matters && (
+                            <p className="text-xs text-emerald-700 leading-relaxed italic">
+                              {matchedWork.why_it_matters}
+                            </p>
+                          )}
+
+                          {/* Teacher caption */}
+                          {photo.caption && (
+                            <p className="text-xs text-gray-400 italic mt-1">
+                              {photo.caption}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
-              </details>
+              </div>
             )}
 
             {/* Preview link */}
@@ -688,7 +710,7 @@ export default function WeeklyWrapPage() {
                   disabled={savingId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
                 >
-                  {savingId === r.child_id ? 'Saving...' : (locale === 'zh' ? '保存修改' : 'Save Changes')}
+                  {savingId === r.child_id ? (locale === 'zh' ? '保存中...' : 'Saving...') : (locale === 'zh' ? '保存修改' : 'Save Changes')}
                 </button>
               )}
               {!isSent && !edited && r.report_id && (
@@ -718,7 +740,7 @@ export default function WeeklyWrapPage() {
                   disabled={sendingChildId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                 >
-                  {sendingChildId === r.child_id ? 'Sending...' : (locale === 'zh' ? '发送给家长' : 'Send to Parent')}
+                  {sendingChildId === r.child_id ? (locale === 'zh' ? '发送中...' : 'Sending...') : (locale === 'zh' ? '发送给家长' : 'Send to Parent')}
                 </button>
               )}
               {isSent && (

@@ -85,16 +85,17 @@ export async function POST(request: NextRequest) {
     const location = await getLocationFromIP(ip);
 
     // Insert into DB
+    // NOTE: actual table has `isp` column (not `ip`) and no `page_url` column.
+    // Store IP in `isp` field and page_url in `referrer` fallback if no referrer.
     const supabase = getSupabase();
     const { error } = await supabase.from('montree_visitors').insert({
-      ip: ip?.slice(0, 45) || null, // IPv6 max 45 chars
+      isp: ip?.slice(0, 45) || null,
       country: location.country,
       country_code: location.countryCode,
       city: location.city,
       region: location.region,
       timezone: location.timezone,
-      page_url: sanitizedPageUrl,
-      referrer: sanitizedReferrer,
+      referrer: sanitizedReferrer || sanitizedPageUrl,
       user_agent: userAgent,
       fingerprint,
     });
