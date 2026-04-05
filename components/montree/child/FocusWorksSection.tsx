@@ -66,6 +66,19 @@ function normalizeArea(area: string): string {
   return area;
 }
 
+// Clean AI recommendation sentences from work names
+// e.g. "Present Carrying a Mat as the foundational Practical Life work" → "Carrying a Mat"
+function cleanWorkName(raw: string): string {
+  if (!raw) return raw;
+  let name = raw.trim();
+  // Strip leading action verbs
+  name = name.replace(/^(Present|Continue|Introduce|Begin|Start|Explore|Practice|Review|Offer|Revisit|Try|Focus on|Work on|Encourage)\s+/i, '');
+  // Strip trailing clauses
+  name = name.replace(/\s+(as the|as a|as an|with increased|with more|with special|because|for the|for a|to build|to develop|to strengthen|to support|to encourage|to practice|which will|that will|in order|progressively|sequentially)\b.*/i, '');
+  name = name.replace(/\s+[—–-]\s+.*$/, '');
+  return name.trim();
+}
+
 export default function FocusWorksSection({
   focusWorks,
   extraWorks,
@@ -221,7 +234,7 @@ export default function FocusWorksSection({
                 >
                   {focusWork ? (
                     <p className="font-medium text-gray-800 text-sm">
-                      {locale === 'zh' && focusWork.chineseName ? focusWork.chineseName : focusWork.work_name}
+                      {locale === 'zh' && focusWork.chineseName ? focusWork.chineseName : cleanWorkName(focusWork.work_name)}
                     </p>
                   ) : (
                     <p className="font-medium text-gray-400 text-sm italic">
@@ -235,7 +248,7 @@ export default function FocusWorksSection({
                   <button
                     {...(areaIdx === 0 ? { 'data-tutorial': 'status-badge-first' } : {})}
                     onClick={() => onCycleStatus(focusWork, true)}
-                    className={`w-9 h-9 rounded-full ${status.bg} ${status.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90 transition-transform`}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all active:scale-90 ${status.bg} ${status.text}`}
                   >
                     {status.label}
                   </button>
@@ -395,11 +408,11 @@ export default function FocusWorksSection({
                       <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
                         <span className="text-xs text-gray-400">└</span>
                         <span className="flex-1 text-sm text-gray-600">
-                          {locale === 'zh' && extra.chineseName ? extra.chineseName : extra.work_name}
+                          {locale === 'zh' && extra.chineseName ? extra.chineseName : cleanWorkName(extra.work_name)}
                         </span>
                         <button
                           onClick={() => onCycleStatus(extra, false)}
-                          className={`w-7 h-7 rounded-full ${extraStatus.bg} ${extraStatus.text} font-bold text-xs flex items-center justify-center shadow-sm active:scale-90`}
+                          className={`px-2 py-0.5 rounded-full ${extraStatus.bg} ${extraStatus.text} font-semibold text-xs active:scale-90`}
                         >
                           {extraStatus.label}
                         </button>
