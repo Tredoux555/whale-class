@@ -809,7 +809,8 @@ export async function POST(request: NextRequest) {
         : Promise.resolve({ data: null }),
     ]);
 
-    // Process corrections result
+    // Process corrections result — NEWEST correction for each key wins
+    // Query is ordered by created_at DESC (newest first), so first occurrence should be kept
     if (correctionsResult.status === 'fulfilled') {
       const corrections = correctionsResult.value?.data;
       if (corrections && corrections.length > 0) {
@@ -818,11 +819,19 @@ export async function POST(request: NextRequest) {
           const origTrimmed = typeof c.original_work_name === 'string' ? c.original_work_name.trim() : '';
           const corrTrimmed = typeof c.corrected_work_name === 'string' ? c.corrected_work_name.trim() : '';
           if (origTrimmed && corrTrimmed) {
-            correctionsMap.set(origTrimmed.toLowerCase(), corrTrimmed);
+            const key = origTrimmed.toLowerCase();
+            // Only set if NOT already in map — newest (first in list) wins
+            if (!correctionsMap.has(key)) {
+              correctionsMap.set(key, corrTrimmed);
+            }
             if (promptEntries.length < 10) {
               promptEntries.push(`- You said "${sanitizeForPrompt(c.original_work_name, 100)}" but teacher corrected to "${sanitizeForPrompt(c.corrected_work_name, 100)}"`);
             }
           }
+        }
+        console.log(`[PhotoInsight] Corrections loaded: ${correctionsMap.size} unique keys from ${corrections.length} entries`);
+        if (correctionsMap.has('geometric cabinet')) {
+          console.log(`[PhotoInsight] DIAGNOSTIC: "geometric cabinet" → "${correctionsMap.get('geometric cabinet')}"`);
         }
         if (promptEntries.length > 0) {
           correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):\n${promptEntries.join('\n')}`;
@@ -1723,6 +1732,30 @@ Match this description to the correct Montessori work. Use the visual identifica
         visual_description: visualDescription || null, // Return Pass 1 description even on failure (useful for diagnostics)
         model_used: modelUsed,
       }, { status: 500 });
+    }
+
+    // ========================================================
+    // POST-V2 CORRECTIONS ENFORCEMENT (belt-and-suspenders)
+    // If V2 returned a name that has a teacher correction, force-apply it.
+    // This catches cases where V2's internal correction lookup fails for any reason.
+    // ========================================================
+    if (correctionsMap.size > 0 && finalWorkName) {
+      const correctedTo = correctionsMap.get(finalWorkName.toLowerCase().trim());
+      if (correctedTo && correctedTo.toLowerCase() !== finalWorkName.toLowerCase()) {
+        // Find the corrected work in curriculum
+        const correctedWork = curriculum.find(w => w.name.toLowerCase().trim() === correctedTo.toLowerCase().trim());
+        if (correctedWork) {
+          console.log(`[PhotoInsight] POST-V2 CORRECTION APPLIED: "${finalWorkName}" → "${correctedWork.name}" (teacher correction)`);
+          finalWorkName = correctedWork.name;
+          finalArea = correctedWork.area_key;
+          finalWorkKey = correctedWork.work_key;
+          matchScore = 0.98; // Correction confidence
+          // Re-run V2 to get proper candidates for the corrected work
+          matchResult = matchToCurriculumV2(correctedWork.name, correctedWork.area_key, curriculum, undefined, input?.observation);
+        } else {
+          console.warn(`[PhotoInsight] POST-V2 CORRECTION SKIPPED: "${finalWorkName}" → "${correctedTo}" (corrected name not in curriculum)`);
+        }
+      }
     }
 
     // ========================================================
