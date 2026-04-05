@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No active children found in this classroom' }, { status: 404 });
     }
 
-    // Load shared data (curriculum works + visual memory + descriptions)
-    const [curriculumRes, visualRes] = await Promise.all([
+    // Load shared data (curriculum works + visual memory + descriptions + area mapping)
+    const [curriculumRes, visualRes, areasRes] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
         .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh, area_id')
@@ -104,6 +104,10 @@ export async function POST(request: NextRequest) {
         .select('work_name, parent_description, why_it_matters')
         .eq('classroom_id', classroom_id)
         .not('parent_description', 'is', null),
+      supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id, area_key')
+        .eq('classroom_id', classroom_id),
     ]);
 
     const curriculumWorks = (curriculumRes.data || []) as Array<{
@@ -114,14 +118,22 @@ export async function POST(request: NextRequest) {
       work_name: string; parent_description: string | null; why_it_matters: string | null;
     }>;
 
+    // Build area UUID → canonical area_key map (e.g. "8ed822b1-..." → "mathematics")
+    const areaIdToKey = new Map<string, string>();
+    for (const a of (areasRes.data || []) as Array<{ id: string; area_key: string }>) {
+      areaIdToKey.set(a.id, a.area_key);
+    }
+
     // Build description + area lookups
     const workIdToName = new Map<string, string>();
-    const workNameToArea = new Map<string, string>(); // name (lowercase) → area_id
+    const workNameToArea = new Map<string, string>(); // name (lowercase) → area_key (canonical)
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
     for (const w of curriculumWorks) {
       workIdToName.set(w.id, w.name);
       if (w.area_id) {
-        workNameToArea.set(w.name.toLowerCase().trim(), w.area_id);
+        // Resolve UUID to canonical area key (e.g. "mathematics", "language")
+        const areaKey = areaIdToKey.get(w.area_id) || w.area_id;
+        workNameToArea.set(w.name.toLowerCase().trim(), areaKey);
       }
       const desc = (locale === 'zh' && w.parent_description_zh) ? w.parent_description_zh : w.parent_description;
       const whyMatters = (locale === 'zh' && w.why_it_matters_zh) ? w.why_it_matters_zh : (w.why_it_matters || '');
@@ -298,7 +310,7 @@ export async function POST(request: NextRequest) {
               availableWorks: curriculumWorks.map(w => ({
                 id: w.id,
                 name: w.name,
-                area: w.area_id || '',
+                area: (w.area_id ? areaIdToKey.get(w.area_id) : '') || '',
               })),
             });
 
