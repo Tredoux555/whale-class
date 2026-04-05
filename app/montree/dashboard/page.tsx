@@ -26,8 +26,7 @@ const GuruFAQSection = dynamic(() => import('@/components/montree/guru/GuruFAQSe
 const GuruContextBubble = dynamic(() => import('@/components/montree/guru/GuruContextBubble'), { ssr: false });
 const GuruChatThread = dynamic(() => import('@/components/montree/guru/GuruChatThread'), { ssr: false });
 const WeeklyAdminCard = dynamic(() => import('@/components/montree/voice-notes/WeeklyAdminCard'), { ssr: false });
-const BatchReportsCard = dynamic(() => import('@/components/montree/reports/BatchReportsCard'), { ssr: false });
-const BatchNarrativesCard = dynamic(() => import('@/components/montree/reports/BatchNarrativesCard'), { ssr: false });
+// BatchReportsCard and BatchNarrativesCard removed — consolidated into Weekly Wrap
 const WeeklyWrapCard = dynamic(() => import('@/components/montree/reports/WeeklyWrapCard'), { ssr: false });
 const BulkPasteImport = dynamic(() => import('@/components/montree/BulkPasteImport'), { ssr: false });
 
@@ -481,10 +480,8 @@ export default function DashboardPage() {
                       </button>
                       {sectionsOpen.tools && (
                         <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                          {isEnabled('weekly_admin_docs') && <WeeklyAdminCard classroomId={session.classroom.id} children={children} />}
                           {isEnabled('teacher_tools') && <WeeklyWrapCard classroomId={session.classroom.id} children={children} />}
-                          <BatchNarrativesCard classroomId={session.classroom.id} children={children} />
-                          <BatchReportsCard classroomId={session.classroom.id} children={children} />
+                          {isEnabled('weekly_admin_docs') && <WeeklyAdminCard classroomId={session.classroom.id} children={children} />}
                           {isEnabled('shelf_autopilot') && <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />}
                         </div>
                       )}
