@@ -20,14 +20,15 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 **Chinese Localization — ✅ MOSTLY WORKING (commits from this session):**
 Full bilingual pipeline for Weekly Wrap + Weekly Admin Docs. When UI is set to Chinese, area labels, work names, photo descriptions, parent narratives, and flag badges all display in Chinese. English when in English.
 
-**⚠️ HAIKU CHINESE JSON — PARTIALLY FIXED (commit `df69e3be` + follow-up):**
-Haiku produces malformed JSON when generating Chinese teacher reports. Two rounds of fixes:
-- **Round 1** (`df69e3be`): Added `repairAndParseJSON()` with 5 repair layers + string-state-tracking newline fixer. FAILED — Haiku puts unescaped ASCII `"` inside string values (quoting English terms in Chinese text), which throws off the state machine.
-- **Round 2** (follow-up commit): Replaced state machine with nuclear approach — `text.replace(/\r?\n/g, ' ')` replaces ALL literal newlines with spaces. This is safe because JSON whitespace between tokens can be spaces, and literal newlines inside strings are always invalid. Added structural fixes for fullwidth punctuation after. **Testing needed** — verify Henry, Joey, Ryan reports now parse correctly.
-- **System prompt rewritten**: Chinese system message now in ENGLISH (not Chinese) to prevent Haiku from "thinking in Chinese" and using fullwidth punctuation structurally. Explicit rules about ASCII-only JSON structure.
-- **If still failing after round 2**: Consider switching back to Sonnet (`AI_MODEL`) for Chinese teacher reports — more expensive (~$1.70/run vs $0.10/run) but much more reliable JSON output. Or use `tool_use` for structured output.
+**✅ SWITCHED TO SONNET + TOOL_USE (commit `760d7c4c`):**
+Haiku's Chinese JSON corruption issue is permanently solved by two changes:
+1. **Switched to Sonnet** (`AI_MODEL`) for both teacher reports and parent narratives. Higher quality, reliable JSON.
+2. **Teacher reports use `tool_use` structured output** — the API handles JSON serialization, so the model never produces raw JSON text. This eliminates all JSON corruption issues (unescaped quotes, fullwidth punctuation, literal newlines) regardless of model or language.
+3. **Selective child generation** — teachers can now pick specific children to generate/regenerate reports for instead of all 19 at once. This controls Sonnet costs (~$0.09/child vs $1.70 for all 19).
+- Cost with Sonnet: ~$0.09 per child (teacher + parent). Full class run: ~$1.70. Selective generation makes this manageable.
+- MAX_CONCURRENT reduced from 5 to 3 for Sonnet rate limit safety.
 
-**⚠️ CURRENTLY ON HAIKU** — Both `teacher-report-generator.ts` and `narrative-generator.ts` import `HAIKU_MODEL` instead of `AI_MODEL`. Switched to save costs during testing. **Switch back to Sonnet for production** by changing `HAIKU_MODEL` → `AI_MODEL` in both imports.
+**✅ NOW ON SONNET** — Both `teacher-report-generator.ts` and `narrative-generator.ts` import `AI_MODEL` (Sonnet). Teacher report uses `tool_use` for structured output.
 
 **What was FIXED this session (Chinese localization):**
 1. ~~**UUID areas in Weekly Admin Docs auto-fill**~~ — ✅ FIXED. Auto-fill API now has `resolveArea()` with UUID→canonical key mapping. Was causing summary to show "..." placeholder (no data matched canonical area keys).
@@ -42,7 +43,7 @@ Haiku produces malformed JSON when generating Chinese teacher reports. Two round
 1. **Teacher report quality** — Still too structured/clinical. Needs narrative paragraph format. See suggested approach below.
 2. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
 3. **Teacher summary line still shows English work names** — The "需要关注" section shows e.g. "感官: Constructive Triangles - Rectangular Box · 语言: Chalk Board Writing - No lines, Chalkboard Writing" — area labels are Chinese but work names are English. The review API needs to return Chinese work names for the teacher summary works list.
-4. **Verify Haiku JSON repair works** — Test Weekly Wrap generation after latest fix deployed.
+4. **Test Sonnet + tool_use generation** — Verify teacher reports generate correctly with new approach (commit `760d7c4c`).
 
 **Suggested approach for next session:**
 - The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. Two options:
@@ -78,10 +79,10 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - `app/api/montree/reports/weekly-wrap/route.ts` — main generation (streaming + non-streaming). Loads `montree_classroom_curriculum_areas` to build `areaIdToKey` map; resolves UUID areas at generation time.
 - `app/api/montree/reports/weekly-wrap/review/route.ts` — GET review data. Has `resolveArea()`, `cleanWorkName()`, `getChineseWorkName()`, `cleanUUIDs()`. Pipes `work_zh`, `area_label_zh` through all response fields.
 - `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
-- `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client (~1450 lines). Two tabs: Teacher Summary (with interactive shelf, WorkWheelPicker, approve/push) + Parent Reports (edit narrative, reorder photos, crop, send). Generate/Regenerate button in header with streaming progress bar. Invite Parents link in bottom bar.
+- `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client (~1500 lines). Two tabs: Teacher Summary (with interactive shelf, WorkWheelPicker, approve/push) + Parent Reports (edit narrative, reorder photos, crop, send). **Selective generation**: "Select" mode lets teachers pick specific children to regenerate. Generate/Regenerate All button in header with streaming progress bar. Invite Parents link in bottom bar.
 - `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card (NO LONGER used on dashboard — removed from Teacher Tools. Still exists as component for potential reuse.)
-- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production. Has `repairAndParseJSON()` for robust Chinese JSON handling. System prompt in English even for Chinese output (prevents fullwidth punctuation in JSON structure). Prompt updated: work field = "EXACT curriculum work name ONLY", area field = "canonical area_key ONLY".
-- `lib/montree/reports/narrative-generator.ts` — **HAIKU** parent narrative ← switch back to AI_MODEL for production
+- `lib/montree/reports/teacher-report-generator.ts` — **SONNET** teacher report (max_tokens: 8192). Uses `tool_use` structured output — API handles JSON serialization (no raw JSON from model). Has `repairAndParseJSON()` as legacy fallback. System prompt in English even for Chinese output.
+- `lib/montree/reports/narrative-generator.ts` — **SONNET** parent narrative
 - `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports. Has `resolveArea()` for UUID→canonical key mapping. Returns `planAreasZh` alongside `planAreas`. Has `getZhWorkName()` for fuzzy Chinese name lookup.
 - `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation. Locale-aware: uses `chinese_text` for plan area work names when locale is zh.
 - `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
