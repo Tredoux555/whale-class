@@ -1067,23 +1067,10 @@ export default function PhotoAuditPage() {
 
     let classified = 0;
     let failed = 0;
+    let completed = 0;
 
-    for (let i = 0; i < photosToProcess.length; i++) {
-      if (haikuCancelledRef.current) {
-        // Mark remaining as cancelled
-        for (let j = i; j < photosToProcess.length; j++) {
-          setRerunResults(prev => ({
-            ...prev,
-            [photosToProcess[j].id]: { ...prev[photosToProcess[j].id], loading: false, error: 'Cancelled' },
-          }));
-        }
-        toast.info(`Haiku cancelled after ${i} of ${photosToProcess.length}`);
-        break;
-      }
-
-      const photo = photosToProcess[i];
-      setHaikuProgress({ current: i + 1, total: photosToProcess.length });
-
+    // Process a single photo — returns true if classified, false if failed/unmatched
+    const processOnePhoto = async (photo: AuditPhoto): Promise<boolean> => {
       try {
         const isTestMode = zone === 'haiku_test';
         const res = await fetch('/api/montree/guru/photo-insight', {
@@ -1099,7 +1086,7 @@ export default function PhotoAuditPage() {
         });
 
         if (res.status === 429) {
-          // Rate limited — wait 5s and retry
+          // Rate limited — wait 5s and retry once
           await new Promise(r => setTimeout(r, 5000));
           const retry = await fetch('/api/montree/guru/photo-insight', {
             method: 'POST',
@@ -1109,8 +1096,7 @@ export default function PhotoAuditPage() {
           });
           if (!retry.ok) {
             setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Rate limited' } }));
-            failed++;
-            continue;
+            return false;
           }
           const retryData = await retry.json();
           setRerunResults(prev => ({
@@ -1127,9 +1113,8 @@ export default function PhotoAuditPage() {
               error: null,
             },
           }));
-          if (retryData.work_name) classified++; else failed++;
+          return !!retryData.work_name;
         } else if (!res.ok) {
-          // In test mode, error responses may still contain visual_description (Pass 1)
           let errVisualDesc = null;
           let errMsg = `Error ${res.status}`;
           try {
@@ -1141,7 +1126,7 @@ export default function PhotoAuditPage() {
             ...prev,
             [photo.id]: { ...prev[photo.id], loading: false, error: errMsg, visual_description: errVisualDesc },
           }));
-          failed++;
+          return false;
         } else {
           const data = await res.json();
           setRerunResults(prev => ({
@@ -1158,21 +1143,63 @@ export default function PhotoAuditPage() {
               error: null,
             },
           }));
-          if (data.work_name) classified++; else failed++;
+          return !!data.work_name;
         }
       } catch (err: any) {
         console.error(`[Haiku] Error for ${photo.id}:`, err);
         setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Network error' } }));
-        failed++;
         if (err instanceof TypeError && err.message.includes('fetch')) {
-          toast.error('Connection lost');
-          break;
+          throw err; // Re-throw connection errors to stop the batch
         }
+        return false;
+      }
+    };
+
+    // Process in parallel batches of 3 with 500ms delay between batches
+    const BATCH_SIZE = 3;
+    const BATCH_DELAY_MS = 500;
+    let connectionLost = false;
+
+    for (let i = 0; i < photosToProcess.length; i += BATCH_SIZE) {
+      if (haikuCancelledRef.current || connectionLost) {
+        // Mark remaining as cancelled
+        for (let j = i; j < photosToProcess.length; j++) {
+          setRerunResults(prev => ({
+            ...prev,
+            [photosToProcess[j].id]: { ...prev[photosToProcess[j].id], loading: false, error: connectionLost ? 'Connection lost' : 'Cancelled' },
+          }));
+        }
+        if (!connectionLost) toast.info(`Haiku cancelled after ${completed} of ${photosToProcess.length}`);
+        break;
       }
 
-      // Delay between requests (respect rate limits: ~10/min for Haiku)
-      if (i < photosToProcess.length - 1) {
-        await new Promise(r => setTimeout(r, 3000));
+      const batch = photosToProcess.slice(i, i + BATCH_SIZE);
+      setHaikuProgress({ current: Math.min(i + BATCH_SIZE, photosToProcess.length), total: photosToProcess.length });
+
+      try {
+        const results = await Promise.allSettled(batch.map(p => processOnePhoto(p)));
+        for (const r of results) {
+          completed++;
+          if (r.status === 'fulfilled') {
+            if (r.value) classified++; else failed++;
+          } else {
+            failed++;
+            // Check if it was a connection error
+            if (r.reason instanceof TypeError && r.reason.message.includes('fetch')) {
+              connectionLost = true;
+              toast.error('Connection lost');
+            }
+          }
+        }
+      } catch (err) {
+        // Shouldn't reach here due to allSettled, but safety net
+        connectionLost = true;
+        toast.error('Connection lost');
+      }
+
+      // Short delay between batches (500ms instead of 3s)
+      if (i + BATCH_SIZE < photosToProcess.length && !haikuCancelledRef.current && !connectionLost) {
+        await new Promise(r => setTimeout(r, BATCH_DELAY_MS));
       }
     }
 

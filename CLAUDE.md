@@ -13,7 +13,19 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## RECENT STATUS (Apr 4, 2026)
+## RECENT STATUS (Apr 5, 2026)
+
+**Haiku Classification Fix — Visual Memory Feedback Loop — ✅ PUSHED (commit `cf039f04`):**
+Fixed critical data flow break: teacher "Teach the AI" descriptions (Sonnet-quality, confidence 1.0, with key_materials + negative_descriptions) were stored in `montree_visual_memory` but NEVER injected into Haiku identification prompts because `is_custom=false` filter discarded them. 4 changes: (1) Pass 1 reordered — HANDS & PRIMARY WORK now item #1, accessories labeled as secondary. (2) Query expanded — loads key_materials, negative_descriptions, source, description_confidence. (3) Filter replaced — `is_custom OR (source IN teacher_setup/correction AND confidence>=0.9)` instead of just `is_custom`. (4) Visual memory moved to TOP of Pass 2 prompt with rich format (KEY MATERIALS, DISTINGUISH FROM) instead of buried at bottom of 280-line guide.
+
+**Haiku Batch Speed-Up — ✅ PUSHED (same session, commit before cf039f04):**
+Photo Audit Haiku batch processing: 3 photos in parallel (was 1 sequential), 500ms delay between batches (was 3000ms per photo). ~47 photos now ~20 seconds instead of ~2.7 minutes.
+
+**Dual P/P/M System + Auto-Presented — ✅ PUSHED (same session):**
+Photo Audit seeds P/P/M statuses from DB with "practicing" default. Fire-and-forget persists defaults with `no_downgrade: true`. Multi-child group photos auto-mark all children as "presented" silently (no UI clutter). Progress update API has `no_downgrade` param with STATUS_RANK guard. Case-insensitive progressMap keying fixed.
+
+**Haiku Test Tab + Feature Gates + Upload Limits — ✅ PUSHED + MIGRATED (commit `3b4e1423`, migration 161):**
+Photo Audit: new 🧪 Haiku Test diagnostic tab — runs two-pass Haiku without Sonnet fallback, shows Pass 1 (visual description) + Pass 2 (match result). Fixed `visualDescription` block-scoping bug. Weekly Admin Docs feature-gated (dashboard card, page, 5 API routes) — toggleable per-school via super-admin ⚙️. Migration 161 enables for Whale Class. Story video uploads bumped 100→300MB, timeouts 180→300s across all 4 paths.
 
 **Feature-Gated Dashboard — ✅ PUSHED + MIGRATED (commit `039b435d`, migration 160):**
 Dashboard sections (Daily Brief, Intelligence, Teacher Tools, Shelf Autopilot, Paperwork Tracker) gated by existing feature flag system. New schools see clean minimal view. Whale Class has everything enabled. Super-admin ⚙️ gear button per school opens feature toggle modal. Features POST route now accepts super-admin auth.
@@ -40,12 +52,12 @@ Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex 
 - **CLIP/SigLIP — PERMANENTLY REMOVED (Apr 4, 2026).** Stub files remain for type exports only. All functions are no-ops. Production uses Haiku two-pass exclusively.
 - **Smart Capture** uses two-pass describe-then-match: Pass 1 (Haiku + image) describes what's seen, Pass 2 (Haiku + text) matches to curriculum. Sonnet fallback if both fail.
 - **Photo identification cost:** ~$0.006/photo via Haiku two-pass pipeline.
-- **Per-classroom visual memory** self-learning system: teacher corrections → Haiku generates visual descriptions → stored permanently → injected into future prompts.
+- **Per-classroom visual memory** self-learning system: two paths — (1) "Teach the AI" button uses Sonnet to generate 5-field descriptions (visual_description, parent_description, why_it_matters, key_materials, negative_descriptions) stored with source='teacher_setup', confidence=1.0. (2) "Fix" corrections use Haiku for quick descriptions, source='correction', confidence=0.9. Both injected into Pass 2 prompts. Auto-generated onboarding/first_capture descriptions (confidence=0.8) are NOT injected — they caused bias reinforcement. Visual memory placed at TOP of Pass 2 prompt before the visual ID guide.
 - **Guru** uses Sonnet for all users (teachers + parents). Haiku for daily coach features. Self-improving brain system grows from every conversation.
 - **All client-facing photo URLs** use Cloudflare-cached proxy (`getProxyUrl()`). Server-to-server URLs use direct Supabase.
 - **Cross-pollination security:** Every route accepting `child_id` MUST call `verifyChildBelongsToSchool()`. No exceptions.
 - **i18n:** 1,490+ keys, perfect EN/ZH parity. Custom React Context system (`useI18n()` hook).
-- **Feature flags:** `montree_feature_definitions` + `montree_school_features` + `montree_classroom_features`. `FeaturesProvider` context in dashboard layout. `useFeatures()` hook with `isEnabled(key)`. Fail-closed (all off if fetch fails). Dashboard sections gated: `daily_brief`, `intelligence_panels`, `teacher_tools`, `shelf_autopilot`, `paperwork_tracker`. New schools get clean minimal view. Super-admin ⚙️ button per school to toggle.
+- **Feature flags:** `montree_feature_definitions` + `montree_school_features` + `montree_classroom_features`. `FeaturesProvider` context in dashboard layout. `useFeatures()` hook with `isEnabled(key)`. Fail-closed (all off if fetch fails). Dashboard sections gated: `daily_brief`, `intelligence_panels`, `teacher_tools`, `shelf_autopilot`, `paperwork_tracker`, `weekly_admin_docs`. New schools get clean minimal view. Super-admin ⚙️ button per school to toggle.
 
 ---
 
@@ -79,7 +91,8 @@ Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex 
 - `story_online_sessions` — heartbeat-based online detection
 
 ### Whale Class Data
-- Classroom ID: `945c846d-fb33-4370-8a95-a29b7767af54`
+- School ID: `c6280fae-567c-45ed-ad4d-934eae79aabc` (Tredoux House)
+- Classroom ID: `51e7adb6-cd18-4e03-b707-eceb0a1d2e69` (Whale Class)
 - 20 students: Amy, Austin, Eric, Gengerlyn, Hayden, Henry, Jimmy, Joey, Kayla, Kevin, KK, Leo, Lucky, MaoMao, MingXi, NiuNiu, Rachel, Segina, Stella, YueZe
 
 ---
@@ -253,7 +266,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 160 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled).
+All migrations through 161 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class).
 
 ---
 
