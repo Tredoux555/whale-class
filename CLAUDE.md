@@ -15,6 +15,48 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 5, 2026)
 
+### ⚡ PRIORITY: Weekly Wrap → Weekly Admin Pipeline (IN PROGRESS)
+
+**Weekly Wrap End-to-End — 🔄 IN PROGRESS (commits `f137a9b3` → `44d3f211`):**
+The full Weekly Wrap → Weekly Admin pipeline is being brought online. Status:
+
+**What's DONE:**
+- Weekly Wrap generation route (`/api/montree/reports/weekly-wrap`) — fixed `enrolled_at`, removed non-existent `duration_minutes`/`repetition_count` from progress query, restored `week_number`/`report_year` in upserts (NOT NULL columns)
+- Streaming progress — server returns NDJSON events per child (`stream: true`), client shows real-time progress bar ("Joey... 5/19") instead of static spinner. Bypasses `montreeApi` 30s timeout.
+- Teacher report `max_tokens` bumped 2048→4096 (was truncating JSON, every report fell back to template)
+- Review route (`/api/montree/reports/weekly-wrap/review`) — migrated to `week_start` param
+- Send route (`/api/montree/reports/weekly-wrap/send`) — migrated to `week_start` param, `is_published`/`published_at` restored
+- Review client page (`/montree/dashboard/weekly-wrap/page.tsx`) — uses `week_start` instead of `week_number`/`report_year`
+- WeeklyWrapCard — removed `wn`/`yr` URL params, uses streaming fetch
+- Weekly Admin auto-fill (`/api/montree/weekly-admin-docs/auto-fill`) — pulls data FROM Weekly Wrap `montree_weekly_reports` as primary source, area-by-area format with `\n` separators
+- Weekly Admin generate (`/api/montree/weekly-admin-docs/generate`) — simplified to use saved notes only, `is_active` filter added
+- Both tabs (Summary + Plan) fill simultaneously on auto-fill
+
+**What NEEDS TESTING (next session):**
+- Full generation → Review → Send flow: confirm all 19 children appear in Review page (was failing due to NOT NULL `week_number` constraint — fixed in `44d3f211`)
+- Teacher reports: confirm JSON parsing succeeds with 4096 tokens (was failing at 2048)
+- Send to parents: confirm emails dispatch correctly
+- Weekly Admin auto-fill: confirm it pulls from Weekly Wrap reports correctly
+- Weekly Admin DOCX: confirm area-by-area format renders in Word
+- Quick test approach: can query DB directly to verify reports saved: `SELECT child_id, report_type FROM montree_weekly_reports WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND week_start='2026-03-29'` — should show 38 rows (19 teacher + 19 parent)
+
+**Key Discovery — `montree_weekly_reports` schema:**
+Table has MORE columns than originally documented. Full column list: `id, child_id, classroom_id, school_id, week_start, week_end, week_number (NOT NULL), report_year (NOT NULL), report_type, status, content, is_published, published_at, sent_at, generated_at, created_at, updated_at, created_by, concentration_score, area_distribution, areas_of_growth, highlights, parent_summary, recommendations, recommended_works, active_sensitive_periods`. The `week_number` and `report_year` columns are NOT NULL — removing them from upserts causes silent insert failures. Always include computed `weekNumber` and `reportYear` in upserts. Queries should use `.eq('week_start', weekStart)` (canonical identifier).
+
+**Key Files:**
+- `app/api/montree/reports/weekly-wrap/route.ts` — main generation (streaming + non-streaming)
+- `app/api/montree/reports/weekly-wrap/review/route.ts` — GET review data
+- `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
+- `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client
+- `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card with streaming
+- `lib/montree/reports/teacher-report-generator.ts` — Sonnet teacher report (max_tokens: 4096)
+- `lib/montree/reports/narrative-generator.ts` — parent narrative generator
+- `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports
+- `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation
+- `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
+
+---
+
 **Gallery Chronological Order + Photo Audit Sort — ✅ PUSHED (commit `9f9bff3e`):**
 Gallery "All Photos" now renders chronologically with date headers (was area-grouped). Timeline tab and Tag Event tab removed (redundant). Area filter chips retained. Photo Audit API sort changed from `created_at` to `captured_at` for consistency.
 
