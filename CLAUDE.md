@@ -15,6 +15,34 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 6, 2026)
 
+### ⚡ Photo Audit + Weekly Wrap MERGED (Apr 6, 2026)
+
+**Merged Photo Audit + Weekly Wrap into one page** — Weekly Wrap is now a tab inside Photo Audit (`/montree/dashboard/photo-audit`). Three tabs: Needs Review → Confirmed → Weekly Wrap. Teachers audit photos first, then do weekly wrap in the same page.
+
+**Dashboard nav reduced to 3 icons**: Capture (📸), Notes (📝), Photo Audit (🔍). Weekly Wrap icon (📋) removed from header — accessed via Photo Audit tab instead.
+
+**New component**: `components/montree/reports/WeeklyWrapTab.tsx` — self-contained Weekly Wrap embedded in Photo Audit:
+- **Teacher Review**: Compact 2-3 column grid of child cards. Yellow highlight if flagged. Click expands inline with work chips (× delete), flags, recommendations.
+- **Parent Reports**: Continuous scroll — all children expanded with narrative + horizontal photo row. No accordion. Teacher can scan whole class, edit narratives, delete photos.
+- Week ◀ ▶ navigation, Select mode with Select All, Generate/Regenerate with streaming, Send All to Parents.
+
+**Weekly Wrap page** (`/montree/dashboard/weekly-wrap`) still exists as standalone for direct URL access. WeeklyWrapTab is the simplified embedded version.
+
+---
+
+### 3x3x3x3x3 Development System
+
+Standard development methodology for complex tasks:
+1. **3x PLAN** — Map all tasks, dependencies, and scope
+2. **3x THEORIZE** — Research best approach, explore code, consider architecture
+3. **3x INVESTIGATE** — Deep audit of all code paths, data flow, wiring points
+4. **3x BUILD** — Build with audit cycles (build → audit → build → audit)
+5. **3x AUDIT** — Final verification: type safety, logic, JSX, data flow, edge cases
+
+Each phase runs 3 rounds of its activity. Parallel agents used where possible. Every build phase includes inline auditing. Final audit catches remaining bugs before push.
+
+---
+
 ### ⚡ PRIORITY: Full Chinese Localization + Teacher Report JSON Repair
 
 **Chinese Localization — ✅ MOSTLY WORKING (commits from this session):**

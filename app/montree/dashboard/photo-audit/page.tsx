@@ -11,6 +11,7 @@ import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
+import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -41,7 +42,7 @@ interface AuditPhoto {
   status: string | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_wrap';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -409,6 +410,9 @@ export default function PhotoAuditPage() {
   // Track photos confirmed in this session — prevents server refetch from overwriting optimistic green status
   const confirmedIdsRef = useRef<Set<string>>(new Set());
 
+  // Classroom (for WeeklyWrapTab)
+  const [classroomIdState, setClassroomIdState] = useState<string>('');
+
   // Core state
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
   const [counts, setCounts] = useState({ green: 0, amber: 0, red: 0, untagged: 0 });
@@ -481,6 +485,8 @@ export default function PhotoAuditPage() {
       console.warn('[Photo Audit] No classroomId — cannot load curriculum');
       return;
     }
+    // Store classroomId for WeeklyWrapTab
+    if (classroomId && !classroomIdState) setClassroomIdState(classroomId);
     // Abort previous curriculum fetch if still in-flight (prevents race on rapid area changes)
     curriculumAbortRef.current?.abort();
     const controller = new AbortController();
@@ -1468,10 +1474,11 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  // Zone tab config — simplified: Needs Review (all non-green) + Confirmed (green)
-  const ZONE_TABS: { key: Zone; label: string; color: string; count: number }[] = [
+  // Zone tab config — Needs Review + Confirmed + Weekly Wrap
+  const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
+    { key: 'weekly_wrap', label: t('weeklyWrap.title') || 'Weekly Wrap', color: 'bg-blue-100 text-blue-700', count: null },
   ];
 
   // ─── JSX ───
@@ -1481,19 +1488,21 @@ export default function PhotoAuditPage() {
       <div className="sticky top-0 z-10 bg-white border-b px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">{t('audit.title')}</h1>
-          <select
-            value={dateRange}
-            onChange={e => setDateRange(e.target.value as DateRange)}
-            className="text-sm border rounded px-2 py-1"
-          >
-            <option value="7d">{t('audit.last7d')}</option>
-            <option value="30d">{t('audit.last30d')}</option>
-            <option value="all">{t('audit.allTime')}</option>
-          </select>
+          {zone !== 'weekly_wrap' && (
+            <select
+              value={dateRange}
+              onChange={e => setDateRange(e.target.value as DateRange)}
+              className="text-sm border rounded px-2 py-1"
+            >
+              <option value="7d">{t('audit.last7d')}</option>
+              <option value="30d">{t('audit.last30d')}</option>
+              <option value="all">{t('audit.allTime')}</option>
+            </select>
+          )}
         </div>
 
         {/* Smart Learning progress bar */}
-        {smartLearningStats && smartLearningStats.total > 0 && (
+        {zone !== 'weekly_wrap' && smartLearningStats && smartLearningStats.total > 0 && (
           <div className="mt-2">
             <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
               <span>🧠 {t('audit.smartLearning')}</span>
@@ -1519,7 +1528,7 @@ export default function PhotoAuditPage() {
                   zone === tab.key ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-gray-50 text-gray-400'
                 }`}
               >
-                {tab.label} ({tab.count})
+                {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
               </button>
             ))}
           </div>
@@ -1556,15 +1565,20 @@ export default function PhotoAuditPage() {
         )}
       </div>
 
+      {/* ─── Weekly Wrap Tab ─── */}
+      {zone === 'weekly_wrap' && classroomIdState && (
+        <WeeklyWrapTab classroomId={classroomIdState} />
+      )}
+
       {/* Loading state */}
-      {loading && (
+      {zone !== 'weekly_wrap' && loading && (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
         </div>
       )}
 
       {/* Empty state */}
-      {!loading && filteredPhotos.length === 0 && (
+      {zone !== 'weekly_wrap' && !loading && filteredPhotos.length === 0 && (
         <div className="text-center py-20 text-gray-400">
           <p className="text-4xl mb-2">📷</p>
           <p>{t('audit.noPhotos')}</p>
@@ -1572,7 +1586,7 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Photo grid */}
-      {!loading && filteredPhotos.length > 0 && (
+      {zone !== 'weekly_wrap' && !loading && filteredPhotos.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3">
           {pagedPhotos.map(photo => (
             <AuditPhotoCard
@@ -1620,8 +1634,8 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
-      {/* Floating action bar */}
-      {filteredPhotos.length > 0 && !loading && (
+      {/* Floating action bar (photo audit only) */}
+      {zone !== 'weekly_wrap' && filteredPhotos.length > 0 && !loading && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-20">
           {selectedIds.size === 0 ? (
             /* No selection — just Select All */
