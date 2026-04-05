@@ -12,6 +12,7 @@ import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import PhotoCropper from '@/components/montree/shared/PhotoCropper';
+import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 
 const TeacherReportView = dynamic(
   () => import('@/components/montree/reports/TeacherReportView'),
@@ -129,6 +130,16 @@ export default function WeeklyWrapPage() {
   const [sent, setSent] = useState(false);
   // Crop state
   const [croppingPhoto, setCroppingPhoto] = useState<{ childId: string; photo: Photo } | null>(null);
+
+  // Work picker state (for shelf editing)
+  type PickerWork = { id: string; name: string; name_chinese?: string; status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed'; sequence?: number };
+  const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
+  const [wheelPickerArea, setWheelPickerArea] = useState('');
+  const [wheelPickerWorks, setWheelPickerWorks] = useState<PickerWork[]>([]);
+  const [wheelPickerCurrentWork, setWheelPickerCurrentWork] = useState('');
+  const [wheelPickerChildId, setWheelPickerChildId] = useState('');
+  const [wheelPickerShelfIdx, setWheelPickerShelfIdx] = useState(-1);
+  const [curriculumCache, setCurriculumCache] = useState<Record<string, PickerWork[]>>({});
 
   // Load session
   useEffect(() => {
@@ -344,6 +355,84 @@ export default function WeeklyWrapPage() {
     }
   };
 
+  // ─── Shelf Work Picker ───
+
+  const openShelfPicker = async (childId: string, shelfIdx: number, area: string, currentWork: string) => {
+    setWheelPickerChildId(childId);
+    setWheelPickerShelfIdx(shelfIdx);
+    setWheelPickerArea(area);
+    setWheelPickerCurrentWork(currentWork);
+
+    // Load works for this area (cached)
+    if (curriculumCache[area]) {
+      setWheelPickerWorks(curriculumCache[area]);
+      setWheelPickerOpen(true);
+      return;
+    }
+
+    try {
+      const classroomId = session?.classroom?.id;
+      const url = classroomId
+        ? `/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${classroomId}`
+        : `/api/montree/works/search?area=${encodeURIComponent(area)}`;
+      const res = await montreeApi(url);
+      if (!res.ok) throw new Error('Failed to load works');
+      const data = await res.json();
+      const works = (data.works || []).map((w: Record<string, unknown>, idx: number) => ({
+        id: String(w.id),
+        name: String(w.name),
+        name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+        status: 'not_started' as const,
+        sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
+      }));
+      setCurriculumCache(prev => ({ ...prev, [area]: works }));
+      setWheelPickerWorks(works);
+      setWheelPickerOpen(true);
+    } catch (err) {
+      console.error('Failed to load curriculum works:', err);
+    }
+  };
+
+  const handleShelfPickerSelect = (work: PickerWork, _status: string) => {
+    const childId = wheelPickerChildId;
+    const idx = wheelPickerShelfIdx;
+    if (!childId || idx < 0) return;
+
+    const report = reports.find(r => r.child_id === childId);
+    if (!report) return;
+
+    const shelf = shelfWorks[childId] || getShelfForChild(report);
+    const updated = [...shelf];
+    updated[idx] = { ...updated[idx], work: work.name, status: 'presented' };
+    setShelfWorks(prev => ({ ...prev, [childId]: updated }));
+    setWheelPickerOpen(false);
+  };
+
+  const handleRefreshPickerWorks = async () => {
+    // Refresh after adding a custom work
+    const area = wheelPickerArea;
+    const classroomId = session?.classroom?.id;
+    try {
+      const url = classroomId
+        ? `/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${classroomId}`
+        : `/api/montree/works/search?area=${encodeURIComponent(area)}`;
+      const res = await montreeApi(url);
+      if (!res.ok) return;
+      const data = await res.json();
+      const works = (data.works || []).map((w: Record<string, unknown>, idx: number) => ({
+        id: String(w.id),
+        name: String(w.name),
+        name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+        status: 'not_started' as const,
+        sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
+      }));
+      setCurriculumCache(prev => ({ ...prev, [area]: works }));
+      setWheelPickerWorks(works);
+    } catch (err) {
+      console.error('Failed to refresh works:', err);
+    }
+  };
+
   // ─── Parent Reports Actions ───
 
   const getEffectiveNarrative = (r: ReportResult) => {
@@ -515,13 +604,14 @@ export default function WeeklyWrapPage() {
     // Build recommendation sentence
     const recAreas: Record<string, string[]> = {};
     for (const rec of r.recommendations) {
-      const a = normalizeArea(rec.area);
+      const a = toCanonicalArea(rec.area);
+      if (!a) continue; // skip if area can't be resolved
       if (!recAreas[a]) recAreas[a] = [];
       recAreas[a].push(rec.work);
     }
     const recSentenceParts: string[] = [];
     for (const [area, works] of Object.entries(recAreas)) {
-      const areaLabel = area.replace('_', ' ');
+      const areaLabel = area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
       recSentenceParts.push(`${areaLabel} works such as ${works.join(' and ')}`);
     }
 
@@ -632,17 +722,22 @@ export default function WeeklyWrapPage() {
                       key={`${r.child_id}-shelf-${item.area}`}
                       className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50"
                     >
-                      <AreaBadge area={item.area} size="lg" />
+                      <button
+                        onClick={() => openShelfPicker(r.child_id, idx, item.area, item.work)}
+                        className="flex-shrink-0"
+                      >
+                        <AreaBadge area={item.area} size="lg" />
+                      </button>
 
                       <button
                         className="flex-1 text-left min-w-0"
-                        onClick={() => {/* future: open work picker */}}
+                        onClick={() => openShelfPicker(r.child_id, idx, item.area, item.work)}
                       >
                         {item.work ? (
                           <p className="font-medium text-gray-800 text-sm">{item.work}</p>
                         ) : (
                           <p className="font-medium text-gray-400 text-sm italic">
-                            {locale === 'zh' ? '无推荐' : 'No work set'}
+                            {locale === 'zh' ? '点击选择' : 'Tap to select'}
                           </p>
                         )}
                       </button>
@@ -658,8 +753,6 @@ export default function WeeklyWrapPage() {
                       ) : (
                         <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">○</span>
                       )}
-
-                      <span className="text-gray-300 text-xs">▼</span>
                     </div>
                   );
                 })}
@@ -1208,6 +1301,17 @@ export default function WeeklyWrapPage() {
           onCancel={() => setCroppingPhoto(null)}
         />
       )}
+
+      {/* Work Wheel Picker for shelf editing */}
+      <WorkWheelPicker
+        isOpen={wheelPickerOpen}
+        onClose={() => setWheelPickerOpen(false)}
+        area={wheelPickerArea}
+        works={wheelPickerWorks}
+        currentWorkName={wheelPickerCurrentWork}
+        onSelectWork={handleShelfPickerSelect}
+        onWorkAdded={handleRefreshPickerWorks}
+      />
     </div>
   );
 }
