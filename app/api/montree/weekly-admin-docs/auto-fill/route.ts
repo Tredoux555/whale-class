@@ -249,7 +249,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } else {
-        summaryEnglish = '';
+        summaryEnglish = "didn't complete any recorded activities this week.";
       }
 
       // --- Plan Areas ---
