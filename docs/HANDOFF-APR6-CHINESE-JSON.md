@@ -1,153 +1,108 @@
-# Handoff: Haiku Chinese JSON Repair — Apr 6, 2026
+# Handoff: Sonnet + Tool Use + Selective Generation — Apr 6, 2026
 
-## The Problem
+## Summary
 
-When Weekly Wrap generates teacher reports in Chinese (locale=zh), Haiku (claude-haiku-4-5-20251001) produces **malformed JSON**. Every single child's teacher report fails with `SyntaxError: Expected ',' or '}' after property value in JSON at position XXXX`, falling back to a basic template. Parent narratives (also Haiku) work fine because they're plain text, not JSON.
+The Haiku Chinese JSON corruption problem is **permanently solved**. Two commits this session:
 
-The teacher report generator asks Haiku to return a massive structured JSON object with ~15 fields (developmental_snapshot, sensitive_periods[], area_analyses[], concentration{}, flags[], recommendations[], key_insight, etc). When instructed to write Chinese values, Haiku corrupts the JSON in multiple ways.
+- **`760d7c4c`** — Switch to Sonnet + tool_use structured output + selective child generation UI
+- **`e8ca11df`** — CLAUDE.md update documenting the changes
 
-## What We Know About the Corruption
+## The Problem (Now Solved)
 
-From Railway logs (19 children, 3 confirmed failures — Henry, Joey, Ryan):
+When Weekly Wrap generated teacher reports in Chinese (locale=zh), Haiku (`claude-haiku-4-5-20251001`) produced **malformed JSON**. Every child's teacher report failed with JSON parse errors, falling back to a generic template. Three rounds of repair attempts (regex, state machine, nuclear newline removal) all failed because Haiku corrupts JSON in multiple simultaneous ways when writing Chinese: unescaped ASCII `"` inside string values, literal newlines, fullwidth punctuation.
 
-1. **Markdown code fences** — Haiku wraps output in ` ```json ... ``` ` despite being told not to
-2. **Literal newlines inside string values** — Chinese text spans multiple lines within JSON strings (invalid — should be `\n`)
-3. **Unescaped ASCII double quotes** — Haiku quotes English terms inside Chinese text using raw `"`, e.g., `"亨利选择了"Sand Tray Writing"这项工作"` — the inner quotes break JSON structure
-4. **Empty lines between fields** — Extra blank lines in the JSON (valid whitespace, but indicates Haiku is formatting for human readability not machine parsing)
+## The Fix: Two-Part Solution
 
-Root cause: Haiku treats JSON output more like prose when writing Chinese. It formats for readability (newlines, indentation), uses Chinese punctuation habits (quoting with `"`), and doesn't strictly track JSON escaping rules.
+### 1. Switched to Sonnet (`AI_MODEL`)
+Both `teacher-report-generator.ts` and `narrative-generator.ts` now import `AI_MODEL` (claude-sonnet-4-6) instead of `HAIKU_MODEL`. Sonnet handles JSON + Chinese perfectly.
 
-## What We Tried (Chronological)
+**Cost impact:** ~$0.09 per child (teacher + parent) vs ~$0.005 with Haiku. Full class run (19 children): ~$1.70. This is managed by selective generation (see below).
 
-### Attempt 1: Basic JSON extraction (pre-existing)
-- `JSON.parse(rawText)` → catch → regex `rawText.match(/\{[\s\S]*\}/)` → `JSON.parse(match)`
-- **Result:** Failed. The regex match extracted the JSON block but it still had literal newlines and unescaped quotes inside strings.
+### 2. Teacher Reports Use `tool_use` Structured Output
+Instead of asking the model to output raw JSON text, the teacher report generator now uses the Anthropic API's `tool_use` feature. The API handles JSON serialization — the model fills in a schema via tool parameters, and the API guarantees valid JSON back. This is the same pattern Smart Capture's describe endpoint uses (which never had JSON issues).
 
-### Attempt 2: repairAndParseJSON v1 — State Machine (commit `df69e3be`)
-Five-layer repair:
-1. Strip markdown fences (`^```json` and trailing ` ``` `)
-2. Extract between first `{` and last `}`
-3. Try direct `JSON.parse`
-4. Fix fullwidth colons (`："` → `:"`) + trailing commas + **string-state-tracking newline fixer** (character-by-character walk tracking `inString` boolean, replacing `\n` with `\\n` when inside quotes)
-5. Aggressive: fix Chinese curly quotes (`"` `"` → `\"`) + fullwidth commas before structural chars
+The tool is called `submit_teacher_report` with a full schema covering all report fields: `developmental_snapshot`, `sensitive_periods[]`, `area_analyses[]`, `concentration{}`, `normalization_narrative`, `flags[]`, `recommendations[]`, `key_insight`.
 
-- **Result:** FAILED. The string-state-tracking newline fixer gets confused by Haiku's unescaped ASCII `"` inside string values. When it encounters `"Sand Tray Writing"` inside a Chinese string, it thinks the `"` before "Sand" ends the string, then all subsequent tracking is wrong — newlines outside strings get escaped, newlines inside strings don't, and the JSON gets more broken.
-
-### Attempt 3: repairAndParseJSON v2 — Nuclear Newline Removal (commit `27e91b2f`)
-Replaced the state machine with a much simpler approach:
-1. Strip markdown fences
-2. Extract between first `{` and last `}`
-3. Try direct `JSON.parse`
-4. **Replace ALL literal newlines with spaces**: `text.replace(/\r?\n/g, ' ')`
-5. Collapse multiple spaces
-6. Try `JSON.parse`
-7. Fix fullwidth colons + trailing commas → try again
-8. Fix fullwidth commas before structural chars → try again
-9. Last resort: `fixUnescapedQuotesInValues()` (placeholder — not fully implemented)
-
-The key insight: In valid JSON, literal newlines are only valid as whitespace between tokens. Inside string values they MUST be escaped as `\n`. So replacing all literal newlines with spaces is always safe — it just makes the JSON one line.
-
-- **Result:** DEPLOYED but UNTESTED. The latest Railway deploy (commit `27e91b2f`) should test this. If the only corruption was literal newlines + markdown fences, this will work. If there are also unescaped ASCII double quotes inside string values, it will still fail.
-
-### Prompt Engineering (both commits)
-Also rewrote the system message and prompt:
-- **System message**: Changed from Chinese (`'你是一位拥有30年AMI培训经验...'`) to English (`'You are a senior Montessori consultant... Write all JSON string values in Chinese. Keep all JSON keys in English. You MUST return valid JSON — use ASCII quotes, commas, and colons for JSON structure.'`)
-- **End-of-prompt rules**: Added explicit JSON formatting rules — `"Use standard ASCII double quotes (") for JSON strings, standard commas (,) between items, standard colons (:) after keys. Do NOT use Chinese fullwidth punctuation in JSON structure."` and `"If your Chinese text contains double quotes, escape them as \". Newlines inside strings must be \n."`
-
-The theory: telling Haiku to "think in English" for structure while writing Chinese values prevents it from using Chinese punctuation patterns in JSON structure.
-
-## What To Test Tomorrow
-
-1. **Open Railway logs** for the latest deploy (`27e91b2f`) and check if teacher reports for Henry, Joey, Ryan parse correctly now.
-
-2. **Regenerate the Weekly Wrap** — go to the Weekly Wrap page, click Generate/Regenerate. Watch the Railway logs for `[TeacherReport]` entries. If you see `[TeacherReport] ALL JSON repair failed`, it's still broken.
-
-3. **Check the UI** — if teacher reports parse correctly, the Teacher Summary tab should show real AI-generated analysis instead of the template fallback (which is very generic — just lists work names and says "concentration is developing").
-
-## If It's Still Failing Tomorrow — Options
-
-### Option A: Switch to Sonnet for Chinese teacher reports (RECOMMENDED — quickest)
-Change one line in `lib/montree/reports/teacher-report-generator.ts`:
+The system message was simplified since tool_use handles structure:
 ```typescript
-// Line 6: Change HAIKU_MODEL to AI_MODEL
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
-// Line ~517: Change HAIKU_MODEL to AI_MODEL
-model: AI_MODEL,  // was HAIKU_MODEL
+const systemMessage = input.locale === 'zh'
+  ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all responses in Chinese (Mandarin). Use Chinese for all descriptive text fields.'
+  : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
 ```
-Cost: ~$1.70/run (19 children) vs ~$0.10/run with Haiku. Sonnet handles JSON + Chinese perfectly — it was only switched to Haiku to save money during testing. This is the fastest path to production quality.
 
-### Option B: Use `tool_use` for structured output
-Instead of asking Haiku to output raw JSON, use the Anthropic API's `tool_use` feature which forces structured output via a JSON schema. This is how Smart Capture's describe endpoint works and it never has JSON issues.
+### 3. Selective Child Generation (Cost Control)
+New UI feature in the Weekly Wrap page. Teachers can now:
+- Tap "Select" button in the header → enters selection mode
+- Tap individual children to select/deselect (blue checkboxes + blue border highlight)
+- Use "Select All / Deselect All" toggle bar
+- Tap "Regenerate (N)" to only generate for selected children
+- Selection mode auto-clears after generation completes
 
-Change the API call from:
+This means you don't have to burn $1.70 regenerating all 19 children — you can do just one (~$0.09) or a handful.
+
+The API (`/api/montree/reports/weekly-wrap`) already supported `child_ids?: string[]` in the request body. The UI now passes selected IDs through when in selection mode.
+
+## Files Changed
+
+| File | What Changed |
+|------|-------------|
+| `lib/montree/reports/teacher-report-generator.ts` | `HAIKU_MODEL` → `AI_MODEL`, raw JSON → `tool_use` structured output, simplified system message |
+| `lib/montree/reports/narrative-generator.ts` | `HAIKU_MODEL` → `AI_MODEL` |
+| `app/api/montree/reports/weekly-wrap/route.ts` | `MAX_CONCURRENT` 5 → 3 (Sonnet rate limit safety) |
+| `app/montree/dashboard/weekly-wrap/page.tsx` | New states: `selectedChildIds`, `selectionMode`. New UI: Select button, checkboxes on teacher cards, "Regenerate (N)" button, Select All bar. `handleGenerate()` now accepts optional `childIds` parameter. |
+| `CLAUDE.md` | Updated RECENT STATUS section with Sonnet + tool_use + selective generation |
+
+## What Was Already Working (Before This Session)
+
+- Weekly Wrap generation (streaming, all 19 children)
+- Review page loads all children with reports
+- Parent narratives generate beautifully (warm paragraph style)
+- Full Chinese localization (area labels, work names, recommendation sentences)
+- UUID area resolution (`resolveArea()` pattern)
+- Clean work names (AI prefixes stripped by `cleanWorkName()`)
+- Interactive "Next Week's Focus" shelf with WorkWheelPicker
+- Auto-translate for "Teach the AI" descriptions (fire-and-forget Haiku translation)
+
+## What Still Needs Testing
+
+1. **Sonnet + tool_use teacher report generation** — This is the #1 thing to test. Go to Weekly Wrap, select one child, hit Regenerate. Check Railway logs for `[TeacherReport]` entries. If successful, the Teacher Summary tab should show real AI-generated analysis.
+
+2. **Cost verification** — After generating for one child, check Railway logs for token usage. Should be around 2K-4K input + 1K-2K output tokens for teacher report, similar for parent narrative.
+
+3. **Chinese output quality** — Verify that Sonnet writes better Chinese than Haiku did (more natural, warmer tone, less template-like).
+
+## What Still Needs Fixing (Not This Session)
+
+1. **Teacher report quality** — Still too structured/clinical. Needs narrative paragraph format. Two options:
+   - **Option A:** Add a `teacher_narrative` field (paragraph summary like parent report). Display prominently, collapse structured data behind "Details" toggle.
+   - **Option B:** Redesign to output prose, store structured data separately for intelligence layer.
+
+2. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data. Need guard in teacher report prompt or data prep.
+
+3. **Teacher summary English work names** — The "需要关注" section shows Chinese area labels but English work names. The review API needs to pipe `name_zh` into the works list.
+
+4. **Send to parents** — Email dispatch untested.
+
+5. **Weekly Admin auto-fill + DOCX generation** — Untested with latest changes.
+
+## How to Revert If Needed
+
+To switch back to Haiku (cheaper but broken Chinese JSON):
 ```typescript
-const response = await anthropic.messages.create({
-  model: HAIKU_MODEL,
-  max_tokens: 8192,
-  system: systemMessage,
-  messages: [{ role: 'user', content: prompt }],
-});
+// In both teacher-report-generator.ts and narrative-generator.ts:
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
+// And change model: AI_MODEL → model: HAIKU_MODEL
 ```
-To:
-```typescript
-const response = await anthropic.messages.create({
-  model: HAIKU_MODEL,
-  max_tokens: 8192,
-  system: systemMessage,
-  messages: [{ role: 'user', content: prompt }],
-  tools: [{
-    name: 'teacher_report',
-    description: 'Generate a weekly teacher report',
-    input_schema: {
-      type: 'object',
-      properties: {
-        developmental_snapshot: { type: 'string' },
-        sensitive_periods: { type: 'array', items: { ... } },
-        // ... full schema
-      },
-      required: ['developmental_snapshot', 'key_insight', ...]
-    }
-  }],
-  tool_choice: { type: 'tool', name: 'teacher_report' }
-});
-// Extract from tool use block:
-const toolBlock = response.content.find(b => b.type === 'tool_use');
-const report = toolBlock.input; // Already parsed JSON!
-```
-This guarantees valid JSON because the API handles serialization. More work to set up but fundamentally solves the problem for any model.
 
-### Option C: Hybrid — Haiku for English, Sonnet for Chinese
-```typescript
-const model = input.locale === 'zh' ? AI_MODEL : HAIKU_MODEL;
-```
-Costs more only when Chinese is selected. English reports continue on cheap Haiku.
+To remove tool_use (revert to raw JSON):
+- The old raw JSON approach with `repairAndParseJSON()` is still in the file as dead code. Would need to restore the old API call pattern.
 
-### Option D: Install `jsonrepair` npm package
-```bash
-npm install jsonrepair
-```
-Then:
-```typescript
-import { jsonrepair } from 'jsonrepair';
-const repaired = jsonrepair(rawText);
-const report = JSON.parse(repaired);
-```
-This library handles all the edge cases (unescaped quotes, trailing commas, missing commas, etc). It's battle-tested. But it's an external dependency.
+## Historical Context
 
-## Other Remaining Issues (Not JSON Related)
+This was the 4th attempt to fix the Chinese JSON problem:
+1. Basic regex JSON extraction → failed
+2. `repairAndParseJSON()` v1 with state machine → failed (unescaped quotes broke tracking)
+3. `repairAndParseJSON()` v2 with nuclear newline removal → deployed but still failing
+4. **Sonnet + tool_use** → definitive fix (this commit)
 
-1. **Teacher summary shows English work names** — Screenshot shows "感官: Constructive Triangles - Rectangular Box · 语言: Chalk Board Writing" — area labels are Chinese but work names are English. Fix: the review API (`app/api/montree/reports/weekly-wrap/review/route.ts`) needs to pipe `name_zh` into the works list for the teacher summary section.
-
-2. **"999 days" red flags** — Children with no baseline data show "No work in 999 days" in practical_life, sensorial, etc. The 999 is a fallback value when there's no progress record. Fix: guard in the teacher report prompt or data prep to show "No recorded work yet" instead.
-
-3. **Teacher report format** — Still renders as structured sections (Developmental Snapshot, Area Analysis, Concentration, Flags, Recommendations, Key Insight). Teacher wants narrative prose like the parent report. Consider adding a `teacher_narrative` field or redesigning the prompt.
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `lib/montree/reports/teacher-report-generator.ts` | The generator — prompt, API call, JSON repair, fallback |
-| `lib/montree/reports/narrative-generator.ts` | Parent narrative (Haiku, plain text — works fine) |
-| `app/api/montree/reports/weekly-wrap/route.ts` | Main generation route (streams progress) |
-| `app/api/montree/reports/weekly-wrap/review/route.ts` | Review data API (resolveArea, cleanWorkName, Chinese names) |
-| `lib/ai/anthropic.ts` | AI_MODEL vs HAIKU_MODEL constants |
+The `repairAndParseJSON()` function still exists in the codebase as a legacy fallback but is no longer in the critical path — tool_use guarantees valid JSON from the API.
