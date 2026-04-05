@@ -890,6 +890,7 @@ export async function POST(request: NextRequest) {
           verifiedEntries.push(entry);
         }
 
+        console.log(`[VisualMemory] Total memories loaded: ${memories.length}, verified entries: ${verifiedEntries.length}, injected: [${injectedNames.join(', ')}]`);
         if (verifiedEntries.length > 0) {
           // Cap at 20 entries to keep prompt manageable
           const capped = verifiedEntries.slice(0, 20);
@@ -1612,6 +1613,8 @@ Match this description to the correct Montessori work. Use the visual identifica
       const toolBlock = matchMsg.content.find(b => b.type === 'tool_use');
       if (toolBlock && toolBlock.type === 'tool_use') {
         input = validateToolOutput(toolBlock.input as Record<string, unknown>);
+        console.log(`[PhotoInsight] Pass 2 RAW Haiku output: work="${input.work_name}", area="${input.area}", confidence=${input.confidence}`);
+        console.log(`[PhotoInsight] Pass 2 visualMemoryContext length: ${visualMemoryContext.length} chars, starts with: "${visualMemoryContext.slice(0, 80)}"`);
         matchResult = matchToCurriculumV2(
           input.work_name,
           input.area !== 'unknown' ? input.area : null,
@@ -1625,6 +1628,7 @@ Match this description to the correct Montessori work. Use the visual identifica
         finalWorkKey = matchResult.bestMatch?.work_key || null;
         matchScore = matchResult.bestScore;
         modelUsed = HAIKU_MODEL;
+        console.log(`[PhotoInsight] Pass 2 V2 MATCH: "${finalWorkName}" (score=${matchScore}), Haiku said="${input.work_name}"`)
         haikuAccepted = true;
         console.log(`[PhotoInsight] Pass 2 MATCH: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
         // logApiUsage deferred — metering system not yet deployed
