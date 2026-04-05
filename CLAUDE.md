@@ -15,31 +15,41 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 5, 2026)
 
-### ⚡ PRIORITY: Weekly Wrap → Weekly Admin Pipeline (IN PROGRESS)
+### ⚡ PRIORITY: Weekly Wrap Report Quality (NEXT UP)
 
-**Weekly Wrap End-to-End — 🔄 IN PROGRESS (commits `f137a9b3` → `44d3f211`):**
-The full Weekly Wrap → Weekly Admin pipeline is being brought online. Status:
+**Weekly Wrap Generation — ✅ WORKING (commits `f137a9b3` → `af422e64`):**
+The full generation pipeline is functional. All 19 children generate, all 38 rows (19 teacher + 19 parent) save to DB, review page shows all children, "19 parent reports ready to send" appears, streaming progress works. Migration 162 resolved duplicate key constraint. No more 500 errors.
 
-**What's DONE:**
-- Weekly Wrap generation route (`/api/montree/reports/weekly-wrap`) — fixed `enrolled_at`, removed non-existent `duration_minutes`/`repetition_count` from progress query, restored `week_number`/`report_year` in upserts (NOT NULL columns)
-- Streaming progress — server returns NDJSON events per child (`stream: true`), client shows real-time progress bar ("Joey... 5/19") instead of static spinner. Bypasses `montreeApi` 30s timeout.
-- Teacher report `max_tokens` bumped 2048→4096 (was truncating JSON, every report fell back to template)
-- Review route (`/api/montree/reports/weekly-wrap/review`) — migrated to `week_start` param
-- Send route (`/api/montree/reports/weekly-wrap/send`) — migrated to `week_start` param, `is_published`/`published_at` restored
-- Review client page (`/montree/dashboard/weekly-wrap/page.tsx`) — uses `week_start` instead of `week_number`/`report_year`
-- WeeklyWrapCard — removed `wn`/`yr` URL params, uses streaming fetch
-- Weekly Admin auto-fill (`/api/montree/weekly-admin-docs/auto-fill`) — pulls data FROM Weekly Wrap `montree_weekly_reports` as primary source, area-by-area format with `\n` separators
-- Weekly Admin generate (`/api/montree/weekly-admin-docs/generate`) — simplified to use saved notes only, `is_active` filter added
-- Both tabs (Summary + Plan) fill simultaneously on auto-fill
+**⚠️ CURRENTLY ON HAIKU** — Both `teacher-report-generator.ts` and `narrative-generator.ts` import `HAIKU_MODEL` instead of `AI_MODEL`. Switched to save costs during testing (~$0.10/run vs ~$1.70/run on Sonnet). **Switch back to Sonnet for production** by changing `HAIKU_MODEL` → `AI_MODEL` in both imports. `max_tokens` is 8192 (teacher) and 300 (parent narrative).
 
-**What NEEDS TESTING (next session):**
-- **FIRST: Regenerate Weekly Wrap** — hit 🔄 on the card. All prior fixes + migration 162 are deployed. Should now save all 38 rows (19 teacher + 19 parent).
-- Quick DB verify: `SELECT child_id, report_type FROM montree_weekly_reports WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND week_start='2026-03-29'` — expect 38 rows
-- Review page: confirm all 19 children appear with teacher reports (not fallback templates)
-- Send to parents: confirm emails dispatch correctly
-- Weekly Admin auto-fill: confirm it pulls from Weekly Wrap reports correctly
-- Weekly Admin DOCX: confirm area-by-area format renders in Word
-- Teacher report JSON: confirm 4096 max_tokens is enough (was truncating at 2048, position ~8700; at 4096 still truncating at ~18000 — may need 8192 or prompt simplification)
+**What NEEDS FIXING (next session — report quality):**
+The teacher report WORKS but the output quality needs significant rework. Currently it renders as a structured technical document (Developmental Snapshot → Curriculum Areas → Concentration & Focus → Observations → Recommended Presentations → Key Insight). What the teacher actually wants is:
+1. **Raw UUIDs leaking into display** — "Recommended Next Presentations" shows `8ed822b1-1968-4d18-97b8-67b05313f8fe` instead of area/category names. The KEY INSIGHT paragraph also contains raw UUIDs. The teacher report prompt or the review page rendering is passing work IDs instead of resolving them to human-readable names.
+2. **"999 days" in observations** — Red flags say "No work in 999 days" for practical life, sensorial, mathematics, cultural. This is a data artifact (child has no progress records in those areas, and the "days since" calculation produces 999 as a fallback). Should either show "No recorded work yet" or hide the flag entirely if there's no baseline data.
+3. **Report format is too structured/clinical** — Teacher wants a narrative paragraph, not a structured breakdown with headers. The current format is useful as an INTERNAL diagnostic but shouldn't be the final teacher-facing report. Consider: (a) redesigning the teacher report prompt to output a flowing paragraph, or (b) adding a rendering layer that converts the structured JSON into prose.
+4. **"other" area grouping** — Works that don't match a curriculum area show as "other: 6 works". Should resolve to specific areas or use better labeling.
+5. **Parent narrative looks good** — "This week, Austin spent a lot of time with language work..." paragraph style is exactly right. Use this as the model for teacher report tone.
+
+**Suggested approach for next session:**
+- The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. The review page (`app/montree/dashboard/weekly-wrap/page.tsx`) then renders each field. Two options:
+  - **Option A (simpler):** Keep the structured JSON for data but add a `teacher_narrative` field — a single paragraph summary like the parent narrative. Display that prominently, collapse the structured data behind a "Details" toggle.
+  - **Option B (cleaner):** Redesign the teacher report to output prose like the parent report, with the structured analysis stored separately for the intelligence layer.
+- Fix the UUID leak — trace where `recommended_works` gets populated. Likely the prompt is receiving work objects with IDs and the AI is copying them verbatim instead of using names.
+- Fix the "999 days" — add a guard in the teacher report prompt or the data preparation step.
+
+**What WORKS end-to-end (tested Apr 5):**
+- ✅ Weekly Wrap generation (streaming, all 19 children)
+- ✅ Review page loads all children with reports
+- ✅ Parent narratives generate beautifully (warm, paragraph style)
+- ✅ "19 parent reports ready to send" + Send All button appears
+- ✅ No duplicate key errors (migration 162)
+- ✅ No column errors (enrolled_at, no duration_minutes/repetition_count)
+
+**Still untested:**
+- Send to parents (email dispatch)
+- Weekly Admin auto-fill from Weekly Wrap data
+- Weekly Admin DOCX generation
+- Switching back to Sonnet for production quality
 
 **Key Discovery — `montree_weekly_reports` schema:**
 Table has MORE columns than originally documented. Full column list: `id, child_id, classroom_id, school_id, week_start, week_end, week_number (NOT NULL), report_year (NOT NULL), report_type, status, content, is_published, published_at, sent_at, generated_at, created_at, updated_at, created_by, concentration_score, area_distribution, areas_of_growth, highlights, parent_summary, recommendations, recommended_works, active_sensitive_periods`. The `week_number` and `report_year` columns are NOT NULL — removing them from upserts causes silent insert failures. Always include computed `weekNumber` and `reportYear` in upserts. Queries should use `.eq('week_start', weekStart)` (canonical identifier).
@@ -50,8 +60,8 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
 - `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client
 - `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card with streaming
-- `lib/montree/reports/teacher-report-generator.ts` — Sonnet teacher report (max_tokens: 4096)
-- `lib/montree/reports/narrative-generator.ts` — parent narrative generator
+- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production
+- `lib/montree/reports/narrative-generator.ts` — **HAIKU** parent narrative ← switch back to AI_MODEL for production
 - `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports
 - `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation
 - `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
