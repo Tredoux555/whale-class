@@ -24,17 +24,16 @@ The full generation pipeline is functional. All 19 children generate, all 38 row
 
 **What NEEDS FIXING (next session — report quality):**
 The teacher report WORKS but the output quality needs significant rework. Currently it renders as a structured technical document (Developmental Snapshot → Curriculum Areas → Concentration & Focus → Observations → Recommended Presentations → Key Insight). What the teacher actually wants is:
-1. **Raw UUIDs leaking into display** — "Recommended Next Presentations" shows `8ed822b1-1968-4d18-97b8-67b05313f8fe` instead of area/category names. The KEY INSIGHT paragraph also contains raw UUIDs. The teacher report prompt or the review page rendering is passing work IDs instead of resolving them to human-readable names.
+1. ~~**Raw UUIDs leaking into display**~~ — ✅ FIXED (commits `aaee0d8f` → `cab4052b`). UUID areas resolved via `areaIdToKey` map from `montree_classroom_curriculum_areas`. Review API has `resolveArea()` with 3-layer fallback (UUID lookup → canonical check → fuzzy keyword match). Generation route also fixed at source.
 2. **"999 days" in observations** — Red flags say "No work in 999 days" for practical life, sensorial, mathematics, cultural. This is a data artifact (child has no progress records in those areas, and the "days since" calculation produces 999 as a fallback). Should either show "No recorded work yet" or hide the flag entirely if there's no baseline data.
 3. **Report format is too structured/clinical** — Teacher wants a narrative paragraph, not a structured breakdown with headers. The current format is useful as an INTERNAL diagnostic but shouldn't be the final teacher-facing report. Consider: (a) redesigning the teacher report prompt to output a flowing paragraph, or (b) adding a rendering layer that converts the structured JSON into prose.
-4. **"other" area grouping** — Works that don't match a curriculum area show as "other: 6 works". Should resolve to specific areas or use better labeling.
+4. ~~**"other" area grouping**~~ — ✅ FIXED (commit `6c042522`). Works that don't match now resolve to specific areas via `area_id` fallback.
 5. **Parent narrative looks good** — "This week, Austin spent a lot of time with language work..." paragraph style is exactly right. Use this as the model for teacher report tone.
 
 **Suggested approach for next session:**
 - The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. The review page (`app/montree/dashboard/weekly-wrap/page.tsx`) then renders each field. Two options:
   - **Option A (simpler):** Keep the structured JSON for data but add a `teacher_narrative` field — a single paragraph summary like the parent narrative. Display that prominently, collapse the structured data behind a "Details" toggle.
   - **Option B (cleaner):** Redesign the teacher report to output prose like the parent report, with the structured analysis stored separately for the intelligence layer.
-- Fix the UUID leak — trace where `recommended_works` gets populated. Likely the prompt is receiving work objects with IDs and the AI is copying them verbatim instead of using names.
 - Fix the "999 days" — add a guard in the teacher report prompt or the data preparation step.
 
 **What WORKS end-to-end (tested Apr 5):**
@@ -44,6 +43,12 @@ The teacher report WORKS but the output quality needs significant rework. Curren
 - ✅ "19 parent reports ready to send" + Send All button appears
 - ✅ No duplicate key errors (migration 162)
 - ✅ No column errors (enrolled_at, no duration_minutes/repetition_count)
+- ✅ UUID areas resolved to canonical keys (practical_life, sensorial, etc.)
+- ✅ Full Chinese localization (area labels, work names, recommendation sentences)
+- ✅ Clean work names (AI prefixes "Present/Continue" stripped by `cleanWorkName()`)
+- ✅ Interactive "Next Week's Focus" shelf with WorkWheelPicker, P/P/M status badges
+- ✅ Generate/Regenerate button in review page header with streaming progress
+- ✅ Invite Parents link in sticky bottom bar (links to Manage Students)
 
 **Still untested:**
 - Send to parents (email dispatch)
@@ -55,18 +60,33 @@ The teacher report WORKS but the output quality needs significant rework. Curren
 Table has MORE columns than originally documented. Full column list: `id, child_id, classroom_id, school_id, week_start, week_end, week_number (NOT NULL), report_year (NOT NULL), report_type, status, content, is_published, published_at, sent_at, generated_at, created_at, updated_at, created_by, concentration_score, area_distribution, areas_of_growth, highlights, parent_summary, recommendations, recommended_works, active_sensitive_periods`. The `week_number` and `report_year` columns are NOT NULL — removing them from upserts causes silent insert failures. Always include computed `weekNumber` and `reportYear` in upserts. Queries should use `.eq('week_start', weekStart)` (canonical identifier).
 
 **Key Files:**
-- `app/api/montree/reports/weekly-wrap/route.ts` — main generation (streaming + non-streaming)
-- `app/api/montree/reports/weekly-wrap/review/route.ts` — GET review data
+- `app/api/montree/reports/weekly-wrap/route.ts` — main generation (streaming + non-streaming). Loads `montree_classroom_curriculum_areas` to build `areaIdToKey` map; resolves UUID areas at generation time.
+- `app/api/montree/reports/weekly-wrap/review/route.ts` — GET review data. Has `resolveArea()`, `cleanWorkName()`, `getChineseWorkName()`, `cleanUUIDs()`. Pipes `work_zh`, `area_label_zh` through all response fields.
 - `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
-- `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client
-- `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card with streaming
-- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production
+- `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client (~1450 lines). Two tabs: Teacher Summary (with interactive shelf, WorkWheelPicker, approve/push) + Parent Reports (edit narrative, reorder photos, crop, send). Generate/Regenerate button in header with streaming progress bar. Invite Parents link in bottom bar.
+- `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card (NO LONGER used on dashboard — removed from Teacher Tools. Still exists as component for potential reuse.)
+- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production. Prompt updated: work field = "EXACT curriculum work name ONLY", area field = "canonical area_key ONLY".
 - `lib/montree/reports/narrative-generator.ts` — **HAIKU** parent narrative ← switch back to AI_MODEL for production
 - `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports
 - `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation
 - `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
 
+**Key Technical Patterns (Weekly Wrap):**
+- `cleanWorkName(raw)` — strips AI prefixes ("Present/Continue/Introduce") and trailing clauses ("as the.../with increased..."), with substring matching against known curriculum works. Used in both review API and `FocusWorksSection.tsx`.
+- `resolveArea(raw, workName?)` — 3-layer resolution: UUID lookup via `areaIdToKey` map → canonical key check → fuzzy keyword matching → work-name-based area fallback.
+- `toCanonicalArea(raw)` — client-side area normalization using `normalizeArea()` from AreaBadge + fuzzy keyword matching.
+- Chinese localization: `AREA_LABELS_ZH` map + `name_zh` from `montree_classroom_curriculum_works` table + `getAreaLabel(area)` helper using locale.
+
 ---
+
+**Weekly Wrap UI Polish — ✅ PUSHED (commits `aaee0d8f` → `e077e68d`):**
+6 commits in this session:
+1. `aaee0d8f` — Fix UUID areas in weekly wrap + add shelf work picker (WorkWheelPicker integration, `areaIdToKey` map in generation route and review API)
+2. `cab4052b` — Full Chinese localization for Weekly Wrap + clean work names (`cleanWorkName()`, `resolveArea()`, `AREA_LABELS_ZH`, `work_zh`/`area_label_zh` fields, 顿号 separators)
+3. `d40c65ff` — Rectangular pill badges + `cleanWorkName()` in FocusWorksSection (child week view badges changed from round circles to pills matching Weekly Wrap aesthetic)
+4. `dfcc4208` — Remove old Parent Report block from gallery page (replaced with minimal "Invite Parent" text link)
+5. `d5d97465` — Generate button in Weekly Wrap header + Weekly Plan & Summary moved to three-dots dropdown menu + WeeklyWrapCard removed from Teacher Tools
+6. `e077e68d` — Invite Parents link added to Weekly Wrap sticky bottom bar (left of Send All button)
 
 **Gallery Chronological Order + Photo Audit Sort — ✅ PUSHED (commit `9f9bff3e`):**
 Gallery "All Photos" now renders chronologically with date headers (was area-grouped). Timeline tab and Tag Event tab removed (redundant). Area filter chips retained. Photo Audit API sort changed from `created_at` to `captured_at` for consistency.
