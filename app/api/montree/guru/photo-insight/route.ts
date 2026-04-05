@@ -801,8 +801,9 @@ export async function POST(request: NextRequest) {
       classroomId
         ? supabase
             .from('montree_visual_memory')
-            .select('work_name, area, visual_description, is_custom')
+            .select('work_name, area, visual_description, is_custom, key_materials, negative_descriptions, source, description_confidence')
             .eq('classroom_id', classroomId)
+            .order('description_confidence', { ascending: false })
             .order('updated_at', { ascending: false })
             .limit(30)
         : Promise.resolve({ data: null }),
@@ -849,48 +850,63 @@ export async function POST(request: NextRequest) {
     }
 
     // Process visual memory result — per-classroom learned descriptions
+    // UPDATED (Apr 5, 2026): Inject ALL teacher-validated descriptions, not just custom works.
+    // Previous debiasing (Mar 20) removed standard work memories because auto-generated
+    // descriptions from first_capture/onboarding reinforced misidentification errors.
+    // New approach: filter by SOURCE quality instead of is_custom flag.
+    // - is_custom=true: always inject (custom works not in standard guide)
+    // - source='teacher_setup' (confidence 1.0): inject (teacher explicitly taught the AI via Sonnet)
+    // - source='correction' (confidence 0.9): inject (teacher corrected a misidentification)
+    // - source='onboarding'/'first_capture'/'teacher_enrichment' with is_custom=false: SKIP
+    //   (auto-generated, potentially wrong — the original bias problem)
     if (visualMemoryResult.status === 'fulfilled') {
       const memories = visualMemoryResult.value?.data;
       if (memories && memories.length > 0) {
-        const standardMemories: string[] = [];
-        const customMemories: string[] = [];
+        const verifiedEntries: string[] = [];
+        const injectedNames: string[] = [];
 
         for (const m of memories) {
-          const desc = sanitizeForPrompt(m.visual_description, 200);
-          const name = sanitizeForPrompt(m.work_name, 100);
-          const entry = `- "${name}" (${sanitizeForPrompt(m.area || 'unknown', 30)}): ${desc}`;
+          // Include if: custom work OR teacher-validated source with high confidence
+          const isTeacherValidated = (m.source === 'teacher_setup' || m.source === 'correction') &&
+                                     (m.description_confidence || 0) >= 0.9;
+          if (!m.is_custom && !isTeacherValidated) continue; // Skip auto-generated standard work descriptions
 
-          if (m.is_custom) {
-            customMemories.push(entry);
-          } else {
-            standardMemories.push(entry);
-          }
+          const name = sanitizeForPrompt(m.work_name, 100);
+          const desc = sanitizeForPrompt(m.visual_description, 300);
+          injectedNames.push(m.work_name);
+
+          // Build rich entry if key_materials available, otherwise simple format
+          const keyMats = Array.isArray(m.key_materials) && m.key_materials.length > 0
+            ? m.key_materials.map((k: string) => sanitizeForPrompt(k, 60)).join(', ')
+            : null;
+          const negatives = Array.isArray(m.negative_descriptions) && m.negative_descriptions.length > 0
+            ? m.negative_descriptions.map((n: string) => sanitizeForPrompt(n, 80)).join('; ')
+            : null;
+
+          let entry = `- "${name}" (${sanitizeForPrompt(m.area || 'unknown', 30)}):\n  LOOKS LIKE: ${desc}`;
+          if (keyMats) entry += `\n  KEY MATERIALS: ${keyMats}`;
+          if (negatives) entry += `\n  DISTINGUISH FROM: ${negatives}`;
+
+          verifiedEntries.push(entry);
         }
 
-        // DEBIASED (Mar 20, 2026): Only inject CUSTOM work memories into identification prompts.
-        // Standard work memories are REMOVED — they were a bias vector identical to the
-        // worksContext/focusWorksContext bias that caused Sandpaper Letters → Grammar Boxes.
-        // Standard works already have comprehensive descriptions in the visual ID guide.
-        // Injecting "learned" descriptions from possibly-wrong prior identifications just
-        // reinforces errors (e.g., wrong "Fabric Matching" description steers future photos wrong).
-        // Custom works still need memory injection because they're NOT in the visual ID guide.
-        if (customMemories.length > 0) {
-          visualMemoryContext = `\n\nCUSTOM WORKS in this classroom (teacher-created — NOT in standard curriculum):\n${customMemories.join('\n')}
-NOTE: These are custom works unique to this classroom. Use these descriptions to identify them. For ALL standard Montessori works, use ONLY the visual identification guide above.`;
+        if (verifiedEntries.length > 0) {
+          // Cap at 20 entries to keep prompt manageable
+          const capped = verifiedEntries.slice(0, 20);
+          visualMemoryContext = `\n\nCLASSROOM-VERIFIED WORKS (teacher has confirmed these — match to these when the description fits):\n\n${capped.join('\n\n')}
 
-          // Fire-and-forget: increment times_used for CUSTOM memories only (the ones actually injected)
-          if (classroomId) {
-            const customNames = memories.filter((m: { is_custom: boolean }) => m.is_custom).map((m: { work_name: string }) => m.work_name);
-            if (customNames.length > 0) {
-              supabase.rpc('increment_visual_memory_used', {
-                p_classroom_id: classroomId,
-                p_work_names: customNames,
-              }).then(({ error: rpcErr }) => {
-                if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
-              }).catch((err) => {
-                console.error('[VisualMemory] increment_visual_memory_used RPC rejection (non-fatal):', err);
-              });
-            }
+When the photo description CLEARLY matches a CLASSROOM-VERIFIED work above, prefer that match. If no verified work fits, use the VISUAL IDENTIFICATION GUIDE below.`;
+
+          // Fire-and-forget: increment times_used for all injected memories
+          if (classroomId && injectedNames.length > 0) {
+            supabase.rpc('increment_visual_memory_used', {
+              p_classroom_id: classroomId,
+              p_work_names: injectedNames,
+            }).then(({ error: rpcErr }) => {
+              if (rpcErr) console.error('[VisualMemory] increment_visual_memory_used RPC failed (non-fatal):', rpcErr);
+            }).catch((err) => {
+              console.error('[VisualMemory] increment_visual_memory_used RPC rejection (non-fatal):', err);
+            });
           }
         }
       }
@@ -1195,7 +1211,7 @@ CONFIDENCE CALIBRATION (CRITICAL — your confidence score has real consequences
 - Below 0.5 : Cannot reliably identify — describe what you see, no matching attempted
 IMPORTANT: When in doubt, round DOWN your confidence. It is always better to ask the teacher
 to confirm (0.75-0.84) than to auto-update incorrectly (0.85+).
-${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
+${curriculumHint}${correctionsContext}${duplicateContext}`;
 
     // ================================================================
     // ONBOARDING ENGINE: Sonnet direct path for new classrooms
@@ -1278,7 +1294,7 @@ CONFIDENCE CALIBRATION:
 - 0.75-0.84 : Likely match but some ambiguity — teacher will confirm
 - 0.5-0.74 : Best guess based on limited evidence — requires teacher confirmation
 - Below 0.5 : Cannot reliably identify — use propose_custom_work if it's a real Montessori activity
-${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`;
+${curriculumHint}${correctionsContext}${duplicateContext}`;
 
       const sonnetOnboardAbort = new AbortController();
       let sonnetOnboardTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -1503,15 +1519,17 @@ ${curriculumHint}${visualMemoryContext}${correctionsContext}${duplicateContext}`
         max_tokens: 300,
         system: `You are observing a Montessori classroom photo. Describe ONLY what you physically see.
 
+Start with what the child's hands are ACTIVELY touching or working with — this is the PRIMARY work. Then describe other materials nearby as secondary context.
+
 Focus on:
-1. MATERIAL COMPOSITION: What are the objects MADE OF? Be very specific: wood, metal, fabric/cloth, plastic, paper/cardboard, sandpaper, glass, ceramic? Are pieces RIGID (hard, stiff) or SOFT (foldable, flexible)?
-2. OBJECTS: What objects/tools are on the table or mat? (shape, color, size, quantity)
-3. HANDS: What is the child doing with their hands? (threading, tracing, stacking, sorting, pouring, writing, matching, feeling/touching with eyes closed, etc.)
+1. HANDS & PRIMARY WORK: What is the child doing with their hands RIGHT NOW? (writing, tracing, stacking, sorting, pouring, threading, matching, etc.) What is the MAIN surface or tool their hands are on? Describe its material, color, and size.
+2. MATERIAL COMPOSITION: What are the objects MADE OF? Be very specific: wood, metal, fabric/cloth, plastic, paper/cardboard, sandpaper, glass, ceramic? Are pieces RIGID (hard, stiff) or SOFT (foldable, flexible)?
+3. SECONDARY OBJECTS: What other objects/tools are nearby on the table or mat but NOT being directly used? (these are accessories, not the main work)
 4. SETUP: How are materials arranged? (in a frame, on a tray, in a box, on a mat, in pairs, in a sequence, etc.)
 5. KEY DETAILS: Any closures (buttons, zippers, bows, laces, snaps)? Any colors/patterns? Any numbers/letters? If letters or words visible, specify: are they individual LETTERS on boards, or WORDS/SENTENCES on cards/strips? If colored pieces, specify: are they hard/rigid TABLETS or soft FABRIC swatches?
 
 Be specific and factual. Do NOT guess the name of the activity. Do NOT say "Montessori work" or name any work.
-Just describe the physical scene in 2-4 sentences. ALWAYS state what the pieces are MADE OF.`,
+Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work the hands are engaged with. ALWAYS state what the pieces are MADE OF.`,
         messages: [{
           role: 'user',
           content: [
@@ -1567,10 +1585,11 @@ ${langInstruction}
 
 CRITICAL RULES:
 1. Match based on the MATERIALS DESCRIBED — the specific tool/material determines the work name
-2. Use the EXACT standard curriculum name from the visual identification guide below
+2. Use the EXACT work name from CLASSROOM-VERIFIED WORKS (if any match) or the visual identification guide
 3. If the description doesn't clearly match any work, set confidence LOW (below 0.5)
 4. Keep the observation to ONE warm, specific sentence about the child's engagement
 5. COMPOSITION: Suggest a crop if the description mentions a child and materials together. Use normalized 0-1 coordinates.
+${visualMemoryContext}
 
 ${systemPrompt.slice(systemPrompt.indexOf('VISUAL IDENTIFICATION GUIDE'))}`,
         tools: [PHOTO_ANALYSIS_TOOL],
