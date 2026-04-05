@@ -646,7 +646,7 @@ async function feedBrainLearning({
   const payload = { p_learning: newLearning };
 
   try {
-    const { error: brainError } = await supabase.rpc('append_brain_learning', payload);
+    const { error: brainError } = await supabase.rpc('append_guru_learning', payload);
     if (brainError) throw brainError;
 
     // Success — also process any queued retries opportunistically
@@ -718,7 +718,7 @@ async function processRetryQueue(supabase: ReturnType<typeof getSupabase>) {
     if (now - item.lastAttempt < RETRY_DELAY_MS) continue;
 
     try {
-      const { error } = await supabase.rpc('append_brain_learning', item.payload);
+      const { error } = await supabase.rpc('append_guru_learning', item.payload);
       if (!error) {
         LEARNING_RETRY_QUEUE.splice(i, 1); // Success — remove
       } else {
