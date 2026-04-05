@@ -45,15 +45,19 @@ export async function GET(request: NextRequest) {
       areaIdToKey.set(a.id, a.area_key);
     }
 
-    // Also load work name → area_key for fallback resolution
+    // Also load work name → area_key + Chinese names for localization
     const { data: worksRaw } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('name, area_id')
+      .select('name, name_zh, area_id')
       .eq('classroom_id', classroom_id);
     const workNameToArea = new Map<string, string>();
-    for (const w of (worksRaw || []) as Array<{ name: string; area_id: string | null }>) {
+    const workNameToChinese = new Map<string, string>();
+    for (const w of (worksRaw || []) as Array<{ name: string; name_zh: string | null; area_id: string | null }>) {
       if (w.area_id) {
         workNameToArea.set(w.name.toLowerCase().trim(), areaIdToKey.get(w.area_id) || w.area_id);
+      }
+      if (w.name_zh) {
+        workNameToChinese.set(w.name.toLowerCase().trim(), w.name_zh);
       }
     }
 
@@ -80,6 +84,36 @@ export async function GET(request: NextRequest) {
       // Last resort: work name lookup
       if (workName) return workNameToArea.get(workName.toLowerCase().trim()) || raw;
       return raw;
+    };
+
+    // Extract the actual work name from an AI recommendation sentence
+    // e.g. "Present Carrying a Mat as the foundational Practical Life work" → "Carrying a Mat"
+    // e.g. "Continue Sand Tray Writing with increased frequency and observation" → "Sand Tray Writing"
+    const cleanWorkName = (raw: string): string => {
+      if (!raw) return raw;
+      let name = raw.trim();
+      // Strip leading action verbs
+      name = name.replace(/^(Present|Continue|Introduce|Begin|Start|Explore|Practice|Review|Offer|Revisit|Try|Focus on|Work on|Encourage)\s+/i, '');
+      // Strip trailing clauses: "as the...", "with increased...", "because...", "for...", "to build...", "— ", " - "
+      name = name.replace(/\s+(as the|as a|as an|with increased|with more|with special|because|for the|for a|to build|to develop|to strengthen|to support|to encourage|to practice|which will|that will|in order|progressively|sequentially)\b.*/i, '');
+      name = name.replace(/\s+[—–-]\s+.*$/, '');
+      // If name matches a known curriculum work, use that
+      const key = name.toLowerCase().trim();
+      if (workNameToArea.has(key)) return name;
+      // Try to find the closest match by checking if a known work name is a substring
+      for (const [knownName] of workNameToArea) {
+        if (key.includes(knownName) && knownName.length > 3) {
+          // Return properly cased version from our records
+          const entry = (worksRaw || []).find((w: { name: string }) => w.name.toLowerCase().trim() === knownName);
+          if (entry) return (entry as { name: string }).name;
+        }
+      }
+      return name.trim();
+    };
+
+    // Get Chinese work name for a given English work name
+    const getChineseWorkName = (englishName: string): string | null => {
+      return workNameToChinese.get(englishName.toLowerCase().trim()) || null;
     };
 
     // Strip UUIDs from text
@@ -177,32 +211,46 @@ export async function GET(request: NextRequest) {
       const recommendationsRaw = (data.teacher_report?.recommendations as Array<{
         area: string; area_label: string; work: string; reasoning: string;
       }>) || [];
+      const AREA_LABELS_EN: Record<string, string> = {
+        practical_life: 'Practical Life', sensorial: 'Sensorial',
+        mathematics: 'Mathematics', language: 'Language', cultural: 'Cultural',
+      };
+      const AREA_LABELS_ZH: Record<string, string> = {
+        practical_life: '日常生活', sensorial: '感官',
+        mathematics: '数学', language: '语言', cultural: '文化',
+      };
       const recommendations = recommendationsRaw.map(rec => {
-        const resolved = resolveArea(rec.area, rec.work);
-        const AREA_LABELS: Record<string, string> = {
-          practical_life: 'Practical Life', sensorial: 'Sensorial',
-          mathematics: 'Mathematics', language: 'Language', cultural: 'Cultural',
-        };
+        const cleanedWork = cleanWorkName(rec.work);
+        const resolved = resolveArea(rec.area, cleanedWork);
         return {
           ...rec,
           area: resolved,
-          area_label: AREA_LABELS[resolved] || rec.area_label || resolved.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          area_label: AREA_LABELS_EN[resolved] || rec.area_label || resolved.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          area_label_zh: AREA_LABELS_ZH[resolved] || '',
+          work: cleanedWork,
+          work_zh: getChineseWorkName(cleanedWork),
           reasoning: cleanUUIDs(rec.reasoning),
         };
       });
       const areaAnalysesRaw = (data.teacher_report?.area_analyses as Array<{
         area: string; area_label: string; works_count: number; narrative: string;
       }>) || [];
-      const areaAnalyses = areaAnalysesRaw.map(a => ({
-        ...a,
-        area: resolveArea(a.area),
-        narrative: cleanUUIDs(a.narrative),
-      }));
+      const areaAnalyses = areaAnalysesRaw.map(a => {
+        const resolved = resolveArea(a.area);
+        return {
+          ...a,
+          area: resolved,
+          area_label: AREA_LABELS_EN[resolved] || a.area_label || resolved.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          area_label_zh: AREA_LABELS_ZH[resolved] || '',
+          narrative: cleanUUIDs(a.narrative),
+        };
+      });
 
-      // Resolve parent work areas too
+      // Resolve parent work areas + add Chinese names
       const resolvedParentWorks = parentWorks.map(w => ({
         ...w,
         area: resolveArea(w.area, w.name),
+        name_zh: getChineseWorkName(w.name),
       }));
 
       return {

@@ -31,6 +31,7 @@ interface Photo {
 
 interface ParentWork {
   name: string;
+  name_zh?: string | null;
   area: string;
   status: string;
   parent_description?: string;
@@ -42,7 +43,9 @@ interface ParentWork {
 interface Recommendation {
   area: string;
   area_label: string;
+  area_label_zh?: string;
   work: string;
+  work_zh?: string | null;
   reasoning: string;
 }
 
@@ -60,7 +63,7 @@ interface ReportResult {
   teacher_status: string | null;
   key_insight: string | null;
   recommendations: Recommendation[];
-  area_analyses: Array<{ area: string; area_label: string; works_count: number; narrative: string }>;
+  area_analyses: Array<{ area: string; area_label: string; area_label_zh?: string; works_count: number; narrative: string }>;
   flags: Flag[];
   flags_count: number;
   parent_narrative: string | null;
@@ -95,6 +98,22 @@ const AREA_COLORS: Record<string, { emoji: string; bg: string; text: string }> =
   cultural: { emoji: '🌍', bg: 'bg-green-50', text: 'text-green-700' },
 };
 
+const AREA_LABELS_ZH: Record<string, string> = {
+  practical_life: '日常生活',
+  sensorial: '感官',
+  mathematics: '数学',
+  language: '语言',
+  cultural: '文化',
+};
+
+const AREA_LABELS_EN: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+
 export default function WeeklyWrapPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,8 +135,8 @@ export default function WeeklyWrapPage() {
   const [shelfUpdatingId, setShelfUpdatingId] = useState<string | null>(null);
   const [shelfUpdatedIds, setShelfUpdatedIds] = useState<Set<string>>(new Set());
   const [teacherNotes, setTeacherNotes] = useState<Record<string, string>>({});
-  // Interactive shelf state: child_id → array of {area, work, status}
-  const [shelfWorks, setShelfWorks] = useState<Record<string, Array<{ area: string; work: string; status: string }>>>({});
+  // Interactive shelf state: child_id → array of {area, work, work_zh, status}
+  const [shelfWorks, setShelfWorks] = useState<Record<string, Array<{ area: string; work: string; work_zh?: string | null; status: string }>>>({});
 
   // Parent Reports state
   const [expandedParent, setExpandedParent] = useState<string | null>(null);
@@ -305,9 +324,10 @@ export default function WeeklyWrapPage() {
   const getShelfForChild = (r: ReportResult) => {
     if (shelfWorks[r.child_id]) return shelfWorks[r.child_id];
     const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-    const shelf: Array<{ area: string; work: string; status: string }> = AREAS.map(area => ({
+    const shelf: Array<{ area: string; work: string; work_zh?: string | null; status: string }> = AREAS.map(area => ({
       area,
       work: '',
+      work_zh: null,
       status: 'not_started',
     }));
     // Fill from recommendations — first match per area wins
@@ -316,6 +336,7 @@ export default function WeeklyWrapPage() {
       const slot = shelf.find(s => s.area === canonical && !s.work);
       if (slot) {
         slot.work = rec.work;
+        slot.work_zh = rec.work_zh || null;
         slot.status = 'presented';
       }
     }
@@ -403,7 +424,7 @@ export default function WeeklyWrapPage() {
 
     const shelf = shelfWorks[childId] || getShelfForChild(report);
     const updated = [...shelf];
-    updated[idx] = { ...updated[idx], work: work.name, status: 'presented' };
+    updated[idx] = { ...updated[idx], work: work.name, work_zh: work.name_chinese || null, status: 'presented' };
     setShelfWorks(prev => ({ ...prev, [childId]: updated }));
     setWheelPickerOpen(false);
   };
@@ -574,10 +595,11 @@ export default function WeeklyWrapPage() {
     // Group works by area from parent_works (actual works done this week)
     const worksByArea: Record<string, string[]> = {};
     for (const w of r.parent_works) {
-      const area = normalizeArea(w.area || 'other');
+      const area = toCanonicalArea(w.area || 'other') || normalizeArea(w.area || 'other');
       if (!worksByArea[area]) worksByArea[area] = [];
-      if (!worksByArea[area].includes(w.name)) {
-        worksByArea[area].push(w.name);
+      const displayName = (locale === 'zh' && w.name_zh) ? w.name_zh : w.name;
+      if (!worksByArea[area].includes(displayName)) {
+        worksByArea[area].push(displayName);
       }
     }
     const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
@@ -594,25 +616,32 @@ export default function WeeklyWrapPage() {
     const shelf = getShelfForChild(r);
 
     // Collapsed preview
+    const getAreaLabel = (area: string) =>
+      locale === 'zh' ? (AREA_LABELS_ZH[area] || area) : (AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
+
     const previewText = areaEntries
       .map(([area, works]) => {
-        const label = area.replace('_', ' ');
-        return `${label}: ${works.slice(0, 2).join(', ')}${works.length > 2 ? ` +${works.length - 2}` : ''}`;
+        return `${getAreaLabel(area)}: ${works.slice(0, 2).join(', ')}${works.length > 2 ? ` +${works.length - 2}` : ''}`;
       })
       .join(' · ');
 
-    // Build recommendation sentence
+    // Build recommendation sentence (fully localized)
     const recAreas: Record<string, string[]> = {};
     for (const rec of r.recommendations) {
       const a = toCanonicalArea(rec.area);
-      if (!a) continue; // skip if area can't be resolved
+      if (!a) continue;
       if (!recAreas[a]) recAreas[a] = [];
-      recAreas[a].push(rec.work);
+      const workDisplay = (locale === 'zh' && rec.work_zh) ? rec.work_zh : rec.work;
+      recAreas[a].push(workDisplay);
     }
     const recSentenceParts: string[] = [];
     for (const [area, works] of Object.entries(recAreas)) {
-      const areaLabel = area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-      recSentenceParts.push(`${areaLabel} works such as ${works.join(' and ')}`);
+      const areaLabel = getAreaLabel(area);
+      if (locale === 'zh') {
+        recSentenceParts.push(`${areaLabel}的${works.join('和')}`);
+      } else {
+        recSentenceParts.push(`${areaLabel} works such as ${works.join(' and ')}`);
+      }
     }
 
     return (
@@ -668,14 +697,15 @@ export default function WeeklyWrapPage() {
               {areaEntries.length > 0 ? (
                 <div className="space-y-1.5 pl-1">
                   {areaEntries.map(([area, works]) => {
-                    const label = (r.area_analyses.find(a => a.area === area)?.area_label)
-                      || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    const label = locale === 'zh'
+                      ? (r.area_analyses.find(a => a.area === area)?.area_label_zh || AREA_LABELS_ZH[area] || area)
+                      : (r.area_analyses.find(a => a.area === area)?.area_label || AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
                     return (
                       <div key={area} className="flex items-start gap-2">
                         <AreaBadge area={area} size="sm" />
                         <p className="text-sm text-gray-700">
                           <span className="font-medium">{label}:</span>{' '}
-                          {works.join(', ')}
+                          {works.join(locale === 'zh' ? '、' : ', ')}
                         </p>
                       </div>
                     );
@@ -734,7 +764,9 @@ export default function WeeklyWrapPage() {
                         onClick={() => openShelfPicker(r.child_id, idx, item.area, item.work)}
                       >
                         {item.work ? (
-                          <p className="font-medium text-gray-800 text-sm">{item.work}</p>
+                          <p className="font-medium text-gray-800 text-sm">
+                            {(locale === 'zh' && item.work_zh) ? item.work_zh : item.work}
+                          </p>
                         ) : (
                           <p className="font-medium text-gray-400 text-sm italic">
                             {locale === 'zh' ? '点击选择' : 'Tap to select'}

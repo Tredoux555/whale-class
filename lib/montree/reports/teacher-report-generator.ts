@@ -236,9 +236,9 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
 
   "recommendations": [
     {
-      "area": "area_key",
+      "area": "area_key (e.g. practical_life, sensorial, mathematics, language, cultural)",
       "area_label": "Area Name",
-      "work": "Specific work name to present next",
+      "work": "EXACT curriculum work name ONLY (e.g. 'Carrying a Mat', 'Number Rods', 'Sand Tray Writing'). Do NOT include action verbs like 'Present' or 'Continue', do NOT include explanations like 'as the foundational work'. Just the work name exactly as it appears in the curriculum data above.",
       "reasoning": "Why THIS work, why NOW — connect to the child's current sensitive periods, developmental stage, demonstrated interests, and progression sequence. Reference what the child has already mastered or is practicing as foundation."
     }
   ],
@@ -255,6 +255,8 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
 - Repetition is ALWAYS a positive signal (indicates sensitive period engagement, concentration building)
 - If there are no flags, the flags array should be empty []
 - Include at least one recommendation per area the child was active in, plus one for an area they should explore
+- CRITICAL: In recommendations[].work, write ONLY the exact work name (e.g. "Carrying a Mat", "Number Rods", "Color Box 1"). Do NOT prefix with "Present", "Continue", "Introduce". Do NOT append descriptions like "as the foundational..." or "with increased frequency...". Those belong in the reasoning field.
+- In recommendations[].area, use ONLY the canonical area_key: practical_life, sensorial, mathematics, language, or cultural. Do NOT use UUIDs or capitalized names.
 - The key_insight must mention specific works and specific areas — no generics
 - Return ONLY valid JSON, no other text`;
 }
