@@ -147,13 +147,11 @@ export default function WeeklyAdminDocsPage() {
     fetchData();
   }, [fetchData, featuresLoading, isEnabled]);
 
-  // ─── Save Notes ────────────────────────────────────────────
+  // ─── Save Notes (reusable — silent=true skips UI feedback) ─
 
-  const handleSave = async () => {
-    if (!session?.classroom?.id) return;
-    setSaving(true);
-    setError('');
-    setSuccess('');
+  const saveNotes = async (silent = false): Promise<boolean> => {
+    if (!session?.classroom?.id) return false;
+    if (!silent) { setSaving(true); setError(''); setSuccess(''); }
 
     try {
       const notes: Array<{
@@ -221,9 +219,8 @@ export default function WeeklyAdminDocsPage() {
       }
 
       if (notes.length === 0) {
-        setError(t('weeklyAdmin.noNotes'));
-        setSaving(false);
-        return;
+        if (!silent) { setError(t('weeklyAdmin.noNotes')); setSaving(false); }
+        return false;
       }
 
       const res = await montreeApi('/api/montree/weekly-admin-docs/notes', {
@@ -238,17 +235,21 @@ export default function WeeklyAdminDocsPage() {
 
       const data = await res.json();
       if (data.success) {
-        setSuccess(t('weeklyAdmin.saved'));
-        setTimeout(() => setSuccess(''), 3000);
+        if (!silent) { setSuccess(t('weeklyAdmin.saved')); setTimeout(() => setSuccess(''), 3000); }
+        return true;
       } else {
-        setError(data.error || t('weeklyAdmin.saveFailed'));
+        if (!silent) setError(data.error || t('weeklyAdmin.saveFailed'));
+        return false;
       }
     } catch {
-      setError(t('weeklyAdmin.saveFailed'));
+      if (!silent) setError(t('weeklyAdmin.saveFailed'));
+      return false;
     } finally {
-      setSaving(false);
+      if (!silent) setSaving(false);
     }
   };
+
+  const handleSave = () => saveNotes(false);
 
   // ─── Generate & Download ───────────────────────────────────
 
@@ -256,6 +257,12 @@ export default function WeeklyAdminDocsPage() {
     if (!session?.classroom?.id) return;
     setGenerating(docType);
     setError('');
+
+    // Auto-save current notes to DB before generating (prevents empty DOCX)
+    const saved = await saveNotes(true);
+    if (!saved) {
+      // If nothing to save, still try generate (DB may have notes from earlier)
+    }
 
     try {
       const res = await fetch('/api/montree/weekly-admin-docs/generate', {
