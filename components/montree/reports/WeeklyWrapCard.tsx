@@ -77,6 +77,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           locale,
           force_regenerate: forceRegenerate,
         }),
+        timeout: 300000, // 5 minutes — generates AI reports for every child
       });
 
       if (!res.ok) {
