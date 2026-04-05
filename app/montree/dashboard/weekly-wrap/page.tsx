@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
+import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 
 const TeacherReportView = dynamic(
   () => import('@/components/montree/reports/TeacherReportView'),
@@ -111,6 +112,7 @@ export default function WeeklyWrapPage() {
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [shelfUpdatingId, setShelfUpdatingId] = useState<string | null>(null);
   const [shelfUpdatedIds, setShelfUpdatedIds] = useState<Set<string>>(new Set());
+  const [teacherNotes, setTeacherNotes] = useState<Record<string, string>>({});
 
   // Parent Reports state
   const [expandedParent, setExpandedParent] = useState<string | null>(null);
@@ -344,6 +346,27 @@ export default function WeeklyWrapPage() {
     const isApproved = approvedIds.has(r.child_id);
     const isShelfUpdated = shelfUpdatedIds.has(r.child_id);
 
+    // Group works by area from parent_works (these are the actual works done this week)
+    const worksByArea: Record<string, string[]> = {};
+    for (const w of r.parent_works) {
+      const area = w.area || 'other';
+      if (!worksByArea[area]) worksByArea[area] = [];
+      if (!worksByArea[area].includes(w.name)) {
+        worksByArea[area].push(w.name);
+      }
+    }
+    const areaEntries = Object.entries(worksByArea);
+    const totalWorks = areaEntries.reduce((s, [, ws]) => s + ws.length, 0);
+
+    // Collapsed preview: "Language: X, Y · Practical Life: Z"
+    const previewText = areaEntries
+      .map(([area, works]) => {
+        const style = AREA_COLORS[area] || AREA_COLORS.cultural;
+        const label = area.replace('_', ' ');
+        return `${label}: ${works.slice(0, 2).join(', ')}${works.length > 2 ? ` +${works.length - 2}` : ''}`;
+      })
+      .join(' · ');
+
     return (
       <div key={r.child_id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {/* Header row */}
@@ -351,19 +374,16 @@ export default function WeeklyWrapPage() {
           onClick={() => setExpandedTeacher(isExpanded ? null : r.child_id)}
           className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
         >
-          {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
             {firstName.charAt(0)}
           </div>
 
-          {/* Name + quick summary */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="font-semibold text-gray-900 text-sm">{r.child_name}</p>
+              <span className="text-[10px] text-gray-400">{totalWorks} {locale === 'zh' ? '项活动' : 'works'}</span>
               {isApproved && (
-                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
-                  Approved
-                </span>
+                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">✓</span>
               )}
               {r.flags_count > 0 && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
@@ -371,62 +391,51 @@ export default function WeeklyWrapPage() {
                 </span>
               )}
             </div>
-            {/* Key insight preview */}
-            {r.key_insight && !isExpanded && (
-              <p className="text-xs text-gray-400 mt-0.5 line-clamp-2">{cleanUUIDs(r.key_insight)}</p>
+            {!isExpanded && previewText && (
+              <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{previewText}</p>
             )}
           </div>
 
           <span className={`text-gray-300 transition-transform text-xs ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
         </button>
 
-        {/* Expanded: full teacher summary */}
+        {/* Expanded */}
         {isExpanded && (
-          <div className="px-4 pb-4 border-t border-gray-100 space-y-4">
-            {/* Key Insight — the concise paragraph */}
-            {r.key_insight && (
-              <div className="mt-3 bg-emerald-50/50 border border-emerald-100 rounded-lg p-3">
-                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1">
-                  {locale === 'zh' ? '本周总结' : 'Weekly Summary'}
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">{cleanUUIDs(r.key_insight)}</p>
+          <div className="px-4 pb-4 border-t border-gray-100 space-y-3">
+            {/* Works grouped by area */}
+            {areaEntries.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {areaEntries.map(([area, works]) => {
+                  const style = AREA_COLORS[area] || AREA_COLORS.cultural;
+                  const label = (r.area_analyses.find(a => a.area === area)?.area_label)
+                    || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                  return (
+                    <div key={area}>
+                      <p className={`text-xs font-semibold ${style.text} mb-1`}>
+                        {style.emoji} {label}
+                      </p>
+                      <p className="text-sm text-gray-700 pl-5">
+                        {works.join(', ')}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            {/* Area breakdown — compact */}
-            {r.area_analyses.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {locale === 'zh' ? '课程领域' : 'Areas This Week'}
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {r.area_analyses.filter(a => a.works_count > 0).map(area => {
-                    const style = AREA_COLORS[area.area] || AREA_COLORS.cultural;
-                    return (
-                      <div key={area.area} className={`${style.bg} rounded-lg p-2`}>
-                        <p className={`text-xs font-medium ${style.text}`}>
-                          {style.emoji} {area.area_label} ({area.works_count})
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+            {totalWorks === 0 && (
+              <p className="mt-3 text-sm text-gray-400 italic">
+                {locale === 'zh' ? '本周无记录活动' : 'No recorded activities this week'}
+              </p>
             )}
 
-            {/* Flags */}
+            {/* Flags — compact */}
             {r.flags.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
-                  {locale === 'zh' ? '需要关注' : 'Flags'}
-                </p>
+              <div className="space-y-1">
                 {r.flags.map((f, i) => (
                   <div key={i} className="flex items-start gap-2 text-xs bg-amber-50 rounded-lg p-2">
                     <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
-                    <div>
-                      <p className="font-medium text-gray-700">{f.issue}</p>
-                      <p className="text-gray-500 mt-0.5">{f.recommendation}</p>
-                    </div>
+                    <p className="text-gray-700">{f.issue}</p>
                   </div>
                 ))}
               </div>
@@ -434,30 +443,45 @@ export default function WeeklyWrapPage() {
 
             {/* Recommendations */}
             {r.recommendations.length > 0 && (
-              <div className="space-y-1.5">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {locale === 'zh' ? '推荐展示' : 'Recommended Next Presentations'}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                  {locale === 'zh' ? '推荐下周' : 'Recommended Next'}
                 </p>
-                <div className="space-y-1">
-                  {r.recommendations.map((rec, i) => {
-                    const style = AREA_COLORS[rec.area] || AREA_COLORS.cultural;
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 rounded-lg px-2 py-1.5">
-                        <span>{style.emoji}</span>
-                        <span className="font-medium text-gray-700">{rec.work}</span>
-                        <span className="text-gray-400 hidden sm:inline">— {cleanUUIDs(rec.reasoning)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+                <p className="text-sm text-gray-600 pl-1">
+                  {r.recommendations.map(rec => rec.work).join(', ')}
+                </p>
               </div>
             )}
 
-            {/* Full report toggle */}
+            {/* Teacher Notes + Voice */}
+            <div className="pt-2 border-t border-gray-100">
+              <div className="flex items-center gap-2 mb-1.5">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {locale === 'zh' ? '教师备注' : 'Teacher Notes'}
+                </p>
+                <ChildVoiceNote
+                  childId={r.child_id}
+                  childName={r.child_name}
+                  onTranscript={(text) => setTeacherNotes(prev => ({
+                    ...prev,
+                    [r.child_id]: prev[r.child_id] ? `${prev[r.child_id]}\n${text}` : text,
+                  }))}
+                />
+              </div>
+              <textarea
+                value={teacherNotes[r.child_id] || ''}
+                onChange={(e) => setTeacherNotes(prev => ({ ...prev, [r.child_id]: e.target.value }))}
+                placeholder={locale === 'zh' ? '录音或输入备注...' : 'Record or type notes...'}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[60px] resize-y placeholder:text-gray-300"
+                rows={2}
+              />
+            </div>
+
+            {/* Full AI report toggle */}
             {r.teacher_report && (
               <details className="text-xs">
                 <summary className="text-emerald-600 cursor-pointer hover:underline font-medium py-1">
-                  {locale === 'zh' ? '查看完整教师报告' : 'View full teacher report'}
+                  {locale === 'zh' ? '查看 AI 分析' : 'View AI Analysis'}
                 </summary>
                 <div className="mt-2">
                   <TeacherReportView report={r.teacher_report as any} childName={r.child_name} />
