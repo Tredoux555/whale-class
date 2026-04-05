@@ -3478,6 +3478,8 @@ export const en = {
   'aiBudget.loading': 'Loading AI budget...',
   // Photo Audit
   'audit.title': 'Photo Audit',
+  'audit.needsReview': 'Needs Review',
+  'weeklyWrap.title': 'Weekly Wrap',
   'audit.all': 'All',
   'audit.red': 'Red',
   'audit.amber': 'Amber',

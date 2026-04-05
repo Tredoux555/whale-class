@@ -3479,6 +3479,8 @@ export const zh = {
   'aiBudget.loading': '正在加载AI预算...',
   // Photo Audit
   'audit.title': '照片审核',
+  'audit.needsReview': '待审核',
+  'weeklyWrap.title': '周报总结',
   'audit.all': '全部',
   'audit.red': '红色',
   'audit.amber': '黄色',
