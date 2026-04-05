@@ -400,18 +400,26 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
 
     // Auto-mark "presented" for all children in multi-child (group) photos
     // Only fires when teacher pre-selected a work (work_id set) — group presentations
+    // Uses no_downgrade=true so existing practicing/mastered statuses aren't overwritten
     if (entry.child_ids && entry.child_ids.length > 1 && entry.work_name && entry.work_id) {
       for (const childId of entry.child_ids) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
         fetch('/api/montree/progress/update', {
           method: 'POST',
+          credentials: 'same-origin',
+          signal: controller.signal,
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             child_id: childId,
             work_name: entry.work_name,
             area: entry.work_area || undefined,
             status: 'presented',
+            no_downgrade: true,
           }),
-        }).catch(err => console.error(`[Auto-Presented] Failed for ${childId}:`, err));
+        })
+          .catch(err => console.error(`[Auto-Presented] Failed for ${childId}:`, err))
+          .finally(() => clearTimeout(timeoutId));
       }
     }
 
