@@ -302,7 +302,7 @@ export default function DashboardHeader() {
           {/* Language toggle — always visible */}
           <LanguageToggle />
 
-          {/* === DAILY DRIVERS — always visible === */}
+          {/* === DAILY DRIVERS — always visible: Capture, Notes, Weekly Wrap === */}
           <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
@@ -313,18 +313,6 @@ export default function DashboardHeader() {
           >
             📸
           </Link>
-          {!isHome && (
-            <Link
-              href="/montree/dashboard/photo-audit"
-              data-guide="nav-setup"
-              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-                pathname === '/montree/dashboard/photo-audit' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-              }`}
-              title={t('audit.title')}
-            >
-              🔍
-            </Link>
-          )}
           <Link
             href="/montree/dashboard/notes"
             data-guide="nav-notes"
@@ -336,25 +324,26 @@ export default function DashboardHeader() {
             📝
           </Link>
           <Link
-            href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
-            data-tutorial="guru-link"
-            data-guide="nav-guru"
+            href={(() => {
+              const now = new Date();
+              const dow = now.getDay();
+              const mon = new Date(now);
+              mon.setDate(now.getDate() - ((dow + 6) % 7));
+              mon.setHours(0, 0, 0, 0);
+              const sun = new Date(mon);
+              sun.setDate(mon.getDate() + 6);
+              return `/montree/dashboard/weekly-wrap?week=${mon.toISOString().split('T')[0]}&week_end=${sun.toISOString().split('T')[0]}`;
+            })()}
+            data-guide="nav-weekly-wrap"
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname === '/montree/dashboard/guru' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+              pathname === '/montree/dashboard/weekly-wrap' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
             }`}
-            title={t('nav.guru')}
+            title={locale === 'zh' ? '周报总结' : 'Weekly Wrap'}
           >
-            🧠
+            📋
           </Link>
 
-          {/* Inbox — always visible (opens slide-out panel) */}
-          <InboxButton
-            conversationId={session.teacher.id}
-            userName={session.teacher.name || 'Teacher'}
-            data-tutorial="inbox-button"
-          />
-
-          {/* === MORE MENU — tools you need less often === */}
+          {/* === MORE MENU — everything else === */}
           {!isHome && (
             <div ref={moreMenuRef} className="relative flex-shrink-0">
               <button
@@ -369,6 +358,29 @@ export default function DashboardHeader() {
 
               {showMoreMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] min-w-[200px] py-1">
+                  <Link
+                    href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
+                    data-tutorial="guru-link"
+                    data-guide="nav-guru"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/guru' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">🧠</span>
+                    <span>{t('nav.guru')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/photo-audit"
+                    data-guide="nav-setup"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/photo-audit' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">🔍</span>
+                    <span>{t('audit.title')}</span>
+                  </Link>
                   <Link
                     href="/montree/dashboard/curriculum"
                     data-guide="nav-curriculum"
@@ -442,6 +454,13 @@ export default function DashboardHeader() {
               )}
             </div>
           )}
+
+          {/* Inbox — keep visible (message notifications) */}
+          <InboxButton
+            conversationId={session.teacher.id}
+            userName={session.teacher.name || 'Teacher'}
+            data-tutorial="inbox-button"
+          />
 
           <button
             onClick={() => { clearSession(); router.push('/montree/login'); }}
