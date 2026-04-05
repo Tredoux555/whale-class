@@ -616,13 +616,35 @@ export default function PhotoAuditPage() {
         !confirmedIdsRef.current.has(p.id)
       );
       setPhotos(mergedPhotos);
-      // Seed work statuses from DB (capture-time P/P/M choices show pre-selected)
+      // Seed work statuses from DB, defaulting to 'practicing' for any identified photo
+      // (if a teacher photographed a child doing a work, they're at minimum practicing it)
       const initialStatuses: Record<string, string> = {};
+      const needsDefault: Array<{ child_id: string; work_name: string; area: string | null }> = [];
       mergedPhotos.forEach((p: AuditPhoto) => {
-        if (p.child_id && p.work_name && p.status) {
-          initialStatuses[`${p.child_id}:${p.work_name}`] = p.status;
+        if (p.child_id && p.work_name) {
+          const key = `${p.child_id}:${p.work_name}`;
+          if (p.status) {
+            initialStatuses[key] = p.status;
+          } else if (!initialStatuses[key]) {
+            initialStatuses[key] = 'practicing';
+            needsDefault.push({ child_id: p.child_id, work_name: p.work_name, area: p.area });
+          }
         }
       });
+      // Persist defaults to DB (fire-and-forget, no_downgrade so we don't overwrite higher statuses)
+      for (const d of needsDefault) {
+        montreeApi('/api/montree/progress/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: d.child_id,
+            work_name: d.work_name,
+            area: d.area || undefined,
+            status: 'practicing',
+            no_downgrade: true,
+          }),
+        }).catch(err => console.error('[P/P/M Default] Failed:', err));
+      }
       setWorkStatuses(prev => {
         // Merge: DB seeds first, then session overrides win (teacher edits this session
         // should not be reverted by a refetch returning stale DB values)
