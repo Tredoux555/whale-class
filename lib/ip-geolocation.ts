@@ -99,10 +99,10 @@ export async function getLocationFromIP(ip: string | null): Promise<LocationData
   }
 
   try {
-    // Use ip-api.com free tier (no API key needed)
-    // Rate limit: 45 requests/minute
-    // HTTPS is supported on free tier
-    const response = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,city,regionName,timezone`, {
+    // ip-api.com free tier does NOT support HTTPS (returns 403).
+    // Use http:// which is fine for server-side geolocation (no user data exposed).
+    // Rate limit: 45 requests/minute, no API key needed.
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,city,regionName,timezone`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -120,7 +120,7 @@ export async function getLocationFromIP(ip: string | null): Promise<LocationData
 
     // Check if the API returned success
     if (data.status !== 'success') {
-      console.warn('[IP-GEO] API returned non-success status:', data.status);
+      console.warn('[IP-GEO] API returned non-success status:', data.status, data.message || '');
       return defaultLocation;
     }
 

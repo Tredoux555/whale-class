@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { legacySha256 } from '@/lib/montree/password';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getLocationFromRequest } from '@/lib/ip-geolocation';
 
 // Generate URL-friendly slug
 function generateSlug(name: string): string {
@@ -73,6 +74,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'A school with this name already exists' }, { status: 400 });
     }
 
+    // Capture signup location (non-blocking — has 5s timeout)
+    const location = await getLocationFromRequest(request).catch(() => ({
+      country: null, countryCode: null, city: null, region: null, timezone: null, ip: null,
+    }));
+
     // 1. Create school
     const { data: school, error: schoolError } = await supabase
       .from('montree_schools')
@@ -85,6 +91,12 @@ export async function POST(request: NextRequest) {
         plan_type: 'school',
         subscription_tier: 'free',
         is_active: true,
+        signup_country: location.country,
+        signup_country_code: location.countryCode,
+        signup_city: location.city,
+        signup_region: location.region,
+        signup_timezone: location.timezone,
+        signup_ip: location.ip,
       })
       .select()
       .single();
