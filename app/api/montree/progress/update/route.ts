@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await request.json();
-    const { child_id, work_key, work_name, status, area, notes, is_focus, is_extra, remove_extra } = body;
+    const { child_id, work_key, work_name, status, area, notes, is_focus, is_extra, remove_extra, no_downgrade } = body;
 
     if (!child_id || (!work_key && !work_name)) {
       return NextResponse.json({ error: 'child_id and work_key/work_name required' }, { status: 400 });
@@ -87,6 +87,22 @@ export async function POST(request: NextRequest) {
     const statusStr = normalizeStatus(status);
     const workNameToSave = work_name || work_key;
     const now = new Date().toISOString();
+
+    // Never-downgrade guard: skip if existing status is higher in progression
+    // Used by auto-presented (group photos) to avoid overwriting practicing/mastered
+    if (no_downgrade && statusStr !== 'not_started') {
+      const STATUS_RANK: Record<string, number> = { 'not_started': 0, 'presented': 1, 'practicing': 2, 'mastered': 3 };
+      const { data: existingProgress } = await supabase
+        .from('montree_child_progress')
+        .select('status')
+        .eq('child_id', child_id)
+        .eq('work_name', workNameToSave)
+        .maybeSingle();
+
+      if (existingProgress && (STATUS_RANK[existingProgress.status] || 0) >= (STATUS_RANK[statusStr] || 0)) {
+        return NextResponse.json({ success: true, skipped: true, existing_status: existingProgress.status });
+      }
+    }
 
     // Build the record for upsert
     const record: Record<string, unknown> = {

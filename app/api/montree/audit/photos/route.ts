@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
     if (progressResult.status === 'fulfilled') {
       for (const p of (progressResult.value as any).data || []) {
         if (p.child_id && p.work_name && p.status) {
-          progressMap.set(`${p.child_id}:${p.work_name}`, p.status);
+          progressMap.set(`${p.child_id}:${p.work_name.toLowerCase()}`, p.status);
         }
       }
     }
@@ -227,7 +227,7 @@ export async function GET(request: NextRequest) {
         auto_crop: m.auto_crop,
         captured_at: m.captured_at || m.created_at,
         caption: m.caption || null,
-        status: (m.child_id && work?.name ? progressMap.get(`${m.child_id}:${work.name}`) : null) || null,
+        status: (m.child_id && work?.name ? progressMap.get(`${m.child_id}:${work.name.toLowerCase()}`) : null) || null,
       };
     });
 
