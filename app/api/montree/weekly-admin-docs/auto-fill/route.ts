@@ -105,8 +105,9 @@ export async function GET(request: NextRequest) {
 
     const childIds = children.map((c: { id: string }) => c.id);
 
-    // Step 2: Fetch focus works + progress in parallel (using actual childIds)
-    const [focusWorksRes, progressRes] = await Promise.all([
+    // Step 2: Fetch focus works + progress + photos in parallel
+    // NOTE: montree_child_progress does NOT have classroom_id — filter by child_id instead
+    const [focusWorksRes, progressRes, mediaRes] = await Promise.all([
       supabase
         .from('montree_child_focus_works')
         .select('child_id, area, work_name')
@@ -115,21 +116,45 @@ export async function GET(request: NextRequest) {
       supabase
         .from('montree_child_progress')
         .select('child_id, work_name, area, status, updated_at')
-        .eq('classroom_id', classroomId)
+        .in('child_id', childIds)
         .gte('updated_at', weekStart)
         .lt('updated_at', weekEndStr),
+
+      // Smart Capture photos tagged with work_id this week (primary data source)
+      supabase
+        .from('montree_media')
+        .select('child_id, work_id, captured_at, classroom_id')
+        .eq('classroom_id', classroomId)
+        .eq('media_type', 'photo')
+        .not('work_id', 'is', null)
+        .gte('captured_at', weekStart)
+        .lt('captured_at', weekEndStr),
     ]);
 
     if (focusWorksRes.error) {
       console.error('auto-fill: focus works error:', focusWorksRes.error.message);
-      // Non-fatal — continue without focus works
+    }
+    if (progressRes.error) {
+      console.error('auto-fill: progress error:', progressRes.error.message);
+    }
+    if (mediaRes.error) {
+      console.error('auto-fill: media error:', mediaRes.error.message);
     }
 
     const focusWorks = focusWorksRes.data;
+    const mediaRows = (mediaRes.data || []) as Array<{ child_id: string; work_id: string; captured_at: string }>;
 
-    if (progressRes.error) {
-      console.error('auto-fill: progress error:', progressRes.error.message);
-      // Non-fatal — continue without progress data
+    // Resolve work_ids from photos to work names via classroom_curriculum_works
+    const workIds = [...new Set(mediaRows.map(m => m.work_id).filter(Boolean))];
+    let workIdToName = new Map<string, { name: string; area: string }>();
+    if (workIds.length > 0) {
+      const { data: worksData } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area_key')
+        .in('id', workIds);
+      for (const w of (worksData || []) as Array<{ id: string; name: string; area_key: string }>) {
+        workIdToName.set(w.id, { name: w.name, area: w.area_key });
+      }
     }
 
     // Build focus works lookup: childId -> area -> work_name
@@ -152,15 +177,15 @@ export async function GET(request: NextRequest) {
       if (!areaMap.has(row.area)) {
         areaMap.set(row.area, []);
       }
-      // Avoid duplicate work names
       const existing = areaMap.get(row.area)!;
       if (!existing.includes(row.work_name)) {
         existing.push(row.work_name);
       }
     }
 
-    // Also build a flat list of works done this week per child (for Summary English)
+    // Build flat list of works done this week per child — merge progress + photo data
     const weekWorksByChild = new Map<string, string[]>();
+    // From progress records
     for (const row of progressItems) {
       if (!weekWorksByChild.has(row.child_id)) {
         weekWorksByChild.set(row.child_id, []);
@@ -168,6 +193,30 @@ export async function GET(request: NextRequest) {
       const list = weekWorksByChild.get(row.child_id)!;
       if (!list.includes(row.work_name)) {
         list.push(row.work_name);
+      }
+    }
+    // From Smart Capture photos (photos with work_id = confirmed activity)
+    for (const photo of mediaRows) {
+      const work = workIdToName.get(photo.work_id);
+      if (!work || !photo.child_id) continue;
+      if (!weekWorksByChild.has(photo.child_id)) {
+        weekWorksByChild.set(photo.child_id, []);
+      }
+      const list = weekWorksByChild.get(photo.child_id)!;
+      if (!list.includes(work.name)) {
+        list.push(work.name);
+      }
+      // Also enrich progressByChild so plan area suggestions benefit
+      if (!progressByChild.has(photo.child_id)) {
+        progressByChild.set(photo.child_id, new Map());
+      }
+      const areaMap = progressByChild.get(photo.child_id)!;
+      if (!areaMap.has(work.area)) {
+        areaMap.set(work.area, []);
+      }
+      const existing = areaMap.get(work.area)!;
+      if (!existing.includes(work.name)) {
+        existing.push(work.name);
       }
     }
 
@@ -200,7 +249,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } else {
-        summaryEnglish = "didn't complete any recorded activities this week.";
+        summaryEnglish = '';
       }
 
       // --- Plan Areas ---

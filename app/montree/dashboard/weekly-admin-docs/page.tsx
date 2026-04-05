@@ -134,8 +134,13 @@ export default function WeeklyAdminDocsPage() {
 
       setSummaryNotes(sNotes);
       setPlanNotes(pNotes);
+
+      // Auto-fill if no saved notes exist (first visit for this week)
+      const hasAnyNotes = notesData.notes && notesData.notes.length > 0;
+      return hasAnyNotes;
     } catch {
       setError(t('weeklyAdmin.fetchError'));
+      return true; // Don't auto-fill on error
     } finally {
       setLoading(false);
     }
@@ -144,7 +149,12 @@ export default function WeeklyAdminDocsPage() {
   useEffect(() => {
     // Wait for features to load and verify enabled before fetching data
     if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
-    fetchData();
+    fetchData().then((hasNotes) => {
+      // Auto-fill from data if no saved notes (saves teacher a click)
+      if (hasNotes === false) {
+        handleAutoFill();
+      }
+    });
   }, [fetchData, featuresLoading, isEnabled]);
 
   // ─── Save Notes (reusable — silent=true skips UI feedback) ─
