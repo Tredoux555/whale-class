@@ -124,6 +124,34 @@ export async function POST(request: NextRequest) {
       areaIdToKey.set(a.id, a.area_key);
     }
 
+    // Fuzzy description lookup: strips suffixes like "- No lines", "- Rectangular Box"
+    // and normalizes spacing so "Chalk Board Writing" matches "Chalkboard Writing"
+    const fuzzyDescriptionLookup = (
+      name: string,
+      descs: Map<string, { description: string; why_it_matters: string }>
+    ): { description: string; why_it_matters: string } | undefined => {
+      const key = name.toLowerCase().trim();
+      // Exact match first
+      const exact = descs.get(key);
+      if (exact) return exact;
+      // Strip " - suffix" variants (e.g. "Constructive Triangles - Rectangular Box" → "constructive triangles")
+      const base = key.replace(/\s*-\s*.+$/, '').trim();
+      if (base !== key) {
+        const baseMatch = descs.get(base);
+        if (baseMatch) return baseMatch;
+      }
+      // Normalize spaces (e.g. "chalk board" → "chalkboard")
+      const collapsed = base.replace(/\s+/g, '');
+      for (const [dKey, dVal] of descs) {
+        if (dKey.replace(/\s+/g, '') === collapsed) return dVal;
+      }
+      // Substring match: if a description key is contained in the name
+      for (const [dKey, dVal] of descs) {
+        if (dKey.length > 5 && key.includes(dKey)) return dVal;
+      }
+      return undefined;
+    };
+
     // Build description + area lookups
     const workIdToName = new Map<string, string>();
     const workNameToArea = new Map<string, string>(); // name (lowercase) → area_key (canonical)
@@ -150,7 +178,10 @@ export async function POST(request: NextRequest) {
     if (visualMemories) {
       for (const vm of visualMemories) {
         if (vm.work_name && vm.parent_description) {
-          dbDescriptions.set(vm.work_name.toLowerCase().trim(), {
+          const vmKey = vm.work_name.toLowerCase().trim();
+          // Don't overwrite Chinese descriptions with English visual memory
+          if (locale === 'zh' && dbDescriptions.has(vmKey)) continue;
+          dbDescriptions.set(vmKey, {
             description: vm.parent_description,
             why_it_matters: vm.why_it_matters || '',
           });
@@ -264,7 +295,7 @@ export async function POST(request: NextRequest) {
               if (!workName) continue;
               photoByWorkName.set(workName.toLowerCase(), photo);
 
-              const desc = dbDescriptions.get(workName.toLowerCase().trim());
+              const desc = fuzzyDescriptionLookup(workName, dbDescriptions);
               const matchingProgress = progress.find(
                 p => p.work_name.toLowerCase() === workName.toLowerCase()
               );

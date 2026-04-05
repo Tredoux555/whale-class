@@ -269,6 +269,7 @@ function fuzzyMatchChineseName(workName: string, map: Map<string, string>): stri
   // 2. Strip common suffixes/additions and try again
   // e.g., "Geometry Cabinet and Cards" → try "Geometry Cabinet"
   const strippedInput = input
+    .replace(/\s*-\s*.+$/, '')        // Remove " - ..." suffix (e.g. "Chalk Board Writing - No lines")
     .replace(/\s+and\s+.+$/, '')      // Remove " and ..." suffix
     .replace(/\s+with\s+.+$/, '')     // Remove " with ..." suffix
     .replace(/\s*\(.*\)$/, '')        // Remove parenthetical
@@ -276,6 +277,11 @@ function fuzzyMatchChineseName(workName: string, map: Map<string, string>): stri
   if (strippedInput !== input) {
     const match = map.get(strippedInput);
     if (match) return match;
+    // Also try space-collapsed (e.g. "chalk board" → "chalkboard")
+    const collapsed = strippedInput.replace(/\s+/g, '');
+    for (const [k, v] of map) {
+      if (k.replace(/\s+/g, '') === collapsed) return v;
+    }
   }
 
   // 3. Substring matching: check if DB name contains a curriculum name or vice versa

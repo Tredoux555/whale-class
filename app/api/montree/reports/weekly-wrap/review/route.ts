@@ -111,9 +111,24 @@ export async function GET(request: NextRequest) {
       return name.trim();
     };
 
-    // Get Chinese work name for a given English work name
+    // Get Chinese work name for a given English work name (with fuzzy fallback)
     const getChineseWorkName = (englishName: string): string | null => {
-      return workNameToChinese.get(englishName.toLowerCase().trim()) || null;
+      const key = englishName.toLowerCase().trim();
+      // Exact match
+      const exact = workNameToChinese.get(key);
+      if (exact) return exact;
+      // Strip " - suffix" variants (e.g. "Chalk Board Writing - No lines" → "chalk board writing")
+      const base = key.replace(/\s*-\s*.+$/, '').trim();
+      if (base !== key) {
+        const baseMatch = workNameToChinese.get(base);
+        if (baseMatch) return baseMatch;
+      }
+      // Normalize spaces (e.g. "chalk board" → "chalkboard")
+      const collapsed = base.replace(/\s+/g, '');
+      for (const [k, v] of workNameToChinese) {
+        if (k.replace(/\s+/g, '') === collapsed) return v;
+      }
+      return null;
     };
 
     // Strip UUIDs from text

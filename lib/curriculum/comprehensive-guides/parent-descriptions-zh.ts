@@ -291,6 +291,78 @@ const DESCRIPTIONS: Record<string, ParentDescriptionZh> = {
     parent_description: '您的孩子正在沙盘上用手指写字母和数字。薄薄的沙层为手指运动提供了触觉反馈，而且如果写错了，只需轻轻摇晃就可以重新开始。这种无压力的练习方式让孩子自由地探索和练习书写。',
     why_it_matters: '沙盘写字提供了一个从描摹砂纸字母到纸上书写的重要过渡。沙子的触觉反馈帮助强化字母的肌肉记忆，而没有"写错了"的心理压力。这种自由探索让孩子建立对书写的信心和兴趣。',
   },
+  'sandpaper letters': {
+    parent_description: '您的孩子正在使用砂纸字母——贴在木板上的砂纸制成的字母。他们用手指沿着字母的形状描摹，同时说出字母的发音。通过触觉、视觉和听觉三种感官同时学习，孩子能更深刻地记住每个字母。',
+    why_it_matters: '砂纸字母是蒙台梭利语言教育的核心材料之一。多感官学习方法让孩子同时用手感受字母形状、用眼看字母、用耳听发音，这种三重编码让字母记忆更加深刻和持久，为后续的阅读和书写打下坚实基础。',
+  },
+  'chalkboard writing': {
+    parent_description: '您的孩子正在粉笔板上练习书写字母和单词。粉笔板允许孩子自由尝试，写错了可以轻松擦掉重来。这种无压力的环境让孩子大胆地探索书写，培养信心和流畅性。',
+    why_it_matters: '粉笔板书写是从砂纸字母到纸上书写的重要过渡步骤。在大表面上写字让孩子锻炼大臂运动，这对建立正确的书写姿势和力度控制很重要。擦除重写的特性鼓励孩子无畏地尝试，培养对书写的积极态度。',
+  },
+  'handwriting on paper': {
+    parent_description: '您的孩子已经进入纸上书写阶段——这是书写准备的最后一步。经过砂纸字母、沙盘和粉笔板的充分准备，他们现在用铅笔在特制的蒙台梭利书写纸上练习。线条的间距帮助他们控制字母的大小和位置。',
+    why_it_matters: '纸上书写标志着孩子书写能力的重要里程碑。经过之前各个阶段的准备，孩子的手部肌肉、字母记忆和书写信心都已就绪。这种循序渐进的方法确保了书写是一种愉快的体验而非挫折。',
+  },
+  'creative writing': {
+    parent_description: '您的孩子正在进行创意写作——用文字表达自己的想法、故事和经历。这不仅仅是抄写或练习字母，而是真正的自主创作。他们选择自己想写的内容，用已经掌握的字母和拼写知识来表达。',
+    why_it_matters: '创意写作是所有前期语言准备工作的巅峰成果。它将拼写、语法、词汇和想象力融合在一起。当孩子发现自己可以用文字记录想法时，他们对学习的热情和自信心都会得到极大提升。',
+  },
+  'vocabulary enrichment': {
+    parent_description: '您的孩子正在通过各种活动扩展词汇量——学习新词、理解词义、在日常对话中使用新词。蒙台梭利环境中丰富的实物教具和有意义的对话为词汇学习提供了绝佳机会。',
+    why_it_matters: '丰富的词汇是阅读理解和口语表达的基础。研究表明，早期词汇量是预测学业成功的重要指标。蒙台梭利通过真实情境和感官体验来教授词汇，让孩子对词语有深层理解而非表面记忆。',
+  },
+  'classified cards (nomenclature cards)': {
+    parent_description: '您的孩子正在使用分类命名卡——一套包含图片、名称和描述的三段式卡片。他们学习将图片与名称配对，然后与描述配对，系统地认识和分类各种事物。',
+    why_it_matters: '命名卡帮助孩子将词汇与真实事物联系起来，建立分类思维。这种系统化的学习方法培养科学分类能力和逻辑思维，同时扩展孩子在植物学、动物学、地理等多个领域的词汇。',
+  },
+  'rhyming activities': {
+    parent_description: '您的孩子正在玩押韵游戏——找出听起来相似的词（如cat-hat-bat）。通过歌曲、诗歌和配对活动，他们发展对词语声音模式的敏感度。',
+    why_it_matters: '押韵意识是语音意识的重要组成部分——它帮助孩子注意到单词之间的声音关系。这项技能直接支持后续的拼读学习，因为能听出"at"音的孩子可以更容易地学会阅读整个词族。',
+  },
+  'storytelling and sequencing': {
+    parent_description: '您的孩子正在练习讲故事和排序——用图片卡把事件按正确的先后顺序排列，然后用自己的话讲述完整的故事。这项活动培养叙事能力和逻辑思维。',
+    why_it_matters: '故事讲述和排序培养孩子的叙事能力和逻辑思维。理解事件的先后顺序是阅读理解的基础，而学会有条理地表达想法对未来的口头和书面表达都至关重要。',
+  },
+  'pink object box': {
+    parent_description: '您的孩子正在使用粉色物件盒——里面装有小型实物和相应的三字母单词标签。他们将实物与标签配对，在真实物品和文字之间建立联系。这是阅读之旅的第一步。',
+    why_it_matters: '粉色物件盒让阅读变得具体和有意义——孩子不是在读抽象的符号，而是在读代表真实物品的文字。这种有意义的第一次阅读体验激发了孩子对阅读的兴趣和信心。',
+  },
+  'blue object box': {
+    parent_description: '您的孩子已进入蓝色物件盒——包含更复杂的单词（含辅音组合），配有实物和标签。这比粉色物件盒更有挑战性，因为单词更长，声音组合更复杂。',
+    why_it_matters: '蓝色物件盒拓展了孩子的解码能力，让他们能够阅读包含辅音组合的更复杂单词。持续的实物-文字配对保持了阅读的趣味性和意义感。',
+  },
+  'phonogram introduction': {
+    parent_description: '您的孩子正在学习语音组合——两个或三个字母组合在一起发出一个声音（如sh、th、oa、ee）。通过专门的砂纸语音卡和配套活动，他们学习这些特殊的拼写模式。',
+    why_it_matters: '语音组合是英语拼读系统中的关键知识。掌握这些组合大大扩展了孩子能够独立阅读的词汇范围。这是从简单的CVC单词过渡到流利阅读的重要桥梁。',
+  },
+  'green object box': {
+    parent_description: '您的孩子正在使用绿色物件盒——包含含有复杂语音组合的单词，配有实物和标签。这是三个物件盒系列中最高级的，代表了语音阅读能力的成熟阶段。',
+    why_it_matters: '绿色物件盒代表孩子语音阅读能力的最高阶段。完成绿色物件盒意味着孩子已经掌握了英语中大多数的拼读规则，能够独立解码绝大多数英文单词。',
+  },
+  'command cards (action reading)': {
+    parent_description: '您的孩子正在使用命令卡——上面写着简单的动作指令（如"跳三下"、"把书放在桌子上"）。孩子读卡后执行动作，让阅读变成了一个有趣的全身运动游戏。',
+    why_it_matters: '命令卡将阅读与动作结合，让孩子体验到阅读的实际用途。通过读和做的结合，阅读理解变得生动具体。这种方法特别适合动觉型学习者。',
+  },
+  'reading analysis': {
+    parent_description: '您的孩子正在进行阅读分析——仔细阅读文本并分析其含义和结构。这包括回答理解问题、找出主要思想、识别文本中的细节，以及做出推理和预测。',
+    why_it_matters: '阅读分析将孩子的阅读从简单的解码提升到真正的理解。学会分析文本是所有学科学习的基础技能，帮助孩子成为一个能思考、能质疑的主动读者。',
+  },
+  'spelling rules': {
+    parent_description: '您的孩子正在学习英语拼写规则——像"magic e"（末尾的不发音e如何改变元音发音）、双写辅音等规则。通过系统的练习和发现活动，他们理解英语拼写背后的逻辑。',
+    why_it_matters: '学习拼写规则帮助孩子理解英语拼写不是任意的，而是有规律可循的。这种对规则的理解让拼写从死记硬背变成了一个逻辑推理过程，大大提高拼写准确性和学习效率。',
+  },
+  'prefixes and suffixes': {
+    parent_description: '您的孩子正在学习前缀和后缀——添加在单词前面或后面的词素，可以改变词义（如un-happy变成"不高兴"，teach-er变成"老师"）。这帮助他们理解英语构词法。',
+    why_it_matters: '学习前缀和后缀是扩展词汇量的最有效策略之一。当孩子理解了"un-"表示"不"，他们就能理解几十个新词。这种构词分析能力对阅读理解和词汇增长都有巨大帮助。',
+  },
+  'synonyms and antonyms': {
+    parent_description: '您的孩子正在学习同义词（意思相近的词，如happy-glad）和反义词（意思相反的词，如hot-cold）。通过配对游戏和语境练习，他们扩展词汇网络。',
+    why_it_matters: '学习同义词和反义词帮助孩子建立丰富的词汇网络——不是孤立地记忆单词，而是理解词与词之间的关系。这让他们的表达更加精确丰富，阅读理解也更加深入。',
+  },
+  'constructive triangles': {
+    parent_description: '您的孩子正在使用构成三角形——通过将不同颜色和形状的三角形拼合在一起，发现它们可以组成正方形、长方形、六边形等各种几何形状。这是一个充满发现的动手探索活动。',
+    why_it_matters: '构成三角形让孩子发现几何图形之间的关系——所有多边形都可以由三角形组成。这种对几何变换的直觉理解为后续更高级的几何学习打下基础，同时培养空间推理能力。',
+  },
   'moveable alphabet': {
     parent_description: '您的孩子正在使用活动字母表——一盒可以自由移动的字母——来"书写"单词和句子。在他们的手部肌肉还不足以流利书写之前，活动字母表让他们能够将脑中的想法"拼"出来。辅音是蓝色的，元音是红色的。',
     why_it_matters: '活动字母表让孩子在能够用笔书写之前就能表达自己的想法。这解放了他们的创造力和语言能力，不受手部发育限制。红蓝两色的区分帮助他们直觉地理解元音和辅音的角色，为拼写和阅读奠定基础。',
@@ -459,10 +531,26 @@ const DESCRIPTIONS: Record<string, ParentDescriptionZh> = {
 
 /**
  * Get Chinese parent description for a work by its English name.
+ * Supports fuzzy matching: strips " - suffix" variants and normalizes spaces.
  * Returns undefined if no Chinese translation exists for this work.
  */
 export function getChineseParentDescription(workName: string): ParentDescriptionZh | undefined {
-  return DESCRIPTIONS[workName.toLowerCase().trim()];
+  const key = workName.toLowerCase().trim();
+  // Exact match
+  const exact = DESCRIPTIONS[key];
+  if (exact) return exact;
+  // Strip " - suffix" (e.g. "Chalk Board Writing - No lines" → "chalk board writing")
+  const base = key.replace(/\s*-\s*.+$/, '').trim();
+  if (base !== key) {
+    const baseMatch = DESCRIPTIONS[base];
+    if (baseMatch) return baseMatch;
+  }
+  // Space-collapsed match (e.g. "chalk board writing" → "chalkboard writing")
+  const collapsed = (base || key).replace(/\s+/g, '');
+  for (const [dKey, dVal] of Object.entries(DESCRIPTIONS)) {
+    if (dKey.replace(/\s+/g, '') === collapsed) return dVal;
+  }
+  return undefined;
 }
 
 /**
