@@ -80,12 +80,16 @@ export async function POST(request: NextRequest) {
       childQuery = childQuery.in('id', requestedChildIds);
     }
 
-    const { data: childrenRaw } = await childQuery;
+    const { data: childrenRaw, error: childrenError } = await childQuery;
+    if (childrenError) {
+      console.error('weekly-wrap: children query error:', childrenError.message);
+      return NextResponse.json({ error: `Failed to fetch children: ${childrenError.message}` }, { status: 500 });
+    }
     const children = (childrenRaw || []) as Array<{
       id: string; name: string; date_of_birth: string; classroom_id: string; enrollment_date: string | null;
     }>;
     if (children.length === 0) {
-      return NextResponse.json({ error: 'No children found' }, { status: 404 });
+      return NextResponse.json({ error: 'No active children found in this classroom' }, { status: 404 });
     }
 
     // Load shared data (curriculum works + visual memory + descriptions)
