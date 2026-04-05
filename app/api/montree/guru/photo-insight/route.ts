@@ -1435,7 +1435,7 @@ ${curriculumHint}${correctionsContext}${duplicateContext}`;
 
             // Fire-and-forget: feed brain learning (cross-classroom patterns)
             if (auth.schoolId && auth.userId) {
-              supabase.rpc('append_brain_learning', {
+              supabase.rpc('append_guru_learning', {
                 p_category: 'montessori_insights',
                 p_learning: `Onboarding: Sonnet identified "${finalWorkName}" (${finalArea}) with confidence ${input.confidence.toFixed(2)} in classroom ${classroomId}`,
               }).then(({ error: brainErr }) => {

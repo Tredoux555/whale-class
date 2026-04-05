@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('id, name, photo_url, paperwork_current_week')
       .eq('classroom_id', auth.classroomId)
-      .eq('active', true)
+      .eq('is_active', true)
       .order('name');
 
     if (error) {
