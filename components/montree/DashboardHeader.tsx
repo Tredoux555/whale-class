@@ -402,6 +402,18 @@ export default function DashboardHeader() {
                     <span className="text-base">📋</span>
                     <span>{t('nav.classroomOverview')}</span>
                   </Link>
+                  {isEnabled('weekly_admin_docs') && (
+                    <Link
+                      href="/montree/dashboard/weekly-admin-docs"
+                      onClick={() => setShowMoreMenu(false)}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                        pathname === '/montree/dashboard/weekly-admin-docs' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <span className="text-base">📄</span>
+                      <span>{locale === 'zh' ? '周计划与总结' : 'Weekly Plan & Summary'}</span>
+                    </Link>
+                  )}
                   <Link
                     href="/montree/dashboard/albums"
                     onClick={() => setShowMoreMenu(false)}

@@ -128,6 +128,12 @@ export default function WeeklyWrapPage() {
   const [activeTab, setActiveTab] = useState<Tab>('teacher');
   const [error, setError] = useState('');
 
+  // Generate/regenerate state
+  const [generating, setGenerating] = useState(false);
+  const [genProgress, setGenProgress] = useState('');
+  const [genDone, setGenDone] = useState(0);
+  const [genTotal, setGenTotal] = useState(0);
+
   // Teacher Summary state
   const [expandedTeacher, setExpandedTeacher] = useState<string | null>(null);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
@@ -201,6 +207,79 @@ export default function WeeklyWrapPage() {
   }, [session, weekStart]);
 
   useEffect(() => { loadReports(); }, [loadReports]);
+
+  // Generate/regenerate reports
+  const handleGenerate = async (forceRegenerate = false) => {
+    if (!session || generating) return;
+    setGenerating(true);
+    setGenProgress(locale === 'zh' ? '正在准备...' : 'Preparing...');
+    setGenDone(0);
+    setGenTotal(0);
+
+    try {
+      const res = await fetch('/api/montree/reports/weekly-wrap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          classroom_id: session.classroom.id,
+          week_start: weekStart,
+          week_end: weekEnd,
+          locale,
+          force_regenerate: forceRegenerate,
+          stream: true,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Generation failed');
+      }
+
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') || contentType.includes('application/x-ndjson')) {
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              if (event.type === 'start') {
+                setGenTotal(event.total);
+                setGenProgress(locale === 'zh' ? '正在生成...' : 'Generating...');
+              } else if (event.type === 'child_start') {
+                const firstName = event.child_name?.split(' ')[0] || '';
+                setGenProgress(`${firstName}... (${event.index}/${event.total})`);
+              } else if (event.type === 'child_done') {
+                setGenDone(d => d + 1);
+              } else if (event.type === 'complete') {
+                setGenProgress('');
+              } else if (event.type === 'error') {
+                throw new Error(event.error || 'Generation failed');
+              }
+            } catch { /* skip malformed lines */ }
+          }
+        }
+      }
+
+      // Reload reports after generation
+      await loadReports();
+    } catch (err: any) {
+      setError(err?.message || 'Failed to generate');
+    } finally {
+      setGenerating(false);
+      setGenProgress('');
+    }
+  };
 
   // Sort alphabetically
   const sortedReports = useMemo(() => {
@@ -1163,12 +1242,43 @@ export default function WeeklyWrapPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-gray-400">
-              <span>📸 {totalPhotos}</span>
-              {totalFlags > 0 && <span className="text-amber-600 font-medium">{totalFlags} flags</span>}
-              <span className="text-emerald-600 font-medium">{approvedCount}/{reports.length} approved</span>
+            <div className="flex items-center gap-2">
+              {/* Stats */}
+              <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 mr-1">
+                <span>📸 {totalPhotos}</span>
+                {totalFlags > 0 && <span className="text-amber-600 font-medium">{totalFlags}</span>}
+                <span className="text-emerald-600 font-medium">{approvedCount}/{reports.length}</span>
+              </div>
+
+              {/* Generate / Regenerate button */}
+              <button
+                onClick={() => handleGenerate(reports.length > 0)}
+                disabled={generating}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+              >
+                {generating ? (
+                  <>
+                    <span className="animate-spin text-[10px]">⏳</span>
+                    <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
+                  </>
+                ) : reports.length > 0 ? (
+                  locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate'
+                ) : (
+                  locale === 'zh' ? '✨ 生成' : '✨ Generate'
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Generation progress bar */}
+          {generating && genTotal > 0 && (
+            <div className="mb-2 w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${Math.round((genDone / genTotal) * 100)}%` }}
+              />
+            </div>
+          )}
 
           {/* Tab bar */}
           <div className="flex border-b border-gray-200 -mb-px">
