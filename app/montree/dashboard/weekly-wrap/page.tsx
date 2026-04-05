@@ -216,25 +216,42 @@ export default function WeeklyWrapPage() {
   };
 
   const handleUpdateShelf = async (r: ReportResult) => {
-    if (!r.teacher_report_id || shelfUpdatingId || r.recommendations.length === 0) return;
+    if (!r.teacher_report_id || shelfUpdatingId) return;
+    // Use interactive shelf state if available, otherwise fall back to raw recommendations
+    const currentShelf = shelfWorks[r.child_id];
+    const worksToUpdate = currentShelf
+      ? currentShelf.filter(w => w.work) // Only push works that have a name
+      : r.recommendations.map(rec => ({ area: rec.area, work: rec.work, status: 'presented' }));
+    if (worksToUpdate.length === 0) return;
+
     setShelfUpdatingId(r.child_id);
     try {
-      const res = await montreeApi('/api/montree/reports/weekly-wrap/approve', {
+      // Push each shelf work to child progress with its current status
+      const results = await Promise.allSettled(
+        worksToUpdate.map(w =>
+          montreeApi('/api/montree/progress/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              child_id: r.child_id,
+              work_name: w.work,
+              area: w.area,
+              status: w.status || 'presented',
+              is_focus: true,
+            }),
+          })
+        )
+      );
+      // Also approve the teacher report
+      await montreeApi('/api/montree/reports/weekly-wrap/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           report_id: r.teacher_report_id,
           child_id: r.child_id,
-          update_shelf: true,
-          recommendations: r.recommendations.map(rec => ({
-            area: rec.area,
-            work: rec.work,
-            reasoning: rec.reasoning,
-          })),
+          update_shelf: false, // We already pushed via progress/update
         }),
       });
-      if (!res.ok) throw new Error('Failed to update shelf');
-      const data = await res.json();
       setShelfUpdatedIds(prev => new Set([...prev, r.child_id]));
       setApprovedIds(prev => new Set([...prev, r.child_id]));
     } catch (err: any) {
@@ -450,8 +467,6 @@ export default function WeeklyWrapPage() {
       if (!recAreas[a]) recAreas[a] = [];
       recAreas[a].push(rec.work);
     }
-    // Find areas with no activity this week (for the "focus more on" phrasing)
-    const weakAreas = AREA_ORDER.filter(a => !worksByArea[a] || worksByArea[a].length === 0);
     const recSentenceParts: string[] = [];
     for (const [area, works] of Object.entries(recAreas)) {
       const areaLabel = area.replace('_', ' ');
