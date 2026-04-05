@@ -343,7 +343,7 @@ export default function WeeklyAdminDocsPage() {
       // Fill BOTH tabs simultaneously (Summary + Plan) regardless of active tab
       let filledCount = 0;
 
-      // Fill summary English fields
+      // Fill summary fields (both English and Chinese)
       for (const suggestion of data.children) {
         const existing = summaryNotes[suggestion.childId];
         if (!existing?.english_text && suggestion.summaryEnglish) filledCount++;
@@ -352,10 +352,10 @@ export default function WeeklyAdminDocsPage() {
         const next = { ...prev };
         for (const suggestion of data.children) {
           const existing = next[suggestion.childId];
-          if (!existing?.english_text) {
+          if (!existing?.english_text || !existing?.chinese_text) {
             next[suggestion.childId] = {
-              english_text: suggestion.summaryEnglish || '',
-              chinese_text: existing?.chinese_text || '',
+              english_text: existing?.english_text || suggestion.summaryEnglish || '',
+              chinese_text: existing?.chinese_text || suggestion.summaryChinese || '',
             };
           }
         }
@@ -574,34 +574,27 @@ function SummaryCard({
   notes: NoteData;
   onUpdate: (childId: string, field: 'english_text' | 'chinese_text', value: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+
+  // Show the locale-appropriate content in one box
+  const displayField = locale === 'zh' ? 'chinese_text' : 'english_text';
+  const displayValue = notes[displayField] || '';
+  const placeholder = locale === 'zh'
+    ? '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...'
+    : 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...';
 
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="text-xs text-gray-500 font-medium block mb-1">
-          {t('weeklyAdmin.englishSummary')}
-        </label>
-        <textarea
-          value={notes.english_text}
-          onChange={(e) => onUpdate(childId, 'english_text', e.target.value)}
-          placeholder="e.g. worked on Sandpaper Letters and Bingo this week..."
-          className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
-          rows={2}
-        />
-      </div>
-      <div>
-        <label className="text-xs text-gray-500 font-medium block mb-1">
-          {t('weeklyAdmin.chineseSummary')}
-        </label>
-        <textarea
-          value={notes.chinese_text}
-          onChange={(e) => onUpdate(childId, 'chinese_text', e.target.value)}
-          placeholder={'日常：...\n感官：...\n数学：...\n语言：...\n文化：...'}
-          className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
-          rows={5}
-        />
-      </div>
+    <div>
+      <label className="text-xs text-gray-500 font-medium block mb-1">
+        {locale === 'zh' ? '本周活动' : 'This Week\'s Activities'}
+      </label>
+      <textarea
+        value={displayValue}
+        onChange={(e) => onUpdate(childId, displayField, e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
+        rows={5}
+      />
     </div>
   );
 }
