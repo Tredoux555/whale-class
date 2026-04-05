@@ -134,6 +134,10 @@ export default function WeeklyWrapPage() {
   const [genDone, setGenDone] = useState(0);
   const [genTotal, setGenTotal] = useState(0);
 
+  // Child selection for selective generation
+  const [selectedChildIds, setSelectedChildIds] = useState<Set<string>>(new Set());
+  const [selectionMode, setSelectionMode] = useState(false);
+
   // Teacher Summary state
   const [expandedTeacher, setExpandedTeacher] = useState<string | null>(null);
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
@@ -208,8 +212,8 @@ export default function WeeklyWrapPage() {
 
   useEffect(() => { loadReports(); }, [loadReports]);
 
-  // Generate/regenerate reports
-  const handleGenerate = async (forceRegenerate = false) => {
+  // Generate/regenerate reports (optionally for specific child IDs)
+  const handleGenerate = async (forceRegenerate = false, childIds?: string[]) => {
     if (!session || generating) return;
     setGenerating(true);
     setGenProgress(locale === 'zh' ? '正在准备...' : 'Preparing...');
@@ -217,18 +221,23 @@ export default function WeeklyWrapPage() {
     setGenTotal(0);
 
     try {
+      const payload: Record<string, unknown> = {
+        classroom_id: session.classroom.id,
+        week_start: weekStart,
+        week_end: weekEnd,
+        locale,
+        force_regenerate: forceRegenerate,
+        stream: true,
+      };
+      if (childIds && childIds.length > 0) {
+        payload.child_ids = childIds;
+      }
+
       const res = await fetch('/api/montree/reports/weekly-wrap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          classroom_id: session.classroom.id,
-          week_start: weekStart,
-          week_end: weekEnd,
-          locale,
-          force_regenerate: forceRegenerate,
-          stream: true,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -278,6 +287,8 @@ export default function WeeklyWrapPage() {
     } finally {
       setGenerating(false);
       setGenProgress('');
+      setSelectionMode(false);
+      setSelectedChildIds(new Set());
     }
   };
 
@@ -724,10 +735,20 @@ export default function WeeklyWrapPage() {
     }
 
     return (
-      <div key={r.child_id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div key={r.child_id} className={`bg-white rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-blue-400 ring-1 ring-blue-200' : 'border-gray-200'}`}>
         {/* Header row */}
         <button
           onClick={() => {
+            if (selectionMode) {
+              // Toggle selection
+              setSelectedChildIds(prev => {
+                const next = new Set(prev);
+                if (next.has(r.child_id)) next.delete(r.child_id);
+                else next.add(r.child_id);
+                return next;
+              });
+              return;
+            }
             const next = isExpanded ? null : r.child_id;
             setExpandedTeacher(next);
             // Init shelf on first expand
@@ -737,6 +758,15 @@ export default function WeeklyWrapPage() {
           }}
           className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
         >
+          {selectionMode && (
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+              selectedChildIds.has(r.child_id)
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'border-gray-300 bg-white'
+            }`}>
+              {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
+            </div>
+          )}
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
             {firstName.charAt(0)}
           </div>
@@ -1252,23 +1282,64 @@ export default function WeeklyWrapPage() {
                 <span className="text-emerald-600 font-medium">{approvedCount}/{reports.length}</span>
               </div>
 
-              {/* Generate / Regenerate button */}
-              <button
-                onClick={() => handleGenerate(reports.length > 0)}
-                disabled={generating}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-              >
-                {generating ? (
-                  <>
-                    <span className="animate-spin text-[10px]">⏳</span>
-                    <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
-                  </>
-                ) : reports.length > 0 ? (
-                  locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate'
-                ) : (
-                  locale === 'zh' ? '✨ 生成' : '✨ Generate'
-                )}
-              </button>
+              {/* Select mode toggle */}
+              {reports.length > 0 && !generating && (
+                <button
+                  onClick={() => {
+                    setSelectionMode(!selectionMode);
+                    if (selectionMode) setSelectedChildIds(new Set());
+                  }}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectionMode
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  {selectionMode
+                    ? (locale === 'zh' ? '取消选择' : 'Cancel')
+                    : (locale === 'zh' ? '选择' : 'Select')}
+                </button>
+              )}
+
+              {/* Generate Selected button (when in selection mode) */}
+              {selectionMode && selectedChildIds.size > 0 && (
+                <button
+                  onClick={() => handleGenerate(true, Array.from(selectedChildIds))}
+                  disabled={generating}
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                >
+                  {generating ? (
+                    <>
+                      <span className="animate-spin text-[10px]">⏳</span>
+                      <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
+                    </>
+                  ) : (
+                    locale === 'zh'
+                      ? `🔄 重新生成 (${selectedChildIds.size})`
+                      : `🔄 Regenerate (${selectedChildIds.size})`
+                  )}
+                </button>
+              )}
+
+              {/* Generate All / Regenerate All button */}
+              {!selectionMode && (
+                <button
+                  onClick={() => handleGenerate(reports.length > 0)}
+                  disabled={generating}
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+                >
+                  {generating ? (
+                    <>
+                      <span className="animate-spin text-[10px]">⏳</span>
+                      <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
+                    </>
+                  ) : reports.length > 0 ? (
+                    locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate All'
+                  ) : (
+                    locale === 'zh' ? '✨ 生成' : '✨ Generate'
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -1332,6 +1403,31 @@ export default function WeeklyWrapPage() {
         {/* ─── Teacher Summary Tab ─── */}
         {activeTab === 'teacher' && reports.length > 0 && (
           <>
+            {/* Selection bar */}
+            {selectionMode && (
+              <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
+                <span className="text-xs text-blue-700 font-medium">
+                  {selectedChildIds.size > 0
+                    ? (locale === 'zh' ? `已选择 ${selectedChildIds.size} 名学生` : `${selectedChildIds.size} selected`)
+                    : (locale === 'zh' ? '点击选择要生成的学生' : 'Tap children to select')}
+                </span>
+                <button
+                  onClick={() => {
+                    if (selectedChildIds.size === reports.length) {
+                      setSelectedChildIds(new Set());
+                    } else {
+                      setSelectedChildIds(new Set(reports.map(r => r.child_id)));
+                    }
+                  }}
+                  className="text-xs text-blue-600 font-semibold hover:text-blue-800"
+                >
+                  {selectedChildIds.size === reports.length
+                    ? (locale === 'zh' ? '取消全选' : 'Deselect All')
+                    : (locale === 'zh' ? '全选' : 'Select All')}
+                </button>
+              </div>
+            )}
+
             {/* Flagged children first */}
             {sortedReports.filter(r => r.flags_count > 0).length > 0 && (
               <div className="space-y-2">

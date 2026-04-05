@@ -3,7 +3,7 @@
 // Produces per-child weekly analysis at the level of a 30-year AMI consultant
 // This is the internal report — detailed, developmental, forward-looking
 
-import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 
 // ── Types ──
@@ -500,47 +500,132 @@ export async function generateTeacherReport(
 
   try {
     const prompt = buildTeacherReportPrompt(input);
+    const lang = input.locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
 
     const systemMessage = input.locale === 'zh'
-      ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all JSON string values in Chinese (Mandarin). Keep all JSON keys in English. You MUST return valid JSON — use ASCII quotes, commas, and colons for JSON structure. Chinese punctuation is only allowed inside string values.'
+      ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all responses in Chinese (Mandarin). Use Chinese for all descriptive text fields.'
       : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
 
+    // Use tool_use for structured output — the API handles JSON serialization,
+    // so Haiku never has to produce raw JSON. This completely eliminates the
+    // Chinese JSON corruption issue (unescaped quotes, fullwidth punctuation, etc.)
     const response = await anthropic.messages.create({
-      model: HAIKU_MODEL,
+      model: AI_MODEL,
       max_tokens: 8192,
       system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
+      tools: [{
+        name: 'submit_teacher_report',
+        description: `Submit the completed weekly teacher report. All text fields must be written in ${lang}.`,
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            developmental_snapshot: {
+              type: 'string',
+              description: '2-3 sentences placing this child in their developmental context.',
+            },
+            sensitive_periods: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  period: { type: 'string', description: 'Sensitive period name' },
+                  status: { type: 'string', enum: ['active', 'emerging'] },
+                  evidence: { type: 'string', description: 'What specific work choices indicate this' },
+                  implication: { type: 'string', description: 'What this means for curriculum' },
+                },
+                required: ['period', 'status', 'evidence', 'implication'],
+              },
+            },
+            area_analyses: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  area: { type: 'string', description: 'Canonical area key (practical_life, sensorial, mathematics, language, cultural)' },
+                  area_label: { type: 'string', description: 'Area display name' },
+                  works_count: { type: 'number' },
+                  narrative: { type: 'string', description: '3-5 sentence expert Montessori analysis of this area' },
+                },
+                required: ['area', 'area_label', 'works_count', 'narrative'],
+              },
+            },
+            concentration: {
+              type: 'object',
+              properties: {
+                score: { type: 'number' },
+                assessment: { type: 'string' },
+                narrative: { type: 'string', description: '2-3 sentences interpreting the score in developmental context' },
+              },
+              required: ['score', 'assessment', 'narrative'],
+            },
+            normalization_narrative: {
+              type: 'string',
+              description: '2-3 sentences about normalization journey (love of work, concentration, self-discipline, sociability)',
+            },
+            flags: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  level: { type: 'string', enum: ['red', 'yellow'] },
+                  issue: { type: 'string' },
+                  montessori_context: { type: 'string', description: 'Reframe through Montessori lens' },
+                  recommendation: { type: 'string' },
+                },
+                required: ['level', 'issue', 'montessori_context', 'recommendation'],
+              },
+            },
+            recommendations: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  area: { type: 'string', description: 'Canonical area key only' },
+                  area_label: { type: 'string' },
+                  work: { type: 'string', description: 'EXACT curriculum work name only — no prefixes like Present/Continue' },
+                  reasoning: { type: 'string' },
+                },
+                required: ['area', 'area_label', 'work', 'reasoning'],
+              },
+            },
+            key_insight: {
+              type: 'string',
+              description: 'The most important 3-5 sentence synthesis. End with specific recommendations for the coming week.',
+            },
+          },
+          required: [
+            'developmental_snapshot', 'sensitive_periods', 'area_analyses',
+            'concentration', 'normalization_narrative', 'flags',
+            'recommendations', 'key_insight',
+          ],
+        },
+      }],
+      tool_choice: { type: 'tool' as const, name: 'submit_teacher_report' },
     });
 
-    const rawText = response.content
-      .filter(block => block.type === 'text')
-      .map(block => (block as { type: 'text'; text: string }).text)
-      .join('')
-      .trim();
+    // Extract the structured data from the tool_use response block
+    const toolBlock = response.content.find(
+      (block): block is { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
+        block.type === 'tool_use' && block.name === 'submit_teacher_report'
+    );
 
-    // Parse JSON response with robust repair (Haiku + Chinese = frequent malformed JSON)
-    let report: TeacherReportContent;
-    const parsed = repairAndParseJSON(rawText);
-    if (parsed) {
-      report = parsed;
-    } else {
-      // Log enough context to debug: first 200 chars + last 200 chars + error position
-      const head = rawText.substring(0, 200);
-      const tail = rawText.substring(Math.max(0, rawText.length - 200));
-      console.error(`[TeacherReport] ALL JSON repair failed for ${input.child.name} (${rawText.length} chars).`);
-      console.error(`[TeacherReport] Head: ${head}`);
-      console.error(`[TeacherReport] Tail: ${tail}`);
+    if (!toolBlock?.input) {
+      console.error(`[TeacherReport] No tool_use block in response for ${input.child.name}`);
       return {
         success: true,
         report: generateTeacherFallback(input),
         generatedAt: new Date().toISOString(),
-        error: 'Failed to parse AI response, using fallback',
+        error: 'No tool_use block in AI response, using fallback',
       };
     }
 
+    // The API guarantees valid JSON — cast directly
+    const report = toolBlock.input as unknown as TeacherReportContent;
+
     // Validate required fields exist
     if (!report.developmental_snapshot || !report.key_insight) {
-      console.error('Teacher report missing required fields');
+      console.error(`[TeacherReport] Missing required fields for ${input.child.name}`);
       return {
         success: true,
         report: generateTeacherFallback(input),
@@ -552,7 +637,7 @@ export async function generateTeacherReport(
     return {
       success: true,
       report,
-      model: HAIKU_MODEL,
+      model: AI_MODEL,
       generatedAt: new Date().toISOString(),
       tokensUsed: {
         input: response.usage?.input_tokens || 0,

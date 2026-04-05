@@ -3,7 +3,7 @@
 // Takes weekly analysis + photo data + curriculum descriptions
 // Returns a personalized narrative summary for parents
 
-import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 
 // ── Types ──
@@ -189,7 +189,7 @@ export async function generateWeeklyNarrative(
       : 'You are a warm Montessori teacher writing a weekly update for parents.';
 
     const response = await anthropic.messages.create({
-      model: HAIKU_MODEL,
+      model: AI_MODEL,
       max_tokens: 300,
       system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
@@ -204,7 +204,7 @@ export async function generateWeeklyNarrative(
     return {
       success: true,
       narrative: narrative || generateTemplateFallback(input),
-      model: HAIKU_MODEL,
+      model: AI_MODEL,
       generatedAt: new Date().toISOString(),
       tokensUsed: {
         input: response.usage?.input_tokens || 0,
