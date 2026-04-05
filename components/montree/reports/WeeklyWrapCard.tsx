@@ -44,8 +44,6 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
     skipped: number;
     failed: number;
     cost_usd: number;
-    week_number: number;
-    report_year: number;
   } | null>(null);
   const [error, setError] = useState('');
   const mountedRef = useRef(true);
@@ -94,8 +92,6 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
         skipped: data.skipped,
         failed: data.failed,
         cost_usd: data.cost_usd,
-        week_number: data.week_number,
-        report_year: data.report_year,
       });
       setProgress('');
     } catch (err: any) {
@@ -111,7 +107,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
   const handleReview = () => {
     if (!result) return;
     router.push(
-      `/montree/dashboard/weekly-wrap?week=${week_start}&week_end=${week_end}&wn=${result.week_number}&yr=${result.report_year}`
+      `/montree/dashboard/weekly-wrap?week=${week_start}&week_end=${week_end}`
     );
   };
 

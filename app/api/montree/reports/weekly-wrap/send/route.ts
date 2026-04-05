@@ -3,8 +3,7 @@
 //
 // Body: {
 //   classroom_id: string,
-//   week_number: number,
-//   report_year: number,
+//   week_start: string,    // YYYY-MM-DD Monday
 //   locale?: 'en' | 'zh'
 // }
 
@@ -22,11 +21,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
     const body = await request.json();
-    const { classroom_id, week_number, report_year, locale: requestLocale } = body;
+    const { classroom_id, week_start, locale: requestLocale } = body;
 
-    if (!classroom_id || !week_number || !report_year) {
+    if (!classroom_id || !week_start) {
       return NextResponse.json(
-        { error: 'classroom_id, week_number, and report_year are required' },
+        { error: 'classroom_id and week_start are required' },
         { status: 400 }
       );
     }
@@ -50,8 +49,7 @@ export async function POST(request: NextRequest) {
       .from('montree_weekly_reports')
       .select('id, child_id, content, week_start, week_end')
       .eq('classroom_id', classroom_id)
-      .eq('week_number', week_number)
-      .eq('report_year', report_year)
+      .eq('week_start', week_start)
       .eq('report_type', 'parent')
       .eq('status', 'draft');
 
@@ -110,8 +108,6 @@ export async function POST(request: NextRequest) {
           .from('montree_weekly_reports')
           .update({
             status: 'sent',
-            is_published: true,
-            published_at: now,
             sent_at: now,
           })
           .eq('id', draft.id);
@@ -127,8 +123,7 @@ export async function POST(request: NextRequest) {
           .from('montree_weekly_reports')
           .update({ status: 'approved', approved_at: now })
           .eq('child_id', draft.child_id)
-          .eq('week_number', week_number)
-          .eq('report_year', report_year)
+          .eq('week_start', week_start)
           .eq('report_type', 'teacher');
 
         if (teacherUpdateErr) {
@@ -150,7 +145,7 @@ export async function POST(request: NextRequest) {
           const weekEndStr = draft.week_end || '';
           const startFmt = weekStartStr ? new Date(weekStartStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }) : '';
           const endFmt = weekEndStr ? new Date(weekEndStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }) : '';
-          const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : `Week ${week_number}`;
+          const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : week_start;
 
           const html = narrative
             ? `

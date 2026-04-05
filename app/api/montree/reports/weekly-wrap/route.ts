@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     // Get children
     let childQuery = supabase
       .from('montree_children')
-      .select('id, name, date_of_birth, classroom_id, enrollment_date')
+      .select('id, name, date_of_birth, classroom_id, enrolled_at')
       .eq('classroom_id', classroom_id)
       .eq('is_active', true);
 
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to fetch children: ${childrenError.message}` }, { status: 500 });
     }
     const children = (childrenRaw || []) as Array<{
-      id: string; name: string; date_of_birth: string; classroom_id: string; enrollment_date: string | null;
+      id: string; name: string; date_of_birth: string; classroom_id: string; enrolled_at: string | null;
     }>;
     if (children.length === 0) {
       return NextResponse.json({ error: 'No active children found in this classroom' }, { status: 404 });
@@ -156,8 +156,7 @@ export async function POST(request: NextRequest) {
         .from('montree_weekly_reports')
         .select('child_id, report_type, content')
         .in('child_id', children.map(c => c.id))
-        .eq('week_number', weekNumber)
-        .eq('report_year', reportYear)
+        .eq('week_start', week_start)
         .in('report_type', ['teacher', 'parent']);
 
       for (const r of (existingData || []) as Array<{ child_id: string; report_type: string; content: Record<string, unknown> }>) {
@@ -204,7 +203,7 @@ export async function POST(request: NextRequest) {
             const [progressRes, historicalRes, photosRes, groupPhotosRes] = await Promise.all([
               supabase
                 .from('montree_child_progress')
-                .select('work_name, area, status, notes, created_at, duration_minutes, repetition_count')
+                .select('work_name, area, status, notes, created_at')
                 .eq('child_id', child.id)
                 .gte('created_at', week_start)
                 .lte('created_at', week_end + 'T23:59:59'),
@@ -227,7 +226,7 @@ export async function POST(request: NextRequest) {
                 .eq('child_id', child.id),
             ]);
 
-            type ProgressRecord = { work_name: string; area: string; status: string; notes?: string; created_at: string; duration_minutes?: number; repetition_count?: number };
+            type ProgressRecord = { work_name: string; area: string; status: string; notes?: string; created_at: string };
             type HistoryRecord = { work_name: string; area: string; status: string; created_at: string };
             type PhotoRecord = { id: string; storage_path: string; work_id: string | null; caption: string | null; captured_at: string };
 
@@ -257,8 +256,6 @@ export async function POST(request: NextRequest) {
               parent_description: string | null;
               why_it_matters: string | null;
               caption: string | null;
-              duration_minutes?: number;
-              repetition_count?: number;
             }> = [];
 
             const photoByWorkName = new Map<string, PhotoRecord>();
@@ -279,8 +276,6 @@ export async function POST(request: NextRequest) {
                 parent_description: desc?.description || null,
                 why_it_matters: desc?.why_it_matters || null,
                 caption: photo.caption,
-                duration_minutes: matchingProgress?.duration_minutes,
-                repetition_count: matchingProgress?.repetition_count,
               });
             }
 
@@ -305,8 +300,6 @@ export async function POST(request: NextRequest) {
                 status: p.status,
                 notes: p.notes,
                 date: p.created_at,
-                duration_minutes: p.duration_minutes,
-                repetition_count: p.repetition_count,
               })),
               historicalProgress: historical.map(p => ({
                 work_name: p.work_name,
@@ -332,7 +325,7 @@ export async function POST(request: NextRequest) {
                   name: child.name,
                   age: Math.round(childAge * 10) / 10,
                   date_of_birth: child.date_of_birth,
-                  enrollment_date: child.enrollment_date,
+                  enrollment_date: child.enrolled_at,
                   classroom_name: classroom.name,
                 },
                 weekStart: week_start,
@@ -360,14 +353,11 @@ export async function POST(request: NextRequest) {
                 school_id: classroom.school_id,
                 classroom_id: classroom_id,
                 child_id: child.id,
-                week_number: weekNumber,
-                report_year: reportYear,
                 week_start: week_start,
                 week_end: week_end,
                 report_type: 'teacher',
                 status: 'draft',
                 content: teacherReportContent,
-                is_published: false,
                 generated_at: now,
               }, { onConflict: 'child_id,week_start,report_type' });
             }
@@ -442,14 +432,11 @@ export async function POST(request: NextRequest) {
                 school_id: classroom.school_id,
                 classroom_id: classroom_id,
                 child_id: child.id,
-                week_number: weekNumber,
-                report_year: reportYear,
                 week_start: week_start,
                 week_end: week_end,
                 report_type: 'parent',
                 status: 'draft',
                 content: parentReportContent,
-                is_published: false,
                 generated_at: now,
               }, { onConflict: 'child_id,week_start,report_type' });
             }

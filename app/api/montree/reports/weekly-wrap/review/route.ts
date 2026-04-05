@@ -1,6 +1,6 @@
 // /api/montree/reports/weekly-wrap/review/route.ts
 // GET: Load all reports for a given week for the review page
-// Query params: classroom_id, week_number, report_year
+// Query params: classroom_id, week_start
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -14,12 +14,11 @@ export async function GET(request: NextRequest) {
     const supabase = getSupabase();
     const url = new URL(request.url);
     const classroom_id = url.searchParams.get('classroom_id');
-    const week_number = parseInt(url.searchParams.get('week_number') || '0');
-    const report_year = parseInt(url.searchParams.get('report_year') || '0');
+    const week_start = url.searchParams.get('week_start');
 
-    if (!classroom_id || !week_number || !report_year) {
+    if (!classroom_id || !week_start) {
       return NextResponse.json(
-        { error: 'classroom_id, week_number, and report_year are required' },
+        { error: 'classroom_id and week_start are required' },
         { status: 400 }
       );
     }
@@ -41,8 +40,7 @@ export async function GET(request: NextRequest) {
       .from('montree_weekly_reports')
       .select('id, child_id, report_type, status, content')
       .eq('classroom_id', classroom_id)
-      .eq('week_number', week_number)
-      .eq('report_year', report_year)
+      .eq('week_start', week_start)
       .in('report_type', ['teacher', 'parent']);
 
     const reports = (reportsRaw || []) as Array<{

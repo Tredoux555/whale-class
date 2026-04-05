@@ -32,8 +32,6 @@ export default function WeeklyWrapPage() {
 
   const weekStart = searchParams.get('week') || '';
   const weekEnd = searchParams.get('week_end') || '';
-  const weekNumber = parseInt(searchParams.get('wn') || '0');
-  const reportYear = parseInt(searchParams.get('yr') || '0');
 
   const [session, setSession] = useState<{ classroom: { id: string; name: string }; school: { id: string } } | null>(null);
   const [reports, setReports] = useState<ReportResult[]>([]);
@@ -55,13 +53,13 @@ export default function WeeklyWrapPage() {
 
   // Load reports for this week
   const loadReports = useCallback(async () => {
-    if (!session || !weekNumber || !reportYear) return;
+    if (!session || !weekStart) return;
     setLoading(true);
     setError('');
 
     try {
       const res = await montreeApi(
-        `/api/montree/reports/weekly-wrap/review?classroom_id=${session.classroom.id}&week_number=${weekNumber}&report_year=${reportYear}`
+        `/api/montree/reports/weekly-wrap/review?classroom_id=${session.classroom.id}&week_start=${weekStart}`
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -75,7 +73,7 @@ export default function WeeklyWrapPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, weekNumber, reportYear]);
+  }, [session, weekStart]);
 
   useEffect(() => {
     loadReports();
@@ -105,7 +103,7 @@ export default function WeeklyWrapPage() {
         const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
         return `${fmt(start)} – ${fmt(end)}`;
       })()
-    : `Week ${weekNumber}, ${reportYear}`;
+    : weekStart;
 
   // Send all to parents
   const handleSendAll = async () => {
@@ -122,8 +120,7 @@ export default function WeeklyWrapPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           classroom_id: session.classroom.id,
-          week_number: weekNumber,
-          report_year: reportYear,
+          week_start: weekStart,
           locale,
         }),
       });
