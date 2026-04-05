@@ -412,6 +412,7 @@ export default function PhotoAuditPage() {
 
   // Classroom (for WeeklyWrapTab)
   const [classroomIdState, setClassroomIdState] = useState<string>('');
+  const classroomIdInitRef = useRef(false);
 
   // Core state
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
@@ -485,8 +486,11 @@ export default function PhotoAuditPage() {
       console.warn('[Photo Audit] No classroomId — cannot load curriculum');
       return;
     }
-    // Store classroomId for WeeklyWrapTab
-    if (classroomId && !classroomIdState) setClassroomIdState(classroomId);
+    // Store classroomId for WeeklyWrapTab (use ref to avoid stale closure)
+    if (classroomId && !classroomIdInitRef.current) {
+      classroomIdInitRef.current = true;
+      setClassroomIdState(classroomId);
+    }
     // Abort previous curriculum fetch if still in-flight (prevents race on rapid area changes)
     curriculumAbortRef.current?.abort();
     const controller = new AbortController();
@@ -1455,6 +1459,7 @@ export default function PhotoAuditPage() {
 
   // Filter photos by zone — 'all' shows everything needing review (non-green)
   const filteredPhotos = useMemo(() => {
+    if (zone === 'weekly_wrap') return []; // Weekly Wrap tab handled separately
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
