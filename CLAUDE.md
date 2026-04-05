@@ -13,28 +13,43 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## RECENT STATUS (Apr 5, 2026)
+## RECENT STATUS (Apr 6, 2026)
 
-### ⚡ PRIORITY: Weekly Wrap Report Quality (NEXT UP)
+### ⚡ PRIORITY: Full Chinese Localization + Teacher Report JSON Repair
 
-**Weekly Wrap Generation — ✅ WORKING (commits `f137a9b3` → `af422e64`):**
-The full generation pipeline is functional. All 19 children generate, all 38 rows (19 teacher + 19 parent) save to DB, review page shows all children, "19 parent reports ready to send" appears, streaming progress works. Migration 162 resolved duplicate key constraint. No more 500 errors.
+**Chinese Localization — ✅ MOSTLY WORKING (commits from this session):**
+Full bilingual pipeline for Weekly Wrap + Weekly Admin Docs. When UI is set to Chinese, area labels, work names, photo descriptions, parent narratives, and flag badges all display in Chinese. English when in English.
 
-**⚠️ CURRENTLY ON HAIKU** — Both `teacher-report-generator.ts` and `narrative-generator.ts` import `HAIKU_MODEL` instead of `AI_MODEL`. Switched to save costs during testing (~$0.10/run vs ~$1.70/run on Sonnet). **Switch back to Sonnet for production** by changing `HAIKU_MODEL` → `AI_MODEL` in both imports. `max_tokens` is 8192 (teacher) and 300 (parent narrative).
+**⚠️ HAIKU CHINESE JSON — PARTIALLY FIXED (commit `df69e3be` + follow-up):**
+Haiku produces malformed JSON when generating Chinese teacher reports. Two rounds of fixes:
+- **Round 1** (`df69e3be`): Added `repairAndParseJSON()` with 5 repair layers + string-state-tracking newline fixer. FAILED — Haiku puts unescaped ASCII `"` inside string values (quoting English terms in Chinese text), which throws off the state machine.
+- **Round 2** (follow-up commit): Replaced state machine with nuclear approach — `text.replace(/\r?\n/g, ' ')` replaces ALL literal newlines with spaces. This is safe because JSON whitespace between tokens can be spaces, and literal newlines inside strings are always invalid. Added structural fixes for fullwidth punctuation after. **Testing needed** — verify Henry, Joey, Ryan reports now parse correctly.
+- **System prompt rewritten**: Chinese system message now in ENGLISH (not Chinese) to prevent Haiku from "thinking in Chinese" and using fullwidth punctuation structurally. Explicit rules about ASCII-only JSON structure.
+- **If still failing after round 2**: Consider switching back to Sonnet (`AI_MODEL`) for Chinese teacher reports — more expensive (~$1.70/run vs $0.10/run) but much more reliable JSON output. Or use `tool_use` for structured output.
 
-**What NEEDS FIXING (next session — report quality):**
-The teacher report WORKS but the output quality needs significant rework. Currently it renders as a structured technical document (Developmental Snapshot → Curriculum Areas → Concentration & Focus → Observations → Recommended Presentations → Key Insight). What the teacher actually wants is:
-1. ~~**Raw UUIDs leaking into display**~~ — ✅ FIXED (commits `aaee0d8f` → `cab4052b`). UUID areas resolved via `areaIdToKey` map from `montree_classroom_curriculum_areas`. Review API has `resolveArea()` with 3-layer fallback (UUID lookup → canonical check → fuzzy keyword match). Generation route also fixed at source.
-2. **"999 days" in observations** — Red flags say "No work in 999 days" for practical life, sensorial, mathematics, cultural. This is a data artifact (child has no progress records in those areas, and the "days since" calculation produces 999 as a fallback). Should either show "No recorded work yet" or hide the flag entirely if there's no baseline data.
-3. **Report format is too structured/clinical** — Teacher wants a narrative paragraph, not a structured breakdown with headers. The current format is useful as an INTERNAL diagnostic but shouldn't be the final teacher-facing report. Consider: (a) redesigning the teacher report prompt to output a flowing paragraph, or (b) adding a rendering layer that converts the structured JSON into prose.
-4. ~~**"other" area grouping**~~ — ✅ FIXED (commit `6c042522`). Works that don't match now resolve to specific areas via `area_id` fallback.
-5. **Parent narrative looks good** — "This week, Austin spent a lot of time with language work..." paragraph style is exactly right. Use this as the model for teacher report tone.
+**⚠️ CURRENTLY ON HAIKU** — Both `teacher-report-generator.ts` and `narrative-generator.ts` import `HAIKU_MODEL` instead of `AI_MODEL`. Switched to save costs during testing. **Switch back to Sonnet for production** by changing `HAIKU_MODEL` → `AI_MODEL` in both imports.
+
+**What was FIXED this session (Chinese localization):**
+1. ~~**UUID areas in Weekly Admin Docs auto-fill**~~ — ✅ FIXED. Auto-fill API now has `resolveArea()` with UUID→canonical key mapping. Was causing summary to show "..." placeholder (no data matched canonical area keys).
+2. ~~**Weekly Admin Docs plan showing English work names**~~ — ✅ FIXED. API returns `planAreasZh` alongside `planAreas`. Page uses `chinese_text` when locale is zh. DOCX generation also locale-aware.
+3. ~~**Photo descriptions under parent reports in English**~~ — ✅ FIXED (earlier commit). Static Chinese descriptions file + DB `parent_description_zh`/`why_it_matters_zh` columns + fuzzy matching.
+4. ~~**Visual memory overwriting Chinese descriptions**~~ — ✅ FIXED. Guard: `if (locale === 'zh' && dbDescriptions.has(vmKey)) continue;`
+5. ~~**Missing Chinese descriptions for 20+ works**~~ — ✅ FIXED. Added to `parent-descriptions-zh.ts`.
+6. ~~**Classroom variant names not matching**~~ — ✅ FIXED. Fuzzy matching (strip " - suffix", normalize spaces) in 4 files.
+7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `parent_description_zh`/`why_it_matters_zh`.
+
+**What STILL NEEDS FIXING (next session):**
+1. **Teacher report quality** — Still too structured/clinical. Needs narrative paragraph format. See suggested approach below.
+2. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
+3. **Teacher summary line still shows English work names** — The "需要关注" section shows e.g. "感官: Constructive Triangles - Rectangular Box · 语言: Chalk Board Writing - No lines, Chalkboard Writing" — area labels are Chinese but work names are English. The review API needs to return Chinese work names for the teacher summary works list.
+4. **Verify Haiku JSON repair works** — Test Weekly Wrap generation after latest fix deployed.
 
 **Suggested approach for next session:**
-- The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. The review page (`app/montree/dashboard/weekly-wrap/page.tsx`) then renders each field. Two options:
+- The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. Two options:
   - **Option A (simpler):** Keep the structured JSON for data but add a `teacher_narrative` field — a single paragraph summary like the parent narrative. Display that prominently, collapse the structured data behind a "Details" toggle.
   - **Option B (cleaner):** Redesign the teacher report to output prose like the parent report, with the structured analysis stored separately for the intelligence layer.
-- Fix the "999 days" — add a guard in the teacher report prompt or the data preparation step.
+- Fix "999 days" — add a guard in the teacher report prompt or data preparation step.
+- Fix teacher summary work names — use `name_zh` in review API response for works list.
 
 **What WORKS end-to-end (tested Apr 5):**
 - ✅ Weekly Wrap generation (streaming, all 19 children)
@@ -65,19 +80,33 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
 - `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client (~1450 lines). Two tabs: Teacher Summary (with interactive shelf, WorkWheelPicker, approve/push) + Parent Reports (edit narrative, reorder photos, crop, send). Generate/Regenerate button in header with streaming progress bar. Invite Parents link in bottom bar.
 - `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card (NO LONGER used on dashboard — removed from Teacher Tools. Still exists as component for potential reuse.)
-- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production. Prompt updated: work field = "EXACT curriculum work name ONLY", area field = "canonical area_key ONLY".
+- `lib/montree/reports/teacher-report-generator.ts` — **HAIKU** teacher report (max_tokens: 8192) ← switch back to AI_MODEL for production. Has `repairAndParseJSON()` for robust Chinese JSON handling. System prompt in English even for Chinese output (prevents fullwidth punctuation in JSON structure). Prompt updated: work field = "EXACT curriculum work name ONLY", area field = "canonical area_key ONLY".
 - `lib/montree/reports/narrative-generator.ts` — **HAIKU** parent narrative ← switch back to AI_MODEL for production
-- `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports
-- `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation
+- `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports. Has `resolveArea()` for UUID→canonical key mapping. Returns `planAreasZh` alongside `planAreas`. Has `getZhWorkName()` for fuzzy Chinese name lookup.
+- `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation. Locale-aware: uses `chinese_text` for plan area work names when locale is zh.
 - `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
+- `lib/montree/auto-translate.ts` — **NEW**. Fire-and-forget Haiku translation of Sonnet-generated descriptions to Chinese. Called after "Teach the AI" saves. Stores in `parent_description_zh`/`why_it_matters_zh` on `montree_classroom_curriculum_works`.
+- `lib/curriculum/comprehensive-guides/parent-descriptions-zh.ts` — Static Chinese parent descriptions (~130 works). Has `getChineseParentDescription()` with fuzzy matching (strip suffix, space-collapsed). `getChineseDescriptionsMap()` for batch lookups.
 
 **Key Technical Patterns (Weekly Wrap):**
 - `cleanWorkName(raw)` — strips AI prefixes ("Present/Continue/Introduce") and trailing clauses ("as the.../with increased..."), with substring matching against known curriculum works. Used in both review API and `FocusWorksSection.tsx`.
-- `resolveArea(raw, workName?)` — 3-layer resolution: UUID lookup via `areaIdToKey` map → canonical key check → fuzzy keyword matching → work-name-based area fallback.
+- `resolveArea(raw, workName?)` — 3-layer resolution: UUID lookup via `areaIdToKey` map → canonical key check → fuzzy keyword matching → work-name-based area fallback. **Must be added to any new API that reads Weekly Wrap data** — parent reports store areas as UUIDs.
 - `toCanonicalArea(raw)` — client-side area normalization using `normalizeArea()` from AreaBadge + fuzzy keyword matching.
 - Chinese localization: `AREA_LABELS_ZH` map + `name_zh` from `montree_classroom_curriculum_works` table + `getAreaLabel(area)` helper using locale.
+- `repairAndParseJSON(raw)` — robust JSON repair for Haiku Chinese output. Strategy: strip fences → extract braces → replace ALL newlines with spaces → fix fullwidth punctuation → fix structural commas. The newline→space replacement is the key insight: literal newlines in JSON are only valid as whitespace between tokens, never inside strings.
+- **Fuzzy work name matching** (used in 4+ files): strip " - suffix" variants → normalize spaces ("chalk board" → "chalkboard") → substring match for long keys. Pattern: `name.replace(/\s*-\s*.+$/, '').trim()` then `collapsed.replace(/\s+/g, '')`.
 
 ---
+
+**Full Chinese Localization + JSON Repair — ✅ PUSHED (commits from Apr 5-6 session):**
+Multi-commit session for full bilingual Chinese/English support:
+- Chinese parent descriptions: 20+ missing works added to `parent-descriptions-zh.ts`, fuzzy matching in `getChineseParentDescription()` and `getChineseWorkName()`
+- Visual memory overwrite fix: Chinese descriptions no longer overwritten by English visual memory entries
+- Fuzzy work name matching: 4 files updated with strip-suffix + space-collapsed matching
+- Auto-translate: new `lib/montree/auto-translate.ts` for fire-and-forget Haiku translation after "Teach the AI"
+- Weekly Admin Docs Chinese: `resolveArea()` for UUID areas, `planAreasZh` in API, locale-aware PlanCard + DOCX generation
+- Teacher report JSON repair: `repairAndParseJSON()` with nuclear newline→space approach + rewritten system prompt
+- Weekly Wrap UI: flag badges, sent/edited badges, photo work names, shelf names all localized
 
 **Weekly Wrap UI Polish — ✅ PUSHED (commits `aaee0d8f` → `e077e68d`):**
 6 commits in this session:
