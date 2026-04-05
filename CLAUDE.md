@@ -15,6 +15,15 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 5, 2026)
 
+**Gallery Chronological Order + Photo Audit Sort — ✅ PUSHED (commit `9f9bff3e`):**
+Gallery "All Photos" now renders chronologically with date headers (was area-grouped). Timeline tab and Tag Event tab removed (redundant). Area filter chips retained. Photo Audit API sort changed from `created_at` to `captured_at` for consistency.
+
+**Smart Capture Tappable Work Name — ✅ PUSHED (commit `4c736971`):**
+PhotoInsightPopup work name row is now a tappable button with pencil icon → opens WorkWheelPicker inline on capture page. "Wrong? Fix →" removed. "Just Save" centered. Full correction flow (area picker → work picker → PATCH → popup reappears) works without leaving capture screen.
+
+**Corrections Map Override + Scenario A Fix — ✅ PUSHED (commit `e7277f24`):**
+Visual memory now overrides stale corrections map entries at runtime (fuzzyScore >= 0.5). E.g., "Chalkboard Writing" → "Chalk Board Writing - No lines" instead of → "Name Writing". Pass 2 prompt gets CLASSROOM-VERIFIED PRIORITY rule. Scenario A threshold changed to trust high matchScores (>=0.90) even with moderate Haiku confidence.
+
 **Haiku Classification Fix — Visual Memory Feedback Loop — ✅ PUSHED (commit `cf039f04`):**
 Fixed critical data flow break: teacher "Teach the AI" descriptions (Sonnet-quality, confidence 1.0, with key_materials + negative_descriptions) were stored in `montree_visual_memory` but NEVER injected into Haiku identification prompts because `is_custom=false` filter discarded them. 4 changes: (1) Pass 1 reordered — HANDS & PRIMARY WORK now item #1, accessories labeled as secondary. (2) Query expanded — loads key_materials, negative_descriptions, source, description_confidence. (3) Filter replaced — `is_custom OR (source IN teacher_setup/correction AND confidence>=0.9)` instead of just `is_custom`. (4) Visual memory moved to TOP of Pass 2 prompt with rich format (KEY MATERIALS, DISTINGUISH FROM) instead of buried at bottom of 280-line guide.
 
