@@ -896,7 +896,7 @@ export async function POST(request: NextRequest) {
           const capped = verifiedEntries.slice(0, 20);
           visualMemoryContext = `\n\nCLASSROOM-VERIFIED WORKS (teacher has confirmed these — match to these when the description fits):\n\n${capped.join('\n\n')}
 
-When the photo description CLEARLY matches a CLASSROOM-VERIFIED work above, prefer that match. If no verified work fits, use the VISUAL IDENTIFICATION GUIDE below.`;
+IMPORTANT: These CLASSROOM-VERIFIED works OVERRIDE the generic VISUAL IDENTIFICATION GUIDE below. If the photo description matches a verified work's KEY MATERIALS and LOOKS LIKE description, you MUST use that work name. Pay special attention to DISTINGUISH FROM entries — if the description matches what a work is NOT, eliminate it. Only fall back to the VISUAL IDENTIFICATION GUIDE if NO verified work matches.`;
 
           // Fire-and-forget: increment times_used for all injected memories
           if (classroomId && injectedNames.length > 0) {
@@ -1059,7 +1059,7 @@ VISUAL — COLOR (Color Tablets are small WOODEN or PLASTIC rectangles with pain
 - If you see colored SQUARES or RECTANGLES being matched/paired by COLOR on a mat → this is a "Color Box" (NOT Fabric Matching)
 
 VISUAL — FORM (geometric shapes):
-- Cabinet with drawers of flat geometric shape insets → "Geometric Cabinet"
+- Cabinet with multiple PULL-OUT DRAWERS containing flat geometric shape insets (circles, triangles, rectangles etc. in a WIDE cabinet) → "Geometric Cabinet" (NOT Metal Insets — Metal Insets are SQUARE FRAMES held in a VERTICAL RACK, not drawers)
 - 10 blue 3D wooden shapes (sphere, cube, cone, cylinder, pyramid, etc.) → "Geometric Solids"
 - Colored triangles being assembled into shapes → "Constructive Triangles" (specify box if visible:
   → Rectangular Box, Triangular Box, Large Hexagonal, Small Hexagonal, Blue Triangles)
@@ -1155,7 +1155,7 @@ ORAL LANGUAGE:
 - Rhyming picture card pairs → "Rhyming Activities"
 
 WRITING PREPARATION:
-- Pink metal geometric frames + colored pencils + traced designs → "Metal Insets"
+- Square FRAMES (pink, red, or metal) each with ONE removable geometric shape inset + small knob, stored in a VERTICAL RACK or stand (may include colored pencils + traced designs nearby) → "Metal Insets" (NOT Geometric Cabinet — Geometric Cabinet has DRAWERS in a WIDE cabinet with multiple shapes per drawer)
 - Individual LETTERS on pink (vowel) or blue (consonant) boards stored in a wooden box, child tracing the rough/textured letter surface with fingertips → "Sandpaper Letters" (NOT Grammar Boxes — Grammar Boxes contain WORD CARDS and SENTENCE STRIPS, not individual letters)
 - Tray of colored sand, child writing with finger → "Sand Tray Writing"
 - Child writing on chalkboard/whiteboard → "Chalkboard Writing"
