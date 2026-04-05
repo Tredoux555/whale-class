@@ -271,25 +271,41 @@ export default function WeeklyWrapPage() {
     mastered: { label: locale === 'zh' ? '已掌握' : 'Mastered', bg: 'bg-emerald-400', text: 'text-emerald-800' },
   };
 
-  // Initialize shelf from recommendations when first expanded
+  // Aggressively normalize area strings to canonical keys
+  const toCanonicalArea = (raw: string): string => {
+    if (!raw) return '';
+    const n = normalizeArea(raw); // handles 'math', 'culture', 'Practical Life' etc.
+    const CANONICAL = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    if (CANONICAL.includes(n)) return n;
+    // Fuzzy match: check if the raw string contains an area keyword
+    const lower = raw.toLowerCase().replace(/[^a-z]/g, '');
+    if (lower.includes('practical') || lower.includes('life')) return 'practical_life';
+    if (lower.includes('sensor')) return 'sensorial';
+    if (lower.includes('math') || lower.includes('number') || lower.includes('arith')) return 'mathematics';
+    if (lower.includes('lang') || lower.includes('reading') || lower.includes('writing') || lower.includes('phonics')) return 'language';
+    if (lower.includes('cultur') || lower.includes('science') || lower.includes('geography') || lower.includes('history')) return 'cultural';
+    return n; // fallback
+  };
+
+  // Initialize shelf: ALWAYS exactly 5 rows, one per area, first recommendation per area wins
   const getShelfForChild = (r: ReportResult) => {
     if (shelfWorks[r.child_id]) return shelfWorks[r.child_id];
-    // Initialize from recommendations with 'presented' default
-    const initial = r.recommendations.map(rec => ({
-      area: normalizeArea(rec.area),
-      work: rec.work,
-      status: 'presented',
-    }));
-    // Ensure all 5 areas represented
     const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
-    for (const area of AREAS) {
-      if (!initial.find(w => w.area === area)) {
-        initial.push({ area, work: '', status: 'not_started' });
+    const shelf: Array<{ area: string; work: string; status: string }> = AREAS.map(area => ({
+      area,
+      work: '',
+      status: 'not_started',
+    }));
+    // Fill from recommendations — first match per area wins
+    for (const rec of r.recommendations) {
+      const canonical = toCanonicalArea(rec.area);
+      const slot = shelf.find(s => s.area === canonical && !s.work);
+      if (slot) {
+        slot.work = rec.work;
+        slot.status = 'presented';
       }
     }
-    // Sort by canonical area order
-    initial.sort((a, b) => AREAS.indexOf(a.area) - AREAS.indexOf(b.area));
-    return initial;
+    return shelf;
   };
 
   const handleShelfStatusCycle = async (childId: string, idx: number) => {
@@ -567,11 +583,11 @@ export default function WeeklyWrapPage() {
               </p>
             )}
 
-            {/* ── Recommended Shelf (Interactive — mirrors This Week's Focus) ── */}
-            <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
-              <h3 className="font-bold text-gray-800 text-sm mb-2">
+            {/* ── Next Week's Focus (mirrors child week view exactly) ── */}
+            <div className="bg-white rounded-2xl p-4 shadow-sm">
+              <h2 className="font-bold text-gray-800 mb-3">
                 {locale === 'zh' ? '下周重点' : "Next Week's Focus"}
-              </h3>
+              </h2>
               <div className="space-y-2">
                 {shelf.map((item, idx) => {
                   const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.not_started;
@@ -580,29 +596,34 @@ export default function WeeklyWrapPage() {
                       key={`${r.child_id}-shelf-${item.area}`}
                       className="flex items-center gap-3 p-2.5 rounded-xl bg-gray-50"
                     >
-                      {/* Area badge */}
                       <AreaBadge area={item.area} size="lg" />
 
-                      {/* Work name */}
-                      <div className="flex-1 min-w-0">
+                      <button
+                        className="flex-1 text-left min-w-0"
+                        onClick={() => {/* future: open work picker */}}
+                      >
                         {item.work ? (
-                          <p className="font-medium text-gray-800 text-sm truncate">{item.work}</p>
+                          <p className="font-medium text-gray-800 text-sm">{item.work}</p>
                         ) : (
                           <p className="font-medium text-gray-400 text-sm italic">
-                            {locale === 'zh' ? '无推荐' : 'No recommendation'}
+                            {locale === 'zh' ? '无推荐' : 'No work set'}
                           </p>
                         )}
-                      </div>
+                      </button>
 
-                      {/* Status badge — tap to cycle */}
-                      {item.work && (
+                      {/* Status badge — tap to cycle (only if work assigned) */}
+                      {item.work ? (
                         <button
                           onClick={() => handleShelfStatusCycle(r.child_id, idx)}
                           className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all active:scale-90 ${statusCfg.bg} ${statusCfg.text}`}
                         >
                           {statusCfg.label}
                         </button>
+                      ) : (
+                        <span className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">○</span>
                       )}
+
+                      <span className="text-gray-300 text-xs">▼</span>
                     </div>
                   );
                 })}
