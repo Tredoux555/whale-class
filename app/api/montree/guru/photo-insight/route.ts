@@ -829,10 +829,6 @@ export async function POST(request: NextRequest) {
             }
           }
         }
-        console.log(`[PhotoInsight] Corrections loaded: ${correctionsMap.size} unique keys from ${corrections.length} entries`);
-        if (correctionsMap.has('geometric cabinet')) {
-          console.log(`[PhotoInsight] DIAGNOSTIC: "geometric cabinet" → "${correctionsMap.get('geometric cabinet')}"`);
-        }
         if (promptEntries.length > 0) {
           correctionsContext = `\n\nTEACHER CORRECTIONS (learn from these — you got these wrong before):\n${promptEntries.join('\n')}`;
         }
@@ -1631,8 +1627,7 @@ Match this description to the correct Montessori work. Use the visual identifica
       const toolBlock = matchMsg.content.find(b => b.type === 'tool_use');
       if (toolBlock && toolBlock.type === 'tool_use') {
         input = validateToolOutput(toolBlock.input as Record<string, unknown>);
-        console.log(`[PhotoInsight] Pass 2 RAW Haiku output: work="${input.work_name}", area="${input.area}", confidence=${input.confidence}`);
-        console.log(`[PhotoInsight] Pass 2 visualMemoryContext length: ${visualMemoryContext.length} chars, starts with: "${visualMemoryContext.slice(0, 80)}"`);
+        console.log(`[PhotoInsight] Pass 2 Haiku: work="${input.work_name}", area="${input.area}", confidence=${input.confidence}`);
         matchResult = matchToCurriculumV2(
           input.work_name,
           input.area !== 'unknown' ? input.area : null,

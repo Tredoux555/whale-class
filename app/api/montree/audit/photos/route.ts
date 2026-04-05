@@ -53,8 +53,8 @@ export async function GET(request: NextRequest) {
     if (effectiveClassroomId) {
       mediaQuery = mediaQuery.eq('classroom_id', effectiveClassroomId);
     }
-    if (zone === 'haiku_test') {
-      // Haiku Test: return ALL photos (no work_id filtering)
+    if (zone === 'green') {
+      mediaQuery = mediaQuery.not('work_id', 'is', null);
     } else if (zone === 'untagged') {
       mediaQuery = mediaQuery.is('work_id', null);
     } else if (zone !== 'all') {
@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Client-side zone filter for green/amber/red (untagged already filtered server-side)
-    const filtered = zone === 'all' || zone === 'untagged' || zone === 'haiku_test'
+    const filtered = zone === 'all' || zone === 'untagged'
       ? photos
       : photos.filter(p => p.zone === zone);
 

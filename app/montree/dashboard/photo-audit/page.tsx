@@ -41,7 +41,7 @@ interface AuditPhoto {
   status: string | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'haiku_test';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -413,7 +413,7 @@ export default function PhotoAuditPage() {
   const [photos, setPhotos] = useState<AuditPhoto[]>([]);
   const [counts, setCounts] = useState({ green: 0, amber: 0, red: 0, untagged: 0 });
   const [loading, setLoading] = useState(true);
-  const [zone, setZone] = useState<Zone>('amber');
+  const [zone, setZone] = useState<Zone>('all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
@@ -1072,7 +1072,6 @@ export default function PhotoAuditPage() {
     // Process a single photo — returns true if classified, false if failed/unmatched
     const processOnePhoto = async (photo: AuditPhoto): Promise<boolean> => {
       try {
-        const isTestMode = zone === 'haiku_test';
         const res = await fetch('/api/montree/guru/photo-insight', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1081,7 +1080,6 @@ export default function PhotoAuditPage() {
             media_id: photo.id,
             child_id: photo.child_id,
             force_reanalyze: true,
-            ...(isTestMode && { haiku_only: true }),
           }),
         });
 
@@ -1092,7 +1090,7 @@ export default function PhotoAuditPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id, force_reanalyze: true, ...(isTestMode && { haiku_only: true }) }),
+            body: JSON.stringify({ media_id: photo.id, child_id: photo.child_id, force_reanalyze: true }),
           });
           if (!retry.ok) {
             setRerunResults(prev => ({ ...prev, [photo.id]: { ...prev[photo.id], loading: false, error: 'Rate limited' } }));
@@ -1449,9 +1447,9 @@ export default function PhotoAuditPage() {
     }));
   }, [pickerArea, curriculum]);
 
-  // Filter photos by zone — exclude green (confirmed) from all views, except haiku_test which shows ALL
+  // Filter photos by zone — 'all' shows everything needing review (non-green)
   const filteredPhotos = useMemo(() => {
-    if (zone === 'haiku_test') return photos; // Show ALL photos including green for diagnostic testing
+    if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
     return nonGreen.filter(p => p.zone === zone);
@@ -1465,22 +1463,15 @@ export default function PhotoAuditPage() {
   }, [filteredPhotos, page]);
   const totalPages = Math.ceil(filteredPhotos.length / PAGE_SIZE);
 
-  // Reset page on zone change; clear test results when entering haiku_test
+  // Reset page on zone change
   useEffect(() => {
     setPage(0);
-    if (zone === 'haiku_test') {
-      setRerunResults({});
-      setSelectedIds(new Set());
-    }
   }, [zone]);
 
-  // Zone tab config — Green tab removed; confirmed photos simply disappear from view
+  // Zone tab config — simplified: Needs Review (all non-green) + Confirmed (green)
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number }[] = [
-    { key: 'all', label: t('audit.all'), color: 'bg-gray-100 text-gray-700', count: counts.amber + counts.red + counts.untagged },
-    { key: 'red', label: t('audit.red'), color: 'bg-red-100 text-red-700', count: counts.red },
-    { key: 'amber', label: t('audit.amber'), color: 'bg-amber-100 text-amber-700', count: counts.amber },
-    { key: 'untagged', label: t('audit.untagged'), color: 'bg-gray-200 text-gray-600', count: counts.untagged },
-    { key: 'haiku_test', label: '🧪 Haiku Test', color: 'bg-violet-100 text-violet-700', count: photos.length },
+    { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
+    { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
   ];
 
   // ─── JSX ───
@@ -1577,53 +1568,6 @@ export default function PhotoAuditPage() {
         <div className="text-center py-20 text-gray-400">
           <p className="text-4xl mb-2">📷</p>
           <p>{t('audit.noPhotos')}</p>
-        </div>
-      )}
-
-      {/* Haiku Test mode banner */}
-      {zone === 'haiku_test' && !loading && filteredPhotos.length > 0 && (
-        <div className="mx-3 mt-2 p-3 rounded-xl bg-violet-50 border border-violet-200">
-          <div className="flex items-center justify-between mb-1">
-            <div>
-              <p className="text-sm font-semibold text-violet-800">🧪 Haiku Diagnostic Test</p>
-              <p className="text-xs text-violet-600 mt-0.5">
-                Re-run Haiku two-pass scan to check if the AI has learned your works. Haiku only — no Sonnet fallback.
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => {
-                // Select ALL photos that have a child_id
-                const testableIds = new Set(filteredPhotos.filter(p => p.child_id).map(p => p.id));
-                setSelectedIds(testableIds);
-              }}
-              disabled={haikusRunning}
-              className="px-3 py-1.5 text-xs rounded-lg bg-violet-600 text-white font-medium disabled:opacity-50"
-            >
-              Select All ({filteredPhotos.filter(p => p.child_id).length})
-            </button>
-            <button
-              onClick={() => {
-                setRerunResults({});
-                setSelectedIds(new Set());
-              }}
-              disabled={haikusRunning}
-              className="px-3 py-1.5 text-xs rounded-lg border border-violet-300 text-violet-600 font-medium disabled:opacity-50"
-            >
-              Clear Results
-            </button>
-            {Object.keys(rerunResults).length > 0 && (
-              <span className="text-xs text-violet-500 self-center ml-auto">
-                {Object.values(rerunResults).filter(r => !r.loading && !r.error && r.work_name).length} matched
-                {' · '}
-                {Object.values(rerunResults).filter(r => !r.loading && !r.error && !r.work_name).length} unmatched
-                {Object.values(rerunResults).some(r => r.model_used && !r.model_used.includes('haiku')) && (
-                  <span className="text-amber-500 ml-1">(some fell back to Sonnet)</span>
-                )}
-              </span>
-            )}
-          </div>
         </div>
       )}
 
