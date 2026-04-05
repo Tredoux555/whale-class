@@ -1,12 +1,10 @@
 // components/montree/reports/WeeklyWrapCard.tsx
-// Dashboard card for the Weekly Wrap flow
-// Replaces BatchNarrativesCard + BatchReportsCard
+// Dashboard card for the Weekly Wrap flow — uses streaming for progress
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
-import { montreeApi } from '@/lib/montree/api';
 
 interface Child {
   id: string;
@@ -39,6 +37,8 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
   const { t, locale } = useI18n();
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState('');
+  const [childrenDone, setChildrenDone] = useState(0);
+  const [childrenTotal, setChildrenTotal] = useState(0);
   const [result, setResult] = useState<{
     generated: number;
     skipped: number;
@@ -64,20 +64,24 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
     setGenerating(true);
     setError('');
     setResult(null);
-    setProgress(locale === 'zh' ? '正在生成报告...' : 'Generating reports...');
+    setChildrenDone(0);
+    setChildrenTotal(0);
+    setProgress(locale === 'zh' ? '正在准备...' : 'Preparing...');
 
     try {
-      const res = await montreeApi('/api/montree/reports/weekly-wrap', {
+      // Use raw fetch (not montreeApi) — streaming bypasses timeout issues
+      const res = await fetch('/api/montree/reports/weekly-wrap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           classroom_id: classroomId,
           week_start,
           week_end,
           locale,
           force_regenerate: forceRegenerate,
+          stream: true, // Request streaming response
         }),
-        timeout: 300000, // 5 minutes — generates AI reports for every child
       });
 
       if (!res.ok) {
@@ -85,16 +89,75 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
         throw new Error(data.error || 'Generation failed');
       }
 
-      const data = await res.json();
-      if (!mountedRef.current) return;
+      // Check if streaming response
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') || contentType.includes('application/x-ndjson')) {
+        // Read streaming NDJSON events
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-      setResult({
-        generated: data.generated,
-        skipped: data.skipped,
-        failed: data.failed,
-        cost_usd: data.cost_usd,
-      });
-      setProgress('');
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (!mountedRef.current) {
+            reader.cancel();
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const event = JSON.parse(line);
+              if (event.type === 'start') {
+                setChildrenTotal(event.total);
+                setProgress(locale === 'zh' ? '正在生成报告...' : 'Generating reports...');
+              } else if (event.type === 'child_start') {
+                const firstName = event.child_name?.split(' ')[0] || '';
+                setProgress(locale === 'zh'
+                  ? `正在处理 ${firstName}... (${event.index}/${event.total})`
+                  : `${firstName}... (${event.index}/${event.total})`);
+              } else if (event.type === 'child_done') {
+                setChildrenDone(d => d + 1);
+              } else if (event.type === 'complete') {
+                if (mountedRef.current) {
+                  setResult({
+                    generated: event.generated,
+                    skipped: event.skipped,
+                    failed: event.failed,
+                    cost_usd: event.cost_usd,
+                  });
+                  setProgress('');
+                }
+              } else if (event.type === 'error') {
+                throw new Error(event.error || 'Generation failed');
+              }
+            } catch (parseErr: any) {
+              // If it's our thrown error, re-throw
+              if (parseErr.message && parseErr.message !== 'Generation failed' && !parseErr.message.includes('JSON')) {
+                throw parseErr;
+              }
+              // Otherwise skip malformed line
+            }
+          }
+        }
+      } else {
+        // Fallback: non-streaming JSON response
+        const data = await res.json();
+        if (mountedRef.current) {
+          setResult({
+            generated: data.generated,
+            skipped: data.skipped,
+            failed: data.failed,
+            cost_usd: data.cost_usd,
+          });
+          setProgress('');
+        }
+      }
     } catch (err: any) {
       if (mountedRef.current) {
         setError(err?.message || 'Failed to generate reports');
@@ -111,6 +174,9 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
       `/montree/dashboard/weekly-wrap?week=${week_start}&week_end=${week_end}`
     );
   };
+
+  // Progress bar percentage
+  const progressPct = childrenTotal > 0 ? Math.round((childrenDone / childrenTotal) * 100) : 0;
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
@@ -138,20 +204,37 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
 
       {/* Generate button */}
       {!result && (
-        <button
-          onClick={() => handleGenerate(false)}
-          disabled={generating || children.length === 0}
-          className="w-full py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-        >
-          {generating ? (
-            <span className="flex items-center justify-center gap-2">
-              <span className="animate-spin">⏳</span>
-              {progress}
-            </span>
-          ) : (
-            locale === 'zh' ? '生成周报' : '✨ Generate Weekly Wrap'
+        <div className="space-y-2">
+          <button
+            onClick={() => handleGenerate(false)}
+            disabled={generating || children.length === 0}
+            className="w-full py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {generating ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="animate-spin">⏳</span>
+                {progress}
+              </span>
+            ) : (
+              locale === 'zh' ? '生成周报' : '✨ Generate Weekly Wrap'
+            )}
+          </button>
+
+          {/* Progress bar during generation */}
+          {generating && childrenTotal > 0 && (
+            <div className="space-y-1">
+              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 text-center">
+                {childrenDone}/{childrenTotal} {locale === 'zh' ? '已完成' : 'done'}
+              </p>
+            </div>
           )}
-        </button>
+        </div>
       )}
 
       {/* Error */}

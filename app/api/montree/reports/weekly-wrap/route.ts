@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
       child_ids: requestedChildIds,
       locale: requestLocale,
       force_regenerate = false,
+      stream: useStreaming = false,
     } = body;
 
     if (!classroom_id || !week_start || !week_end) {
@@ -64,10 +65,10 @@ export async function POST(request: NextRequest) {
       .eq('school_id', auth.schoolId)
       .maybeSingle();
 
-    const classroom = classroomRaw as { id: string; name: string; school_id: string } | null;
-    if (!classroom) {
+    if (!classroomRaw) {
       return NextResponse.json({ error: 'Classroom not found or access denied' }, { status: 403 });
     }
+    const classroom = classroomRaw as { id: string; name: string; school_id: string };
 
     // Get children
     let childQuery = supabase
@@ -165,25 +166,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Process children in batches
-    const results: Array<{
-      child_id: string;
-      child_name: string;
-      success: boolean;
-      skipped?: boolean;
-      photo_count: number;
-      teacher_report_preview?: string; // key_insight
-      parent_narrative?: string;
-      flags_count?: number;
-      tokens_used?: { input: number; output: number };
-      error?: string;
-    }> = [];
-
-    for (let i = 0; i < children.length; i += MAX_CONCURRENT) {
-      const batch = children.slice(i, i + MAX_CONCURRENT);
-
-      const batchResults = await Promise.all(
-        batch.map(async (child) => {
+    // ─── Helper: process a single child ───
+    async function processChild(child: typeof children[0]) {
           try {
             // Skip if both reports already exist
             if (existingTeacherReports.has(child.id) && existingParentReports.has(child.id)) {
@@ -464,28 +448,105 @@ export async function POST(request: NextRequest) {
               error: err instanceof Error ? err.message : 'Unknown error',
             };
           }
-        })
-      );
+    } // end processChild
 
+    // Helper: build final summary from results
+    function buildSummary(results: Array<{ success: boolean; skipped?: boolean; tokens_used?: { input: number; output: number } }>) {
+      const totalInputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.input || 0), 0);
+      const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
+      const estimatedCost = (totalInputTokens * 3 + totalOutputTokens * 15) / 1_000_000;
+      return {
+        success: true,
+        generated: results.filter(r => r.success && !r.skipped).length,
+        skipped: results.filter(r => r.skipped).length,
+        failed: results.filter(r => !r.success).length,
+        total: results.length,
+        cost_usd: Math.round(estimatedCost * 1000) / 1000,
+        week_number: weekNumber,
+        report_year: reportYear,
+      };
+    }
+
+    // ─── Streaming mode: NDJSON events per child ───
+    if (useStreaming) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        async start(controller) {
+          try {
+            // Send start event
+            controller.enqueue(encoder.encode(JSON.stringify({
+              type: 'start', total: children.length,
+            }) + '\n'));
+
+            const results: Array<{ success: boolean; skipped?: boolean; tokens_used?: { input: number; output: number } }> = [];
+            let childIndex = 0;
+
+            for (let i = 0; i < children.length; i += MAX_CONCURRENT) {
+              const batch = children.slice(i, i + MAX_CONCURRENT);
+
+              // Send child_start events for this batch
+              for (const child of batch) {
+                childIndex++;
+                controller.enqueue(encoder.encode(JSON.stringify({
+                  type: 'child_start',
+                  child_name: child.name,
+                  index: childIndex,
+                  total: children.length,
+                }) + '\n'));
+              }
+
+              const batchResults = await Promise.all(batch.map(processChild));
+              results.push(...batchResults);
+
+              // Send child_done for each completed child
+              for (const r of batchResults) {
+                controller.enqueue(encoder.encode(JSON.stringify({
+                  type: 'child_done',
+                  child_name: (r as any).child_name,
+                  success: r.success,
+                  skipped: r.skipped || false,
+                }) + '\n'));
+              }
+            }
+
+            // Send complete event
+            const summary = buildSummary(results);
+            controller.enqueue(encoder.encode(JSON.stringify({
+              type: 'complete', ...summary, results,
+            }) + '\n'));
+            controller.close();
+          } catch (err) {
+            console.error('Weekly wrap stream error:', err);
+            try {
+              controller.enqueue(encoder.encode(JSON.stringify({
+                type: 'error',
+                error: err instanceof Error ? err.message : 'Internal server error',
+              }) + '\n'));
+            } catch { /* controller may be closed */ }
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(stream, {
+        headers: {
+          'Content-Type': 'application/x-ndjson',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'X-Content-Type-Options': 'nosniff',
+        },
+      });
+    }
+
+    // ─── Non-streaming mode: classic JSON response ───
+    const results: Array<any> = [];
+    for (let i = 0; i < children.length; i += MAX_CONCURRENT) {
+      const batch = children.slice(i, i + MAX_CONCURRENT);
+      const batchResults = await Promise.all(batch.map(processChild));
       results.push(...batchResults);
     }
 
-    // Calculate total cost (Sonnet: $3/M input, $15/M output)
-    const totalInputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.input || 0), 0);
-    const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
-    const estimatedCost = (totalInputTokens * 3 + totalOutputTokens * 15) / 1_000_000;
-
-    return NextResponse.json({
-      success: true,
-      generated: results.filter(r => r.success && !r.skipped).length,
-      skipped: results.filter(r => r.skipped).length,
-      failed: results.filter(r => !r.success).length,
-      total: results.length,
-      cost_usd: Math.round(estimatedCost * 1000) / 1000,
-      week_number: weekNumber,
-      report_year: reportYear,
-      results,
-    });
+    return NextResponse.json({ ...buildSummary(results), results });
   } catch (error) {
     console.error('Weekly wrap error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
