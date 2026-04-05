@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
         .from('montree_children')
         .select('id, name')
         .eq('classroom_id', classroomId)
+        .eq('is_active', true)
         .order('name', { ascending: true }),
 
       // 2. All saved notes for this week + doc type

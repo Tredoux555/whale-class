@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
       .from('montree_children')
       .select('id, name')
       .eq('classroom_id', classroomId)
+      .eq('is_active', true)
       .order('name', { ascending: true });
 
     if (childrenRes.error) {
@@ -105,13 +106,6 @@ export async function GET(request: NextRequest) {
     const childIds = children.map((c: { id: string }) => c.id);
     const childIdSet = new Set(childIds);
 
-    // Calculate week number for Weekly Wrap report lookup
-    const weekStartDate = new Date(weekStart);
-    const reportYear = weekStartDate.getUTCFullYear();
-    const startOfYear = new Date(Date.UTC(reportYear, 0, 1));
-    const daysSinceStart = Math.floor((weekStartDate.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
-    const weekNumber = Math.ceil((daysSinceStart + startOfYear.getUTCDay() + 1) / 7);
-
     // Step 2: Fetch Weekly Wrap reports + focus works + photos in parallel
     // Weekly Wrap parent reports are the PRIMARY data source (rich AI-analyzed works by area)
     // Photos are the FALLBACK when Weekly Wrap hasn't been run yet
@@ -122,8 +116,7 @@ export async function GET(request: NextRequest) {
         .select('child_id, content')
         .eq('classroom_id', classroomId)
         .eq('report_type', 'parent')
-        .eq('week_number', weekNumber)
-        .eq('report_year', reportYear)
+        .eq('week_start', weekStart)
         .in('child_id', childIds),
 
       supabase
