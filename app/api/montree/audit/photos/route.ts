@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     const workIds = [...new Set(mediaRows.map(m => m.work_id).filter(Boolean))];
     const mediaIds = mediaRows.map(m => m.id);
 
-    const [childResult, workResult, confidenceResult, multiChildResult] = await Promise.allSettled([
+    const [childResult, workResult, confidenceResult, multiChildResult, progressResult] = await Promise.allSettled([
       childIds.length > 0
         ? supabase.from('montree_children').select('id, name').in('id', childIds)
         : Promise.resolve({ data: [] }),
@@ -96,6 +96,10 @@ export async function GET(request: NextRequest) {
       // Fetch multi-child links from junction table
       mediaIds.length > 0
         ? supabase.from('montree_media_children').select('media_id, child_id').in('media_id', mediaIds)
+        : Promise.resolve({ data: [] }),
+      // Fetch existing work progress statuses for P/P/M seeding
+      childIds.length > 0
+        ? supabase.from('montree_child_progress').select('child_id, work_name, status').in('child_id', childIds)
         : Promise.resolve({ data: [] }),
     ]);
 
@@ -135,6 +139,16 @@ export async function GET(request: NextRequest) {
     if (workResult.status === 'fulfilled') {
       for (const w of (workResult.value as any).data || []) workMap.set(w.work_id, { name: w.name, area: w.area?.area_key || 'unknown' });
     }
+    // Build progress status map for P/P/M seeding (child_id:work_name → status)
+    const progressMap = new Map<string, string>();
+    if (progressResult.status === 'fulfilled') {
+      for (const p of (progressResult.value as any).data || []) {
+        if (p.child_id && p.work_name && p.status) {
+          progressMap.set(`${p.child_id}:${p.work_name}`, p.status);
+        }
+      }
+    }
+
     const confidenceMap = new Map<string, { confidence: number | null; scenario: string | null }>();
     if (confidenceResult.status === 'fulfilled') {
       for (const r of (confidenceResult.value as any) || []) {
@@ -213,6 +227,7 @@ export async function GET(request: NextRequest) {
         auto_crop: m.auto_crop,
         captured_at: m.captured_at || m.created_at,
         caption: m.caption || null,
+        status: (m.child_id && work?.name ? progressMap.get(`${m.child_id}:${work.name}`) : null) || null,
       };
     });
 

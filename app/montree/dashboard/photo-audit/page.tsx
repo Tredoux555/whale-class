@@ -38,6 +38,7 @@ interface AuditPhoto {
   auto_crop: { x: number; y: number; width: number; height: number } | null;
   captured_at: string;
   caption: string | null;
+  status: string | null;
 }
 
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'haiku_test';
@@ -615,6 +616,18 @@ export default function PhotoAuditPage() {
         !confirmedIdsRef.current.has(p.id)
       );
       setPhotos(mergedPhotos);
+      // Seed work statuses from DB (capture-time P/P/M choices show pre-selected)
+      const initialStatuses: Record<string, string> = {};
+      mergedPhotos.forEach((p: AuditPhoto) => {
+        if (p.child_id && p.work_name && p.status) {
+          initialStatuses[`${p.child_id}:${p.work_name}`] = p.status;
+        }
+      });
+      setWorkStatuses(prev => {
+        // Merge: DB seeds first, then session overrides win (teacher edits this session
+        // should not be reverted by a refetch returning stale DB values)
+        return { ...initialStatuses, ...prev };
+      });
       // Recalculate counts excluding confirmed photos
       if (confirmedIdsRef.current.size > 0) {
         const recounted = { green: 0, amber: 0, red: 0, untagged: 0 };

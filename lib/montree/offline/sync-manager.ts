@@ -398,6 +398,23 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       synced_at: new Date().toISOString(),
     });
 
+    // Auto-mark "presented" for all children in multi-child (group) photos
+    // Only fires when teacher pre-selected a work (work_id set) — group presentations
+    if (entry.child_ids && entry.child_ids.length > 1 && entry.work_name && entry.work_id) {
+      for (const childId of entry.child_ids) {
+        fetch('/api/montree/progress/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: childId,
+            work_name: entry.work_name,
+            area: entry.work_area || undefined,
+            status: 'presented',
+          }),
+        }).catch(err => console.error(`[Auto-Presented] Failed for ${childId}:`, err));
+      }
+    }
+
     // Trigger Smart Capture analysis — SKIP if teacher already tagged the work
     // When work_id is set, the teacher selected the work from WorkWheelPicker
     // before taking the photo. No need for AI vision — saves $0.006-0.06 per photo.
