@@ -11,7 +11,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
-import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
+import { matchToCurriculumV2, fuzzyScore } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
@@ -913,6 +913,49 @@ When the photo description CLEARLY matches a CLASSROOM-VERIFIED work above, pref
       }
     }
 
+    // VISUAL MEMORY → CORRECTIONS MAP OVERRIDE (Apr 5, 2026)
+    // Problem: Old corrections like "Chalkboard Writing" → "Name Writing" hijack matches
+    // when the teacher has since taught a classroom-specific variant like
+    // "Chalk Board Writing - No lines". The teacher's visual memory teaching
+    // (confidence 1.0) should take priority over stale corrections.
+    // Solution: For each teacher-validated visual memory entry, if a STANDARD curriculum
+    // work has a similar name (fuzzy >= 0.5), add a correction override:
+    //   standard name → visual memory name
+    // This ensures V2 matching routes "Chalkboard Writing" → "Chalk Board Writing - No lines"
+    // instead of → "Name Writing".
+    if (visualMemoryResult.status === 'fulfilled' && correctionsMap.size > 0) {
+      const memories = visualMemoryResult.value?.data;
+      if (memories && memories.length > 0) {
+        // Only use teacher-validated entries with high confidence for override
+        const teacherMemories = memories.filter((m: Record<string, unknown>) =>
+          (m.source === 'teacher_setup' || m.source === 'correction') &&
+          ((m.description_confidence as number) || 0) >= 0.9 &&
+          m.work_name
+        );
+
+        // Load standard curriculum names (without custom works) for comparison
+        const standardCurriculum = curriculum.filter(w => !w.work_key?.startsWith('custom_'));
+
+        for (const vm of teacherMemories) {
+          const vmName = (vm.work_name as string).trim();
+          // Find standard works with similar names (potential confusion pairs)
+          for (const stdWork of standardCurriculum) {
+            const similarity = fuzzyScore(vmName, stdWork.name);
+            if (similarity >= 0.5 && vmName.toLowerCase() !== stdWork.name.toLowerCase()) {
+              // Standard work has a similar name to the visual memory work
+              // Override any correction for the standard name → point to visual memory name
+              const stdKey = stdWork.name.toLowerCase().trim();
+              const oldCorrection = correctionsMap.get(stdKey);
+              if (oldCorrection && oldCorrection.toLowerCase() !== vmName.toLowerCase()) {
+                console.log(`[VisualMemory] Corrections override: "${stdWork.name}" → "${vmName}" (was → "${oldCorrection}", fuzzy=${similarity.toFixed(2)})`);
+              }
+              correctionsMap.set(stdKey, vmName);
+            }
+          }
+        }
+      }
+    }
+
     // ========================================================
     // POST-IDENTIFICATION LOOKUPS (run after we have the match)
     // These will be populated after Sonnet returns results
@@ -1586,10 +1629,11 @@ ${langInstruction}
 
 CRITICAL RULES:
 1. Match based on the MATERIALS DESCRIBED — the specific tool/material determines the work name
-2. Use the EXACT work name from CLASSROOM-VERIFIED WORKS (if any match) or the visual identification guide
-3. If the description doesn't clearly match any work, set confidence LOW (below 0.5)
-4. Keep the observation to ONE warm, specific sentence about the child's engagement
-5. COMPOSITION: Suggest a crop if the description mentions a child and materials together. Use normalized 0-1 coordinates.
+2. CLASSROOM-VERIFIED PRIORITY: Check CLASSROOM-VERIFIED WORKS FIRST. If the description's materials match a verified work's KEY MATERIALS, you MUST use that EXACT work name — even if a similar standard curriculum name exists. These are teacher-confirmed names specific to THIS classroom. For example, "Chalk Board Writing - No lines" is DIFFERENT from standard "Chalkboard Writing" — use the classroom-verified name when the materials match.
+3. Only fall back to the VISUAL IDENTIFICATION GUIDE if no classroom-verified work matches
+4. If the description doesn't clearly match any work, set confidence LOW (below 0.5)
+5. Keep the observation to ONE warm, specific sentence about the child's engagement
+6. COMPOSITION: Suggest a crop if the description mentions a child and materials together. Use normalized 0-1 coordinates.
 ${visualMemoryContext}
 
 ${systemPrompt.slice(systemPrompt.indexOf('VISUAL IDENTIFICATION GUIDE'))}`,
@@ -2027,7 +2071,11 @@ Match this description to the correct Montessori work. Use the visual identifica
     // Don't use autoUpdated as a proxy — check actual shelf/classroom state
     // If auto-add-to-shelf failed, inChildShelf is still false → scenario C (user can add manually)
     let scenario: 'A' | 'B' | 'C' | 'D' = 'D';
-    if (matchScore < 0.75 || input.confidence < 0.75) {
+    // UPDATED (Apr 5, 2026): When V2 match is very high (>= 0.90), trust the curriculum match
+    // even if Haiku's self-reported confidence is moderate (0.50-0.74). This prevents
+    // Scenario A (custom work proposal) from overriding correct visual-memory-backed matches.
+    // Scenario A only triggers when BOTH are weak, OR match is < 0.75, OR confidence is very low (< 0.50).
+    if (matchScore < 0.75 || (input.confidence < 0.75 && matchScore < 0.90) || input.confidence < 0.50) {
       scenario = 'A'; // Unknown or too uncertain
     } else if (!inClassroom) {
       scenario = 'B'; // Known work, not in this classroom
