@@ -303,6 +303,25 @@ export default function WeeklyWrapPage() {
   const approvedCount = approvedIds.size;
   const readyToSend = reports.filter(r => r.parent_narrative && r.report_id).length;
 
+  // Week navigation helpers
+  const shiftWeek = (ws: string, weeks: number) => {
+    const d = new Date(`${ws}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + weeks * 7);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const getWeekEnd = (ws: string) => {
+    const d = new Date(`${ws}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + 6);
+    return d.toISOString().slice(0, 10);
+  };
+
+  const navigateWeek = (direction: number) => {
+    const newStart = shiftWeek(weekStart, direction);
+    const newEnd = getWeekEnd(newStart);
+    router.push(`/montree/dashboard/weekly-wrap?week=${newStart}&week_end=${newEnd}`);
+  };
+
   // Format week display
   const weekDisplay = weekStart
     ? (() => {
@@ -562,6 +581,17 @@ export default function WeeklyWrapPage() {
     }));
   };
 
+  // Remove a work from a child's report (local state only — affects display)
+  const handleRemoveWork = (childId: string, workName: string, area: string) => {
+    setReports(prev => prev.map(r => {
+      if (r.child_id !== childId) return r;
+      return {
+        ...r,
+        parent_works: r.parent_works.filter(w => !(w.name === workName && (w.area || '') === area)),
+      };
+    }));
+  };
+
   const handleMovePhoto = (childId: string, photoId: string, direction: 'up' | 'down') => {
     const current = [...(photoEdits[childId] ?? reports.find(r => r.child_id === childId)?.parent_photos ?? [])];
     const idx = current.findIndex(p => p.id === photoId);
@@ -683,19 +713,19 @@ export default function WeeklyWrapPage() {
     const isShelfUpdated = shelfUpdatedIds.has(r.child_id);
 
     // Group works by area from parent_works (actual works done this week)
-    const worksByArea: Record<string, string[]> = {};
+    const worksByArea: Record<string, Array<{ name: string; display: string; area: string }>> = {};
     for (const w of r.parent_works) {
       const area = toCanonicalArea(w.area || 'other') || normalizeArea(w.area || 'other');
       if (!worksByArea[area]) worksByArea[area] = [];
       const displayName = (locale === 'zh' && w.name_zh) ? w.name_zh : w.name;
-      if (!worksByArea[area].includes(displayName)) {
-        worksByArea[area].push(displayName);
+      if (!worksByArea[area].some(x => x.name === w.name)) {
+        worksByArea[area].push({ name: w.name, display: displayName, area: w.area || area });
       }
     }
     const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
     const areaEntries = AREA_ORDER
       .filter(a => worksByArea[a] && worksByArea[a].length > 0)
-      .map(a => [a, worksByArea[a]] as [string, string[]]);
+      .map(a => [a, worksByArea[a]] as [string, Array<{ name: string; display: string; area: string }>]);
     // Add any "other" areas
     for (const [a, ws] of Object.entries(worksByArea)) {
       if (!AREA_ORDER.includes(a)) areaEntries.push([a, ws]);
@@ -711,7 +741,8 @@ export default function WeeklyWrapPage() {
 
     const previewText = areaEntries
       .map(([area, works]) => {
-        return `${getAreaLabel(area)}: ${works.slice(0, 2).join(', ')}${works.length > 2 ? ` +${works.length - 2}` : ''}`;
+        const names = works.map(w => w.display);
+        return `${getAreaLabel(area)}: ${names.slice(0, 2).join(', ')}${names.length > 2 ? ` +${names.length - 2}` : ''}`;
       })
       .join(' · ');
 
@@ -804,18 +835,37 @@ export default function WeeklyWrapPage() {
                   : `This week ${firstName} did:`}
               </p>
               {areaEntries.length > 0 ? (
-                <div className="space-y-1.5 pl-1">
+                <div className="space-y-2 pl-1">
                   {areaEntries.map(([area, works]) => {
                     const label = locale === 'zh'
                       ? (r.area_analyses.find(a => a.area === area)?.area_label_zh || AREA_LABELS_ZH[area] || area)
                       : (r.area_analyses.find(a => a.area === area)?.area_label || AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
                     return (
-                      <div key={area} className="flex items-start gap-2">
-                        <AreaBadge area={area} size="sm" />
-                        <p className="text-sm text-gray-700">
-                          <span className="font-medium">{label}:</span>{' '}
-                          {works.join(locale === 'zh' ? '、' : ', ')}
-                        </p>
+                      <div key={area}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <AreaBadge area={area} size="sm" />
+                          <span className="text-sm font-medium text-gray-700">{label}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5 pl-7">
+                          {works.map((w) => (
+                            <span
+                              key={w.name}
+                              className="inline-flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1 text-xs text-gray-700 group/chip hover:border-gray-300 transition-colors"
+                            >
+                              {w.display}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveWork(r.child_id, w.name, w.area);
+                                }}
+                                className="w-4 h-4 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors ml-0.5"
+                                title={locale === 'zh' ? '移除' : 'Remove'}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     );
                   })}
@@ -986,12 +1036,32 @@ export default function WeeklyWrapPage() {
     const isSent = r.parent_status === 'sent';
 
     return (
-      <div key={r.child_id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div key={r.child_id} className={`bg-white rounded-xl border overflow-hidden ${selectionMode && selectedChildIds.has(r.child_id) ? 'border-blue-400 ring-1 ring-blue-200' : 'border-gray-200'}`}>
         {/* Header */}
         <button
-          onClick={() => setExpandedParent(isExpanded ? null : r.child_id)}
+          onClick={() => {
+            if (selectionMode) {
+              setSelectedChildIds(prev => {
+                const next = new Set(prev);
+                if (next.has(r.child_id)) next.delete(r.child_id);
+                else next.add(r.child_id);
+                return next;
+              });
+              return;
+            }
+            setExpandedParent(isExpanded ? null : r.child_id);
+          }}
           className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-gray-50 transition-colors"
         >
+          {selectionMode && (
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+              selectedChildIds.has(r.child_id)
+                ? 'bg-blue-600 border-blue-600 text-white'
+                : 'border-gray-300 bg-white'
+            }`}>
+              {selectedChildIds.has(r.child_id) && <span className="text-[11px]">✓</span>}
+            </div>
+          )}
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">
             {firstName.charAt(0)}
           </div>
@@ -1270,7 +1340,21 @@ export default function WeeklyWrapPage() {
                 <h1 className="text-lg font-bold text-gray-900">
                   {locale === 'zh' ? '周报总结' : 'Weekly Wrap'}
                 </h1>
-                <p className="text-xs text-gray-400">{weekDisplay} · {reports.length} {locale === 'zh' ? '学生' : 'children'}</p>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => navigateWeek(-1)}
+                    className="px-1.5 py-0.5 text-gray-400 hover:bg-gray-100 rounded text-xs"
+                  >
+                    ◀
+                  </button>
+                  <p className="text-xs text-gray-400">{weekDisplay} · {reports.length} {locale === 'zh' ? '学生' : 'children'}</p>
+                  <button
+                    onClick={() => navigateWeek(1)}
+                    className="px-1.5 py-0.5 text-gray-400 hover:bg-gray-100 rounded text-xs"
+                  >
+                    ▶
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -1490,6 +1574,29 @@ export default function WeeklyWrapPage() {
         {/* ─── Parent Reports Tab ─── */}
         {activeTab === 'parents' && reports.length > 0 && (
           <div className="space-y-2">
+            {selectionMode && (
+              <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
+                <span className="text-xs text-blue-700 font-medium">
+                  {selectedChildIds.size > 0
+                    ? (locale === 'zh' ? `已选择 ${selectedChildIds.size} 名学生` : `${selectedChildIds.size} selected`)
+                    : (locale === 'zh' ? '点击选择要生成的学生' : 'Tap children to select')}
+                </span>
+                <button
+                  onClick={() => {
+                    if (selectedChildIds.size === reports.length) {
+                      setSelectedChildIds(new Set());
+                    } else {
+                      setSelectedChildIds(new Set(reports.map(r => r.child_id)));
+                    }
+                  }}
+                  className="text-xs text-blue-600 font-semibold hover:text-blue-800"
+                >
+                  {selectedChildIds.size === reports.length
+                    ? (locale === 'zh' ? '取消全选' : 'Deselect All')
+                    : (locale === 'zh' ? '全选' : 'Select All')}
+                </button>
+              </div>
+            )}
             {sortedReports.map(renderParentCard)}
           </div>
         )}
