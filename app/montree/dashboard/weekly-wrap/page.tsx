@@ -750,7 +750,7 @@ export default function WeeklyWrapPage() {
               )}
               {r.flags_count > 0 && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                  {r.flags_count} {r.flags_count === 1 ? 'flag' : 'flags'}
+                  {r.flags_count} {locale === 'zh' ? '个标记' : (r.flags_count === 1 ? 'flag' : 'flags')}
                 </span>
               )}
             </div>
@@ -972,12 +972,12 @@ export default function WeeklyWrapPage() {
               <span className="text-xs text-gray-400">📸 {photos.length}</span>
               {isSent && (
                 <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
-                  Sent
+                  {locale === 'zh' ? '已发送' : 'Sent'}
                 </span>
               )}
               {edited && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                  Edited
+                  {locale === 'zh' ? '已编辑' : 'Edited'}
                 </span>
               )}
             </div>
@@ -1099,11 +1099,13 @@ export default function WeeklyWrapPage() {
                           {/* Work name + area badge */}
                           <div className="flex items-center gap-2">
                             {photo.work_name && (
-                              <p className="font-semibold text-gray-900 text-sm">{photo.work_name}</p>
+                              <p className="font-semibold text-gray-900 text-sm">
+                                {(locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : photo.work_name}
+                              </p>
                             )}
                             {matchedWork && (
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${areaStyle.bg} ${areaStyle.text}`}>
-                                {areaStyle.emoji} {matchedWork.area.replace('_', ' ')}
+                                {areaStyle.emoji} {locale === 'zh' ? (AREA_LABELS_ZH[matchedWork.area] || matchedWork.area.replace('_', ' ')) : matchedWork.area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                               </span>
                             )}
                           </div>
