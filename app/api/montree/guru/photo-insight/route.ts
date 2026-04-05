@@ -1821,10 +1821,12 @@ Match this description to the correct Montessori work. Use the visual identifica
     }
 
     // Determine if we should auto-update progress
+    // Cap at 'practicing' — only a teacher can set 'mastered' (too important for AI to decide from one photo)
     const validStatuses = ['mastered', 'practicing', 'presented'];
-    const masteryEvidence = validStatuses.includes(input.mastery_evidence)
+    const rawMastery = validStatuses.includes(input.mastery_evidence)
       ? input.mastery_evidence
       : null;
+    const masteryEvidence = rawMastery === 'mastered' ? 'practicing' : rawMastery;
 
     // GREEN zone auto-update: BOTH match score AND confidence must be ≥ AUTO_UPDATE_THRESHOLD (0.85)
     // AMBER zone (0.75–0.84): tagged but requires teacher confirmation before progress update
