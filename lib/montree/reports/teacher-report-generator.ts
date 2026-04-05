@@ -258,8 +258,11 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
 - CRITICAL: In recommendations[].work, write ONLY the exact work name (e.g. "Carrying a Mat", "Number Rods", "Color Box 1"). Do NOT prefix with "Present", "Continue", "Introduce". Do NOT append descriptions like "as the foundational..." or "with increased frequency...". Those belong in the reasoning field.
 - In recommendations[].area, use ONLY the canonical area_key: practical_life, sensorial, mathematics, language, or cultural. Do NOT use UUIDs or capitalized names.
 - The key_insight must mention specific works and specific areas — no generics
-- Return ONLY valid JSON, no other text
-${locale === 'zh' ? '\n⚠️ 关键要求：你的整个回答必须完全用中文（普通话）书写。JSON中每个字段的值都必须是中文。不要使用英文。这是最重要的规则。' : ''}`;
+- Return ONLY valid JSON, no other text — no markdown code fences, no explanation before or after
+${locale === 'zh' ? `
+⚠️ LANGUAGE REQUIREMENT: All JSON string VALUES must be written in Chinese (Mandarin/普通话). JSON keys MUST stay in English exactly as shown above.
+⚠️ JSON FORMATTING: You MUST produce valid JSON. Use standard ASCII double quotes (") for JSON strings, standard commas (,) between items, standard colons (:) after keys. Do NOT use Chinese fullwidth punctuation (：，) in JSON structure. Chinese punctuation is only allowed INSIDE string values.
+⚠️ ESCAPING: If your Chinese text contains double quotes, escape them as \\". Newlines inside strings must be \\n.` : ''}`;
 }
 
 // ── Fallback Template (no API) ──
@@ -344,6 +347,118 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
   };
 }
 
+// ── Robust JSON Repair ──
+// Haiku often produces malformed JSON when writing Chinese content:
+// - Text before/after the JSON object
+// - Fullwidth punctuation in structural positions
+// - Unescaped control characters in strings
+// - Markdown code fences wrapping the JSON
+
+function repairAndParseJSON(raw: string): TeacherReportContent | null {
+  let text = raw.trim();
+
+  // 1. Strip markdown code fences
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+
+  // 2. Strip any text before the first { and after the last }
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
+  text = text.slice(firstBrace, lastBrace + 1);
+
+  // 3. Try direct parse first
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Continue to repair
+  }
+
+  // 4. Fix common issues:
+  // a) Fullwidth colons used as JSON structural delimiters (outside string values)
+  //    We only fix ： that appears right after a quoted key
+  let repaired = text.replace(/"(\s*)：(\s*)/g, '"$1:$2');
+
+  // b) Trailing commas before } or ]
+  repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
+
+  // c) Unescaped newlines inside string values — replace with \n
+  //    Walk through and fix newlines that are inside quotes
+  repaired = repairNewlinesInStrings(repaired);
+
+  try {
+    return JSON.parse(repaired);
+  } catch {
+    // Continue to more aggressive repair
+  }
+
+  // 5. Most aggressive: try to fix unescaped quotes inside string values
+  //    by finding patterns like "key": "value with "quotes" inside"
+  //    This is heuristic and may not always work
+  try {
+    const aggressiveRepaired = repaired
+      // Fix Chinese fullwidth quotes that might break structure
+      .replace(/\u201c/g, '\\"').replace(/\u201d/g, '\\"')
+      .replace(/\u2018/g, "\\'").replace(/\u2019/g, "\\'")
+      // Fix stray fullwidth commas used structurally
+      .replace(/\uff0c(\s*")/g, ',$1')
+      .replace(/\uff0c(\s*\[)/g, ',$1')
+      .replace(/\uff0c(\s*\{)/g, ',$1');
+    return JSON.parse(aggressiveRepaired);
+  } catch {
+    // Last resort: return null
+    return null;
+  }
+}
+
+/**
+ * Fix unescaped newlines inside JSON string values.
+ * Walks through the string tracking whether we're inside a quoted value.
+ */
+function repairNewlinesInStrings(json: string): string {
+  const result: string[] = [];
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i];
+
+    if (escaped) {
+      result.push(ch);
+      escaped = false;
+      continue;
+    }
+
+    if (ch === '\\' && inString) {
+      result.push(ch);
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      inString = !inString;
+      result.push(ch);
+      continue;
+    }
+
+    if (inString && ch === '\n') {
+      result.push('\\n');
+      continue;
+    }
+    if (inString && ch === '\r') {
+      result.push('\\r');
+      continue;
+    }
+    if (inString && ch === '\t') {
+      result.push('\\t');
+      continue;
+    }
+
+    result.push(ch);
+  }
+
+  return result.join('');
+}
+
 // ── Main Generator ──
 
 export async function generateTeacherReport(
@@ -395,7 +510,7 @@ export async function generateTeacherReport(
     const prompt = buildTeacherReportPrompt(input);
 
     const systemMessage = input.locale === 'zh'
-      ? '你是一位拥有30年AMI培训经验的资深蒙台梭利教育顾问。你必须完全用中文（普通话）回答。所有JSON字段的值都必须是中文。不要使用任何英文。'
+      ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all JSON string values in Chinese (Mandarin). Keep all JSON keys in English. You MUST return valid JSON — use ASCII quotes, commas, and colons for JSON structure. Chinese punctuation is only allowed inside string values.'
       : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
 
     const response = await anthropic.messages.create({
@@ -411,24 +526,19 @@ export async function generateTeacherReport(
       .join('')
       .trim();
 
-    // Parse JSON response
+    // Parse JSON response with robust repair (Haiku + Chinese = frequent malformed JSON)
     let report: TeacherReportContent;
-    try {
-      report = JSON.parse(rawText);
-    } catch {
-      // Try to extract JSON from response (in case Sonnet wrapped it)
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        report = JSON.parse(jsonMatch[0]);
-      } else {
-        console.error('Failed to parse teacher report JSON:', rawText.substring(0, 200));
-        return {
-          success: true,
-          report: generateTeacherFallback(input),
-          generatedAt: new Date().toISOString(),
-          error: 'Failed to parse AI response, using fallback',
-        };
-      }
+    const parsed = repairAndParseJSON(rawText);
+    if (parsed) {
+      report = parsed;
+    } else {
+      console.error(`[TeacherReport] Failed to parse JSON for ${input.child.name} (${rawText.length} chars). First 300:`, rawText.substring(0, 300));
+      return {
+        success: true,
+        report: generateTeacherFallback(input),
+        generatedAt: new Date().toISOString(),
+        error: 'Failed to parse AI response, using fallback',
+      };
     }
 
     // Validate required fields exist
