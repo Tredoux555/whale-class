@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, features }, {
-      headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' }
+      headers: { 'Cache-Control': 'private, no-cache' }
     });
   } catch (error) {
     console.error('Features GET error:', error);
