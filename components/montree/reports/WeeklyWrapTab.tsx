@@ -83,12 +83,14 @@ const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'c
 // ─── Helpers ──────────────────────────────────────────────────
 
 function getCurrentMonday(): string {
+  // Must match DashboardHeader's date serialization:
+  // local Monday at midnight → toISOString() → YYYY-MM-DD (UTC)
   const now = new Date();
-  const beijing = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const day = beijing.getUTCDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  beijing.setUTCDate(beijing.getUTCDate() + diff);
-  return beijing.toISOString().slice(0, 10);
+  const dow = now.getDay();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - ((dow + 6) % 7));
+  mon.setHours(0, 0, 0, 0);
+  return mon.toISOString().split('T')[0];
 }
 
 function shiftWeek(ws: string, weeks: number): string {
