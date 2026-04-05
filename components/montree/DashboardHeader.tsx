@@ -302,7 +302,7 @@ export default function DashboardHeader() {
           {/* Language toggle — always visible */}
           <LanguageToggle />
 
-          {/* === DAILY DRIVERS — always visible: Capture, Notes, Weekly Wrap === */}
+          {/* === DAILY DRIVERS — 3 icons: Capture, Notes, Photo Audit (Weekly Wrap merged into Photo Audit) === */}
           <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
@@ -324,29 +324,10 @@ export default function DashboardHeader() {
             📝
           </Link>
           <Link
-            href={(() => {
-              const now = new Date();
-              const dow = now.getDay();
-              const mon = new Date(now);
-              mon.setDate(now.getDate() - ((dow + 6) % 7));
-              mon.setHours(0, 0, 0, 0);
-              const sun = new Date(mon);
-              sun.setDate(mon.getDate() + 6);
-              return `/montree/dashboard/weekly-wrap?week=${mon.toISOString().split('T')[0]}&week_end=${sun.toISOString().split('T')[0]}`;
-            })()}
-            data-guide="nav-weekly-wrap"
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname === '/montree/dashboard/weekly-wrap' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-            }`}
-            title={locale === 'zh' ? '周报总结' : 'Weekly Wrap'}
-          >
-            📋
-          </Link>
-          <Link
             href="/montree/dashboard/photo-audit"
             data-guide="nav-setup"
             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname === '/montree/dashboard/photo-audit' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
+              pathname?.startsWith('/montree/dashboard/photo-audit') || pathname === '/montree/dashboard/weekly-wrap' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
             }`}
             title={t('audit.title')}
           >
