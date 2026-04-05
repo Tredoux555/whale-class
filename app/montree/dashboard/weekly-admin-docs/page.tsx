@@ -340,55 +340,51 @@ export default function WeeklyAdminDocsPage() {
         return;
       }
 
-      // Compute filled count BEFORE setState (avoid React batching issue)
+      // Fill BOTH tabs simultaneously (Summary + Plan) regardless of active tab
       let filledCount = 0;
 
-      if (activeTab === 'summary') {
-        // Count how many empty fields will be filled
+      // Fill summary English fields
+      for (const suggestion of data.children) {
+        const existing = summaryNotes[suggestion.childId];
+        if (!existing?.english_text && suggestion.summaryEnglish) filledCount++;
+      }
+      setSummaryNotes((prev) => {
+        const next = { ...prev };
         for (const suggestion of data.children) {
-          const existing = summaryNotes[suggestion.childId];
-          if (!existing?.english_text && suggestion.summaryEnglish) filledCount++;
+          const existing = next[suggestion.childId];
+          if (!existing?.english_text) {
+            next[suggestion.childId] = {
+              english_text: suggestion.summaryEnglish || '',
+              chinese_text: existing?.chinese_text || '',
+            };
+          }
         }
-        // Fill only EMPTY summary English fields
-        setSummaryNotes((prev) => {
-          const next = { ...prev };
-          for (const suggestion of data.children) {
-            const existing = next[suggestion.childId];
-            if (!existing?.english_text) {
-              next[suggestion.childId] = {
-                english_text: suggestion.summaryEnglish || '',
+        return next;
+      });
+
+      // Fill plan area cells
+      for (const suggestion of data.children) {
+        for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
+          const existing = planNotes[suggestion.childId]?.[area];
+          if (!existing?.english_text && workName) filledCount++;
+        }
+      }
+      setPlanNotes((prev) => {
+        const next = { ...prev };
+        for (const suggestion of data.children) {
+          if (!next[suggestion.childId]) next[suggestion.childId] = {};
+          for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
+            const existing = next[suggestion.childId][area];
+            if (!existing?.english_text && workName) {
+              next[suggestion.childId][area] = {
+                english_text: workName as string,
                 chinese_text: existing?.chinese_text || '',
               };
             }
           }
-          return next;
-        });
-      } else {
-        // Count how many empty fields will be filled
-        for (const suggestion of data.children) {
-          for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
-            const existing = planNotes[suggestion.childId]?.[area];
-            if (!existing?.english_text && workName) filledCount++;
-          }
         }
-        // Fill only EMPTY plan area cells
-        setPlanNotes((prev) => {
-          const next = { ...prev };
-          for (const suggestion of data.children) {
-            if (!next[suggestion.childId]) next[suggestion.childId] = {};
-            for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
-              const existing = next[suggestion.childId][area];
-              if (!existing?.english_text && workName) {
-                next[suggestion.childId][area] = {
-                  english_text: workName as string,
-                  chinese_text: existing?.chinese_text || '',
-                };
-              }
-            }
-          }
-          return next;
-        });
-      }
+        return next;
+      });
 
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
       setTimeout(() => setSuccess(''), 3000);

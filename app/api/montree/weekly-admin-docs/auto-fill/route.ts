@@ -8,14 +8,13 @@ import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
-
-interface ProgressRow {
-  child_id: string;
-  work_name: string;
-  area: string;
-  status: string;
-  updated_at: string;
-}
+const AREA_LABELS: Record<string, string> = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
 
 interface FocusWorkRow {
   child_id: string;
@@ -104,26 +103,38 @@ export async function GET(request: NextRequest) {
     }
 
     const childIds = children.map((c: { id: string }) => c.id);
+    const childIdSet = new Set(childIds);
 
-    // Step 2: Fetch focus works + progress + photos in parallel
-    // NOTE: montree_child_progress does NOT have classroom_id — filter by child_id instead
-    const [focusWorksRes, progressRes, mediaRes] = await Promise.all([
+    // Calculate week number for Weekly Wrap report lookup
+    const weekStartDate = new Date(weekStart);
+    const reportYear = weekStartDate.getUTCFullYear();
+    const startOfYear = new Date(Date.UTC(reportYear, 0, 1));
+    const daysSinceStart = Math.floor((weekStartDate.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+    const weekNumber = Math.ceil((daysSinceStart + startOfYear.getUTCDay() + 1) / 7);
+
+    // Step 2: Fetch Weekly Wrap reports + focus works + photos in parallel
+    // Weekly Wrap parent reports are the PRIMARY data source (rich AI-analyzed works by area)
+    // Photos are the FALLBACK when Weekly Wrap hasn't been run yet
+    const [reportsRes, focusWorksRes, mediaRes] = await Promise.all([
+      // Weekly Wrap parent reports (have works array with name + area)
+      supabase
+        .from('montree_weekly_reports')
+        .select('child_id, content')
+        .eq('classroom_id', classroomId)
+        .eq('report_type', 'parent')
+        .eq('week_number', weekNumber)
+        .eq('report_year', reportYear)
+        .in('child_id', childIds),
+
       supabase
         .from('montree_child_focus_works')
         .select('child_id, area, work_name')
         .in('child_id', childIds),
 
-      supabase
-        .from('montree_child_progress')
-        .select('child_id, work_name, area, status, updated_at')
-        .in('child_id', childIds)
-        .gte('updated_at', weekStart)
-        .lt('updated_at', weekEndStr),
-
-      // Smart Capture photos tagged with work_id this week (primary data source)
+      // Smart Capture photos with work_id this week (fallback data source)
       supabase
         .from('montree_media')
-        .select('child_id, work_id, captured_at, classroom_id')
+        .select('id, child_id, work_id, captured_at')
         .eq('classroom_id', classroomId)
         .eq('media_type', 'photo')
         .not('work_id', 'is', null)
@@ -131,22 +142,68 @@ export async function GET(request: NextRequest) {
         .lt('captured_at', weekEndStr),
     ]);
 
+    if (reportsRes.error) {
+      console.error('auto-fill: reports error:', reportsRes.error.message);
+    }
     if (focusWorksRes.error) {
       console.error('auto-fill: focus works error:', focusWorksRes.error.message);
-    }
-    if (progressRes.error) {
-      console.error('auto-fill: progress error:', progressRes.error.message);
     }
     if (mediaRes.error) {
       console.error('auto-fill: media error:', mediaRes.error.message);
     }
 
-    const focusWorks = focusWorksRes.data;
-    const mediaRows = (mediaRes.data || []) as Array<{ child_id: string; work_id: string; captured_at: string }>;
+    // Build Weekly Wrap works by child: childId -> area -> [work names]
+    interface ReportWork { name: string; area: string; status?: string }
+    const wrapWorksByChild = new Map<string, Map<string, string[]>>();
+    const reports = (reportsRes.data || []) as Array<{ child_id: string; content: { works?: ReportWork[] } }>;
+    for (const report of reports) {
+      if (!report.content?.works) continue;
+      const areaMap = new Map<string, string[]>();
+      for (const work of report.content.works) {
+        if (!work.name || !work.area) continue;
+        if (!areaMap.has(work.area)) areaMap.set(work.area, []);
+        const existing = areaMap.get(work.area)!;
+        if (!existing.includes(work.name)) existing.push(work.name);
+      }
+      if (areaMap.size > 0) {
+        wrapWorksByChild.set(report.child_id, areaMap);
+      }
+    }
+    const hasWrapData = wrapWorksByChild.size > 0;
 
-    // Resolve work_ids from photos to work names via classroom_curriculum_works
+    // Build photo-based area works (fallback): childId -> area -> [work names]
+    const focusWorks = focusWorksRes.data;
+    const mediaRows = (mediaRes.data || []) as Array<{ id: string; child_id: string | null; work_id: string; captured_at: string }>;
+    const mediaIds = mediaRows.map(m => m.id);
+
+    // Fetch group photo children links
+    let groupChildLinks: Array<{ media_id: string; child_id: string }> = [];
+    if (mediaIds.length > 0) {
+      const { data: links } = await supabase
+        .from('montree_media_children')
+        .select('media_id, child_id')
+        .in('media_id', mediaIds);
+      groupChildLinks = (links || []) as Array<{ media_id: string; child_id: string }>;
+    }
+
+    // Build media_id -> set of child_ids
+    const mediaChildMap = new Map<string, Set<string>>();
+    for (const photo of mediaRows) {
+      if (!mediaChildMap.has(photo.id)) mediaChildMap.set(photo.id, new Set());
+      if (photo.child_id && childIdSet.has(photo.child_id)) {
+        mediaChildMap.get(photo.id)!.add(photo.child_id);
+      }
+    }
+    for (const link of groupChildLinks) {
+      if (!mediaChildMap.has(link.media_id)) mediaChildMap.set(link.media_id, new Set());
+      if (childIdSet.has(link.child_id)) {
+        mediaChildMap.get(link.media_id)!.add(link.child_id);
+      }
+    }
+
+    // Resolve work_ids from photos
     const workIds = [...new Set(mediaRows.map(m => m.work_id).filter(Boolean))];
-    let workIdToName = new Map<string, { name: string; area: string }>();
+    const workIdToName = new Map<string, { name: string; area: string }>();
     if (workIds.length > 0) {
       const { data: worksData } = await supabase
         .from('montree_classroom_curriculum_works')
@@ -157,99 +214,48 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Build focus works lookup: childId -> area -> work_name
-    const focusMap = new Map<string, Map<string, string>>();
-    for (const fw of (focusWorks || []) as FocusWorkRow[]) {
-      if (!focusMap.has(fw.child_id)) {
-        focusMap.set(fw.child_id, new Map());
-      }
-      focusMap.get(fw.child_id)!.set(fw.area, fw.work_name);
-    }
-
-    // Build progress lookup: childId -> area -> [work names]
-    const progressByChild = new Map<string, Map<string, string[]>>();
-    const progressItems = (progressRes.error ? [] : (progressRes.data || [])) as ProgressRow[];
-    for (const row of progressItems) {
-      if (!progressByChild.has(row.child_id)) {
-        progressByChild.set(row.child_id, new Map());
-      }
-      const areaMap = progressByChild.get(row.child_id)!;
-      if (!areaMap.has(row.area)) {
-        areaMap.set(row.area, []);
-      }
-      const existing = areaMap.get(row.area)!;
-      if (!existing.includes(row.work_name)) {
-        existing.push(row.work_name);
-      }
-    }
-
-    // Build flat list of works done this week per child — merge progress + photo data
-    const weekWorksByChild = new Map<string, string[]>();
-    // From progress records
-    for (const row of progressItems) {
-      if (!weekWorksByChild.has(row.child_id)) {
-        weekWorksByChild.set(row.child_id, []);
-      }
-      const list = weekWorksByChild.get(row.child_id)!;
-      if (!list.includes(row.work_name)) {
-        list.push(row.work_name);
-      }
-    }
-    // From Smart Capture photos (photos with work_id = confirmed activity)
+    const photoWorksByChild = new Map<string, Map<string, string[]>>();
     for (const photo of mediaRows) {
       const work = workIdToName.get(photo.work_id);
-      if (!work || !photo.child_id) continue;
-      if (!weekWorksByChild.has(photo.child_id)) {
-        weekWorksByChild.set(photo.child_id, []);
+      if (!work) continue;
+      const childIdsForPhoto = mediaChildMap.get(photo.id) || new Set();
+      for (const cid of childIdsForPhoto) {
+        if (!photoWorksByChild.has(cid)) photoWorksByChild.set(cid, new Map());
+        const areaMap = photoWorksByChild.get(cid)!;
+        if (!areaMap.has(work.area)) areaMap.set(work.area, []);
+        const existing = areaMap.get(work.area)!;
+        if (!existing.includes(work.name)) existing.push(work.name);
       }
-      const list = weekWorksByChild.get(photo.child_id)!;
-      if (!list.includes(work.name)) {
-        list.push(work.name);
-      }
-      // Also enrich progressByChild so plan area suggestions benefit
-      if (!progressByChild.has(photo.child_id)) {
-        progressByChild.set(photo.child_id, new Map());
-      }
-      const areaMap = progressByChild.get(photo.child_id)!;
-      if (!areaMap.has(work.area)) {
-        areaMap.set(work.area, []);
-      }
-      const existing = areaMap.get(work.area)!;
-      if (!existing.includes(work.name)) {
-        existing.push(work.name);
-      }
+    }
+
+    // Build focus works lookup
+    const focusMap = new Map<string, Map<string, string>>();
+    for (const fw of (focusWorks || []) as FocusWorkRow[]) {
+      if (!focusMap.has(fw.child_id)) focusMap.set(fw.child_id, new Map());
+      focusMap.get(fw.child_id)!.set(fw.area, fw.work_name);
     }
 
     // Build suggestions for each child
     const suggestions: ChildSuggestion[] = children.map((child: { id: string; name: string }) => {
       const childFocus = focusMap.get(child.id);
-      const childWeekWorks = weekWorksByChild.get(child.id) || [];
+      // Prefer Weekly Wrap data, fall back to photos
+      const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
 
-      // --- Summary English ---
+      // --- Summary English (area-by-area) ---
       let summaryEnglish = '';
-      if (childWeekWorks.length > 0) {
-        const workList = childWeekWorks.slice(0, 5);
-        const worksStr = workList.length === 1
-          ? workList[0]
-          : workList.length === 2
-            ? `${workList[0]} and ${workList[1]}`
-            : `${workList.slice(0, -1).join(', ')}, and ${workList[workList.length - 1]}`;
-
-        summaryEnglish = `did ${worksStr} this week.`;
-
-        // Add "Next week" from focus works (pick Language area focus, or first available)
-        if (childFocus) {
-          const nextWork = childFocus.get('language')
-            || childFocus.get('mathematics')
-            || childFocus.get('sensorial')
-            || childFocus.get('practical_life')
-            || childFocus.get('cultural');
-          if (nextWork) {
-            summaryEnglish += ` Next week: ${nextWork}.`;
+      if (childWorks && childWorks.size > 0) {
+        const lines: string[] = [];
+        for (const area of AREAS) {
+          const works = childWorks.get(area);
+          if (works && works.length > 0) {
+            lines.push(`${AREA_LABELS[area]}: ${works.join(', ')}`);
           }
         }
+        summaryEnglish = lines.length > 0
+          ? lines.join('\n')
+          : "No recorded activities this week.";
       } else {
-        summaryEnglish = "didn't complete any recorded activities this week.";
+        summaryEnglish = "No recorded activities this week.";
       }
 
       // --- Plan Areas ---
@@ -257,9 +263,7 @@ export async function GET(request: NextRequest) {
       for (const area of AREAS) {
         const focusWork = childFocus?.get(area);
         if (focusWork) {
-          // Check if child is currently practicing this work (add -P suffix)
-          const childProgress = progressByChild.get(child.id);
-          const areaWorks = childProgress?.get(area) || [];
+          const areaWorks = childWorks?.get(area) || [];
           const isPracticing = areaWorks.includes(focusWork);
           planAreas[area] = isPracticing ? `${focusWork}-P` : focusWork;
         } else {
