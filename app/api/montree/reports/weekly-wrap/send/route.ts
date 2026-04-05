@@ -21,7 +21,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
     const body = await request.json();
-    const { classroom_id, week_start, locale: requestLocale } = body;
+    const { classroom_id, week_start, locale: requestLocale, child_ids } = body as {
+      classroom_id: string;
+      week_start: string;
+      locale?: 'en' | 'zh';
+      child_ids?: string[];  // Optional: send only for specific children
+    };
 
     if (!classroom_id || !week_start) {
       return NextResponse.json(
@@ -44,14 +49,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
     }
 
-    // Get all parent draft reports for this week
-    const { data: draftsRaw } = await supabase
+    // Get parent draft reports for this week (optionally filtered by child_ids)
+    let draftsQuery = supabase
       .from('montree_weekly_reports')
       .select('id, child_id, content, week_start, week_end')
       .eq('classroom_id', classroom_id)
       .eq('week_start', week_start)
       .eq('report_type', 'parent')
       .eq('status', 'draft');
+
+    if (child_ids && child_ids.length > 0) {
+      draftsQuery = draftsQuery.in('child_id', child_ids);
+    }
+
+    const { data: draftsRaw } = await draftsQuery;
 
     const drafts = (draftsRaw || []) as Array<{
       id: string; child_id: string; content: Record<string, unknown>;

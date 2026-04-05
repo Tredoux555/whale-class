@@ -65,39 +65,75 @@ export async function GET(request: NextRequest) {
     // Group by child
     const byChild = new Map<string, {
       teacher_report: Record<string, unknown> | null;
+      teacher_report_id: string | null;
+      teacher_status: string | null;
       parent_content: Record<string, unknown> | null;
       parent_report_id: string | null;
+      parent_status: string | null;
     }>();
 
     for (const r of reports) {
       if (!byChild.has(r.child_id)) {
-        byChild.set(r.child_id, { teacher_report: null, parent_content: null, parent_report_id: null });
+        byChild.set(r.child_id, {
+          teacher_report: null, teacher_report_id: null, teacher_status: null,
+          parent_content: null, parent_report_id: null, parent_status: null,
+        });
       }
       const entry = byChild.get(r.child_id)!;
       if (r.report_type === 'teacher') {
         entry.teacher_report = r.content;
+        entry.teacher_report_id = r.id;
+        entry.teacher_status = r.status;
       }
       if (r.report_type === 'parent') {
         entry.parent_content = r.content;
         entry.parent_report_id = r.id;
+        entry.parent_status = r.status;
       }
     }
 
-    // Build results
+    // Build results with full data for both tabs
     const results = Array.from(byChild.entries()).map(([childId, data]) => {
       const parentNarrative = (data.parent_content?.narrative as { summary?: string })?.summary || null;
-      const photoCount = ((data.parent_content?.photos as unknown[]) || []).length;
-      const teacherFlags = (data.teacher_report?.flags as Array<{ level: string }>) || [];
+      const parentPhotos = (data.parent_content?.photos as Array<{
+        id: string; url: string; work_name?: string; caption?: string; captured_at?: string;
+      }>) || [];
+      const parentWorks = (data.parent_content?.works as Array<{
+        name: string; area: string; status: string;
+        parent_description?: string; why_it_matters?: string;
+        photo_url?: string; photo_caption?: string;
+      }>) || [];
+      const photoCount = parentPhotos.length;
+
+      const teacherFlags = (data.teacher_report?.flags as Array<{ level: string; issue: string; recommendation: string }>) || [];
       const flagsCount = teacherFlags.length;
+      const keyInsight = (data.teacher_report?.key_insight as string) || null;
+      const recommendations = (data.teacher_report?.recommendations as Array<{
+        area: string; area_label: string; work: string; reasoning: string;
+      }>) || [];
+      const areaAnalyses = (data.teacher_report?.area_analyses as Array<{
+        area: string; area_label: string; works_count: number; narrative: string;
+      }>) || [];
 
       return {
         child_id: childId,
         child_name: childMap.get(childId) || 'Unknown',
+        // Teacher data
         teacher_report: data.teacher_report,
-        parent_narrative: parentNarrative,
-        photo_count: photoCount,
+        teacher_report_id: data.teacher_report_id,
+        teacher_status: data.teacher_status,
+        key_insight: keyInsight,
+        recommendations,
+        area_analyses: areaAnalyses,
+        flags: teacherFlags,
         flags_count: flagsCount,
+        // Parent data
+        parent_narrative: parentNarrative,
+        parent_photos: parentPhotos,
+        parent_works: parentWorks,
+        photo_count: photoCount,
         report_id: data.parent_report_id,
+        parent_status: data.parent_status,
       };
     });
 
