@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
+import { autoTranslateToChinese } from '@/lib/montree/auto-translate';
 
 export async function GET(request: NextRequest) {
   try {
@@ -232,6 +233,32 @@ export async function POST(request: NextRequest) {
     // Invalidate per-classroom CLIP embeddings so they re-build with new description
     if (auth.classroomId) {
       invalidateClassroomEmbeddings(auth.classroomId);
+    }
+
+    // Also update the curriculum works table with parent_description + why_it_matters
+    // so they're available for weekly wrap generation via the curriculum query
+    if (parent_description && auth.classroomId) {
+      const currUpdateData: Record<string, string | null> = {
+        parent_description: parent_description.trim().slice(0, 500),
+        why_it_matters: why_it_matters ? why_it_matters.trim().slice(0, 500) : null,
+      };
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .update(currUpdateData)
+        .eq('classroom_id', auth.classroomId)
+        .ilike('name', work_name.trim().replace(/[%_\\]/g, '\\$&'))
+        .then(({ error: currErr }) => {
+          if (currErr) console.error('[ClassroomSetup] Curriculum works update failed (non-fatal):', currErr.message);
+        });
+
+      // Fire-and-forget: auto-translate parent_description + why_it_matters into Chinese
+      // Runs in background via Haiku (~$0.001, ~1s) — doesn't block the response
+      autoTranslateToChinese({
+        classroomId: auth.classroomId,
+        workName: work_name.trim(),
+        parentDescription: parent_description.trim(),
+        whyItMatters: why_it_matters ? why_it_matters.trim() : '',
+      }).catch(err => console.error('[ClassroomSetup] Auto-translate error:', err));
     }
 
     return NextResponse.json({ success: true });
