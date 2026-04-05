@@ -3,7 +3,7 @@
 // Produces per-child weekly analysis at the level of a 30-year AMI consultant
 // This is the internal report — detailed, developmental, forward-looking
 
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 
 // ── Types ──
@@ -392,7 +392,7 @@ export async function generateTeacherReport(
     const prompt = buildTeacherReportPrompt(input);
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: HAIKU_MODEL,
       max_tokens: 8192,
       messages: [{ role: 'user', content: prompt }],
     });
@@ -437,7 +437,7 @@ export async function generateTeacherReport(
     return {
       success: true,
       report,
-      model: AI_MODEL,
+      model: HAIKU_MODEL,
       generatedAt: new Date().toISOString(),
       tokensUsed: {
         input: response.usage?.input_tokens || 0,
