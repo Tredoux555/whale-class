@@ -45,9 +45,9 @@ export async function GET(request: NextRequest) {
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
       .neq('teacher_confirmed', true)
-      .gte('created_at', dateFrom)
-      .lte('created_at', dateTo)
-      .order('created_at', { ascending: false })
+      .gte('captured_at', dateFrom)
+      .lte('captured_at', dateTo)
+      .order('captured_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (effectiveClassroomId) {

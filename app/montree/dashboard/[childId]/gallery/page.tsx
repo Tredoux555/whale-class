@@ -1179,29 +1179,11 @@ export default function GalleryPage() {
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           <button
-            onClick={() => { setViewMode('grid'); setSelectedArea(null); }}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === 'grid' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+            onClick={() => setSelectedArea(null)}
+            className="px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-500 text-white"
           >
             {t('review.allPhotos')}
           </button>
-          <button
-            onClick={() => { setViewMode('timeline'); setSelectedArea(null); }}
-            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === 'timeline' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            {t('gallery.timeline')}
-          </button>
-          {!isHomeschoolParent() && (
-            <button
-              onClick={() => setEventAttendanceOpen(true)}
-              className="px-3 py-2 rounded-lg text-sm font-medium transition-colors bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
-            >
-              🎉 Tag Event
-            </button>
-          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -1220,7 +1202,7 @@ export default function GalleryPage() {
       </div>
 
       {/* Area filter chips */}
-      {viewMode === 'grid' && (
+      {(
         <div className="flex gap-2 overflow-x-auto pb-1">
           <button
             onClick={() => setSelectedArea(null)}
@@ -1298,8 +1280,8 @@ export default function GalleryPage() {
             {t('review.takePhotos')}
           </p>
         </div>
-      ) : viewMode === 'timeline' && !selectedArea ? (
-        // Timeline view — grouped by date
+      ) : (
+        // Chronological view — grouped by date (newest first)
         <div className="space-y-6">
           {timelineGroups.map(([dateKey, datePhotos]) => (
               <div key={dateKey}>
@@ -1319,52 +1301,6 @@ export default function GalleryPage() {
                 </div>
               </div>
             ))}
-        </div>
-      ) : selectedArea ? (
-        // Single area view
-        <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {filteredPhotos.map(photo => renderPhotoCard(photo))}
-          </div>
-        </div>
-      ) : (
-        // Default grid view — grouped by area
-        <div className="space-y-6">
-          {AREA_ORDER.map(area => {
-            const areaPhotos = photosByArea[area] || [];
-            if (areaPhotos.length === 0) return null;
-            const config = AREA_CONFIG[area];
-            return (
-              <div key={area}>
-                <div className="flex items-center gap-2 mb-3 px-1">
-                  <AreaBadge area={area} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-800 text-sm">{config.name}</p>
-                    <p className="text-xs text-gray-500">{areaPhotos.length} {areaPhotos.length !== 1 ? t('gallery.photos') : t('gallery.photo')}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {areaPhotos.map(photo => renderPhotoCard(photo))}
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Untagged photos at the end */}
-          {(photosByArea['untagged']?.length || 0) > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-3 px-1">
-                <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs font-bold">?</div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-800 text-sm">{t('gallery.untagged')}</p>
-                  <p className="text-xs text-gray-500">{photosByArea['untagged'].length} {t('gallery.photosTotal')}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {photosByArea['untagged'].map(photo => renderPhotoCard(photo))}
-              </div>
-            </div>
-          )}
         </div>
       )}
 
