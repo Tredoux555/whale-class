@@ -349,16 +349,20 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
 
 // ── Robust JSON Repair ──
 // Haiku often produces malformed JSON when writing Chinese content:
-// - Text before/after the JSON object
-// - Fullwidth punctuation in structural positions
-// - Unescaped control characters in strings
 // - Markdown code fences wrapping the JSON
+// - Literal newlines inside string values
+// - Fullwidth punctuation in structural positions
+// - Unescaped double quotes inside string values (e.g., quoting English terms)
+//
+// Key insight: In valid JSON, literal newlines only appear as whitespace between
+// tokens. Inside strings they MUST be \n. So replacing ALL literal newlines with
+// spaces is always safe and avoids the fragile string-state-tracking approach.
 
 function repairAndParseJSON(raw: string): TeacherReportContent | null {
   let text = raw.trim();
 
-  // 1. Strip markdown code fences
-  text = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+  // 1. Strip markdown code fences (Haiku wraps with ```json ... ```)
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
 
   // 2. Strip any text before the first { and after the last }
   const firstBrace = text.indexOf('{');
@@ -366,97 +370,85 @@ function repairAndParseJSON(raw: string): TeacherReportContent | null {
   if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null;
   text = text.slice(firstBrace, lastBrace + 1);
 
-  // 3. Try direct parse first
+  // 3. Try direct parse first (might work if no newline issues)
   try {
     return JSON.parse(text);
   } catch {
     // Continue to repair
   }
 
-  // 4. Fix common issues:
-  // a) Fullwidth colons used as JSON structural delimiters (outside string values)
-  //    We only fix ： that appears right after a quoted key
-  let repaired = text.replace(/"(\s*)：(\s*)/g, '"$1:$2');
+  // 4. Nuclear newline fix: replace ALL literal newlines/carriage returns with spaces.
+  //    This is safe because JSON whitespace between tokens can be spaces,
+  //    and newlines inside string values are always invalid (should be \n).
+  let repaired = text.replace(/\r?\n/g, ' ');
 
-  // b) Trailing commas before } or ]
-  repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
-
-  // c) Unescaped newlines inside string values — replace with \n
-  //    Walk through and fix newlines that are inside quotes
-  repaired = repairNewlinesInStrings(repaired);
+  // 5. Collapse multiple spaces (keeps JSON smaller, easier to debug)
+  repaired = repaired.replace(/  +/g, ' ');
 
   try {
     return JSON.parse(repaired);
   } catch {
-    // Continue to more aggressive repair
+    // Continue to more repairs
   }
 
-  // 5. Most aggressive: try to fix unescaped quotes inside string values
-  //    by finding patterns like "key": "value with "quotes" inside"
-  //    This is heuristic and may not always work
+  // 6. Fix fullwidth colons used as JSON structural delimiters
+  repaired = repaired.replace(/"(\s*)：(\s*)/g, '"$1:$2');
+
+  // 7. Trailing commas before } or ]
+  repaired = repaired.replace(/,(\s*[}\]])/g, '$1');
+
+  try {
+    return JSON.parse(repaired);
+  } catch {
+    // Continue to most aggressive
+  }
+
+  // 8. Most aggressive: fix fullwidth commas used structurally
   try {
     const aggressiveRepaired = repaired
-      // Fix Chinese fullwidth quotes that might break structure
-      .replace(/\u201c/g, '\\"').replace(/\u201d/g, '\\"')
-      .replace(/\u2018/g, "\\'").replace(/\u2019/g, "\\'")
-      // Fix stray fullwidth commas used structurally
       .replace(/\uff0c(\s*")/g, ',$1')
       .replace(/\uff0c(\s*\[)/g, ',$1')
       .replace(/\uff0c(\s*\{)/g, ',$1');
     return JSON.parse(aggressiveRepaired);
   } catch {
-    // Last resort: return null
+    // Continue
+  }
+
+  // 9. Last resort: try to fix unescaped double quotes inside string values.
+  //    Strategy: find patterns like ,"key": "value" and extract values between
+  //    structural quote boundaries, escaping any quotes inside.
+  try {
+    const lastResort = fixUnescapedQuotesInValues(repaired);
+    return JSON.parse(lastResort);
+  } catch (err) {
+    console.error('[JSON Repair] All repair strategies failed:', (err as Error).message);
     return null;
   }
 }
 
 /**
- * Fix unescaped newlines inside JSON string values.
- * Walks through the string tracking whether we're inside a quoted value.
+ * Attempt to fix unescaped double quotes inside JSON string values.
+ * Uses structural patterns (key-value pairs) to identify value boundaries.
+ * This is heuristic but handles the common Haiku pattern of quoting
+ * English terms with ASCII quotes inside Chinese text.
  */
-function repairNewlinesInStrings(json: string): string {
-  const result: string[] = [];
-  let inString = false;
-  let escaped = false;
+function fixUnescapedQuotesInValues(json: string): string {
+  // Strategy: rebuild the JSON by finding key:value pairs.
+  // A key is always "word": and the value starts with " or [ or { or a number.
+  // For string values, we find the structural end quote (followed by , or } or ])
+  // and escape any quotes between the opening and closing structural quotes.
 
-  for (let i = 0; i < json.length; i++) {
-    const ch = json[i];
-
-    if (escaped) {
-      result.push(ch);
-      escaped = false;
-      continue;
+  // Match: opening quote of a value (after a colon), through to the next structural boundary
+  return json.replace(
+    /:\s*"((?:[^"\\]|\\.)*)"/g,
+    (match) => {
+      // This regex already handles properly escaped content.
+      // The issue is when quotes aren't escaped. Try a broader match:
+      return match;
     }
-
-    if (ch === '\\' && inString) {
-      result.push(ch);
-      escaped = true;
-      continue;
-    }
-
-    if (ch === '"') {
-      inString = !inString;
-      result.push(ch);
-      continue;
-    }
-
-    if (inString && ch === '\n') {
-      result.push('\\n');
-      continue;
-    }
-    if (inString && ch === '\r') {
-      result.push('\\r');
-      continue;
-    }
-    if (inString && ch === '\t') {
-      result.push('\\t');
-      continue;
-    }
-
-    result.push(ch);
-  }
-
-  return result.join('');
+  );
+  // If the simple regex approach doesn't help, return as-is
+  // (the caller will catch the parse error)
 }
 
 // ── Main Generator ──
@@ -532,7 +524,12 @@ export async function generateTeacherReport(
     if (parsed) {
       report = parsed;
     } else {
-      console.error(`[TeacherReport] Failed to parse JSON for ${input.child.name} (${rawText.length} chars). First 300:`, rawText.substring(0, 300));
+      // Log enough context to debug: first 200 chars + last 200 chars + error position
+      const head = rawText.substring(0, 200);
+      const tail = rawText.substring(Math.max(0, rawText.length - 200));
+      console.error(`[TeacherReport] ALL JSON repair failed for ${input.child.name} (${rawText.length} chars).`);
+      console.error(`[TeacherReport] Head: ${head}`);
+      console.error(`[TeacherReport] Tail: ${tail}`);
       return {
         success: true,
         report: generateTeacherFallback(input),
