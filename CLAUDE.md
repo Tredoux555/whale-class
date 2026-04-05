@@ -33,12 +33,13 @@ The full Weekly Wrap → Weekly Admin pipeline is being brought online. Status:
 - Both tabs (Summary + Plan) fill simultaneously on auto-fill
 
 **What NEEDS TESTING (next session):**
-- Full generation → Review → Send flow: confirm all 19 children appear in Review page (was failing due to NOT NULL `week_number` constraint — fixed in `44d3f211`)
-- Teacher reports: confirm JSON parsing succeeds with 4096 tokens (was failing at 2048)
+- **FIRST: Regenerate Weekly Wrap** — hit 🔄 on the card. All prior fixes + migration 162 are deployed. Should now save all 38 rows (19 teacher + 19 parent).
+- Quick DB verify: `SELECT child_id, report_type FROM montree_weekly_reports WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND week_start='2026-03-29'` — expect 38 rows
+- Review page: confirm all 19 children appear with teacher reports (not fallback templates)
 - Send to parents: confirm emails dispatch correctly
 - Weekly Admin auto-fill: confirm it pulls from Weekly Wrap reports correctly
 - Weekly Admin DOCX: confirm area-by-area format renders in Word
-- Quick test approach: can query DB directly to verify reports saved: `SELECT child_id, report_type FROM montree_weekly_reports WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND week_start='2026-03-29'` — should show 38 rows (19 teacher + 19 parent)
+- Teacher report JSON: confirm 4096 max_tokens is enough (was truncating at 2048, position ~8700; at 4096 still truncating at ~18000 — may need 8192 or prompt simplification)
 
 **Key Discovery — `montree_weekly_reports` schema:**
 Table has MORE columns than originally documented. Full column list: `id, child_id, classroom_id, school_id, week_start, week_end, week_number (NOT NULL), report_year (NOT NULL), report_type, status, content, is_published, published_at, sent_at, generated_at, created_at, updated_at, created_by, concentration_score, area_distribution, areas_of_growth, highlights, parent_summary, recommendations, recommended_works, active_sensitive_periods`. The `week_number` and `report_year` columns are NOT NULL — removing them from upserts causes silent insert failures. Always include computed `weekNumber` and `reportYear` in upserts. Queries should use `.eq('week_start', weekStart)` (canonical identifier).
@@ -317,7 +318,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 161 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class).
+All migrations through 162 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class).
 
 ---
 
