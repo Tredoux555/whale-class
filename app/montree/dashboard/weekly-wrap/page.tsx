@@ -1406,15 +1406,23 @@ export default function WeeklyWrapPage() {
                 ? `${readyToSend} 份家长报告准备就绪`
                 : `${readyToSend} parent reports ready to send`}
             </p>
-            <button
-              onClick={handleSendAll}
-              disabled={sending}
-              className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
-            >
-              {sending
-                ? (locale === 'zh' ? '发送中...' : 'Sending...')
-                : (locale === 'zh' ? '发送给所有家长' : 'Send All to Parents')}
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/montree/dashboard/students"
+                className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                ✉️ {locale === 'zh' ? '邀请家长' : 'Invite Parents'}
+              </Link>
+              <button
+                onClick={handleSendAll}
+                disabled={sending}
+                className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              >
+                {sending
+                  ? (locale === 'zh' ? '发送中...' : 'Sending...')
+                  : (locale === 'zh' ? '发送给所有家长' : 'Send All to Parents')}
+              </button>
+            </div>
           </div>
         </div>
       )}
