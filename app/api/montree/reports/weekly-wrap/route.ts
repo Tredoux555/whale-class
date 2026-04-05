@@ -114,11 +114,15 @@ export async function POST(request: NextRequest) {
       work_name: string; parent_description: string | null; why_it_matters: string | null;
     }>;
 
-    // Build description lookup
+    // Build description + area lookups
     const workIdToName = new Map<string, string>();
+    const workNameToArea = new Map<string, string>(); // name (lowercase) → area_id
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
     for (const w of curriculumWorks) {
       workIdToName.set(w.id, w.name);
+      if (w.area_id) {
+        workNameToArea.set(w.name.toLowerCase().trim(), w.area_id);
+      }
       const desc = (locale === 'zh' && w.parent_description_zh) ? w.parent_description_zh : w.parent_description;
       const whyMatters = (locale === 'zh' && w.why_it_matters_zh) ? w.why_it_matters_zh : (w.why_it_matters || '');
       if (desc) {
@@ -255,7 +259,7 @@ export async function POST(request: NextRequest) {
 
               enrichedPhotos.push({
                 work_name: workName,
-                area: matchingProgress?.area || '',
+                area: matchingProgress?.area || workNameToArea.get(workName.toLowerCase().trim()) || '',
                 status: matchingProgress?.status || 'documented',
                 parent_description: desc?.description || null,
                 why_it_matters: desc?.why_it_matters || null,
@@ -280,7 +284,7 @@ export async function POST(request: NextRequest) {
               weekEnd: week_end,
               progress: progress.map(p => ({
                 work_name: p.work_name,
-                area: p.area,
+                area: p.area || workNameToArea.get(p.work_name.toLowerCase().trim()) || '',
                 status: p.status,
                 notes: p.notes,
                 date: p.created_at,
