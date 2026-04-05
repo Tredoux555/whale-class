@@ -108,6 +108,8 @@ export async function POST(request: NextRequest) {
           .from('montree_weekly_reports')
           .update({
             status: 'sent',
+            is_published: true,
+            published_at: now,
             sent_at: now,
           })
           .eq('id', draft.id);

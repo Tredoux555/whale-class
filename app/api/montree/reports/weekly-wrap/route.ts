@@ -333,17 +333,22 @@ export async function POST(request: NextRequest) {
 
               // Upsert teacher report
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase.from('montree_weekly_reports') as any).upsert({
+              const { error: teacherUpsertErr } = await (supabase.from('montree_weekly_reports') as any).upsert({
                 school_id: classroom.school_id,
                 classroom_id: classroom_id,
                 child_id: child.id,
                 week_start: week_start,
                 week_end: week_end,
+                week_number: weekNumber,
+                report_year: reportYear,
                 report_type: 'teacher',
                 status: 'draft',
                 content: teacherReportContent,
                 generated_at: now,
               }, { onConflict: 'child_id,week_start,report_type' });
+              if (teacherUpsertErr) {
+                console.error(`Teacher report upsert failed for ${child.name}:`, teacherUpsertErr.message);
+              }
             }
 
             // ─── Generate Parent Report ───
@@ -412,17 +417,22 @@ export async function POST(request: NextRequest) {
 
               // Upsert parent report
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase.from('montree_weekly_reports') as any).upsert({
+              const { error: parentUpsertErr } = await (supabase.from('montree_weekly_reports') as any).upsert({
                 school_id: classroom.school_id,
                 classroom_id: classroom_id,
                 child_id: child.id,
                 week_start: week_start,
                 week_end: week_end,
+                week_number: weekNumber,
+                report_year: reportYear,
                 report_type: 'parent',
                 status: 'draft',
                 content: parentReportContent,
                 generated_at: now,
               }, { onConflict: 'child_id,week_start,report_type' });
+              if (parentUpsertErr) {
+                console.error(`Parent report upsert failed for ${child.name}:`, parentUpsertErr.message);
+              }
             }
 
             const keyInsight = (teacherReportContent as any)?.key_insight || '';
