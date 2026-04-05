@@ -34,7 +34,7 @@ type PlanNotes = Record<string, Record<string, NoteData>>; // childId -> area|'_
 
 export default function WeeklyAdminDocsPage() {
   const router = useRouter();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { isEnabled, loading: featuresLoading } = useFeatures();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
@@ -283,6 +283,7 @@ export default function WeeklyAdminDocsPage() {
           classroom_id: session.classroom?.id,
           week_start: weekStart,
           doc_type: docType,
+          locale,
         }),
       });
 

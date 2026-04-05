@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const classroomId: string = body.classroom_id || auth.classroomId;
     const weekStart: string = body.week_start;
     const docType: string = body.doc_type; // 'summary' or 'plan'
+    const locale: string = body.locale || 'en'; // 'en' or 'zh'
 
     if (!classroomId) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
@@ -110,14 +111,16 @@ export async function POST(request: NextRequest) {
         // Summary: overall English + Chinese notes (area=null)
         const summaryNote = childNotesMap?.get(null);
 
-        // Use saved note text; fallback only if teacher never auto-filled
-        const englishSummary = summaryNote?.english_text || 'No recorded activities this week.';
+        // Use locale-appropriate content as the primary display
+        const englishSummary = locale === 'zh'
+          ? (summaryNote?.chinese_text || summaryNote?.english_text || '本周没有记录到活动。')
+          : (summaryNote?.english_text || 'No recorded activities this week.');
 
         return {
           childId: child.id,
           childName: child.name,
           englishSummary,
-          chineseSummary: summaryNote?.chinese_text || '',
+          chineseSummary: '', // Single-language mode — content is in englishSummary
         };
       } else {
         // Plan: per-area English work names + overall Chinese note + additional notes
