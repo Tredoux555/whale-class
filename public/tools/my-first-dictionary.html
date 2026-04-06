@@ -320,16 +320,16 @@
   }
 
   /* ===== LAYOUT OPTIONS ===== */
-  .layout-compact .word-row { margin-bottom: 1mm; padding: 2mm 4mm; }
+  .layout-compact .word-row, .layout-compact .word-card { margin-bottom: 1mm; padding: 2mm 4mm; }
   .layout-compact .word-picture { font-size: 32px; width: 42px; height: 42px; }
-  .layout-compact .word-solid { font-size: 22px; width: 80px; }
+  .layout-compact .word-solid { font-size: 22px; }
   .layout-compact .trace-area { height: 42px; }
   .layout-compact .trace-word { font-size: 28px; letter-spacing: 6px; }
   .layout-compact .write-area { height: 42px; }
 
-  .layout-spacious .word-row { margin-bottom: 4mm; padding: 4mm 4mm; }
+  .layout-spacious .word-row, .layout-spacious .word-card { margin-bottom: 4mm; padding: 4mm 4mm; }
   .layout-spacious .word-picture { font-size: 48px; width: 60px; height: 60px; }
-  .layout-spacious .word-solid { font-size: 34px; width: 100px; }
+  .layout-spacious .word-solid { font-size: 34px; }
   .layout-spacious .trace-area { height: 60px; }
   .layout-spacious .trace-word { font-size: 42px; letter-spacing: 10px; }
   .layout-spacious .write-area { height: 60px; }
@@ -340,11 +340,12 @@
     grid-template-columns: 1fr 1fr;
     gap: 2mm 6mm;
   }
-  .two-col-grid .word-row {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  .two-col-grid .word-row,
+  .two-col-grid .word-card {
     padding: 3mm;
+  }
+  .two-col-grid .word-card-top {
+    justify-content: center;
   }
   .two-col-grid .word-solid { width: auto; }
   .two-col-grid .trace-area { width: 100%; }
@@ -361,9 +362,9 @@
   .page-a5 .cover-page h1 { font-size: 36px; }
   .page-a5 .cover-page .big-emoji { font-size: 60px; }
   .page-a5 .cover-page .cover-subtitle { font-size: 18px; }
-  .page-a5 .word-row { margin-bottom: 1.5mm; padding: 2mm 3mm; }
+  .page-a5 .word-row, .page-a5 .word-card { margin-bottom: 1.5mm; padding: 2mm 3mm; }
   .page-a5 .word-picture { font-size: 30px; width: 38px; height: 38px; }
-  .page-a5 .word-solid { font-size: 20px; width: 70px; }
+  .page-a5 .word-solid { font-size: 20px; }
   .page-a5 .trace-area { height: 38px; }
   .page-a5 .trace-word { font-size: 26px; letter-spacing: 5px; }
   .page-a5 .write-area { height: 38px; }
@@ -1070,21 +1071,20 @@ function makeWordRow(w, showWrite) {
 }
 
 function makeTwoColCard(w, showWrite) {
-  const writeHTML = showWrite ? `
-    <div class="write-area" style="height:36px;">
-      ${makeGuidelines()}
-    </div>` : '';
-
   const safe = w.imgData ? escapeHTML(w.word) : w.word;
   return `
-    <div class="word-row">
-      ${makePictureHTML(w)}
-      <div class="word-solid">${safe}</div>
-      <div class="trace-area">
-        ${makeGuidelines()}
-        <span class="trace-word">${safe}</span>
+    <div class="word-card">
+      <div class="word-card-top">
+        ${makePictureHTML(w)}
+        <div class="word-solid">${safe}</div>
       </div>
-      ${writeHTML}
+      <div class="word-card-bottom">
+        <div class="trace-area" style="flex:1;">
+          ${makeGuidelines()}
+          <span class="trace-word">${safe}</span>
+        </div>
+        ${showWrite ? `<div class="write-area" style="flex:1;">${makeGuidelines()}</div>` : ''}
+      </div>
     </div>`;
 }
 
@@ -1137,9 +1137,9 @@ function render() {
   const isA5 = pageSize === 'a5';
   let wordsPerPage;
   if (isA5) {
-    wordsPerPage = layout === 'compact' ? 8 : layout === 'spacious' ? 4 : (showWrite ? 5 : 6);
+    wordsPerPage = layout === 'compact' ? 6 : layout === 'spacious' ? 3 : (showWrite ? 4 : 5);
   } else {
-    wordsPerPage = layout === 'compact' ? 10 : layout === 'spacious' ? 5 : (showWrite ? 6 : 8);
+    wordsPerPage = layout === 'compact' ? 8 : layout === 'spacious' ? 4 : (showWrite ? 5 : 6);
   }
 
   let html = '';
