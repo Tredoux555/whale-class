@@ -89,11 +89,12 @@ const ALL_BORDERS = { top: THIN_BORDER, bottom: THIN_BORDER, left: THIN_BORDER, 
 /**
  * Split text on newlines into separate Paragraph objects.
  * docx-js ignores \n inside TextRun — MUST use separate Paragraphs.
+ * If boldFirstLine is true, the first line gets bold styling (used for child names).
  */
-function multilineParagraphs(text: string, font: string, size: number, bold?: boolean): Paragraph[] {
+function multilineParagraphs(text: string, font: string, size: number, bold?: boolean, boldFirstLine?: boolean): Paragraph[] {
   return text.split('\n').map(
-    (line) => new Paragraph({
-      children: [new TextRun({ text: line, font, size, bold })],
+    (line, i) => new Paragraph({
+      children: [new TextRun({ text: line, font, size, bold: bold || (boldFirstLine && i === 0) })],
     })
   );
 }
@@ -104,10 +105,10 @@ function textCell(
   width: number,
   font: string,
   fontSize: number,
-  opts?: { bold?: boolean; verticalAlign?: (typeof VerticalAlign)[keyof typeof VerticalAlign] }
+  opts?: { bold?: boolean; boldFirstLine?: boolean; verticalAlign?: (typeof VerticalAlign)[keyof typeof VerticalAlign] }
 ): TableCell {
   const paragraphs = (text || '').trim()
-    ? multilineParagraphs(text, font, fontSize, opts?.bold)
+    ? multilineParagraphs(text, font, fontSize, opts?.bold, opts?.boldFirstLine)
     : [new Paragraph({})];
   return new TableCell({
     borders: ALL_BORDERS,
@@ -136,16 +137,14 @@ function emptyCell(width: number): TableCell {
  */
 export function generateWeeklySummary(children: ChildNotes[], weekLabel: string): Document {
   // Build cell content for each child
+  // Format: "Name\nArea: works\nArea: works\n\nNext week: ..."
   const cellContents: string[] = children.map((child) => {
     const en = child.englishSummary || '';
     const zh = child.chineseSummary || '';
     if (!en && !zh) return `${child.childName}:`;
-    const parts = [`${child.childName}: ${en}`];
-    if (zh) {
-      parts.push('');
-      parts.push(zh);
-    }
-    return parts.join('\n');
+    // Use the locale-appropriate content (English already has area-by-area format)
+    const content = en || zh;
+    return `${child.childName}\n${content}`;
   });
 
   // Pad to fill complete rows (multiple of 3)
@@ -159,7 +158,7 @@ export function generateWeeklySummary(children: ChildNotes[], weekLabel: string)
     rows.push(new TableRow({
       height: { value: SUMMARY.ROW_HEIGHT, rule: HeightRule.EXACT },
       children: [0, 1, 2].map((offset) =>
-        textCell(cellContents[i + offset], SUMMARY.COL_WIDTH, SUMMARY.FONT, SUMMARY.FONT_SIZE)
+        textCell(cellContents[i + offset], SUMMARY.COL_WIDTH, SUMMARY.FONT, SUMMARY.FONT_SIZE, { boldFirstLine: true })
       ),
     }));
   }

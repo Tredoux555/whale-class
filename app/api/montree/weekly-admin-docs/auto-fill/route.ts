@@ -298,6 +298,32 @@ export async function GET(request: NextRequest) {
       // Prefer Weekly Wrap data, fall back to photos
       const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
 
+      // --- Plan Areas (English + Chinese) — compute first so we can append "Next week" to summary ---
+      const planAreas: Record<string, string> = {};
+      const planAreasZh: Record<string, string> = {};
+      const nextWeekEn: string[] = [];
+      const nextWeekZh: string[] = [];
+      for (const area of AREAS) {
+        const focusWork = childFocus?.get(area);
+        if (focusWork) {
+          const areaWorks = childWorks?.get(area) || [];
+          const isPracticing = areaWorks.includes(focusWork);
+          const suffix = isPracticing ? '-P' : '';
+          planAreas[area] = `${focusWork}${suffix}`;
+          // Chinese work name (with same P suffix, fuzzy matched)
+          const zhName = getZhWorkName(focusWork);
+          planAreasZh[area] = `${zhName}${suffix}`;
+          // Collect next week focus items (only non-practicing — new presentations)
+          if (!isPracticing) {
+            nextWeekEn.push(focusWork);
+            nextWeekZh.push(zhName);
+          }
+        } else {
+          planAreas[area] = '';
+          planAreasZh[area] = '';
+        }
+      }
+
       // --- Summary (area-by-area, both languages) ---
       let summaryEnglish = '';
       let summaryChinese = '';
@@ -312,30 +338,20 @@ export async function GET(request: NextRequest) {
             zhLines.push(`${AREA_LABELS[area].zh}：${zhWorks.join('、')}`);
           }
         }
+        // Append "Next week" line if there are focus works
+        if (nextWeekEn.length > 0) {
+          enLines.push('');
+          enLines.push(`Next week: ${nextWeekEn.join(', ')}`);
+        }
+        if (nextWeekZh.length > 0) {
+          zhLines.push('');
+          zhLines.push(`下周计划：${nextWeekZh.join('、')}`);
+        }
         summaryEnglish = enLines.length > 0 ? enLines.join('\n') : 'No recorded activities this week.';
         summaryChinese = zhLines.length > 0 ? zhLines.join('\n') : '本周没有记录到活动。';
       } else {
         summaryEnglish = 'No recorded activities this week.';
         summaryChinese = '本周没有记录到活动。';
-      }
-
-      // --- Plan Areas (English + Chinese) ---
-      const planAreas: Record<string, string> = {};
-      const planAreasZh: Record<string, string> = {};
-      for (const area of AREAS) {
-        const focusWork = childFocus?.get(area);
-        if (focusWork) {
-          const areaWorks = childWorks?.get(area) || [];
-          const isPracticing = areaWorks.includes(focusWork);
-          const suffix = isPracticing ? '-P' : '';
-          planAreas[area] = `${focusWork}${suffix}`;
-          // Chinese work name (with same P suffix, fuzzy matched)
-          const zhName = getZhWorkName(focusWork);
-          planAreasZh[area] = `${zhName}${suffix}`;
-        } else {
-          planAreas[area] = '';
-          planAreasZh[area] = '';
-        }
       }
 
       return {
