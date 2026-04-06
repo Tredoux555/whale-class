@@ -2,7 +2,7 @@
 // Teachers input English + Chinese notes per child, then generate & download.
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
@@ -57,6 +57,11 @@ export default function WeeklyAdminDocsPage() {
 
   // ─── Init ──────────────────────────────────────────────────
 
+  const abortRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
+  const weekRef = useRef(weekStart);
+  weekRef.current = weekStart;
+
   useEffect(() => {
     const sess = getSession();
     if (!sess) {
@@ -73,11 +78,18 @@ export default function WeeklyAdminDocsPage() {
       return;
     }
     setSession(sess);
+    return () => { mountedRef.current = false; };
   }, [router, featuresLoading, isEnabled]);
 
   // Fetch children + existing notes when session or week changes
   const fetchData = useCallback(async () => {
     if (!session?.classroom?.id) return;
+
+    // Cancel any in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError('');
 
@@ -87,8 +99,12 @@ export default function WeeklyAdminDocsPage() {
         montreeApi(`/api/montree/weekly-admin-docs/notes?classroom_id=${session.classroom?.id}&week_start=${weekStart}`),
       ]);
 
+      if (controller.signal.aborted) return;
+
       const childrenData = await childrenRes.json();
       const notesData = notesRes.ok ? await notesRes.json() : { notes: [] };
+
+      if (controller.signal.aborted) return;
 
       if (childrenData.children) {
         const sorted = childrenData.children.sort((a: Child, b: Child) =>
@@ -101,6 +117,8 @@ export default function WeeklyAdminDocsPage() {
       const sNotes: SummaryNotes = {};
       const pNotes: PlanNotes = {};
 
+      const hasAnyNotes = notesData.notes && notesData.notes.length > 0;
+
       if (notesData.notes) {
         for (const note of notesData.notes) {
           if (note.doc_type === 'summary') {
@@ -111,13 +129,11 @@ export default function WeeklyAdminDocsPage() {
           } else if (note.doc_type === 'plan') {
             if (!pNotes[note.child_id]) pNotes[note.child_id] = {};
             if (note.area === null) {
-              // Overall Chinese developmental note (stored with area=null)
               pNotes[note.child_id]['_chinese'] = {
                 english_text: note.english_text || '',
                 chinese_text: note.chinese_text || '',
               };
             } else if (note.area === 'notes') {
-              // Additional notes text
               pNotes[note.child_id]['_notes'] = {
                 english_text: note.english_text || '',
                 chinese_text: note.chinese_text || '',
@@ -134,25 +150,27 @@ export default function WeeklyAdminDocsPage() {
 
       setSummaryNotes(sNotes);
       setPlanNotes(pNotes);
-
-      // Auto-fill if no saved notes exist (first visit for this week)
-      const hasAnyNotes = notesData.notes && notesData.notes.length > 0;
-      return hasAnyNotes;
-    } catch {
-      setError(t('weeklyAdmin.fetchError'));
-      return true; // Don't auto-fill on error
-    } finally {
       setLoading(false);
+
+      // Auto-fill ONLY when no saved notes exist (first visit for this week)
+      if (!hasAnyNotes && !controller.signal.aborted) {
+        handleAutoFill();
+      }
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (!controller.signal.aborted) {
+        setError('Failed to load data');
+        setLoading(false);
+      }
     }
-  }, [session?.classroom?.id, weekStart, t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.classroom?.id, weekStart]);
 
   useEffect(() => {
     // Wait for features to load and verify enabled before fetching data
     if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
-    fetchData().then(() => {
-      // Always auto-fill with fresh area-by-area data on load
-      handleAutoFill();
-    });
+    fetchData();
+    return () => { abortRef.current?.abort(); };
   }, [fetchData, featuresLoading, isEnabled]);
 
   // ─── Save Notes (reusable — silent=true skips UI feedback) ─
@@ -319,13 +337,17 @@ export default function WeeklyAdminDocsPage() {
 
   const handleAutoFill = async () => {
     if (!session?.classroom?.id) return;
+    const requestedWeek = weekStart;  // Capture at call time
     setAutoFilling(true);
     setError('');
+    setSuccess('');
 
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroom?.id}&week_start=${weekStart}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroom?.id}&week_start=${requestedWeek}`
       );
+
+      if (!mountedRef.current || weekRef.current !== requestedWeek) return;
 
       if (!res.ok) {
         setError(t('weeklyAdmin.autoFillFailed'));
@@ -333,51 +355,54 @@ export default function WeeklyAdminDocsPage() {
       }
 
       const data = await res.json();
+      if (!mountedRef.current || weekRef.current !== requestedWeek) return;
 
       if (!data.children || !Array.isArray(data.children)) {
         setError(t('weeklyAdmin.autoFillFailed'));
         return;
       }
 
-      // Fill BOTH tabs simultaneously (Summary + Plan) regardless of active tab
       let filledCount = 0;
 
-      // Fill summary fields (both English and Chinese — always overwrite with fresh data)
-      setSummaryNotes((prev) => {
-        const next = { ...prev };
-        for (const suggestion of data.children) {
-          if (suggestion.summaryEnglish || suggestion.summaryChinese) filledCount++;
-          next[suggestion.childId] = {
-            english_text: suggestion.summaryEnglish || '',
-            chinese_text: suggestion.summaryChinese || '',
+      // Build new state snapshots before setting (single update, no flash)
+      const newSummary: SummaryNotes = {};
+      for (const suggestion of data.children) {
+        if (suggestion.summaryEnglish || suggestion.summaryChinese) filledCount++;
+        newSummary[suggestion.childId] = {
+          english_text: suggestion.summaryEnglish || '',
+          chinese_text: suggestion.summaryChinese || '',
+        };
+      }
+
+      const newPlan: PlanNotes = {};
+      for (const suggestion of data.children) {
+        if (!newPlan[suggestion.childId]) newPlan[suggestion.childId] = {};
+        const zhAreas = suggestion.planAreasZh || {};
+        for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
+          if (workName) filledCount++;
+          newPlan[suggestion.childId][area] = {
+            english_text: workName as string,
+            chinese_text: (zhAreas[area] as string) || '',
           };
         }
-        return next;
-      });
+      }
 
-      // Fill plan area cells (always overwrite with fresh data, include Chinese names)
+      // Merge with existing (preserve teacher edits for fields auto-fill doesn't cover)
+      setSummaryNotes((prev) => ({ ...prev, ...newSummary }));
       setPlanNotes((prev) => {
-        const next = { ...prev };
-        for (const suggestion of data.children) {
-          if (!next[suggestion.childId]) next[suggestion.childId] = {};
-          const zhAreas = suggestion.planAreasZh || {};
-          for (const [area, workName] of Object.entries(suggestion.planAreas || {})) {
-            if (workName) filledCount++;
-            next[suggestion.childId][area] = {
-              english_text: workName as string,
-              chinese_text: (zhAreas[area] as string) || '',
-            };
-          }
+        const merged = { ...prev };
+        for (const [childId, areas] of Object.entries(newPlan)) {
+          merged[childId] = { ...(merged[childId] || {}), ...areas };
         }
-        return next;
+        return merged;
       });
 
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
     } catch {
-      setError(t('weeklyAdmin.autoFillFailed'));
+      if (mountedRef.current) setError(t('weeklyAdmin.autoFillFailed'));
     } finally {
-      setAutoFilling(false);
+      if (mountedRef.current) setAutoFilling(false);
     }
   };
 
