@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     // Process teacher reports first, then parent overwrites
     for (const report of [...teacherReports, ...parentReports]) {
       // Parent reports have content.works; teacher reports have content.area_analyses
-      const works: ReportWork[] = report.content?.works || [];
+      const works: ReportWork[] = [...(report.content?.works || [])];
       // Extract works from teacher area_analyses if no direct works array
       if (works.length === 0 && report.content?.area_analyses) {
         for (const aa of report.content.area_analyses) {
