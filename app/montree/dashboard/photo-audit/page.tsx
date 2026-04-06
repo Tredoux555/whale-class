@@ -1483,7 +1483,7 @@ export default function PhotoAuditPage() {
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
-    { key: 'weekly_wrap', label: t('weeklyWrap.title') || 'Weekly Wrap', color: 'bg-blue-100 text-blue-700', count: null },
+    { key: 'weekly_wrap', label: `📋 ${t('weeklyWrap.title') || 'Weekly Wrap'}`, color: 'bg-blue-100 text-blue-800', count: null },
   ];
 
   // ─── JSX ───
@@ -1525,17 +1525,25 @@ export default function PhotoAuditPage() {
         {/* Zone tabs + Reclassify button */}
         <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
           <div className="flex gap-2 flex-1 overflow-x-auto">
-            {ZONE_TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setZone(tab.key)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  zone === tab.key ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-gray-50 text-gray-400'
-                }`}
-              >
-                {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
-              </button>
-            ))}
+            {ZONE_TABS.map(tab => {
+              const isWeeklyWrap = tab.key === 'weekly_wrap';
+              const isActive = zone === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setZone(tab.key)}
+                  className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all ${
+                    isWeeklyWrap ? 'font-bold' : 'font-medium'
+                  } ${
+                    isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : (
+                      isWeeklyWrap ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-gray-50 text-gray-400'
+                    )
+                  }`}
+                >
+                  {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
+                </button>
+              );
+            })}
           </div>
         </div>
 
