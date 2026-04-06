@@ -10,7 +10,7 @@ export async function PATCH(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
-    const { report_id, narrative, photos } = body as {
+    const { report_id, narrative, photos, works } = body as {
       report_id: string;
       narrative?: string;           // Updated narrative text
       photos?: Array<{              // Updated photos array (after removal/reorder)
@@ -19,6 +19,15 @@ export async function PATCH(request: NextRequest) {
         work_name?: string;
         caption?: string;
         captured_at?: string;
+      }>;
+      works?: Array<{               // Updated works array (after removal)
+        name: string;
+        area: string;
+        status?: string;
+        parent_description?: string;
+        why_it_matters?: string;
+        photo_url?: string;
+        photo_caption?: string;
       }>;
     };
 
@@ -54,6 +63,11 @@ export async function PATCH(request: NextRequest) {
     // Update photos if provided (supports removal and reorder)
     if (photos !== undefined) {
       content.photos = photos;
+    }
+
+    // Update works if provided (supports removal)
+    if (works !== undefined) {
+      content.works = works;
     }
 
     // Save

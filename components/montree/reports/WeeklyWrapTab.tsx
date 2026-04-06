@@ -555,7 +555,16 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const handleRemoveWork = (childId: string, workName: string, area: string) => {
     setReports(prev => prev.map(r => {
       if (r.child_id !== childId) return r;
-      return { ...r, parent_works: r.parent_works.filter(w => !(w.name === workName && (w.area || '') === area)) };
+      const updatedWorks = r.parent_works.filter(w => !(w.name === workName && (w.area || '') === area));
+      // Persist to DB so removal survives page reload
+      if (r.report_id) {
+        montreeApi(`/api/montree/reports/weekly-wrap/edit`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ report_id: r.report_id, works: updatedWorks }),
+        }).catch(err => console.error('[WeeklyWrap] Failed to persist work removal:', err));
+      }
+      return { ...r, parent_works: updatedWorks };
     }));
   };
 
@@ -566,7 +575,16 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     const report = reports.find(r => r.child_id === childId);
     if (!report) return;
     const current = photoEdits[childId] ?? [...report.parent_photos];
-    setPhotoEdits(prev => ({ ...prev, [childId]: current.filter(p => p.id !== photoId) }));
+    const updatedPhotos = current.filter(p => p.id !== photoId);
+    setPhotoEdits(prev => ({ ...prev, [childId]: updatedPhotos }));
+    // Persist to DB so removal survives page reload
+    if (report.report_id) {
+      montreeApi(`/api/montree/reports/weekly-wrap/edit`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report_id: report.report_id, photos: updatedPhotos }),
+      }).catch(err => console.error('[WeeklyWrap] Failed to persist photo removal:', err));
+    }
   };
 
   // ─── Sorted reports ───────────────────────────────────────
@@ -826,17 +844,34 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       </div>
                     )}
 
-                    {/* Flags */}
-                    {r.flags.length > 0 && (
-                      <div className="space-y-1">
-                        {r.flags.map((f, i) => (
-                          <div key={`${f.level}-${i}-${f.issue.slice(0, 30)}`} className="flex items-start gap-1.5 text-[11px] bg-amber-50 rounded-lg p-2">
-                            <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
-                            <p className="text-gray-700 leading-relaxed">{cleanUUIDs(f.issue)}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {/* Flags — deduplicate: if red flag mentions an area, skip yellow for same area */}
+                    {r.flags.length > 0 && (() => {
+                      const AREA_KEYWORDS = ['practical life', 'sensorial', 'mathematics', 'language', 'cultural'];
+                      const redAreas = new Set<string>();
+                      for (const f of r.flags) {
+                        if (f.level === 'red') {
+                          const lower = (f.issue || '').toLowerCase();
+                          for (const kw of AREA_KEYWORDS) {
+                            if (lower.includes(kw)) redAreas.add(kw);
+                          }
+                        }
+                      }
+                      const deduped = r.flags.filter(f => {
+                        if (f.level !== 'yellow' || redAreas.size === 0) return true;
+                        const lower = (f.issue || '').toLowerCase();
+                        return !AREA_KEYWORDS.some(kw => redAreas.has(kw) && lower.includes(kw));
+                      });
+                      return deduped.length > 0 ? (
+                        <div className="space-y-1">
+                          {deduped.map((f, i) => (
+                            <div key={`${f.level}-${i}-${f.issue.slice(0, 30)}`} className="flex items-start gap-1.5 text-[11px] bg-amber-50 rounded-lg p-2">
+                              <span>{f.level === 'red' ? '🔴' : '🟡'}</span>
+                              <p className="text-gray-700 leading-relaxed">{cleanUUIDs(f.issue)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
 
                     {/* ── Next Week's Focus Shelf ── */}
                     {(() => {
