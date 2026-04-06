@@ -137,17 +137,35 @@ export async function POST(req: NextRequest) {
       const trimmedMessage = message.trim();
       const encryptedMessage = encryptMessage(trimmedMessage);
 
-      const { error: textInsertError } = await supabase.from('story_message_history').insert({
+      // Core fields always present; session linking fields may not exist in DB yet
+      const textRecord: Record<string, unknown> = {
         week_start_date: weekStartDate,
         message_type: 'text',
         message_content: encryptedMessage,
         author: adminUsername,
         expires_at: expiresAt.toISOString(),
         is_expired: false,
-        is_from_admin: true,
-        session_token: sessionToken,
-        login_log_id: loginLogId,
-      });
+      };
+      // Session linking — add only if columns exist (migration may not have run)
+      if (sessionToken) textRecord.session_token = sessionToken;
+      if (loginLogId) textRecord.login_log_id = loginLogId;
+      textRecord.is_from_admin = true;
+
+      let { error: textInsertError } = await supabase.from('story_message_history').insert(textRecord);
+
+      // If insert fails due to unknown column, retry without session fields
+      if (textInsertError && (textInsertError.message?.includes('column') || textInsertError.code === '42703')) {
+        console.warn('[Send] Session columns missing — retrying without:', textInsertError.message);
+        const { error: retryError } = await supabase.from('story_message_history').insert({
+          week_start_date: weekStartDate,
+          message_type: 'text',
+          message_content: encryptedMessage,
+          author: adminUsername,
+          expires_at: expiresAt.toISOString(),
+          is_expired: false,
+        });
+        textInsertError = retryError;
+      }
 
       if (textInsertError) {
         console.error('[Send] Text message DB insert failed:', textInsertError);
@@ -249,7 +267,8 @@ export async function POST(req: NextRequest) {
     const mediaUrl = urlData.publicUrl;
     const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
 
-    const { error: mediaInsertError } = await supabase.from('story_message_history').insert({
+    // Core fields always present; session linking fields may not exist in DB yet
+    const mediaRecord: Record<string, unknown> = {
       week_start_date: weekStartDate,
       message_type: mediaType,
       message_content: encryptedCaption,
@@ -258,10 +277,28 @@ export async function POST(req: NextRequest) {
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
-      is_from_admin: true,
-      session_token: sessionToken,
-      login_log_id: loginLogId,
-    });
+    };
+    if (sessionToken) mediaRecord.session_token = sessionToken;
+    if (loginLogId) mediaRecord.login_log_id = loginLogId;
+    mediaRecord.is_from_admin = true;
+
+    let { error: mediaInsertError } = await supabase.from('story_message_history').insert(mediaRecord);
+
+    // Retry without session fields if columns don't exist
+    if (mediaInsertError && (mediaInsertError.message?.includes('column') || mediaInsertError.code === '42703')) {
+      console.warn('[Send] Session columns missing on media — retrying without:', mediaInsertError.message);
+      const { error: retryError } = await supabase.from('story_message_history').insert({
+        week_start_date: weekStartDate,
+        message_type: mediaType,
+        message_content: encryptedCaption,
+        media_url: mediaUrl,
+        media_filename: file.name || filename,
+        author: adminUsername,
+        expires_at: expiresAt.toISOString(),
+        is_expired: false,
+      });
+      mediaInsertError = retryError;
+    }
 
     if (mediaInsertError) {
       console.error('[Send] Media message DB insert failed:', mediaInsertError);

@@ -128,7 +128,8 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
 
-    const { error: insertError } = await supabase.from('story_message_history').insert({
+    // Core fields always present; session linking fields may not exist in DB yet
+    const mediaRecord: Record<string, unknown> = {
       week_start_date: weekStartDate,
       message_type: fileType,
       media_url: mediaUrl,
@@ -136,10 +137,27 @@ export async function POST(req: NextRequest) {
       author: username,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
-      is_from_admin: false,
-      session_token: sessionToken,
-      login_log_id: loginLogId,
-    });
+    };
+    if (sessionToken) mediaRecord.session_token = sessionToken;
+    if (loginLogId) mediaRecord.login_log_id = loginLogId;
+    mediaRecord.is_from_admin = false;
+
+    let { error: insertError } = await supabase.from('story_message_history').insert(mediaRecord);
+
+    // Retry without session fields if columns don't exist
+    if (insertError && (insertError.message?.includes('column') || insertError.code === '42703')) {
+      console.warn('[Upload Media] Session columns missing — retrying without:', insertError.message);
+      const { error: retryError } = await supabase.from('story_message_history').insert({
+        week_start_date: weekStartDate,
+        message_type: fileType,
+        media_url: mediaUrl,
+        media_filename: file.name,
+        author: username,
+        expires_at: expiresAt.toISOString(),
+        is_expired: false,
+      });
+      insertError = retryError;
+    }
 
     if (insertError) {
       console.error('[Upload Media] DB insert error:', insertError);
