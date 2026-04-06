@@ -184,6 +184,12 @@ export async function GET(request: NextRequest) {
     if (mediaRes.error) {
       console.error('auto-fill: media error:', mediaRes.error.message);
     }
+    if (allWorksRes.error) {
+      console.error('auto-fill: allWorks error:', allWorksRes.error.message);
+    }
+    if (existingNotesRes.error) {
+      console.error('auto-fill: existingNotes error:', existingNotesRes.error.message);
+    }
 
     // Build work name → area lookup from curriculum (for flat-text parsing fallback)
     const workNameToArea = new Map<string, string>();
@@ -516,7 +522,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { children: suggestions },
+      { children: suggestions, _v: 2, _debug: { areaMapSize: areaIdToKey.size, workMapSize: workNameToArea.size, hasWrapData } },
       { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
     );
   } catch (err) {
