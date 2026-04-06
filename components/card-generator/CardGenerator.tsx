@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Card, CropData } from './types';
+import { Card } from './types';
 import CropOverlay from './CropOverlay';
 import CardPreview from './CardPreview';
 import { generateCards, generateLargeCards, generateLabelsOnly } from './print-utils';
@@ -41,14 +41,10 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
   const [fontFamily, setFontFamily] = useState('Comic Sans MS');
   const [bulkText, setBulkText] = useState('');
   const [cropMode, setCropMode] = useState<number | null>(null);
-  const [cropData, setCropData] = useState<CropData>({ startX: 0, startY: 0, endX: 0, endY: 0 });
-  const [isDragging, setIsDragging] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState('upload');
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cropCanvasRef = useRef<HTMLDivElement>(null);
-  const cropImageRef = useRef<HTMLImageElement>(null);
 
   // Pre-load cards from prop (e.g., phonics word data)
   React.useEffect(() => {
@@ -246,83 +242,10 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
   // Start crop mode
   const startCrop = (id: number) => {
     setCropMode(id);
-    setCropData({ startX: 0, startY: 0, endX: 0, endY: 0 });
   };
 
-  // Crop canvas mouse handlers (with touch support)
-  const handleCropStart = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!cropCanvasRef.current) return;
-    const rect = cropCanvasRef.current.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    
-    const x = clientX - rect.left;
-    const y = clientY - rect.top;
-    setCropData({ startX: x, startY: y, endX: x, endY: y });
-    setIsDragging(true);
-  };
-
-  const handleCropMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging || !cropCanvasRef.current) return;
-    e.preventDefault();
-    const rect = cropCanvasRef.current.getBoundingClientRect();
-    
-    let clientX, clientY;
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-    
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
-    setCropData(prev => ({ ...prev, endX: x, endY: y }));
-  };
-
-  const handleCropEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Apply crop
-  const applyCrop = () => {
-    const card = cards.find(c => c.id === cropMode);
-    if (!card || !cropCanvasRef.current || !cropImageRef.current) return;
-
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const img = cropImageRef.current;
-    
-    const displayRect = cropCanvasRef.current.getBoundingClientRect();
-    const scaleX = img.naturalWidth / displayRect.width;
-    const scaleY = img.naturalHeight / displayRect.height;
-    
-    const x = Math.min(cropData.startX, cropData.endX) * scaleX;
-    const y = Math.min(cropData.startY, cropData.endY) * scaleY;
-    const width = Math.abs(cropData.endX - cropData.startX) * scaleX;
-    const height = Math.abs(cropData.endY - cropData.startY) * scaleY;
-    
-    if (width < 10 || height < 10) {
-      setCropMode(null);
-      return;
-    }
-    
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
-    
-    const croppedDataUrl = canvas.toDataURL('image/png');
-    
+  // Apply crop — receives the cropped data URL from the new CropOverlay
+  const applyCrop = (croppedDataUrl: string) => {
     setCards(prev => prev.map(c =>
       c.id === cropMode ? { ...c, croppedImage: croppedDataUrl, imageOffset: undefined } : c
     ));
@@ -1087,16 +1010,10 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
         </div>
       )}
 
-      {/* Crop overlay */}
+      {/* Crop overlay — fixed square frame, drag to reposition, scroll to zoom */}
       {cropMode && (
         <CropOverlay
           card={cardInCropMode}
-          cropData={cropData}
-          cropCanvasRef={cropCanvasRef}
-          cropImageRef={cropImageRef}
-          onCropStart={handleCropStart}
-          onCropMove={handleCropMove}
-          onCropEnd={handleCropEnd}
           onClose={() => setCropMode(null)}
           onApplyCrop={applyCrop}
         />
