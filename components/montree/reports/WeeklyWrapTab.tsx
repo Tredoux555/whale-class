@@ -213,7 +213,7 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
                     <div className="relative">
                       <img
                         src={photo.url}
-                        alt={workDisplay}
+                        alt={workDisplay || 'Learning moment photo'}
                         className="w-full aspect-[4/3] object-cover bg-gray-100"
                         loading="lazy"
                       />

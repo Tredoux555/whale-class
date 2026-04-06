@@ -965,12 +965,9 @@ function importFromPhotoBankExport() {
 
     // Auto-enable "Custom words only" when importing from Photo Bank
     document.getElementById('customOnly').checked = true;
+    render(); // Refresh immediately so checkbox state is reflected
 
     let loaded = 0;
-    const totalToLoad = photos.filter(p => {
-      const w = (p.label || p.filename || '').replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').toLowerCase().trim();
-      return !!w;
-    }).length;
 
     photos.forEach(photo => {
       const word = (photo.label || photo.filename || '')
@@ -1081,7 +1078,7 @@ function makeCoverPage(name) {
       <h1>My First Dictionary</h1>
       <div class="cover-subtitle">AMI Montessori Letter Groups</div>
       <div style="margin: 30px 0;">
-        <div class="name-line">${name || '&nbsp;'}</div>
+        <div class="name-line">${name ? escapeHTML(name) : '&nbsp;'}</div>
         <div class="name-label">This dictionary belongs to</div>
       </div>
       <div style="font-size: 16px; color: #888; margin-top: 20px; line-height: 2;">
@@ -1135,6 +1132,18 @@ function render() {
     html += makeCoverPage(name);
   }
 
+  // Empty state for custom-only mode
+  if (customOnly && groups.length === 0) {
+    html += `<div class="dict-page" style="text-align:center; padding:60px 40px;">
+      <div style="font-size:48px; margin-bottom:20px;">📷</div>
+      <h2 style="color:#888; margin-bottom:12px;">No custom words yet</h2>
+      <p style="color:#aaa; font-size:14px; line-height:1.6;">
+        Upload photos using the <strong>+ Upload Images</strong> button above,<br>
+        or export from <strong>Photo Bank</strong> to add custom words.
+      </p>
+    </div>`;
+  }
+
   // Each group
   groups.forEach(g => {
     const words = g.words;
@@ -1153,7 +1162,7 @@ function render() {
         <div class="page-header">
           <h2 style="color: ${g.color};">Group ${g.group}${chunks.length > 1 ? ` (${ci + 1}/${chunks.length})` : ''}</h2>
           <div class="subtitle">New letters: <strong>${g.newLetters.join('  ')}</strong>${g.vowel ? ` — New vowel: <strong style="color:${g.color}">${g.vowel}</strong>` : ''}</div>
-          ${name ? `<div class="child-name">${name}'s Dictionary</div>` : ''}
+          ${name ? `<div class="child-name">${escapeHTML(name)}'s Dictionary</div>` : ''}
         </div>`;
 
       // Words
