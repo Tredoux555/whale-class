@@ -438,9 +438,16 @@ export async function GET(request: NextRequest) {
     // Build suggestions for each child
     const suggestions: ChildSuggestion[] = children.map((child: { id: string; name: string }) => {
       const childFocus = focusMap.get(child.id);
-      // Use Weekly Wrap data (best) → photos → leave empty if nothing
-      // Don't re-parse old saved flat text — it may have stale/incorrect data
-      const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id) || new Map<string, string[]>();
+      // Use Weekly Wrap data (best) → photos → parse existing flat text → empty
+      // Tier 3: re-parse saved flat text into area-grouped format (handles legacy "did X, Y, Z" notes)
+      let childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
+      if (!childWorks || childWorks.size === 0) {
+        const saved = existingNotes.get(child.id);
+        if (saved?.en) {
+          childWorks = parseSavedText(saved.en);
+        }
+      }
+      if (!childWorks) childWorks = new Map<string, string[]>();
 
       // --- Plan Areas (English + Chinese) — compute first so we can append "Next week" to summary ---
       const planAreas: Record<string, string> = {};
@@ -516,7 +523,7 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { children: suggestions, _v: 2, _debug: { areaMapSize: areaIdToKey.size, workMapSize: workNameToArea.size, hasWrapData } },
+      { children: suggestions },
       { headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=60' } }
     );
   } catch (err) {
