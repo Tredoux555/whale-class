@@ -620,13 +620,22 @@ export default function GalleryPage() {
       });
 
       if (!res.ok) throw new Error('Failed to save cropped image');
+      const data = await res.json();
 
-      // Clear the cached image URL so it reloads with the new crop
-      setImageUrls(prev => {
-        const next = { ...prev };
-        delete next[cropPhoto.id];
-        return next;
-      });
+      // Update the cached image URL with the new cropped URL (original preserved)
+      if (data.media?.cropped_url) {
+        setImageUrls(prev => ({
+          ...prev,
+          [cropPhoto.id]: data.media.cropped_url,
+        }));
+      } else {
+        // Fallback: clear cache so it reloads
+        setImageUrls(prev => {
+          const next = { ...prev };
+          delete next[cropPhoto.id];
+          return next;
+        });
+      }
 
       // Refresh gallery to get updated photo
       fetchPhotos();
