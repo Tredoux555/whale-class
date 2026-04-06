@@ -21,6 +21,7 @@ const EXPORT_TARGETS = [
   { key: 'vocabulary-flashcards', label: '📸 Vocabulary Flashcards', href: '/montree/library/tools/vocabulary-flashcards' },
   { key: 'picture-bingo', label: '🖼️ Picture Bingo', href: '/tools/picture-bingo-generator.html' },
   { key: 'phonics-fast', label: '📚 Phonics Fast', href: '/montree/library/tools/phonics-fast' },
+  { key: 'dictionary', label: '📖 Dictionary', href: '/tools/my-first-dictionary.html' },
 ] as const;
 
 export default function PhotoBankPage() {

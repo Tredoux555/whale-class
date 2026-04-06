@@ -156,6 +156,12 @@
     justify-content: center;
     flex-shrink: 0;
   }
+  .word-picture img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
 
   .word-solid {
     font-size: 28px;
@@ -413,6 +419,63 @@
     color: #166534;
     text-align: center;
   }
+
+  /* ===== CUSTOM WORDS BAR ===== */
+  .custom-bar {
+    padding: 12px 24px;
+    background: #fffbeb;
+    border-bottom: 1px solid #fde68a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .custom-bar .label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #92400e;
+  }
+  .custom-bar button {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid #d97706;
+    background: #fbbf24;
+    color: #78350f;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .custom-bar button:hover { background: #f59e0b; }
+  .custom-chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .custom-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    font-size: 12px;
+    color: #374151;
+  }
+  .custom-chip img {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    object-fit: cover;
+  }
+  .custom-chip .remove {
+    cursor: pointer;
+    color: #9ca3af;
+    font-size: 14px;
+    margin-left: 2px;
+  }
+  .custom-chip .remove:hover { color: #ef4444; }
 </style>
 </head>
 <body>
@@ -457,6 +520,13 @@
 <div class="tabs" id="tabsContainer"></div>
 
 <div class="info-bar" id="infoBar"></div>
+
+<div class="custom-bar no-print" id="customBar" style="display:none;">
+  <span class="label">📷 Custom Words:</span>
+  <button onclick="document.getElementById('customFileInput').click()">+ Upload Images</button>
+  <input type="file" id="customFileInput" accept="image/*" multiple style="display:none" onchange="handleCustomUpload(this.files)">
+  <div class="custom-chips" id="customChips"></div>
+</div>
 
 <div class="preview" id="preview"></div>
 
@@ -804,6 +874,118 @@ const AMI_GROUPS = [
   }
 ];
 
+// ===== CUSTOM WORDS (from Photo Bank or file upload) =====
+// Each: { word, emoji: '', imgData: 'data:image/...' }
+let customWords = [];
+
+// Map starting letter → AMI group number
+const LETTER_TO_GROUP = {};
+AMI_GROUPS.forEach(g => {
+  g.newLetters.forEach(letter => { LETTER_TO_GROUP[letter] = g.group; });
+});
+
+function getGroupForWord(word) {
+  const firstLetter = word.charAt(0).toLowerCase();
+  return LETTER_TO_GROUP[firstLetter] || 6; // Default to Group 6 for non-standard letters
+}
+
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function addCustomWord(word, imgData) {
+  // Avoid duplicates
+  if (customWords.some(cw => cw.word === word)) return;
+  customWords.push({ word, emoji: '', imgData });
+  // Inject into the matching AMI group
+  const groupNum = getGroupForWord(word);
+  if (groupNum) {
+    const group = AMI_GROUPS.find(g => g.group === groupNum);
+    if (group && !group.words.some(w => w.word === word)) {
+      group.words.push({ word, emoji: '', imgData });
+      // Re-sort alphabetically
+      group.words.sort((a, b) => a.word.localeCompare(b.word));
+    }
+  }
+  updateCustomBar();
+  render();
+}
+
+function removeCustomWord(word) {
+  customWords = customWords.filter(cw => cw.word !== word);
+  // Remove from AMI groups
+  AMI_GROUPS.forEach(g => {
+    g.words = g.words.filter(w => w.word !== word || !w.imgData);
+  });
+  updateCustomBar();
+  render();
+}
+
+function updateCustomBar() {
+  const bar = document.getElementById('customBar');
+  const chips = document.getElementById('customChips');
+  if (customWords.length === 0) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  chips.innerHTML = customWords.map(cw => `
+    <div class="custom-chip">
+      ${cw.imgData ? `<img src="${cw.imgData}" alt="${escapeHTML(cw.word)}">` : ''}
+      <span>${escapeHTML(cw.word)}</span>
+      <span class="remove" onclick="removeCustomWord('${cw.word.replace(/'/g, "\\'")}')">&times;</span>
+    </div>
+  `).join('');
+}
+
+function handleCustomUpload(files) {
+  Array.from(files).forEach(file => {
+    const word = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').toLowerCase().trim();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      addCustomWord(word, e.target.result);
+    };
+    reader.readAsDataURL(file);
+  });
+  // Reset input so same file can be re-selected
+  document.getElementById('customFileInput').value = '';
+}
+
+// Import from Photo Bank (sessionStorage)
+function importFromPhotoBankExport() {
+  try {
+    const raw = sessionStorage.getItem('photoBankExport');
+    if (!raw) return;
+    sessionStorage.removeItem('photoBankExport');
+    const { photos } = JSON.parse(raw);
+    if (!photos || photos.length === 0) return;
+
+    let loaded = 0;
+    photos.forEach(photo => {
+      const word = (photo.label || photo.filename || '')
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[-_]/g, ' ')
+        .toLowerCase()
+        .trim();
+      if (!word) return;
+
+      fetch(photo.public_url)
+        .then(res => res.blob())
+        .then(blob => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            addCustomWord(word, e.target.result);
+            loaded++;
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch(err => console.error('Failed to load photo:', photo.label, err));
+    });
+  } catch (err) {
+    console.error('Failed to import from Photo Bank:', err);
+  }
+}
+
 let activeGroup = 'all';
 
 function buildTabs() {
@@ -834,23 +1016,29 @@ function makeGuidelines() {
   </div>`;
 }
 
+function makePictureHTML(w) {
+  if (w.imgData) {
+    return `<div class="word-picture"><img src="${w.imgData}" alt="${escapeHTML(w.word)}"></div>`;
+  } else if (w.emoji) {
+    return `<div class="word-picture">${w.emoji}</div>`;
+  }
+  return `<div class="word-picture" style="font-size:20px; color:#ccc; border:2px dashed #ddd; border-radius:10px;">✎</div>`;
+}
+
 function makeWordRow(w, showWrite) {
   const writeHTML = showWrite ? `
     <div class="write-area">
       ${makeGuidelines()}
     </div>` : '';
 
-  const pictureHTML = w.emoji
-    ? `<div class="word-picture">${w.emoji}</div>`
-    : `<div class="word-picture" style="font-size:20px; color:#ccc; border:2px dashed #ddd; border-radius:10px;">✎</div>`;
-
+  const safe = w.imgData ? escapeHTML(w.word) : w.word;
   return `
     <div class="word-row">
-      ${pictureHTML}
-      <div class="word-solid">${w.word}</div>
+      ${makePictureHTML(w)}
+      <div class="word-solid">${safe}</div>
       <div class="trace-area">
         ${makeGuidelines()}
-        <span class="trace-word">${w.word}</span>
+        <span class="trace-word">${safe}</span>
       </div>
       ${writeHTML}
     </div>`;
@@ -862,17 +1050,14 @@ function makeTwoColCard(w, showWrite) {
       ${makeGuidelines()}
     </div>` : '';
 
-  const pictureHTML = w.emoji
-    ? `<div class="word-picture">${w.emoji}</div>`
-    : `<div class="word-picture" style="font-size:20px; color:#ccc; border:2px dashed #ddd; border-radius:10px;">✎</div>`;
-
+  const safe = w.imgData ? escapeHTML(w.word) : w.word;
   return `
     <div class="word-row">
-      ${pictureHTML}
-      <div class="word-solid">${w.word}</div>
+      ${makePictureHTML(w)}
+      <div class="word-solid">${safe}</div>
       <div class="trace-area">
         ${makeGuidelines()}
-        <span class="trace-word">${w.word}</span>
+        <span class="trace-word">${safe}</span>
       </div>
       ${writeHTML}
     </div>`;
@@ -915,7 +1100,7 @@ function render() {
     : AMI_GROUPS.filter(g => g.group === activeGroup)
   ).map(g => ({
     ...g,
-    words: pictureOnly ? g.words.filter(w => w.emoji) : g.words
+    words: pictureOnly ? g.words.filter(w => w.emoji || w.imgData) : g.words
   })).filter(g => g.words.length > 0);
 
   // How many words per page?
@@ -982,6 +1167,7 @@ function render() {
 
 // Init
 buildTabs();
+importFromPhotoBankExport();
 render();
 </script>
 </body>
