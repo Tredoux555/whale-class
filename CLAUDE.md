@@ -13,7 +13,70 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## RECENT STATUS (Apr 6, 2026)
+## RECENT STATUS (Apr 7, 2026)
+
+### ⚡ Session 5 — Story Fixes, Flag Dedup, Crop Preservation (Apr 6-7, 2026)
+
+**Story system fixes — ✅ PUSHED:**
+- Video uploads: Added `uploadWithRetry()` with exponential backoff for ECONNRESET/ETIMEDOUT, Node `--max-old-space-size=2048` in `start.sh`, better MIME handling for mobile (empty MIME → extension fallback), better error messages
+- Login records: Merged user + admin login logs in `/api/story/admin/login-logs/route.ts` with `role` field. `logLogin()` now verifies insert. Online user window expanded 2→5min.
+- Admin send: `validateFile()` fixed for mobile videos with empty MIME type. Session linking fields made conditional (retry without if columns don't exist in production).
+- Rate limiter: DB-backed, 5 attempts per 15 minutes per IP per endpoint (`montree_rate_limit_logs`).
+
+**Flag deduplication in Weekly Wrap — ✅ PUSHED (commit `54a3257c`):**
+Red flags now suppress yellow flags for same curriculum area. Client-side dedup: extracts area keywords from red flag text, filters yellow flags that mention same areas.
+- **Key file**: `components/montree/reports/WeeklyWrapTab.tsx` — flag rendering IIFE (~line 844)
+
+**Persistent work/photo removal — ✅ PUSHED (commit `54a3257c`):**
+`handleRemoveWork` and `handleRemovePhoto` in WeeklyWrapTab now call edit API (`/api/montree/reports/weekly-wrap/edit`) to persist deletions to DB. Previously was client-state only — removals vanished on page reload. Edit API now supports `works[]` field alongside `narrative` and `photos`.
+
+**Photo crop preservation — ✅ PUSHED (commit `cb82fb15`):**
+Crop API (`/api/montree/media/crop`) was overwriting original photos with `upsert: true`. Now saves cropped version to new path (`original_cropped_timestamp.jpg`) keeping originals intact. Migration 164 adds `cropped_storage_path` column to `montree_media`. Callers (weekly-wrap, gallery) updated to use `cropped_url` from API response. Graceful fallback if column doesn't exist yet.
+- **⚠️ Migration 164 needs manual run** via Supabase SQL editor: `ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS cropped_storage_path TEXT;`
+- **Key file**: `app/api/montree/media/crop/route.ts`
+
+**What STILL NEEDS FIXING (next session):**
+1. **Run migration 164** via Supabase SQL editor (cropped_storage_path column)
+2. **Verify Weekly Admin auto-fill on production** — Click Auto-fill on week 2026-03-30
+3. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data
+4. **Teacher summary line still shows English work names** — The "需要关注" section needs Chinese work names
+5. **Test new prompts end-to-end** — Verify parent narratives (200-300 words) and teacher key_insight (2-3 sentences)
+
+---
+
+### ⚡ Session 4 — Weekly Admin Auto-fill Root Cause Fix + Dictionary 6-per-page (Apr 6, 2026)
+
+**Weekly Admin auto-fill area-grouped format — ✅ FINALLY FIXED (10+ iterations across sessions 3-4):**
+Root cause was `area_key` column doesn't exist on `montree_classroom_curriculum_works` — that table uses `area_id` (UUID). Supabase queries with nonexistent columns return `{ data: null }` silently, so the `workNameToArea` map was completely empty (0 entries), causing ALL works to fall into "Other" bucket or produce "No recorded activities."
+- **The fix** (commit `193eca37`): Changed 3 queries from `area_key` to `area_id`, then resolve via `areaIdToKey.get(w.area_id)`. Confirmed: 384 works now map correctly.
+- **Tier 3 fallback restored** (commit `09c5ffb4`): When no Weekly Wrap or photo data exists, `parseSavedText()` re-parses existing flat "did X, Y, Z" notes into area-grouped format. This ensures clicking Auto-fill always reformats old flat notes.
+- **Flash-and-vanish bug**: Area-grouped text briefly appeared then vanished — likely caused by `fetchData` re-running and reloading flat-format saved notes from DB, overwriting the fresh auto-fill state. The parseSavedText tier 3 fix addresses this from the API side (even stale DB text gets reformatted).
+- **Auto-fill guard**: Auto-fills on page load ONLY when no saved notes exist. Manual Auto-fill button click always runs and overwrites current state.
+- **Debug fields removed** (commit `09c5ffb4`): `_v` and `_debug` removed from API response.
+- **Key file**: `app/api/montree/weekly-admin-docs/auto-fill/route.ts`
+- **Critical lesson**: `montree_classroom_curriculum_works` has `area_id` (UUID FK), NOT `area_key`. Always resolve via `areaIdToKey` map from `montree_classroom_curriculum_areas`.
+
+**Dictionary 6 words per page — ✅ PUSHED (commit `dc684834`):**
+Card dimensions tightened: picture 52→46px, trace/write 52→46px, fonts shrunk proportionally, margins reduced (8mm→5mm header). wordsPerPage: A4 normal+write `5→6`, A4 no-write `6→7`, A5 `4→5`. Only CMAT group needed for now — others added week by week.
+- **Key file**: `public/tools/my-first-dictionary.html`
+
+**Total commits this session** (7 pushed to main):
+- `dc684834` — Dictionary 6 words/page + initial auto-fill fixes
+- `193eca37` — area_key → area_id fix (THE critical fix)
+- `8ba39374` — Debug info in API response (temporary)
+- `3162e097` — Merge all data sources
+- `abef0c0f` — Simplify to Weekly Wrap + photos only
+- `0e1868f4` — Revert client-side flat format auto-detection
+- `09c5ffb4` — Restore parseSavedText tier 3 + remove debug fields
+
+**What STILL NEEDS FIXING (next session):**
+1. **Verify Weekly Admin auto-fill on production** — Click Auto-fill on week 2026-03-30 after Railway deploys commit `09c5ffb4`. API confirmed working via console; UI verification pending.
+2. **Verify dictionary 6-per-page on production** — Print preview CMAT group, confirm 6 cards fit per A4 page.
+3. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
+4. **Teacher summary line still shows English work names** — The "需要关注" section shows English work names with Chinese area labels. Review API needs Chinese work names for teacher summary.
+5. **Test new prompts end-to-end** — Generate reports and verify: parent narratives are rich/educational (200-300 words), teacher key_insight is concise/actionable (2-3 sentences).
+
+---
 
 ### ⚡ Session 3 Fixes — Parent Reports, Weekly Admin Format, Dictionary (Apr 6, 2026)
 
@@ -22,9 +85,7 @@ Photos in Parent Reports tab (WeeklyWrapTab.tsx) now grouped by curriculum area 
 - **Key file**: `components/montree/reports/WeeklyWrapTab.tsx` — `ParentPhotosGrouped` component (~lines 137-252)
 
 **Weekly Admin summary area-grouped format — ✅ PUSHED (after 7+ iterations):**
-Weekly Summary in Weekly Admin Docs now displays works grouped by area (`Practical Life: X, Y\nSensorial: Z`) instead of flat paragraphs. The core challenge: the auto-fill API depends on Weekly Wrap reports or photos existing for a given week. For older weeks with no Weekly Wrap data, auto-fill returned "No recorded activities" and destroyed existing flat-format notes.
-- **Solution**: Three-tier data source with `parseSavedText()` fallback. If no Weekly Wrap or photo data exists, parses the existing saved flat text, looks up each work's curriculum area, and rebuilds in area-grouped format.
-- **Auto-fill guard**: Only auto-fills when NO saved notes exist (prevents overwriting). `NO_DATA_PHRASES` filter prevents "No recorded activities" from replacing real data.
+Weekly Summary in Weekly Admin Docs now displays works grouped by area (`Practical Life: X, Y\nSensorial: Z`) instead of flat paragraphs. See Session 4 above for the full root cause fix.
 - **Key files**: `app/api/montree/weekly-admin-docs/auto-fill/route.ts` (three-tier fallback + `parseSavedText()` dual-format parser), `components/montree/reports/WeeklyAdminTab.tsx` (auto-fill trigger guard)
 - **Pattern — `parseSavedText(text)`**: Detects whether text is already area-grouped (has "Practical Life:" lines) or flat paragraph ("did X, Y, and Z"), parses work names, looks up curriculum areas, returns `Map<area_key, work_names[]>`. Always check format before parsing.
 
@@ -33,19 +94,11 @@ Word cards changed from single flex-row (`[picture][word][trace][write]`) to two
 - Top row (`.word-card-top`): picture + written word side by side
 - Bottom row (`.word-card-bottom`): trace word (flex:1) left + free write (flex:1) right
 - Both `makeWordRow()` (standard) and `makeTwoColCard()` (two-column) use this layout
-- `wordsPerPage` reduced to account for taller cards (e.g. A4 default with write: 5, compact: 8)
 - CSS layout overrides (compact, spacious, A5) target both `.word-row` and `.word-card`
 - **Key file**: `public/tools/my-first-dictionary.html`
 
 **Dictionary custom-only mode — ✅ PUSHED:**
 New "Custom words only" checkbox. Auto-checked on Photo Bank import. Filters to only show words with `imgData` (imported/uploaded). Empty state shows "No custom words yet" placeholder with instructions.
-
-**What STILL NEEDS FIXING (next session):**
-1. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
-2. **Teacher summary line still shows English work names** — The "需要关注" section shows English work names with Chinese area labels. Review API needs Chinese work names for teacher summary.
-3. **Test new prompts end-to-end** — Generate reports and verify: parent narratives are rich/educational (200-300 words), teacher key_insight is concise/actionable (2-3 sentences).
-4. **Verify Weekly Admin auto-fill format on production** — Click Auto-fill on a past week and confirm area-grouped format appears.
-5. **Verify dictionary layout on production** — Confirm picture+word top row, trace+write bottom row renders correctly in print.
 
 ---
 
@@ -151,6 +204,7 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - Chinese localization: `AREA_LABELS_ZH` map + `name_zh` from `montree_classroom_curriculum_works` table + `getAreaLabel(area)` helper using locale.
 - `repairAndParseJSON(raw)` — robust JSON repair for Haiku Chinese output. Strategy: strip fences → extract braces → replace ALL newlines with spaces → fix fullwidth punctuation → fix structural commas. The newline→space replacement is the key insight: literal newlines in JSON are only valid as whitespace between tokens, never inside strings.
 - **Fuzzy work name matching** (used in 4+ files): strip " - suffix" variants → normalize spaces ("chalk board" → "chalkboard") → substring match for long keys. Pattern: `name.replace(/\s*-\s*.+$/, '').trim()` then `collapsed.replace(/\s+/g, '')`.
+- **Photo crop preservation**: Crop API saves to new path (`_cropped_{timestamp}` suffix), stores in `montree_media.cropped_storage_path`. Original `storage_path` never modified. Callers use `cropped_url` from API response. Parent reports always reference original `storage_path`.
 
 ---
 
@@ -439,7 +493,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 162 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class).
+All migrations through 163 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class). **Migration 164 (cropped_storage_path) needs manual run** via Supabase SQL editor.
 
 ---
 
