@@ -134,6 +134,123 @@ function cleanUUIDs(text: string): string {
     .trim();
 }
 
+// ─── Parent Photos Grouped by Area ────────────────────────────
+
+function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, getAreaLabel, handleRemovePhoto }: {
+  photos: Photo[];
+  parentWorks: ParentWork[];
+  childId: string;
+  firstName: string;
+  locale: string;
+  getAreaLabel: (area: string) => string;
+  handleRemovePhoto: (childId: string, photoId: string) => void;
+}) {
+  if (photos.length === 0) {
+    return (
+      <div className="px-5 pb-6">
+        <p className="text-sm text-gray-300 italic text-center py-6">
+          {locale === 'zh' ? '本周没有拍摄照片' : `No photos captured for ${firstName} this week`}
+        </p>
+      </div>
+    );
+  }
+
+  // Match each photo to its work & resolve area
+  const enriched = photos.map(photo => {
+    const matchedWork = photo.work_name
+      ? parentWorks.find(w =>
+          w.name.toLowerCase().includes(photo.work_name!.toLowerCase()) ||
+          photo.work_name!.toLowerCase().includes(w.name.toLowerCase())
+        )
+      : undefined;
+    const canonicalArea = matchedWork ? toCanonicalArea(matchedWork.area) : null;
+    return { photo, matchedWork, canonicalArea };
+  });
+
+  // Group by area — shelf order first, then 'other' for unmatched
+  const grouped: Record<string, typeof enriched> = {};
+  for (const area of AREA_ORDER) grouped[area] = [];
+  grouped['other'] = [];
+  for (const item of enriched) {
+    const key = item.canonicalArea && AREA_ORDER.includes(item.canonicalArea)
+      ? item.canonicalArea : 'other';
+    grouped[key].push(item);
+  }
+
+  // Shelf order + other at end, skip empties
+  const orderedKeys = [...AREA_ORDER, 'other'].filter(k => grouped[k].length > 0);
+
+  return (
+    <div className="px-5 pb-6 space-y-6">
+      <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+        {locale === 'zh'
+          ? `${firstName} 的学习瞬间`
+          : `${firstName}'s Learning Moments`}
+      </p>
+      {orderedKeys.map(areaKey => {
+        const areaColor = AREA_COLORS[areaKey] || { bg: 'bg-gray-100', text: 'text-gray-600' };
+        const areaLabel = areaKey === 'other'
+          ? (locale === 'zh' ? '其他' : 'Other')
+          : getAreaLabel(areaKey);
+
+        return (
+          <div key={areaKey}>
+            {/* Area section header */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${areaColor.bg} ${areaColor.text}`}>
+                {areaLabel}
+              </span>
+              <div className="flex-1 h-px bg-gray-100" />
+            </div>
+
+            {/* Photos in this area */}
+            <div className="space-y-4">
+              {grouped[areaKey].map(({ photo, matchedWork }) => {
+                const workDisplay = (locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : (photo.work_name || '');
+
+                return (
+                  <div key={photo.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative">
+                    <div className="relative">
+                      <img
+                        src={photo.url}
+                        alt={workDisplay}
+                        className="w-full aspect-[4/3] object-cover bg-gray-100"
+                        loading="lazy"
+                      />
+                      <button
+                        onClick={() => handleRemovePhoto(childId, photo.id)}
+                        className="absolute top-3 right-3 w-7 h-7 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      >✕</button>
+                    </div>
+
+                    {(photo.work_name || matchedWork) && (
+                      <div className="px-4 py-3 bg-white">
+                        <h4 className="font-semibold text-gray-800 text-sm leading-snug">
+                          {workDisplay}
+                        </h4>
+                        {matchedWork?.parent_description && (
+                          <p className="text-sm text-gray-600 leading-relaxed mt-2">
+                            {matchedWork.parent_description}
+                          </p>
+                        )}
+                        {matchedWork?.why_it_matters && (
+                          <p className="text-xs text-gray-500 leading-relaxed mt-1.5 italic">
+                            {matchedWork.why_it_matters}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────
 
 interface WeeklyWrapTabProps {
@@ -860,79 +977,16 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                   )}
                 </div>
 
-                {/* ── Photos — large, vertical, with educational context ── */}
-                {photos.length > 0 ? (
-                  <div className="px-5 pb-6 space-y-5">
-                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
-                      {locale === 'zh'
-                        ? `${firstName} 的学习瞬间`
-                        : `${firstName}'s Learning Moments`}
-                    </p>
-                    {photos.map(photo => {
-                      const matchedWork = photo.work_name
-                        ? r.parent_works.find(w =>
-                            w.name.toLowerCase().includes(photo.work_name!.toLowerCase()) ||
-                            photo.work_name!.toLowerCase().includes(w.name.toLowerCase())
-                          )
-                        : undefined;
-                      const areaColor = matchedWork
-                        ? (AREA_COLORS[toCanonicalArea(matchedWork.area)] || AREA_COLORS.cultural)
-                        : { bg: 'bg-gray-50', text: 'text-gray-600' };
-                      const workDisplay = (locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : (photo.work_name || '');
-
-                      return (
-                        <div key={photo.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative">
-                          {/* Large photo */}
-                          <div className="relative">
-                            <img
-                              src={photo.url}
-                              alt={workDisplay}
-                              className="w-full aspect-[4/3] object-cover bg-gray-100"
-                              loading="lazy"
-                            />
-                            {/* Delete button — teacher only, hover */}
-                            <button
-                              onClick={() => handleRemovePhoto(r.child_id, photo.id)}
-                              className="absolute top-3 right-3 w-7 h-7 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
-                            >✕</button>
-                          </div>
-
-                          {/* Educational context below photo */}
-                          {(photo.work_name || matchedWork) && (
-                            <div className="px-4 py-3 bg-white">
-                              <div className="flex items-start gap-2">
-                                {matchedWork && (
-                                  <span className={`flex-shrink-0 mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${areaColor.bg} ${areaColor.text}`}>
-                                    {getAreaLabel(toCanonicalArea(matchedWork.area))}
-                                  </span>
-                                )}
-                                <h4 className="font-semibold text-gray-800 text-sm leading-snug">
-                                  {workDisplay}
-                                </h4>
-                              </div>
-                              {matchedWork?.parent_description && (
-                                <p className="text-sm text-gray-600 leading-relaxed mt-2">
-                                  {matchedWork.parent_description}
-                                </p>
-                              )}
-                              {matchedWork?.why_it_matters && (
-                                <p className="text-xs text-gray-500 leading-relaxed mt-1.5 italic">
-                                  {matchedWork.why_it_matters}
-                                </p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="px-5 pb-6">
-                    <p className="text-sm text-gray-300 italic text-center py-6">
-                      {locale === 'zh' ? '本周没有拍摄照片' : `No photos captured for ${firstName} this week`}
-                    </p>
-                  </div>
-                )}
+                {/* ── Photos — grouped by curriculum area in shelf order ── */}
+                <ParentPhotosGrouped
+                  photos={photos}
+                  parentWorks={r.parent_works}
+                  childId={r.child_id}
+                  firstName={firstName}
+                  locale={locale}
+                  getAreaLabel={getAreaLabel}
+                  handleRemovePhoto={handleRemovePhoto}
+                />
 
                 {/* Divider between children */}
                 <div className="mx-8 border-b border-gray-100" />
