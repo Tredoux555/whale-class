@@ -114,8 +114,6 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       const sNotes: SummaryNotes = {};
       const pNotes: PlanNotes = {};
 
-      const hasAnyNotes = notesData.notes && notesData.notes.length > 0;
-
       if (notesData.notes) {
         for (const note of notesData.notes) {
           if (note.doc_type === 'summary') {
@@ -149,8 +147,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       setPlanNotes(pNotes);
       setLoading(false);
 
-      // Auto-fill ONLY when no saved notes exist (first visit for this week)
-      if (!hasAnyNotes && !controller.signal.aborted) {
+      // Always auto-fill summary on week load to ensure area-grouped format
+      // (older saved summaries may be in flat paragraph format from previous versions)
+      if (!controller.signal.aborted) {
         handleAutoFill();
       }
     } catch (err: unknown) {
