@@ -19,3 +19,9 @@ export interface CropData {
   endX: number;
   endY: number;
 }
+
+export interface FrameCropState {
+  offsetX: number;  // image offset in pixels (how far image is moved from top-left)
+  offsetY: number;
+  zoom: number;     // 1 = fit, >1 = zoomed in
+}

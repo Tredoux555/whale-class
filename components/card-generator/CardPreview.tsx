@@ -25,7 +25,8 @@ const DraggableImage: React.FC<{
   offsetX: number;
   offsetY: number;
   onOffsetChange: (x: number, y: number) => void;
-}> = ({ src, alt, size, offsetX, offsetY, onOffsetChange }) => {
+  onDoubleClick?: () => void;
+}> = ({ src, alt, size, offsetX, offsetY, onOffsetChange, onDoubleClick }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const draggingRef = useRef(false);
   const startRef = useRef({ mouseX: 0, mouseY: 0, startOffX: 0, startOffY: 0 });
@@ -95,6 +96,7 @@ const DraggableImage: React.FC<{
       ref={containerRef}
       onMouseDown={handleStart}
       onTouchStart={handleStart}
+      onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); onDoubleClick?.(); }}
       style={{
         backgroundColor: '#fff',
         width: `${size}px`,
@@ -105,7 +107,7 @@ const DraggableImage: React.FC<{
         userSelect: 'none',
         WebkitUserSelect: 'none',
       }}
-      title="Drag to reposition image"
+      title="Drag to reposition · Double-click to crop"
     >
       <img
         src={src}
@@ -178,6 +180,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
               offsetX={offX}
               offsetY={offY}
               onOffsetChange={handleOffsetChange}
+              onDoubleClick={() => onStartCrop(card.id)}
             />
             <div style={{
               backgroundColor: '#fff',
@@ -214,6 +217,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
               offsetX={offX}
               offsetY={offY}
               onOffsetChange={handleOffsetChange}
+              onDoubleClick={() => onStartCrop(card.id)}
             />
           </div>
         </div>
@@ -253,7 +257,7 @@ const CardPreview: React.FC<CardPreviewProps> = ({
         color: '#999',
         fontFamily: 'system-ui',
       }}>
-        Drag image to reposition
+        Drag to reposition · Double-click to crop
         {isRepositioned && (
           <button
             onClick={() => onUpdateOffset(card.id, 50, 50)}
