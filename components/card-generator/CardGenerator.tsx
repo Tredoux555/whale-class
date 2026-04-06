@@ -39,6 +39,7 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
   const [cards, setCards] = useState<Card[]>([]);
   const [borderColor, setBorderColor] = useState('#2D5A27');
   const [fontFamily, setFontFamily] = useState('Comic Sans MS');
+  const [cardSizeCm, setCardSizeCm] = useState(10);
   const [bulkText, setBulkText] = useState('');
   const [cropMode, setCropMode] = useState<number | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -92,13 +93,13 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
   }, []);
 
   // Card dimensions in pixels (assuming 96 DPI for screen)
-  // 10cm image + 0.5cm border on each side = 11cm total width
+  // image + 0.5cm border on each side = total width
   // At 96 DPI: 1cm ≈ 37.8px
   const CM_TO_PX = 37.8;
-  const IMAGE_SIZE = 10 * CM_TO_PX; // 378px
+  const IMAGE_SIZE = cardSizeCm * CM_TO_PX;
   const BORDER_SIZE = 0.5 * CM_TO_PX; // 19px
-  const CARD_SIZE = IMAGE_SIZE + (BORDER_SIZE * 2); // 416px
-  const LABEL_HEIGHT = 2 * CM_TO_PX; // 76px for label area
+  const CARD_SIZE = IMAGE_SIZE + (BORDER_SIZE * 2);
+  const LABEL_HEIGHT = Math.max(2, cardSizeCm * 0.2) * CM_TO_PX; // scale label with card size
 
   // Handle file upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -447,7 +448,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
       const html = generateCards({
         cards,
         borderColor,
-        fontFamily
+        fontFamily,
+        cardSizeCm
       });
 
       printWindow.document.write(html);
@@ -480,7 +482,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
       const html = generateLargeCards({
         cards,
         borderColor,
-        fontFamily
+        fontFamily,
+        cardSizeCm
       });
 
       printWindow.document.write(html);
@@ -513,7 +516,8 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
       const html = generateLabelsOnly({
         cards,
         borderColor,
-        fontFamily
+        fontFamily,
+        cardSizeCm
       });
 
       printWindow.document.write(html);
@@ -699,14 +703,43 @@ const CardGenerator: React.FC<CardGeneratorProps> = ({ headerConfig = {}, initia
             </select>
           </div>
           
+          <div>
+            <label style={{
+              display: 'block',
+              marginBottom: '6px',
+              fontSize: '14px',
+              fontWeight: '600',
+              color: '#333',
+              fontFamily: 'system-ui'
+            }}>Card Size</label>
+            <select
+              value={cardSizeCm}
+              onChange={(e) => setCardSizeCm(Number(e.target.value))}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
+                fontFamily: 'system-ui',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              <option value={10}>10 cm (standard)</option>
+              <option value={12}>12 cm</option>
+              <option value={15}>15 cm</option>
+              <option value={20}>20 cm</option>
+              <option value={30}>30 cm</option>
+            </select>
+          </div>
           <div style={{
             padding: '12px 16px',
             backgroundColor: '#e8f5e9',
             borderRadius: '8px',
             fontSize: '13px',
-            color: '#2e7d32'
+            color: '#2e7d32',
+            alignSelf: 'flex-end'
           }}>
-            <strong>Card Size:</strong> 11cm × 11cm (10cm image + 0.5cm border)
+            <strong>Card Size:</strong> {cardSizeCm + 1}cm × {cardSizeCm + 1}cm ({cardSizeCm}cm image + 0.5cm border)
           </div>
         </div>
       </div>

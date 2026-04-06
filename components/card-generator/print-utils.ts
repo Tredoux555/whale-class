@@ -12,16 +12,50 @@ const getObjectPosition = (card: Card): string => {
   return `object-position: ${x}% ${y}%`;
 };
 
-// Constants for card dimensions (in cm)
+// Constants for page dimensions (in cm)
 const A4_WIDTH_CM = 21;
 const A4_HEIGHT_CM = 29.7;
-const PICTURE_CARD_SIZE_CM = 7.5;
-const LABEL_INTERNAL_CM = 1.8;
-const LABEL_CARD_HEIGHT_CM = 2.4;
+const DEFAULT_CARD_SIZE_CM = 7.5;
 const MARGIN_CM = 0;
-const CUTTING_LINE_WIDTH = 0.02;
 const WHITE_BORDER_CM = 0.5;
 const CARD_BORDER_RADIUS = 0.4;
+
+/**
+ * Compute grid layout that fits cards onto A4.
+ * Returns { cols, rows, labelHeight, labelInternal, cardSize, fontSize }
+ */
+function computeLayout(cardSizeCm: number) {
+  const s = cardSizeCm;
+  // How many columns/rows of picture cards fit on A4
+  const cols = Math.max(1, Math.floor(A4_WIDTH_CM / s));
+  const pictureRows = Math.max(1, Math.floor(A4_HEIGHT_CM / s));
+
+  // Label height scales with card size, minimum 2cm
+  const labelHeight = Math.max(2, Math.round(s * 0.32 * 10) / 10);
+  const labelInternal = Math.max(1.4, labelHeight - 0.6);
+
+  // Control card = picture + label
+  const controlHeight = s + labelHeight;
+  const controlRows = Math.max(1, Math.floor(A4_HEIGHT_CM / controlHeight));
+
+  // Cards per page
+  const picturePerPage = cols * pictureRows;
+  const controlPerPage = cols * controlRows;
+
+  // Label-only: same width as picture card, compact rows
+  const labelRows = Math.max(1, Math.floor(A4_HEIGHT_CM / labelHeight));
+  const labelPerPage = cols * labelRows;
+
+  // Font size scales with card size
+  const fontSize = Math.max(12, Math.min(36, Math.round(s * 3.2)));
+
+  return {
+    cols, pictureRows, controlRows, labelRows,
+    picturePerPage, controlPerPage, labelPerPage,
+    labelHeight, labelInternal, controlHeight,
+    cardSize: s, fontSize
+  };
+}
 
 interface CreateCardHTMLParams {
   card: Card;
@@ -62,6 +96,7 @@ interface GenerateCardsParams {
   cards: Card[];
   borderColor: string;
   fontFamily: string;
+  cardSizeCm?: number;
 }
 
 /**
@@ -71,13 +106,15 @@ interface GenerateCardsParams {
 export const generateCards = ({
   cards,
   borderColor,
-  fontFamily
+  fontFamily,
+  cardSizeCm = DEFAULT_CARD_SIZE_CM
 }: GenerateCardsParams): string => {
-  const CONTROL_CARD_HEIGHT_CM = PICTURE_CARD_SIZE_CM + LABEL_CARD_HEIGHT_CM;
-  const gridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-  const pictureGridMarginTop = (A4_HEIGHT_CM - (PICTURE_CARD_SIZE_CM * 3)) / 2;
-  const controlGridMarginTop = (A4_HEIGHT_CM - (CONTROL_CARD_HEIGHT_CM * 3)) / 2;
-  const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 8)) / 2;
+  const L = computeLayout(cardSizeCm);
+
+  const gridMarginLeft = (A4_WIDTH_CM - (L.cardSize * L.cols)) / 2;
+  const pictureGridMarginTop = (A4_HEIGHT_CM - (L.cardSize * L.pictureRows)) / 2;
+  const controlGridMarginTop = (A4_HEIGHT_CM - (L.controlHeight * L.controlRows)) / 2;
+  const labelGridMarginTop = (A4_HEIGHT_CM - (L.labelHeight * L.labelRows)) / 2;
 
   let html = `
 <!DOCTYPE html>
@@ -90,19 +127,19 @@ export const generateCards = ({
       size: A4;
       margin: ${MARGIN_CM}cm;
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: system-ui, sans-serif;
       background: white;
       position: relative;
     }
-    
+
     .page {
       page-break-after: always;
       width: ${A4_WIDTH_CM}cm;
@@ -110,39 +147,39 @@ export const generateCards = ({
       position: relative;
       overflow: hidden;
     }
-    
+
     .page:last-child {
       page-break-after: auto;
     }
-    
+
     .page-title {
       font-size: 10pt;
       color: #999;
       margin-bottom: 0.5cm;
       text-align: center;
     }
-    
+
     .grid {
       display: grid;
-      grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
+      grid-template-columns: repeat(${L.cols}, ${L.cardSize}cm);
       gap: 0;
       position: relative;
       margin: 0;
       padding: 0;
     }
-    
+
     .grid-picture {
-      grid-template-rows: repeat(3, ${PICTURE_CARD_SIZE_CM}cm);
+      grid-template-rows: repeat(${L.pictureRows}, ${L.cardSize}cm);
       margin-left: ${gridMarginLeft}cm;
       margin-top: ${pictureGridMarginTop}cm;
     }
-    
+
     .grid-control {
-      grid-template-rows: repeat(3, ${CONTROL_CARD_HEIGHT_CM}cm);
+      grid-template-rows: repeat(${L.controlRows}, ${L.controlHeight}cm);
       margin-left: ${gridMarginLeft}cm;
       margin-top: ${controlGridMarginTop}cm;
     }
-    
+
     .card {
       background: ${borderColor};
       padding: ${WHITE_BORDER_CM}cm;
@@ -157,27 +194,27 @@ export const generateCards = ({
       margin: 0;
       border: none;
     }
-    
+
     .card-control {
-      height: ${CONTROL_CARD_HEIGHT_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
+      height: ${L.controlHeight}cm;
+      width: ${L.cardSize}cm;
     }
-    
+
     .card-picture {
-      height: ${PICTURE_CARD_SIZE_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
+      height: ${L.cardSize}cm;
+      width: ${L.cardSize}cm;
     }
-    
+
     .card-label-only {
-      height: ${LABEL_CARD_HEIGHT_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
+      height: ${L.labelHeight}cm;
+      width: ${L.cardSize}cm;
     }
-    
+
     .card-label-only .label-area {
       height: auto;
       flex: 1;
     }
-    
+
     .image-area {
       background: white;
       -webkit-print-color-adjust: exact;
@@ -189,23 +226,23 @@ export const generateCards = ({
       overflow: hidden;
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
-    
+
     .image-area img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     .label-area {
       background: white;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
-      height: ${LABEL_INTERNAL_CM}cm;
+      height: ${L.labelInternal}cm;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: "${fontFamily}", cursive;
-      font-size: 24pt;
+      font-size: ${L.fontSize}pt;
       font-weight: bold;
       text-align: center;
       padding: 0.2cm 0.3cm;
@@ -215,38 +252,38 @@ export const generateCards = ({
       max-width: 100%;
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
-    
+
     @media print {
       * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         color-adjust: exact !important;
       }
-      
+
       body {
         margin: 0;
         padding: 0;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
       }
-      
+
       .page-title {
         display: none;
       }
-      
+
       .card {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
         background: ${borderColor} !important;
       }
     }
-    
+
     @media screen {
       body {
         padding: 20px;
         background: #f0f0f0;
       }
-      
+
       .page {
         background: white;
         margin-bottom: 20px;
@@ -258,50 +295,50 @@ export const generateCards = ({
 <body>
 `;
 
-  // Generate Control Cards pages (6 per page in 2x3 grid)
+  // Generate Control Cards pages
   const controlCards = cards.map(card => createCardHTML({ card, type: 'control' }));
-  for (let i = 0; i < controlCards.length; i += 6) {
-    const pageCards = controlCards.slice(i, i + 6);
-    const pageNum = Math.floor(i / 6) + 1;
+  for (let i = 0; i < controlCards.length; i += L.controlPerPage) {
+    const pageCards = controlCards.slice(i, i + L.controlPerPage);
+    const pageNum = Math.floor(i / L.controlPerPage) + 1;
     html += `
-      <div class="page page-has-3rows-control">
+      <div class="page">
         <div class="page-title">Control Cards - Page ${pageNum}</div>
         <div class="grid grid-control">
           ${pageCards.join('')}
-          ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
+          ${pageCards.length < L.controlPerPage ? '<div></div>'.repeat(L.controlPerPage - pageCards.length) : ''}
         </div>
       </div>
     `;
   }
 
-  // Generate Picture Cards pages (6 per page in 2x3 grid)
+  // Generate Picture Cards pages
   const pictureCards = cards.map(card => createCardHTML({ card, type: 'picture' }));
-  for (let i = 0; i < pictureCards.length; i += 6) {
-    const pageCards = pictureCards.slice(i, i + 6);
-    const pageNum = Math.floor(i / 6) + 1;
+  for (let i = 0; i < pictureCards.length; i += L.picturePerPage) {
+    const pageCards = pictureCards.slice(i, i + L.picturePerPage);
+    const pageNum = Math.floor(i / L.picturePerPage) + 1;
     html += `
-      <div class="page page-has-3rows-picture">
+      <div class="page">
         <div class="page-title">Picture Cards - Page ${pageNum}</div>
         <div class="grid grid-picture">
           ${pageCards.join('')}
-          ${pageCards.length < 6 ? '<div></div>'.repeat(6 - pageCards.length) : ''}
+          ${pageCards.length < L.picturePerPage ? '<div></div>'.repeat(L.picturePerPage - pageCards.length) : ''}
         </div>
       </div>
     `;
   }
 
-  // Generate Label Cards pages (16 per page in 2x8 grid)
+  // Generate Label Cards pages
   const labelCards = cards.map(card => createCardHTML({ card, type: 'label' }));
-  const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-  for (let i = 0; i < labelCards.length; i += 16) {
-    const pageCards = labelCards.slice(i, i + 16);
-    const pageNum = Math.floor(i / 16) + 1;
+  const labelGridMarginLeft = (A4_WIDTH_CM - (L.cardSize * L.cols)) / 2;
+  for (let i = 0; i < labelCards.length; i += L.labelPerPage) {
+    const pageCards = labelCards.slice(i, i + L.labelPerPage);
+    const pageNum = Math.floor(i / L.labelPerPage) + 1;
     html += `
       <div class="page">
         <div class="page-title">Label Cards - Page ${pageNum}</div>
-        <div class="grid" style="grid-template-rows: repeat(8, ${LABEL_CARD_HEIGHT_CM}cm); grid-auto-rows: ${LABEL_CARD_HEIGHT_CM}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
+        <div class="grid" style="grid-template-rows: repeat(${L.labelRows}, ${L.labelHeight}cm); grid-auto-rows: ${L.labelHeight}cm; margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
           ${pageCards.join('')}
-          ${pageCards.length < 16 ? '<div></div>'.repeat(16 - pageCards.length) : ''}
+          ${pageCards.length < L.labelPerPage ? '<div></div>'.repeat(L.labelPerPage - pageCards.length) : ''}
         </div>
       </div>
     `;
@@ -323,25 +360,21 @@ export const generateCards = ({
 };
 
 /**
- * Generate large cards print layout (4 images per A4 page in 2x2 grid)
+ * Generate large cards print layout (images only, fills A4 as much as possible)
  * Returns HTML document string ready for printing
  */
 export const generateLargeCards = ({
   cards,
   borderColor,
-  fontFamily: _fontFamily
+  fontFamily: _fontFamily,
+  cardSizeCm = DEFAULT_CARD_SIZE_CM
 }: GenerateCardsParams): string => {
-  const MARGIN_CM = 0;
-  const WHITE_BORDER_CM = 0.5;
-  const CARD_BORDER_RADIUS = 0.4;
-  
-  const usableWidth = A4_WIDTH_CM - (2 * MARGIN_CM);
-  const usableHeight = A4_HEIGHT_CM - (2 * MARGIN_CM);
-  
-  const imageSize = Math.min(
-    usableWidth / 2,
-    usableHeight / 2
-  );
+  // For "Print Images Only", use the selected card size to determine grid
+  const cols = Math.max(1, Math.floor(A4_WIDTH_CM / cardSizeCm));
+  const rows = Math.max(1, Math.floor(A4_HEIGHT_CM / cardSizeCm));
+  const perPage = cols * rows;
+  const marginLeft = (A4_WIDTH_CM - (cardSizeCm * cols)) / 2;
+  const marginTop = (A4_HEIGHT_CM - (cardSizeCm * rows)) / 2;
 
   let html = `
 <!DOCTYPE html>
@@ -354,19 +387,19 @@ export const generateLargeCards = ({
       size: A4;
       margin: 0;
     }
-    
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    
+
     body {
       font-family: system-ui, sans-serif;
       background: white;
       position: relative;
     }
-    
+
     .page {
       page-break-after: always;
       width: ${A4_WIDTH_CM}cm;
@@ -376,28 +409,29 @@ export const generateLargeCards = ({
       position: relative;
       overflow: hidden;
     }
-    
+
     .page:last-child {
       page-break-after: auto;
     }
-    
+
     .page-title {
       font-size: 10pt;
       color: #999;
       margin-bottom: 0.5cm;
       text-align: center;
     }
-    
+
     .grid {
       display: grid;
-      grid-template-columns: ${imageSize}cm ${imageSize}cm;
-      grid-template-rows: ${imageSize}cm ${imageSize}cm;
+      grid-template-columns: repeat(${cols}, ${cardSizeCm}cm);
+      grid-template-rows: repeat(${rows}, ${cardSizeCm}cm);
       gap: 0;
       position: relative;
-      margin: 0 auto;
+      margin-left: ${marginLeft}cm;
+      margin-top: ${marginTop}cm;
       padding: 0;
     }
-    
+
     .image-box {
       background: ${borderColor};
       padding: ${WHITE_BORDER_CM}cm;
@@ -411,7 +445,7 @@ export const generateLargeCards = ({
       margin: 0;
       border: none;
     }
-    
+
     .image-inner {
       background: white;
       -webkit-print-color-adjust: exact;
@@ -424,30 +458,30 @@ export const generateLargeCards = ({
       overflow: hidden;
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
-    
+
     .image-inner img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    
+
     @media print {
       body {
         margin: 0;
         padding: 0;
       }
-      
+
       .page-title {
         display: none;
       }
     }
-    
+
     @media screen {
       body {
         padding: 20px;
         background: #f0f0f0;
       }
-      
+
       .page {
         background: white;
         margin-bottom: 20px;
@@ -459,10 +493,10 @@ export const generateLargeCards = ({
 <body>
 `;
 
-  // Generate pages with 4 images each
-  for (let i = 0; i < cards.length; i += 4) {
-    const pageCards = cards.slice(i, i + 4);
-    const pageNum = Math.floor(i / 4) + 1;
+  // Generate pages
+  for (let i = 0; i < cards.length; i += perPage) {
+    const pageCards = cards.slice(i, i + perPage);
+    const pageNum = Math.floor(i / perPage) + 1;
     html += `
       <div class="page">
         <div class="page-title">Images - Page ${pageNum}</div>
@@ -474,7 +508,7 @@ export const generateLargeCards = ({
               </div>
             </div>
           `).join('')}
-          ${pageCards.length < 4 ? '<div></div>'.repeat(4 - pageCards.length) : ''}
+          ${pageCards.length < perPage ? '<div></div>'.repeat(perPage - pageCards.length) : ''}
         </div>
       </div>
     `;
@@ -496,16 +530,18 @@ export const generateLargeCards = ({
 };
 
 /**
- * Generate labels-only print layout (16 labels per A4 page in 2x8 grid)
+ * Generate labels-only print layout
  * Returns HTML document string ready for printing
  */
 export const generateLabelsOnly = ({
   cards,
   borderColor,
-  fontFamily
+  fontFamily,
+  cardSizeCm = DEFAULT_CARD_SIZE_CM
 }: GenerateCardsParams): string => {
-  const labelGridMarginLeft = (A4_WIDTH_CM - (PICTURE_CARD_SIZE_CM * 2)) / 2;
-  const labelGridMarginTop = (A4_HEIGHT_CM - (LABEL_CARD_HEIGHT_CM * 8)) / 2;
+  const L = computeLayout(cardSizeCm);
+  const labelGridMarginLeft = (A4_WIDTH_CM - (L.cardSize * L.cols)) / 2;
+  const labelGridMarginTop = (A4_HEIGHT_CM - (L.labelHeight * L.labelRows)) / 2;
 
   let html = `
 <!DOCTYPE html>
@@ -552,7 +588,7 @@ export const generateLabelsOnly = ({
 
     .grid {
       display: grid;
-      grid-template-columns: ${PICTURE_CARD_SIZE_CM}cm ${PICTURE_CARD_SIZE_CM}cm;
+      grid-template-columns: repeat(${L.cols}, ${L.cardSize}cm);
       gap: 0;
       position: relative;
       margin: 0;
@@ -571,8 +607,8 @@ export const generateLabelsOnly = ({
       border-radius: ${CARD_BORDER_RADIUS}cm;
       margin: 0;
       border: none;
-      height: ${LABEL_CARD_HEIGHT_CM}cm;
-      width: ${PICTURE_CARD_SIZE_CM}cm;
+      height: ${L.labelHeight}cm;
+      width: ${L.cardSize}cm;
     }
 
     .label-area {
@@ -584,7 +620,7 @@ export const generateLabelsOnly = ({
       align-items: center;
       justify-content: center;
       font-family: "${fontFamily}", cursive;
-      font-size: 24pt;
+      font-size: ${L.fontSize}pt;
       font-weight: bold;
       text-align: center;
       padding: 0.2cm 0.3cm;
@@ -622,15 +658,15 @@ export const generateLabelsOnly = ({
     </div>
   `);
 
-  for (let i = 0; i < labelCards.length; i += 16) {
-    const pageCards = labelCards.slice(i, i + 16);
-    const pageNum = Math.floor(i / 16) + 1;
+  for (let i = 0; i < labelCards.length; i += L.labelPerPage) {
+    const pageCards = labelCards.slice(i, i + L.labelPerPage);
+    const pageNum = Math.floor(i / L.labelPerPage) + 1;
     html += `
       <div class="page">
         <div class="page-title">Label Cards - Page ${pageNum}</div>
-        <div class="grid" style="grid-template-rows: repeat(8, ${LABEL_CARD_HEIGHT_CM}cm); margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
+        <div class="grid" style="grid-template-rows: repeat(${L.labelRows}, ${L.labelHeight}cm); margin-left: ${labelGridMarginLeft}cm; margin-top: ${labelGridMarginTop}cm;">
           ${pageCards.join('')}
-          ${pageCards.length < 16 ? '<div></div>'.repeat(16 - pageCards.length) : ''}
+          ${pageCards.length < L.labelPerPage ? '<div></div>'.repeat(L.labelPerPage - pageCards.length) : ''}
         </div>
       </div>
     `;
