@@ -217,6 +217,9 @@ export async function GET(request: NextRequest) {
         areaLabelToKey[labels.en.toLowerCase()] = key;
         areaLabelToKey[labels.zh] = key;
       }
+      // Also recognize "Other" / "其他" from previous conversions
+      areaLabelToKey['other'] = 'other';
+      areaLabelToKey['其他'] = 'other';
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
       let isGrouped = false;
       for (const line of lines) {
@@ -255,6 +258,7 @@ export async function GET(request: NextRequest) {
           area = workNameToArea.get(base);
         }
         if (!area) {
+          // Fuzzy substring match
           for (const [name, aKey] of workNameToArea) {
             if (lower.includes(name) || name.includes(lower)) {
               area = aKey;
@@ -262,11 +266,21 @@ export async function GET(request: NextRequest) {
             }
           }
         }
-        if (area) {
-          if (!result.has(area)) result.set(area, []);
-          const existing = result.get(area)!;
-          if (!existing.includes(part)) existing.push(part);
+        // Space-collapsed match (e.g. "chalk board" → "chalkboard")
+        if (!area) {
+          const collapsed = lower.replace(/\s+/g, '');
+          for (const [name, aKey] of workNameToArea) {
+            if (name.replace(/\s+/g, '') === collapsed) {
+              area = aKey;
+              break;
+            }
+          }
         }
+        // Keep unmatched works in "other" instead of dropping them
+        if (!area) area = 'other';
+        if (!result.has(area)) result.set(area, []);
+        const existing = result.get(area)!;
+        if (!existing.includes(part)) existing.push(part);
       }
       return result;
     }
@@ -464,6 +478,13 @@ export async function GET(request: NextRequest) {
             const zhWorks = works.map(w => getZhWorkName(w));
             zhLines.push(`${AREA_LABELS[area].zh}：${zhWorks.join('、')}`);
           }
+        }
+        // Include unmatched works under "Other" (from flat-text parsing where area couldn't be determined)
+        const otherWorks = childWorks.get('other');
+        if (otherWorks && otherWorks.length > 0) {
+          enLines.push(`Other: ${otherWorks.join(', ')}`);
+          const zhOther = otherWorks.map(w => getZhWorkName(w));
+          zhLines.push(`其他：${zhOther.join('、')}`);
         }
         // Append "Next week" line if there are focus works
         if (nextWeekEn.length > 0) {
