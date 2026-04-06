@@ -133,18 +133,25 @@
     font-style: italic;
   }
 
-  /* ===== WORD ROW ===== */
-  .word-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 2mm;
+  /* ===== WORD CARD (two rows: picture+word on top, trace+write below) ===== */
+  .word-card {
+    margin-bottom: 3mm;
     padding: 3mm 4mm;
     border-radius: 8px;
     background: #fafafa;
   }
-  .word-row:nth-child(even) {
+  .word-card:nth-child(even) {
     background: #f0f8f0;
+  }
+  .word-card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 2mm;
+  }
+  .word-card-bottom {
+    display: flex;
+    gap: 10px;
   }
 
   .word-picture {
@@ -167,10 +174,21 @@
     font-size: 28px;
     font-weight: bold;
     color: #0D3330;
-    width: 90px;
-    text-align: center;
-    flex-shrink: 0;
     letter-spacing: 2px;
+  }
+
+  /* Legacy .word-row kept for two-col format */
+  .word-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2mm;
+    padding: 3mm 4mm;
+    border-radius: 8px;
+    background: #fafafa;
+  }
+  .word-row:nth-child(even) {
+    background: #f0f8f0;
   }
 
   /* ===== TRACING AREA ===== */
@@ -1034,21 +1052,20 @@ function makePictureHTML(w) {
 }
 
 function makeWordRow(w, showWrite) {
-  const writeHTML = showWrite ? `
-    <div class="write-area">
-      ${makeGuidelines()}
-    </div>` : '';
-
   const safe = w.imgData ? escapeHTML(w.word) : w.word;
   return `
-    <div class="word-row">
-      ${makePictureHTML(w)}
-      <div class="word-solid">${safe}</div>
-      <div class="trace-area">
-        ${makeGuidelines()}
-        <span class="trace-word">${safe}</span>
+    <div class="word-card">
+      <div class="word-card-top">
+        ${makePictureHTML(w)}
+        <div class="word-solid">${safe}</div>
       </div>
-      ${writeHTML}
+      <div class="word-card-bottom">
+        <div class="trace-area" style="flex:1;">
+          ${makeGuidelines()}
+          <span class="trace-word">${safe}</span>
+        </div>
+        ${showWrite ? `<div class="write-area" style="flex:1;">${makeGuidelines()}</div>` : ''}
+      </div>
     </div>`;
 }
 
