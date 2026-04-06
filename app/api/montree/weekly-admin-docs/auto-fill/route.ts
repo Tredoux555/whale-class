@@ -438,31 +438,9 @@ export async function GET(request: NextRequest) {
     // Build suggestions for each child
     const suggestions: ChildSuggestion[] = children.map((child: { id: string; name: string }) => {
       const childFocus = focusMap.get(child.id);
-      // Merge all data sources: Weekly Wrap → photos → parsed saved text
-      // Each tier supplements (not replaces) to avoid losing works from any source
-      let childWorks = new Map<string, string[]>();
-      const wrapData = wrapWorksByChild.get(child.id);
-      const photoData = photoWorksByChild.get(child.id);
-      // Start with Weekly Wrap (highest quality) or photos
-      const primarySource = wrapData || photoData;
-      if (primarySource) {
-        for (const [area, works] of primarySource) {
-          childWorks.set(area, [...works]);
-        }
-      }
-      // Always supplement with parsed saved text (may have works not captured by photos)
-      const saved = existingNotes.get(child.id);
-      if (saved) {
-        const parsed = parseSavedText(saved.en || saved.zh);
-        for (const [area, works] of parsed) {
-          if (area === 'other' && childWorks.size > 0) continue; // skip "other" if we have real data
-          if (!childWorks.has(area)) childWorks.set(area, []);
-          const existing = childWorks.get(area)!;
-          for (const w of works) {
-            if (!existing.some(e => e.toLowerCase() === w.toLowerCase())) existing.push(w);
-          }
-        }
-      }
+      // Use Weekly Wrap data (best) → photos → leave empty if nothing
+      // Don't re-parse old saved flat text — it may have stale/incorrect data
+      const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id) || new Map<string, string[]>();
 
       // --- Plan Areas (English + Chinese) — compute first so we can append "Next week" to summary ---
       const planAreas: Record<string, string> = {};
