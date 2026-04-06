@@ -12,6 +12,35 @@ import {
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
 
+// Retry helper for Supabase storage uploads (handles ECONNRESET / transient network errors)
+async function uploadWithRetry(
+  supabase: ReturnType<typeof getSupabase>,
+  bucket: string,
+  path: string,
+  data: ArrayBuffer | Uint8Array,
+  options: { contentType: string; upsert: boolean },
+  maxRetries = 2
+): Promise<{ error: { message: string } | null }> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const { error } = await supabase.storage.from(bucket).upload(path, data, options);
+    if (!error) return { error: null };
+
+    const msg = error.message || '';
+    const isTransient = msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') ||
+                        msg.includes('CONNECT_TIMEOUT') || msg.includes('fetch failed') ||
+                        msg.includes('socket hang up') || msg.includes('network');
+
+    if (!isTransient || attempt === maxRetries) {
+      return { error: { message: error.message || 'Upload failed' } };
+    }
+
+    const delay = (attempt + 1) * 1000;
+    console.log(`[Admin Send] Retry ${attempt + 1}/${maxRetries} after ${delay}ms — ${msg}`);
+    await new Promise(r => setTimeout(r, delay));
+  }
+  return { error: { message: 'Upload failed after retries' } };
+}
+
 // File type validation rules
 const MEDIA_CONFIG = {
   audio: {
@@ -58,13 +87,15 @@ function detectMediaType(file: File): MediaType | null {
 function validateFile(file: File, type: MediaType): string | null {
   const config = MEDIA_CONFIG[type];
 
-  // Type validation
-  if (type === 'audio') {
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (!config.allowedMimes.includes(file.type) && (!ext || !config.allowedExts.includes(ext))) {
-      return 'Only audio files are allowed';
-    }
-  } else if (!file.type.startsWith(config.mimePrefix)) {
+  // Type validation — mobile browsers often send empty or wrong MIME types
+  // so also check file extension as fallback (same logic as detectMediaType)
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const mimeOk = file.type && (
+    file.type.startsWith(config.mimePrefix) || config.allowedMimes.includes(file.type)
+  );
+  const extOk = ext && config.allowedExts.includes(ext);
+
+  if (!mimeOk && !extOk) {
     return `Only ${type} files are allowed`;
   }
 
@@ -113,6 +144,9 @@ export async function POST(req: NextRequest) {
         author: adminUsername,
         expires_at: expiresAt.toISOString(),
         is_expired: false,
+        is_from_admin: true,
+        session_token: sessionToken,
+        login_log_id: loginLogId,
       });
 
       if (textInsertError) {
@@ -186,18 +220,26 @@ export async function POST(req: NextRequest) {
     const filename = `${config.filenamePrefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`;
     const filePath = `story-media/${weekStartDate}/${filename}`;
 
-    // Upload to Supabase Storage
-    const arrayBuffer = await file.arrayBuffer();
-    const { error: uploadError } = await supabase.storage
-      .from('story-uploads')
-      .upload(filePath, arrayBuffer, {
-        contentType: file.type || `${config.mimePrefix}${config.defaultExt}`,
-        upsert: false,
-      });
+    // Upload to Supabase Storage (with retry for transient network errors)
+    let arrayBuffer: ArrayBuffer;
+    try {
+      arrayBuffer = await file.arrayBuffer();
+    } catch (bufferErr) {
+      console.error(`[Send ${mediaType}] Failed to read file buffer:`, bufferErr);
+      return NextResponse.json({ error: 'Failed to read file — it may be too large for server memory' }, { status: 500 });
+    }
+
+    console.log(`[Send ${mediaType}] Uploading ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)}MB) to ${filePath}`);
+
+    const { error: uploadError } = await uploadWithRetry(
+      supabase, 'story-uploads', filePath, arrayBuffer,
+      { contentType: file.type || `${config.mimePrefix}${config.defaultExt}`, upsert: false },
+      mediaType === 'video' ? 3 : 2
+    );
 
     if (uploadError) {
-      console.error(`[Send ${mediaType}] Upload error:`, uploadError);
-      return NextResponse.json({ error: `Failed to upload ${mediaType}` }, { status: 500 });
+      console.error(`[Send ${mediaType}] Upload error:`, uploadError.message);
+      return NextResponse.json({ error: `Failed to upload ${mediaType}: ${uploadError.message}` }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage
@@ -216,6 +258,9 @@ export async function POST(req: NextRequest) {
       author: adminUsername,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
+      is_from_admin: true,
+      session_token: sessionToken,
+      login_log_id: loginLogId,
     });
 
     if (mediaInsertError) {

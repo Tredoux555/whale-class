@@ -10,16 +10,20 @@ import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger'
 async function logLogin(username: string, ip: string, userAgent: string, token: string) {
   try {
     const supabase = getSupabase();
-    const { error } = await supabase.from('story_login_logs').insert({
+    const { data, error } = await supabase.from('story_login_logs').insert({
       username,
       login_at: new Date().toISOString(),
       session_token: token.substring(0, 50),
       ip_address: ip,
       user_agent: userAgent
-    });
+    }).select('id').maybeSingle();
 
     if (error) {
-      console.error('[Auth] Login log FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
+      console.error('[Auth] Login log INSERT FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
+    } else if (!data) {
+      console.error('[Auth] Login log INSERT returned no data — row may not have been created');
+    } else {
+      console.log(`[Auth] Login logged: user=${username} ip=${ip} log_id=${data.id}`);
     }
   } catch (e) {
     console.error('[Auth] Login log exception:', e);

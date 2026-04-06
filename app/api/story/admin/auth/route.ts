@@ -19,22 +19,25 @@ async function logAdminLogin(
   supabase: ReturnType<typeof getSupabase>,
   username: string,
   token: string,
-  req: NextRequest
+  ip: string,
+  userAgent: string
 ): Promise<void> {
   try {
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-    const userAgent = req.headers.get('user-agent') || 'unknown';
 
-    const { error } = await supabase.from('story_admin_login_logs').insert({
+    const { data, error } = await supabase.from('story_admin_login_logs').insert({
       username,
       login_at: new Date().toISOString(),
       session_token: token.substring(0, 50),
       ip_address: ip,
       user_agent: userAgent
-    });
+    }).select('id').maybeSingle();
 
     if (error) {
-      console.error('[AdminAuth] Login log FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
+      console.error('[AdminAuth] Login log INSERT FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
+    } else if (!data) {
+      console.error('[AdminAuth] Login log INSERT returned no data — row may not have been created');
+    } else {
+      console.log(`[AdminAuth] Login logged: user=${username} ip=${ip} log_id=${data.id}`);
     }
   } catch (e) {
     console.error('[AdminAuth] Login log exception:', e);
@@ -94,7 +97,7 @@ export async function POST(req: NextRequest) {
           .sign(getJWTSecret());
 
         // Log the login
-        await logAdminLogin(supabase, username, token, req);
+        await logAdminLogin(supabase, username, token, ip, userAgent);
 
         // Phase 7: Set HttpOnly cookie alongside JSON (dual mode for backward compat)
         const response = NextResponse.json({ session: token });
