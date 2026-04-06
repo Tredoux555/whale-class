@@ -147,10 +147,13 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       setPlanNotes(pNotes);
       setLoading(false);
 
-      // Auto-fill ONLY when no saved notes exist (first visit for this week)
-      // Never overwrite existing notes — teacher clicks Auto-fill manually to refresh
+      // Auto-fill when no saved notes exist, OR when saved notes are in flat format
+      // (flat format = old "did X, Y, and Z this week" style that needs area-grouped conversion)
       const hasNotes = notesData.notes && notesData.notes.length > 0;
-      if (!controller.signal.aborted && !hasNotes) {
+      const hasFlatFormatNotes = hasNotes && Object.values(sNotes).some(n =>
+        n.english_text && /^did\s/i.test(n.english_text.trim())
+      );
+      if (!controller.signal.aborted && (!hasNotes || hasFlatFormatNotes)) {
         handleAutoFill();
       }
     } catch (err: unknown) {
