@@ -1,9 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
+import { getSupabase, verifyUserToken, getCurrentWeekStart, getSessionToken, getLoginLogId } from '@/lib/story-db';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
 export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
+
+// Retry helper for Supabase storage uploads (handles ECONNRESET / transient network errors)
+async function uploadWithRetry(
+  supabase: ReturnType<typeof getSupabase>,
+  bucket: string,
+  path: string,
+  data: Uint8Array,
+  options: { contentType: string; upsert: boolean },
+  maxRetries = 2
+): Promise<{ error: { message: string } | null }> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const { error } = await supabase.storage.from(bucket).upload(path, data, options);
+    if (!error) return { error: null };
+
+    const msg = error.message || '';
+    const isTransient = msg.includes('ECONNRESET') || msg.includes('ETIMEDOUT') ||
+                        msg.includes('CONNECT_TIMEOUT') || msg.includes('fetch failed') ||
+                        msg.includes('socket hang up') || msg.includes('network');
+
+    if (!isTransient || attempt === maxRetries) {
+      return { error: { message: error.message || 'Upload failed' } };
+    }
+
+    // Exponential backoff: 1s, 2s
+    const delay = (attempt + 1) * 1000;
+    console.log(`[Upload Media] Retry ${attempt + 1}/${maxRetries} after ${delay}ms — ${msg}`);
+    await new Promise(r => setTimeout(r, delay));
+  }
+  return { error: { message: 'Upload failed after retries' } };
+}
 
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
 const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'];
@@ -17,7 +47,8 @@ function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'a
   if (IMAGE_TYPES.includes(mimeType)) return 'image';
   if (VIDEO_TYPES.includes(mimeType)) return 'video';
   if (AUDIO_TYPES.includes(mimeType)) return 'audio';
-  
+
+  // Some mobile browsers send application/octet-stream — fall through to extension check
   const ext = filename.split('.').pop()?.toLowerCase();
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
   const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', '3gp', '3g2'];
@@ -59,6 +90,9 @@ export async function POST(req: NextRequest) {
 
     const supabase = getSupabase();
     const weekStartDate = getCurrentWeekStart();
+    const authHeader = req.headers.get('authorization');
+    const sessionToken = getSessionToken(authHeader);
+    const loginLogId = await getLoginLogId(sessionToken);
     const timestamp = Date.now();
     const ext = file.name.split('.').pop() || 'bin';
     const filename = `${timestamp}-${username}.${ext}`;
@@ -76,13 +110,16 @@ export async function POST(req: NextRequest) {
     }
     const buffer = new Uint8Array(arrayBuffer);
 
-    const { error: uploadError } = await supabase.storage
-      .from('story-uploads')
-      .upload(storagePath, buffer, { contentType: file.type || `${fileType === 'video' ? 'video/mp4' : fileType === 'audio' ? 'audio/mpeg' : 'image/jpeg'}`, upsert: false });
+    const effectiveContentType = file.type || `${fileType === 'video' ? 'video/mp4' : fileType === 'audio' ? 'audio/mpeg' : 'image/jpeg'}`;
+    const { error: uploadError } = await uploadWithRetry(
+      supabase, 'story-uploads', storagePath, buffer,
+      { contentType: effectiveContentType, upsert: false },
+      fileType === 'video' ? 3 : 2 // extra retry for videos
+    );
 
     if (uploadError) {
-      console.error('[Upload Media] Supabase storage error:', uploadError.message || uploadError);
-      return NextResponse.json({ error: `Upload to storage failed: ${uploadError.message || 'unknown error'}` }, { status: 500 });
+      console.error('[Upload Media] Supabase storage error:', uploadError.message);
+      return NextResponse.json({ error: `Upload to storage failed: ${uploadError.message}` }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage.from('story-uploads').getPublicUrl(storagePath);
@@ -99,6 +136,9 @@ export async function POST(req: NextRequest) {
       author: username,
       expires_at: expiresAt.toISOString(),
       is_expired: false,
+      is_from_admin: false,
+      session_token: sessionToken,
+      login_log_id: loginLogId,
     });
 
     if (insertError) {
@@ -114,7 +154,13 @@ export async function POST(req: NextRequest) {
       expiresIn: '24 hours'
     });
   } catch (error) {
-    console.error('Media upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload media' }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    const isAbort = errMsg.includes('aborted') || errMsg.includes('ECONNRESET');
+    console.error(`[Upload Media] ${isAbort ? 'Connection' : 'Unexpected'} error:`, errMsg);
+    return NextResponse.json({
+      error: isAbort
+        ? 'Upload connection was interrupted. Please try again.'
+        : `Failed to upload media: ${errMsg}`
+    }, { status: 500 });
   }
 }

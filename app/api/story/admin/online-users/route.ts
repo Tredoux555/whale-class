@@ -10,15 +10,17 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
     const now = Date.now();
-    // 2 minutes window - heartbeats are sent every 30s so 2min is safe
-    const twoMinutesAgo = new Date(now - 2 * 60 * 1000).toISOString();
+    // 5 minutes window for online detection — heartbeats are every 30s but can be delayed
+    // by slow networks, app backgrounding (mobile), or tab throttling.
+    // Previous 2min window was too aggressive and marked users as offline prematurely.
+    const onlineWindow = new Date(now - 5 * 60 * 1000).toISOString();
 
     // Primary: check story_online_sessions (heartbeat-based)
     const { data: onlineSessions, error: sessionError } = await supabase
       .from('story_online_sessions')
       .select('username, last_seen_at')
       .eq('is_online', true)
-      .gt('last_seen_at', twoMinutesAgo);
+      .gt('last_seen_at', onlineWindow);
 
     if (sessionError) {
       console.error('[OnlineUsers] Session query error:', sessionError.message);
@@ -28,7 +30,7 @@ export async function GET(req: NextRequest) {
     const { data: recentLogins, error: loginError } = await supabase
       .from('story_login_logs')
       .select('username, login_at')
-      .gt('login_at', twoMinutesAgo)
+      .gt('login_at', onlineWindow)
       .is('logout_at', null);
 
     if (loginError) {
@@ -68,12 +70,12 @@ export async function GET(req: NextRequest) {
 
     const uniqueUsers = new Set((allLogs || []).map(r => r.username));
 
-    // Clean up stale online sessions (no heartbeat in >2 minutes)
+    // Clean up stale online sessions (no heartbeat in >5 minutes)
     const { error: cleanupError } = await supabase
       .from('story_online_sessions')
       .update({ is_online: false })
       .eq('is_online', true)
-      .lt('last_seen_at', twoMinutesAgo);
+      .lt('last_seen_at', onlineWindow);
 
     if (cleanupError) {
       console.error('[OnlineUsers] Stale session cleanup error:', cleanupError.message);
@@ -82,11 +84,13 @@ export async function GET(req: NextRequest) {
     // Infer logout for login logs where user has no active heartbeat
     // Only process users NOT currently in the onlineUsers list
     const onlineUsernames = new Set(onlineUsers.map(u => u.username));
+    // Only infer logout for sessions inactive >10 minutes (very conservative)
+    const tenMinutesAgo = new Date(now - 10 * 60 * 1000).toISOString();
     const { data: staleLogins } = await supabase
       .from('story_login_logs')
       .select('id, username')
       .is('logout_at', null)
-      .lt('login_at', twoMinutesAgo)
+      .lt('login_at', tenMinutesAgo)
       .limit(100);
 
     if (staleLogins && staleLogins.length > 0) {

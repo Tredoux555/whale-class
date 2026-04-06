@@ -19,4 +19,5 @@ export PORT="${PORT:-3000}"
 echo "Starting server on ${HOSTNAME}:${PORT}..."
 
 # Use exec to replace shell with node process
-exec node server.js
+# --max-old-space-size=2048 allows Node to use up to 2GB for large video uploads
+exec node --max-old-space-size=2048 server.js
