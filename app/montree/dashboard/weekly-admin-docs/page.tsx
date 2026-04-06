@@ -149,11 +149,9 @@ export default function WeeklyAdminDocsPage() {
   useEffect(() => {
     // Wait for features to load and verify enabled before fetching data
     if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
-    fetchData().then((hasNotes) => {
-      // Auto-fill from data if no saved notes (saves teacher a click)
-      if (hasNotes === false) {
-        handleAutoFill();
-      }
+    fetchData().then(() => {
+      // Always auto-fill with fresh area-by-area data on load
+      handleAutoFill();
     });
   }, [fetchData, featuresLoading, isEnabled]);
 

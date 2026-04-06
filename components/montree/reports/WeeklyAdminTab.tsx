@@ -144,10 +144,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   }, [classroomId, weekStart, t]);
 
   useEffect(() => {
-    fetchData().then((hasNotes) => {
-      if (hasNotes === false) {
-        handleAutoFill();
-      }
+    fetchData().then(() => {
+      // Always auto-fill with fresh data on load — overwrites stale sentence-style notes
+      handleAutoFill();
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData]);
