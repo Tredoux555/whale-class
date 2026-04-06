@@ -77,7 +77,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
     return () => { mountedRef.current = false; };
   }, []);
 
-  // Fetch children + existing notes (auto-fills if no notes or stale flat-paragraph format)
+  // Fetch children + existing notes (auto-fills only when no saved notes exist)
   const fetchData = useCallback(async () => {
     if (!classroomId) return;
 
@@ -147,17 +147,10 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       setPlanNotes(pNotes);
       setLoading(false);
 
-      // Auto-fill when no notes exist OR when saved summaries are in stale flat-paragraph format
-      // (older versions stored "did X, Y, Z this week" instead of area-by-area)
+      // Auto-fill ONLY when no saved notes exist (first visit for this week)
+      // Never overwrite existing notes — teacher clicks Auto-fill manually to refresh
       const hasNotes = notesData.notes && notesData.notes.length > 0;
-      const hasStaleFormat = hasNotes && Object.values(sNotes).some(n => {
-        const text = n.english_text || n.chinese_text || '';
-        // Stale format: doesn't contain area labels (was a flat paragraph)
-        return text.length > 0 && !text.includes('Practical Life') && !text.includes('Sensorial')
-          && !text.includes('日常') && !text.includes('感官')
-          && !text.includes('No recorded') && !text.includes('没有记录');
-      });
-      if (!controller.signal.aborted && (!hasNotes || hasStaleFormat)) {
+      if (!controller.signal.aborted && !hasNotes) {
         handleAutoFill();
       }
     } catch (err: unknown) {
