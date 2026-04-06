@@ -137,12 +137,12 @@ export async function GET(request: NextRequest) {
     // Weekly Wrap parent reports are the PRIMARY data source (rich AI-analyzed works by area)
     // Photos are the FALLBACK when Weekly Wrap hasn't been run yet
     const [reportsRes, focusWorksRes, mediaRes] = await Promise.all([
-      // Weekly Wrap parent reports (have works array with name + area)
+      // Weekly Wrap reports — parent (preferred, has works array) + teacher (fallback)
       supabase
         .from('montree_weekly_reports')
-        .select('child_id, content')
+        .select('child_id, report_type, content')
         .eq('classroom_id', classroomId)
-        .eq('report_type', 'parent')
+        .in('report_type', ['parent', 'teacher'])
         .eq('week_start', weekStart)
         .in('child_id', childIds),
 
@@ -173,15 +173,36 @@ export async function GET(request: NextRequest) {
     }
 
     // Build Weekly Wrap works by child: childId -> area -> [work names]
+    // Prefer parent reports (have works array), fall back to teacher reports (have area_analyses)
     interface ReportWork { name: string; area: string; status?: string }
+    interface AreaAnalysis { area: string; works_count?: number; narrative?: string; works?: string[] }
     const wrapWorksByChild = new Map<string, Map<string, string[]>>();
-    const reports = (reportsRes.data || []) as Array<{ child_id: string; content: { works?: ReportWork[] } }>;
-    for (const report of reports) {
-      if (!report.content?.works) continue;
+    const allReports = (reportsRes.data || []) as Array<{
+      child_id: string;
+      report_type: string;
+      content: { works?: ReportWork[]; area_analyses?: AreaAnalysis[] };
+    }>;
+    // Sort so parent reports are processed first (overwrite teacher data)
+    const parentReports = allReports.filter(r => r.report_type === 'parent');
+    const teacherReports = allReports.filter(r => r.report_type === 'teacher');
+    // Process teacher reports first, then parent overwrites
+    for (const report of [...teacherReports, ...parentReports]) {
+      // Parent reports have content.works; teacher reports have content.area_analyses
+      const works: ReportWork[] = report.content?.works || [];
+      // Extract works from teacher area_analyses if no direct works array
+      if (works.length === 0 && report.content?.area_analyses) {
+        for (const aa of report.content.area_analyses) {
+          if (aa.works && Array.isArray(aa.works)) {
+            for (const workName of aa.works) {
+              works.push({ name: workName, area: aa.area });
+            }
+          }
+        }
+      }
+      if (works.length === 0) continue;
       const areaMap = new Map<string, string[]>();
-      for (const work of report.content.works) {
+      for (const work of works) {
         if (!work.name || !work.area) continue;
-        // Resolve UUID areas to canonical keys
         const resolvedArea = resolveArea(work.area);
         if (!resolvedArea) continue;
         if (!areaMap.has(resolvedArea)) areaMap.set(resolvedArea, []);

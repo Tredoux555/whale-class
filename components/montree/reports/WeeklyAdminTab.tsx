@@ -347,15 +347,22 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       }
 
       let filledCount = 0;
+      const NO_DATA_PHRASES = ['No recorded activities', '没有记录到活动'];
 
-      // Build new state snapshots before setting (single update, no flash)
+      // Build new state — only include children with real area-grouped data
+      // Never overwrite existing notes with "No recorded activities"
       const newSummary: SummaryNotes = {};
       for (const suggestion of data.children) {
-        if (suggestion.summaryEnglish || suggestion.summaryChinese) filledCount++;
-        newSummary[suggestion.childId] = {
-          english_text: suggestion.summaryEnglish || '',
-          chinese_text: suggestion.summaryChinese || '',
-        };
+        const en = suggestion.summaryEnglish || '';
+        const zh = suggestion.summaryChinese || '';
+        const hasRealData = (en || zh) && !NO_DATA_PHRASES.some(p => en.includes(p) || zh.includes(p));
+        if (hasRealData) {
+          filledCount++;
+          newSummary[suggestion.childId] = {
+            english_text: en,
+            chinese_text: zh,
+          };
+        }
       }
 
       const newPlan: PlanNotes = {};
@@ -371,7 +378,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         }
       }
 
-      // Merge with existing (preserve teacher edits for fields auto-fill doesn't cover)
+      // Merge with existing — only overwrites children that have real auto-fill data
       setSummaryNotes((prev) => ({ ...prev, ...newSummary }));
       setPlanNotes((prev) => {
         const merged = { ...prev };
