@@ -126,9 +126,10 @@ function cleanUUIDs(text: string): string {
 
 interface WeeklyWrapTabProps {
   classroomId: string;
+  view?: 'teacher' | 'parents';  // controlled from parent; if set, hides internal sub-view toggle
 }
 
-export default function WeeklyWrapTab({ classroomId }: WeeklyWrapTabProps) {
+export default function WeeklyWrapTab({ classroomId, view: externalView }: WeeklyWrapTabProps) {
   const { t, locale } = useI18n();
 
   // Week
@@ -145,8 +146,10 @@ export default function WeeklyWrapTab({ classroomId }: WeeklyWrapTabProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Sub-view
-  const [subView, setSubView] = useState<'teacher' | 'parents'>('teacher');
+  // Sub-view — external prop overrides internal state
+  const [internalSubView, setInternalSubView] = useState<'teacher' | 'parents'>('teacher');
+  const subView = externalView || internalSubView;
+  const setSubView = externalView ? (() => {}) : setInternalSubView;
 
   // Teacher summary
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
@@ -397,23 +400,25 @@ export default function WeeklyWrapTab({ classroomId }: WeeklyWrapTabProps) {
         </div>
       </div>
 
-      {/* Sub-view toggle */}
-      <div className="flex gap-1 px-4 py-2 bg-gray-50 border-b">
-        <button
-          onClick={() => setSubView('teacher')}
-          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'teacher' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-        >
-          {locale === 'zh' ? '教师审查' : 'Teacher Review'}
-          {flaggedCount > 0 && <span className="ml-1.5 text-amber-600">{flaggedCount}</span>}
-        </button>
-        <button
-          onClick={() => setSubView('parents')}
-          className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'parents' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-        >
-          {locale === 'zh' ? '家长报告' : 'Parent Reports'}
-          {readyToSend > 0 && <span className="ml-1.5 text-emerald-600">{readyToSend}</span>}
-        </button>
-      </div>
+      {/* Sub-view toggle — only shown when view is NOT externally controlled */}
+      {!externalView && (
+        <div className="flex gap-1 px-4 py-2 bg-gray-50 border-b">
+          <button
+            onClick={() => setSubView('teacher')}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'teacher' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            {locale === 'zh' ? '教师审查' : 'Teacher Review'}
+            {flaggedCount > 0 && <span className="ml-1.5 text-amber-600">{flaggedCount}</span>}
+          </button>
+          <button
+            onClick={() => setSubView('parents')}
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${subView === 'parents' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+            {locale === 'zh' ? '家长报告' : 'Parent Reports'}
+            {readyToSend > 0 && <span className="ml-1.5 text-emerald-600">{readyToSend}</span>}
+          </button>
+        </div>
+      )}
 
       {/* Selection bar */}
       {selectionMode && (

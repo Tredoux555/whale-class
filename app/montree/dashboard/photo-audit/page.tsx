@@ -42,7 +42,7 @@ interface AuditPhoto {
   status: string | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_wrap';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_wrap' | 'teacher_review' | 'parent_reports';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -404,7 +404,7 @@ function AreaPickerWithSearch({
 }
 
 export default function PhotoAuditPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const abortRef = useRef<AbortController | null>(null);
 
   // Track photos confirmed in this session — prevents server refetch from overwriting optimistic green status
@@ -1459,7 +1459,7 @@ export default function PhotoAuditPage() {
 
   // Filter photos by zone — 'all' shows everything needing review (non-green)
   const filteredPhotos = useMemo(() => {
-    if (zone === 'weekly_wrap') return []; // Weekly Wrap tab handled separately
+    if (zone === 'weekly_wrap' || zone === 'teacher_review' || zone === 'parent_reports') return []; // Weekly Wrap tabs handled separately
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
@@ -1479,11 +1479,14 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  // Zone tab config — Needs Review + Confirmed + Weekly Wrap
-  const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
+  const isWrapZone = zone === 'weekly_wrap' || zone === 'teacher_review' || zone === 'parent_reports';
+
+  // Zone tab config — Needs Review + Confirmed + Teacher Review + Parent Reports
+  const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null; bold?: boolean; separator?: boolean }[] = [
     { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
-    { key: 'weekly_wrap', label: `📋 ${t('weeklyWrap.title') || 'Weekly Wrap'}`, color: 'bg-blue-100 text-blue-800', count: null },
+    { key: 'teacher_review', label: `📋 ${locale === 'zh' ? '教师审查' : 'Teacher Review'}`, color: 'bg-blue-100 text-blue-800', count: null, bold: true, separator: true },
+    { key: 'parent_reports', label: `💌 ${locale === 'zh' ? '家长报告' : 'Parent Reports'}`, color: 'bg-violet-100 text-violet-800', count: null, bold: true },
   ];
 
   // ─── JSX ───
@@ -1493,7 +1496,7 @@ export default function PhotoAuditPage() {
       <div className="sticky top-0 z-10 bg-white border-b px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">{t('audit.title')}</h1>
-          {zone !== 'weekly_wrap' && (
+          {!isWrapZone && (
             <select
               value={dateRange}
               onChange={e => setDateRange(e.target.value as DateRange)}
@@ -1507,7 +1510,7 @@ export default function PhotoAuditPage() {
         </div>
 
         {/* Smart Learning progress bar */}
-        {zone !== 'weekly_wrap' && smartLearningStats && smartLearningStats.total > 0 && (
+        {!isWrapZone && smartLearningStats && smartLearningStats.total > 0 && (
           <div className="mt-2">
             <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
               <span>🧠 {t('audit.smartLearning')}</span>
@@ -1525,23 +1528,24 @@ export default function PhotoAuditPage() {
         {/* Zone tabs + Reclassify button */}
         <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
           <div className="flex gap-2 flex-1 overflow-x-auto">
-            {ZONE_TABS.map(tab => {
-              const isWeeklyWrap = tab.key === 'weekly_wrap';
+            {ZONE_TABS.map((tab) => {
               const isActive = zone === tab.key;
               return (
-                <button
-                  key={tab.key}
-                  onClick={() => setZone(tab.key)}
-                  className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all ${
-                    isWeeklyWrap ? 'font-bold' : 'font-medium'
-                  } ${
-                    isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : (
-                      isWeeklyWrap ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-gray-50 text-gray-400'
-                    )
-                  }`}
-                >
-                  {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
-                </button>
+                <span key={tab.key} className="contents">
+                  {tab.separator && <div className="w-px h-5 bg-gray-200 mx-1 self-center flex-shrink-0" />}
+                  <button
+                    onClick={() => setZone(tab.key)}
+                    className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all ${
+                      tab.bold ? 'font-bold' : 'font-medium'
+                    } ${
+                      isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : (
+                        tab.bold ? 'bg-gray-50 text-gray-500 border border-gray-200' : 'bg-gray-50 text-gray-400'
+                      )
+                    }`}
+                  >
+                    {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
+                  </button>
+                </span>
               );
             })}
           </div>
@@ -1578,20 +1582,23 @@ export default function PhotoAuditPage() {
         )}
       </div>
 
-      {/* ─── Weekly Wrap Tab ─── */}
-      {zone === 'weekly_wrap' && classroomIdState && (
-        <WeeklyWrapTab classroomId={classroomIdState} />
+      {/* ─── Weekly Wrap / Teacher Review / Parent Reports ─── */}
+      {isWrapZone && classroomIdState && (
+        <WeeklyWrapTab
+          classroomId={classroomIdState}
+          view={zone === 'teacher_review' ? 'teacher' : zone === 'parent_reports' ? 'parents' : undefined}
+        />
       )}
 
       {/* Loading state */}
-      {zone !== 'weekly_wrap' && loading && (
+      {!isWrapZone && loading && (
         <div className="flex items-center justify-center py-20">
           <div className="animate-spin h-8 w-8 border-4 border-emerald-500 border-t-transparent rounded-full" />
         </div>
       )}
 
       {/* Empty state */}
-      {zone !== 'weekly_wrap' && !loading && filteredPhotos.length === 0 && (
+      {!isWrapZone && !loading && filteredPhotos.length === 0 && (
         <div className="text-center py-20 text-gray-400">
           <p className="text-4xl mb-2">📷</p>
           <p>{t('audit.noPhotos')}</p>
@@ -1599,7 +1606,7 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Photo grid */}
-      {zone !== 'weekly_wrap' && !loading && filteredPhotos.length > 0 && (
+      {!isWrapZone && !loading && filteredPhotos.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3">
           {pagedPhotos.map(photo => (
             <AuditPhotoCard
@@ -1648,7 +1655,7 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Floating action bar (photo audit only) */}
-      {zone !== 'weekly_wrap' && filteredPhotos.length > 0 && !loading && (
+      {!isWrapZone && filteredPhotos.length > 0 && !loading && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-3 z-20">
           {selectedIds.size === 0 ? (
             /* No selection — just Select All */
