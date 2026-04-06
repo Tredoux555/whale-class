@@ -1483,7 +1483,6 @@ export default function PhotoAuditPage() {
   const isPhotoZone = zone === 'all' || zone === 'green';
 
   // 4-tab layout: Photo Review | Works Review | Parent Reports | Weekly Admin
-  const nonGreenCount = counts.amber + counts.red + counts.untagged;
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     { key: 'all', label: locale === 'zh' ? '照片审核' : 'Photo Review', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
     { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
