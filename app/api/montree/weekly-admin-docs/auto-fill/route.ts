@@ -133,10 +133,8 @@ export async function GET(request: NextRequest) {
       return raw;
     };
 
-    // Step 2: Fetch Weekly Wrap reports + focus works + photos in parallel
-    // Weekly Wrap parent reports are the PRIMARY data source (rich AI-analyzed works by area)
-    // Photos are the FALLBACK when Weekly Wrap hasn't been run yet
-    const [reportsRes, focusWorksRes, mediaRes] = await Promise.all([
+    // Step 2: Fetch all data sources in parallel
+    const [reportsRes, focusWorksRes, mediaRes, existingNotesRes, allWorksRes] = await Promise.all([
       // Weekly Wrap reports — parent (preferred, has works array) + teacher (fallback)
       supabase
         .from('montree_weekly_reports')
@@ -151,7 +149,7 @@ export async function GET(request: NextRequest) {
         .select('child_id, area, work_name')
         .in('child_id', childIds),
 
-      // Smart Capture photos with work_id this week (fallback data source)
+      // Smart Capture photos with work_id this week
       supabase
         .from('montree_media')
         .select('id, child_id, work_id, captured_at')
@@ -160,6 +158,21 @@ export async function GET(request: NextRequest) {
         .not('work_id', 'is', null)
         .gte('captured_at', weekStart)
         .lt('captured_at', weekEndStr),
+
+      // Existing saved notes (for flat-text parsing fallback)
+      supabase
+        .from('montree_weekly_admin_notes')
+        .select('child_id, english_text, chinese_text')
+        .eq('classroom_id', classroomId)
+        .eq('week_start', weekStart)
+        .eq('doc_type', 'summary')
+        .is('area', null),
+
+      // All curriculum works (name → area_key for parsing flat text)
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, area_key')
+        .eq('classroom_id', classroomId),
     ]);
 
     if (reportsRes.error) {
@@ -170,6 +183,60 @@ export async function GET(request: NextRequest) {
     }
     if (mediaRes.error) {
       console.error('auto-fill: media error:', mediaRes.error.message);
+    }
+
+    // Build work name → area lookup from curriculum (for flat-text parsing fallback)
+    const workNameToArea = new Map<string, string>();
+    for (const w of (allWorksRes.data || []) as Array<{ name: string; area_key: string }>) {
+      workNameToArea.set(w.name.toLowerCase(), w.area_key);
+      // Also store without " - suffix" variants
+      const base = w.name.replace(/\s*-\s*.+$/, '').trim();
+      if (base !== w.name) workNameToArea.set(base.toLowerCase(), w.area_key);
+    }
+
+    // Build existing saved notes by child (flat-text fallback source)
+    const existingNotes = new Map<string, { en: string; zh: string }>();
+    for (const note of (existingNotesRes.data || []) as Array<{ child_id: string; english_text: string | null; chinese_text: string | null }>) {
+      existingNotes.set(note.child_id, {
+        en: note.english_text || '',
+        zh: note.chinese_text || '',
+      });
+    }
+
+    // Parse flat-paragraph text into area → [work names]
+    // Input: "did X, Y, Z (Variant), and W this week. Next week: A."
+    // Output: Map<area, string[]>
+    function parseFlatText(text: string): Map<string, string[]> {
+      const result = new Map<string, string[]>();
+      if (!text) return result;
+      // Strip "did " prefix and " this week." / " Next week:..." suffix
+      let body = text.replace(/^did\s+/i, '').replace(/\s+this\s+week\.?\s*(Next\s+week:.*)?\s*$/i, '');
+      // Split by ", " and " and " to get individual work names
+      const parts = body.split(/,\s+(?:and\s+)?|\s+and\s+/).map(s => s.trim()).filter(Boolean);
+      for (const part of parts) {
+        // Try exact match, then base name (without " - suffix" or " (variant)")
+        const lower = part.toLowerCase();
+        let area = workNameToArea.get(lower);
+        if (!area) {
+          const base = part.replace(/\s*[\-(].*$/, '').trim().toLowerCase();
+          area = workNameToArea.get(base);
+        }
+        if (!area) {
+          // Fuzzy: try substring match against all known works
+          for (const [name, aKey] of workNameToArea) {
+            if (lower.includes(name) || name.includes(lower)) {
+              area = aKey;
+              break;
+            }
+          }
+        }
+        if (area) {
+          if (!result.has(area)) result.set(area, []);
+          const existing = result.get(area)!;
+          if (!existing.includes(part)) existing.push(part);
+        }
+      }
+      return result;
     }
 
     // Build Weekly Wrap works by child: childId -> area -> [work names]
@@ -316,8 +383,15 @@ export async function GET(request: NextRequest) {
     // Build suggestions for each child
     const suggestions: ChildSuggestion[] = children.map((child: { id: string; name: string }) => {
       const childFocus = focusMap.get(child.id);
-      // Prefer Weekly Wrap data, fall back to photos
-      const childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
+      // Prefer Weekly Wrap data → photos → parsed flat text from existing saved notes
+      let childWorks = wrapWorksByChild.get(child.id) || photoWorksByChild.get(child.id);
+      if (!childWorks || childWorks.size === 0) {
+        const saved = existingNotes.get(child.id);
+        if (saved) {
+          const parsed = parseFlatText(saved.en || saved.zh);
+          if (parsed.size > 0) childWorks = parsed;
+        }
+      }
 
       // --- Plan Areas (English + Chinese) — compute first so we can append "Next week" to summary ---
       const planAreas: Record<string, string> = {};
