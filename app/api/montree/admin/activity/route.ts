@@ -265,7 +265,7 @@ export async function GET(request: NextRequest) {
 
       const daysWithoutActivity = lastActivityDate
         ? Math.floor((now.getTime() - lastActivityDate.getTime()) / (24 * 60 * 60 * 1000))
-        : 999; // Very high number if never had activity
+        : -1; // -1 means never had activity (no baseline data)
 
       studentCoverageMap.set(student.id, {
         child_id: student.id,
