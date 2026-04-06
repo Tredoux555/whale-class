@@ -168,10 +168,10 @@ export async function GET(request: NextRequest) {
         .eq('doc_type', 'summary')
         .is('area', null),
 
-      // All curriculum works (name → area_key for parsing flat text)
+      // All curriculum works (name → area_id for parsing flat text)
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, area_key')
+        .select('name, area_id')
         .eq('classroom_id', classroomId),
     ]);
 
@@ -187,11 +187,13 @@ export async function GET(request: NextRequest) {
 
     // Build work name → area lookup from curriculum (for flat-text parsing fallback)
     const workNameToArea = new Map<string, string>();
-    for (const w of (allWorksRes.data || []) as Array<{ name: string; area_key: string }>) {
-      workNameToArea.set(w.name.toLowerCase(), w.area_key);
+    for (const w of (allWorksRes.data || []) as Array<{ name: string; area_id: string }>) {
+      const areaKey = areaIdToKey.get(w.area_id) || resolveArea(w.area_id);
+      if (!areaKey) continue;
+      workNameToArea.set(w.name.toLowerCase(), areaKey);
       // Also store without " - suffix" variants
       const base = w.name.replace(/\s*-\s*.+$/, '').trim();
-      if (base !== w.name) workNameToArea.set(base.toLowerCase(), w.area_key);
+      if (base !== w.name) workNameToArea.set(base.toLowerCase(), areaKey);
     }
 
     // Build existing saved notes by child (flat-text fallback source)
@@ -364,10 +366,11 @@ export async function GET(request: NextRequest) {
     if (workIds.length > 0) {
       const { data: worksData } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, name_zh, area_key')
+        .select('id, name, name_zh, area_id')
         .in('id', workIds);
-      for (const w of (worksData || []) as Array<{ id: string; name: string; name_zh: string | null; area_key: string }>) {
-        workIdToName.set(w.id, { name: w.name, name_zh: w.name_zh, area: w.area_key });
+      for (const w of (worksData || []) as Array<{ id: string; name: string; name_zh: string | null; area_id: string }>) {
+        const resolvedArea = areaIdToKey.get(w.area_id) || resolveArea(w.area_id);
+        workIdToName.set(w.id, { name: w.name, name_zh: w.name_zh, area: resolvedArea });
       }
     }
 
