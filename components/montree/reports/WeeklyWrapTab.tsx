@@ -5,7 +5,9 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { getSession } from '@/lib/montree/auth';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -79,6 +81,16 @@ const AREA_COLORS: Record<string, { bg: string; text: string }> = {
   cultural: { bg: 'bg-purple-50', text: 'text-purple-700' },
 };
 const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
+
+// ─── WorkWheelPicker types ──────────────────────────────────
+interface PickerWork {
+  id: string;
+  name: string;
+  name_chinese?: string;
+  status: 'not_started' | 'presented' | 'practicing' | 'mastered';
+  sequence: number;
+}
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -168,6 +180,125 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const [narrativeEdits, setNarrativeEdits] = useState<Record<string, string>>({});
   const [editingNarrative, setEditingNarrative] = useState<string | null>(null);
   const [photoEdits, setPhotoEdits] = useState<Record<string, Photo[]>>({});
+
+  // ─── Shelf state ──────────────────────────────────────────
+  const [shelfWorks, setShelfWorks] = useState<Record<string, Array<{ area: string; work: string; work_zh?: string | null; status: string }>>>({});
+  const [wheelPickerOpen, setWheelPickerOpen] = useState(false);
+  const [wheelPickerChildId, setWheelPickerChildId] = useState<string>('');
+  const [wheelPickerShelfIdx, setWheelPickerShelfIdx] = useState<number>(-1);
+  const [wheelPickerArea, setWheelPickerArea] = useState<string>('');
+  const [wheelPickerCurrentWork, setWheelPickerCurrentWork] = useState<string>('');
+  const [wheelPickerWorks, setWheelPickerWorks] = useState<PickerWork[]>([]);
+  const [curriculumCache, setCurriculumCache] = useState<Record<string, PickerWork[]>>({});
+
+  const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
+    not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
+    presented: { label: locale === 'zh' ? '已展示' : 'Presented', bg: 'bg-amber-300', text: 'text-amber-800' },
+    practicing: { label: locale === 'zh' ? '练习中' : 'Practicing', bg: 'bg-blue-400', text: 'text-blue-800' },
+    mastered: { label: locale === 'zh' ? '已掌握' : 'Mastered', bg: 'bg-emerald-400', text: 'text-emerald-800' },
+  };
+
+  const getShelfForChild = (r: ReportResult) => {
+    if (shelfWorks[r.child_id]) return shelfWorks[r.child_id];
+    const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const shelf: Array<{ area: string; work: string; work_zh?: string | null; status: string }> = AREAS.map(area => ({
+      area, work: '', work_zh: null, status: 'not_started',
+    }));
+    for (const rec of r.recommendations) {
+      const canonical = toCanonicalArea(rec.area);
+      const slot = shelf.find(s => s.area === canonical && !s.work);
+      if (slot) {
+        slot.work = rec.work;
+        slot.work_zh = rec.work_zh || null;
+        slot.status = 'presented';
+      }
+    }
+    return shelf;
+  };
+
+  const handleShelfStatusCycle = async (childId: string, idx: number) => {
+    const shelf = shelfWorks[childId] || getShelfForChild(reports.find(r => r.child_id === childId)!);
+    const work = shelf[idx];
+    if (!work.work) return;
+    const currentIdx = STATUS_FLOW.indexOf(work.status as typeof STATUS_FLOW[number]) ?? 0;
+    const nextStatus = STATUS_FLOW[(currentIdx + 1) % STATUS_FLOW.length];
+    const updated = [...shelf];
+    updated[idx] = { ...work, status: nextStatus };
+    setShelfWorks(prev => ({ ...prev, [childId]: updated }));
+    try {
+      const res = await montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId, work_name: work.work, area: work.area, status: nextStatus, is_focus: true }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+    } catch {
+      setShelfWorks(prev => ({ ...prev, [childId]: shelf }));
+    }
+  };
+
+  const openShelfPicker = async (childId: string, shelfIdx: number, area: string, currentWork: string) => {
+    setWheelPickerChildId(childId);
+    setWheelPickerShelfIdx(shelfIdx);
+    setWheelPickerArea(area);
+    setWheelPickerCurrentWork(currentWork);
+    if (curriculumCache[area]) {
+      setWheelPickerWorks(curriculumCache[area]);
+      setWheelPickerOpen(true);
+      return;
+    }
+    try {
+      const session = await getSession();
+      const cid = session?.classroom?.id || classroomId;
+      const url = `/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${cid}`;
+      const res = await montreeApi(url);
+      if (!res.ok) throw new Error('Failed to load works');
+      const data = await res.json();
+      const works = (data.works || []).map((w: Record<string, unknown>, i: number) => ({
+        id: String(w.id), name: String(w.name),
+        name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+        status: 'not_started' as const, sequence: typeof w.sequence === 'number' ? w.sequence : i + 1,
+      }));
+      setCurriculumCache(prev => ({ ...prev, [area]: works }));
+      setWheelPickerWorks(works);
+      setWheelPickerOpen(true);
+    } catch (err) {
+      console.error('Failed to load curriculum works:', err);
+    }
+  };
+
+  const handleShelfPickerSelect = (work: { id: string; name: string; name_chinese?: string; status?: string; sequence?: number }, _status: string) => {
+    const childId = wheelPickerChildId;
+    const idx = wheelPickerShelfIdx;
+    if (!childId || idx < 0) return;
+    const report = reports.find(r => r.child_id === childId);
+    if (!report) return;
+    const shelf = shelfWorks[childId] || getShelfForChild(report);
+    const updated = [...shelf];
+    updated[idx] = { ...updated[idx], work: work.name, work_zh: work.name_chinese || null, status: 'presented' };
+    setShelfWorks(prev => ({ ...prev, [childId]: updated }));
+    setWheelPickerOpen(false);
+  };
+
+  const handleRefreshPickerWorks = async () => {
+    const area = wheelPickerArea;
+    const session = await getSession();
+    const cid = session?.classroom?.id || classroomId;
+    try {
+      const res = await montreeApi(`/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${cid}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const works = (data.works || []).map((w: Record<string, unknown>, i: number) => ({
+        id: String(w.id), name: String(w.name),
+        name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+        status: 'not_started' as const, sequence: typeof w.sequence === 'number' ? w.sequence : i + 1,
+      }));
+      setCurriculumCache(prev => ({ ...prev, [area]: works }));
+      setWheelPickerWorks(works);
+    } catch (err) {
+      console.error('Failed to refresh picker works:', err);
+    }
+  };
 
   // ─── Fetch ────────────────────────────────────────────────
 
@@ -507,9 +638,47 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                 {/* Expanded details */}
                 {isExpanded && (
                   <div className="px-3 pb-3 border-t border-gray-100 space-y-3">
+                    {/* ── Guru Weekly Summary ── */}
+                    {(() => {
+                      // Build a concise Montessori-perspective summary
+                      const activeAreas = areaEntries.map(e => getAreaLabel(e.area));
+                      const missingAreas = AREA_ORDER
+                        .filter(a => !areaEntries.some(e => e.area === a))
+                        .map(a => getAreaLabel(a));
+                      const totalWk = r.parent_works.length;
+                      const insight = r.key_insight ? cleanUUIDs(r.key_insight) : null;
+
+                      // Build a short guru-style observation
+                      let guruSummary = '';
+                      if (insight) {
+                        guruSummary = insight;
+                      } else if (totalWk > 0) {
+                        if (locale === 'zh') {
+                          guruSummary = `${firstName} 本周参与了 ${totalWk} 项工作，涵盖${activeAreas.join('、')}。`;
+                          if (missingAreas.length > 0 && missingAreas.length <= 3) {
+                            guruSummary += `${missingAreas.join('、')}领域本周缺少记录。`;
+                          }
+                        } else {
+                          guruSummary = `${firstName} engaged with ${totalWk} work${totalWk > 1 ? 's' : ''} this week across ${activeAreas.join(', ')}.`;
+                          if (missingAreas.length > 0 && missingAreas.length <= 3) {
+                            guruSummary += ` No documented engagement in ${missingAreas.join(', ')}.`;
+                          }
+                        }
+                      }
+
+                      return guruSummary ? (
+                        <div className="mt-2 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-3 border border-violet-100">
+                          <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-wider mb-1">
+                            {locale === 'zh' ? '本周观察' : "This Week's Observation"}
+                          </p>
+                          <p className="text-xs text-gray-700 leading-relaxed">{guruSummary}</p>
+                        </div>
+                      ) : null;
+                    })()}
+
                     {/* Works as chips */}
                     {areaEntries.length > 0 && (
-                      <div className="mt-2 space-y-2">
+                      <div className="space-y-2">
                         {areaEntries.map(({ area, works }) => (
                           <div key={area}>
                             <div className="flex items-center gap-1.5 mb-1">
@@ -544,13 +713,59 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       </div>
                     )}
 
-                    {/* Recommendations */}
-                    {r.recommendations.length > 0 && (
-                      <p className="text-[11px] text-gray-500 italic leading-relaxed">
-                        {locale === 'zh' ? '建议：' : 'Suggestion: '}
-                        {r.recommendations.map(rec => (locale === 'zh' && rec.work_zh) ? rec.work_zh : rec.work).join(', ')}
-                      </p>
-                    )}
+                    {/* ── Next Week's Focus Shelf ── */}
+                    {(() => {
+                      const shelf = getShelfForChild(r);
+                      return (
+                        <div className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100">
+                          <h3 className="font-bold text-gray-800 text-xs mb-2">
+                            {locale === 'zh' ? '下周重点' : "Next Week's Focus"}
+                          </h3>
+                          <div className="space-y-1.5">
+                            {shelf.map((item, idx) => {
+                              const statusCfg = STATUS_CONFIG[item.status] || STATUS_CONFIG.not_started;
+                              return (
+                                <div
+                                  key={`${r.child_id}-shelf-${item.area}`}
+                                  className="flex items-center gap-2.5 p-2 rounded-xl bg-gray-50"
+                                >
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); openShelfPicker(r.child_id, idx, item.area, item.work); }}
+                                    className="flex-shrink-0"
+                                  >
+                                    <AreaBadge area={item.area} size="md" />
+                                  </button>
+                                  <button
+                                    className="flex-1 text-left min-w-0"
+                                    onClick={(e) => { e.stopPropagation(); openShelfPicker(r.child_id, idx, item.area, item.work); }}
+                                  >
+                                    {item.work ? (
+                                      <p className="font-medium text-gray-800 text-xs truncate">
+                                        {(locale === 'zh' && item.work_zh) ? item.work_zh : item.work}
+                                      </p>
+                                    ) : (
+                                      <p className="font-medium text-gray-400 text-xs italic">
+                                        {locale === 'zh' ? '点击选择' : 'Tap to select'}
+                                      </p>
+                                    )}
+                                  </button>
+                                  {item.work ? (
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleShelfStatusCycle(r.child_id, idx); }}
+                                      className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all active:scale-90 ${statusCfg.bg} ${statusCfg.text}`}
+                                    >
+                                      {statusCfg.label}
+                                    </button>
+                                  ) : (
+                                    <span className="w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-[10px]">○</span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -559,106 +774,143 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {/* ═══ PARENT REPORTS — continuous scroll ═══ */}
+      {/* ═══ PARENT REPORTS — beautiful, exactly as parents will see ═══ */}
       {subView === 'parents' && reports.length > 0 && (
-        <div className="divide-y divide-gray-100">
+        <div className="space-y-0">
           {sortedReports.map(r => {
             const firstName = r.child_name.split(' ')[0];
             const narrative = getNarrative(r);
             const photos = getPhotos(r);
             const isEditing = editingNarrative === r.child_id;
-            const hasFlagIssue = r.flags_count > 0;
 
             return (
-              <div key={r.child_id} className={`px-4 py-5 ${hasFlagIssue ? 'bg-amber-50/30' : ''}`}>
-                {/* Child header */}
-                <div className="flex items-center gap-3 mb-3">
-                  {selectionMode && (
-                    <button
-                      onClick={() => setSelectedIds(prev => {
-                        const next = new Set(prev);
-                        if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
-                        return next;
-                      })}
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[11px] ${selectedIds.has(r.child_id) ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
-                    >
-                      {selectedIds.has(r.child_id) && '✓'}
-                    </button>
-                  )}
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 ${hasFlagIssue ? 'bg-gradient-to-br from-amber-400 to-amber-500' : 'bg-gradient-to-br from-emerald-500 to-teal-600'}`}>
-                    {firstName.charAt(0)}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 text-sm">{r.child_name}</p>
-                    <p className="text-[10px] text-gray-400">
-                      📸 {photos.length}
-                      {r.parent_status === 'sent' && <span className="ml-2 text-emerald-600">{locale === 'zh' ? '已发送' : 'Sent'}</span>}
-                    </p>
-                  </div>
-                  {/* Edit narrative toggle */}
-                  {narrative && (
-                    <button
-                      onClick={() => {
-                        if (isEditing) { setEditingNarrative(null); }
-                        else {
-                          setEditingNarrative(r.child_id);
-                          if (narrativeEdits[r.child_id] === undefined) {
-                            setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
+              <div key={r.child_id} className="bg-white">
+                {/* ── Child Header — elegant, warm ── */}
+                <div className="px-5 pt-8 pb-4">
+                  <div className="flex items-center gap-3">
+                    {selectionMode && (
+                      <button
+                        onClick={() => setSelectedIds(prev => {
+                          const next = new Set(prev);
+                          if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
+                          return next;
+                        })}
+                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[11px] ${selectedIds.has(r.child_id) ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
+                      >
+                        {selectedIds.has(r.child_id) && '✓'}
+                      </button>
+                    )}
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+                      {firstName.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <h2 className="font-bold text-gray-900 text-lg">{r.child_name}</h2>
+                      <p className="text-xs text-gray-400">
+                        {weekDisplay}
+                        {r.parent_status === 'sent' && <span className="ml-2 text-emerald-600 font-medium">{locale === 'zh' ? '✓ 已发送' : '✓ Sent'}</span>}
+                      </p>
+                    </div>
+                    {narrative && (
+                      <button
+                        onClick={() => {
+                          if (isEditing) { setEditingNarrative(null); }
+                          else {
+                            setEditingNarrative(r.child_id);
+                            if (narrativeEdits[r.child_id] === undefined) {
+                              setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
+                            }
                           }
-                        }
-                      }}
-                      className="text-[10px] text-emerald-600 font-medium"
-                    >
-                      {isEditing ? (locale === 'zh' ? '完成' : 'Done') : (locale === 'zh' ? '编辑' : 'Edit')}
-                    </button>
+                        }}
+                        className="text-xs text-emerald-600 font-medium px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                      >
+                        {isEditing ? (locale === 'zh' ? '完成' : 'Done') : (locale === 'zh' ? '编辑' : 'Edit')}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* ── Narrative Introduction — warm summary for parents ── */}
+                <div className="px-5 pb-4">
+                  {narrative ? (
+                    isEditing ? (
+                      <textarea
+                        value={narrativeEdits[r.child_id] ?? narrative}
+                        onChange={e => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
+                        className="w-full border border-gray-200 rounded-xl p-4 text-[15px] text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[120px] resize-y"
+                      />
+                    ) : (
+                      <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100">
+                        <p className="text-[15px] text-gray-700 leading-[1.8] tracking-wide">{narrative}</p>
+                      </div>
+                    )
+                  ) : (
+                    <div className="bg-gray-50 rounded-2xl p-5 border border-dashed border-gray-200">
+                      <p className="text-sm text-gray-400 italic text-center">
+                        {locale === 'zh' ? '点击"生成"创建家长报告' : 'Click "Generate" to create the parent report'}
+                      </p>
+                    </div>
                   )}
                 </div>
 
-                {/* Narrative */}
-                {narrative ? (
-                  isEditing ? (
-                    <textarea
-                      value={narrativeEdits[r.child_id] ?? narrative}
-                      onChange={e => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg p-3 text-sm text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[80px] resize-y mb-3"
-                    />
-                  ) : (
-                    <div className="border-l-3 border-emerald-300 pl-3 mb-3">
-                      <p className="text-sm text-gray-700 leading-relaxed italic">&ldquo;{narrative}&rdquo;</p>
-                    </div>
-                  )
-                ) : (
-                  <p className="text-xs text-gray-400 italic mb-3">
-                    {locale === 'zh' ? '还没有生成家长叙述' : 'No parent narrative generated yet'}
-                  </p>
-                )}
-
-                {/* Photos — horizontal row */}
+                {/* ── Photos — large, vertical, with educational context ── */}
                 {photos.length > 0 ? (
-                  <div className="flex gap-2 overflow-x-auto pb-2">
+                  <div className="px-5 pb-6 space-y-5">
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                      {locale === 'zh'
+                        ? `${firstName} 的学习瞬间`
+                        : `${firstName}'s Learning Moments`}
+                    </p>
                     {photos.map(photo => {
                       const matchedWork = photo.work_name
-                        ? r.parent_works.find(w => w.name.toLowerCase().includes(photo.work_name!.toLowerCase()) || photo.work_name!.toLowerCase().includes(w.name.toLowerCase()))
+                        ? r.parent_works.find(w =>
+                            w.name.toLowerCase().includes(photo.work_name!.toLowerCase()) ||
+                            photo.work_name!.toLowerCase().includes(w.name.toLowerCase())
+                          )
                         : undefined;
-                      const areaColor = matchedWork ? (AREA_COLORS[toCanonicalArea(matchedWork.area)] || AREA_COLORS.cultural) : { bg: 'bg-gray-50', text: 'text-gray-600' };
+                      const areaColor = matchedWork
+                        ? (AREA_COLORS[toCanonicalArea(matchedWork.area)] || AREA_COLORS.cultural)
+                        : { bg: 'bg-gray-50', text: 'text-gray-600' };
+                      const workDisplay = (locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : (photo.work_name || '');
 
                       return (
-                        <div key={photo.id} className="flex-shrink-0 w-32 rounded-lg overflow-hidden border border-gray-200 relative group">
-                          <img src={photo.url} alt={photo.work_name || ''} className="w-32 h-24 object-cover bg-gray-100" loading="lazy" />
-                          {/* Delete button */}
-                          <button
-                            onClick={() => handleRemovePhoto(r.child_id, photo.id)}
-                            className="absolute top-1 right-1 w-5 h-5 bg-red-500/80 rounded-full flex items-center justify-center text-white text-[10px] opacity-0 group-hover:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shadow"
-                          >✕</button>
-                          {photo.work_name && (
-                            <div className="px-1.5 py-1">
-                              <p className="text-[10px] font-medium text-gray-700 truncate">
-                                {(locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : photo.work_name}
-                              </p>
-                              {matchedWork && (
-                                <span className={`text-[8px] px-1 py-0.5 rounded-full ${areaColor.bg} ${areaColor.text}`}>
-                                  {getAreaLabel(toCanonicalArea(matchedWork.area))}
-                                </span>
+                        <div key={photo.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative">
+                          {/* Large photo */}
+                          <div className="relative">
+                            <img
+                              src={photo.url}
+                              alt={workDisplay}
+                              className="w-full aspect-[4/3] object-cover bg-gray-100"
+                              loading="lazy"
+                            />
+                            {/* Delete button — teacher only, hover */}
+                            <button
+                              onClick={() => handleRemovePhoto(r.child_id, photo.id)}
+                              className="absolute top-3 right-3 w-7 h-7 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                            >✕</button>
+                          </div>
+
+                          {/* Educational context below photo */}
+                          {(photo.work_name || matchedWork) && (
+                            <div className="px-4 py-3 bg-white">
+                              <div className="flex items-start gap-2">
+                                {matchedWork && (
+                                  <span className={`flex-shrink-0 mt-0.5 text-[10px] px-2 py-0.5 rounded-full font-medium ${areaColor.bg} ${areaColor.text}`}>
+                                    {getAreaLabel(toCanonicalArea(matchedWork.area))}
+                                  </span>
+                                )}
+                                <h4 className="font-semibold text-gray-800 text-sm leading-snug">
+                                  {workDisplay}
+                                </h4>
+                              </div>
+                              {matchedWork?.parent_description && (
+                                <p className="text-sm text-gray-600 leading-relaxed mt-2">
+                                  {matchedWork.parent_description}
+                                </p>
+                              )}
+                              {matchedWork?.why_it_matters && (
+                                <p className="text-xs text-gray-500 leading-relaxed mt-1.5 italic">
+                                  {matchedWork.why_it_matters}
+                                </p>
                               )}
                             </div>
                           )}
@@ -667,10 +919,15 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                     })}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-300 italic">
-                    {locale === 'zh' ? '本周没有拍摄照片' : `No photos captured for ${firstName} this week`}
-                  </p>
+                  <div className="px-5 pb-6">
+                    <p className="text-sm text-gray-300 italic text-center py-6">
+                      {locale === 'zh' ? '本周没有拍摄照片' : `No photos captured for ${firstName} this week`}
+                    </p>
+                  </div>
                 )}
+
+                {/* Divider between children */}
+                <div className="mx-8 border-b border-gray-100" />
               </div>
             );
           })}
@@ -698,6 +955,17 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           </div>
         </div>
       )}
+
+      {/* WorkWheelPicker modal for shelf */}
+      <WorkWheelPicker
+        isOpen={wheelPickerOpen}
+        onClose={() => setWheelPickerOpen(false)}
+        area={wheelPickerArea}
+        works={wheelPickerWorks}
+        currentWorkName={wheelPickerCurrentWork}
+        onSelectWork={handleShelfPickerSelect}
+        onWorkAdded={handleRefreshPickerWorks}
+      />
     </div>
   );
 }
