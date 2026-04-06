@@ -243,7 +243,7 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
     }
   ],
 
-  "key_insight": "The most important paragraph. Synthesize everything into 3-5 sentences that capture the essence of this child's week. Start with the big picture — is this child on track? What's the developmental story? Then give the headline recommendation: 'Taking all of this into consideration, I recommend focusing on [specific work] in [area] because [developmental reason], [specific work] in [area] because [reason], and [specific work] in [area] because [reason] over the coming week.' This should read like the kind of insight that makes a teacher say 'wow, that's exactly right.'"
+  "key_insight": "A brief, actionable teacher summary — 2-3 sentences MAX. Sentence 1: Quick status read (on track / needs attention / thriving + one-line why). Sentence 2-3: Specific shelf action items for next week — name exact works to present or continue, referencing the recommendations above. Write like a consultant's sticky note, not an essay. Example tone: '${firstName} is building strong concentration through repetition in practical life — on track. Next week: present Color Box 2 (ready after mastering Box 1), continue Sand Tray Writing daily, introduce Spindle Boxes to bridge into math.' No Montessori lectures, no developmental philosophy — the teacher already knows that. Just status + next moves."
 }
 
 ═══ RULES ═══
@@ -591,7 +591,7 @@ export async function generateTeacherReport(
             },
             key_insight: {
               type: 'string',
-              description: 'The most important 3-5 sentence synthesis. End with specific recommendations for the coming week.',
+              description: 'Brief 2-3 sentence actionable summary. Sentence 1: quick status (on track/needs attention/thriving + why). Sentences 2-3: specific shelf actions for next week (exact work names). No essays — write like a consultant sticky note.',
             },
           },
           required: [
