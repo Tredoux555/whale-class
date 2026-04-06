@@ -203,18 +203,51 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Parse flat-paragraph text into area → [work names]
-    // Input: "did X, Y, Z (Variant), and W this week. Next week: A."
-    // Output: Map<area, string[]>
-    function parseFlatText(text: string): Map<string, string[]> {
+    // Parse saved text into area → [work names]
+    // Handles TWO formats:
+    //   1. Flat: "did X, Y, Z (Variant), and W this week. Next week: A."
+    //   2. Already grouped: "Practical Life: X, Y\nSensorial: Z"
+    function parseSavedText(text: string): Map<string, string[]> {
       const result = new Map<string, string[]>();
       if (!text) return result;
-      // Strip "did " prefix and " this week." / " Next week:..." suffix
+
+      // Detect already-grouped format (lines starting with area labels)
+      const areaLabelToKey: Record<string, string> = {};
+      for (const [key, labels] of Object.entries(AREA_LABELS)) {
+        areaLabelToKey[labels.en.toLowerCase()] = key;
+        areaLabelToKey[labels.zh] = key;
+      }
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      let isGrouped = false;
+      for (const line of lines) {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx > 0 && colonIdx < 20) {
+          const label = line.slice(0, colonIdx).trim().toLowerCase();
+          if (areaLabelToKey[label]) { isGrouped = true; break; }
+        }
+      }
+
+      if (isGrouped) {
+        // Already area-grouped — parse each "Area: work1, work2" line
+        for (const line of lines) {
+          if (line.toLowerCase().startsWith('next week') || line.startsWith('下周')) continue;
+          const colonIdx = line.indexOf(':');
+          if (colonIdx <= 0) continue;
+          const label = line.slice(0, colonIdx).trim().toLowerCase();
+          const areaKey = areaLabelToKey[label];
+          if (!areaKey) continue;
+          // Split works by comma or 、
+          const worksStr = line.slice(colonIdx + 1).trim();
+          const works = worksStr.split(/[,、]\s*/).map(s => s.trim()).filter(Boolean);
+          if (works.length > 0) result.set(areaKey, works);
+        }
+        return result;
+      }
+
+      // Flat paragraph format: "did X, Y, and Z this week. Next week: ..."
       let body = text.replace(/^did\s+/i, '').replace(/\s+this\s+week\.?\s*(Next\s+week:.*)?\s*$/i, '');
-      // Split by ", " and " and " to get individual work names
       const parts = body.split(/,\s+(?:and\s+)?|\s+and\s+/).map(s => s.trim()).filter(Boolean);
       for (const part of parts) {
-        // Try exact match, then base name (without " - suffix" or " (variant)")
         const lower = part.toLowerCase();
         let area = workNameToArea.get(lower);
         if (!area) {
@@ -222,7 +255,6 @@ export async function GET(request: NextRequest) {
           area = workNameToArea.get(base);
         }
         if (!area) {
-          // Fuzzy: try substring match against all known works
           for (const [name, aKey] of workNameToArea) {
             if (lower.includes(name) || name.includes(lower)) {
               area = aKey;
@@ -388,7 +420,7 @@ export async function GET(request: NextRequest) {
       if (!childWorks || childWorks.size === 0) {
         const saved = existingNotes.get(child.id);
         if (saved) {
-          const parsed = parseFlatText(saved.en || saved.zh);
+          const parsed = parseSavedText(saved.en || saved.zh);
           if (parsed.size > 0) childWorks = parsed;
         }
       }
