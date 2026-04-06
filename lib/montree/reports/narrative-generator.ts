@@ -65,9 +65,11 @@ function buildNarrativePrompt(input: NarrativeInput): string {
     .filter(p => p.status === 'active')
     .map(p => p.period_name);
 
-  // Build work list with descriptions
+  // Build rich work list with parent descriptions and why_it_matters
   const workLines = photos.map(p => {
     const parts = [`- ${p.work_name} (${p.area}, ${p.status})`];
+    if (p.parent_description) parts.push(`  What this work is: ${p.parent_description}`);
+    if (p.why_it_matters) parts.push(`  Why it matters: ${p.why_it_matters}`);
     if (p.caption) parts.push(`  Teacher note: ${p.caption}`);
     return parts.join('\n');
   }).join('\n');
@@ -78,7 +80,7 @@ function buildNarrativePrompt(input: NarrativeInput): string {
     ...analysis.yellow_flags.map(f => `YELLOW: ${f.issue}`),
   ];
 
-  return `You are writing a warm, personal weekly update introduction for a parent about their child's Montessori week.
+  return `You are ${firstName}'s Montessori teacher writing a personal weekly letter to their parent. You watched these moments happen. You know what they mean developmentally. Your job is to help this parent — who may know nothing about Montessori — truly understand what their child is learning and WHY it matters for their growth.
 
 OUTPUT LANGUAGE: ${lang}
 CHILD: ${firstName}, age ${child.age}
@@ -93,27 +95,36 @@ ${activePeriods.length > 0 ? `- Active sensitive periods: ${activePeriods.join('
 ${analysis.repetition_highlights.length > 0 ? `- Deep focus works: ${analysis.repetition_highlights.map(h => `${h.work} (${h.count}x)`).join(', ')}` : ''}
 ${concerns.length > 0 ? `- Notes: ${concerns.join('; ')}` : ''}
 
-DOCUMENTED WORKS:
+DOCUMENTED WORKS (with educational context):
 ${workLines}
 
-${previousNarrative ? `PREVIOUS WEEK'S SUMMARY (for continuity):\n${previousNarrative}\n` : ''}
+${previousNarrative ? `PREVIOUS WEEK'S LETTER (for continuity — reference or build on it naturally):\n${previousNarrative}\n` : ''}
 TASK:
-Write a 3-5 sentence introduction paragraph for a parent who may not know anything about Montessori education. This paragraph opens their weekly photo update.
+Write a warm, personal narrative letter (3-4 short paragraphs, roughly 200-300 words) that this parent will read alongside their child's weekly photos.
 
-Rules:
-- Address the parent warmly but don't be saccharine
-- Mention ${firstName} by name
-- Highlight 1-2 specific works or moments that stood out
-- Connect the activities to real developmental skills the parent will understand (e.g., "building concentration", "developing fine motor control", "learning to read")
-- If there's a sensitive period detected, weave it in naturally without jargon
-- If the child mastered something, celebrate it specifically
-- End with something forward-looking or encouraging
-- Keep it under 100 words
-- No emojis, no headers, no bullet points — just warm prose
-- Write it as if you are the teacher who watched these moments happen
+STRUCTURE:
+1. Opening (2-3 sentences): A warm, specific observation about ${firstName}'s week. Don't say "this week" generically — lead with a moment that captures who this child was this week. What stood out? What would make a parent smile?
 
-Return ONLY the paragraph, nothing else.
-${locale === 'zh' ? '\n⚠️ 关键要求：你必须完全用中文（普通话）书写这段话。不要使用任何英文。用温暖的中文语气给家长写信。' : ''}`;
+2. The Learning Story (4-6 sentences): Pick 2-3 of the most meaningful works and explain what ${firstName} was actually doing and WHY it matters. Use the "What this work is" and "Why it matters" data provided above — weave it into your own words naturally. Help the parent see that when their child pours water between jugs, they're building the precise hand control they'll need to write. When they trace sandpaper letters, they're training muscle memory that makes reading feel natural. Connect the classroom to real development the parent can observe at home.
+
+3. The Bigger Picture (2-3 sentences): Step back and paint the developmental arc. ${activePeriods.length > 0 ? `Weave in the sensitive period(s) naturally — explain what it means that ${firstName} is drawn to certain kinds of work right now, and that this window won't last forever.` : 'Connect the week\'s work to the bigger developmental journey.'} If the child mastered something, help the parent feel the significance. If they repeated something many times, explain why repetition is the sign of deep learning, not boredom.
+
+4. Closing (1-2 sentences): Forward-looking, encouraging, warm. Leave the parent feeling connected to their child's classroom life and excited about what's coming next.
+
+VOICE & TONE RULES:
+- Write as if you're a thoughtful teacher who genuinely loves this child, talking to the parent over coffee
+- Be warm but never saccharine — no "little one" or "precious moments" or empty superlatives
+- Never use the word "journey" — find fresher language
+- Use ${firstName}'s name 2-3 times naturally, not in every sentence
+- No emojis, no headers, no bullet points, no bold text — just flowing prose paragraphs
+- Don't list works mechanically ("${firstName} did X, Y, and Z") — weave them into a story
+- Every work you mention should connect to WHY it matters — if you can't explain why, don't mention it
+- If there are concerns/flags, acknowledge growth areas gently and constructively
+- Don't use Montessori jargon (no "normalization", "sensitive period", "absorbent mind" etc.) — translate everything into parent language
+- This should read like a letter from someone who knows and cares about this specific child, not a generated report
+
+Return ONLY the narrative text, nothing else. No subject line, no greeting like "Dear Parent", no sign-off — just the body paragraphs.
+${locale === 'zh' ? '\n⚠️ 关键要求：你必须完全用中文（普通话）书写。不要使用任何英文。用温暖自然的中文语气写信，像一位真正关心孩子的老师在和家长聊天。避免翻译腔，用地道的中文表达。' : ''}`;
 }
 
 // ── Fallback (template-based, no API needed) ──
@@ -122,37 +133,59 @@ function generateTemplateFallback(input: NarrativeInput): string {
   const firstName = input.child.name.split(' ')[0];
   const photoCount = input.photos.length;
   const masteredCount = input.photos.filter(p => p.status === 'mastered').length;
+  const practicingCount = input.photos.filter(p => p.status === 'practicing').length;
   const areaSet = new Set(input.photos.map(p => p.area).filter(Boolean));
   const areas = Array.from(areaSet);
 
+  // Pick a highlighted work to feature
+  const featured = input.photos.find(p => p.parent_description) || input.photos[0];
+
   if (input.locale === 'zh') {
     const parts: string[] = [];
-    parts.push(`${firstName}度过了充实的一周！`);
+    parts.push(`${firstName}这周在教室里度过了充实而有意义的一周。`);
     if (photoCount > 0) {
-      parts.push(`我们记录了${photoCount}项活动。`);
+      parts.push(`我们记录了${photoCount}个专注学习的瞬间。`);
+    }
+    if (featured?.parent_description) {
+      parts.push(`\n\n其中特别值得一提的是${featured.work_name}——${featured.parent_description}`);
+      if (featured.why_it_matters) {
+        parts.push(featured.why_it_matters);
+      }
     }
     if (masteredCount > 0) {
-      parts.push(`特别值得庆祝的是，${firstName}掌握了${masteredCount}项新技能。`);
+      parts.push(`\n\n${firstName}这周掌握了${masteredCount}项新技能，这代表着真正的成长和进步。`);
+    }
+    if (practicingCount > 0) {
+      parts.push(`还有${practicingCount}项活动正在反复练习中——这种重复不是无聊，而是深度学习的标志。`);
     }
     if (areas.length >= 2) {
-      parts.push(`${firstName}在多个领域都有探索，展现了强烈的学习热情。`);
+      parts.push(`${firstName}在${areas.length}个不同领域都有探索，展现了旺盛的求知欲和学习热情。`);
     }
-    parts.push('请浏览以下照片，了解详细情况。');
+    parts.push('\n\n请浏览下面的照片，感受这些珍贵的学习时刻。');
     return parts.join('');
   }
 
   const parts: string[] = [];
-  parts.push(`${firstName} had a wonderful week in the classroom!`);
+  parts.push(`${firstName} had a meaningful week in the classroom.`);
   if (photoCount > 0) {
-    parts.push(`We captured ${photoCount} moments of focused learning.`);
+    parts.push(`We captured ${photoCount} moments of focused, purposeful work.`);
+  }
+  if (featured?.parent_description) {
+    parts.push(`\n\nOne highlight was ${featured.work_name} — ${featured.parent_description}`);
+    if (featured.why_it_matters) {
+      parts.push(featured.why_it_matters);
+    }
   }
   if (masteredCount > 0) {
-    parts.push(`${firstName} mastered ${masteredCount} new ${masteredCount === 1 ? 'skill' : 'skills'} — a real accomplishment.`);
+    parts.push(`\n\n${firstName} mastered ${masteredCount} new ${masteredCount === 1 ? 'skill' : 'skills'} this week, which represents real growth and accomplishment.`);
+  }
+  if (practicingCount > 0) {
+    parts.push(`${firstName} is also deep in practice with ${practicingCount} other ${practicingCount === 1 ? 'activity' : 'activities'} — this kind of repetition is the hallmark of genuine learning taking root.`);
   }
   if (areas.length >= 2) {
-    parts.push(`${firstName} explored activities across ${areas.length} different areas, showing a healthy curiosity.`);
+    parts.push(`Across ${areas.length} different areas of the classroom, ${firstName} showed a healthy curiosity and willingness to explore.`);
   }
-  parts.push('Scroll through the photos below to see the details.');
+  parts.push('\n\nScroll through the photos below to see these moments for yourself.');
   return parts.join(' ');
 }
 
@@ -190,7 +223,7 @@ export async function generateWeeklyNarrative(
 
     const response = await anthropic.messages.create({
       model: AI_MODEL,
-      max_tokens: 300,
+      max_tokens: 800,
       system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
     });

@@ -68,17 +68,10 @@ Haiku's Chinese JSON corruption issue is permanently solved by two changes:
 7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `parent_description_zh`/`why_it_matters_zh`.
 
 **What STILL NEEDS FIXING (next session):**
-1. **Teacher report quality** — Still too structured/clinical. Needs narrative paragraph format. See suggested approach below.
+1. ~~**Teacher report quality**~~ — ✅ FIXED (Apr 6 session 2). Content quality was "swapped" — teacher `key_insight` was producing rich Montessori essays (parent-appropriate), parent `narrative` was producing casual 3-5 sentence summaries (teacher-appropriate). Both prompts rewritten. See details below.
 2. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
 3. **Teacher summary line still shows English work names** — The "需要关注" section shows e.g. "感官: Constructive Triangles - Rectangular Box · 语言: Chalk Board Writing - No lines, Chalkboard Writing" — area labels are Chinese but work names are English. The review API needs to return Chinese work names for the teacher summary works list.
-4. **Test Sonnet + tool_use generation** — Verify teacher reports generate correctly with new approach (commit `760d7c4c`).
-
-**Suggested approach for next session:**
-- The teacher report generator prompt (`lib/montree/reports/teacher-report-generator.ts`) defines a massive JSON schema that the AI fills out. Two options:
-  - **Option A (simpler):** Keep the structured JSON for data but add a `teacher_narrative` field — a single paragraph summary like the parent narrative. Display that prominently, collapse the structured data behind a "Details" toggle.
-  - **Option B (cleaner):** Redesign the teacher report to output prose like the parent report, with the structured analysis stored separately for the intelligence layer.
-- Fix "999 days" — add a guard in the teacher report prompt or data preparation step.
-- Fix teacher summary work names — use `name_zh` in review API response for works list.
+4. **Test new prompts end-to-end** — Generate reports and verify: parent narratives are rich/educational (200-300 words), teacher key_insight is concise/actionable (2-3 sentences).
 
 **What WORKS end-to-end (tested Apr 5):**
 - ✅ Weekly Wrap generation (streaming, all 19 children)
@@ -109,8 +102,8 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - `app/api/montree/reports/weekly-wrap/send/route.ts` — POST publish + email
 - `app/montree/dashboard/weekly-wrap/page.tsx` — review UI client (~1500 lines). Two tabs: Teacher Summary (with interactive shelf, WorkWheelPicker, approve/push) + Parent Reports (edit narrative, reorder photos, crop, send). **Selective generation**: "Select" mode lets teachers pick specific children to regenerate. Generate/Regenerate All button in header with streaming progress bar. Invite Parents link in bottom bar.
 - `components/montree/reports/WeeklyWrapCard.tsx` — dashboard card (NO LONGER used on dashboard — removed from Teacher Tools. Still exists as component for potential reuse.)
-- `lib/montree/reports/teacher-report-generator.ts` — **SONNET** teacher report (max_tokens: 8192). Uses `tool_use` structured output — API handles JSON serialization (no raw JSON from model). Has `repairAndParseJSON()` as legacy fallback. System prompt in English even for Chinese output.
-- `lib/montree/reports/narrative-generator.ts` — **SONNET** parent narrative
+- `lib/montree/reports/teacher-report-generator.ts` — **SONNET** teacher report (max_tokens: 8192). Uses `tool_use` structured output — API handles JSON serialization (no raw JSON from model). Has `repairAndParseJSON()` as legacy fallback. System prompt in English even for Chinese output. `key_insight` field prompt rewritten (Apr 6) to produce concise 2-3 sentence actionable summary (status + shelf actions), not Montessori essays.
+- `lib/montree/reports/narrative-generator.ts` — **SONNET** parent narrative (max_tokens: 800, was 300). Prompt rewritten (Apr 6) from "3-5 sentence intro under 100 words" to rich 200-300 word personal letter: opening moment → learning story with educational context per work → bigger developmental picture → warm close. Uses `parent_description` and `why_it_matters` data from photos. Template fallback also enriched.
 - `app/api/montree/weekly-admin-docs/auto-fill/route.ts` — pulls from weekly_reports. Has `resolveArea()` for UUID→canonical key mapping. Returns `planAreasZh` alongside `planAreas`. Has `getZhWorkName()` for fuzzy Chinese name lookup.
 - `app/api/montree/weekly-admin-docs/generate/route.ts` — DOCX generation. Locale-aware: uses `chinese_text` for plan area work names when locale is zh.
 - `lib/montree/weekly-admin/doc-generator.ts` — DOCX builder (multilineParagraphs splits on \n)
@@ -126,6 +119,12 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 - **Fuzzy work name matching** (used in 4+ files): strip " - suffix" variants → normalize spaces ("chalk board" → "chalkboard") → substring match for long keys. Pattern: `name.replace(/\s*-\s*.+$/, '').trim()` then `collapsed.replace(/\s+/g, '')`.
 
 ---
+
+**Content Quality Swap Fix — PENDING PUSH (Apr 6 session 2):**
+Parent narrative and teacher key_insight prompts were producing content for the wrong audience. Teacher `key_insight` was writing rich Montessori developmental essays (perfect for parents), while parent `narrative` was writing casual 3-5 sentence summaries (more like teacher notes). Fixed by rewriting both prompts:
+- **`narrative-generator.ts`**: Prompt expanded from "3-5 sentence intro under 100 words" to a structured 200-300 word personal letter (opening moment → learning story explaining 2-3 works with WHY they matter → developmental arc → warm close). max_tokens 300→800. Now uses `parent_description` and `why_it_matters` photo data that was available but underutilized. Voice: "teacher talking to parent over coffee." Template fallback also enriched with educational context.
+- **`teacher-report-generator.ts`**: `key_insight` field prompt rewritten from "3-5 sentence synthesis essay" to "2-3 sentence consultant sticky note" — quick status read (on track/needs attention/thriving) + specific shelf action items naming exact works. Detailed analysis stays in structured fields (`area_analyses`, `sensitive_periods`, etc.). Tool_use schema description also updated.
+- **WeeklyWrapTab.tsx**: (From earlier in this session) Added interactive shelf to Teacher Review, redesigned Parent Reports with large vertical photos + educational context per photo, added guru observation card, fixed AbortController cleanup, fixed `await getSession()` on sync function.
 
 **Full Chinese Localization + JSON Repair — ✅ PUSHED (commits from Apr 5-6 session):**
 Multi-commit session for full bilingual Chinese/English support:
