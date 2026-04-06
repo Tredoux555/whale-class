@@ -12,6 +12,7 @@ import { montreeApi } from '@/lib/montree/api';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
+import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -42,7 +43,7 @@ interface AuditPhoto {
   status: string | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_wrap' | 'teacher_review' | 'parent_reports';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_wrap' | 'weekly_admin' | 'teacher_review' | 'parent_reports';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -1479,13 +1480,14 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  const isWrapZone = zone === 'weekly_wrap';
+  const isWrapZone = zone === 'weekly_wrap' || zone === 'weekly_admin';
 
-  // Zone tab config — Needs Review + Confirmed + Weekly Wrap
+  // Zone tab config — Needs Review + Confirmed | Weekly Wrap + Weekly Admin
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null; bold?: boolean; separator?: boolean }[] = [
     { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
     { key: 'weekly_wrap', label: `📋 ${locale === 'zh' ? '每周总结' : 'Weekly Wrap'}`, color: 'bg-blue-100 text-blue-800', count: null, bold: true, separator: true },
+    { key: 'weekly_admin', label: `📄 ${locale === 'zh' ? '周报文档' : 'Weekly Admin'}`, color: 'bg-indigo-100 text-indigo-800', count: null, bold: true },
   ];
 
   // ─── JSX ───
@@ -1582,8 +1584,15 @@ export default function PhotoAuditPage() {
       </div>
 
       {/* ─── Weekly Wrap (internal Teacher Review + Parent Reports sub-tabs) ─── */}
-      {isWrapZone && classroomIdState && (
+      {zone === 'weekly_wrap' && classroomIdState && (
         <WeeklyWrapTab
+          classroomId={classroomIdState}
+        />
+      )}
+
+      {/* ─── Weekly Admin Docs (Summary + Plan DOCX generation) ─── */}
+      {zone === 'weekly_admin' && classroomIdState && (
+        <WeeklyAdminTab
           classroomId={classroomIdState}
         />
       )}
