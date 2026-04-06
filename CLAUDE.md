@@ -15,6 +15,40 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 6, 2026)
 
+### ⚡ Session 3 Fixes — Parent Reports, Weekly Admin Format, Dictionary (Apr 6, 2026)
+
+**Parent Reports area grouping — ✅ PUSHED:**
+Photos in Parent Reports tab (WeeklyWrapTab.tsx) now grouped by curriculum area in shelf order (`practical_life → sensorial → mathematics → language → cultural → other`). New `ParentPhotosGrouped` component renders area headers with colored pills, groups photos using `toCanonicalArea()`. Replaces flat photo list.
+- **Key file**: `components/montree/reports/WeeklyWrapTab.tsx` — `ParentPhotosGrouped` component (~lines 137-252)
+
+**Weekly Admin summary area-grouped format — ✅ PUSHED (after 7+ iterations):**
+Weekly Summary in Weekly Admin Docs now displays works grouped by area (`Practical Life: X, Y\nSensorial: Z`) instead of flat paragraphs. The core challenge: the auto-fill API depends on Weekly Wrap reports or photos existing for a given week. For older weeks with no Weekly Wrap data, auto-fill returned "No recorded activities" and destroyed existing flat-format notes.
+- **Solution**: Three-tier data source with `parseSavedText()` fallback. If no Weekly Wrap or photo data exists, parses the existing saved flat text, looks up each work's curriculum area, and rebuilds in area-grouped format.
+- **Auto-fill guard**: Only auto-fills when NO saved notes exist (prevents overwriting). `NO_DATA_PHRASES` filter prevents "No recorded activities" from replacing real data.
+- **Key files**: `app/api/montree/weekly-admin-docs/auto-fill/route.ts` (three-tier fallback + `parseSavedText()` dual-format parser), `components/montree/reports/WeeklyAdminTab.tsx` (auto-fill trigger guard)
+- **Pattern — `parseSavedText(text)`**: Detects whether text is already area-grouped (has "Practical Life:" lines) or flat paragraph ("did X, Y, and Z"), parses work names, looks up curriculum areas, returns `Map<area_key, work_names[]>`. Always check format before parsing.
+
+**Dictionary two-row card layout — ✅ PUSHED (2 commits: `c1f7da6d` + `7df8629a`):**
+Word cards changed from single flex-row (`[picture][word][trace][write]`) to two-row stacked card:
+- Top row (`.word-card-top`): picture + written word side by side
+- Bottom row (`.word-card-bottom`): trace word (flex:1) left + free write (flex:1) right
+- Both `makeWordRow()` (standard) and `makeTwoColCard()` (two-column) use this layout
+- `wordsPerPage` reduced to account for taller cards (e.g. A4 default with write: 5, compact: 8)
+- CSS layout overrides (compact, spacious, A5) target both `.word-row` and `.word-card`
+- **Key file**: `public/tools/my-first-dictionary.html`
+
+**Dictionary custom-only mode — ✅ PUSHED:**
+New "Custom words only" checkbox. Auto-checked on Photo Bank import. Filters to only show words with `imgData` (imported/uploaded). Empty state shows "No custom words yet" placeholder with instructions.
+
+**What STILL NEEDS FIXING (next session):**
+1. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
+2. **Teacher summary line still shows English work names** — The "需要关注" section shows English work names with Chinese area labels. Review API needs Chinese work names for teacher summary.
+3. **Test new prompts end-to-end** — Generate reports and verify: parent narratives are rich/educational (200-300 words), teacher key_insight is concise/actionable (2-3 sentences).
+4. **Verify Weekly Admin auto-fill format on production** — Click Auto-fill on a past week and confirm area-grouped format appears.
+5. **Verify dictionary layout on production** — Confirm picture+word top row, trace+write bottom row renders correctly in print.
+
+---
+
 ### ⚡ Photo Audit + Weekly Wrap MERGED (Apr 6, 2026)
 
 **Merged Photo Audit + Weekly Wrap into one page** — Weekly Wrap is now a tab inside Photo Audit (`/montree/dashboard/photo-audit`). Three tabs: Needs Review → Confirmed → Weekly Wrap. Teachers audit photos first, then do weekly wrap in the same page.
@@ -67,11 +101,11 @@ Haiku's Chinese JSON corruption issue is permanently solved by two changes:
 6. ~~**Classroom variant names not matching**~~ — ✅ FIXED. Fuzzy matching (strip " - suffix", normalize spaces) in 4 files.
 7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `parent_description_zh`/`why_it_matters_zh`.
 
-**What STILL NEEDS FIXING (next session):**
-1. ~~**Teacher report quality**~~ — ✅ FIXED (Apr 6 session 2). Content quality was "swapped" — teacher `key_insight` was producing rich Montessori essays (parent-appropriate), parent `narrative` was producing casual 3-5 sentence summaries (teacher-appropriate). Both prompts rewritten. See details below.
-2. **"999 days" in observations** — Red flags say "No work in 999 days" for areas with no baseline data.
-3. **Teacher summary line still shows English work names** — The "需要关注" section shows e.g. "感官: Constructive Triangles - Rectangular Box · 语言: Chalk Board Writing - No lines, Chalkboard Writing" — area labels are Chinese but work names are English. The review API needs to return Chinese work names for the teacher summary works list.
-4. **Test new prompts end-to-end** — Generate reports and verify: parent narratives are rich/educational (200-300 words), teacher key_insight is concise/actionable (2-3 sentences).
+**What was FIXED (next session = session 3):**
+1. ~~**Teacher report quality**~~ — ✅ FIXED (Apr 6 session 2). Content quality was "swapped" — both prompts rewritten.
+2. ~~**Parent Reports flat photo list**~~ — ✅ FIXED (Apr 6 session 3). Photos now grouped by curriculum area.
+3. ~~**Weekly Admin flat format**~~ — ✅ FIXED (Apr 6 session 3). Three-tier fallback with `parseSavedText()`.
+**Still open** — see Session 3 "STILL NEEDS FIXING" above.
 
 **What WORKS end-to-end (tested Apr 5):**
 - ✅ Weekly Wrap generation (streaming, all 19 children)
@@ -120,7 +154,7 @@ Table has MORE columns than originally documented. Full column list: `id, child_
 
 ---
 
-**Content Quality Swap Fix — PENDING PUSH (Apr 6 session 2):**
+**Content Quality Swap Fix — ✅ PUSHED (Apr 6 session 2):**
 Parent narrative and teacher key_insight prompts were producing content for the wrong audience. Teacher `key_insight` was writing rich Montessori developmental essays (perfect for parents), while parent `narrative` was writing casual 3-5 sentence summaries (more like teacher notes). Fixed by rewriting both prompts:
 - **`narrative-generator.ts`**: Prompt expanded from "3-5 sentence intro under 100 words" to a structured 200-300 word personal letter (opening moment → learning story explaining 2-3 works with WHY they matter → developmental arc → warm close). max_tokens 300→800. Now uses `parent_description` and `why_it_matters` photo data that was available but underutilized. Voice: "teacher talking to parent over coffee." Template fallback also enriched with educational context.
 - **`teacher-report-generator.ts`**: `key_insight` field prompt rewritten from "3-5 sentence synthesis essay" to "2-3 sentence consultant sticky note" — quick status read (on track/needs attention/thriving) + specific shelf action items naming exact works. Detailed analysis stays in structured fields (`area_analyses`, `sensitive_periods`, etc.). Tool_use schema description also updated.
