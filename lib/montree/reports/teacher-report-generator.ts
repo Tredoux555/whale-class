@@ -5,6 +5,7 @@
 
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
+import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
 // ── Types ──
 
@@ -303,7 +304,7 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
       area_label: getAreaLabel(area, locale),
       works_count: works.length,
       narrative: locale === 'zh'
-        ? `${firstName}本周在${getAreaLabel(area, locale)}领域进行了${works.length}项活动：${works.map(w => w.work_name).join('、')}。`
+        ? `${firstName}本周在${getAreaLabel(area, locale)}领域进行了${works.length}项活动：${works.map(w => getChineseNameForWork(w.work_name) || w.work_name).join('、')}。`
         : `${firstName} engaged with ${works.length} ${getAreaLabel(area, locale)} works this week: ${works.map(w => w.work_name).join(', ')}.`,
     })),
 
@@ -338,11 +339,12 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
       area: w.area,
       area_label: getAreaLabel(w.area, locale),
       work: w.work_name,
+      work_zh: locale === 'zh' ? (getChineseNameForWork(w.work_name) || w.work_name) : undefined,
       reasoning: w.reasons.join('; '),
     })),
 
     key_insight: locale === 'zh'
-      ? `${firstName}本周参与了${photos.length}项活动。${analysis.recommended_works.length > 0 ? `建议下周关注${analysis.recommended_works.slice(0, 3).map(w => `${getAreaLabel(w.area, locale)}的${w.work_name}`).join('、')}。` : ''}`
+      ? `${firstName}本周参与了${photos.length}项活动。${analysis.recommended_works.length > 0 ? `建议下周关注${analysis.recommended_works.slice(0, 3).map(w => `${getAreaLabel(w.area, locale)}的${getChineseNameForWork(w.work_name) || w.work_name}`).join('、')}。` : ''}`
       : `${firstName} engaged with ${photos.length} activities this week. ${analysis.recommended_works.length > 0 ? `I recommend focusing on ${analysis.recommended_works.slice(0, 3).map(w => `${w.work_name} in ${getAreaLabel(w.area, locale)}`).join(', ')} in the coming week.` : ''}`,
   };
 }

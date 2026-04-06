@@ -386,8 +386,9 @@ function detectFlags(
     });
   }
 
-  // 2. Check area avoidance
+  // 2. Check area avoidance (skip if no baseline data, i.e. daysSince === -1)
   for (const stat of areaStats) {
+    if (stat.days_since_work < 0) continue; // No baseline data — not avoidance
     if (stat.days_since_work > 21) {
       redFlags.push({
         type: 'red',

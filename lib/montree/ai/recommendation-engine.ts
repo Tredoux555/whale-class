@@ -350,14 +350,14 @@ export function getAreasNeedingAttention(
       });
     }
 
-    // Check if not worked recently
-    if (stat.days_since_work > 21) {
+    // Check if not worked recently (skip if no baseline data, i.e. daysSince === -1)
+    if (stat.days_since_work >= 0 && stat.days_since_work > 21) {
       needs.push({
         area: stat.area,
         reason: `No work in ${stat.days_since_work} days`,
         urgency: 'high',
       });
-    } else if (stat.days_since_work > 14) {
+    } else if (stat.days_since_work >= 0 && stat.days_since_work > 14) {
       needs.push({
         area: stat.area,
         reason: `No work in ${stat.days_since_work} days`,
@@ -413,7 +413,7 @@ export function calculateAreaStats(
       .sort()
       .reverse()[0];
     
-    let daysSince = 999;
+    let daysSince = -1; // -1 means "never worked" (no baseline data)
     if (lastWorked) {
       const lastDate = new Date(lastWorked);
       daysSince = Math.floor((now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));

@@ -372,7 +372,7 @@ export default function ActivityPage() {
                 </div>
               ) : (
                 students.map((student) => {
-                  const needsAttention = student.days_without_activity >= 7;
+                  const needsAttention = student.days_without_activity >= 7 && student.days_without_activity >= 0;
 
                   return (
                     <div
@@ -408,7 +408,7 @@ export default function ActivityPage() {
                           </div>
                         )}
                         <div className="text-2xl font-bold text-emerald-400">
-                          {student.days_without_activity === 999 ? '—' : student.days_without_activity}
+                          {student.days_without_activity < 0 ? '—' : student.days_without_activity}
                         </div>
                         <div className="text-gray-400 text-xs">{t('admin.activity.daysIdle')}</div>
                       </div>
