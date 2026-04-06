@@ -217,7 +217,9 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   };
 
   const handleShelfStatusCycle = async (childId: string, idx: number) => {
-    const shelf = shelfWorks[childId] || getShelfForChild(reports.find(r => r.child_id === childId)!);
+    const report = reports.find(r => r.child_id === childId);
+    if (!report) return;
+    const shelf = shelfWorks[childId] || getShelfForChild(report);
     const work = shelf[idx];
     if (!work.work) return;
     const currentIdx = STATUS_FLOW.indexOf(work.status as typeof STATUS_FLOW[number]) ?? 0;
@@ -248,7 +250,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       return;
     }
     try {
-      const session = await getSession();
+      const session = getSession();
       const cid = session?.classroom?.id || classroomId;
       const url = `/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${cid}`;
       const res = await montreeApi(url);
@@ -282,7 +284,7 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
   const handleRefreshPickerWorks = async () => {
     const area = wheelPickerArea;
-    const session = await getSession();
+    const session = getSession();
     const cid = session?.classroom?.id || classroomId;
     try {
       const res = await montreeApi(`/api/montree/works/search?area=${encodeURIComponent(area)}&classroom_id=${cid}`);
@@ -302,25 +304,31 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
   // ─── Fetch ────────────────────────────────────────────────
 
-  const fetchReports = useCallback(async () => {
+  const fetchReports = useCallback(async (signal?: AbortSignal) => {
     if (!classroomId || !weekStart) return;
     setLoading(true);
     setError('');
     try {
       const res = await montreeApi(
-        `/api/montree/reports/weekly-wrap/review?classroom_id=${classroomId}&week_start=${weekStart}`
+        `/api/montree/reports/weekly-wrap/review?classroom_id=${classroomId}&week_start=${weekStart}`,
+        { signal }
       );
       if (!res.ok) throw new Error('Failed to load');
       const data = await res.json();
-      setReports(data.reports || []);
-    } catch {
+      if (!signal?.aborted) setReports(data.reports || []);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       setError(locale === 'zh' ? '加载失败' : 'Failed to load reports');
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, [classroomId, weekStart, locale]);
 
-  useEffect(() => { fetchReports(); }, [fetchReports]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchReports(controller.signal);
+    return () => controller.abort();
+  }, [fetchReports]);
 
   // ─── Generate ─────────────────────────────────────────────
 
