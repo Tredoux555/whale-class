@@ -513,6 +513,9 @@
   <label>
     <input type="checkbox" id="pictureOnly" onchange="render()"> Picture words only
   </label>
+  <label>
+    <input type="checkbox" id="customOnly" onchange="render()"> Custom words only
+  </label>
   <button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
   <button style="padding:8px 16px; border-radius:8px; border:none; font-size:14px; cursor:pointer; background:#fff3; color:white; font-family:inherit;" onclick="document.getElementById('instructionsModal').classList.add('open')">📋 Booklet Instructions</button>
 </div>
@@ -960,7 +963,15 @@ function importFromPhotoBankExport() {
     const { photos } = JSON.parse(raw);
     if (!photos || photos.length === 0) return;
 
+    // Auto-enable "Custom words only" when importing from Photo Bank
+    document.getElementById('customOnly').checked = true;
+
     let loaded = 0;
+    const totalToLoad = photos.filter(p => {
+      const w = (p.label || p.filename || '').replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ').toLowerCase().trim();
+      return !!w;
+    }).length;
+
     photos.forEach(photo => {
       const word = (photo.label || photo.filename || '')
         .replace(/\.[^/.]+$/, '')
@@ -1093,6 +1104,7 @@ function render() {
   const showWrite = document.getElementById('showWriteLine').checked;
   const showCover = document.getElementById('showCover').checked;
   const pictureOnly = document.getElementById('pictureOnly').checked;
+  const customOnly = document.getElementById('customOnly').checked;
   const preview = document.getElementById('preview');
 
   const groups = (activeGroup === 'all'
@@ -1100,7 +1112,11 @@ function render() {
     : AMI_GROUPS.filter(g => g.group === activeGroup)
   ).map(g => ({
     ...g,
-    words: pictureOnly ? g.words.filter(w => w.emoji || w.imgData) : g.words
+    words: customOnly
+      ? g.words.filter(w => w.imgData)  // Only imported/uploaded custom words
+      : pictureOnly
+        ? g.words.filter(w => w.emoji || w.imgData)
+        : g.words
   })).filter(g => g.words.length > 0);
 
   // How many words per page?
@@ -1160,7 +1176,7 @@ function render() {
   // Info bar
   const totalWords = groups.reduce((sum, g) => sum + g.words.length, 0);
   const totalPages = document.querySelectorAll('.dict-page').length + (showCover ? 1 : 0);
-  const label = pictureOnly ? 'picture words' : 'words';
+  const label = customOnly ? 'custom words' : pictureOnly ? 'picture words' : 'words';
   document.getElementById('infoBar').textContent =
     `${totalWords} ${label} across ${groups.length} group${groups.length > 1 ? 's' : ''} — ${totalPages} page${totalPages > 1 ? 's' : ''} to print`;
 }
