@@ -635,7 +635,7 @@ export default function WeeklyWrapPage() {
     return narrativeEdits[childId] !== undefined || photoEdits[childId] !== undefined;
   };
 
-  // Crop a photo — uploads cropped version, updates URL with cache-bust
+  // Crop a photo — uploads cropped version to NEW path (original preserved)
   const handleCropComplete = async (blob: Blob, width: number, height: number) => {
     if (!croppingPhoto) return;
     const { childId, photo } = croppingPhoto;
@@ -653,11 +653,10 @@ export default function WeeklyWrapPage() {
         body: formData,
       });
       if (!res.ok) throw new Error('Crop failed');
+      const data = await res.json();
 
-      // Update the photo URL with a cache-bust param so the new crop shows
-      const bust = `?t=${Date.now()}`;
-      const baseUrl = photo.url.split('?')[0];
-      const newUrl = baseUrl + bust;
+      // Use the new cropped URL from the API (original photo untouched)
+      const newUrl = data.media?.cropped_url || (photo.url.split('?')[0] + `?t=${Date.now()}`);
 
       // Update in photoEdits (or create edit entry)
       const current = photoEdits[childId] ?? reports.find(r => r.child_id === childId)?.parent_photos ?? [];
