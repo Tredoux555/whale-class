@@ -1479,14 +1479,13 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  const isWrapZone = zone === 'weekly_wrap' || zone === 'teacher_review' || zone === 'parent_reports';
+  const isWrapZone = zone === 'weekly_wrap';
 
-  // Zone tab config — Needs Review + Confirmed + Teacher Review + Parent Reports
+  // Zone tab config — Needs Review + Confirmed + Weekly Wrap
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null; bold?: boolean; separator?: boolean }[] = [
     { key: 'all', label: t('audit.needsReview') || 'Needs Review', color: 'bg-amber-100 text-amber-700', count: counts.amber + counts.red + counts.untagged },
     { key: 'green', label: t('audit.confirmed') || 'Confirmed', color: 'bg-emerald-100 text-emerald-700', count: counts.green },
-    { key: 'teacher_review', label: `📋 ${locale === 'zh' ? '教师审查' : 'Teacher Review'}`, color: 'bg-blue-100 text-blue-800', count: null, bold: true, separator: true },
-    { key: 'parent_reports', label: `💌 ${locale === 'zh' ? '家长报告' : 'Parent Reports'}`, color: 'bg-violet-100 text-violet-800', count: null, bold: true },
+    { key: 'weekly_wrap', label: `📋 ${locale === 'zh' ? '每周总结' : 'Weekly Wrap'}`, color: 'bg-blue-100 text-blue-800', count: null, bold: true, separator: true },
   ];
 
   // ─── JSX ───
@@ -1582,11 +1581,10 @@ export default function PhotoAuditPage() {
         )}
       </div>
 
-      {/* ─── Weekly Wrap / Teacher Review / Parent Reports ─── */}
+      {/* ─── Weekly Wrap (internal Teacher Review + Parent Reports sub-tabs) ─── */}
       {isWrapZone && classroomIdState && (
         <WeeklyWrapTab
           classroomId={classroomIdState}
-          view={zone === 'teacher_review' ? 'teacher' : zone === 'parent_reports' ? 'parents' : undefined}
         />
       )}
 
