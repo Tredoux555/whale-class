@@ -1728,10 +1728,16 @@ Match this description to the correct Montessori work. Use the visual identifica
           };
 
           const pass3Abort = new AbortController();
-          const pass3Timeout = setTimeout(() => pass3Abort.abort(), 30000);
+          // Dynamic timeout: use remaining route budget minus 3s safety margin, capped at 25s
+          // (Fixed 30s blew the 45s ROUTE_TIMEOUT_MS budget when Pass 1+2 already ran ~15s)
+          const pass3Elapsed = Date.now() - routeStart;
+          const pass3Remaining = Math.max(5000, ROUTE_TIMEOUT_MS - pass3Elapsed - 3000);
+          const pass3Budget = Math.min(pass3Remaining, 25000);
+          const pass3Timeout = setTimeout(() => pass3Abort.abort(), pass3Budget);
           const onRouteAbortPass3 = () => pass3Abort.abort();
           routeAbort.signal.addEventListener('abort', onRouteAbortPass3, { once: true });
           const pass3Start = Date.now();
+          console.log(`[PhotoInsight] Pass 3 budget: ${pass3Budget}ms (${pass3Elapsed}ms elapsed)`);
 
           try {
             const pass3Msg = await anthropic.messages.create({
