@@ -329,25 +329,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 5: Generate visual description from the photo and store in visual memory
-    // Uses Haiku (cheap + fast) to describe what the material looks like
-    // This is the KEY self-learning step — future Smart Capture calls will see this description
+    // Step 5: Enrich visual memory for the corrected work + log negative on the original
+    // This is the KEY self-learning loop. Two paths:
+    //   (a) corrected work — APPEND a rich visual fingerprint (preferring cached Sonnet draft)
+    //   (b) original work — APPEND a negative example ("looks like X but is Y") so Pass 2
+    //       distinguishes them next time via the DISTINGUISH FROM block.
     if (corrected_work_name && photoUrl && anthropic) {
       parallelTasks.push(
-        generateAndStoreVisualMemory({
+        enrichVisualMemoryFromCorrection({
           supabase,
           classroomId,
-          workName: corrected_work_name,
-          workKey: corrected_work_id || null,
-          area: corrected_area || null,
-          photoUrl,
           mediaId: media_id || null,
-          isCustom: corrected_work_id ? String(corrected_work_id).startsWith('custom_') : false,
-          source: 'correction',
-          schoolId: auth.schoolId,
-          teacherId: auth.userId,
+          correctedWorkName: corrected_work_name,
+          correctedWorkId: corrected_work_id || null,
+          correctedArea: corrected_area || null,
+          originalWorkName: original_work_name || null,
+          originalWorkId: original_work_id || null,
+          originalArea: original_area || null,
+          photoUrl,
         }).catch((err) => {
-          console.error('[Corrections] Visual memory generation failed (non-fatal):', err);
+          console.error('[Corrections] Visual memory enrichment failed (non-fatal):', err);
         })
       );
     }
@@ -448,7 +449,280 @@ export async function POST(request: NextRequest) {
 }
 
 // ========================================================
-// Visual Memory Generation
+// Visual Memory Enrichment (Self-Learning Loop)
+// ========================================================
+
+// Strategy:
+//   1. Try to use the cached Sonnet draft visual_description from the media row.
+//      It's richer than re-running Haiku AND it's free (already paid for).
+//   2. Fall back to a fresh Haiku visual call if no draft is cached.
+//   3. APPEND the new fingerprint to existing visual_description (multi-fingerprint
+//      accumulation across many corrections), capped at ~2500 chars total.
+//   4. Log a NEGATIVE example on the original (wrong) work — appended to its
+//      negative_descriptions[] array. Pass 2 already renders these as
+//      "DISTINGUISH FROM" blocks so future calls avoid the same confusion.
+async function enrichVisualMemoryFromCorrection({
+  supabase,
+  classroomId,
+  mediaId,
+  correctedWorkName,
+  correctedWorkId,
+  correctedArea,
+  originalWorkName,
+  originalWorkId,
+  originalArea,
+  photoUrl,
+}: {
+  supabase: ReturnType<typeof getSupabase>;
+  classroomId: string;
+  mediaId: string | null;
+  correctedWorkName: string;
+  correctedWorkId: string | null;
+  correctedArea: string | null;
+  originalWorkName: string | null;
+  originalWorkId: string | null;
+  originalArea: string | null;
+  photoUrl: string;
+}) {
+  if (!photoUrl.startsWith('http://') && !photoUrl.startsWith('https://')) {
+    console.warn('[VisualMemory] Invalid photoUrl, skipping enrichment:', photoUrl);
+    return;
+  }
+
+  // 1. Try to read the cached Sonnet draft visual description (rich, free)
+  let visualDescription: string | null = null;
+  let descriptionSource: 'sonnet_draft' | 'haiku_fresh' = 'sonnet_draft';
+  if (mediaId) {
+    try {
+      const { data: mediaRow } = await supabase
+        .from('montree_media')
+        .select('sonnet_draft')
+        .eq('id', mediaId)
+        .maybeSingle();
+      const draft = mediaRow?.sonnet_draft as Record<string, unknown> | null;
+      if (draft && typeof draft.visual_description === 'string' && draft.visual_description.trim().length >= 20) {
+        visualDescription = draft.visual_description.trim();
+      }
+    } catch (err) {
+      console.warn('[VisualMemory] Failed to read sonnet_draft (non-fatal):', err);
+    }
+  }
+
+  // 2. Fall back to a fresh Haiku visual description if no cached draft
+  if (!visualDescription && anthropic) {
+    descriptionSource = 'haiku_fresh';
+    const apiAbortController = new AbortController();
+    const apiTimeout = setTimeout(() => apiAbortController.abort(), 45000);
+    try {
+      const message = await anthropic.messages.create({
+        model: HAIKU_MODEL,
+        max_tokens: 200,
+        system: `You are a Montessori material describer. Describe ONLY the physical materials/objects visible in the photo — NOT the child, NOT the activity. Focus on shape, color, size, material (wood/metal/fabric/plastic/paper), arrangement, and distinctive visual features (printed text, diagrams, page layout). 1-2 sentences, max 150 words. This description will be used to recognize the same materials in future photos.`,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'url', url: photoUrl } },
+            { type: 'text', text: `This is the Montessori work "${correctedWorkName}" (area: ${correctedArea || 'unknown'}). Describe what makes it visually identifiable.` },
+          ],
+        }],
+      }, { signal: apiAbortController.signal });
+      for (const block of message.content) {
+        if (block.type === 'text') { visualDescription = block.text.trim(); break; }
+      }
+    } catch (err) {
+      if (apiAbortController.signal.aborted) {
+        console.error('[VisualMemory] Haiku timed out — skipping enrichment');
+        return;
+      }
+      console.error('[VisualMemory] Haiku call failed (non-fatal):', err);
+      return;
+    } finally {
+      clearTimeout(apiTimeout);
+    }
+  }
+
+  if (!visualDescription || visualDescription.length < 10) {
+    console.warn(`[VisualMemory] No usable description for "${correctedWorkName}"`);
+    return;
+  }
+  visualDescription = visualDescription.slice(0, 500);
+
+  // 3. APPEND positive fingerprint to corrected work's visual memory
+  await appendVisualFingerprint({
+    supabase,
+    classroomId,
+    workName: correctedWorkName,
+    workKey: correctedWorkId,
+    area: correctedArea,
+    isCustom: correctedWorkId ? String(correctedWorkId).startsWith('custom_') : false,
+    fingerprint: visualDescription,
+    photoUrl,
+    mediaId,
+  });
+
+  // 4. APPEND negative example to original (wrong) work's visual memory
+  // Only if we have a real original_work_name AND it's different from the corrected one
+  if (originalWorkName && originalWorkName.trim() && originalWorkName.toLowerCase() !== correctedWorkName.toLowerCase()) {
+    const negativeText = `Looks similar to "${correctedWorkName}" — features: ${visualDescription.slice(0, 180)}`;
+    await appendNegativeExample({
+      supabase,
+      classroomId,
+      workName: originalWorkName,
+      workKey: originalWorkId,
+      area: originalArea,
+      negative: negativeText,
+    });
+  }
+
+  console.log(`[VisualMemory] Enriched "${correctedWorkName}" via ${descriptionSource}${originalWorkName && originalWorkName !== correctedWorkName ? ` + negative on "${originalWorkName}"` : ''}`);
+  invalidateClassroomEmbeddings(classroomId);
+}
+
+// Append a visual fingerprint to a work's visual_description column.
+// Multiple fingerprints accumulate over time, separated by " || ", capped at ~2500 chars.
+// Older fingerprints are evicted FIFO when cap is hit.
+async function appendVisualFingerprint({
+  supabase,
+  classroomId,
+  workName,
+  workKey,
+  area,
+  isCustom,
+  fingerprint,
+  photoUrl,
+  mediaId,
+}: {
+  supabase: ReturnType<typeof getSupabase>;
+  classroomId: string;
+  workName: string;
+  workKey: string | null;
+  area: string | null;
+  isCustom: boolean;
+  fingerprint: string;
+  photoUrl: string;
+  mediaId: string | null;
+}) {
+  const SEP = ' || ';
+  const CAP = 2500;
+
+  const { data: existing } = await supabase
+    .from('montree_visual_memory')
+    .select('visual_description, description_confidence')
+    .eq('classroom_id', classroomId)
+    .eq('work_name', workName)
+    .maybeSingle();
+
+  let merged = fingerprint;
+  if (existing?.visual_description) {
+    const existingDesc = String(existing.visual_description);
+    // Skip if this exact fingerprint is already present (idempotent)
+    if (existingDesc.includes(fingerprint.slice(0, 80))) {
+      console.log(`[VisualMemory] Fingerprint already present for "${workName}" — skipping append`);
+      return;
+    }
+    merged = `${existingDesc}${SEP}${fingerprint}`;
+    // Evict oldest fingerprints if over cap
+    while (merged.length > CAP && merged.includes(SEP)) {
+      const idx = merged.indexOf(SEP);
+      merged = merged.slice(idx + SEP.length);
+    }
+    if (merged.length > CAP) merged = merged.slice(-CAP);
+  }
+
+  const { error } = await supabase
+    .from('montree_visual_memory')
+    .upsert({
+      classroom_id: classroomId,
+      work_name: workName,
+      work_key: workKey,
+      area,
+      is_custom: isCustom,
+      visual_description: merged,
+      source: 'correction',
+      source_media_id: mediaId,
+      photo_url: photoUrl,
+      description_confidence: 0.95,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'classroom_id,work_name' });
+
+  if (error) console.error('[VisualMemory] Append fingerprint upsert failed:', error);
+}
+
+// Append a negative example to a work's negative_descriptions[] array.
+// Idempotent: skips if a near-duplicate is already present.
+async function appendNegativeExample({
+  supabase,
+  classroomId,
+  workName,
+  workKey,
+  area,
+  negative,
+}: {
+  supabase: ReturnType<typeof getSupabase>;
+  classroomId: string;
+  workName: string;
+  workKey: string | null;
+  area: string | null;
+  negative: string;
+}) {
+  const MAX_NEGATIVES = 8;
+
+  const { data: existing } = await supabase
+    .from('montree_visual_memory')
+    .select('negative_descriptions, description_confidence, visual_description')
+    .eq('classroom_id', classroomId)
+    .eq('work_name', workName)
+    .maybeSingle();
+
+  const currentNegatives: string[] = Array.isArray(existing?.negative_descriptions)
+    ? (existing!.negative_descriptions as string[])
+    : [];
+
+  // Idempotency: skip if first 60 chars match an existing entry
+  const head = negative.slice(0, 60).toLowerCase();
+  if (currentNegatives.some(n => typeof n === 'string' && n.slice(0, 60).toLowerCase() === head)) {
+    console.log(`[VisualMemory] Negative already present for "${workName}" — skipping`);
+    return;
+  }
+
+  // FIFO cap
+  const nextNegatives = [...currentNegatives, negative].slice(-MAX_NEGATIVES);
+
+  if (existing) {
+    const { error } = await supabase
+      .from('montree_visual_memory')
+      .update({
+        negative_descriptions: nextNegatives,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('classroom_id', classroomId)
+      .eq('work_name', workName);
+    if (error) {
+      // Column may not exist yet (graceful) — log and skip
+      console.error('[VisualMemory] Negative update failed (column may be missing):', error.message);
+    }
+  } else {
+    // No existing memory row — create a stub entry just to hold the negative
+    const { error } = await supabase
+      .from('montree_visual_memory')
+      .insert({
+        classroom_id: classroomId,
+        work_name: workName,
+        work_key: workKey,
+        area,
+        is_custom: false,
+        visual_description: '(no positive fingerprint yet)',
+        negative_descriptions: nextNegatives,
+        source: 'correction',
+        description_confidence: 0.9,
+        updated_at: new Date().toISOString(),
+      });
+    if (error) console.error('[VisualMemory] Negative stub insert failed:', error.message);
+  }
+}
+
+// ========================================================
+// Visual Memory Generation (legacy — kept for first_capture path)
 // ========================================================
 
 // Generate a visual description of the material from the photo using Haiku (cheap + fast)
