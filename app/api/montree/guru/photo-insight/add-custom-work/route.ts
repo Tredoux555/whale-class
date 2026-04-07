@@ -108,6 +108,30 @@ export async function POST(request: NextRequest) {
     const trimmedName = name.trim();
     const workKey = `custom_${trimmedName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${randomUUID().slice(0, 8)}`;
 
+    // Resolve area_key → area_id (table uses area_id UUID FK, NOT area_key)
+    const { data: areaRow, error: areaErr } = await supabase
+      .from('montree_classroom_curriculum_areas')
+      .select('id')
+      .eq('classroom_id', child.classroom_id)
+      .eq('area_key', area)
+      .maybeSingle();
+
+    if (areaErr || !areaRow?.id) {
+      console.error('[AddCustomWork] Area lookup failed:', { area, classroom_id: child.classroom_id, areaErr });
+      return NextResponse.json({ success: false, error: `Curriculum area "${area}" not found in this classroom` }, { status: 500 });
+    }
+    const areaId = areaRow.id;
+
+    // Compute next sequence at end of area
+    const { data: seqRow } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('sequence')
+      .eq('classroom_id', child.classroom_id)
+      .eq('area_id', areaId)
+      .order('sequence', { ascending: false })
+      .limit(1);
+    const nextSequence = (seqRow?.[0]?.sequence || 0) + 1;
+
     // Step 1: Create the custom work in classroom curriculum
     let workId: string;
     let deduplicated = false;
@@ -119,10 +143,14 @@ export async function POST(request: NextRequest) {
           classroom_id: child.classroom_id,
           name: trimmedName,
           work_key: workKey,
-          area_key: area,
+          area_id: areaId,
+          sequence: nextSequence,
           description: description.trim().slice(0, 500),
-          materials: materials.map((m: string) => m.trim()).filter(Boolean).slice(0, 10).join(', '),
+          parent_description: description.trim().slice(0, 1000),
+          why_it_matters: why_it_matters ? why_it_matters.trim().slice(0, 1000) : null,
+          materials: materials.map((m: string) => m.trim()).filter(Boolean).slice(0, 10),
           is_custom: true,
+          is_active: true,
           source: 'auto_propose',
           teacher_notes: why_it_matters ? why_it_matters.trim().slice(0, 500) : null,
         })
