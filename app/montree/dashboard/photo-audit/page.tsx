@@ -13,6 +13,7 @@ import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
 import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
+import AcceptDraftModal, { DraftFields } from '@/components/montree/photo-audit/AcceptDraftModal';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -440,6 +441,7 @@ export default function PhotoAuditPage() {
 
   // Correction state
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
+  const [acceptingPhoto, setAcceptingPhoto] = useState<AuditPhoto | null>(null);
   const [pickerArea, setPickerArea] = useState('');
 
   // Batch state
@@ -845,10 +847,10 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Accept a Sonnet draft as a brand new custom work in the classroom curriculum.
-  // Reuses the existing add-custom-work endpoint, then removes the photo from the
-  // audit grid (it's now confirmed + tagged).
-  const handleAcceptDraft = async (photo: AuditPhoto) => {
+  // Open the Accept modal for a photo with a Sonnet draft.
+  // Teachers can review + edit the work name, parent description, and why-it-matters
+  // before the work lands in their classroom curriculum.
+  const openAcceptModal = (photo: AuditPhoto) => {
     const draft = photo.sonnet_draft;
     if (!draft || !draft.proposed_name || !draft.suggested_area || !draft.parent_description) {
       toast.error('Draft is missing required fields');
@@ -858,6 +860,15 @@ export default function PhotoAuditPage() {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
+    setAcceptingPhoto(photo);
+  };
+
+  // Save handler invoked from AcceptDraftModal with the (possibly edited) fields.
+  // Reuses the existing add-custom-work endpoint, then removes the photo from
+  // the audit grid (it's now confirmed + tagged).
+  const handleAcceptDraftSave = async (edited: DraftFields) => {
+    const photo = acceptingPhoto;
+    if (!photo || !photo.child_id) return;
     setProcessingId(photo.id);
     try {
       const res = await montreeApi('/api/montree/guru/photo-insight/add-custom-work', {
@@ -866,13 +877,13 @@ export default function PhotoAuditPage() {
         body: JSON.stringify({
           media_id: photo.id,
           child_id: photo.child_id,
-          name: draft.proposed_name,
-          area: draft.suggested_area,
-          description: draft.parent_description,
-          materials: draft.key_materials && draft.key_materials.length > 0
-            ? draft.key_materials
+          name: edited.name,
+          area: edited.area,
+          description: edited.description,
+          materials: edited.materials && edited.materials.length > 0
+            ? edited.materials
             : ['(materials inferred from photo)'],
-          why_it_matters: draft.why_it_matters || null,
+          why_it_matters: edited.why_it_matters || null,
         }),
       });
       const json = await res.json().catch(() => ({}));
@@ -890,7 +901,12 @@ export default function PhotoAuditPage() {
         ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
-      toast.success(`✨ Added "${draft.proposed_name}" to curriculum`);
+      if (json.deduplicated) {
+        toast.success(`Attached to existing "${edited.name}" (already in curriculum)`);
+      } else {
+        toast.success(`✨ Added "${edited.name}" to curriculum`);
+      }
+      setAcceptingPhoto(null);
     } catch (err) {
       console.error('[AcceptDraft] Failed:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to add work');
@@ -1737,7 +1753,7 @@ export default function PhotoAuditPage() {
               onDelete={() => handleDeletePhoto(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
-              onAcceptDraft={() => handleAcceptDraft(photo)}
+              onAcceptDraft={() => openAcceptModal(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
@@ -1865,6 +1881,18 @@ export default function PhotoAuditPage() {
             onWorkAdded={fetchCurriculum}
           />
         </>
+      )}
+
+      {/* Accept AI Draft modal — review + edit Sonnet's draft before adding to curriculum */}
+      {acceptingPhoto && acceptingPhoto.sonnet_draft && (
+        <AcceptDraftModal
+          isOpen={true}
+          onClose={() => setAcceptingPhoto(null)}
+          onSave={handleAcceptDraftSave}
+          initialDraft={acceptingPhoto.sonnet_draft}
+          photoUrl={acceptingPhoto.url}
+          saving={processingId === acceptingPhoto.id}
+        />
       )}
 
       {/* Crop choice modal — "Use Full Photo" vs "Crop to Work" */}
@@ -2186,18 +2214,18 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <button
               onClick={onAcceptDraft}
               disabled={processing}
-              className="flex-1 text-[10px] py-1 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
-              title="Create new custom work using this draft"
+              className="flex-1 text-[11px] py-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
+              title="Review, edit, and add this draft to your curriculum"
             >
-              {processing ? '...' : '✨ Add as new'}
+              {processing ? '...' : '✅ Accept'}
             </button>
             <button
               onClick={onCorrect}
               disabled={processing}
-              className="flex-1 text-[10px] py-1 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
-              title="Attach this photo to an existing curriculum work"
+              className="flex-1 text-[11px] py-1.5 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
+              title="Pick a different work from your curriculum"
             >
-              🔗 Attach
+              ✏️ Fix
             </button>
           </div>
         </div>
