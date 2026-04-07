@@ -1655,6 +1655,141 @@ Match this description to the correct Montessori work. Use the visual identifica
     }
     } // END: if (!input) — skip two-pass when onboarding Sonnet already succeeded
 
+    // ========================================================
+    // === PASS 3: Sonnet discriminator on low-confidence Pass 2 ===
+    // ========================================================
+    // When Pass 2 succeeded but with weak confidence, ask Sonnet to discriminate
+    // between the top 3 candidates using their accumulated visual memory.
+    // This is the "audit-time accuracy boost" — easy photos still flow through
+    // Haiku-only at $0.006, hard photos pay ~$0.02 for a much better answer.
+    // Cost ramps DOWN over time as the visual memory corpus grows and Pass 2
+    // confidence climbs above the threshold.
+    const PASS3_SCORE_THRESHOLD = 0.7;
+    const PASS3_CONFIDENCE_THRESHOLD = 0.5;
+    if (
+      !haiku_only &&
+      input && matchResult &&
+      anthropic &&
+      classroomId &&
+      photoUrl &&
+      matchResult.candidates.length >= 2 &&
+      (matchScore < PASS3_SCORE_THRESHOLD || input.confidence < PASS3_CONFIDENCE_THRESHOLD)
+    ) {
+      try {
+        const top3 = matchResult.candidates.slice(0, 3);
+        const candidateNames = top3.map(c => c.work.name);
+
+        // Load visual memory entries for the top candidates
+        const { data: memoryRows } = await supabase
+          .from('montree_visual_memory')
+          .select('work_name, visual_description, key_materials, negative_descriptions')
+          .eq('classroom_id', classroomId)
+          .in('work_name', candidateNames);
+
+        const memoryByName = new Map<string, Record<string, unknown>>();
+        for (const m of (memoryRows || [])) {
+          memoryByName.set(String(m.work_name), m as Record<string, unknown>);
+        }
+
+        // Skip Pass 3 if NO candidates have visual memory — there's nothing to discriminate against
+        const candidatesWithMemory = top3.filter(c => memoryByName.has(c.work.name));
+        if (candidatesWithMemory.length >= 1) {
+          const candidateBlocks = top3.map((c, i) => {
+            const m = memoryByName.get(c.work.name);
+            const letter = String.fromCharCode(65 + i); // A, B, C
+            let block = `[${letter}] "${c.work.name}" (area: ${c.work.area_key || 'unknown'})`;
+            if (m && typeof m.visual_description === 'string') {
+              block += `\n  LOOKS LIKE: ${m.visual_description.slice(0, 600)}`;
+            }
+            if (m && Array.isArray(m.key_materials) && (m.key_materials as string[]).length > 0) {
+              block += `\n  KEY MATERIALS: ${(m.key_materials as string[]).slice(0, 5).join(', ')}`;
+            }
+            if (m && Array.isArray(m.negative_descriptions) && (m.negative_descriptions as string[]).length > 0) {
+              block += `\n  NOT TO BE CONFUSED WITH: ${(m.negative_descriptions as string[]).slice(0, 3).join('; ')}`;
+            }
+            if (!m) {
+              block += `\n  (no visual memory yet)`;
+            }
+            return block;
+          }).join('\n\n');
+
+          const discriminatorTool = {
+            name: 'pick_work',
+            description: 'Pick which candidate work the photo shows, or "none" if none match.',
+            input_schema: {
+              type: 'object' as const,
+              properties: {
+                choice: { type: 'string', enum: ['A', 'B', 'C', 'none'], description: 'Which candidate the photo shows, or "none"' },
+                confidence: { type: 'number', description: '0.0 to 1.0' },
+                reasoning: { type: 'string', description: 'Brief explanation (1-2 sentences) referencing what you see in the photo vs the candidate descriptions' },
+              },
+              required: ['choice', 'confidence', 'reasoning'],
+            },
+          };
+
+          const pass3Abort = new AbortController();
+          const pass3Timeout = setTimeout(() => pass3Abort.abort(), 30000);
+          const onRouteAbortPass3 = () => pass3Abort.abort();
+          routeAbort.signal.addEventListener('abort', onRouteAbortPass3, { once: true });
+          const pass3Start = Date.now();
+
+          try {
+            const pass3Msg = await anthropic.messages.create({
+              model: AI_MODEL,
+              max_tokens: 400,
+              system: `You are an expert Montessori material identifier. You will see a photo and 2-3 candidate works. Each candidate has a teacher-confirmed visual description of what it looks like in this specific classroom. Your job: pick the candidate that best matches the photo, or say "none" if the photo clearly shows something different from all candidates. Use the KEY MATERIALS and NOT TO BE CONFUSED WITH hints — they come from real teacher corrections in this classroom and are highly accurate. Prefer to pick a candidate over "none" unless the photo is unambiguously different.`,
+              tools: [discriminatorTool],
+              tool_choice: { type: 'tool' as const, name: 'pick_work' },
+              messages: [{
+                role: 'user',
+                content: [
+                  { type: 'image' as const, source: { type: 'url' as const, url: photoUrl } },
+                  { type: 'text' as const, text: `CANDIDATES:\n\n${candidateBlocks}\n\nWhich candidate (A, B, or C) best matches this photo? Or "none" if none match.` },
+                ],
+              }],
+            }, { signal: pass3Abort.signal });
+            clearTimeout(pass3Timeout);
+            routeAbort.signal.removeEventListener('abort', onRouteAbortPass3);
+
+            const tb = pass3Msg.content.find(b => b.type === 'tool_use');
+            if (tb && tb.type === 'tool_use') {
+              const out = tb.input as { choice?: string; confidence?: number; reasoning?: string };
+              const choiceIdx = out.choice === 'A' ? 0 : out.choice === 'B' ? 1 : out.choice === 'C' ? 2 : -1;
+              if (choiceIdx >= 0 && choiceIdx < top3.length && (out.confidence ?? 0) >= 0.6) {
+                const picked = top3[choiceIdx].work;
+                console.log(`[PhotoInsight] Pass 3 discriminator (${Date.now() - pass3Start}ms): "${finalWorkName}" → "${picked.name}" (conf ${out.confidence}) — ${out.reasoning}`);
+                finalWorkName = picked.name;
+                finalArea = picked.area_key || finalArea;
+                finalWorkKey = picked.work_key || finalWorkKey;
+                matchScore = Math.max(matchScore, 0.85);
+                modelUsed = AI_MODEL;
+                // Bump input.confidence too so downstream gates accept the result
+                if (input && typeof out.confidence === 'number') {
+                  input.confidence = Math.max(input.confidence, out.confidence);
+                }
+              } else if (out.choice === 'none') {
+                console.log(`[PhotoInsight] Pass 3 (${Date.now() - pass3Start}ms): none — keeping Pass 2 result "${finalWorkName}"`);
+              } else {
+                console.log(`[PhotoInsight] Pass 3 (${Date.now() - pass3Start}ms): low confidence (${out.confidence}) — keeping Pass 2 result`);
+              }
+            }
+          } catch (pass3Err: unknown) {
+            clearTimeout(pass3Timeout);
+            routeAbort.signal.removeEventListener('abort', onRouteAbortPass3);
+            if (pass3Abort.signal.aborted) {
+              console.warn('[PhotoInsight] Pass 3 timed out — keeping Pass 2 result');
+            } else {
+              console.error('[PhotoInsight] Pass 3 failed (non-fatal):', pass3Err);
+            }
+          }
+        } else {
+          console.log('[PhotoInsight] Pass 3 skipped — no top candidates have visual memory yet');
+        }
+      } catch (err) {
+        console.error('[PhotoInsight] Pass 3 setup failed (non-fatal):', err);
+      }
+    }
+
     // === FALLBACK: If two-pass failed, try single-pass Sonnet (old approach) ===
     // Skip Sonnet fallback in haiku_only diagnostic mode
     if ((!input || !matchResult) && !haiku_only) {
