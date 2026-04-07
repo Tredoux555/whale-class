@@ -847,9 +847,83 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Open the Accept modal for a photo with a Sonnet draft.
-  // Teachers can review + edit the work name, parent description, and why-it-matters
-  // before the work lands in their classroom curriculum.
+  // Find a work by name across the loaded curriculum (case-insensitive, prefers
+  // exact match then substring match within the suggested area).
+  const findWorkByName = useCallback((rawName: string, preferredArea?: string): { work: any; areaKey: string } | null => {
+    if (!rawName) return null;
+    const needle = rawName.trim().toLowerCase();
+    const tryAreas = preferredArea
+      ? [preferredArea, ...Object.keys(curriculum).filter(k => k !== preferredArea)]
+      : Object.keys(curriculum);
+    // Pass 1: exact name match
+    for (const areaKey of tryAreas) {
+      const works = curriculum[areaKey] || [];
+      const exact = works.find((w: any) => (w.name || '').trim().toLowerCase() === needle);
+      if (exact) return { work: exact, areaKey };
+    }
+    // Pass 2: substring match (work name contains needle or vice versa)
+    for (const areaKey of tryAreas) {
+      const works = curriculum[areaKey] || [];
+      const sub = works.find((w: any) => {
+        const n = (w.name || '').trim().toLowerCase();
+        return n && (n.includes(needle) || needle.includes(n));
+      });
+      if (sub) return { work: sub, areaKey };
+    }
+    return null;
+  }, [curriculum]);
+
+  // Silently attach a photo to an existing curriculum work via the corrections endpoint.
+  // Used by both the Tier 1 (>=90% match) auto-attach path and the Tier 2 modal "Use existing" button.
+  const attachToExistingWork = async (photo: AuditPhoto, work: { id: string; name: string }, areaKey: string) => {
+    setProcessingId(photo.id);
+    try {
+      const res = await fetch('/api/montree/guru/corrections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_id: photo.id,
+          child_id: photo.child_id,
+          original_work_name: photo.work_name || photo.sonnet_draft?.proposed_name || 'Unknown',
+          original_work_id: photo.work_id || '',
+          original_area: photo.area || '',
+          original_confidence: photo.confidence || 0,
+          corrected_work_name: work.name,
+          corrected_work_id: work.id,
+          corrected_area: areaKey,
+        }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || 'attach failed');
+      }
+      // Remove photo from grid — it's now confirmed
+      const removedZone = photo.zone || 'untagged';
+      setPhotos(prev => prev.filter(p => p.id !== photo.id));
+      setCounts(prev => ({
+        ...prev,
+        ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+        ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
+      toast.success(`🔗 Matched to "${work.name}"`);
+      setAcceptingPhoto(null);
+      return true;
+    } catch (err) {
+      console.error('[AttachExisting] Failed:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to attach');
+      return false;
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Three-tier router for the "✅ Accept" button on a draft card:
+  //   - >=90% match → silent attach (no modal)
+  //   - 50-89% match → modal opens with "Use existing" as primary
+  //   - <50% / no match → modal opens with "Add to Curriculum" as primary (current behavior)
   const openAcceptModal = (photo: AuditPhoto) => {
     const draft = photo.sonnet_draft;
     if (!draft || !draft.proposed_name || !draft.suggested_area || !draft.parent_description) {
@@ -860,6 +934,18 @@ export default function PhotoAuditPage() {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
+    const matchName = draft.closest_existing_match?.work_name;
+    const similarity = typeof draft.closest_existing_match?.similarity === 'number'
+      ? draft.closest_existing_match.similarity
+      : 0;
+    const found = matchName ? findWorkByName(matchName, draft.suggested_area) : null;
+
+    // Tier 1: high confidence — attach silently, skip modal
+    if (found && similarity >= 0.9) {
+      attachToExistingWork(photo, found.work, found.areaKey);
+      return;
+    }
+    // Tier 2 + 3: open modal (modal will show "Use existing" primary if found)
     setAcceptingPhoto(photo);
   };
 
@@ -1884,16 +1970,32 @@ export default function PhotoAuditPage() {
       )}
 
       {/* Accept AI Draft modal — review + edit Sonnet's draft before adding to curriculum */}
-      {acceptingPhoto && acceptingPhoto.sonnet_draft && (
-        <AcceptDraftModal
-          isOpen={true}
-          onClose={() => setAcceptingPhoto(null)}
-          onSave={handleAcceptDraftSave}
-          initialDraft={acceptingPhoto.sonnet_draft}
-          photoUrl={acceptingPhoto.url}
-          saving={processingId === acceptingPhoto.id}
-        />
-      )}
+      {acceptingPhoto && acceptingPhoto.sonnet_draft && (() => {
+        const draft = acceptingPhoto.sonnet_draft;
+        const matchName = draft.closest_existing_match?.work_name;
+        const similarity = typeof draft.closest_existing_match?.similarity === 'number'
+          ? draft.closest_existing_match.similarity
+          : 0;
+        const found = matchName ? findWorkByName(matchName, draft.suggested_area) : null;
+        // Tier 2 cutoff: 50% min similarity AND a real curriculum match
+        const existingMatch = found && similarity >= 0.5
+          ? { workId: found.work.id, workName: found.work.name, areaKey: found.areaKey, similarity }
+          : null;
+        return (
+          <AcceptDraftModal
+            isOpen={true}
+            onClose={() => setAcceptingPhoto(null)}
+            onSave={handleAcceptDraftSave}
+            onUseExisting={existingMatch ? async () => {
+              await attachToExistingWork(acceptingPhoto, { id: existingMatch.workId, name: existingMatch.workName }, existingMatch.areaKey);
+            } : undefined}
+            existingMatch={existingMatch}
+            initialDraft={draft}
+            photoUrl={acceptingPhoto.url}
+            saving={processingId === acceptingPhoto.id}
+          />
+        );
+      })()}
 
       {/* Crop choice modal — "Use Full Photo" vs "Crop to Work" */}
       {cropChoicePhoto && (
