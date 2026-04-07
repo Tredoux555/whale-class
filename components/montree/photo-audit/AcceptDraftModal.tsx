@@ -29,10 +29,19 @@ export interface DraftFields {
   materials: string[];
 }
 
+interface ExistingMatch {
+  workId: string;
+  workName: string;
+  areaKey: string;
+  similarity: number;
+}
+
 interface AcceptDraftModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (edited: DraftFields) => Promise<void>;
+  onUseExisting?: () => Promise<void>;
+  existingMatch?: ExistingMatch | null;
   initialDraft: {
     proposed_name?: string;
     suggested_area?: string;
@@ -49,6 +58,8 @@ export default function AcceptDraftModal({
   isOpen,
   onClose,
   onSave,
+  onUseExisting,
+  existingMatch,
   initialDraft,
   photoUrl,
   saving = false,
@@ -146,15 +157,23 @@ export default function AcceptDraftModal({
           </div>
         )}
 
-        {/* Similar match warning */}
-        {closeMatch?.work_name && (
+        {/* Similar match info — friendlier when an actionable match exists */}
+        {existingMatch ? (
+          <div className="mx-5 mt-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-[11px] text-blue-800">
+              <span className="font-semibold">💡 This looks like "{existingMatch.workName}"</span>
+              <span className="text-blue-600"> ({Math.round(existingMatch.similarity * 100)}% match)</span>
+              {' '}— already in your curriculum. Tap below to match this photo to it instead of creating a duplicate.
+            </p>
+          </div>
+        ) : closeMatch?.work_name && (
           <div className="mx-5 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-[11px] text-amber-800">
               <span className="font-semibold">⚠️ Similar to "{closeMatch.work_name}"</span>
               {typeof closeMatch.similarity === 'number' && (
                 <span className="text-amber-600"> ({Math.round(closeMatch.similarity * 100)}% match)</span>
               )}
-              . Adding as new will create a duplicate. Tap Fix on the card to attach to the existing work instead.
+              {' '}— but not currently in your curriculum.
             </p>
           </div>
         )}
@@ -223,32 +242,74 @@ export default function AcceptDraftModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between gap-3 sticky bottom-0">
-          <button
-            onClick={onClose}
-            disabled={saving}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-30"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || !name.trim() || !description.trim()}
-            className="px-5 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
-                  <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-                </svg>
-                Adding…
-              </>
-            ) : (
-              <>✨ Add to Curriculum</>
-            )}
-          </button>
+        {/* Footer — primary button differs based on whether an existing match exists */}
+        <div className="px-5 py-3 border-t border-gray-100 bg-gray-50 sticky bottom-0">
+          {existingMatch && onUseExisting ? (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={onClose}
+                  disabled={saving}
+                  className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-30"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={onUseExisting}
+                  disabled={saving}
+                  className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors flex items-center gap-2"
+                >
+                  {saving ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                        <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                      </svg>
+                      Matching…
+                    </>
+                  ) : (
+                    <>🔗 Use "{existingMatch.workName}"</>
+                  )}
+                </button>
+              </div>
+              <div className="text-center mt-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving || !name.trim() || !description.trim()}
+                  className="text-[11px] text-gray-500 hover:text-violet-700 underline disabled:opacity-30"
+                >
+                  + Add as new work anyway
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={onClose}
+                disabled={saving}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-30"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || !name.trim() || !description.trim()}
+                className="px-5 py-2 bg-violet-600 text-white text-sm font-bold rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                      <path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                    Adding…
+                  </>
+                ) : (
+                  <>✨ Add to Curriculum</>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
