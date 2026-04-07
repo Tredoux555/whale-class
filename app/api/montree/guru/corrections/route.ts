@@ -688,36 +688,28 @@ async function appendNegativeExample({
   // FIFO cap
   const nextNegatives = [...currentNegatives, negative].slice(-MAX_NEGATIVES);
 
-  if (existing) {
-    const { error } = await supabase
-      .from('montree_visual_memory')
-      .update({
-        negative_descriptions: nextNegatives,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('classroom_id', classroomId)
-      .eq('work_name', workName);
-    if (error) {
-      // Column may not exist yet (graceful) — log and skip
-      console.error('[VisualMemory] Negative update failed (column may be missing):', error.message);
-    }
-  } else {
-    // No existing memory row — create a stub entry just to hold the negative
-    const { error } = await supabase
-      .from('montree_visual_memory')
-      .insert({
-        classroom_id: classroomId,
-        work_name: workName,
-        work_key: workKey,
-        area,
-        is_custom: false,
-        visual_description: '(no positive fingerprint yet)',
-        negative_descriptions: nextNegatives,
-        source: 'correction',
-        description_confidence: 0.9,
-        updated_at: new Date().toISOString(),
-      });
-    if (error) console.error('[VisualMemory] Negative stub insert failed:', error.message);
+  if (!existing) {
+    // No positive fingerprint yet for this work — skip the negative.
+    // Creating a stub row would inject "LOOKS LIKE: (no fingerprint)" garbage into Pass 2.
+    // Negatives only accumulate on works with at least one positive correction first.
+    console.log(`[VisualMemory] Skipping negative on "${workName}" — no positive fingerprint yet`);
+    return;
+  }
+
+  // Suppress unused warnings — workKey/area only used in stub branch which is now removed
+  void workKey;
+  void area;
+
+  const { error } = await supabase
+    .from('montree_visual_memory')
+    .update({
+      negative_descriptions: nextNegatives,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('classroom_id', classroomId)
+    .eq('work_name', workName);
+  if (error) {
+    console.error('[VisualMemory] Negative update failed (column may be missing):', error.message);
   }
 }
 
