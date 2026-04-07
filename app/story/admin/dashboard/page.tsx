@@ -90,6 +90,10 @@ export default function AdminDashboard() {
     clearAudio,
     handleVideoSelect,
     clearVideo,
+    selectedDocument,
+    uploadingDocument,
+    handleDocumentSelect,
+    clearDocument,
     sendAdminMessage,
     clearAllMedia
   } = useAdminMessage(getSession, loadMessages);
@@ -206,15 +210,19 @@ export default function AdminDashboard() {
                 onAudioClear={clearAudio}
                 selectedVideo={selectedVideo}
                 onVideoClear={clearVideo}
+                selectedDocument={selectedDocument}
+                onDocumentClear={clearDocument}
                 onImageSelect={handleImageSelect}
                 onAudioSelect={handleAudioSelect}
                 onVideoSelect={handleVideoSelect}
+                onDocumentSelect={handleDocumentSelect}
                 onSendMessage={sendAdminMessage}
                 onClearAll={clearAllMedia}
                 isSending={sendingMessage}
                 isUploadingImage={uploadingImage}
                 isUploadingAudio={uploadingAudio}
                 isUploadingVideo={uploadingVideo}
+                isUploadingDocument={uploadingDocument}
                 messageSent={messageSent}
                 messageError={messageError}
                 selectedImage={selectedImage}

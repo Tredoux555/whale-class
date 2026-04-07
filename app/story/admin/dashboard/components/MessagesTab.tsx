@@ -102,6 +102,26 @@ export function MessagesTab({
                 </div>
               )}
 
+              {msg.message_type === 'document' && msg.media_url && (
+                <div className="mt-2">
+                  <a
+                    href={msg.media_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  >
+                    <span className="text-2xl">📄</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-blue-800 truncate">{msg.media_filename || 'Document'}</p>
+                      <p className="text-xs text-blue-600">Click to open / download</p>
+                    </div>
+                  </a>
+                  {msg.message_content && (
+                    <p className="mt-2 text-gray-700 text-sm">{msg.message_content}</p>
+                  )}
+                </div>
+              )}
+
               {msg.message_type === 'audio' && msg.media_url && (
                 <div className="mt-2">
                   <div className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">

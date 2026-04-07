@@ -643,6 +643,20 @@ export default function StoryViewer() {
                       {msg.type === 'audio' && msg.mediaUrl && (
                         <audio src={msg.mediaUrl} controls className="w-full" />
                       )}
+                      {msg.type === 'document' && msg.mediaUrl && (
+                        <a
+                          href={msg.mediaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                          <span className="text-2xl">📄</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-blue-800 truncate">{msg.mediaFilename || 'Document'}</p>
+                            <p className="text-xs text-blue-600">Tap to open</p>
+                          </div>
+                        </a>
+                      )}
                       {msg.content && msg.type !== 'text' && (
                         <p className="text-gray-600 text-sm mt-2">{msg.content}</p>
                       )}

@@ -35,6 +35,7 @@ export const getTypeIcon = (type: string) => {
     case 'image': return '🖼️';
     case 'video': return '▶️';
     case 'audio': return '🔊';
+    case 'document': return '📄';
     default: return '📎';
   }
 };

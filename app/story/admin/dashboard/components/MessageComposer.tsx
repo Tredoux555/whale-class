@@ -9,15 +9,19 @@ interface MessageComposerProps {
   onAudioClear: () => void;
   selectedVideo: File | null;
   onVideoClear: () => void;
+  selectedDocument: File | null;
+  onDocumentClear: () => void;
   onImageSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onAudioSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onVideoSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDocumentSelect: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSendMessage: () => void;
   onClearAll: () => void;
   isSending: boolean;
   isUploadingImage: boolean;
   isUploadingAudio: boolean;
   isUploadingVideo: boolean;
+  isUploadingDocument: boolean;
   messageSent: boolean;
   messageError: string;
   selectedImage: File | null;
@@ -33,15 +37,19 @@ export function MessageComposer({
   onAudioClear,
   selectedVideo,
   onVideoClear,
+  selectedDocument,
+  onDocumentClear,
   onImageSelect,
   onAudioSelect,
   onVideoSelect,
+  onDocumentSelect,
   onSendMessage,
   onClearAll,
   isSending,
   isUploadingImage,
   isUploadingAudio,
   isUploadingVideo,
+  isUploadingDocument,
   messageSent,
   messageError,
   selectedImage,
@@ -52,11 +60,13 @@ export function MessageComposer({
       <div className="space-y-3">
         <textarea
           value={adminMessage}
-          onChange={(e) => onMessageChange(e.target.value)}
+          onChange={(e) => onMessageChange(e.target.value.slice(0, 50000))}
+          maxLength={50000}
           placeholder={selectedImage ? 'Add a caption (optional)...' : 'Write a message for your students...'}
           className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
           rows={3}
         />
+        <p className="text-xs text-gray-400 text-right">{adminMessage.length.toLocaleString()} / 50,000</p>
 
         {imagePreview && (
           <div className="relative inline-block">
@@ -102,6 +112,22 @@ export function MessageComposer({
           </div>
         )}
 
+        {selectedDocument && (
+          <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <span className="text-2xl">📄</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-blue-800 truncate">{selectedDocument.name}</p>
+              <p className="text-xs text-blue-600">{(selectedDocument.size / (1024 * 1024)).toFixed(1)} MB</p>
+            </div>
+            <button
+              onClick={onDocumentClear}
+              className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-red-600"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         <div className="flex gap-2 flex-wrap">
           <label className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
             📷 Add Photo
@@ -133,6 +159,16 @@ export function MessageComposer({
             />
           </label>
 
+          <label className="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 cursor-pointer transition-colors font-medium flex items-center gap-2">
+            📄 Add Document
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.odt,.ods,.odp,.zip,.epub,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/plain,text/csv"
+              onChange={onDocumentSelect}
+              className="hidden"
+            />
+          </label>
+
           <button
             onClick={onSendMessage}
             disabled={
@@ -140,11 +176,14 @@ export function MessageComposer({
               isUploadingImage ||
               isUploadingAudio ||
               isUploadingVideo ||
-              (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo)
+              isUploadingDocument ||
+              (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo && !selectedDocument)
             }
             className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
           >
-            {isUploadingVideo
+            {isUploadingDocument
+              ? '⟳ Uploading Document...'
+              : isUploadingVideo
               ? '⟳ Uploading Video...'
               : isUploadingAudio
               ? '⟳ Uploading Song...'
@@ -152,6 +191,8 @@ export function MessageComposer({
               ? '⟳ Uploading...'
               : isSending
               ? '⟳ Sending...'
+              : selectedDocument
+              ? '✓ Send Document'
               : selectedVideo
               ? '✓ Send Video'
               : selectedAudio
