@@ -183,6 +183,29 @@ export async function POST(request: NextRequest) {
 
     console.log(`[AddCustomWork] Created work "${trimmedName}" (${workKey}), tagged media ${media_id}, deduplicated=${deduplicated}`);
 
+    // Step 2.5: Fire-and-forget — passive global collection (owner-only staging table).
+    // Every accepted custom work becomes one row. Used later for studying global patterns.
+    // Failures here must NEVER affect the teacher response.
+    if (!deduplicated) {
+      supabase
+        .from('montree_global_works_staging')
+        .insert({
+          source_school_id: auth.schoolId,
+          source_classroom_id: child.classroom_id,
+          source_media_id: media_id,
+          source_work_id: workId,
+          name: trimmedName,
+          area: area,
+          description: description.trim().slice(0, 2000),
+          materials: materials.map((m: string) => m.trim()).filter(Boolean).slice(0, 20),
+          why_it_matters: why_it_matters ? why_it_matters.trim().slice(0, 2000) : null,
+          origin: 'add_custom_work',
+        })
+        .then(({ error }) => {
+          if (error) console.error('[AddCustomWork] Global staging insert failed (non-fatal):', error.message);
+        });
+    }
+
     // Step 3: Fire-and-forget — generate visual memory + enrich work
     // These happen AFTER the success response is sent to avoid blocking the teacher
     const classroomId = child.classroom_id;
