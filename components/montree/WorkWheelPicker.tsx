@@ -15,6 +15,9 @@ interface Work {
   status?: 'not_started' | 'presented' | 'practicing' | 'mastered' | 'completed';
   sequence?: number;
   dbSequence?: number;
+  area_key?: string;
+  area_name?: string;
+  area_color?: string;
 }
 
 interface WorkWheelPickerProps {
@@ -51,6 +54,9 @@ export default function WorkWheelPicker({
 
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [globalWorks, setGlobalWorks] = useState<Work[]>([]);
+  const [loadingGlobal, setLoadingGlobal] = useState(false);
+  const globalLoadedRef = useRef(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newWorkName, setNewWorkName] = useState('');
@@ -64,7 +70,7 @@ export default function WorkWheelPicker({
     name: area, icon: '📋', color: '#888'
   };
 
-  // Type-to-jump: scroll wheel to first matching work
+  // Type-to-jump: scroll wheel to first matching work in current area
   useEffect(() => {
     if (!searchText.trim() || works.length === 0) return;
     const needle = searchText.toLowerCase();
@@ -75,6 +81,43 @@ export default function WorkWheelPicker({
       if (navigator.vibrate) navigator.vibrate(10);
     }
   }, [searchText, works]);
+
+  // Lazy-load global works (all areas) on first non-empty search
+  useEffect(() => {
+    if (!searchText.trim() || globalLoadedRef.current || loadingGlobal) return;
+    const classroomId = getClassroomId();
+    if (!classroomId) return;
+    globalLoadedRef.current = true;
+    setLoadingGlobal(true);
+    fetch(`/api/montree/curriculum?classroom_id=${classroomId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const flat: Work[] = (data.curriculum || []).map((w: any) => {
+          const areaKey = w.area?.area_key || 'other';
+          const areaName = w.area?.name || AREA_CONFIG[areaKey]?.name || areaKey;
+          const areaColor = w.area?.color || AREA_CONFIG[areaKey]?.color || '#888';
+          return {
+            id: w.id,
+            name: w.name,
+            name_chinese: w.name_chinese,
+            status: w.status,
+            sequence: w.sequence,
+            dbSequence: w.sequence,
+            area_key: areaKey,
+            area_name: areaName,
+            area_color: areaColor,
+          };
+        });
+        setGlobalWorks(flat);
+      })
+      .catch(err => console.error('[WorkWheel] Global load failed:', err))
+      .finally(() => setLoadingGlobal(false));
+  }, [searchText, loadingGlobal]);
+
+  const globalMatches = searchText.trim()
+    ? globalWorks.filter(w => w.name.toLowerCase().includes(searchText.toLowerCase())).slice(0, 50)
+    : [];
 
   useEffect(() => {
     if (!isOpen) {
@@ -287,7 +330,49 @@ export default function WorkWheelPicker({
         </div>
       </div>
 
+      {/* Global search results overlay (all areas) */}
+      {searchText.trim() && (
+        <div className="flex-1 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="h-full overflow-y-auto px-4 pt-2 pb-4">
+            {loadingGlobal && globalMatches.length === 0 && (
+              <div className="text-white/40 text-center text-sm py-8">Searching all areas…</div>
+            )}
+            {!loadingGlobal && globalMatches.length === 0 && (
+              <div className="text-white/40 text-center text-sm py-8">No matches found</div>
+            )}
+            {globalMatches.map((w, i) => {
+              const sColor = STATUS_COLORS[w.status || ''] || null;
+              return (
+                <button
+                  key={`${w.id}-${i}`}
+                  onClick={() => { onSelectWork(w, w.status || 'not_started'); onClose(); }}
+                  className="w-full text-left px-4 py-3 rounded-xl mb-1.5 flex items-center gap-3 bg-white/6 hover:bg-white/12 border border-white/10 transition-colors"
+                >
+                  <div className="w-5 flex justify-center shrink-0">
+                    {sColor ? (
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sColor, boxShadow: `0 0 6px ${sColor}60` }} />
+                    ) : (
+                      <div className="w-2 h-2 rounded-full bg-white/20" />
+                    )}
+                  </div>
+                  <span className="flex-1 text-white text-sm font-medium truncate">{w.name}</span>
+                  {w.area_name && (
+                    <span
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wide"
+                      style={{ color: w.area_color, backgroundColor: (w.area_color || '#888') + '22' }}
+                    >
+                      {w.area_name}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Wheel Container */}
+      {!searchText.trim() && (
       <div className="flex-1 relative overflow-hidden" onClick={e => e.stopPropagation()}>
         {/* Fade overlays */}
         <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 via-black/40 to-transparent z-10 pointer-events-none" />
@@ -366,6 +451,7 @@ export default function WorkWheelPicker({
           <div style={{ height: 'calc(50% - 32px)' }} />
         </div>
       </div>
+      )}
 
       {/* Bottom Action Area */}
       <div className="pb-[max(0.75rem,env(safe-area-inset-bottom))] px-5 pt-3 shrink-0" onClick={e => e.stopPropagation()}>
