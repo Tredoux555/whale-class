@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { decryptMessage } from '@/lib/message-encryption';
+import { effectiveMessageType } from '@/lib/story/document-detect';
 
 function getJWTSecret(): Uint8Array {
   const secret = process.env.STORY_JWT_SECRET;
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
 
       return {
         id: row.id,
-        type: row.message_type,
+        type: effectiveMessageType(row.message_type, row.media_filename),
         content,
         mediaUrl: row.media_url,
         mediaFilename: row.media_filename,

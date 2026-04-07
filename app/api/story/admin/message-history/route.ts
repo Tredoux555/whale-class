@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { getSupabase } from '@/lib/supabase-client';
 import { decryptMessage } from '@/lib/message-encryption';
+import { effectiveMessageType } from '@/lib/story/document-detect';
 
 function getJWTSecret(): Uint8Array {
   const secret = process.env.STORY_JWT_SECRET;
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
       return {
         id: row.id,
         week_start_date: row.week_start_date,
-        message_type: row.message_type,
+        message_type: effectiveMessageType(row.message_type, row.media_filename),
         message_content: content,
         media_url: row.media_url,
         media_filename: row.media_filename,
