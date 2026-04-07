@@ -15,6 +15,81 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ## RECENT STATUS (Apr 7, 2026)
 
+### ⚡ Session 6 — Self-Learning Loop Complete + Three-Tier Accept Router (Apr 7, 2026)
+
+**Three-tier Accept router for photo audit — ✅ PUSHED (commit `97c9d151`):**
+Replaced confusing 4-button row (Add as new / Attach / Fix / Correct / Teach) with simplified 2-button "✅ Accept" + "✏️ Fix" on AI Draft cards. Accept button now routes through three tiers based on `closest_existing_match` similarity:
+- **Tier 1 (≥90%)**: Silently attaches photo to existing curriculum work via `/api/montree/guru/corrections` — no modal, no clicks
+- **Tier 2 (50-89%)**: Opens AcceptDraftModal with blue "🔗 Use 'WorkName'" as primary button, small "+ Add as new work anyway" link below
+- **Tier 3 (<50%)**: Opens AcceptDraftModal with violet "✨ Add to Curriculum" as primary
+- **Key files**: `app/montree/dashboard/photo-audit/page.tsx` (`findWorkByName`, `attachToExistingWork`, `openAcceptModal` three-tier router, lines 852-950), `components/montree/photo-audit/AcceptDraftModal.tsx` (`existingMatch` + `onUseExisting` props)
+- **Pre-existing 500 fix in same session** (commit `12ef1671`): `app/api/montree/guru/photo-insight/add-custom-work/route.ts` was inserting `area_key` directly but the table uses `area_id` (UUID FK) — same root cause as Session 4 weekly-admin bug. Added area_key→area_id resolution + sequence computation + materials as array + parent_description/why_it_matters/is_active in insert payload.
+
+**WorkWheelPicker cross-area search — ✅ PUSHED (commit `ab7d7f13`):**
+Search bar now searches ALL curriculum areas, not just the open one. Lazy-loads `globalWorks` on first non-empty search via `/api/montree/curriculum?classroom_id=X`. Renders flat list with area badges when search is active.
+
+**🧠 SELF-LEARNING LOOP COMPLETE — ✅ PUSHED (3 commits: `b54ef5e4`, `13cf25ff`, `256b6a6a`, `3923914c`):**
+
+The crown jewel. Per-classroom self-improving brain that gets measurably smarter every day from teacher Fix corrections. All hidden behind the scenes — no UI changes, the corpus lives entirely in `montree_visual_memory` (server-side moat).
+
+**Loop 1 — Write the corpus (`app/api/montree/guru/corrections/route.ts`)**:
+When a teacher Fixes a photo from work A → work B, the new `enrichVisualMemoryFromCorrection()` function:
+1. Reads cached `sonnet_draft.visual_description` from `montree_media` (rich + free) — falls back to fresh Haiku call only if no draft cached. `descriptionSource: 'sonnet_draft' | 'haiku_fresh'` tracked.
+2. **APPENDS** (not overwrites) the fingerprint to work B's `visual_description` column via `appendVisualFingerprint()` — multi-fingerprint accumulation with `||` separator, capped at 2500 chars with FIFO eviction. Idempotent: skips if first 80 chars already present.
+3. **APPENDS** a negative example (`"Looks similar to {B} — features: ..."`) to work A's `negative_descriptions[]` array via `appendNegativeExample()` — capped at 8 with FIFO. Idempotent on first 60 chars. Skips entirely if work A has no positive entry yet (would inject `LOOKS LIKE: (no fingerprint)` garbage into Pass 2).
+4. Source = `'correction'`, confidence = `0.95`. `invalidateClassroomEmbeddings(classroomId)` called after upsert.
+- **Key functions**: `enrichVisualMemoryFromCorrection`, `appendVisualFingerprint`, `appendNegativeExample` (all in corrections route)
+- **Legacy `generateAndStoreVisualMemory` kept** for first_capture path
+
+**Loop 2 — Read the corpus (`app/api/montree/guru/photo-insight/route.ts` ~line 798-918)**:
+ALREADY IN PLACE from prior session. Pass 2 (Haiku) loads up to 30 visual memory entries per request, filters to teacher-validated sources (`teacher_setup` confidence 1.0 OR `correction` confidence ≥0.9, OR any `is_custom=true`), and renders them at TOP of Pass 2 prompt as `LOOKS LIKE: ... / KEY MATERIALS: ... / DISTINGUISH FROM: ...` blocks. As Loop 1 grows the corpus, Pass 2 sees richer descriptions every day.
+
+**Loop 3 — Sonnet discriminator on hard cases (`app/api/montree/guru/photo-insight/route.ts` line 1656-1791)**:
+NEW. Inserted between Pass 2 success block and the existing Sonnet single-pass fallback. Gated on:
+- `!haiku_only` (skip in diagnostic mode)
+- `input && matchResult` (Pass 2 succeeded, mutually exclusive with single-pass fallback at line 1795 which gates on `!input || !matchResult`)
+- `matchResult.candidates.length >= 2`
+- `matchScore < 0.7 OR input.confidence < 0.5`
+- At least 1 of top 3 candidates has visual memory (otherwise nothing to discriminate against — logs `Pass 3 skipped — no top candidates have visual memory yet`)
+
+When fired, loads visual memory for top 3 candidates, builds `[A]/[B]/[C]` blocks with `LOOKS LIKE / KEY MATERIALS / NOT TO BE CONFUSED WITH`, calls Sonnet (`AI_MODEL`) via tool_use (`pick_work` tool with `choice: A|B|C|none`, `confidence`, `reasoning`). If Sonnet picks at confidence ≥0.6, replaces `finalWorkName/Area/Key`, bumps `matchScore` to `Math.max(matchScore, 0.85)`, sets `modelUsed = AI_MODEL`, mutates `input.confidence = max(input.confidence, out.confidence)` so downstream gates accept the result.
+- **Dynamic timeout** (commit `3923914c` audit fix): Was fixed 30s, blew the 45s `ROUTE_TIMEOUT_MS` budget when Pass 1+2 already ran ~15s. Now uses `Math.min(ROUTE_TIMEOUT_MS - elapsed - 3000, 25000)` — same pattern as the existing Sonnet fallback at line 1320.
+- **Cost curve**: Easy photos still flow Haiku-only at $0.006. Hard photos pay ~$0.02. As corpus grows, Pass 2 confidence climbs above the 0.7 gate, fewer photos hit Pass 3 — system gets cheaper AND more accurate over time.
+
+**SQL run by user in Supabase editor (Apr 7)**:
+```sql
+ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS cropped_storage_path TEXT;  -- migration 164
+ALTER TABLE montree_visual_memory
+  ADD COLUMN IF NOT EXISTS negative_descriptions TEXT[],
+  ADD COLUMN IF NOT EXISTS key_materials TEXT[],
+  ADD COLUMN IF NOT EXISTS description_confidence NUMERIC,
+  ADD COLUMN IF NOT EXISTS source TEXT,
+  ADD COLUMN IF NOT EXISTS source_media_id UUID,
+  ADD COLUMN IF NOT EXISTS photo_url TEXT,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+-- Plus unique constraint on (classroom_id, work_name) and idx on (classroom_id, description_confidence DESC, updated_at DESC)
+```
+Baseline showed Whale Class works already had `desc_chars=1000`, `negative_count=3`, `source=teacher_setup` from existing Teach the AI corpus — Loop 1 now appends to these existing rows.
+
+**Watch in Railway logs**:
+- `[VisualMemory] Enriched "X" via sonnet_draft + negative on "Y"` — Loop 1 firing
+- `[PhotoInsight] Pass 3 budget: Xms (Yms elapsed)` — Loop 3 entering
+- `[PhotoInsight] Pass 3 discriminator (Xms): "OldGuess" → "BetterGuess" (conf 0.85) — reasoning...` — Loop 3 saving a hard call
+- `[PhotoInsight] Pass 3 skipped — no top candidates have visual memory yet` — should appear LESS over time as corpus fills
+
+**Architectural decisions**:
+- The moat lives in `montree_visual_memory`. NO UI exposes it. No "AI brain" page. No "learned descriptions" admin view. Competitors screen-recording the app see a clean Montessori tracker; the intelligence is invisible.
+- Negatives only accumulate on works with at least one positive fingerprint (avoids stub-row pollution of Pass 2).
+- Loop 1 mutates `input.confidence` in-memory only — no cross-request leakage.
+- Pass 3 and the legacy single-pass Sonnet fallback are mutually exclusive by gate condition.
+
+**Photo audit "stale Sonnet draft" issue — KNOWN, not yet fixed**:
+After teacher Fixes a photo (correctly re-tagging it), the photo can still appear in Photo Review with an "Accept AI Draft" button because `sonnet_draft` is cached on `montree_media` and Fix doesn't clear it. When teacher clicks Accept, the modal reads the stale `closest_existing_match` from the cached draft and offers a now-irrelevant suggestion. Two fixes to ship next session:
+1. After Fix correction in `attachToExistingWork`, the photo SHOULD already be removed from the audit grid via `setPhotos(prev => prev.filter(p => p.id !== photo.id))` — but verify it's also persisted as `teacher_confirmed=true` so it doesn't reappear on refresh.
+2. In `openAcceptModal`, if `photo.work_id` is already set (teacher already decided), ignore `closest_existing_match` from the cached Sonnet draft and treat as Tier 3 directly.
+
+---
+
 ### ⚡ Session 5 — Story Fixes, Flag Dedup, Crop Preservation (Apr 6-7, 2026)
 
 **Story system fixes — ✅ PUSHED:**
@@ -279,7 +354,13 @@ Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex 
 - **CLIP/SigLIP — PERMANENTLY REMOVED (Apr 4, 2026).** Stub files remain for type exports only. All functions are no-ops. Production uses Haiku two-pass exclusively.
 - **Smart Capture** uses two-pass describe-then-match: Pass 1 (Haiku + image) describes what's seen, Pass 2 (Haiku + text) matches to curriculum. Sonnet fallback if both fail.
 - **Photo identification cost:** ~$0.006/photo via Haiku two-pass pipeline.
-- **Per-classroom visual memory** self-learning system: two paths — (1) "Teach the AI" button uses Sonnet to generate 5-field descriptions (visual_description, parent_description, why_it_matters, key_materials, negative_descriptions) stored with source='teacher_setup', confidence=1.0. (2) "Fix" corrections use Haiku for quick descriptions, source='correction', confidence=0.9. Both injected into Pass 2 prompts. Auto-generated onboarding/first_capture descriptions (confidence=0.8) are NOT injected — they caused bias reinforcement. Visual memory placed at TOP of Pass 2 prompt before the visual ID guide.
+- **Per-classroom visual memory** self-learning system (THE MOAT — Session 6 completed all 3 loops): three paths feed `montree_visual_memory`:
+  - (1) "Teach the AI" button uses Sonnet to generate 5-field descriptions (visual_description, parent_description, why_it_matters, key_materials, negative_descriptions) stored with source='teacher_setup', confidence=1.0.
+  - (2) "Fix" corrections (Loop 1) now APPEND a rich fingerprint via `enrichVisualMemoryFromCorrection()` in `corrections/route.ts` — prefers cached `sonnet_draft.visual_description` from `montree_media` (free, rich), falls back to fresh Haiku call. Multi-fingerprint accumulation in `visual_description` column with `||` separator, capped 2500 chars FIFO. Source='correction', confidence=0.95. ALSO appends a negative example to the original (wrong) work's `negative_descriptions[]` array.
+  - (3) Auto-generated onboarding/first_capture descriptions (confidence=0.8) are NOT injected into Pass 2 — they caused bias reinforcement.
+- **Pass 2** loads up to 30 entries, filters to teacher-validated (`teacher_setup` ≥1.0 OR `correction` ≥0.9 OR `is_custom=true`), renders LOOKS LIKE / KEY MATERIALS / DISTINGUISH FROM blocks at TOP of prompt.
+- **Pass 3** (Loop 3, Session 6) — Sonnet discriminator on low-confidence Pass 2 results (`matchScore < 0.7 OR input.confidence < 0.5`, requires ≥2 candidates with at least 1 having visual memory). Top 3 candidates rendered as A/B/C blocks with visual memory, Sonnet picks via tool_use. Cost ramps DOWN over time as corpus grows.
+- **Hidden moat**: NO UI exposes the corpus. Competitors copying the app see a clean Montessori tracker; the intelligence is invisible and grows in slow motion from real classroom use.
 - **Guru** uses Sonnet for all users (teachers + parents). Haiku for daily coach features. Self-improving brain system grows from every conversation.
 - **All client-facing photo URLs** use Cloudflare-cached proxy (`getProxyUrl()`). Server-to-server URLs use direct Supabase.
 - **Cross-pollination security:** Every route accepting `child_id` MUST call `verifyChildBelongsToSchool()`. No exceptions.
@@ -493,7 +574,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 163 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class). **Migration 164 (cropped_storage_path) needs manual run** via Supabase SQL editor.
+All migrations through 164 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class), 164 (cropped_storage_path on montree_media — run Apr 7 via Supabase SQL editor). **Migration 166 (`montree_global_works_staging`) still pending** from prior session. The Apr 7 self-learning loop SQL also added safety-net columns to `montree_visual_memory` (negative_descriptions, key_materials, description_confidence, source, source_media_id, photo_url, updated_at) — all `IF NOT EXISTS`, idempotent.
 
 ---
 
