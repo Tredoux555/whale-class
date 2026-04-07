@@ -41,6 +41,20 @@ interface AuditPhoto {
   captured_at: string;
   caption: string | null;
   status: string | null;
+  identification_status?: string | null;
+  identification_confidence?: number | null;
+  sonnet_draft?: {
+    visual_description?: string;
+    proposed_name?: string;
+    suggested_area?: string;
+    parent_description?: string;
+    why_it_matters?: string;
+    key_materials?: string[];
+    closest_existing_match?: { work_name?: string; similarity?: number } | null;
+    confidence?: number;
+    work_key?: string;
+    drafted_at?: string;
+  } | null;
 }
 
 type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports';
@@ -686,6 +700,46 @@ export default function PhotoAuditPage() {
   useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
   useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
 
+  // One-shot recovery sweep on mount: ask the server for a list of stuck
+  // photo-identification jobs (status null/pending/failed + stale attempted_at),
+  // then fire /process for each one in our own background loop. Each /process
+  // call lives in its own request lifecycle, so Sonnet's 45s timeout can't
+  // stall this page. Refetch once at the end to surface any new drafts/matches.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await montreeApi('/api/montree/photo-identification/sweep', { method: 'GET' });
+        if (!res.ok) return;
+        const json = await res.json().catch(() => ({}));
+        const ids: string[] = Array.isArray(json?.media_ids) ? json.media_ids : [];
+        if (ids.length === 0 || cancelled) return;
+        // Fire /process calls sequentially but in the background — DO NOT block the UI.
+        let completed = 0;
+        for (const id of ids) {
+          if (cancelled) return;
+          try {
+            await montreeApi('/api/montree/photo-identification/process', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ media_id: id, locale: 'en' }),
+            });
+            completed++;
+          } catch (err) {
+            console.error('[PhotoIdSweep] /process failed for', id, err);
+          }
+        }
+        if (!cancelled && completed > 0) {
+          fetchPhotos();
+        }
+      } catch (err) {
+        console.error('[PhotoIdSweep] client sweep failed (non-fatal):', err);
+      }
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleZoneChange = (z: Zone) => { setZone(z); setPage(0); setSelectedIds(new Set()); };
   const handleDateChange = (d: DateRange) => { setDateRange(d); setPage(0); setSelectedIds(new Set()); };
 
@@ -786,6 +840,60 @@ export default function PhotoAuditPage() {
       toast.success(t('audit.photoDeleted'));
     } catch {
       toast.error(t('audit.deleteFailed'));
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Accept a Sonnet draft as a brand new custom work in the classroom curriculum.
+  // Reuses the existing add-custom-work endpoint, then removes the photo from the
+  // audit grid (it's now confirmed + tagged).
+  const handleAcceptDraft = async (photo: AuditPhoto) => {
+    const draft = photo.sonnet_draft;
+    if (!draft || !draft.proposed_name || !draft.suggested_area || !draft.parent_description) {
+      toast.error('Draft is missing required fields');
+      return;
+    }
+    if (!photo.child_id) {
+      toast.error('Photo has no child tagged — tag a child first');
+      return;
+    }
+    setProcessingId(photo.id);
+    try {
+      const res = await montreeApi('/api/montree/guru/photo-insight/add-custom-work', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          media_id: photo.id,
+          child_id: photo.child_id,
+          name: draft.proposed_name,
+          area: draft.suggested_area,
+          description: draft.parent_description,
+          materials: draft.key_materials && draft.key_materials.length > 0
+            ? draft.key_materials
+            : ['(materials inferred from photo)'],
+          why_it_matters: draft.why_it_matters || null,
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Failed to add custom work');
+      }
+      // Remove from grid — photo is now confirmed via add-custom-work + the new work_id
+      const removedZone = photo.zone || 'untagged';
+      setPhotos(prev => prev.filter(p => p.id !== photo.id));
+      setCounts(prev => ({
+        ...prev,
+        ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+        ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
+      toast.success(`✨ Added "${draft.proposed_name}" to curriculum`);
+    } catch (err) {
+      console.error('[AcceptDraft] Failed:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to add work');
     } finally {
       setProcessingId(null);
     }
@@ -1629,6 +1737,7 @@ export default function PhotoAuditPage() {
               onDelete={() => handleDeletePhoto(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
+              onAcceptDraft={() => handleAcceptDraft(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
@@ -1956,7 +2065,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onSaveNote, processing, workStatus, onSetStatus, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onSaveNote, processing, workStatus, onSetStatus, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -1967,6 +2076,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onDelete: () => void;
   rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
+  onAcceptDraft: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   workStatus: string | null;
@@ -2036,6 +2146,62 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           <div className="w-full h-full flex items-center justify-center text-gray-300 text-3xl">📷</div>
         )}
       </div>
+
+      {/* Sonnet draft — rich AI proposal for unidentified photos */}
+      {photo.sonnet_draft && photo.identification_status === 'sonnet_drafted' && (
+        <div className="p-2 bg-violet-50 border-t-2 border-violet-300">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-[9px] font-bold text-violet-700 uppercase tracking-wide">✨ AI Draft</span>
+            {typeof photo.sonnet_draft.confidence === 'number' && (
+              <span className="text-[9px] text-violet-500">· {Math.round(photo.sonnet_draft.confidence * 100)}%</span>
+            )}
+          </div>
+          {photo.sonnet_draft.proposed_name && (
+            <p className="text-[11px] font-bold text-violet-900 leading-tight">{photo.sonnet_draft.proposed_name}</p>
+          )}
+          {photo.sonnet_draft.suggested_area && (
+            <p className="text-[9px] text-violet-600 capitalize">{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
+          )}
+          {photo.sonnet_draft.visual_description && (
+            <p className="text-[9px] text-violet-700 leading-snug mt-1 line-clamp-3">{photo.sonnet_draft.visual_description}</p>
+          )}
+          {photo.sonnet_draft.key_materials && photo.sonnet_draft.key_materials.length > 0 && (
+            <p className="text-[9px] text-violet-600 mt-1"><span className="font-semibold">Materials:</span> {photo.sonnet_draft.key_materials.slice(0, 4).join(', ')}</p>
+          )}
+          {photo.sonnet_draft.parent_description && (
+            <p className="text-[9px] text-violet-700 leading-snug mt-1 line-clamp-3 italic">"{photo.sonnet_draft.parent_description}"</p>
+          )}
+          {photo.sonnet_draft.why_it_matters && (
+            <p className="text-[9px] text-violet-600 leading-snug mt-1 line-clamp-2"><span className="font-semibold">Why:</span> {photo.sonnet_draft.why_it_matters}</p>
+          )}
+          {photo.sonnet_draft.closest_existing_match?.work_name && (
+            <p className="text-[9px] text-amber-700 mt-1">
+              ≈ Similar to <span className="font-semibold">{photo.sonnet_draft.closest_existing_match.work_name}</span>
+              {typeof photo.sonnet_draft.closest_existing_match.similarity === 'number' && (
+                <span className="text-amber-500"> ({Math.round(photo.sonnet_draft.closest_existing_match.similarity * 100)}%)</span>
+              )}
+            </p>
+          )}
+          <div className="flex gap-1 mt-1.5">
+            <button
+              onClick={onAcceptDraft}
+              disabled={processing}
+              className="flex-1 text-[10px] py-1 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
+              title="Create new custom work using this draft"
+            >
+              {processing ? '...' : '✨ Add as new'}
+            </button>
+            <button
+              onClick={onCorrect}
+              disabled={processing}
+              className="flex-1 text-[10px] py-1 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
+              title="Attach this photo to an existing curriculum work"
+            >
+              🔗 Attach
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Info + actions */}
       <div className="p-2 bg-white">

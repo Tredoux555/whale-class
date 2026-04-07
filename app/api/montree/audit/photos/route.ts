@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     // Step 3: Query media — exclude teacher_confirmed photos (they're done, never show again)
     let mediaQuery = supabase
       .from('montree_media')
-      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags', { count: 'exact' })
+      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, sonnet_draft', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
       .neq('teacher_confirmed', true)
@@ -230,6 +230,9 @@ export async function GET(request: NextRequest) {
         captured_at: m.captured_at || m.created_at,
         caption: m.caption || null,
         status: (m.child_id && work?.name ? progressMap.get(`${m.child_id}:${work.name.toLowerCase()}`) : null) || null,
+        identification_status: m.identification_status || null,
+        identification_confidence: m.identification_confidence ?? null,
+        sonnet_draft: m.sonnet_draft || null,
       };
     });
 
@@ -237,6 +240,14 @@ export async function GET(request: NextRequest) {
     const filtered = zone === 'all' || zone === 'untagged'
       ? photos
       : photos.filter(p => p.zone === zone);
+
+    // Sonnet drafts surface first within the result set so teachers see them at top of Needs Review
+    filtered.sort((a, b) => {
+      const aDraft = a.identification_status === 'sonnet_drafted' ? 1 : 0;
+      const bDraft = b.identification_status === 'sonnet_drafted' ? 1 : 0;
+      if (aDraft !== bDraft) return bDraft - aDraft;
+      return 0; // preserve captured_at DESC from query
+    });
 
     return NextResponse.json({
       success: true, photos: filtered, total: totalCount || 0, counts, limit, offset,
