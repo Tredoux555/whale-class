@@ -335,6 +335,31 @@ export async function POST(req: NextRequest) {
       mediaInsertError = retryError;
     }
 
+    // CHECK constraint fallback: if 'document' isn't in the allowed enum yet,
+    // store as 'image' — readers detect documents by filename extension.
+    if (
+      mediaInsertError &&
+      mediaType === 'document' &&
+      (mediaInsertError.code === '23514' || mediaInsertError.message?.includes('check constraint'))
+    ) {
+      console.warn('[Send] message_type=document not allowed by CHECK constraint — falling back to image');
+      const fallbackRecord: Record<string, unknown> = {
+        week_start_date: weekStartDate,
+        message_type: 'image',
+        message_content: encryptedCaption,
+        media_url: mediaUrl,
+        media_filename: file.name || filename,
+        author: adminUsername,
+        expires_at: expiresAt.toISOString(),
+        is_expired: false,
+      };
+      if (sessionToken) fallbackRecord.session_token = sessionToken;
+      if (loginLogId) fallbackRecord.login_log_id = loginLogId;
+      fallbackRecord.is_from_admin = true;
+      const { error: fbError } = await supabase.from('story_message_history').insert(fallbackRecord);
+      mediaInsertError = fbError;
+    }
+
     if (mediaInsertError) {
       console.error('[Send] Media message DB insert failed:', mediaInsertError);
       return NextResponse.json({ error: 'Failed to save media message' }, { status: 500 });
