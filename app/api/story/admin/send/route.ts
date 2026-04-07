@@ -337,13 +337,15 @@ export async function POST(req: NextRequest) {
 
     // CHECK constraint fallback: if 'document' isn't in the allowed enum yet,
     // store as 'image' — readers detect documents by filename extension.
+    // Use a minimal record (no session columns) so this works even on
+    // databases where the session-linking migration hasn't been applied.
     if (
       mediaInsertError &&
       mediaType === 'document' &&
       (mediaInsertError.code === '23514' || mediaInsertError.message?.includes('check constraint'))
     ) {
       console.warn('[Send] message_type=document not allowed by CHECK constraint — falling back to image');
-      const fallbackRecord: Record<string, unknown> = {
+      const minimalFallback = {
         week_start_date: weekStartDate,
         message_type: 'image',
         message_content: encryptedCaption,
@@ -353,10 +355,10 @@ export async function POST(req: NextRequest) {
         expires_at: expiresAt.toISOString(),
         is_expired: false,
       };
-      if (sessionToken) fallbackRecord.session_token = sessionToken;
-      if (loginLogId) fallbackRecord.login_log_id = loginLogId;
-      fallbackRecord.is_from_admin = true;
-      const { error: fbError } = await supabase.from('story_message_history').insert(fallbackRecord);
+      const { error: fbError } = await supabase.from('story_message_history').insert(minimalFallback);
+      if (fbError) {
+        console.error('[Send] Document image-fallback insert failed:', fbError);
+      }
       mediaInsertError = fbError;
     }
 
