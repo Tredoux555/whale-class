@@ -17,7 +17,6 @@ import {
   getPendingEntries, updateEntryStatus, findByContentHash,
   isQueueFull, cleanupOldEntries, getAllEntries, deleteEntry,
 } from './queue-store';
-import { startAnalysis } from '@/lib/montree/photo-insight-store';
 
 // ============================================
 // STATE
@@ -423,14 +422,26 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
       }
     }
 
-    // Trigger Smart Capture analysis — SKIP if teacher already tagged the work
-    // When work_id is set, the teacher selected the work from WorkWheelPicker
-    // before taking the photo. No need for AI vision — saves $0.006-0.06 per photo.
-    if (result.media?.id && entry.child_id && !entry.work_id) {
+    // Background photo identification — fire-and-forget the new "take and tag" pipeline.
+    // SKIP if teacher already tagged the work (work_id set means manual selection).
+    // The /process route runs two-pass Haiku → Sonnet draft fallback, writes results
+    // to montree_media (identification_status, work_id or sonnet_draft). Photo Audit
+    // surfaces the outcomes. `keepalive: true` so the request survives page navigation.
+    if (result.media?.id && !entry.work_id) {
       const locale = typeof localStorage !== 'undefined'
-        ? localStorage.getItem('montree_lang') || 'en'
+        ? (localStorage.getItem('montree_lang') === 'zh' ? 'zh' : 'en')
         : 'en';
-      startAnalysis(result.media.id, entry.child_id, locale);
+      try {
+        fetch('/api/montree/photo-identification/process', {
+          method: 'POST',
+          credentials: 'same-origin',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ media_id: result.media.id, locale }),
+        }).catch(err => console.error('[PhotoIdentification] fire-and-forget failed (will be swept on Photo Audit load):', err));
+      } catch (err) {
+        console.error('[PhotoIdentification] fetch dispatch threw:', err);
+      }
     }
 
   } catch (err) {
