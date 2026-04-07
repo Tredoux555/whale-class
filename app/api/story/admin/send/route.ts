@@ -67,6 +67,30 @@ const MEDIA_CONFIG = {
     defaultExt: 'mp4',
     filenamePrefix: 'admin_video',
   },
+  document: {
+    mimePrefix: 'application/',
+    allowedExts: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf', 'odt', 'ods', 'odp', 'zip', 'epub'],
+    allowedMimes: [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/vnd.oasis.opendocument.text',
+      'application/vnd.oasis.opendocument.spreadsheet',
+      'application/vnd.oasis.opendocument.presentation',
+      'application/rtf',
+      'application/zip',
+      'application/epub+zip',
+      'text/plain',
+      'text/csv',
+    ],
+    maxSize: 50 * 1024 * 1024, // 50MB
+    defaultExt: 'pdf',
+    filenamePrefix: 'admin_doc',
+  },
 } as const;
 
 type MediaType = keyof typeof MEDIA_CONFIG;
@@ -76,11 +100,15 @@ function detectMediaType(file: File): MediaType | null {
   if (mime.startsWith('video/')) return 'video';
   if (mime.startsWith('image/')) return 'image';
   if (mime.startsWith('audio/')) return 'audio';
+  if (mime.startsWith('application/') || mime.startsWith('text/')) {
+    if (MEDIA_CONFIG.document.allowedMimes.includes(mime as never)) return 'document';
+  }
   // Fallback: check extension (mobile browsers sometimes report wrong/empty MIME)
   const ext = file.name.split('.').pop()?.toLowerCase();
   if (ext && MEDIA_CONFIG.video.allowedExts.includes(ext)) return 'video';
   if (ext && MEDIA_CONFIG.image.allowedExts.includes(ext)) return 'image';
   if (ext && MEDIA_CONFIG.audio.allowedExts.includes(ext)) return 'audio';
+  if (ext && MEDIA_CONFIG.document.allowedExts.includes(ext)) return 'document';
   return null;
 }
 
@@ -91,9 +119,12 @@ function validateFile(file: File, type: MediaType): string | null {
   // so also check file extension as fallback (same logic as detectMediaType)
   const ext = file.name.split('.').pop()?.toLowerCase();
   const mimeOk = file.type && (
-    file.type.startsWith(config.mimePrefix) || config.allowedMimes.includes(file.type)
+    file.type.startsWith(config.mimePrefix) ||
+    config.allowedMimes.includes(file.type as never) ||
+    // Documents allow text/* in addition to application/*
+    (type === 'document' && file.type.startsWith('text/'))
   );
-  const extOk = ext && config.allowedExts.includes(ext);
+  const extOk = ext && config.allowedExts.includes(ext as never);
 
   if (!mimeOk && !extOk) {
     return `Only ${type} files are allowed`;
@@ -132,6 +163,10 @@ export async function POST(req: NextRequest) {
 
       if (!message || typeof message !== 'string' || message.trim().length === 0) {
         return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+      }
+
+      if (message.length > 50000) {
+        return NextResponse.json({ error: 'Message too long (max 50,000 characters)' }, { status: 400 });
       }
 
       const trimmedMessage = message.trim();

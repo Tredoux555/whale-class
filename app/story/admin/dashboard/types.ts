@@ -16,7 +16,7 @@ export interface LoginLog {
 export interface Message {
   id: number;
   week_start_date: string;
-  message_type: 'text' | 'image' | 'video' | 'audio';
+  message_type: 'text' | 'image' | 'video' | 'audio' | 'document';
   message_content: string | null;
   media_url: string | null;
   media_filename: string | null;

@@ -28,6 +28,9 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
   const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
 
+  const [selectedDocument, setSelectedDocument] = useState<File | null>(null);
+  const [uploadingDocument, setUploadingDocument] = useState(false);
+
   const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -72,8 +75,28 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
     setSelectedVideo(null);
   }, []);
 
+  const handleDocumentSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDocument(file);
+      setSelectedImage(null);
+      setImagePreview(null);
+      setSelectedAudio(null);
+      setSelectedVideo(null);
+    }
+  }, []);
+
+  const clearDocument = useCallback(() => {
+    setSelectedDocument(null);
+  }, []);
+
   const sendAdminMessage = useCallback(async () => {
-    if (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo) return;
+    if (!adminMessage.trim() && !selectedImage && !selectedAudio && !selectedVideo && !selectedDocument) return;
+
+    if (adminMessage.length > 50000) {
+      setMessageError('Message too long (max 50,000 characters)');
+      return;
+    }
 
     setSendingMessage(true);
     setMessageSent(false);
@@ -82,7 +105,43 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
     try {
       const session = getSession();
 
-      if (selectedVideo) {
+      if (selectedDocument) {
+        if (selectedDocument.size > 50 * 1024 * 1024) {
+          const sizeMB = (selectedDocument.size / (1024 * 1024)).toFixed(1);
+          setMessageError(`Document is too large (${sizeMB}MB). Maximum is 50MB.`);
+          setSendingMessage(false);
+          return;
+        }
+
+        setUploadingDocument(true);
+        const formData = new FormData();
+        formData.append('file', selectedDocument);
+        formData.append('caption', adminMessage.trim());
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS);
+
+        const res = await fetch('/api/story/admin/send', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session}` },
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+        const data = await safeJson(res);
+        setUploadingDocument(false);
+
+        if (res.ok) {
+          setAdminMessage('');
+          setSelectedDocument(null);
+          setMessageSent(true);
+          await onMessageSent();
+          setTimeout(() => setMessageSent(false), 3000);
+        } else {
+          setMessageError(data.error || 'Failed to send document');
+        }
+      } else if (selectedVideo) {
         // Pre-upload size check
         if (selectedVideo.size > 300 * 1024 * 1024) {
           const sizeMB = (selectedVideo.size / (1024 * 1024)).toFixed(1);
@@ -210,8 +269,9 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
       setUploadingImage(false);
       setUploadingAudio(false);
       setUploadingVideo(false);
+      setUploadingDocument(false);
     }
-  }, [adminMessage, selectedImage, selectedAudio, selectedVideo, getSession, onMessageSent]);
+  }, [adminMessage, selectedImage, selectedAudio, selectedVideo, selectedDocument, getSession, onMessageSent]);
 
   const clearAllMedia = useCallback(() => {
     setAdminMessage('');
@@ -219,7 +279,8 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
     clearImage();
     clearAudio();
     clearVideo();
-  }, [clearImage, clearAudio, clearVideo]);
+    clearDocument();
+  }, [clearImage, clearAudio, clearVideo, clearDocument]);
 
   return {
     adminMessage,
@@ -240,6 +301,10 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
     clearAudio,
     handleVideoSelect,
     clearVideo,
+    selectedDocument,
+    uploadingDocument,
+    handleDocumentSelect,
+    clearDocument,
     sendAdminMessage,
     clearAllMedia
   };

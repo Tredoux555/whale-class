@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
 
+    if (message.length > 50000) {
+      return NextResponse.json({ error: 'Message too long (max 50,000 characters)' }, { status: 400 });
+    }
+
     const supabase = getSupabase();
     const weekStart = getCurrentWeekStart();
     const msgAuthor = author || username;
