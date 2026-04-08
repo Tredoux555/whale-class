@@ -33,6 +33,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { randomUUID } from 'crypto';
 import { enrichCustomWorkInBackground } from '@/lib/montree/photo-identification/enrich-custom-work';
+import { POST as correctionsPost } from '@/app/api/montree/guru/corrections/route';
 
 const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
@@ -317,17 +318,25 @@ async function delegateToCorrections(
   startedAt: number,
   pathLabel: string
 ): Promise<NextResponse> {
-  const origin = request.nextUrl.origin;
-  const cookie = request.headers.get('cookie') || '';
+  // In-process invocation — avoids flaky internal HTTP fetches on Railway/serverless.
+  // Build a synthetic NextRequest that mirrors the incoming cookies + headers so
+  // verifySchoolRequest() works inside the corrections route.
   try {
-    const res = await fetch(`${origin}/api/montree/guru/corrections`, {
+    const cookie = request.headers.get('cookie') || '';
+    const xff = request.headers.get('x-forwarded-for') || '';
+    const ua = request.headers.get('user-agent') || '';
+    const url = new URL('/api/montree/guru/corrections', request.nextUrl.origin);
+    const synthetic = new NextRequest(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         cookie,
+        'x-forwarded-for': xff,
+        'user-agent': ua,
       },
       body: JSON.stringify(body),
     });
+    const res = await correctionsPost(synthetic as any);
     const json: any = await res.json().catch(() => ({}));
     const elapsed = Date.now() - startedAt;
     if (!res.ok || !json?.success) {
@@ -339,8 +348,8 @@ async function delegateToCorrections(
     }
     console.log(`[PhotoAuditResolve] ${pathLabel} OK (${elapsed}ms)`);
     return NextResponse.json({ success: true, path: pathLabel, corrections: json });
-  } catch (err) {
-    console.error(`[PhotoAuditResolve] ${pathLabel} delegation exception:`, err);
-    return NextResponse.json({ success: false, error: 'Delegation failed' }, { status: 500 });
+  } catch (err: any) {
+    console.error(`[PhotoAuditResolve] ${pathLabel} delegation exception:`, err?.message, err?.stack);
+    return NextResponse.json({ success: false, error: `Delegation failed: ${err?.message || 'unknown'}` }, { status: 500 });
   }
 }
