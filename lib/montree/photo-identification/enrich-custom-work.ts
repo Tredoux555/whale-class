@@ -75,6 +75,33 @@ export async function enrichCustomWorkInBackground(input: EnrichInput): Promise<
         });
     }
 
+    // 2b. Check whether the curriculum work row already has a
+    //     parent_description seeded (e.g. by the resolve route copying
+    //     the cached sonnet_draft fields into the insert). If so, skip
+    //     the expensive Sonnet re-call and jump straight to Chinese
+    //     translation of the existing content.
+    const { data: existingWorkRow } = await supabase
+      .from('montree_classroom_curriculum_works')
+      .select('parent_description, why_it_matters, materials')
+      .eq('id', workId)
+      .maybeSingle();
+
+    if (existingWorkRow?.parent_description && existingWorkRow?.why_it_matters) {
+      console.log(`[EnrichCustomWork] "${workName}" already seeded — translating only`);
+      autoTranslateToChinese({
+        classroomId,
+        workName,
+        parentDescription: existingWorkRow.parent_description as string,
+        whyItMatters: (existingWorkRow.why_it_matters as string) || '',
+      }).catch((err) =>
+        console.error(
+          `[EnrichCustomWork] autoTranslate failed for "${workName}":`,
+          err?.message || err
+        )
+      );
+      return;
+    }
+
     // 3. Call Sonnet to generate the rich parent-facing description.
     if (!anthropic) {
       console.warn('[EnrichCustomWork] No Anthropic key — skipping Sonnet enrichment');
