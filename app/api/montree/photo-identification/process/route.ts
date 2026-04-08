@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { media_id?: string; locale?: 'en' | 'zh' };
+  let body: { media_id?: string; locale?: 'en' | 'zh'; force?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -130,12 +130,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  // Idempotency: skip if already processed
+  // Idempotency: skip if already processed (unless force=true, used to re-run
+  // the latest pipeline against the existing audit queue)
   if (
-    media.identification_status === 'haiku_matched' ||
-    media.identification_status === 'sonnet_drafted' ||
-    media.identification_status === 'confirmed' ||
-    media.identification_status === 'skipped'
+    !body.force &&
+    (media.identification_status === 'haiku_matched' ||
+      media.identification_status === 'sonnet_drafted' ||
+      media.identification_status === 'confirmed' ||
+      media.identification_status === 'skipped')
   ) {
     return NextResponse.json({
       success: true,
@@ -143,6 +145,13 @@ export async function POST(request: NextRequest) {
       reason: `already in status ${media.identification_status}`,
       status: media.identification_status,
     });
+  }
+  // When forced, clear stale draft so the new pipeline writes a fresh one
+  if (body.force) {
+    await supabase
+      .from('montree_media')
+      .update({ identification_status: null, sonnet_draft: null })
+      .eq('id', mediaId);
   }
 
   // Load child for context (name + age)
