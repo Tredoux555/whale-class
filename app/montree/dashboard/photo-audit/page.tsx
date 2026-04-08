@@ -934,20 +934,28 @@ export default function PhotoAuditPage() {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
-    const match = photo.sonnet_draft?.closest_existing_match;
+    const draft = photo.sonnet_draft;
+    // Tier 1a — closest_existing_match similarity ≥ 0.8
+    const match = draft?.closest_existing_match;
     const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
     if (match?.work_name && sim >= 0.8) {
-      const resolved = findWorkByName(
-        match.work_name,
-        photo.sonnet_draft?.suggested_area
-      );
+      const resolved = findWorkByName(match.work_name, draft?.suggested_area);
       if (resolved) {
-        console.log(
-          `[ThisIsSheet] Tier 1 auto-attach: "${match.work_name}" (${Math.round(
-            sim * 100
-          )}%) — skipping sheet`
-        );
+        console.log(`[ThisIsSheet] Tier 1a auto-attach: "${match.work_name}" ${Math.round(sim * 100)}% — skipping sheet`);
         attachToExistingWork(photo, resolved.work, resolved.areaKey);
+        return;
+      }
+    }
+    // Tier 1b — Sonnet's proposed_name already IS an existing curriculum work
+    // (confidence ≥ 0.8). This catches the case where closest_existing_match
+    // points at a stale Haiku guess but Sonnet renamed the photo to a real work.
+    const proposed = draft?.proposed_name?.trim();
+    const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
+    if (proposed && draftConf >= 0.8) {
+      const resolvedProposed = findWorkByName(proposed, draft?.suggested_area);
+      if (resolvedProposed) {
+        console.log(`[ThisIsSheet] Tier 1b auto-attach via proposed_name: "${proposed}" ${Math.round(draftConf * 100)}% — skipping sheet`);
+        attachToExistingWork(photo, resolvedProposed.work, resolvedProposed.areaKey);
         return;
       }
     }
