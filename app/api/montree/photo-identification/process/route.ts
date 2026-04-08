@@ -325,16 +325,30 @@ export async function POST(request: NextRequest) {
   const draft = sonnetResult.draft as any;
   const gateBMatch = draft?.closest_existing_match;
   const gateBSim = typeof gateBMatch?.similarity === 'number' ? gateBMatch.similarity : 0;
-  const gateBName = typeof gateBMatch?.work_name === 'string' ? gateBMatch.work_name.trim() : '';
+  const closestName = typeof gateBMatch?.work_name === 'string' ? gateBMatch.work_name.trim() : '';
+  const proposedName = typeof draft?.proposed_name === 'string' ? draft.proposed_name.trim() : '';
+  const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
 
-  if (gateBName && gateBSim >= 0.8 && media.classroom_id) {
+  // Gate B fires on EITHER:
+  //   (a) closest_existing_match similarity ≥ 0.8, OR
+  //   (b) proposed_name matches a real curriculum row AND draft.confidence ≥ 0.8
+  // (b) catches the case where Haiku's closest_existing_match is stale garbage
+  // but Sonnet correctly renamed the photo to an actual curriculum work.
+  const gateBCandidates: Array<{ name: string; score: number; reason: string }> = [];
+  if (closestName && gateBSim >= 0.8) gateBCandidates.push({ name: closestName, score: gateBSim, reason: 'closest_match' });
+  if (proposedName && draftConf >= 0.8 && proposedName.toLowerCase() !== closestName.toLowerCase()) {
+    gateBCandidates.push({ name: proposedName, score: draftConf, reason: 'proposed_name' });
+  }
+
+  for (const cand of gateBCandidates) {
+    if (!media.classroom_id) break;
     try {
       const { data: gateBWork } = await supabase
         .from('montree_classroom_curriculum_works')
         .select('id, name, area_id, montree_classroom_curriculum_areas!inner(area_key)')
         .eq('classroom_id', media.classroom_id)
         .eq('is_active', true)
-        .ilike('name', gateBName.replace(/[%_\\]/g, '\\$&'))
+        .ilike('name', cand.name.replace(/[%_\\]/g, '\\$&'))
         .limit(1)
         .maybeSingle();
 
@@ -349,10 +363,7 @@ export async function POST(request: NextRequest) {
           .update({
             work_id: gateBWork.id,
             identification_status: 'haiku_matched',
-            identification_confidence: Math.max(
-              draft.confidence || 0,
-              gateBSim
-            ),
+            identification_confidence: Math.max(draft.confidence || 0, cand.score),
             sonnet_draft: sonnetResult.draft,
             teacher_confirmed: true,
           })
@@ -360,25 +371,26 @@ export async function POST(request: NextRequest) {
 
         if (!gateBErr) {
           console.log(
-            `[PhotoIdentification] GateB auto-confirm: "${gateBName}" ${Math.round(
-              gateBSim * 100
-            )}% — bypassing Photo Audit`
+            `[PhotoIdentification] GateB auto-confirm via ${cand.reason}: "${cand.name}" ${Math.round(cand.score * 100)}% — bypassing Photo Audit`
           );
           return NextResponse.json({
             success: true,
             outcome: 'gate_b_auto_confirmed',
+            via: cand.reason,
             media_id: mediaId,
             work_id: gateBWork.id,
             work_name: gateBWork.name,
             area_key: gateBAreaKey,
-            similarity: gateBSim,
+            similarity: cand.score,
           });
         }
-        console.error('[PhotoIdentification] GateB update failed — falling through:', gateBErr);
+        console.error('[PhotoIdentification] GateB update failed — trying next candidate:', gateBErr);
+        continue;
       } else {
         console.log(
-          `[PhotoIdentification] GateB skipped — "${gateBName}" not in classroom curriculum`
+          `[PhotoIdentification] GateB ${cand.reason} skipped — "${cand.name}" not in classroom curriculum`
         );
+        continue;
       }
     } catch (gateBEx) {
       console.error('[PhotoIdentification] GateB exception — falling through:', gateBEx);
