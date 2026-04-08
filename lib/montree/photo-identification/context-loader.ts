@@ -89,7 +89,7 @@ export async function loadIdentificationContext(
       .eq('classroom_id', classroomId)
       .order('description_confidence', { ascending: false })
       .order('updated_at', { ascending: false })
-      .limit(30),
+      .limit(100),
   ]);
 
   // ----- Corrections -----
@@ -129,9 +129,15 @@ export async function loadIdentificationContext(
       const verifiedEntries: string[] = [];
 
       for (const m of memories) {
+        // Relaxed filter (Apr 8): accept teacher_enrichment as a valid source
+        // (classroom-setup writes this), drop confidence bar from 0.9 → 0.75.
+        // Previously the strict filter was starving the Gate A trust check —
+        // Whale Class has 53 described works but only 30 made the cap, and
+        // teacher_enrichment rows were excluded entirely.
+        const VALID_SOURCES = ['teacher_setup', 'correction', 'teacher_enrichment'];
         const isTeacherValidated =
-          (m.source === 'teacher_setup' || m.source === 'correction') &&
-          (m.description_confidence || 0) >= 0.9;
+          VALID_SOURCES.includes(m.source) &&
+          (m.description_confidence || 0) >= 0.75;
         if (!m.is_custom && !isTeacherValidated) continue;
 
         const name = sanitizeForPrompt(m.work_name, 100);
