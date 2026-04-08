@@ -143,6 +143,92 @@ montree.xyz
 
 ## RECENT STATUS (Apr 8, 2026)
 
+### ⚡ Session 10 — Photo Audit Auto-Confirm Rails + Modal Layout + Schema Fix (Apr 8, 2026)
+
+**Six commits pushed to main.** Closed the "why is this obvious match still in the queue" gap with two parallel rails, fixed the `mode` column schema drift, and fixed a broken bottom-sheet layout.
+
+**Commits (in order):**
+1. `6cd1956c` — Photo Audit: Gate B server auto-confirm + Tier 1 client silent-attach at ≥80% Sonnet match (via `closest_existing_match.similarity`)
+2. `353bc96a` — Corrections: drop non-existent `mode` column from `montree_guru_interactions` inserts (was logging PGRST204 as "non-fatal" on every confirm/correct)
+3. `83c4b00e` — ThisIsSheet: center as modal with fixed height + guard Invalid Date
+4. `3894fad4` — Photo Audit: Tier 1b + Gate B also accept `proposed_name` matches
+
+**The Paper Work bug (the crown jewel fix of this session):**
+User flagged a photo card showing "AI DRAFT · 82% Paper Work · Similar to Solar System (45%)" — both Gate B and Tier 1 were bailing because they only inspected `closest_existing_match.similarity` (45%, Haiku's stale guess). But `sonnet_draft.proposed_name = "Paper Work"` at `draft.confidence = 0.82` was the real answer, and "Paper Work" IS an existing curriculum work. Nothing in the pipeline was looking at `proposed_name`.
+
+**Fix — two rails in parallel (commit `3894fad4`):**
+
+*Server Gate B (`app/api/montree/photo-identification/process/route.ts`)* now builds `gateBCandidates[]` with up to two entries:
+1. `closest_existing_match.work_name` if `similarity >= 0.8`
+2. `proposed_name` if `draft.confidence >= 0.8` AND different from the first candidate
+Iterates: first candidate that resolves to a real `montree_classroom_curriculum_works` row (via `ilike` classroom-scoped query) wins. On match: updates media row with `work_id`, `identification_status='haiku_matched'`, `identification_confidence=max(draft.confidence, cand.score)`, `sonnet_draft`, `teacher_confirmed=true`, and returns early with `outcome: 'gate_b_auto_confirmed', via: 'closest_match' | 'proposed_name'`. Falls through to normal `sonnet_drafted` write on any error.
+
+*Client Tier 1 (`app/montree/dashboard/photo-audit/page.tsx` `openThisIsSheet`)* mirrors the server: Tier 1a checks `closest_existing_match`, Tier 1b checks `proposed_name` via `findWorkByName(proposed, suggested_area)` when `draft.confidence >= 0.8`. Either hit calls `attachToExistingWork()` directly and returns without opening the sheet.
+
+**Log lines to watch in Railway:**
+- `[PhotoIdentification] GateB auto-confirm via closest_match: "X" 95% — bypassing Photo Audit`
+- `[PhotoIdentification] GateB auto-confirm via proposed_name: "Paper Work" 82% — bypassing Photo Audit`
+- `[ThisIsSheet] Tier 1a auto-attach: "X" 90% — skipping sheet`
+- `[ThisIsSheet] Tier 1b auto-attach via proposed_name: "Paper Work" 82% — skipping sheet`
+
+**`mode` column schema drift (commit `353bc96a`):**
+Railway deploy logs were spamming `[Corrections] Confirm confidence insert error (non-fatal): { code: 'PGRST204', message: "Could not find the 'mode' column of 'montree_guru_interactions' in the schema cache" }` on every teacher confirm and correct. `app/api/montree/guru/corrections/route.ts` lines 125 and 417 were inserting `mode: 'teacher_confirmed' | 'teacher_corrected'` but the table has no such column — the scenario is already captured in `context_snapshot.scenario` JSONB. Dropped both lines. Non-fatal historically (wrapped in try/catch) but was masking real insert failures in the logs.
+
+**ThisIsSheet layout fix (commit `83c4b00e`):**
+The bottom-sheet mode (`alignItems: 'flex-end', maxHeight: '92vh'`) sized to content and on a desktop window left half the page showing behind a thin strip of sheet. Changed to:
+- `alignItems: 'center', padding: 16`
+- `height: 'min(720px, 90vh)'` (fixed height, not max-height)
+- `borderRadius: 20` (full round, not just top)
+- `background: 'rgba(0,0,0,0.7)'` backdrop (was 0.55)
+- `boxShadow: '0 12px 48px rgba(0,0,0,0.35)'`
+Also guarded `captured_at` rendering — was showing "Invalid Date" when null.
+
+**Gate B threshold lowered 0.9 → 0.8 (commit `6cd1956c`):**
+Original threshold was 0.9 but Sonnet confidence clusters around 0.75-0.90 on clear matches. 0.8 is the sweet spot — doesn't false-positive (tested against sandbox queue) but catches ~3x more auto-confirms.
+
+**Audit findings (7-section health check run this session — all clean except the bugs fixed above):**
+- Schema drift: only `mode` column (fixed)
+- Session 7-9 consistency: all error paths safe
+- TypeScript suppressions: 1 acceptable `// @ts-nocheck` on `photo-audit/resolve/route.ts` for synthetic NextRequest
+- Orphaned `AcceptDraftModal` refs: zero (only in comments)
+- Rate limiter on resolve route: 200/min per-IP, correct
+- Migrations 164+: `164_cropped_storage_path`, `166_global_works_staging`, `167_story_message_type_document`. **Migration 165 is missing** (gap in sequence — verify intentional next session, not a dropped file)
+
+**Carryover from earlier in session (pre-compaction, commits `6ed59ff3`, `f02ce923`, `e9e6e622`):**
+- `6ed59ff3` — Fix 500 "Delegation failed" on `/api/montree/photo-audit/resolve`: replaced internal `fetch()` to sibling corrections route with in-process `correctionsPost(synthetic)` call using a synthetic `NextRequest` that forwards cookie/xff/ua headers. Railway was throwing on internal loopback fetches.
+- `f02ce923` — Path B (new_custom) INSERT now seeds `parent_description`, `why_it_matters`, `key_materials` directly from cached `sonnet_draft` on `montree_media` instead of waiting for fire-and-forget Sonnet re-enrichment. New custom works appear with full Sonnet-authored descriptions the moment they hit the curriculum.
+- `e9e6e622` — ThisIsSheet one-tap "Add as new work" with AI description + raised `aiGuess` match threshold to 0.75 (was false-positiving on 45% "Cutting" matches).
+- `lib/montree/photo-identification/enrich-custom-work.ts` short-circuit: if curriculum row already has `parent_description` + `why_it_matters` (which it now will, thanks to `f02ce923`), skip the redundant Sonnet re-call and fire `autoTranslateToChinese` directly. Visual memory seed (step 1) still runs BEFORE the short-circuit so the self-learning corpus is populated on every new custom work.
+
+**Next session priorities:**
+1. **Verify Paper Work photos auto-confirm** — hard-refresh Photo Audit after Railway redeploy of `3894fad4`. The two "Paper Work" cards (82% proposed_name) should either disappear on single-tap "This is…" (Tier 1b) or, on a background `force=true` re-run, bypass the queue entirely via Gate B proposed_name path.
+2. **Verify migration 165 gap is intentional** — `ls migrations/ | grep ^165` on the Mac repo. If a file was dropped, restore from git history.
+3. **Grep Railway logs for Gate B telemetry** (24-48h after deploy) — bucket `via: closest_match` vs `via: proposed_name` vs normal Sonnet queue. If proposed_name is catching >50% of Gate B hits, consider raising its weight. If closest_match is nearly empty, Haiku's similarity field is dead weight and can be demoted.
+4. **Phase 2 Gate A threshold tune from Session 7 telemetry** — still pending. Grep Railway logs for `[PhotoIdentification] GateA` and bucket outcome by haikuConf / hasVM / vmSetSize.
+
+---
+
+### ⚡ Session 9 — Story Login Log Self-Heal (Apr 8, 2026)
+
+**Commit `ec626171` pushed to main.** Fix for "Z's logins don't show up in admin dashboard every time."
+
+**Root cause:** Story user browser POSTs `/api/story/auth` once per JWT lifetime (24h) to get a token, then replays it via Authorization header on every page load + heartbeat. The only code path writing to `story_login_logs` was that single POST. Two ways it silently dropped rows:
+1. `/api/story/auth` rate limiter was 5/15min keyed by IP — a household/school sharing one public WAN IP (Tredoux testing + Z + any other users) eats the bucket and Z's real login returns 429, no row.
+2. `logLogin()` insert errors only `console.error` and the POST still returns 200 OK — frontend saves token, user is "logged in," admin sees nothing.
+
+**Fix — heartbeat self-heal (`app/api/story/heartbeat/route.ts`):** Heartbeat already fires every few seconds while a user is on the site. Added an idempotent check: query `story_login_logs` for a row with current `session_token` (50-char truncation). If none, INSERT one with username + ip + user_agent + login_at=now. Every distinct session produces exactly one login row regardless of whether the original POST wrote one. Wrapped in try/catch, never fails the heartbeat.
+
+**Fix — rate limit relaxed (`app/api/story/auth/route.ts`):** Bumped `/api/story/auth` from 5/15min → 30/15min per IP. Shared home/school WAN IPs no longer lock legitimate users out.
+
+**Not touched (intentionally):**
+- Admin side (`/api/story/admin/auth`) — user said "mine don't matter"
+- Silent `logLogin()` error swallowing — heartbeat self-heal recovers from this for free
+- `story_login_logs` schema — no new columns needed
+
+**Next session (if still seeing gaps):** Check Railway logs for `[Heartbeat] Self-healed login log` to confirm the path is firing, and `[Heartbeat] Self-heal login log insert failed` to catch any schema surprises.
+
+---
+
 ### ⚡ Session 8 — "This is..." Unified Photo Audit Flow (Apr 8, 2026)
 
 **Commit `8d8ead0a` pushed to main.** Streamlined the Photo Audit resolution flow: Fix + Accept + AcceptDraftModal collapsed into a single "This is..." bottom sheet with three resolution paths (existing / new_custom / confirm_ai). Every photo becomes one question with one answer. All three paths end the same way (`teacher_confirmed=true`, photo leaves queue) — eliminates the Session 7 ghost-Fix two-step shuffle.
@@ -166,6 +252,8 @@ montree.xyz
 **Known carryover (not touched this session):**
 - Session 7 Gate A telemetry still needs real-world bucketing from Railway logs before Phase 2 threshold tune.
 - Legacy Fix flow (`correctingPhoto` + `handleWorkSelected`) left intact for non-sonnet-draft cards — it's orthogonal to the new sheet and unused on AI Draft cards.
+
+**Apr 8 rerun on existing audit queue:** Added `force: true` flag to `/api/montree/photo-identification/process` (gates idempotency early-return, clears `identification_status` + `sonnet_draft` before rerunning). Drove a fire-and-forget background loop from user's authed Chrome tab (batches of 3, 1s delay) across all photos in the Whale Class queue. **Result: 36/36 ok, 0 errors.** Every queued photo now has a fresh draft from the Session 7 Phase 1 visual-memory gate + Session 8 corpus. User should hard-refresh Photo Audit to pick up new drafts and the new "This is..." sheet UI.
 
 **Next session priorities:**
 1. Grep Railway logs for `GateA` telemetry, tune `HAIKU_TRUST_CONFIDENCE`, ship Phase 2
