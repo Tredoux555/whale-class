@@ -213,20 +213,37 @@ export async function POST(request: NextRequest) {
 
       const workKey = `custom_${name.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_${randomUUID().slice(0, 8)}`;
 
-      // Insert the custom work. Minimal payload: no description/materials
-      // required — the enrich helper fills those in the background.
+      // Seed rich description fields directly from the cached Sonnet draft
+      // that's already sitting on the media row. The draft describes THIS
+      // photo, which is the archetype for the new work, so its
+      // parent_description / why_it_matters / key_materials are exactly
+      // what the teacher expects to see on the new curriculum entry
+      // immediately — no waiting for background re-enrichment.
+      const draft = (mediaRow.sonnet_draft as Record<string, any>) || {};
+      const draftParent = typeof draft.parent_description === 'string' ? draft.parent_description.trim().slice(0, 1000) : '';
+      const draftWhy = typeof draft.why_it_matters === 'string' ? draft.why_it_matters.trim().slice(0, 1000) : '';
+      const draftMaterials = Array.isArray(draft.key_materials)
+        ? draft.key_materials.filter((m: any) => typeof m === 'string' && m.trim()).slice(0, 20)
+        : [];
+
+      const insertPayload: Record<string, unknown> = {
+        classroom_id: classroomId,
+        name,
+        work_key: workKey,
+        area_id: areaId,
+        sequence: nextSequence,
+        is_custom: true,
+        is_active: true,
+        source: 'photo_audit_resolve',
+      };
+      if (draftParent) insertPayload.parent_description = draftParent;
+      if (draftWhy) insertPayload.why_it_matters = draftWhy;
+      if (draftMaterials.length) insertPayload.materials = draftMaterials;
+
+      // Insert the custom work pre-seeded with the AI draft's rich fields.
       const { data: newWork, error: insErr } = await supabase
         .from('montree_classroom_curriculum_works')
-        .insert({
-          classroom_id: classroomId,
-          name,
-          work_key: workKey,
-          area_id: areaId,
-          sequence: nextSequence,
-          is_custom: true,
-          is_active: true,
-          source: 'photo_audit_resolve',
-        })
+        .insert(insertPayload)
         .select('id')
         .single();
 
