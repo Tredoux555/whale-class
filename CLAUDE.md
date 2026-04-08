@@ -143,6 +143,37 @@ montree.xyz
 
 ## RECENT STATUS (Apr 8, 2026)
 
+### ⚡ Session 8 — "This is..." Unified Photo Audit Flow (Apr 8, 2026)
+
+**Commit `8d8ead0a` pushed to main.** Streamlined the Photo Audit resolution flow: Fix + Accept + AcceptDraftModal collapsed into a single "This is..." bottom sheet with three resolution paths (existing / new_custom / confirm_ai). Every photo becomes one question with one answer. All three paths end the same way (`teacher_confirmed=true`, photo leaves queue) — eliminates the Session 7 ghost-Fix two-step shuffle.
+
+**New files:**
+- `lib/montree/hooks/useClassroomWorks.ts` — extracted from WorkWheelPicker's lazy-load, reusable classroom works hook with AbortController cleanup
+- `components/montree/photo-audit/ThisIsSheet.tsx` — full-screen bottom sheet, three handlers (`handlePickExisting`, `handleConfirmAI`, `handleCreateNew`), AI guess derived from `current_work_id` → `closest_existing_match` fallback, pre-seeds `newWorkArea` from `sonnet_draft.suggested_area`, exact-match dedup check prevents duplicate custom works
+- `app/api/montree/photo-audit/resolve/route.ts` — POST handler, rate limited 200/min, delegates Paths A/C to `/api/montree/guru/corrections` via internal fetch with cookie forwarding, Path B inlines minimal `montree_classroom_curriculum_works` insert (dedup via ilike, 23505 handler, atomic media UPDATE `work_id + teacher_confirmed`, orphan-work rollback on media failure), fires `enrichCustomWorkInBackground` fire-and-forget
+- `lib/montree/photo-identification/enrich-custom-work.ts` — background Sonnet enrichment, reads cached `sonnet_draft.visual_description` from `montree_media` (free rich fingerprint), seeds `montree_visual_memory` with `source='teacher_new_work' confidence=1.0`, calls Sonnet for rich `parent_description` + `why_it_matters` + `key_materials`, updates `montree_classroom_curriculum_works`, fires `autoTranslateToChinese` for zh locale
+
+**Removed:**
+- `components/montree/photo-audit/AcceptDraftModal.tsx` — obsolete
+- `openAcceptModal` three-tier router (logic now split between resolve route + sheet)
+- `handleAcceptDraftSave` (replaced by unified `handleResolvePhoto`)
+- `acceptingPhoto` state
+
+**Wiring in `app/montree/dashboard/photo-audit/page.tsx`:** swapped `AcceptDraftModal` import for `ThisIsSheet`, added `thisIsPhoto` state, added `handleResolvePhoto(photo, resolution)` that POSTs to `/api/montree/photo-audit/resolve`, rewired Sonnet-draft card "Accept" button → `openThisIsSheet`, replaced modal JSX block with `<ThisIsSheet>`.
+
+**Schema note:** Path B uses existing columns — no migrations needed. Resolve route relies on the `(classroom_id, work_name)` unique constraint added in Session 6.
+
+**Known carryover (not touched this session):**
+- Session 7 Gate A telemetry still needs real-world bucketing from Railway logs before Phase 2 threshold tune.
+- Legacy Fix flow (`correctingPhoto` + `handleWorkSelected`) left intact for non-sonnet-draft cards — it's orthogonal to the new sheet and unused on AI Draft cards.
+
+**Next session priorities:**
+1. Grep Railway logs for `GateA` telemetry, tune `HAIKU_TRUST_CONFIDENCE`, ship Phase 2
+2. Verify "This is..." sheet on live Whale Class with real photos (all three paths)
+3. Consider folding the legacy Fix flow into ThisIsSheet for non-sonnet cards
+
+---
+
 ### ⚡ Session 7 — Photo Audit Phase 1: Ghost Queue Fix + Gate A Telemetry (Apr 8, 2026)
 
 **Commit `7f27cc71` pushed to main.** Three targeted fixes to the photo audit pipeline after a live audit of the Whale Class review queue (45 photos, only 2/47 hitting the silent auto-tag path).
