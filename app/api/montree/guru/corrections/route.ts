@@ -122,7 +122,6 @@ export async function POST(request: NextRequest) {
             question_type: 'photo_insight',
             question: `photo:${media_id}:${child_id}`,
             response_insight: `Teacher confirmed: "${original_work_name}"`,
-            mode: 'teacher_confirmed',
             model_used: 'teacher',
             context_snapshot: {
               sonnet_confidence: 1.0,
@@ -414,7 +413,6 @@ export async function POST(request: NextRequest) {
           question_type: 'photo_insight',
           question: `photo:${media_id}:${child_id}`,
           response_insight: `Teacher corrected: "${original_work_name}" → "${corrected_work_name}"`,
-          mode: 'teacher_corrected',
           model_used: 'teacher',
           context_snapshot: {
             sonnet_confidence: 1.0,
