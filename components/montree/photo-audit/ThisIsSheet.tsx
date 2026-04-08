@@ -271,10 +271,11 @@ export default function ThisIsSheet({
         position: 'fixed',
         inset: 0,
         zIndex: 1000,
-        background: 'rgba(0,0,0,0.55)',
+        background: 'rgba(0,0,0,0.7)',
         display: 'flex',
-        alignItems: 'flex-end',
+        alignItems: 'center',
         justifyContent: 'center',
+        padding: 16,
       }}
       onClick={onClose}
     >
@@ -283,10 +284,10 @@ export default function ThisIsSheet({
         style={{
           width: '100%',
           maxWidth: 680,
-          maxHeight: '92vh',
+          height: 'min(720px, 90vh)',
           background: '#fff',
-          borderRadius: '20px 20px 0 0',
-          boxShadow: '0 -8px 32px rgba(0,0,0,0.2)',
+          borderRadius: 20,
+          boxShadow: '0 12px 48px rgba(0,0,0,0.35)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -340,13 +341,17 @@ export default function ThisIsSheet({
         <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
           <div style={{ fontSize: 12, color: '#888', marginBottom: 10 }}>
             {photo.child_name}
-            {' · '}
-            {new Date(photo.captured_at).toLocaleString([], {
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
+            {photo.captured_at && !isNaN(new Date(photo.captured_at).getTime()) && (
+              <>
+                {' · '}
+                {new Date(photo.captured_at).toLocaleString([], {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
+              </>
+            )}
           </div>
 
           {!addMode && (
