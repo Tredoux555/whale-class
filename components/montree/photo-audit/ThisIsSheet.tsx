@@ -81,7 +81,7 @@ export default function ThisIsSheet({
     isOpen
   );
 
-  // Reset on close
+  // Reset on close / pre-seed on open
   useEffect(() => {
     if (!isOpen) {
       setQuery('');
@@ -90,10 +90,22 @@ export default function ThisIsSheet({
       setNewWorkArea('practical_life');
       setSubmitting(false);
     } else {
-      // Autofocus search when opened
-      requestAnimationFrame(() => inputRef.current?.focus());
+      // Pre-seed the search bar with Sonnet's proposed_name (editable).
+      // This gives the teacher a one-tap path: either accept the AI's
+      // name as-is, or tweak a couple of characters and hit "Add as new
+      // work". Path B on the server then seeds the new curriculum row
+      // with the Sonnet-written parent_description / why_it_matters /
+      // materials from the cached draft, so the created work already
+      // carries the exact description shown on this card.
+      const proposed = photo?.sonnet_draft?.proposed_name?.trim() || '';
+      if (proposed) setQuery(proposed);
+      // Autofocus and select-all so a quick edit is one keypress away.
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, photo]);
 
   // Pre-seed the "new work area" from Sonnet's suggested_area if available
   useEffect(() => {
@@ -124,7 +136,15 @@ export default function ThisIsSheet({
       };
     }
     const match = photo.sonnet_draft?.closest_existing_match;
-    if (match?.work_name) {
+    // Only trust the closest_existing_match shortcut when similarity is
+    // high enough to avoid nudging the teacher toward a bad match (e.g.
+    // "Paper Shredding and Cutting" → "Cutting" at 45% is NOT the same
+    // work). Below the threshold, fall through to the editable search
+    // bar pre-seeded with proposed_name so the teacher can create the
+    // new work in one tap instead.
+    const MATCH_CONFIDENCE_THRESHOLD = 0.75;
+    const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
+    if (match?.work_name && sim >= MATCH_CONFIDENCE_THRESHOLD) {
       // We don't know the work_id from the draft cache alone, but we can
       // resolve it against the loaded classroom works list below.
       const resolved = works.find(
@@ -203,6 +223,28 @@ export default function ThisIsSheet({
   const handleEnterAddMode = () => {
     setAddMode(true);
     setNewWorkName(query.trim());
+  };
+
+  // One-tap: create a new custom work directly from whatever is in the
+  // search bar, using the sonnet_draft's suggested_area. The resolve
+  // route copies the cached Sonnet draft's parent_description,
+  // why_it_matters, and key_materials onto the new curriculum row, so
+  // the created work carries exactly the description the teacher sees
+  // on this card.
+  const handleQuickCreateFromQuery = async () => {
+    const name = query.trim();
+    if (submitting || !name) return;
+    setSubmitting(true);
+    try {
+      await onResolve({
+        type: 'new_custom',
+        name,
+        area_key: newWorkArea,
+      });
+    } catch (err) {
+      console.error('[ThisIsSheet] quick create failed:', err);
+      setSubmitting(false);
+    }
   };
 
   const handleCreateNew = async () => {
@@ -455,35 +497,60 @@ export default function ThisIsSheet({
                 </div>
               )}
 
-              {/* "Add as new work" row — always shown when there's a query
-                  AND the query doesn't exactly match an existing work */}
+              {/* "Add as new work" row — one-tap create. Uses the current
+                  search bar text (pre-seeded from Sonnet's proposed_name
+                  but fully editable) and the area pre-seeded from the
+                  draft's suggested_area. The resolve route stamps the
+                  cached Sonnet description onto the new curriculum row. */}
               {query.trim() && !exactMatch && !worksLoading && (
-                <button
-                  onClick={handleEnterAddMode}
-                  disabled={submitting}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    width: '100%',
-                    padding: '14px',
-                    background: '#f5f3ff',
-                    border: '1.5px dashed #8b5cf6',
-                    borderRadius: 12,
-                    cursor: submitting ? 'wait' : 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
-                  <div style={{ fontSize: 22 }}>➕</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 12, color: '#8b5cf6', fontWeight: 600 }}>
-                      Add as new work
+                <div>
+                  <button
+                    onClick={handleQuickCreateFromQuery}
+                    disabled={submitting}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '14px',
+                      background: '#f5f3ff',
+                      border: '1.5px dashed #8b5cf6',
+                      borderRadius: 12,
+                      cursor: submitting ? 'wait' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div style={{ fontSize: 22 }}>➕</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 12, color: '#8b5cf6', fontWeight: 600 }}>
+                        {submitting ? 'Creating…' : 'Add as new work (with AI description)'}
+                      </div>
+                      <div style={{ fontSize: 15, color: '#222', fontWeight: 600 }}>
+                        “{query.trim()}”
+                      </div>
+                      <div style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>
+                        Area:{' '}
+                        {AREAS.find(a => a.key === newWorkArea)?.label || newWorkArea}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 15, color: '#222', fontWeight: 500 }}>
-                      “{query.trim()}”
-                    </div>
-                  </div>
-                </button>
+                  </button>
+                  <button
+                    onClick={handleEnterAddMode}
+                    disabled={submitting}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#8b5cf6',
+                      fontSize: 12,
+                      padding: '6px 4px',
+                      marginTop: 4,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                    }}
+                  >
+                    Change area…
+                  </button>
+                </div>
               )}
             </>
           )}
