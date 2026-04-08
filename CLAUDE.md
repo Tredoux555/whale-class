@@ -13,6 +13,196 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
+## 📧 GMASS OUTREACH CAMPAIGN — "Montree" (cold email to schools)
+
+**TL;DR:** Outreach is run via **GMass** (Gmail mail-merge extension), driven off the user's spreadsheet **`Montree_Global_Outreach.xlsx`** (also lives as a Google Sheet that GMass syncs Status/DateSent back to). NOT sent from the whale codebase. The super-admin "outreach-campaign" page in the repo is a template builder only — `Mark as Sent` writes to localStorage, never DB. Ignore it.
+
+**The list:** 420 schools across 7 batches — Asia 61, Europe 86, Middle East 56, South Asia 80, Africa 38, Americas 71, Oceania 28. Columns: SchoolName, Email, Country, Region, Website, ContactPerson, Accreditation, AgeRange, DateSent, Status, FollowUp1Sent, FollowUp2Sent, Notes, Batch. As of Apr 7, 2026 only 8 marked Sent in the xlsx (53 blank, 359 Pending) — but GMass campaign report shows 201+ opens already from the Mar 28 send, so the spreadsheet is out of sync with reality. Always re-pull from GMass dashboard / Google Sheet, don't trust the local xlsx.
+
+**Why "it stopped at 50":** Free Gmail (`tredoux555@gmail.com`, gmail.com not Workspace) is hard-capped by Gmail at ~500/day, and GMass self-throttles to ~50/day on free Gmail accounts to protect deliverability. The campaign isn't broken — it's pacing. To "send the rest" the user needs to either (a) resume/extend the campaign in GMass over multiple days, or (b) upgrade to Google Workspace for the higher cap. The "paid Google account" the user mentions is likely paid GMass, not paid Workspace — verify before assuming higher caps.
+
+**GMass campaign details — CORRECTED Apr 7 from dashboard:**
+There are **4 separate "Montree" campaigns** all sent on 2026-03-28, NOT one. Totals across all four = **64 schools sent** (not 50). The big one had a 34.7% bounce rate which is the single biggest deliverability risk for the next send.
+
+| Campaign ID | Recipients | Opens | Bounces | Replies |
+|---|---|---|---|---|
+| 50490844 | 9 | 6 (66.7%) | 1 | 0 |
+| 50489320 | **49** | 16 (32.7%) | **17 (34.7%)** | 1 |
+| 50489098 | 3 | 1 | 1 | 0 |
+| 50488830 | 3 | 2 | 0 | 0 |
+
+- Spreadsheet name in GMass: `Montree Global Outreach → Outreach List` (lives in user's Google Drive — Drive MCP can't see Sheets, only Docs/folders, so locate via Chrome on `drive.google.com`)
+- Reports come from `notify@gmass.co` to `tredoux555@gmail.com`
+- Subject line: `Montree` (follow-ups become `Re: Montree`)
+- Two automatic follow-ups already configured: F1 ~5 days after original ("I wanted to make sure my previous email…"), F2 ~5 days after F1 ("I understand how busy things can get…")
+- Each campaign was a separate batch/chunk — not a "single resumable campaign." To send the rest, **build a NEW GMass campaign**, do NOT try to "resume" 50489320.
+
+**🚨 MONDAY APR 13, 9:00am +08:00 — CAMPAIGN A IS LOADED AND SCHEDULED IN GMASS. DO NOT REBUILD IT. JUST OPEN GMAIL → DRAFTS → "Montree" → CONFIRM SETTINGS UNCHANGED → ASK USER TO CLICK THE RED GMASS BUTTON. 🚨**
+
+Strategic decision Apr 8 (after long deliberation): **Campaign B (teacher job application + resume) was CANCELLED.** Reason: attaching a resume that names current school to 345 strangers' inboxes is asymmetric risk — small upside (a few extra replies), big downside (one principal who knows someone at current school → awkward conversation Tredoux didn't choose). Campaign A (Montree pitch) is already a "teacher + builder" intro by subtext — interested principals will ask about availability themselves, and Tredoux can deploy the resume privately to warm leads only. Do NOT revive Campaign B without reopening this conversation.
+
+**Campaign A — LOADED IN GMASS DRAFT (Apr 8 session, ready to fire Mon Apr 13):**
+- To: `345-recipients-big-42c28b38@gmass.co` (cleaned 345-school list, sheet ID `1tlBY456CVLc9v6oyI6PH8uTQiG7lmlxLQnmLaC0M6GQ`)
+- Subject: `Montree`
+- Body: shortened sacred email #1 (~155 words, `{SchoolName}` merge tag, signed Tredoux / montree.xyz)
+- Attachment: NONE (resume removed deliberately)
+- Schedule: **Mon Apr 13, 9:00am +08:00** (Custom date/time in GMass)
+- Speed: 50 emails/day, Pause 5–10s between sends, Skip weekends ON, Skip holidays ON
+- Tracking: Opens ON, Clicks OFF
+- Auto Follow-up Stage 1: ON, no-reply after 5 days, sacred F1 prefilled
+- Auto Follow-up Stage 2: ON, no-reply after 10 days (5 after F1), sacred F2 prefilled
+- Stage 3: OFF, Send as: New messages
+
+**Monday morning checklist (next session, before user clicks Send):**
+1. Open Gmail, find Drafts → "Montree" (compose ID `CllgCHrgDRrsbSxTWQlPXNMCXtkhKwfmfTsNdVrQqfNqDqFBdgrQJRpQcXtZpsHqcqgzJSQFVMg`)
+2. Verify To = `345-recipients-big-42c28b38@gmass.co` (confirms sheet still linked), subject = `Montree`, no attachment, body intact
+3. Click GMass settings gear, verify: 04/13/2026 09:00am +08:00, both Stages still ON, Skip weekends ON, Clicks OFF
+4. Screenshot the loaded compose + settings for user
+5. **STOP. Tell user "Ready. Click the red GMass button when you want to fire." Do NOT click Send autonomously.**
+6. After Send, watch gmass.co/dashboard for the new campaign to confirm queued + throttling correctly
+7. Detailed handoff lives at `whale/docs/outreach/MONDAY_HANDOFF.md`
+
+**Apr 7, 2026 — Cleaned list ready, mass send scheduled for next week / weekend (Apr 11-14):**
+- Ran MX-record scrub on all 412 unsent rows from `Montree_Global_Outreach.xlsx`
+- Result: 346 deliverable, 66 dropped (16% drop rate — vs 34.7% actual bounce on Mar 28 batch)
+- Saved as `whale/docs/outreach/Montree_Outreach_Cleaned.xlsx` (Deliverable / Bounced or Invalid / Summary tabs)
+- Step-by-step send playbook saved as `whale/docs/outreach/SEND_PLAYBOOK.md` — read this BEFORE the actual send next week
+- **Gmail-ready HTML letters** (inline styles, paste-into-compose ready):
+  - `whale/docs/outreach/Letter_Montree_Pitch.html` — Campaign A body, `{SchoolName}` merge tag
+  - `whale/docs/outreach/Letter_Teacher_Application.html` — Campaign B body, attach resume PDF
+  - `whale/docs/outreach/HOW_TO_INJECT.md` — step-by-step automation playbook for next session
+- **Resume updated Apr 7**: `whale/assets/personal/Tredoux_Resume_Tight.html` — DOB removed, headshot placeholder added (swap instructions in HTML comment). Next session: convert to `Tredoux_Resume_Draft3.pdf` via Chrome print-to-PDF or `mcp__Desktop_Commander__write_pdf`, attach to Campaign B.
+- **TODO for next session:** Pick up the Montree mass send. TWO campaigns to run, not one, spaced 5-7 days apart against the same cleaned list of 346 schools:
+  - **Campaign A — Montree pitch** (the first sacred email, shortened Apr 7). Pure product pitch.
+  - **Campaign B — Teacher job application** (the SECOND sacred email, "Teacher, builder, or both"). Attach `whale/assets/personal/Tredoux_Resume_Draft2.pdf` to this one. Runs 5-7 days AFTER Campaign A so no principal gets both in the same week.
+  - Steps: (1) ask user to confirm test send of BOTH emails was done, (2) ask user to confirm GMass paid plan daily cap, (3) drive Chrome to drive.google.com, find/upload the cleaned xlsx as a Google Sheet, (4) drive Chrome to mail.google.com, open GMass compose for Campaign A, paste sacred email 1, link sheet, configure F1+F2, schedule, PAUSE at final Send for user approval, (5) schedule Campaign B 5-7 days later with the second sacred email + attached resume PDF.
+- User's instruction: "set up all of this. concrete this time. We check the system over the next week. Make sure all the improvements are bulletproof and then go ahead with mass mailing next week or over the weekend"
+- Key checks before send: (1) test send to 2-3 safe addresses for inbox placement, (2) verify GMass plan daily cap on paid account, (3) warm up inbox with normal 1:1 sends, (4) configure new campaign with throttle ON, click tracking OFF, unsubscribe ON
+
+**THE SACRED EMAIL** (cold email body, exact wording — DO NOT rewrite without user approval. Tightened Apr 7, 2026 — removed "looking for a change in environment" block, ~330→~155 words):
+```
+Subject: Montree
+
+Dear [School Name],
+
+I'd like to introduce something I've built that I believe represents the next step in the Montessori classroom.
+
+It's called Montree.
+
+A teacher takes a picture of a child working. The system does the rest.
+
+It identifies the work, records the observation, tracks the child's progress, and determines what should come next. It lifts the administrative weight off teachers so they can return to what actually matters — the children, the classroom, the craft.
+
+It writes personalised progress reports for parents. Not templates. Genuine, detailed accounts of what their child is learning and why.
+
+And it gives the principal a complete view of the school — every classroom, every child — with a built-in Montessori expert and developmental psychologist on hand to answer any parent's question instantly.
+
+This wasn't possible before. Now it is.
+
+If you'd like to see it, I'd be glad to show you.
+
+Kind regards,
+Tredoux
+montree.xyz
+```
+
+**THE SECOND SACRED EMAIL — Teacher Job Application** (finalized Apr 7, 2026. For the same 420-school list but a different angle: positioning Tredoux as a qualified Montessori teacher who ALSO built Montree. Run 5-7 days AFTER the Montree pitch campaign, not the same day, to avoid double-hitting principals. Attach `whale/assets/personal/Tredoux_Resume_Draft2.pdf` to this campaign.):
+```
+Subject: Teacher, builder, or both
+
+Dear [School Name],
+
+My name is Tredoux. I'm a qualified Montessori teacher who built a school management system — and I believe it's the next step in the evolution of how Montessori classrooms are run.
+
+I'm also looking for the next step in my own professional evolution. I'm grateful to my current school for letting me learn the beauty of Montessori, but I've reached the limit of what I can do here, and I'm ready for a new classroom to perfect my craft.
+
+So if you need a qualified and experienced Montessori teacher for young learners, let's talk.
+
+If you want a beautifully simple and effective new way to manage your classrooms and school, let me know.
+
+And if you want both — if you want to take your school's next step in its own evolution and bring in an experienced young learners teacher at the same time — then I would highly recommend myself. I can custom-build a classroom and school management system that simplifies and streamlines anything and everything you can think of.
+
+Kind regards,
+Tredoux
+montree.xyz
+```
+
+**Follow-up 1** (subject becomes `Re: Montree`):
+> I wanted to make sure my previous email found its way to you. I'd welcome the chance to show you what Montree can do for your school.
+>
+> Kind regards, Tredoux / montree.xyz
+
+**Follow-up 2:**
+> I understand how busy things can get running a school. If Montree isn't the right fit for you, no problem at all. But if you're curious, I'm happy to arrange a quick demonstration at a time that works for you. Either way, I wish you and your school all the best.
+>
+> Kind regards, Tredoux / montree.xyz
+
+**To resume sending next session:** The right move is to drive Chrome to `mail.google.com`, open the GMass dashboard (extension icon or `gmass.co/dashboard`), find Campaign 50489098, and either resume it or build a fresh GMass campaign pointing at the same Google Sheet filtered to `Status != Sent`. Do NOT bypass GMass with raw `gmail_create_draft` calls — it loses open tracking, follow-up sequencing, and spreadsheet sync. Repo-side "outreach" code in `app/montree/super-admin/marketing/outreach-campaign/page.tsx` and `app/api/montree/super-admin/npo-outreach/route.ts` is UNRELATED to GMass and should not be touched for this task. The uploaded xlsx historically lives at `/sessions/blissful-peaceful-babbage/mnt/uploads/Montree_Global_Outreach.xlsx`; user may re-upload.
+
+---
+
+## RECENT STATUS (Apr 8, 2026)
+
+### ⚡ Session 7 — Photo Audit Phase 1: Ghost Queue Fix + Gate A Telemetry (Apr 8, 2026)
+
+**Commit `7f27cc71` pushed to main.** Three targeted fixes to the photo audit pipeline after a live audit of the Whale Class review queue (45 photos, only 2/47 hitting the silent auto-tag path).
+
+**Ghost-queue bug fixed (`app/api/montree/guru/corrections/route.ts`):**
+Previously only the CONFIRM branch (`action: 'confirm'`) set `teacher_confirmed=true` on the media row. The CORRECTION branch — used by the Tier 1 silent-attach router at `photo-audit/page.tsx` `attachToExistingWork()` — did not. Result: photos accepted via the three-tier Accept router disappeared from the UI via `setPhotos(prev => prev.filter(...))` but reappeared on refresh because `teacher_confirmed` stayed false/null. This was flagged as a known issue in Session 6 notes but not fixed until now. One-shot cleanup SQL run in Supabase editor by user: `UPDATE montree_media SET teacher_confirmed=true WHERE work_id IS NOT NULL AND identification_status='sonnet_drafted' AND (teacher_confirmed IS NULL OR teacher_confirmed=false);` — returned 0 rows (the API's work_id was enriched from a join, not the raw media row).
+
+**Visual memory gate relaxed (`lib/montree/photo-identification/context-loader.ts`):**
+Two changes that were silently starving Gate A:
+1. `.limit(30)` → `.limit(100)` on the `montree_visual_memory` query. Whale Class has 53 described works — the old cap was dropping 23 of them from `visualMemoryWorkNames`, so `hasVisualMemoryFor()` returned false for any photo matching one of the lower-ranked works.
+2. Filter was `source IN ('teacher_setup','correction') AND description_confidence >= 0.9`. Changed to include `'teacher_enrichment'` (the source that classroom-setup writes) and dropped the bar to `>= 0.75`. The "Cutting" row in Whale Class is an example: `source='teacher_enrichment', description_confidence=0.8`, previously excluded entirely from the trust gate.
+
+**Gate A telemetry (`app/api/montree/photo-identification/process/route.ts`):**
+Added a structured log line before the Haiku trust decision:
+```
+console.log('[PhotoIdentification] GateA ' + JSON.stringify({
+  mediaId, haikuSuccess, haikuConf, haikuWork, hasVM,
+  vmSetSize, vmInjected, threshold, outcome
+}));
+```
+24–48h of Railway logs will give the real distribution of Haiku confidence + hasVM hits so `HAIKU_TRUST_CONFIDENCE` can be tuned from data in Phase 2 instead of guessing. **Next session: grep Railway logs for `[PhotoIdentification] GateA`, count outcome='trusted' vs 'sonnet_fallback', bucket by haikuConf and hasVM, then tune the threshold and ship Phase 2.**
+
+**Key architectural correction to CLAUDE.md Session 6 notes:**
+The `sonnet_draft` JSONB column on `montree_media` is populated by a **separate background pipeline** at `app/api/montree/photo-identification/process/route.ts` — NOT by the Guru photo-insight route. Every photo gets fired at this route on capture (fire-and-forget with `keepalive: true`), runs two-pass Haiku, and either (a) writes `identification_status='haiku_matched'` with `work_id` set silently if Gate A passes, or (b) calls `generateSonnetDraft()` from `lib/montree/photo-identification/sonnet-draft.ts` and stores the result in `sonnet_draft` with `identification_status='sonnet_drafted'`. The Photo Audit "Needs Review" queue filters on `teacher_confirmed != true` (NOT on identification_status), which is why the ghost-queue bug was hiding. Gate A conditions: `success && confidence>=0.75 && hasVisualMemoryForMatch && resolveClassroomWorkId() succeeds`. ALL four must be true to auto-tag.
+
+**Live numbers from Whale Class at audit time:**
+- 47 photos in queue, identification_status breakdown: `sonnet_drafted: 42, haiku_matched: 2, skipped: 3`.
+- Auto-tag rate **4%** — expected ~40%+ after Phase 1 visual memory relaxation and Phase 2 threshold tune.
+- Of 29 sonnet_drafted rows inspected: **~22 were wasted Sonnet runs** (proposed_name == closest_existing_match, similarity ≥85%) and **~7 were legitimate** "propose a new variant" cases (e.g. "Ocean Animal Object Matching" closest to "Object to Picture Matching" 82%).
+- 15 of 47 had `work_id` set while still in status `sonnet_drafted` — those are ghosts from the correction-branch bug.
+
+**Cost: $0.02 per photo for the 42 sonnet_drafted today. ~$0.84/day at current volume. Phase 1+2 should drop this ~50%.**
+
+**Known quandary surfaced Apr 8 (NOT YET FIXED — next session, see deep dive below):**
+User reports: took a photo, Sonnet drafted as "Touch Tablets (Rough and Smooth)", clicked Fix and changed to "Baric Tablets". The work_id/work_name on the photo row updates, BUT `sonnet_draft.proposed_name` and `closest_existing_match` are left stale. Result:
+1. The AI DRAFT card on the grid still shows the old Sonnet-proposed name + old similar-to line.
+2. Clicking Accept reads `photo.sonnet_draft.proposed_name` (via `openAcceptModal`), so the modal offers "Use Touch Tablets (Rough and Smooth)" — not the Fix'd value.
+3. Even when Phase 1 ships `teacher_confirmed=true` server-side, Fix is deliberately client-state-only per the comment at `page.tsx:1067` ("update work info but keep photo in place for further actions"). Fix does NOT remove the photo from the queue, so the user is trapped in a two-step Fix-then-something shuffle.
+
+Root cause (three layers):
+- **A.** The Fix flow calls `/api/montree/guru/corrections` (CORRECTION path) which writes the correction + work_id + now teacher_confirmed, but the client-side state update only patches work_id/work_name/area on the photo object — it leaves `sonnet_draft` untouched. Simplest local fix: after a successful Fix, either clear `sonnet_draft` from the photo state, OR remove the photo from the grid (matching the silent-attach router behavior).
+- **B.** Fix is currently designed as "soft update that keeps the photo in the queue for further action" which is the wrong mental model. The teacher is telling us the ground truth — there's nothing left to do. Mental-model fix: Fix = I'm telling you the answer = photo leaves the queue. No second Accept step.
+- **C.** The user's second request: when a photo is a brand-new custom work the AI has never seen ("Baric Tablets" doesn't exist in curriculum), the teacher wants to TYPE the correct name and have Sonnet re-run the rich draft generation seeded with that name, then approve/reject the re-draft. This flow doesn't exist yet. Needs a new endpoint `POST /api/montree/photo-identification/redraft` that takes `media_id` + `teacher_provided_name` and calls `generateSonnetDraft()` with the teacher name as a high-confidence anchor in the prompt.
+
+**Proposed unified flow (see Session 7 deep dive in handoff below):**
+One button per card: "This is..." → modal with three paths:
+- **Path A — existing curriculum match:** autocomplete picker → attach + teacher_confirmed + visual memory append → photo leaves queue.
+- **Path B — new custom work:** type name → Sonnet redraft → teacher reviews/approves → custom work row + visual memory + attach → photo leaves queue.
+- **Path C — AI draft is correct:** the current Accept button (three-tier router), unchanged.
+
+All three paths end the same way: `teacher_confirmed=true`, photo leaves queue, no two-step shuffle. Fix as a standalone action gets removed or redefined to be identical to Path A.
+
+**Next session priorities (in order):**
+1. **Grep Railway logs for `GateA`** — bucket outcomes by haikuConf, hasVM, vmSetSize. Tune HAIKU_TRUST_CONFIDENCE from real data. Ship Phase 2.
+2. **Fix the Fix bug** — at minimum, after a successful Fix correction, remove the photo from the grid (one line: `setPhotos(prev => prev.filter(p => p.id !== correctingPhoto.id))`) and drop the misleading "keep photo in place" comment. Short term band-aid before the bigger UX redesign.
+3. **Build the unified "This is..." modal** — collapse Fix + Accept + Teach-the-AI into one three-path modal. Bigger refactor but much cleaner mental model.
+4. **Build the `/photo-identification/redraft` endpoint** — POST `{media_id, teacher_provided_name}`, calls `generateSonnetDraft()` with a modified prompt anchoring on the teacher name, returns the new draft for review. Then the Path B flow in the unified modal can surface it.
+
+---
+
 ## RECENT STATUS (Apr 7, 2026)
 
 ### ⚡ Session 6 — Self-Learning Loop Complete + Three-Tier Accept Router (Apr 7, 2026)
