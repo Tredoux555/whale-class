@@ -39,9 +39,12 @@ export async function POST(req: NextRequest) {
   const ip = getClientIP(req.headers);
   const userAgent = getUserAgent(req.headers);
 
-  // Rate limiting
+  // Rate limiting — bumped from 5/15min to 30/15min since this endpoint is
+  // keyed by IP and families/schools share a single public IP. The heartbeat
+  // self-heal now catches any missed login rows, but we still want legitimate
+  // POSTs to go through most of the time.
   const { allowed, retryAfterSeconds } = await checkRateLimit(
-    supabaseStory, ip, '/api/story/auth', 5, 15
+    supabaseStory, ip, '/api/story/auth', 30, 15
   );
   if (!allowed) {
     return NextResponse.json(
