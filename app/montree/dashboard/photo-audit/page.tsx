@@ -13,7 +13,7 @@ import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
 import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
-import AcceptDraftModal, { DraftFields } from '@/components/montree/photo-audit/AcceptDraftModal';
+import ThisIsSheet, { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -441,7 +441,7 @@ export default function PhotoAuditPage() {
 
   // Correction state
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
-  const [acceptingPhoto, setAcceptingPhoto] = useState<AuditPhoto | null>(null);
+  const [thisIsPhoto, setThisIsPhoto] = useState<AuditPhoto | null>(null);
   const [pickerArea, setPickerArea] = useState('');
 
   // Batch state
@@ -920,63 +920,31 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Three-tier router for the "✅ Accept" button on a draft card:
-  //   - >=90% match → silent attach (no modal)
-  //   - 50-89% match → modal opens with "Use existing" as primary
-  //   - <50% / no match → modal opens with "Add to Curriculum" as primary (current behavior)
-  const openAcceptModal = (photo: AuditPhoto) => {
-    const draft = photo.sonnet_draft;
-    if (!draft || !draft.proposed_name || !draft.suggested_area || !draft.parent_description) {
-      toast.error('Draft is missing required fields');
-      return;
-    }
+  // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
+  // Replaces the old Fix + Accept + AcceptDraftModal tangle.
+  const openThisIsSheet = (photo: AuditPhoto) => {
     if (!photo.child_id) {
       toast.error('Photo has no child tagged — tag a child first');
       return;
     }
-    const matchName = draft.closest_existing_match?.work_name;
-    const similarity = typeof draft.closest_existing_match?.similarity === 'number'
-      ? draft.closest_existing_match.similarity
-      : 0;
-    const found = matchName ? findWorkByName(matchName, draft.suggested_area) : null;
-
-    // Tier 1: high confidence — attach silently, skip modal
-    if (found && similarity >= 0.9) {
-      attachToExistingWork(photo, found.work, found.areaKey);
-      return;
-    }
-    // Tier 2 + 3: open modal (modal will show "Use existing" primary if found)
-    setAcceptingPhoto(photo);
+    setThisIsPhoto(photo);
   };
 
-  // Save handler invoked from AcceptDraftModal with the (possibly edited) fields.
-  // Reuses the existing add-custom-work endpoint, then removes the photo from
-  // the audit grid (it's now confirmed + tagged).
-  const handleAcceptDraftSave = async (edited: DraftFields) => {
-    const photo = acceptingPhoto;
-    if (!photo || !photo.child_id) return;
+  // Unified resolver — called by ThisIsSheet with a {type, ...} resolution.
+  // Posts to /api/montree/photo-audit/resolve and removes the photo from the grid on success.
+  const handleResolvePhoto = async (photo: AuditPhoto, resolution: ThisIsResolution) => {
     setProcessingId(photo.id);
     try {
-      const res = await montreeApi('/api/montree/guru/photo-insight/add-custom-work', {
+      const res = await fetch('/api/montree/photo-audit/resolve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          media_id: photo.id,
-          child_id: photo.child_id,
-          name: edited.name,
-          area: edited.area,
-          description: edited.description,
-          materials: edited.materials && edited.materials.length > 0
-            ? edited.materials
-            : ['(materials inferred from photo)'],
-          why_it_matters: edited.why_it_matters || null,
-        }),
+        body: JSON.stringify({ media_id: photo.id, resolution }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.success) {
-        throw new Error(json.error || 'Failed to add custom work');
+        throw new Error(json?.error || 'resolve failed');
       }
-      // Remove from grid — photo is now confirmed via add-custom-work + the new work_id
+      // Remove from grid
       const removedZone = photo.zone || 'untagged';
       setPhotos(prev => prev.filter(p => p.id !== photo.id));
       setCounts(prev => ({
@@ -987,15 +955,17 @@ export default function PhotoAuditPage() {
         ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
       }));
       setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
-      if (json.deduplicated) {
-        toast.success(`Attached to existing "${edited.name}" (already in curriculum)`);
-      } else {
-        toast.success(`✨ Added "${edited.name}" to curriculum`);
-      }
-      setAcceptingPhoto(null);
+      const label =
+        resolution.type === 'new_custom'
+          ? `✨ Added "${resolution.name}" to curriculum`
+          : resolution.type === 'confirm_ai'
+            ? `✅ Confirmed "${resolution.work_name}"`
+            : `🔗 Matched to "${resolution.work_name}"`;
+      toast.success(label);
+      setThisIsPhoto(null);
     } catch (err) {
-      console.error('[AcceptDraft] Failed:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to add work');
+      console.error('[ResolvePhoto] Failed:', err);
+      toast.error(err instanceof Error ? err.message : 'Failed to resolve');
     } finally {
       setProcessingId(null);
     }
@@ -1839,7 +1809,7 @@ export default function PhotoAuditPage() {
               onDelete={() => handleDeletePhoto(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
-              onAcceptDraft={() => openAcceptModal(photo)}
+              onAcceptDraft={() => openThisIsSheet(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
@@ -1969,33 +1939,24 @@ export default function PhotoAuditPage() {
         </>
       )}
 
-      {/* Accept AI Draft modal — review + edit Sonnet's draft before adding to curriculum */}
-      {acceptingPhoto && acceptingPhoto.sonnet_draft && (() => {
-        const draft = acceptingPhoto.sonnet_draft;
-        const matchName = draft.closest_existing_match?.work_name;
-        const similarity = typeof draft.closest_existing_match?.similarity === 'number'
-          ? draft.closest_existing_match.similarity
-          : 0;
-        const found = matchName ? findWorkByName(matchName, draft.suggested_area) : null;
-        // Tier 2 cutoff: 50% min similarity AND a real curriculum match
-        const existingMatch = found && similarity >= 0.5
-          ? { workId: found.work.id, workName: found.work.name, areaKey: found.areaKey, similarity }
-          : null;
-        return (
-          <AcceptDraftModal
-            isOpen={true}
-            onClose={() => setAcceptingPhoto(null)}
-            onSave={handleAcceptDraftSave}
-            onUseExisting={existingMatch ? async () => {
-              await attachToExistingWork(acceptingPhoto, { id: existingMatch.workId, name: existingMatch.workName }, existingMatch.areaKey);
-            } : undefined}
-            existingMatch={existingMatch}
-            initialDraft={draft}
-            photoUrl={acceptingPhoto.url}
-            saving={processingId === acceptingPhoto.id}
-          />
-        );
-      })()}
+      {/* "This is..." sheet — one button, three resolution paths */}
+      {thisIsPhoto && (
+        <ThisIsSheet
+          isOpen={true}
+          onClose={() => setThisIsPhoto(null)}
+          photo={{
+            id: thisIsPhoto.id,
+            url: thisIsPhoto.url,
+            current_work_id: thisIsPhoto.work_id || null,
+            current_work_name: thisIsPhoto.work_name || null,
+            current_area: thisIsPhoto.area || null,
+            sonnet_draft: thisIsPhoto.sonnet_draft || null,
+          } as ThisIsSheetPhoto}
+          classroomId={classroomIdState || null}
+          submitting={processingId === thisIsPhoto.id}
+          onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
+        />
+      )}
 
       {/* Crop choice modal — "Use Full Photo" vs "Crop to Work" */}
       {cropChoicePhoto && (
