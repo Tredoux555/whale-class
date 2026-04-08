@@ -922,10 +922,34 @@ export default function PhotoAuditPage() {
 
   // "This is..." — one button, one sheet, three resolution paths (existing / new_custom / confirm_ai).
   // Replaces the old Fix + Accept + AcceptDraftModal tangle.
+  //
+  // Tier 1 shortcut (Session 9 fix): when the Sonnet draft has a very
+  // high-confidence closest_existing_match AND that match resolves to a
+  // real classroom work, silently attach the photo right here instead
+  // of opening the sheet. This restores the single-tap Accept behavior
+  // that got lost when Session 8 collapsed everything into the sheet.
+  // No sheet, no extra click, photo is out of the queue.
   const openThisIsSheet = (photo: AuditPhoto) => {
     if (!photo.child_id) {
       toast.error('Photo has no child tagged — tag a child first');
       return;
+    }
+    const match = photo.sonnet_draft?.closest_existing_match;
+    const sim = typeof match?.similarity === 'number' ? match.similarity : 0;
+    if (match?.work_name && sim >= 0.8) {
+      const resolved = findWorkByName(
+        match.work_name,
+        photo.sonnet_draft?.suggested_area
+      );
+      if (resolved) {
+        console.log(
+          `[ThisIsSheet] Tier 1 auto-attach: "${match.work_name}" (${Math.round(
+            sim * 100
+          )}%) — skipping sheet`
+        );
+        attachToExistingWork(photo, resolved.work, resolved.areaKey);
+        return;
+      }
     }
     setThisIsPhoto(photo);
   };

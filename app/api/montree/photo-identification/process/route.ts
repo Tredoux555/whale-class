@@ -315,6 +315,76 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 
+  // ----- Gate B: auto-confirm high-similarity Sonnet match -----
+  // When Sonnet explicitly reports closest_existing_match.similarity ≥ 0.9
+  // AND that named work resolves to a real classroom curriculum row, the
+  // photo effectively IS that work — there is nothing left for the
+  // teacher to decide. Silently attach, mark teacher_confirmed, and
+  // bypass the Photo Audit queue entirely. This closes the "why did a
+  // 95% match still land in the queue" gap.
+  const draft = sonnetResult.draft as any;
+  const gateBMatch = draft?.closest_existing_match;
+  const gateBSim = typeof gateBMatch?.similarity === 'number' ? gateBMatch.similarity : 0;
+  const gateBName = typeof gateBMatch?.work_name === 'string' ? gateBMatch.work_name.trim() : '';
+
+  if (gateBName && gateBSim >= 0.8 && media.classroom_id) {
+    try {
+      const { data: gateBWork } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('id, name, area_id, montree_classroom_curriculum_areas!inner(area_key)')
+        .eq('classroom_id', media.classroom_id)
+        .eq('is_active', true)
+        .ilike('name', gateBName.replace(/[%_\\]/g, '\\$&'))
+        .limit(1)
+        .maybeSingle();
+
+      if (gateBWork?.id) {
+        const areasRel = (gateBWork as any).montree_classroom_curriculum_areas;
+        const gateBAreaKey = Array.isArray(areasRel)
+          ? areasRel[0]?.area_key
+          : areasRel?.area_key || null;
+
+        const { error: gateBErr } = await supabase
+          .from('montree_media')
+          .update({
+            work_id: gateBWork.id,
+            identification_status: 'haiku_matched',
+            identification_confidence: Math.max(
+              draft.confidence || 0,
+              gateBSim
+            ),
+            sonnet_draft: sonnetResult.draft,
+            teacher_confirmed: true,
+          })
+          .eq('id', mediaId);
+
+        if (!gateBErr) {
+          console.log(
+            `[PhotoIdentification] GateB auto-confirm: "${gateBName}" ${Math.round(
+              gateBSim * 100
+            )}% — bypassing Photo Audit`
+          );
+          return NextResponse.json({
+            success: true,
+            outcome: 'gate_b_auto_confirmed',
+            media_id: mediaId,
+            work_id: gateBWork.id,
+            work_name: gateBWork.name,
+            area_key: gateBAreaKey,
+            similarity: gateBSim,
+          });
+        }
+        console.error('[PhotoIdentification] GateB update failed — falling through:', gateBErr);
+      } else {
+        console.log(
+          `[PhotoIdentification] GateB skipped — "${gateBName}" not in classroom curriculum`
+        );
+      }
+    } catch (gateBEx) {
+      console.error('[PhotoIdentification] GateB exception — falling through:', gateBEx);
+    }
+  }
+
   const { error: draftWriteErr } = await supabase
     .from('montree_media')
     .update({
