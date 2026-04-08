@@ -433,6 +433,19 @@ export async function POST(request: NextRequest) {
     // Wait for all parallel tasks (none are fatal)
     await Promise.allSettled(parallelTasks);
 
+    // Mark photo as teacher_confirmed — the teacher has audited this photo via
+    // any correction/attach path (including the Tier 1/2/3 Accept router), so
+    // it should not reappear in the Photo Review queue on refresh.
+    // Fixes ghost-queue bug: previously only the CONFIRM branch set this flag,
+    // so Tier 1 silent-attach photos kept returning to the queue.
+    if (media_id) {
+      const { error: tcErr } = await supabase
+        .from('montree_media')
+        .update({ teacher_confirmed: true })
+        .eq('id', media_id);
+      if (tcErr) console.error('[Corrections] Set teacher_confirmed (correction branch) error (non-fatal):', tcErr.message);
+    }
+
     console.log(`[Corrections] Recorded: "${original_work_name}" → "${corrected_work_name}" (classroom ${classroomId})${photoUrl ? ' [visual memory generated]' : ''}${media_id ? ' [cache invalidated]' : ''}`);
 
     return NextResponse.json({

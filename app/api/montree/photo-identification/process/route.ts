@@ -201,6 +201,21 @@ export async function POST(request: NextRequest) {
     ident.confidence >= HAIKU_TRUST_CONFIDENCE &&
     twoPassResult.hasVisualMemoryForMatch;
 
+  // Phase 1 telemetry (Apr 8) — log every Gate A decision so we can tune
+  // HAIKU_TRUST_CONFIDENCE and the visual memory filter from real data
+  // instead of guessing. Grep Railway logs for '[PhotoIdentification] GateA'.
+  console.log('[PhotoIdentification] GateA ' + JSON.stringify({
+    mediaId,
+    haikuSuccess: twoPassResult.success,
+    haikuConf: ident?.confidence ?? null,
+    haikuWork: ident?.workName ?? null,
+    hasVM: twoPassResult.hasVisualMemoryForMatch,
+    vmSetSize: context.visualMemoryWorkNames.size,
+    vmInjected: context.visualMemoryInjectedCount,
+    threshold: HAIKU_TRUST_CONFIDENCE,
+    outcome: haikuTrusted ? 'trusted' : 'sonnet_fallback',
+  }));
+
   if (haikuTrusted && ident && media.classroom_id) {
     const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
     if (workId) {
