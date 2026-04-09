@@ -35,16 +35,20 @@ export async function GET(request: NextRequest) {
     const zone = url.searchParams.get('zone') || 'all';
     const dateFrom = url.searchParams.get('date_from') || new Date(Date.now() - 7 * 86400000).toISOString();
     const dateTo = url.searchParams.get('date_to') || new Date().toISOString();
-    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 1), 200);
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '100', 10) || 100, 1), 500);
     const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
+    // include_confirmed=1 returns ALL photos in the date range including
+    // teacher_confirmed ones — powers the "Today (All)" audit view that lets
+    // teachers scan every capture from a day regardless of status, so wrong
+    // auto-confirms can still be caught after the fact.
+    const includeConfirmed = url.searchParams.get('include_confirmed') === '1';
 
-    // Step 3: Query media — exclude teacher_confirmed photos (they're done, never show again)
+    // Step 3: Query media — by default exclude teacher_confirmed photos
     let mediaQuery = supabase
       .from('montree_media')
-      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, sonnet_draft', { count: 'exact' })
+      .select('id, child_id, work_id, storage_path, thumbnail_path, captured_at, created_at, caption, auto_crop, classroom_id, tags, identification_status, identification_confidence, sonnet_draft, teacher_confirmed', { count: 'exact' })
       .eq('school_id', auth.schoolId)
       .eq('media_type', 'photo')
-      .neq('teacher_confirmed', true)
       .gte('captured_at', dateFrom)
       .lte('captured_at', dateTo)
       .order('captured_at', { ascending: false })
@@ -52,6 +56,9 @@ export async function GET(request: NextRequest) {
 
     if (effectiveClassroomId) {
       mediaQuery = mediaQuery.eq('classroom_id', effectiveClassroomId);
+    }
+    if (!includeConfirmed) {
+      mediaQuery = mediaQuery.neq('teacher_confirmed', true);
     }
     if (zone === 'green') {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
@@ -233,6 +240,7 @@ export async function GET(request: NextRequest) {
         identification_status: m.identification_status || null,
         identification_confidence: m.identification_confidence ?? null,
         sonnet_draft: m.sonnet_draft || null,
+        teacher_confirmed: m.teacher_confirmed === true,
       };
     });
 
