@@ -257,37 +257,50 @@ Montree — montree.xyz`,
 ]
 
 const GAME_PLAN = [
-  { week: 'Week 1 — Deploy & Polish', tasks: [
-    'Push all local code (Mar 8-15 features)',
-    'Run migrations 137 + 138',
-    'Seed Community Library (329 works)',
-    'Fix {count}m ago timestamp bug',
-    'Fix Chinese work name translation',
-    'Test Smart Capture end-to-end on production',
+  { week: 'Week 1 — Deploy & Polish (DONE)', tasks: [
+    '✅ Push all local code (Mar 8-15 features)',
+    '✅ Run migrations 137 + 138',
+    '✅ Seed Community Library (329 works)',
+    '✅ Fix Chinese work name translation',
+    '✅ Test Smart Capture end-to-end on production',
   ]},
-  { week: 'Week 2 — First Wave (China + Asia)', tasks: [
-    'Send Etonkids emails (6 campus addresses)',
+  { week: 'Week 2 — GMass Campaign A (420 Global Schools)', tasks: [
+    '✅ Cleaned list: 346 deliverable from 420 total (MX-record scrub)',
+    '✅ Loaded 345 recipients into GMass draft (Mon Apr 13, 9am +08:00)',
+    '✅ Sacred email #1 (Montree pitch, ~155 words, {SchoolName} merge)',
+    '✅ Auto follow-up Stage 1 (5 days) + Stage 2 (10 days) configured',
+    '✅ Speed: 50/day, skip weekends, opens ON, clicks OFF',
+    'FIRE: Open Gmail → Drafts → "Montree" → click red GMass button',
+    'Monitor gmass.co/dashboard for bounce rate (keep under 10%)',
+  ]},
+  { week: 'Week 3 — Personalized Tier-S Emails', tasks: [
+    'Send Etonkids emails (6 campus addresses) — see Emails tab',
     'Email James Moore at MST Tokyo',
+    'Email Guidepost / Steve Xu (3 variants)',
     'Email QAIS Qingdao (Rosemary Gosse)',
-    'Email MABIS Bangkok (Serene Jiratanan)',
-    'Email MMI Singapore',
+    'Email MABIS Bangkok + MMI Singapore',
     'Follow up any responses within 24hrs',
   ]},
-  { week: 'Week 3 — Second Wave (Global)', tasks: [
-    'Email Guidepost (try 3 Steve Xu variants)',
+  { week: 'Week 4 — Tier-A/B Global Wave', tasks: [
     'Email Maria Montessori School London',
-    'Email Brainy Bunch (Coach Fadzil)',
+    'Email Brainy Bunch (Coach Fadzil, 120 campuses)',
     'Batch send to 7 Indian principals',
     'Email Key International School Nairobi',
     'Email Montessori Friends Berlin',
-  ]},
-  { week: 'Week 4 — Follow-up & Expand', tasks: [
-    'Follow up all Week 2 non-responders',
     'Email Spring Education / LePort HQ',
     'Email Montessori Academy Australia',
-    'Contact AMI about Global School Accreditation alignment',
-    'Send to remaining Top 50 as time allows',
-    'Track responses in spreadsheet',
+    'Follow up all Week 3 non-responders',
+  ]},
+  { week: 'Week 5 — China Phone Outreach (302 Schools)', tasks: [
+    'Master list: Montree_Master_Outreach.xlsx → "China Montessori" tab',
+    '302 Montessori schools across 22 cities (Baidu Maps verified)',
+    'Most have phone numbers — Chinese schools use WeChat/phone, not email',
+    'OPTION A: Hire Upwork freelancer — Mandarin sales rep, $10-20/hr',
+    'OPTION B: Callnovo.com — managed VA service for China business',
+    'Budget: ~$500-1000 for all 302 calls (25-50 hrs at $15-20/hr)',
+    'Script: Intro call only — "We built this tool, would your principal like to see it?"',
+    'Test batch first: 20 calls → refine script → scale to full list',
+    'Warm leads get escalated to Tredoux for live Montree demo',
   ]},
 ]
 
@@ -326,7 +339,7 @@ export default function OutreachCampaignPage() {
           🎯 Global Outreach Campaign
         </h1>
         <p style={{ color: '#666', marginBottom: 24 }}>
-          50 schools researched. 9 personalized emails ready. 550+ schools reachable through 5 chain contacts.
+          791 schools total. 345 loaded in GMass (Mon Apr 13). 302 China schools ready for phone outreach. 9 personalized Tier-S emails.
         </p>
 
         {/* Tabs */}

@@ -134,7 +134,7 @@ export async function loadIdentificationContext(
         // Previously the strict filter was starving the Gate A trust check —
         // Whale Class has 53 described works but only 30 made the cap, and
         // teacher_enrichment rows were excluded entirely.
-        const VALID_SOURCES = ['teacher_setup', 'correction', 'teacher_enrichment'];
+        const VALID_SOURCES = ['teacher_setup', 'correction', 'teacher_enrichment', 'teacher_new_work'];
         const isTeacherValidated =
           VALID_SOURCES.includes(m.source) &&
           (m.description_confidence || 0) >= 0.75;

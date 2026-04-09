@@ -503,7 +503,7 @@ async function enrichVisualMemoryFromCorrection({
   // 1. Try to read the cached Sonnet draft visual description + key_materials (rich, free)
   let visualDescription: string | null = null;
   let draftKeyMaterials: string[] = [];
-  let descriptionSource: 'sonnet_draft' | 'haiku_fresh' = 'sonnet_draft';
+  let descriptionSource: 'sonnet_draft' | 'haiku_fresh' | 'sonnet_correction' = 'sonnet_draft';
   if (mediaId) {
     try {
       const { data: mediaRow } = await supabase
@@ -599,7 +599,7 @@ Analyze the photo and call the correction_analysis tool.` },
           // Use Sonnet's visual description (richer than cached draft)
           if (result.visual_description && result.visual_description.length >= 20) {
             visualDescription = result.visual_description.trim().slice(0, 800);
-            descriptionSource = 'sonnet_correction' as any;
+            descriptionSource = 'sonnet_correction';
           }
           // Merge key_materials from Sonnet analysis with draft materials
           if (Array.isArray(result.key_materials) && result.key_materials.length > 0) {
@@ -621,15 +621,17 @@ Analyze the photo and call the correction_analysis tool.` },
             if (mistakeReason) negParts.push(mistakeReason);
             if (distinguishing) negParts.push(`To distinguish: ${distinguishing}`);
             const richNegative = `NOT "${correctedWorkName}" — ${negParts.join(' ')}`.slice(0, 400);
-            await appendNegativeExample({
-              supabase,
-              classroomId,
-              workName: originalWorkName!,
-              workKey: originalWorkId,
-              area: originalArea,
-              negative: richNegative,
-            });
-            console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
+            if (originalWorkName) {
+              await appendNegativeExample({
+                supabase,
+                classroomId,
+                workName: originalWorkName,
+                workKey: originalWorkId,
+                area: originalArea,
+                negative: richNegative,
+              });
+              console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
+            }
           }
           break;
         }
@@ -670,13 +672,13 @@ Analyze the photo and call the correction_analysis tool.` },
   //    (Sonnet analysis writes a richer negative in step 2 above; this is the safety net)
   if (isRealCorrection) {
     // Check if Sonnet already wrote a negative (descriptionSource would be 'sonnet_correction')
-    const sonnetWroteNegative = descriptionSource === ('sonnet_correction' as any);
-    if (!sonnetWroteNegative) {
+    const sonnetWroteNegative = descriptionSource === ('sonnet_correction');
+    if (!sonnetWroteNegative && originalWorkName) {
       const negativeText = `Looks similar to "${correctedWorkName}" — features: ${visualDescription.slice(0, 180)}`;
       await appendNegativeExample({
         supabase,
         classroomId,
-        workName: originalWorkName!,
+        workName: originalWorkName,
         workKey: originalWorkId,
         area: originalArea,
         negative: negativeText,

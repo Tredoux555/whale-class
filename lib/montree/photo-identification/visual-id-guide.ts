@@ -155,9 +155,16 @@ TEENS AND TENS:
 - Wooden board with numbers 1-100 + number tiles → "Hundred Board"
 
 LINEAR COUNTING (BEAD CHAINS):
-- Short bead chains (squares: 1²→10²) → "Short Bead Chains (Squared)"
-- Long bead chains (cubes: 1³→10³, very long) → "Long Bead Chains (Cubed)"
-- Bead chain with arrow labels (skip counting) → "Bead Chain" (specify short/long if visible)
+MONTESSORI BEAD COLOR CODE — use this to identify the SPECIFIC chain number:
+  1=red, 2=green, 3=pink/light pink, 4=yellow, 5=light blue/turquoise, 6=purple/violet, 7=white, 8=brown, 9=dark blue/navy, 10=gold
+- Short bead chain = SQUARED chain (n×n beads). Identify the bead color → number → "Short Bead Chain of N"
+  Example: light blue beads (5) in a short chain with arrows at 5,10,15,20,25 → "Short Bead Chain of 5"
+- Long bead chain = CUBED chain (n×n×n beads, very long). Identify the bead color → number → "Long Bead Chain of N"
+  Example: green beads (2) in a long chain with arrows at 2,4,6,8 → "Long Bead Chain of 2"
+- The HUNDRED CHAIN is specifically 10 gold ten-bars (100 beads) = "Hundred Chain"
+- The THOUSAND CHAIN is specifically 100 gold ten-bars (1000 beads) = "Thousand Chain"
+- Arrow-shaped paper labels placed at skip-counting intervals confirm bead chain work
+- ALWAYS specify the number when you can identify the bead color: "Short Bead Chain of 5", NOT just "Short Bead Chains (Squared)"
 
 MEMORIZATION — OPERATION BOARDS:
 - Red/blue strip board with number strips for addition → "Addition Strip Board"
@@ -183,6 +190,9 @@ FRACTIONS:
 - SMALL BEAD FRAME (4 wires) vs LARGE BEAD FRAME (7 wires)
 - ADDITION STRIP BOARD vs SUBTRACTION STRIP BOARD (same board, different strips — check operation context)
 - HUNDRED BOARD (1-100 grid) vs MULTIPLICATION BOARD (bead on grid)
+- SHORT BEAD CHAIN (squared, shorter) vs LONG BEAD CHAIN (cubed, very long) — check chain length relative to mat
+- HUNDRED CHAIN (gold, 100 beads) vs SHORT BEAD CHAIN OF 10 (also gold, also 100 beads) — these are the same work
+- BEAD CHAINS: always identify the bead COLOR to determine the NUMBER (see color code above)
 
 === LANGUAGE ===
 
