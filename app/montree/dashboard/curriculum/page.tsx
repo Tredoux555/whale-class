@@ -17,6 +17,7 @@ import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
+import DuplicateSheet from '@/components/montree/curriculum/DuplicateSheet';
 
 
 export default function CurriculumPage() {
@@ -38,6 +39,9 @@ export default function CurriculumPage() {
 
   // Highlighted work from search
   const [highlightedWorkId, setHighlightedWorkId] = useState<string | null>(null);
+
+  // Duplicate detection sheet state
+  const [showDuplicates, setShowDuplicates] = useState(false);
 
   // Full Details modal state
   const [fullDetailsOpen, setFullDetailsOpen] = useState(false);
@@ -209,6 +213,13 @@ export default function CurriculumPage() {
               }}
               placeholder={t('curriculum.searchWorks')}
             />
+            <button
+              onClick={() => setShowDuplicates(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-xl text-sm font-medium transition-colors border border-amber-200"
+            >
+              <span>🔗</span>
+              <span className="hidden sm:inline">Duplicates</span>
+            </button>
             <Link
               data-tutorial="browse-guide-link"
               href="/montree/dashboard/curriculum/browse"
@@ -340,6 +351,13 @@ export default function CurriculumPage() {
         workName={fullDetailsDisplayName || fullDetailsWork}
         guideData={fullDetailsData}
         loading={fullDetailsLoading}
+      />
+
+      {/* Duplicate Detection Sheet */}
+      <DuplicateSheet
+        open={showDuplicates}
+        onClose={() => setShowDuplicates(false)}
+        onConsolidated={() => fetchCurriculum()}
       />
 
     </div>
