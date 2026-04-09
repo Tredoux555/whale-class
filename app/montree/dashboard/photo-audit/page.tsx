@@ -44,6 +44,7 @@ interface AuditPhoto {
   status: string | null;
   identification_status?: string | null;
   identification_confidence?: number | null;
+  teacher_confirmed?: boolean;
   sonnet_draft?: {
     visual_description?: string;
     proposed_name?: string;
@@ -58,7 +59,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports' | 'today_all';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -624,14 +625,23 @@ export default function PhotoAuditPage() {
     abortRef.current = controller;
     setLoading(true);
 
-    const dateFrom = dateRange === '24h' ? new Date(Date.now() - 86400000).toISOString()
+    // "Today (All)" overrides the zone + date filter to show every photo from
+    // the last 24h regardless of teacher_confirmed status — the end-of-day
+    // sanity-check view for catching wrong auto-confirms.
+    const isTodayAll = zone === 'today_all';
+    const dateFrom = isTodayAll
+      ? new Date(Date.now() - 86400000).toISOString()
+      : dateRange === '24h' ? new Date(Date.now() - 86400000).toISOString()
       : dateRange === '7d' ? new Date(Date.now() - 7 * 86400000).toISOString()
       : dateRange === '30d' ? new Date(Date.now() - 30 * 86400000).toISOString()
       : '2020-01-01T00:00:00Z';
+    const effectiveZone = isTodayAll ? 'all' : zone;
+    const includeConfirmedParam = isTodayAll ? '&include_confirmed=1' : '';
+    const limitParam = isTodayAll ? 500 : 200;
 
     try {
       const res = await fetch(
-        `/api/montree/audit/photos?zone=${zone}&date_from=${dateFrom}&limit=200&offset=0`,
+        `/api/montree/audit/photos?zone=${effectiveZone}&date_from=${dateFrom}&limit=${limitParam}&offset=0${includeConfirmedParam}`,
         { signal: controller.signal }
       );
       if (controller.signal.aborted) return;
@@ -1673,6 +1683,7 @@ export default function PhotoAuditPage() {
   // Filter photos by zone — 'all' shows everything needing review (non-green)
   const filteredPhotos = useMemo(() => {
     if (zone === 'works_review' || zone === 'parent_reports' || zone === 'weekly_admin') return []; // Non-photo tabs handled separately
+    if (zone === 'today_all') return photos; // Show every photo in last 24h incl. confirmed
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
@@ -1692,11 +1703,12 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  const isPhotoZone = zone === 'all' || zone === 'green';
+  const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'today_all';
 
-  // 4-tab layout: Photo Review | Works Review | Parent Reports | Weekly Admin
+  // 5-tab layout: Photo Review | Today (All) | Works Review | Parent Reports | Weekly Admin
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     { key: 'all', label: locale === 'zh' ? '照片审核' : 'Photo Review', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
+    { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
     { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
     { key: 'parent_reports', label: locale === 'zh' ? '家长报告' : 'Parent Reports', color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
@@ -2254,6 +2266,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
 
       {/* Zone badge */}
       <div className={`absolute top-1.5 right-1.5 z-10 w-3 h-3 rounded-full ${zoneBadge[photo.zone]}`} />
+
+      {/* Confirmed overlay — shown in "Today (All)" view so teachers can spot
+          already-resolved photos at a glance while scanning the day's captures. */}
+      {photo.teacher_confirmed === true && (
+        <div className="absolute top-1.5 left-9 z-10 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[9px] font-bold shadow">
+          ✓ CONFIRMED
+        </div>
+      )}
 
       {/* Photo */}
       <div className="aspect-square bg-gray-100">
