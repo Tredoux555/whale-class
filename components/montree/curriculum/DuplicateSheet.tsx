@@ -20,6 +20,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
   const [selectedWinners, setSelectedWinners] = useState<Record<number, string>>({}); // groupIdx → winnerId
   const [merging, setMerging] = useState<number | null>(null); // groupIdx being merged
   const [mergedGroups, setMergedGroups] = useState<Set<number>>(new Set());
+  const [search, setSearch] = useState('');
 
   const detect = useCallback(async () => {
     setLoading(true);
@@ -86,7 +87,13 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
 
   if (!open) return null;
 
-  const pendingGroups = groups.filter((_, i) => !mergedGroups.has(i));
+  const searchLower = search.toLowerCase().trim();
+  const filteredGroups = searchLower
+    ? groups.map((g, i) => ({ group: g, idx: i })).filter(({ group }) =>
+        group.works.some(w => w.name.toLowerCase().includes(searchLower))
+      )
+    : groups.map((g, i) => ({ group: g, idx: i }));
+  const pendingGroups = filteredGroups.filter(({ idx }) => !mergedGroups.has(idx));
 
   return (
     <div
@@ -103,14 +110,29 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
           <div>
             <h2 className="text-lg font-bold text-gray-800">🔗 Find Duplicates</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              {loading ? 'Scanning...' : `${totalWorks} works scanned`}
+              {loading ? 'Scanning...' : searchLower
+                ? `${filteredGroups.length} of ${groups.length} groups match`
+                : `${totalWorks} works scanned · ${groups.length} groups`}
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
 
+        {/* Search */}
+        {!loading && groups.length > 0 && (
+          <div className="px-5 pt-3 pb-0">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search duplicates... e.g. bingo"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
+            />
+          </div>
+        )}
+
         {/* Content */}
-        <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(85vh - 140px)' }}>
+        <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(85vh - 190px)' }}>
           {loading ? (
             <div className="py-12 text-center">
               <div className="text-3xl mb-3 animate-pulse">🔍</div>
@@ -124,7 +146,12 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
             </div>
           ) : (
             <div className="space-y-5">
-              {groups.map((group, idx) => {
+              {filteredGroups.length === 0 && searchLower ? (
+                <div className="py-8 text-center">
+                  <p className="text-gray-500 text-sm">No duplicate groups match "{search}"</p>
+                </div>
+              ) : null}
+              {filteredGroups.map(({ group, idx }) => {
                 const isMerged = mergedGroups.has(idx);
                 const isMerging = merging === idx;
 
