@@ -2341,7 +2341,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           <p className="text-[9px] text-amber-700 mt-0.5 italic">Auto-tagged by AI — please verify before confirming.</p>
           <div className="flex gap-1 mt-1.5">
             <button
-              onClick={onAcceptDraft}
+              onClick={onConfirm}
               disabled={processing}
               className="flex-1 text-[11px] py-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
               title="Confirm this auto-match is correct"
