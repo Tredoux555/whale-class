@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
-import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 // import { logApiUsage } from '@/lib/montree/api-usage'; // DEFERRED: metering not yet deployed
@@ -528,34 +528,119 @@ async function enrichVisualMemoryFromCorrection({
     }
   }
 
-  // 2. Fall back to a fresh Haiku visual description if no cached draft
-  if (!visualDescription && anthropic) {
-    descriptionSource = 'haiku_fresh';
+  // 2. Sonnet correction analysis — rich visual description + mistake reasoning.
+  //    When a teacher corrects Haiku's guess, Sonnet looks at the ACTUAL photo and produces:
+  //    (a) A detailed visual fingerprint of the CORRECT work
+  //    (b) Key materials visible in the photo
+  //    (c) A specific negative example explaining WHY the AI confused it with the wrong work
+  //    This is the crown jewel of the self-learning loop: every Fix makes Haiku smarter.
+  const hasCachedDescription = !!visualDescription;
+  const isRealCorrection = originalWorkName && originalWorkName.trim() &&
+    originalWorkName.toLowerCase() !== correctedWorkName.toLowerCase();
+
+  if (anthropic && (!hasCachedDescription || isRealCorrection)) {
     const apiAbortController = new AbortController();
     const apiTimeout = setTimeout(() => apiAbortController.abort(), 45000);
     try {
       const message = await anthropic.messages.create({
-        model: HAIKU_MODEL,
-        max_tokens: 200,
-        system: `You are a Montessori material describer. Describe ONLY the physical materials/objects visible in the photo — NOT the child, NOT the activity. Focus on shape, color, size, material (wood/metal/fabric/plastic/paper), arrangement, and distinctive visual features (printed text, diagrams, page layout). 1-2 sentences, max 150 words. This description will be used to recognize the same materials in future photos.`,
+        model: AI_MODEL,
+        max_tokens: 1024,
+        system: `You are a Montessori classroom AI that learns from teacher corrections. A teacher just corrected the AI's identification of a Montessori work in a photo. Your job is to analyze the photo carefully and produce structured data that will help the AI get it right next time.
+
+Focus on PHYSICAL MATERIALS visible in the photo — not the child. Be extremely specific about what distinguishes this work from similar ones: exact materials, colors, shapes, arrangement, textures, what's on the table, what's NOT on the table.`,
         messages: [{
           role: 'user',
           content: [
             { type: 'image', source: { type: 'url', url: photoUrl } },
-            { type: 'text', text: `This is the Montessori work "${correctedWorkName}" (area: ${correctedArea || 'unknown'}). Describe what makes it visually identifiable.` },
+            { type: 'text', text: `The AI guessed this was "${originalWorkName || 'unknown'}" but the teacher corrected it to "${correctedWorkName}" (area: ${correctedArea || 'unknown'}).
+
+Analyze the photo and call the correction_analysis tool.` },
           ],
         }],
+        tools: [{
+          name: 'correction_analysis',
+          description: 'Record structured correction analysis for visual memory',
+          input_schema: {
+            type: 'object' as const,
+            required: ['visual_description', 'key_materials', 'mistake_reason', 'distinguishing_features'],
+            properties: {
+              visual_description: {
+                type: 'string',
+                description: 'Detailed description of what the CORRECT work looks like in this photo. 2-4 sentences. Focus on materials, arrangement, colors, textures. This will be stored as a visual fingerprint to recognize this work in future photos.',
+              },
+              key_materials: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'List of specific materials/objects visible (e.g. "red metal inset frame", "blue crayon", "pink sandpaper letter card"). 3-8 items.',
+              },
+              mistake_reason: {
+                type: 'string',
+                description: 'Why the AI confused this with the wrong work. Be specific about what visual features are shared vs different. 1-2 sentences. This becomes a negative example on the WRONG work.',
+              },
+              distinguishing_features: {
+                type: 'string',
+                description: 'What specifically distinguishes this work from the one the AI guessed. Focus on what to look for AND what should be absent. 1-2 sentences.',
+              },
+            },
+          },
+        }],
+        tool_choice: { type: 'tool', name: 'correction_analysis' },
       }, { signal: apiAbortController.signal });
+
+      // Extract tool_use result
       for (const block of message.content) {
-        if (block.type === 'text') { visualDescription = block.text.trim(); break; }
+        if (block.type === 'tool_use' && block.name === 'correction_analysis') {
+          const result = block.input as {
+            visual_description?: string;
+            key_materials?: string[];
+            mistake_reason?: string;
+            distinguishing_features?: string;
+          };
+          // Use Sonnet's visual description (richer than cached draft)
+          if (result.visual_description && result.visual_description.length >= 20) {
+            visualDescription = result.visual_description.trim().slice(0, 800);
+            descriptionSource = 'sonnet_correction' as any;
+          }
+          // Merge key_materials from Sonnet analysis with draft materials
+          if (Array.isArray(result.key_materials) && result.key_materials.length > 0) {
+            const seen = new Set(draftKeyMaterials.map(m => m.toLowerCase().trim()));
+            for (const m of result.key_materials) {
+              if (typeof m === 'string' && m.trim() && !seen.has(m.toLowerCase().trim())) {
+                draftKeyMaterials.push(m.trim());
+                seen.add(m.toLowerCase().trim());
+              }
+            }
+            draftKeyMaterials = draftKeyMaterials.slice(0, 20);
+          }
+          // Store the mistake reason + distinguishing features for the negative example
+          const mistakeReason = result.mistake_reason?.trim() || '';
+          const distinguishing = result.distinguishing_features?.trim() || '';
+          // Build a rich negative example for the WRONG work
+          if (isRealCorrection && (mistakeReason || distinguishing)) {
+            const negParts: string[] = [];
+            if (mistakeReason) negParts.push(mistakeReason);
+            if (distinguishing) negParts.push(`To distinguish: ${distinguishing}`);
+            const richNegative = `NOT "${correctedWorkName}" — ${negParts.join(' ')}`.slice(0, 400);
+            await appendNegativeExample({
+              supabase,
+              classroomId,
+              workName: originalWorkName!,
+              workKey: originalWorkId,
+              area: originalArea,
+              negative: richNegative,
+            });
+            console.log(`[VisualMemory] Sonnet correction analysis: negative on "${originalWorkName}" — ${mistakeReason.slice(0, 80)}`);
+          }
+          break;
+        }
       }
     } catch (err) {
       if (apiAbortController.signal.aborted) {
-        console.error('[VisualMemory] Haiku timed out — skipping enrichment');
-        return;
+        console.error('[VisualMemory] Sonnet correction analysis timed out');
+      } else {
+        console.error('[VisualMemory] Sonnet correction analysis failed (non-fatal):', err);
       }
-      console.error('[VisualMemory] Haiku call failed (non-fatal):', err);
-      return;
+      // Fall through — we may still have a cached visualDescription from step 1
     } finally {
       clearTimeout(apiTimeout);
     }
@@ -565,7 +650,7 @@ async function enrichVisualMemoryFromCorrection({
     console.warn(`[VisualMemory] No usable description for "${correctedWorkName}"`);
     return;
   }
-  visualDescription = visualDescription.slice(0, 500);
+  visualDescription = visualDescription.slice(0, 800);
 
   // 3. APPEND positive fingerprint + key_materials to corrected work's visual memory
   await appendVisualFingerprint({
@@ -581,21 +666,25 @@ async function enrichVisualMemoryFromCorrection({
     keyMaterials: draftKeyMaterials,
   });
 
-  // 4. APPEND negative example to original (wrong) work's visual memory
-  // Only if we have a real original_work_name AND it's different from the corrected one
-  if (originalWorkName && originalWorkName.trim() && originalWorkName.toLowerCase() !== correctedWorkName.toLowerCase()) {
-    const negativeText = `Looks similar to "${correctedWorkName}" — features: ${visualDescription.slice(0, 180)}`;
-    await appendNegativeExample({
-      supabase,
-      classroomId,
-      workName: originalWorkName,
-      workKey: originalWorkId,
-      area: originalArea,
-      negative: negativeText,
-    });
+  // 4. APPEND fallback negative example if Sonnet analysis didn't already handle it
+  //    (Sonnet analysis writes a richer negative in step 2 above; this is the safety net)
+  if (isRealCorrection) {
+    // Check if Sonnet already wrote a negative (descriptionSource would be 'sonnet_correction')
+    const sonnetWroteNegative = descriptionSource === ('sonnet_correction' as any);
+    if (!sonnetWroteNegative) {
+      const negativeText = `Looks similar to "${correctedWorkName}" — features: ${visualDescription.slice(0, 180)}`;
+      await appendNegativeExample({
+        supabase,
+        classroomId,
+        workName: originalWorkName!,
+        workKey: originalWorkId,
+        area: originalArea,
+        negative: negativeText,
+      });
+    }
   }
 
-  console.log(`[VisualMemory] Enriched "${correctedWorkName}" via ${descriptionSource}${originalWorkName && originalWorkName !== correctedWorkName ? ` + negative on "${originalWorkName}"` : ''}`);
+  console.log(`[VisualMemory] Enriched "${correctedWorkName}" via ${descriptionSource}${isRealCorrection ? ` + negative on "${originalWorkName}"` : ''}`);
   invalidateClassroomEmbeddings(classroomId);
 }
 
