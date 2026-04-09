@@ -173,6 +173,15 @@ export default function DashboardPage() {
     }
   }, [childrenError, router, t]);
 
+  // Scroll to #paperwork hash on load (from nav menu link)
+  useEffect(() => {
+    if (window.location.hash === '#paperwork') {
+      setTimeout(() => {
+        document.getElementById('paperwork-tracker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 500); // wait for lazy-loaded panels to render
+    }
+  }, [loading]);
+
   const isParent = session ? isHomeschoolParent(session) : false;
 
   if (!session || loading) {
@@ -463,7 +472,7 @@ export default function DashboardPage() {
 
                   {/* ─── 📋 Paperwork Tracker (standalone section) ─── */}
                   {isEnabled('paperwork_tracker') && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div id="paperwork-tracker" className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <div className="px-4 py-3">
                         <PaperworkPanel />
                       </div>
