@@ -445,6 +445,7 @@ export default function PhotoAuditPage() {
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
   const [thisIsPhoto, setThisIsPhoto] = useState<AuditPhoto | null>(null);
   const [tellAiPhoto, setTellAiPhoto] = useState<AuditPhoto | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [pickerArea, setPickerArea] = useState('');
 
   // Batch state
@@ -1857,6 +1858,7 @@ export default function PhotoAuditPage() {
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
               onTellAI={() => setTellAiPhoto(photo)}
+              onPhotoTap={() => photo.url && setLightboxUrl(photo.url)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
@@ -2003,6 +2005,28 @@ export default function PhotoAuditPage() {
           submitting={processingId === thisIsPhoto.id}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
         />
+      )}
+
+      {/* Photo lightbox — tap any photo to see it full-size */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/85 flex items-center justify-center p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white/70 hover:text-white text-3xl font-light z-10"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+          <img
+            src={lightboxUrl}
+            alt=""
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
 
       {/* "Tell the AI what it is" sheet — teacher freeform context → Sonnet proposal → save as new custom work */}
@@ -2219,7 +2243,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onSaveNote, processing, workStatus, onSetStatus, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2232,6 +2256,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
   onTellAI: () => void;
+  onPhotoTap: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   workStatus: string | null;
@@ -2295,8 +2320,8 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         </div>
       )}
 
-      {/* Photo */}
-      <div className="aspect-square bg-gray-100">
+      {/* Photo — tap to view full size */}
+      <div className="aspect-square bg-gray-100 cursor-pointer" onClick={onPhotoTap}>
         {photo.url ? (
           <img
             src={photo.url}
