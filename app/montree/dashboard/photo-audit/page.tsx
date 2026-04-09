@@ -14,6 +14,7 @@ import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
 import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
 import ThisIsSheet, { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
+import TellAiSheet from '@/components/montree/photo-audit/TellAiSheet';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -443,6 +444,7 @@ export default function PhotoAuditPage() {
   // Correction state
   const [correctingPhoto, setCorrectingPhoto] = useState<AuditPhoto | null>(null);
   const [thisIsPhoto, setThisIsPhoto] = useState<AuditPhoto | null>(null);
+  const [tellAiPhoto, setTellAiPhoto] = useState<AuditPhoto | null>(null);
   const [pickerArea, setPickerArea] = useState('');
 
   // Batch state
@@ -1854,6 +1856,7 @@ export default function PhotoAuditPage() {
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
+              onTellAI={() => setTellAiPhoto(photo)}
               onSaveNote={(caption) => handleSaveNote(photo.id, caption)}
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
@@ -1999,6 +2002,22 @@ export default function PhotoAuditPage() {
           classroomId={classroomIdState || null}
           submitting={processingId === thisIsPhoto.id}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
+        />
+      )}
+
+      {/* "Tell the AI what it is" sheet — teacher freeform context → Sonnet proposal → save as new custom work */}
+      {tellAiPhoto && (
+        <TellAiSheet
+          photo={{
+            id: tellAiPhoto.id,
+            url: tellAiPhoto.url,
+            child_name: tellAiPhoto.child_name,
+          }}
+          onClose={() => setTellAiPhoto(null)}
+          onSaved={(photoId) => {
+            setPhotos(prev => prev.filter(p => p.id !== photoId));
+            setTellAiPhoto(null);
+          }}
         />
       )}
 
@@ -2200,7 +2219,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onSaveNote, processing, workStatus, onSetStatus, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onSaveNote, processing, workStatus, onSetStatus, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2212,6 +2231,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
+  onTellAI: () => void;
   onSaveNote: (caption: string) => void;
   processing: boolean;
   workStatus: string | null;
@@ -2523,6 +2543,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               🧠 {t('audit.teach')}
             </button>
           )}
+          <button
+            onClick={onTellAI}
+            disabled={processing}
+            className="text-[10px] py-1 px-1.5 rounded bg-violet-50 text-violet-700 font-medium disabled:opacity-50"
+            title="Tell the AI what this is"
+          >
+            🗣️
+          </button>
           <button
             onClick={onDelete}
             disabled={processing}
