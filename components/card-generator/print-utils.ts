@@ -57,22 +57,69 @@ function computeLayout(cardSizeCm: number) {
   };
 }
 
+/**
+ * Compute a per-label font size that fits the text within the available
+ * label area without overflow. Shrinks from the base font when the text
+ * is too long for a single line, down to a minimum of 12pt.
+ */
+function adaptiveLabelFontSize(
+  label: string,
+  basePt: number,
+  cardWidthCm: number,
+  labelHeightCm: number
+): number {
+  // Internal dimensions after subtracting border + padding
+  const internalWidthPt = (cardWidthCm - WHITE_BORDER_CM * 2 - 0.6) * 28.35;
+  const internalHeightPt = (labelHeightCm - WHITE_BORDER_CM * 2 - 0.4) * 28.35;
+  const lineHeight = 1.2;
+
+  let fontSize = basePt;
+  while (fontSize > 12) {
+    // Approximate character width for bold Comic Sans / Nunito
+    const charWidth = fontSize * 0.58;
+    const charsPerLine = Math.max(1, Math.floor(internalWidthPt / charWidth));
+    // Count wrapped lines (split on spaces to avoid mid-word breaks)
+    const words = label.split(/\s+/);
+    let lines = 1;
+    let currentLineLen = 0;
+    for (const w of words) {
+      if (currentLineLen > 0 && currentLineLen + 1 + w.length > charsPerLine) {
+        lines++;
+        currentLineLen = w.length;
+      } else {
+        currentLineLen += (currentLineLen > 0 ? 1 : 0) + w.length;
+      }
+    }
+    const totalHeightPt = lines * fontSize * lineHeight;
+    if (totalHeightPt <= internalHeightPt) break;
+    fontSize -= 1;
+  }
+  return Math.max(12, fontSize);
+}
+
 interface CreateCardHTMLParams {
   card: Card;
   type: 'control' | 'picture' | 'label';
+  layout?: { cardSize: number; labelHeight: number; fontSize: number };
 }
 
 /**
  * Helper function to create HTML for a single card
  */
-const createCardHTML = ({ card, type }: CreateCardHTMLParams): string => {
+const createCardHTML = ({ card, type, layout }: CreateCardHTMLParams): string => {
+  // Compute per-card font size when layout info is available
+  const fontPt = layout
+    ? adaptiveLabelFontSize(card.label, layout.fontSize, layout.cardSize, layout.labelHeight)
+    : undefined;
+  const fontStyle = fontPt ? `font-size: ${fontPt}pt;` : '';
+
   if (type === 'control') {
     return `
       <div class="card card-control">
         <div class="image-area">
           <img src="${sanitizeImageUrl(card.croppedImage)}" alt="${escapeHtml(card.label)}" style="${getObjectPosition(card)}">
         </div>
-        <div class="label-area">${escapeHtml(card.label)}</div>
+        <div class="label-area" style="${fontStyle}">${escapeHtml(card.label)}</div>
       </div>
     `;
   } else if (type === 'picture') {
@@ -86,7 +133,7 @@ const createCardHTML = ({ card, type }: CreateCardHTMLParams): string => {
   } else {
     return `
       <div class="card card-label-only">
-        <div class="label-area" style="flex: 1;">${escapeHtml(card.label)}</div>
+        <div class="label-area" style="flex: 1; ${fontStyle}">${escapeHtml(card.label)}</div>
       </div>
     `;
   }
@@ -296,7 +343,8 @@ export const generateCards = ({
 `;
 
   // Generate Control Cards pages
-  const controlCards = cards.map(card => createCardHTML({ card, type: 'control' }));
+  const layoutInfo = { cardSize: L.cardSize, labelHeight: L.labelHeight, fontSize: L.fontSize };
+  const controlCards = cards.map(card => createCardHTML({ card, type: 'control', layout: layoutInfo }));
   for (let i = 0; i < controlCards.length; i += L.controlPerPage) {
     const pageCards = controlCards.slice(i, i + L.controlPerPage);
     const pageNum = Math.floor(i / L.controlPerPage) + 1;
@@ -328,7 +376,7 @@ export const generateCards = ({
   }
 
   // Generate Label Cards pages
-  const labelCards = cards.map(card => createCardHTML({ card, type: 'label' }));
+  const labelCards = cards.map(card => createCardHTML({ card, type: 'label', layout: layoutInfo }));
   const labelGridMarginLeft = (A4_WIDTH_CM - (L.cardSize * L.cols)) / 2;
   for (let i = 0; i < labelCards.length; i += L.labelPerPage) {
     const pageCards = labelCards.slice(i, i + L.labelPerPage);
@@ -652,11 +700,14 @@ export const generateLabelsOnly = ({
 <body>
 `;
 
-  const labelCards = cards.map(card => `
+  const labelCards = cards.map(card => {
+    const fontPt = adaptiveLabelFontSize(card.label, L.fontSize, L.cardSize, L.labelHeight);
+    return `
     <div class="card">
-      <div class="label-area">${escapeHtml(card.label)}</div>
+      <div class="label-area" style="font-size: ${fontPt}pt;">${escapeHtml(card.label)}</div>
     </div>
-  `);
+  `;
+  });
 
   for (let i = 0; i < labelCards.length; i += L.labelPerPage) {
     const pageCards = labelCards.slice(i, i + L.labelPerPage);
