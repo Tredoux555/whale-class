@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'No classroom in session' }, { status: 400 });
     }
 
+    const searchQuery = request.nextUrl.searchParams.get('search')?.trim().toLowerCase() || '';
     const supabase = getSupabase();
 
     // Load all works for the classroom
@@ -82,12 +83,35 @@ export async function GET(request: NextRequest) {
       visual_memory_exists: vmSet.has(w.name),
     }));
 
+    // If search query provided, return all matching works as a single manual-merge group
+    if (searchQuery) {
+      const matching = candidates
+        .filter(w => w.name.toLowerCase().includes(searchQuery))
+        .sort((a, b) => {
+          const scoreA = a.media_count * 2 + a.progress_count + (a.parent_description ? 1 : 0);
+          const scoreB = b.media_count * 2 + b.progress_count + (b.parent_description ? 1 : 0);
+          return scoreB - scoreA;
+        });
+
+      const searchGroups = matching.length >= 2
+        ? [{ works: matching, score: 0, reason: `Manual search: "${searchQuery}"` }]
+        : [];
+
+      return NextResponse.json({
+        groups: searchGroups,
+        total_works: works.length,
+        search_results: matching.length,
+        mode: 'search',
+      });
+    }
+
     const groups = detectDuplicates(candidates);
 
     return NextResponse.json({
       groups,
       total_works: works.length,
       duplicates_found: groups.reduce((sum, g) => sum + g.works.length, 0),
+      mode: 'auto',
     });
   } catch (err) {
     console.error('[Duplicates] Detection error:', err);
