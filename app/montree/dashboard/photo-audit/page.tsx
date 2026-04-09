@@ -2515,7 +2515,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             })}
           </div>
         )}
-        {/* Correction actions */}
+        {/* Correction actions — hide Fix here when AI section already has it */}
         <div className="flex gap-1 mt-1">
           {photo.work_id && (
             <button
@@ -2526,12 +2526,23 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               {processing ? '...' : `✓ ${t('audit.confirm')}`}
             </button>
           )}
+          {/* Only show footer Fix when the card has no AI section (no sonnet_draft, not haiku_matched) */}
+          {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
+            <button
+              onClick={onCorrect}
+              disabled={processing}
+              className="flex-1 text-[10px] py-1 rounded bg-gray-100 text-gray-600 font-medium disabled:opacity-50"
+            >
+              ✏️ {t('audit.fix')}
+            </button>
+          )}
           <button
-            onClick={onCorrect}
+            onClick={onTellAI}
             disabled={processing}
-            className="flex-1 text-[10px] py-1 rounded bg-gray-100 text-gray-600 font-medium disabled:opacity-50"
+            className="flex-1 text-[10px] py-1 rounded bg-violet-50 text-violet-700 font-medium disabled:opacity-50"
+            title="Tell the AI what this is"
           >
-            ✏️ {t('audit.fix')}
+            🗣️ Tell AI
           </button>
           {photo.work_name && photo.work_id && photo.url && (
             <button
@@ -2543,14 +2554,6 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               🧠 {t('audit.teach')}
             </button>
           )}
-          <button
-            onClick={onTellAI}
-            disabled={processing}
-            className="text-[10px] py-1 px-1.5 rounded bg-violet-50 text-violet-700 font-medium disabled:opacity-50"
-            title="Tell the AI what this is"
-          >
-            🗣️
-          </button>
           <button
             onClick={onDelete}
             disabled={processing}
