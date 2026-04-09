@@ -80,6 +80,9 @@ Reminder from CLAUDE.md: there's a loaded GMass draft scheduled to fire 9:00am M
 
 ---
 
+## Apr 8 rerun on existing audit queue
+Added `force: true` flag to `/api/montree/photo-identification/process` (gates the idempotency early-return and clears `identification_status` + `sonnet_draft` before rerunning). Drove a fire-and-forget background loop from the user's authed Chrome tab (batches of 3, 1s delay) against all photos in the Whale Class audit queue. **Result: 36/36 ok, 0 errors.** Every queued photo now carries a fresh draft from the current pipeline (Session 7 visual-memory gate + Session 8 corpus). User should hard-refresh Photo Audit to see new drafts and the new "This is..." sheet UI.
+
 ## Known carryovers (not Session 8 scope)
 - Session 7 Phase 2 threshold tune still pending
 - Migration 166 (`montree_global_works_staging`) still pending from earlier session

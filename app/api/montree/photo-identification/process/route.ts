@@ -47,7 +47,13 @@ import {
 
 // ----- Constants -----
 
-const HAIKU_TRUST_CONFIDENCE = 0.75;
+// Raised 0.75 → 0.85 on Apr 9 2026 after Sandpaper Letters was auto-tagged as
+// Metal Insets in Whale Class audit. At 0.75 Gate A fires on visually similar
+// language/sensorial works (tray + single focal object). 0.85 is the safer
+// floor — everything below falls through to Sonnet and renders as an auditable
+// AI DRAFT card with "Similar to X" breadcrumbs. Watch Railway [PhotoIdentification]
+// GateA logs and tune from real trusted/fallback distribution.
+const HAIKU_TRUST_CONFIDENCE = 0.85;
 const SONNET_DAILY_CAP_PER_CLASSROOM = parseInt(
   process.env.SONNET_DAILY_CAP_PER_CLASSROOM || '100',
   10,
