@@ -2388,6 +2388,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               ✏️ Fix
             </button>
           </div>
+          <button
+            onClick={onTellAI}
+            disabled={processing}
+            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-violet-200 text-violet-600 font-medium disabled:opacity-50 hover:bg-violet-50 transition-colors"
+            title="Describe this work in your own words"
+          >
+            🗣️ Tell AI what it is
+          </button>
         </div>
       )}
 
@@ -2422,6 +2430,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               ✏️ Fix
             </button>
           </div>
+          <button
+            onClick={onTellAI}
+            disabled={processing}
+            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-amber-200 text-amber-600 font-medium disabled:opacity-50 hover:bg-amber-50 transition-colors"
+            title="Describe this work in your own words"
+          >
+            🗣️ Tell AI what it is
+          </button>
         </div>
       )}
 
@@ -2446,18 +2462,6 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             {Math.round(photo.confidence * 100)}%
           </p>
         )}
-        {/* Teacher note input */}
-        <div className="mt-1 relative">
-          <textarea
-            value={noteText}
-            onChange={e => handleNoteChange(e.target.value)}
-            placeholder={t('audit.addNote')}
-            className="w-full text-[10px] p-1.5 rounded border border-gray-200 bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
-            rows={2}
-          />
-          {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
-          {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
-        </div>
         {/* Re-run classification result display */}
         {rerunResult && !rerunResult.loading && !rerunResult.error && (
           <div className="mt-1 p-1.5 rounded bg-indigo-50 border border-indigo-200">
@@ -2540,7 +2544,26 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             })}
           </div>
         )}
-        {/* Correction actions — hide Fix here when AI section already has it */}
+        {/* For plain cards (no AI section): show Fix + Tell AI as full-width row */}
+        {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
+          <div className="flex gap-1 mt-1.5">
+            <button
+              onClick={onCorrect}
+              disabled={processing}
+              className="flex-1 text-[10px] py-1.5 rounded bg-gray-100 text-gray-600 font-medium disabled:opacity-50"
+            >
+              ✏️ {t('audit.fix')}
+            </button>
+            <button
+              onClick={onTellAI}
+              disabled={processing}
+              className="flex-1 text-[10px] py-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
+            >
+              🗣️ Tell AI what it is
+            </button>
+          </div>
+        )}
+        {/* Utility actions row */}
         <div className="flex gap-1 mt-1">
           {photo.work_id && (
             <button
@@ -2551,24 +2574,6 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               {processing ? '...' : `✓ ${t('audit.confirm')}`}
             </button>
           )}
-          {/* Only show footer Fix when the card has no AI section (no sonnet_draft, not haiku_matched) */}
-          {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
-            <button
-              onClick={onCorrect}
-              disabled={processing}
-              className="flex-1 text-[10px] py-1 rounded bg-gray-100 text-gray-600 font-medium disabled:opacity-50"
-            >
-              ✏️ {t('audit.fix')}
-            </button>
-          )}
-          <button
-            onClick={onTellAI}
-            disabled={processing}
-            className="flex-1 text-[10px] py-1 rounded bg-violet-50 text-violet-700 font-medium disabled:opacity-50"
-            title="Tell the AI what this is"
-          >
-            🗣️ Tell AI
-          </button>
           {photo.work_name && photo.work_id && photo.url && (
             <button
               onClick={onUseAsReference}
@@ -2587,6 +2592,18 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           >
             🗑️
           </button>
+        </div>
+        {/* Teacher note — always at the very bottom */}
+        <div className="mt-1.5 relative">
+          <textarea
+            value={noteText}
+            onChange={e => handleNoteChange(e.target.value)}
+            placeholder={t('audit.addNote')}
+            className="w-full text-[10px] p-1.5 rounded border border-gray-200 bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
+            rows={2}
+          />
+          {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-gray-400">{t('audit.saving')}</span>}
+          {noteSaved && !noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-emerald-500">✓</span>}
         </div>
       </div>
     </div>
