@@ -1008,6 +1008,10 @@ export default function PhotoAuditPage() {
             : `🔗 Matched to "${resolution.work_name}"`;
       toast.success(label);
       setThisIsPhoto(null);
+      // Refresh curriculum cache so new custom works appear in the Fix picker immediately
+      if (resolution.type === 'new_custom') {
+        fetchCurriculum();
+      }
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to resolve');
