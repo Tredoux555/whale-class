@@ -431,11 +431,11 @@ export default function DashboardPage() {
 
 
               {/* ── Collapsible Sections (below student grid) — feature-gated ── */}
-              {session?.classroom?.id && (isEnabled('intelligence_panels') || isEnabled('teacher_tools')) && (
+              {session?.classroom?.id && (isEnabled('intelligence_panels') || isEnabled('teacher_tools') || isEnabled('paperwork_tracker')) && (
                 <div className="space-y-3">
 
                   {/* ─── 📊 Classroom Intelligence ─── */}
-                  {isEnabled('intelligence_panels') && (
+                  {(isEnabled('intelligence_panels') || isEnabled('paperwork_tracker')) && (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <button
                         onClick={() => toggleSection('intelligence')}
@@ -451,12 +451,12 @@ export default function DashboardPage() {
                       </button>
                       {sectionsOpen.intelligence && (
                         <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                          <div id="panel-attendance"><AttendanceWidget /></div>
-                          <div id="panel-stale_works"><StaleWorksPanel /></div>
-                          <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
-                          <div id="panel-evidence"><EvidencePanel /></div>
+                          {isEnabled('intelligence_panels') && <div id="panel-attendance"><AttendanceWidget /></div>}
+                          {isEnabled('intelligence_panels') && <div id="panel-stale_works"><StaleWorksPanel /></div>}
+                          {isEnabled('intelligence_panels') && <div id="panel-conference_notes"><ConferenceNotesPanel /></div>}
+                          {isEnabled('intelligence_panels') && <div id="panel-evidence"><EvidencePanel /></div>}
                           {isEnabled('paperwork_tracker') && <div id="panel-paperwork"><PaperworkPanel /></div>}
-                          <div id="panel-pulse"><PulsePanel /></div>
+                          {isEnabled('intelligence_panels') && <div id="panel-pulse"><PulsePanel /></div>}
                         </div>
                       )}
                     </div>
