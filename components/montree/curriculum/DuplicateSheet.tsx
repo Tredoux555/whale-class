@@ -1,8 +1,9 @@
 // components/montree/curriculum/DuplicateSheet.tsx
 // Bottom sheet showing detected duplicate works with merge controls.
+// Two modes: auto-detect (fuzzy matching) and keyword search (manual merge).
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { toast } from 'sonner';
 import type { WorkCandidate, DuplicateGroup } from '@/lib/montree/curriculum/duplicate-detection';
@@ -21,21 +22,30 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
   const [merging, setMerging] = useState<number | null>(null); // groupIdx being merged
   const [mergedGroups, setMergedGroups] = useState<Set<number>>(new Set());
   const [search, setSearch] = useState('');
+  const [mode, setMode] = useState<'auto' | 'search'>('auto');
+  const [searchResults, setSearchResults] = useState(0);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const detect = useCallback(async () => {
+  const fetchGroups = useCallback(async (searchQuery?: string) => {
     setLoading(true);
     try {
-      const res = await montreeApi('/api/montree/curriculum/duplicates');
+      const url = searchQuery
+        ? `/api/montree/curriculum/duplicates?search=${encodeURIComponent(searchQuery)}`
+        : '/api/montree/curriculum/duplicates';
+      const res = await montreeApi(url);
       if (!res.ok) throw new Error('Detection failed');
       const data = await res.json();
       setGroups(data.groups || []);
       setTotalWorks(data.total_works || 0);
+      setMode(data.mode || 'auto');
+      setSearchResults(data.search_results || 0);
       // Pre-select the first (richest) work in each group as winner
       const defaults: Record<number, string> = {};
       (data.groups || []).forEach((g: DuplicateGroup, i: number) => {
         if (g.works.length > 0) defaults[i] = g.works[0].id;
       });
       setSelectedWinners(defaults);
+      setMergedGroups(new Set());
     } catch (err) {
       toast.error('Failed to detect duplicates');
     }
@@ -44,10 +54,26 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
 
   useEffect(() => {
     if (open) {
-      detect();
-      setMergedGroups(new Set());
+      fetchGroups();
+      setSearch('');
     }
-  }, [open, detect]);
+  }, [open, fetchGroups]);
+
+  // Debounced search — fires API call 400ms after typing stops
+  useEffect(() => {
+    if (!open) return;
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+
+    const trimmed = search.trim();
+    if (!trimmed) {
+      // Back to auto-detect mode
+      searchTimer.current = setTimeout(() => fetchGroups(), 100);
+    } else if (trimmed.length >= 2) {
+      searchTimer.current = setTimeout(() => fetchGroups(trimmed), 400);
+    }
+
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
+  }, [search, open, fetchGroups]);
 
   const handleMerge = async (groupIdx: number) => {
     const group = groups[groupIdx];
@@ -55,6 +81,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
     if (!winnerId) { toast.error('Select a winner first'); return; }
 
     const loserIds = group.works.filter(w => w.id !== winnerId).map(w => w.id);
+    if (loserIds.length === 0) { toast.error('Select at least 2 works to merge'); return; }
     const winnerName = group.works.find(w => w.id === winnerId)?.name || '?';
 
     setMerging(groupIdx);
@@ -87,13 +114,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
 
   if (!open) return null;
 
-  const searchLower = search.toLowerCase().trim();
-  const filteredGroups = searchLower
-    ? groups.map((g, i) => ({ group: g, idx: i })).filter(({ group }) =>
-        group.works.some(w => w.name.toLowerCase().includes(searchLower))
-      )
-    : groups.map((g, i) => ({ group: g, idx: i }));
-  const pendingGroups = filteredGroups.filter(({ idx }) => !mergedGroups.has(idx));
+  const pendingGroups = groups.filter((_, i) => !mergedGroups.has(i));
 
   return (
     <div
@@ -110,48 +131,59 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
           <div>
             <h2 className="text-lg font-bold text-gray-800">🔗 Find Duplicates</h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              {loading ? 'Scanning...' : searchLower
-                ? `${filteredGroups.length} of ${groups.length} groups match`
-                : `${totalWorks} works scanned · ${groups.length} groups`}
+              {loading ? 'Scanning...' :
+                mode === 'search'
+                  ? `${searchResults} works match "${search.trim()}"${groups.length > 0 ? ' · select which to keep' : ''}`
+                  : `${totalWorks} works scanned · ${groups.length} group${groups.length === 1 ? '' : 's'}`}
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
 
-        {/* Search */}
-        {!loading && groups.length > 0 && (
-          <div className="px-5 pt-3 pb-0">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search duplicates... e.g. bingo"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
-            />
-          </div>
-        )}
+        {/* Search — always visible */}
+        <div className="px-5 pt-3 pb-0">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search works to merge... e.g. bingo"
+            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400"
+            autoFocus
+          />
+          {mode === 'search' && !loading && (
+            <p className="text-[11px] text-amber-600 mt-1.5 px-1">
+              Showing all works matching "{search.trim()}" — pick one to keep, the rest will merge into it
+            </p>
+          )}
+        </div>
 
         {/* Content */}
-        <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(85vh - 190px)' }}>
+        <div className="overflow-y-auto px-5 py-4" style={{ maxHeight: 'calc(85vh - 200px)' }}>
           {loading ? (
             <div className="py-12 text-center">
               <div className="text-3xl mb-3 animate-pulse">🔍</div>
-              <p className="text-gray-500 text-sm">Scanning {totalWorks || '...'} works for duplicates...</p>
+              <p className="text-gray-500 text-sm">
+                {search.trim() ? `Searching for "${search.trim()}"...` : `Scanning ${totalWorks || '...'} works for duplicates...`}
+              </p>
             </div>
           ) : groups.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="text-3xl mb-3">✨</div>
-              <p className="text-gray-700 font-medium">No duplicates found</p>
-              <p className="text-gray-500 text-sm mt-1">All {totalWorks} works have unique names</p>
+              <div className="text-3xl mb-3">{mode === 'search' ? '🔍' : '✨'}</div>
+              <p className="text-gray-700 font-medium">
+                {mode === 'search'
+                  ? searchResults === 1 ? `Only 1 work matches "${search.trim()}" — nothing to merge`
+                    : `No works match "${search.trim()}"`
+                  : 'No duplicates found'}
+              </p>
+              <p className="text-gray-500 text-sm mt-1">
+                {mode === 'search'
+                  ? 'Try a different search term'
+                  : `All ${totalWorks} works have unique names`}
+              </p>
             </div>
           ) : (
             <div className="space-y-5">
-              {filteredGroups.length === 0 && searchLower ? (
-                <div className="py-8 text-center">
-                  <p className="text-gray-500 text-sm">No duplicate groups match "{search}"</p>
-                </div>
-              ) : null}
-              {filteredGroups.map(({ group, idx }) => {
+              {groups.map((group, idx) => {
                 const isMerged = mergedGroups.has(idx);
                 const isMerging = merging === idx;
 
@@ -163,14 +195,22 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                     {/* Group header */}
                     <div className="px-4 py-2.5 flex items-center justify-between bg-white border-b border-gray-100">
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                          group.score >= 95 ? 'bg-red-100 text-red-700' :
-                          group.score >= 85 ? 'bg-orange-100 text-orange-700' :
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {group.score}% match
-                        </span>
-                        <span className="text-xs text-gray-500">{group.reason}</span>
+                        {mode === 'auto' ? (
+                          <>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                              group.score >= 95 ? 'bg-red-100 text-red-700' :
+                              group.score >= 85 ? 'bg-orange-100 text-orange-700' :
+                              'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {group.score}% match
+                            </span>
+                            <span className="text-xs text-gray-500">{group.reason}</span>
+                          </>
+                        ) : (
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                            {group.works.length} works found
+                          </span>
+                        )}
                       </div>
                       {isMerged && (
                         <span className="text-xs font-semibold text-green-600">✓ Merged</span>
@@ -213,7 +253,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                                 <span className="text-gray-400">
                                   {work.source === 'teacher_manual' ? 'manual' :
                                    work.source === 'photo_audit_resolve' ? 'photo audit' :
-                                   work.source || 'unknown'}
+                                   work.source || 'standard'}
                                 </span>
                               </div>
                             </div>
@@ -223,7 +263,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                     </div>
 
                     {/* Merge button per group */}
-                    {!isMerged && (
+                    {!isMerged && group.works.length >= 2 && (
                       <div className="px-3 pb-3">
                         <button
                           onClick={() => handleMerge(idx)}
@@ -243,7 +283,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
         </div>
 
         {/* Footer */}
-        {groups.length > 0 && pendingGroups.length > 0 && (
+        {mode === 'auto' && groups.length > 0 && pendingGroups.length > 0 && (
           <div className="px-5 py-3 border-t border-gray-100 bg-gray-50">
             <button
               onClick={handleMergeAll}
