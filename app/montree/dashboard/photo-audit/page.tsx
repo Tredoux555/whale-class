@@ -2326,6 +2326,40 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         </div>
       )}
 
+      {/* Haiku auto-match banner — Gate A silently tagged this photo without
+          Sonnet review. Rendered as a distinct amber card so teachers can
+          spot + verify auto-tags instead of eye-passing them as confirmed. */}
+      {photo.identification_status === 'haiku_matched' && photo.work_name && (
+        <div className="p-2 bg-amber-50 border-t-2 border-amber-300">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-[9px] font-bold text-amber-700 uppercase tracking-wide">🤖 Haiku Auto-Match</span>
+            {typeof photo.identification_confidence === 'number' && (
+              <span className="text-[9px] text-amber-600">· {Math.round(photo.identification_confidence * 100)}%</span>
+            )}
+          </div>
+          <p className="text-[11px] font-bold text-amber-900 leading-tight">{photo.work_name}</p>
+          <p className="text-[9px] text-amber-700 mt-0.5 italic">Auto-tagged by AI — please verify before confirming.</p>
+          <div className="flex gap-1 mt-1.5">
+            <button
+              onClick={onAcceptDraft}
+              disabled={processing}
+              className="flex-1 text-[11px] py-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
+              title="Confirm this auto-match is correct"
+            >
+              {processing ? '...' : '✅ Confirm'}
+            </button>
+            <button
+              onClick={onCorrect}
+              disabled={processing}
+              className="flex-1 text-[11px] py-1.5 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
+              title="Pick the correct work"
+            >
+              ✏️ Fix
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Info + actions */}
       <div className="p-2 bg-white">
         <p className="text-xs font-medium truncate">{photo.work_name || t('audit.untaggedWork')}</p>
