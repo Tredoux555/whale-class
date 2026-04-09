@@ -30,9 +30,41 @@ function normalize(name: string): string {
     .replace(/['']/g, "'")       // normalize quotes
     .replace(/[-–—]/g, ' ')      // dashes → space
     .replace(/[()[\]{}]/g, '')   // remove brackets
+    .replace(/\//g, ' ')         // slashes → space (preserves /o/ as token "o")
     .replace(/[^\w\s']/g, '')    // remove other punctuation
     .replace(/\s+/g, ' ')        // collapse whitespace
     .trim();
+}
+
+/**
+ * Extract a "discriminator suffix" — a short distinguishing tail that makes
+ * two otherwise-identical names represent DIFFERENT works.
+ * e.g. "CVC Different Ending /o/" → "o", "CVC Different Ending /i/" → "i"
+ * Returns null if no clear suffix discriminator.
+ */
+function extractSuffix(name: string): string | null {
+  // Match trailing /X/ patterns (phonics markers)
+  const phonics = name.match(/\/([^/]+)\/\s*$/);
+  if (phonics) return phonics[1].toLowerCase().trim();
+  // Match trailing parenthetical like "(Set A)" vs "(Set B)"
+  const paren = name.match(/\(([^)]+)\)\s*$/);
+  if (paren) return paren[1].toLowerCase().trim();
+  return null;
+}
+
+/**
+ * Check if two names share a long common prefix but differ only in a
+ * short meaningful discriminator (phonics marker, set number, etc.)
+ * If so, they are NOT duplicates — they're variants in a series.
+ */
+function isSeriesVariant(nameA: string, nameB: string): boolean {
+  const suffA = extractSuffix(nameA);
+  const suffB = extractSuffix(nameB);
+  if (suffA && suffB && suffA !== suffB) {
+    // Both have discriminator suffixes that differ — series variants, not duplicates
+    return true;
+  }
+  return false;
 }
 
 /** Tokenize and sort words for order-independent comparison */
@@ -72,6 +104,12 @@ function levenshtein(a: string, b: string): number {
 
 /** Calculate similarity between two work names (0–100) */
 export function similarity(nameA: string, nameB: string): { score: number; reason: string } {
+  // Series variant guard — e.g. "CVC Different Ending /o/" vs "/i/"
+  // These share a long prefix but differ in a meaningful discriminator
+  if (isSeriesVariant(nameA, nameB)) {
+    return { score: 0, reason: 'Series variants (different discriminator suffix)' };
+  }
+
   const normA = normalize(nameA);
   const normB = normalize(nameB);
 
