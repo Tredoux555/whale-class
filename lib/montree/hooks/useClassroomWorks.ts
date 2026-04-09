@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { AREA_CONFIG } from '@/lib/montree/types';
 
 export interface ClassroomWork {
@@ -88,13 +88,15 @@ export function useClassroomWorks(
     return () => controller.abort();
   }, [classroomId, enabled, reloadToken]);
 
+  const reload = useCallback(() => {
+    loadedRef.current = false;
+    setReloadToken(t => t + 1);
+  }, []);
+
   return {
     works,
     loading,
     error,
-    reload: () => {
-      loadedRef.current = false;
-      setReloadToken(t => t + 1);
-    },
+    reload,
   };
 }
