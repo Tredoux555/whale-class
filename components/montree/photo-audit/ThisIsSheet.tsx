@@ -76,10 +76,20 @@ export default function ThisIsSheet({
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Lazy-load the classroom's full works list on first open of the sheet.
-  const { works, loading: worksLoading } = useClassroomWorks(
+  const { works, loading: worksLoading, reload: reloadWorks } = useClassroomWorks(
     classroomId,
     isOpen
   );
+
+  // Reload the works list each time the sheet opens for a new photo,
+  // so custom works just added via "Add as new" are immediately searchable.
+  const prevPhotoId = useRef<string | null>(null);
+  useEffect(() => {
+    if (isOpen && photo?.id && photo.id !== prevPhotoId.current) {
+      prevPhotoId.current = photo?.id || null;
+      reloadWorks();
+    }
+  }, [isOpen, photo?.id, reloadWorks]);
 
   // Reset on close / pre-seed on open
   useEffect(() => {
