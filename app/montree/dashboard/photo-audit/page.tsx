@@ -1012,6 +1012,20 @@ export default function PhotoAuditPage() {
       if (resolution.type === 'new_custom') {
         fetchCurriculum();
       }
+      // Auto-set "practicing" — teacher photographed the child doing this work
+      const workName = resolution.type === 'new_custom' ? resolution.name : resolution.work_name;
+      if (photo.child_id && workName) {
+        montreeApi('/api/montree/progress/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: photo.child_id,
+            work_name: workName,
+            status: 'practicing',
+            no_downgrade: true,
+          }),
+        }).catch(err => console.error('[ResolvePhoto] Auto-practicing failed (non-fatal):', err));
+      }
     } catch (err) {
       console.error('[ResolvePhoto] Failed:', err);
       toast.error(err instanceof Error ? err.message : 'Failed to resolve');
@@ -1083,14 +1097,34 @@ export default function PhotoAuditPage() {
         console.error('[Photo Audit] Correction failed:', res.status, errData);
         throw new Error(errData?.error || 'correction failed');
       }
-      // "Fix" = update work info but keep photo in place for further actions (Teach, Correct).
-      // Don't change zone or counts — teacher still needs to Teach AI and/or click Correct.
-      setPhotos(prev => prev.map(p =>
-        p.id === correctingPhoto.id
-          ? { ...p, work_id: work.id, work_name: work.name, area: effectiveArea }
-          : p
-      ));
-      toast.success(t('audit.corrected'));
+      // Fix = teacher told us the correct answer. Photo is done — remove from queue.
+      // (Previously kept photo in place for Teach/Correct, but that was a confusing extra step.)
+      const removedZone = correctingPhoto.zone || 'untagged';
+      setPhotos(prev => prev.filter(p => p.id !== correctingPhoto.id));
+      setCounts(prev => ({
+        ...prev,
+        ...(removedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+        ...(removedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+        ...(removedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+        ...(removedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+      }));
+      setSelectedIds(prev => { const next = new Set(prev); next.delete(correctingPhoto.id); return next; });
+      toast.success(`🔧 Fixed → "${work.name}"`);
+      // Auto-set "practicing" — teacher photographed the child doing this work
+      if (correctingPhoto.child_id && work.name) {
+        montreeApi('/api/montree/progress/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            child_id: correctingPhoto.child_id,
+            work_name: work.name,
+            work_id: work.id,
+            area: effectiveArea,
+            status: 'practicing',
+            no_downgrade: true,
+          }),
+        }).catch(err => console.error('[Fix] Auto-practicing failed (non-fatal):', err));
+      }
     } catch (err: any) {
       toast.error(err?.message || t('audit.correctionFailed'));
     } finally {
@@ -2524,30 +2558,8 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             )}
           </div>
         )}
-        {/* Work status: Presented / Practicing / Mastered */}
-        {photo.work_name && photo.child_id && (
-          <div className="flex gap-1 mt-1.5">
-            {(['presented', 'practicing', 'mastered'] as const).map(s => {
-              const active = workStatus === s;
-              const cfg = s === 'presented'
-                ? { icon: '🌱', label: 'P', bg: active ? 'bg-amber-200 text-amber-800 ring-1 ring-amber-400' : 'bg-amber-50 text-amber-600 hover:bg-amber-100' }
-                : s === 'practicing'
-                ? { icon: '🔄', label: 'Pr', bg: active ? 'bg-blue-200 text-blue-800 ring-1 ring-blue-400' : 'bg-blue-50 text-blue-600 hover:bg-blue-100' }
-                : { icon: '⭐', label: 'M', bg: active ? 'bg-emerald-200 text-emerald-800 ring-1 ring-emerald-400' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100' };
-              return (
-                <button
-                  key={s}
-                  onClick={() => onSetStatus(s)}
-                  disabled={processing}
-                  className={`flex-1 text-[10px] py-1 rounded font-medium transition-all disabled:opacity-50 ${cfg.bg}`}
-                  title={s.charAt(0).toUpperCase() + s.slice(1)}
-                >
-                  {cfg.icon} {cfg.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        {/* Work status: P/Pr/M buttons hidden — status auto-set to "practicing" on confirm.
+            Kept in code for reinstatement if needed. See handleSetStatus + progressMap. */}
         {/* For plain cards (no AI section): show Fix + Tell AI as full-width row */}
         {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
           <div className="flex gap-1 mt-1.5">
@@ -2567,27 +2579,9 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             </button>
           </div>
         )}
-        {/* Utility actions row */}
-        <div className="flex gap-1 mt-1">
-          {photo.work_id && (
-            <button
-              onClick={onConfirm}
-              disabled={processing}
-              className="flex-1 text-[10px] py-1 rounded bg-emerald-50 text-emerald-700 font-medium disabled:opacity-50"
-            >
-              {processing ? '...' : `✓ ${t('audit.confirm')}`}
-            </button>
-          )}
-          {photo.work_name && photo.work_id && photo.url && (
-            <button
-              onClick={onUseAsReference}
-              disabled={processing}
-              className="flex-1 text-[10px] py-1 rounded bg-blue-50 text-blue-700 font-medium disabled:opacity-50"
-              title={t('audit.teachAI')}
-            >
-              🧠 {t('audit.teach')}
-            </button>
-          )}
+        {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
+            Kept in code for reinstatement. Only delete remains visible. */}
+        <div className="flex gap-1 mt-1 justify-end">
           <button
             onClick={onDelete}
             disabled={processing}
