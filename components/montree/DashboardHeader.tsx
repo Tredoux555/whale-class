@@ -429,6 +429,25 @@ export default function DashboardHeader() {
                     </Link>
                   )}
 
+                  {isEnabled('paperwork_tracker') && (
+                    <Link
+                      href="/montree/dashboard#paperwork"
+                      onClick={() => {
+                        setShowMoreMenu(false);
+                        // If already on dashboard, scroll to the section
+                        if (pathname === '/montree/dashboard') {
+                          setTimeout(() => {
+                            document.getElementById('paperwork-tracker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 100);
+                        }
+                      }}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-gray-700 hover:bg-gray-50`}
+                    >
+                      <span className="text-base">📋</span>
+                      <span>{locale === 'zh' ? '作业追踪器' : 'Paperwork Tracker'}</span>
+                    </Link>
+                  )}
+
                   {/* Divider */}
                   <div className="border-t border-gray-100 my-1" />
 
