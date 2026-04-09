@@ -141,7 +141,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Some loser works not found' }, { status: 404 });
     }
 
-    const loserNames = losers.map(l => l.name);
+    // Deduplicate loser names (two losers may have the same name)
+    const loserNames = [...new Set(losers.map(l => l.name))];
     const stats = { media: 0, progress: 0, visual_memory: 0, deleted: 0 };
 
     // 3. Re-point photos (montree_media.work_id)
@@ -153,41 +154,47 @@ export async function POST(request: NextRequest) {
     stats.media = movedMedia?.length || 0;
 
     // 4. Merge progress records (montree_child_progress.work_name — STRING FK)
-    // For each loser name, check if the child already has a record under the winner name
+    // Collect ALL loser progress in one pass, then deduplicate against winner + each other
+    const allLoserProgress: { id: string; child_id: string; work_name: string }[] = [];
     for (const loserName of loserNames) {
-      // Get all progress records for this loser name
-      const { data: loserProgress } = await supabase
+      if (loserName === winner.name) continue; // skip if loser has same name as winner
+      const { data: lp } = await supabase
         .from('montree_child_progress')
         .select('id, child_id, work_name')
         .eq('work_name', loserName);
+      if (lp) allLoserProgress.push(...lp);
+    }
 
-      if (!loserProgress || loserProgress.length === 0) continue;
+    // Track which children already have progress under the winner name
+    const childrenWithWinnerProgress = new Set<string>();
+    const { data: existingWinnerProgress } = await supabase
+      .from('montree_child_progress')
+      .select('child_id')
+      .eq('work_name', winner.name);
+    for (const ep of (existingWinnerProgress || [])) {
+      childrenWithWinnerProgress.add(ep.child_id);
+    }
 
-      for (const lp of loserProgress) {
-        // Check if child already has progress under the winner name
-        const { data: existing } = await supabase
+    for (const lp of allLoserProgress) {
+      if (childrenWithWinnerProgress.has(lp.child_id)) {
+        // Child already has progress under winner name — delete this duplicate
+        await supabase.from('montree_child_progress').delete().eq('id', lp.id);
+      } else {
+        // Rename to winner name and mark child as handled
+        await supabase
           .from('montree_child_progress')
-          .select('id')
-          .eq('child_id', lp.child_id)
-          .eq('work_name', winner.name)
-          .maybeSingle();
-
-        if (existing) {
-          // Delete the duplicate (child already has progress under winner name)
-          await supabase.from('montree_child_progress').delete().eq('id', lp.id);
-        } else {
-          // Rename to winner name
-          await supabase
-            .from('montree_child_progress')
-            .update({ work_name: winner.name })
-            .eq('id', lp.id);
-        }
-        stats.progress++;
+          .update({ work_name: winner.name })
+          .eq('id', lp.id);
+        childrenWithWinnerProgress.add(lp.child_id);
       }
+      stats.progress++;
     }
 
     // 5. Merge visual memory (montree_visual_memory.work_name — STRING with unique constraint)
+    // Process all losers, always checking current winner VM state (may have been created by a previous iteration)
     for (const loserName of loserNames) {
+      if (loserName === winner.name) continue; // skip same-name losers
+
       const { data: loserVm } = await supabase
         .from('montree_visual_memory')
         .select('*')
@@ -197,7 +204,7 @@ export async function POST(request: NextRequest) {
 
       if (!loserVm) continue;
 
-      // Check if winner already has a visual memory entry
+      // Re-check winner VM each iteration (may have been created/updated by previous loser)
       const { data: winnerVm } = await supabase
         .from('montree_visual_memory')
         .select('*')
@@ -251,14 +258,14 @@ export async function POST(request: NextRequest) {
             .eq('work_name', winner.name);
         }
 
-        // Delete loser VM entry
+        // Delete loser VM entry (safe — winner already exists)
         await supabase
           .from('montree_visual_memory')
           .delete()
           .eq('classroom_id', classroomId)
           .eq('work_name', loserName);
       } else {
-        // No winner VM — just rename the loser's entry
+        // No winner VM yet — rename the loser's entry to become the winner's
         await supabase
           .from('montree_visual_memory')
           .update({ work_name: winner.name, updated_at: new Date().toISOString() })
