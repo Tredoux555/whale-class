@@ -500,8 +500,9 @@ async function enrichVisualMemoryFromCorrection({
     return;
   }
 
-  // 1. Try to read the cached Sonnet draft visual description (rich, free)
+  // 1. Try to read the cached Sonnet draft visual description + key_materials (rich, free)
   let visualDescription: string | null = null;
+  let draftKeyMaterials: string[] = [];
   let descriptionSource: 'sonnet_draft' | 'haiku_fresh' = 'sonnet_draft';
   if (mediaId) {
     try {
@@ -513,6 +514,14 @@ async function enrichVisualMemoryFromCorrection({
       const draft = mediaRow?.sonnet_draft as Record<string, unknown> | null;
       if (draft && typeof draft.visual_description === 'string' && draft.visual_description.trim().length >= 20) {
         visualDescription = draft.visual_description.trim();
+      }
+      // Also extract key_materials from the Sonnet draft — these carry the materials
+      // signal into Pass 2 Haiku prompts via montree_visual_memory.key_materials
+      if (draft && Array.isArray(draft.key_materials)) {
+        draftKeyMaterials = (draft.key_materials as string[])
+          .filter((m: unknown) => typeof m === 'string' && (m as string).trim().length > 0)
+          .map((m: string) => m.trim())
+          .slice(0, 20);
       }
     } catch (err) {
       console.warn('[VisualMemory] Failed to read sonnet_draft (non-fatal):', err);
@@ -558,7 +567,7 @@ async function enrichVisualMemoryFromCorrection({
   }
   visualDescription = visualDescription.slice(0, 500);
 
-  // 3. APPEND positive fingerprint to corrected work's visual memory
+  // 3. APPEND positive fingerprint + key_materials to corrected work's visual memory
   await appendVisualFingerprint({
     supabase,
     classroomId,
@@ -569,6 +578,7 @@ async function enrichVisualMemoryFromCorrection({
     fingerprint: visualDescription,
     photoUrl,
     mediaId,
+    keyMaterials: draftKeyMaterials,
   });
 
   // 4. APPEND negative example to original (wrong) work's visual memory
@@ -602,6 +612,7 @@ async function appendVisualFingerprint({
   fingerprint,
   photoUrl,
   mediaId,
+  keyMaterials,
 }: {
   supabase: ReturnType<typeof getSupabase>;
   classroomId: string;
@@ -612,13 +623,14 @@ async function appendVisualFingerprint({
   fingerprint: string;
   photoUrl: string;
   mediaId: string | null;
+  keyMaterials?: string[];
 }) {
   const SEP = ' || ';
   const CAP = 2500;
 
   const { data: existing } = await supabase
     .from('montree_visual_memory')
-    .select('visual_description, description_confidence')
+    .select('visual_description, description_confidence, key_materials')
     .eq('classroom_id', classroomId)
     .eq('work_name', workName)
     .maybeSingle();
@@ -640,21 +652,43 @@ async function appendVisualFingerprint({
     if (merged.length > CAP) merged = merged.slice(-CAP);
   }
 
+  // Merge key_materials: combine existing + new, deduplicate, cap at 20
+  let mergedMaterials: string[] | undefined = undefined;
+  if (keyMaterials && keyMaterials.length > 0) {
+    const existingMaterials: string[] = Array.isArray(existing?.key_materials)
+      ? (existing!.key_materials as string[]).filter((m: unknown) => typeof m === 'string')
+      : [];
+    const seen = new Set(existingMaterials.map((m: string) => m.toLowerCase().trim()));
+    mergedMaterials = [...existingMaterials];
+    for (const m of keyMaterials) {
+      if (!seen.has(m.toLowerCase().trim())) {
+        mergedMaterials.push(m);
+        seen.add(m.toLowerCase().trim());
+      }
+    }
+    mergedMaterials = mergedMaterials.slice(0, 20);
+  }
+
+  const upsertPayload: Record<string, unknown> = {
+    classroom_id: classroomId,
+    work_name: workName,
+    work_key: workKey,
+    area,
+    is_custom: isCustom,
+    visual_description: merged,
+    source: 'correction',
+    source_media_id: mediaId,
+    photo_url: photoUrl,
+    description_confidence: 0.95,
+    updated_at: new Date().toISOString(),
+  };
+  if (mergedMaterials && mergedMaterials.length > 0) {
+    upsertPayload.key_materials = mergedMaterials;
+  }
+
   const { error } = await supabase
     .from('montree_visual_memory')
-    .upsert({
-      classroom_id: classroomId,
-      work_name: workName,
-      work_key: workKey,
-      area,
-      is_custom: isCustom,
-      visual_description: merged,
-      source: 'correction',
-      source_media_id: mediaId,
-      photo_url: photoUrl,
-      description_confidence: 0.95,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'classroom_id,work_name' });
+    .upsert(upsertPayload, { onConflict: 'classroom_id,work_name' });
 
   if (error) console.error('[VisualMemory] Append fingerprint upsert failed:', error);
 }
