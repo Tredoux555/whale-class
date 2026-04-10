@@ -1,5 +1,5 @@
 // WeeklyWrapTab — embedded in Photo Audit page as third tab
-// Simplified Weekly Wrap: compact teacher cards + continuous parent report scroll
+// Teacher Review: clean list with expand. Parent Reports: child list → click to preview one.
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
