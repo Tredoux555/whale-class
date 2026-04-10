@@ -197,6 +197,95 @@ montree.xyz
 
 ## RECENT STATUS (Apr 11, 2026)
 
+### ⚡ Session 14 — Comprehensive Chinese Locale Fix: Dual-Column Root Cause + All UI Components (Apr 11, 2026)
+
+**Two commits pushed to main: `1f7b2dea` + `7976f5bc`.**
+
+**THE ROOT CAUSE (finally found after 5-10+ attempts across sessions):**
+The DB has TWO Chinese name columns on `montree_classroom_curriculum_works`:
+- `name_chinese` (added migration 099) — **read by UI** (`CurriculumWorkList.tsx` line 120: `locale === 'zh' && work.name_chinese ? work.name_chinese : work.name`)
+- `name_zh` (added migration 149) — **written by auto-translate** (`autoTranslateToChinese()`, `batchTranslateWorksInBackground()`, etc.)
+
+All 384 Whale Class works had `name_zh` populated (Session 13) but `name_chinese = NULL`. The UI was checking `name_chinese`, which was always null, so it always fell back to the English name. This is why every session that "fixed" Chinese translation appeared to work on the API side but never showed up in the UI.
+
+**THE FIX — Commit `1f7b2dea` (7 files):**
+All 7 code paths that write Chinese work names now write BOTH `name_zh` AND `name_chinese`:
+1. `lib/montree/auto-translate.ts` — fire-and-forget translation now writes both columns
+2. `app/api/montree/curriculum/batch-translate/route.ts` — both Haiku and glossary paths write both
+3. `app/api/montree/principal/setup-stream/route.ts` — seeds both from static JSON `chineseName`
+4. `app/api/montree/principal/setup/route.ts` — seeds both from static JSON `chineseName`
+5. `app/api/montree/guru/photo-insight/add-custom-work/route.ts` — writes `name_chinese` alongside `name_zh`
+6. `app/api/montree/admin/reseed-curriculum/route.ts` — seeds both from static JSON
+7. `app/api/montree/admin/backfill-curriculum/route.ts` — already had `name_chinese`, added `name_zh`
+
+DB sync also run: `UPDATE montree_classroom_curriculum_works SET name_chinese = name_zh WHERE name_zh IS NOT NULL AND (name_chinese IS NULL OR name_chinese = '');` — 384 rows updated.
+
+**THE FIX — Commit `7976f5bc` (9 files) — All remaining UI components:**
+
+*Work name rendering — 6 components fixed:*
+- **`components/montree/WorkWheelPicker.tsx`** — 4 render locations (global search results, wheel items, position picker, selected work name) now check `locale === 'zh' && work.name_chinese`
+- **`components/montree/AreaSpinnerWheel.tsx`** — spinner work names now locale-aware, added `name_chinese` to `SpinnerWork` interface
+- **`components/montree/photo-audit/ThisIsSheet.tsx`** — AI guess card + search results show Chinese names, added `work_name_chinese` to `aiGuess` type, resolves from loaded classroom works
+- **`components/montree/curriculum/DuplicateSheet.tsx`** — duplicate work list shows Chinese names
+- **`components/montree/curriculum/CurriculumWorkList.tsx`** — expanded detail view: `parent_description` → `parent_description_zh`, `why_it_matters` → `why_it_matters_zh` when locale is zh
+- **`components/montree/curriculum/types.ts`** — added `parent_description_zh`, `why_it_matters_zh` to `Work` interface
+
+*Data pipeline fixes:*
+- **`app/api/montree/curriculum/route.ts`** — seed action now includes `name_chinese: work.chineseName` + `name_zh: work.chineseName` from static JSON (was missing entirely — new classrooms seeded via this endpoint would get no Chinese names)
+- **`app/api/montree/progress/route.ts`** — added DB Chinese name fallback: fetches child's classroom curriculum `name_chinese` and merges into progress data. Covers custom works that the static JSON `enrichWithChineseNames()` doesn't have. Two-pass enrichment: static JSON first (270/329), DB fallback second.
+- **`lib/montree/curriculum/duplicate-detection.ts`** — added `name_chinese` to `WorkCandidate` interface
+
+**Components already correct (no changes needed):**
+- `CurriculumWorkList.tsx` line 120 — already had `locale === 'zh' && work.name_chinese`
+- `FocusWorksSection.tsx` lines 237, 411 — already checked `locale === 'zh' && focusWork.chineseName`
+- `WeeklyWrapTab.tsx` — already had `work.name_zh` check
+
+**Content translation (detail views):**
+- **Inline expanded view** (CurriculumWorkList): `parent_description_zh` and `why_it_matters_zh` from DB columns (populated by auto-translate)
+- **FullDetailsModal + QuickGuideModal**: fetched via `/api/montree/works/guide?locale=zh` which runs ALL content fields (quick_guide, presentation_steps, direct_aims, materials, control_of_error, why_it_matters) through Sonnet translation. Both curriculum page and child page already pass `locale=zh`.
+
+**🚨 CRITICAL ARCHITECTURAL NOTES FOR FUTURE SESSIONS:**
+- **`name_chinese` is the UI column** — checked by CurriculumWorkList, DuplicateSheet, AreaSpinnerWheel, WorkWheelPicker, ThisIsSheet
+- **`name_zh` is the translate column** — written by auto-translate, batch-translate
+- **ALWAYS write BOTH** when setting Chinese names. The `auto-translate.ts` function is the canonical place.
+- **`chineseName` (camelCase)** — used in static JSON files (`lib/curriculum/data/*.json`) and in the `enrichWithChineseNames()` runtime enrichment function
+- **`chinese_name` (snake_case in API responses)** — used in some API response mappings
+- **Never assume one column implies the other** — they were historically independent
+
+**10 bad translations fixed manually (earlier in session via direct DB UPDATE):**
+- "Cutting" → "剪纸工作" (was "剪" — too short)
+- "Sandpaper Letter Rubbings" → "砂纸字母拓印" (was "砂纸字母rubbing" — half-English)
+- 8 others with similar issues
+
+**Data state after this session:**
+- 384/384 Whale Class works: both `name_chinese` AND `name_zh` populated
+- 317/384 works: `parent_description_zh` populated
+- ~270/329 standard works: static JSON `chineseName` available for runtime enrichment
+- All 7 work creation paths seed Chinese names (static JSON on INSERT + auto-translate background)
+- New classrooms get Chinese translations automatically via `batchTranslateWorksInBackground()`
+
+**Key files changed:**
+- `lib/montree/auto-translate.ts` — writes both `name_zh` + `name_chinese`
+- `app/api/montree/curriculum/route.ts` — seed includes `name_chinese` + `name_zh` from static JSON
+- `app/api/montree/curriculum/batch-translate/route.ts` — writes both columns
+- `app/api/montree/progress/route.ts` — DB Chinese name fallback for child dashboard
+- `components/montree/WorkWheelPicker.tsx` — 4 locale checks
+- `components/montree/AreaSpinnerWheel.tsx` — locale check + `name_chinese` on interface
+- `components/montree/photo-audit/ThisIsSheet.tsx` — locale checks + `work_name_chinese` on aiGuess
+- `components/montree/curriculum/CurriculumWorkList.tsx` — `parent_description_zh` + `why_it_matters_zh` in expanded view
+- `components/montree/curriculum/DuplicateSheet.tsx` — locale check
+- `components/montree/curriculum/types.ts` — `parent_description_zh`, `why_it_matters_zh` fields
+- `lib/montree/curriculum/duplicate-detection.ts` — `name_chinese` on `WorkCandidate`
+
+**Next session priorities:**
+1. **Verify on production** — hard-refresh curriculum page, child dashboard, photo audit. ALL work names should render in Chinese when locale is zh.
+2. **Monitor Campaign D** on gmass.co/dashboard — verify 50/day throttle working, check open rates
+3. **Verify dead Campaign C** (50686495) has no pending follow-ups on gmass.co/dashboard
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+5. **Test new classroom creation end-to-end** — create a test classroom via principal setup, verify Chinese names are auto-seeded
+
+---
+
 ### ⚡ Session 13 — Complete Chinese Translation Coverage + Auto-Translate Pipeline (Apr 10-11, 2026)
 
 **One commit pushed to main: `0a82fcf4`.**
@@ -721,8 +810,11 @@ Each phase runs 3 rounds of its activity. Parallel agents used where possible. E
 
 ### ⚡ PRIORITY: Full Chinese Localization + Teacher Report JSON Repair
 
-**Chinese Localization — ✅ COMPLETE (Session 13, Apr 11, 2026):**
-Full bilingual pipeline for Weekly Wrap + Weekly Admin Docs. When UI is set to Chinese, area labels, work names, photo descriptions, parent narratives, and flag badges all display in Chinese. English when in English.
+**Chinese Localization — ✅ COMPLETE (Session 14, Apr 11, 2026):**
+Full bilingual pipeline. When UI is set to Chinese, area labels, work names, photo descriptions, parent narratives, detail content, and flag badges all display in Chinese. English when in English.
+
+**🚨 DUAL-COLUMN ROOT CAUSE (Session 14 — the persistent English-in-Chinese bug):**
+DB has TWO Chinese name columns: `name_chinese` (migration 099, **read by UI**) and `name_zh` (migration 149, **written by auto-translate**). All previous sessions wrote `name_zh` but the UI checks `name_chinese`. Session 14 fixed ALL 7 write paths to write BOTH columns, synced the DB (384 rows), and fixed ALL UI components to check locale. See Session 14 notes for full details.
 
 **✅ SWITCHED TO SONNET + TOOL_USE (commit `760d7c4c`):**
 Haiku's Chinese JSON corruption issue is permanently solved by two changes:
@@ -744,6 +836,10 @@ Haiku's Chinese JSON corruption issue is permanently solved by two changes:
 7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `name_zh`/`parent_description_zh`/`why_it_matters_zh`. **Session 13 upgrade**: now also translates `name_zh` (glossary first, then Haiku). All 384 Whale Class works have `name_zh` populated.
 8. **Batch-translate endpoint** — ✅ NEW (Session 13). `POST /api/montree/curriculum/batch-translate` translates all works missing `name_zh` in a classroom. Glossary first, then Haiku in batches of 5.
 9. **Principal setup auto-translate** — ✅ NEW (Session 13). `principal/setup-stream/route.ts` fires `batchTranslateWorksInBackground()` after seeding curriculum. New classrooms get Chinese translations automatically.
+10. **Dual-column sync** — ✅ FIXED (Session 14). ALL 7 write paths now write both `name_zh` AND `name_chinese`. DB synced. See Session 14 handoff.
+11. **All UI components** — ✅ FIXED (Session 14). WorkWheelPicker (4 locations), AreaSpinnerWheel, ThisIsSheet, DuplicateSheet, CurriculumWorkList expanded view (`parent_description_zh`, `why_it_matters_zh`).
+12. **Progress API DB fallback** — ✅ FIXED (Session 14). Child dashboard focus works now fetch DB `name_chinese` as fallback for works not in static JSON (custom works).
+13. **Curriculum seed API** — ✅ FIXED (Session 14). POST seed action now includes `name_chinese` + `name_zh` from static JSON `chineseName`.
 
 **What was FIXED (next session = session 3):**
 1. ~~**Teacher report quality**~~ — ✅ FIXED (Apr 6 session 2). Content quality was "swapped" — both prompts rewritten.
