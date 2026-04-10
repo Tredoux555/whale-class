@@ -202,20 +202,33 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Safe array extraction — DB JSONB fields may be objects, strings, or null instead of arrays
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const asArray = <T>(val: unknown): T[] => Array.isArray(val) ? val as T[] : [];
+
+    const AREA_LABELS_EN: Record<string, string> = {
+      practical_life: 'Practical Life', sensorial: 'Sensorial',
+      mathematics: 'Mathematics', language: 'Language', cultural: 'Cultural',
+    };
+    const AREA_LABELS_ZH: Record<string, string> = {
+      practical_life: '日常生活', sensorial: '感官',
+      mathematics: '数学', language: '语言', cultural: '文化',
+    };
+
     // Build results with full data for both tabs
     const results = Array.from(byChild.entries()).map(([childId, data]) => {
       const parentNarrative = (data.parent_content?.narrative as { summary?: string })?.summary || null;
-      const parentPhotos = (data.parent_content?.photos as Array<{
+      const parentPhotos = asArray<{
         id: string; url: string; work_name?: string; caption?: string; captured_at?: string;
-      }>) || [];
-      const parentWorks = (data.parent_content?.works as Array<{
+      }>(data.parent_content?.photos);
+      const parentWorks = asArray<{
         name: string; area: string; status: string;
         parent_description?: string; why_it_matters?: string;
         photo_url?: string; photo_caption?: string;
-      }>) || [];
+      }>(data.parent_content?.works);
       const photoCount = parentPhotos.length;
 
-      const teacherFlagsRaw = (data.teacher_report?.flags as Array<{ level: string; issue: string; recommendation: string }>) || [];
+      const teacherFlagsRaw = asArray<{ level: string; issue: string; recommendation: string }>(data.teacher_report?.flags);
       // Clean UUIDs from flag text
       const teacherFlags = teacherFlagsRaw.map(f => ({
         ...f,
@@ -225,17 +238,9 @@ export async function GET(request: NextRequest) {
       const flagsCount = teacherFlags.length;
       const keyInsight = cleanUUIDs((data.teacher_report?.key_insight as string) || '');
       // Resolve recommendation areas from UUID to canonical key
-      const recommendationsRaw = (data.teacher_report?.recommendations as Array<{
+      const recommendationsRaw = asArray<{
         area: string; area_label: string; work: string; reasoning: string;
-      }>) || [];
-      const AREA_LABELS_EN: Record<string, string> = {
-        practical_life: 'Practical Life', sensorial: 'Sensorial',
-        mathematics: 'Mathematics', language: 'Language', cultural: 'Cultural',
-      };
-      const AREA_LABELS_ZH: Record<string, string> = {
-        practical_life: '日常生活', sensorial: '感官',
-        mathematics: '数学', language: '语言', cultural: '文化',
-      };
+      }>(data.teacher_report?.recommendations);
       const recommendations = recommendationsRaw.map(rec => {
         const cleanedWork = cleanWorkName(rec.work);
         const resolved = resolveArea(rec.area, cleanedWork);
@@ -249,9 +254,9 @@ export async function GET(request: NextRequest) {
           reasoning: cleanUUIDs(rec.reasoning),
         };
       });
-      const areaAnalysesRaw = (data.teacher_report?.area_analyses as Array<{
+      const areaAnalysesRaw = asArray<{
         area: string; area_label: string; works_count: number; narrative: string;
-      }>) || [];
+      }>(data.teacher_report?.area_analyses);
       const areaAnalyses = areaAnalysesRaw.map(a => {
         const resolved = resolveArea(a.area);
         return {
