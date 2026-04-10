@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { legacySha256 } from '@/lib/montree/password';
+import { autoTranslateToChinese } from '@/lib/montree/auto-translate';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -117,6 +118,43 @@ async function seedCurriculumForClassroom(
   }
 }
 
+/**
+ * Background batch-translate all works missing name_zh for a classroom.
+ * Fire-and-forget — never blocks the caller.
+ */
+async function batchTranslateWorksInBackground(classroomId: string): Promise<void> {
+  const supabase = getSupabase();
+  const { data: works, error } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('name, parent_description, why_it_matters, name_zh')
+    .eq('classroom_id', classroomId)
+    .is('name_zh', null);
+
+  if (error || !works || works.length === 0) return;
+
+  console.log(`[Setup] Background translating ${works.length} works for classroom ${classroomId}`);
+  const BATCH = 5;
+  let translated = 0;
+
+  for (let i = 0; i < works.length; i += BATCH) {
+    const batch = works.slice(i, i + BATCH);
+    await Promise.all(batch.map(w =>
+      autoTranslateToChinese({
+        classroomId,
+        workName: w.name,
+        parentDescription: w.parent_description || '',
+        whyItMatters: w.why_it_matters || '',
+      }).then(() => { translated++; })
+        .catch(err => {
+          console.error(`[Setup] Translate failed for "${w.name}":`, err instanceof Error ? err.message : err);
+        })
+    ));
+    if (i + BATCH < works.length) await new Promise(r => setTimeout(r, 500));
+  }
+
+  console.log(`[Setup] Background translation done: ${translated}/${works.length}`);
+}
+
 interface TeacherInput {
   id: string;
   name: string;
@@ -208,6 +246,11 @@ export async function POST(request: NextRequest) {
       if (!curriculumResult.success) {
         errors.push(`Curriculum seeding failed for ${createdClassroom.name}: ${curriculumResult.error}`);
       }
+
+      // Fire-and-forget: batch translate all seeded works to Chinese
+      batchTranslateWorksInBackground(createdClassroom.id).catch(err => {
+        console.error(`[Setup] Background translation failed for ${createdClassroom.name}:`, err instanceof Error ? err.message : err);
+      });
 
       // Create teachers
       const teachersToCreate = classroom.teachers.filter(t => t.name?.trim());
