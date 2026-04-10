@@ -124,7 +124,7 @@ function GuruContent() {
 
   if (pageLoading) {
     return (
-      <div className={`h-dvh flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3]'}`}>
+      <div className={`h-dvh flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
         <div className="animate-bounce text-4xl">{guruEmoji}</div>
       </div>
     );
@@ -194,7 +194,7 @@ function GuruContent() {
             className={`w-full p-2 rounded-lg border text-sm ${
               isParent
                 ? 'border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] focus:ring-1 focus:ring-[#0D3330]/20'
-                : 'border-[#D4C5B0] bg-[#FFFDF8] text-[#3E2723] focus:ring-2 focus:ring-amber-400'
+                : 'border-[#D4C5B0] bg-[#FFFDF8] text-[#3E2723] focus:ring-2 focus:ring-violet-500'
             }`}
           >
             {!isParent && (
@@ -223,7 +223,7 @@ function GuruContent() {
           }}
         />
       ) : (
-        <div className={`flex-1 flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3]'}`}>
+        <div className={`flex-1 flex items-center justify-center ${isParent ? HOME_THEME.pageBg : 'bg-gradient-to-br from-violet-50 to-indigo-50'}`}>
           <p className={isParent ? HOME_THEME.subtleText : 'text-[#3E2723]/60'}>{t('guru.noChildren')}</p>
         </div>
       )}
@@ -234,7 +234,7 @@ function GuruContent() {
 export default function GuruPage() {
   return (
     <Suspense fallback={
-      <div className="h-dvh bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3] flex items-center justify-center">
+      <div className="h-dvh bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center justify-center">
         <div className="animate-bounce text-4xl">🌿</div>
       </div>
     }>

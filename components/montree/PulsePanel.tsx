@@ -184,7 +184,7 @@ export default function PulsePanel() {
 
         <div className="flex items-center gap-2">
           {hasData && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-violet-100 text-violet-700">
               {children.length} {children.length === 1 ? t('pulse.child') : t('pulse.children')}
             </span>
           )}
@@ -201,7 +201,7 @@ export default function PulsePanel() {
           <button
             onClick={handleGenerate}
             disabled={generating || isInProgress}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-[#5D4037] hover:bg-[#4E342E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {generating
               ? t('pulse.generating')
@@ -216,7 +216,7 @@ export default function PulsePanel() {
           {/* Generating progress indicator */}
           {generating && (
             <div className="flex items-center justify-center gap-2 py-2">
-              <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
               <span className="text-xs text-[#A1887F]">{t('pulse.analyzingChildren')}</span>
             </div>
           )}
@@ -235,21 +235,21 @@ export default function PulsePanel() {
                   <div className="text-[10px] text-amber-600 font-medium">{t('pulse.practicing')}</div>
                 </div>
                 {totalStaleWorks > 0 && (
-                  <div className="flex-1 bg-amber-50 rounded-lg px-3 py-2 text-center">
-                    <div className="text-lg font-bold text-amber-700">{totalStaleWorks}</div>
-                    <div className="text-[10px] text-amber-600 font-medium">{t('pulse.stale')}</div>
+                  <div className="flex-1 bg-violet-50 rounded-lg px-3 py-2 text-center">
+                    <div className="text-lg font-bold text-violet-700">{totalStaleWorks}</div>
+                    <div className="text-[10px] text-violet-600 font-medium">{t('pulse.stale')}</div>
                   </div>
                 )}
               </div>
 
               {/* Stale works alert */}
               {childrenWithStaleWorks.length > 0 && (
-                <div className="bg-amber-50 rounded-lg px-3 py-2">
-                  <div className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                <div className="bg-violet-50 rounded-lg px-3 py-2">
+                  <div className="text-xs font-semibold text-violet-700 mb-1 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-violet-400" />
                     {t('pulse.needsAttention').replace('{count}', String(childrenWithStaleWorks.length))}
                   </div>
-                  <div className="text-xs text-amber-600">
+                  <div className="text-xs text-violet-600">
                     {childrenWithStaleWorks.slice(0, 3).map(c => c.name.split(' ')[0]).join(', ')}
                     {childrenWithStaleWorks.length > 3 && ` +${childrenWithStaleWorks.length - 3}`}
                   </div>
@@ -261,7 +261,7 @@ export default function PulsePanel() {
                 {children.map(child => (
                   <div key={child.id} className="flex items-center justify-between bg-[#FAF5EF] rounded-lg px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800 flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-violet-200 flex items-center justify-center text-xs font-bold text-violet-700 flex-shrink-0">
                         {child.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
@@ -283,7 +283,7 @@ export default function PulsePanel() {
                         </span>
                       )}
                       {child.stale_works > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700 font-medium">
                           ⚠️{child.stale_works}
                         </span>
                       )}
