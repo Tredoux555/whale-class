@@ -954,8 +954,8 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
           <div className="px-4 py-2 bg-emerald-50/60 border-b">
             <p className="text-[11px] text-emerald-700">
               {locale === 'zh'
-                ? '家长只能看到自己孩子的报告。点击学生姓名旁的 🔑 邀请家长。'
-                : 'Parents only see their own child\'s report. Tap 🔑 next to a child to invite their parent.'}
+                ? '家长只能看到自己孩子的报告。点击每行末尾的钥匙图标邀请家长。'
+                : 'Parents only see their own child\'s report. Tap the key icon at the end of each row to invite a parent.'}
             </p>
           </div>
 
