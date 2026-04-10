@@ -47,19 +47,27 @@ export async function GET(request: NextRequest) {
       areaIdToKey.set(a.id, a.area_key);
     }
 
-    // Also load work name → area_key + Chinese names for localization
+    // Also load work name → area_key + Chinese names + Chinese descriptions for localization
     const { data: worksRaw } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('name, name_zh, area_id')
+      .select('name, name_zh, area_id, parent_description_zh, why_it_matters_zh')
       .eq('classroom_id', classroom_id);
     const workNameToArea = new Map<string, string>();
     const workNameToChinese = new Map<string, string>();
-    for (const w of (worksRaw || []) as Array<{ name: string; name_zh: string | null; area_id: string | null }>) {
+    const workNameToDescZh = new Map<string, string>();
+    const workNameToWhyZh = new Map<string, string>();
+    for (const w of (worksRaw || []) as Array<{ name: string; name_zh: string | null; area_id: string | null; parent_description_zh: string | null; why_it_matters_zh: string | null }>) {
       if (w.area_id) {
         workNameToArea.set(w.name.toLowerCase().trim(), areaIdToKey.get(w.area_id) || w.area_id);
       }
       if (w.name_zh) {
         workNameToChinese.set(w.name.toLowerCase().trim(), w.name_zh);
+      }
+      if (w.parent_description_zh) {
+        workNameToDescZh.set(w.name.toLowerCase().trim(), w.parent_description_zh);
+      }
+      if (w.why_it_matters_zh) {
+        workNameToWhyZh.set(w.name.toLowerCase().trim(), w.why_it_matters_zh);
       }
     }
 
@@ -133,6 +141,19 @@ export async function GET(request: NextRequest) {
       for (const [k, v] of workNameToChinese) {
         if (k.replace(/\s+/g, '') === collapsed) return v;
       }
+      return null;
+    };
+
+    // Fuzzy lookup helper for any work-name-keyed map (reuses same normalization as getChineseWorkName)
+    const fuzzyLookup = (map: Map<string, string>, englishName: string): string | null => {
+      if (!englishName || typeof englishName !== 'string') return null;
+      const key = englishName.toLowerCase().trim();
+      const exact = map.get(key);
+      if (exact) return exact;
+      const base = key.replace(/\s*-\s*.+$/, '').trim();
+      if (base !== key) { const m = map.get(base); if (m) return m; }
+      const collapsed = base.replace(/\s+/g, '');
+      for (const [k, v] of map) { if (k.replace(/\s+/g, '') === collapsed) return v; }
       return null;
     };
 
@@ -222,9 +243,14 @@ export async function GET(request: NextRequest) {
     // Build results with full data for both tabs
     const results = Array.from(byChild.entries()).map(([childId, data]) => {
       const parentNarrative = (data.parent_content?.narrative as { summary?: string })?.summary || null;
-      const parentPhotos = asArray<{
+      const parentPhotosRaw = asArray<{
         id: string; url: string; work_name?: string; caption?: string; captured_at?: string;
       }>(data.parent_content?.photos);
+      // Add Chinese work name to each photo
+      const parentPhotos = parentPhotosRaw.map(p => ({
+        ...p,
+        work_name_zh: p.work_name ? getChineseWorkName(p.work_name) : null,
+      }));
       const parentWorks = asArray<{
         name: string; area: string; status: string;
         parent_description?: string; why_it_matters?: string;
@@ -272,11 +298,13 @@ export async function GET(request: NextRequest) {
         };
       });
 
-      // Resolve parent work areas + add Chinese names
+      // Resolve parent work areas + add Chinese names + Chinese descriptions
       const resolvedParentWorks = parentWorks.map(w => ({
         ...w,
         area: resolveArea(w.area, w.name),
         name_zh: getChineseWorkName(w.name),
+        parent_description_zh: fuzzyLookup(workNameToDescZh, w.name),
+        why_it_matters_zh: fuzzyLookup(workNameToWhyZh, w.name),
       }));
 
       return {
