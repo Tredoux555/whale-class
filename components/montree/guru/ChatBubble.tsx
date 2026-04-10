@@ -86,16 +86,16 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
   // Thinking block colors based on theme
   const thinkingColors = isTeacher
     ? {
-        liveGradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
-        liveBorder: 'border-amber-200/50',
-        liveDot: 'bg-amber-500',
-        liveText: 'text-amber-600',
-        liveContent: 'text-amber-900/70',
-        liveCursor: 'bg-amber-400/60',
-        collapsedButton: 'text-amber-500/70 hover:text-amber-600',
-        collapsedBg: 'bg-amber-50/50',
-        collapsedBorder: 'border-amber-200/30',
-        collapsedText: 'text-amber-900/50',
+        liveGradient: 'bg-gradient-to-br from-violet-50 to-indigo-50',
+        liveBorder: 'border-violet-200/50',
+        liveDot: 'bg-violet-500',
+        liveText: 'text-violet-600',
+        liveContent: 'text-violet-900/70',
+        liveCursor: 'bg-violet-400/60',
+        collapsedButton: 'text-violet-500/70 hover:text-violet-600',
+        collapsedBg: 'bg-violet-50/50',
+        collapsedBorder: 'border-violet-200/30',
+        collapsedText: 'text-violet-900/50',
       }
     : {
         liveGradient: 'bg-gradient-to-br from-[#0D3330]/10 to-[#164340]/10',

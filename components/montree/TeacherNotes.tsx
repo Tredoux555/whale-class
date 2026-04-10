@@ -358,7 +358,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
         <span className="text-lg">📝</span>
         <span className="font-semibold text-[#3E2723] text-sm">{t('teacherNotes.title')}</span>
         {notes.length > 0 && (
-          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">
+          <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
             {notes.length}
           </span>
         )}
@@ -372,7 +372,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               onClick={() => setSelectedChildId(null)}
               className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                 selectedChildId === null
-                  ? 'bg-amber-600 text-white'
+                  ? 'bg-emerald-500 text-white'
                   : 'bg-[#FAF5EF] text-[#A1887F] hover:bg-[#F5E6D3]'
               }`}
             >
@@ -384,7 +384,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                 onClick={() => setSelectedChildId(child.id)}
                 className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                   selectedChildId === child.id
-                    ? 'bg-amber-600 text-white'
+                    ? 'bg-emerald-500 text-white'
                     : 'bg-[#FAF5EF] text-[#A1887F] hover:bg-[#F5E6D3]'
                 }`}
               >
@@ -403,7 +403,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               ? t('teacherNotes.childNotePlaceholder', { name: children.find(c => c.id === selectedChildId)?.name || '' })
               : t('teacherNotes.placeholder')
             }
-            className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-[#D4C5B0] rounded-lg text-sm text-[#3E2723] placeholder-[#A1887F] focus:border-amber-400 focus:outline-none resize-y"
+            className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-[#D4C5B0] rounded-lg text-sm text-[#3E2723] placeholder-[#A1887F] focus:border-emerald-400 focus:outline-none resize-y"
             maxLength={5000}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -435,7 +435,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           <button
             onClick={handleSave}
             disabled={!content.trim() || saving}
-            className="px-3 py-2 bg-[#5D4037] text-white rounded-lg text-xs font-medium hover:bg-[#4D2C27] disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            className="px-3 py-2 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors flex-shrink-0"
           >
             {saving ? '...' : t('teacherNotes.save')}
           </button>
@@ -456,7 +456,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full p-2.5 border border-amber-300 rounded-lg text-sm text-[#3E2723] focus:border-amber-400 focus:outline-none resize-y min-h-[60px]"
+                      className="w-full p-2.5 border border-emerald-300 rounded-lg text-sm text-[#3E2723] focus:border-emerald-400 focus:outline-none resize-y min-h-[60px]"
                       maxLength={5000}
                       autoFocus
                     />
@@ -470,7 +470,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                       <button
                         onClick={handleSaveEdit}
                         disabled={!editContent.trim() || editSaving}
-                        className="px-3 py-1 bg-[#5D4037] text-white rounded-lg text-xs font-medium hover:bg-[#4D2C27] disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors"
+                        className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors"
                       >
                         {editSaving ? '...' : t('common.save')}
                       </button>
@@ -485,7 +485,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                           <button
                             onClick={() => handleStartEdit(note)}
-                            className="text-[#A1887F] hover:text-amber-600 text-xs p-1"
+                            className="text-[#A1887F] hover:text-emerald-500 text-xs p-1"
                             title={t('common.edit')}
                           >
                             ✏️
@@ -507,14 +507,14 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                       {note.child_name ? (
                         <>
                           <span>·</span>
-                          <span className="bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
                             👶 {note.child_name}
                           </span>
                         </>
                       ) : (
                         <>
                           <span>·</span>
-                          <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-medium">
                             📋 {t('teacherNotes.classNote')}
                           </span>
                         </>

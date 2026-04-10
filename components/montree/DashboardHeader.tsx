@@ -211,7 +211,7 @@ export default function DashboardHeader() {
   const showStudentSearch = !isHome && !isDashboardHome && students.length > 0;
 
   return (
-    <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-[#5D4037] to-[#795548]'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
+    <header className={`${isHome ? HOME_THEME.headerBg : 'bg-gradient-to-r from-emerald-500 to-teal-600'} text-white shadow-lg sticky top-0 z-50 pt-[env(safe-area-inset-top)] print:hidden`}>
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left: Logo + classroom + teacher selector */}
         <div className="flex items-center gap-2 min-w-0 flex-shrink">
@@ -239,13 +239,13 @@ export default function DashboardHeader() {
                       key={teacher.id}
                       className={`flex items-center justify-between px-3 py-2.5 text-sm ${
                         teacher.id === session.teacher?.id
-                          ? 'bg-amber-50 text-amber-800 font-semibold'
+                          ? 'bg-emerald-50 text-emerald-700 font-semibold'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       <span className="truncate">{teacher.name}</span>
                       {teacher.id === session.teacher?.id && (
-                        <span className="text-amber-600 text-xs ml-2 flex-shrink-0">{t('teachers.you')}</span>
+                        <span className="text-emerald-600 text-xs ml-2 flex-shrink-0">{t('teachers.you')}</span>
                       )}
                     </div>
                   ))}
@@ -257,7 +257,7 @@ export default function DashboardHeader() {
                   {!showAddTeacher ? (
                     <button
                       onClick={(e) => { e.stopPropagation(); setShowAddTeacher(true); }}
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-amber-700 hover:bg-amber-50 transition-colors"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
                     >
                       <span>+</span>
                       <span>{t('teachers.addTeacher')}</span>
@@ -270,7 +270,7 @@ export default function DashboardHeader() {
                         onChange={(e) => setNewTeacherName(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleAddTeacher(); if (e.key === 'Escape') setShowAddTeacher(false); }}
                         placeholder={t('teachers.namePlaceholder')}
-                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-gray-800 placeholder-gray-400 focus:border-amber-400 focus:outline-none"
+                        className="w-full px-2 py-1.5 border border-gray-200 rounded text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none"
                         autoFocus
                         maxLength={100}
                       />
@@ -284,7 +284,7 @@ export default function DashboardHeader() {
                         <button
                           onClick={handleAddTeacher}
                           disabled={!newTeacherName.trim() || addingTeacher}
-                          className="flex-1 px-2 py-1 text-xs bg-amber-600 text-white rounded hover:bg-amber-700 disabled:bg-amber-300 disabled:cursor-not-allowed"
+                          className="flex-1 px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed"
                         >
                           {addingTeacher ? t('common.adding') : t('common.add')}
                         </button>
@@ -355,7 +355,7 @@ export default function DashboardHeader() {
                     data-guide="nav-guru"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/guru' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/guru' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">🧠</span>
@@ -366,7 +366,7 @@ export default function DashboardHeader() {
                     data-guide="nav-curriculum"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/curriculum' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/curriculum' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">📚</span>
@@ -377,7 +377,7 @@ export default function DashboardHeader() {
                     data-guide="nav-overview"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/classroom-overview' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/classroom-overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">📋</span>
@@ -388,7 +388,7 @@ export default function DashboardHeader() {
                       href="/montree/dashboard/weekly-admin-docs"
                       onClick={() => setShowMoreMenu(false)}
                       className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        pathname === '/montree/dashboard/weekly-admin-docs' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                        pathname === '/montree/dashboard/weekly-admin-docs' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       <span className="text-base">📄</span>
@@ -399,7 +399,7 @@ export default function DashboardHeader() {
                     href="/montree/dashboard/albums"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/albums' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/albums' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">🖼️</span>
@@ -409,7 +409,7 @@ export default function DashboardHeader() {
                     href="/montree/dashboard/students"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/students' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/students' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">✏️</span>
@@ -421,7 +421,7 @@ export default function DashboardHeader() {
                       data-guide="nav-raz"
                       onClick={() => setShowMoreMenu(false)}
                       className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                        pathname === '/montree/dashboard/raz' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                        pathname === '/montree/dashboard/raz' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       <span className="text-base">📖</span>
@@ -455,7 +455,7 @@ export default function DashboardHeader() {
                     href="/montree/dashboard/classroom-builder"
                     onClick={() => setShowMoreMenu(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/classroom-builder' ? 'bg-amber-50 text-amber-800 font-semibold' : 'text-gray-500 hover:bg-gray-50'
+                      pathname === '/montree/dashboard/classroom-builder' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-500 hover:bg-gray-50'
                     }`}
                   >
                     <span className="text-base">🏗️</span>
@@ -521,19 +521,19 @@ export default function DashboardHeader() {
                     key={student.id}
                     onClick={() => handleStudentSelect(student)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-gray-800 text-sm transition-colors ${
-                      idx === highlightIndex ? 'bg-amber-50' : 'hover:bg-gray-50'
-                    } ${student.id === childIdFromPath ? 'font-semibold text-amber-800' : ''}`}
+                      idx === highlightIndex ? 'bg-emerald-50' : 'hover:bg-gray-50'
+                    } ${student.id === childIdFromPath ? 'font-semibold text-emerald-700' : ''}`}
                   >
                     {student.photo_url ? (
                       <img src={student.photo_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
                     ) : (
-                      <span className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                      <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {student.name.charAt(0).toUpperCase()}
                       </span>
                     )}
                     <span>{student.name}</span>
                     {student.id === childIdFromPath && (
-                      <span className="ml-auto text-amber-600 text-xs">{t('nav.currentStudent') || 'current'}</span>
+                      <span className="ml-auto text-emerald-600 text-xs">{t('nav.currentStudent') || 'current'}</span>
                     )}
                   </button>
                 ))}

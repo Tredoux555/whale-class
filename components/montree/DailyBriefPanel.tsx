@@ -166,12 +166,12 @@ export default function DailyBriefPanel() {
 
         <div className="flex items-center gap-2">
           {totalActions > 0 && (
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-amber-50 text-amber-700">
+            <span className="text-xs font-medium px-2 py-1 rounded-full bg-emerald-50 text-emerald-700">
               {totalActions} {t('brief.toDo')}
             </span>
           )}
           {allGood && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
               ✓
             </span>
           )}

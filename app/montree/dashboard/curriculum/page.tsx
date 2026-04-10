@@ -223,7 +223,7 @@ export default function CurriculumPage() {
             <Link
               data-tutorial="browse-guide-link"
               href="/montree/dashboard/curriculum/browse"
-              className="flex items-center gap-1.5 px-3 py-2 bg-[#F5E6D3] hover:bg-[#E6DDD7] text-[#5D4037] rounded-xl text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
             >
               <span>🔍</span>
               <span className="hidden sm:inline">{t('curriculum.browseGuide')}</span>
@@ -232,7 +232,7 @@ export default function CurriculumPage() {
               <button
                 data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-[#5D4037] hover:bg-[#4E342E] text-white rounded-xl font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
               >
                 <span className="text-lg">➕</span>
                 <span className="hidden sm:inline">{t('weekview.addWork')}</span>
@@ -249,7 +249,7 @@ export default function CurriculumPage() {
             <h2 className="text-xl font-bold text-[#3E2723] mb-2">{t('curriculum.noCurriculum')}</h2>
             <p className="text-[#A1887F] mb-6">{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
-              className="bg-gradient-to-r from-[#5D4037] to-[#795548] text-white px-8 py-4 rounded-xl font-bold
+              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold
                 shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
               {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
@@ -270,7 +270,7 @@ export default function CurriculumPage() {
               {Object.entries(byArea).map(([area, works]) => (
                 <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
                   className={`bg-[#FFFDF8] rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
-                    ${selectedArea === area ? 'ring-2 ring-amber-500' : ''}`}>
+                    ${selectedArea === area ? 'ring-2 ring-emerald-500' : ''}`}>
                   <div className="mb-2">
                     <AreaBadge area={area} size="lg" />
                   </div>
@@ -338,7 +338,7 @@ export default function CurriculumPage() {
       {curriculum.length > 0 && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-[#5D4037] to-[#795548] text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
         >
           ➕
         </button>

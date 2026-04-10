@@ -369,7 +369,7 @@ export default function DashboardPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('nav.searchStudents') || 'Jump to student...'}
-                    className="w-full bg-[#FFFDF8] rounded-xl border border-[#D4C5B0] shadow-sm pl-10 pr-9 py-2.5 text-sm text-[#3E2723] placeholder-[#A1887F] outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100 transition-all"
+                    className="w-full bg-[#FFFDF8] rounded-xl border border-[#D4C5B0] shadow-sm pl-10 pr-9 py-2.5 text-sm text-[#3E2723] placeholder-[#A1887F] outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all"
                     autoComplete="off"
                   />
                   {searchQuery && (
@@ -412,7 +412,7 @@ export default function DashboardPage() {
                     {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
                     className="bg-[#FFFDF8] rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all p-3 flex flex-col items-center border border-[#E6DDD7]"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#8D6E63] to-[#795548] flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
                       {child.photo_url ? (
                         <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
                       ) : (
@@ -430,7 +430,7 @@ export default function DashboardPage() {
                   <Link
                     href="/montree/dashboard/students"
                     data-tutorial="add-student-button"
-                    className="bg-[#FFFDF8]/60 border-2 border-dashed border-[#D4C5B0] hover:border-amber-400 hover:bg-[#FAF5EF] rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
+                    className="bg-[#FFFDF8]/60 border-2 border-dashed border-[#D4C5B0] hover:border-emerald-400 hover:bg-[#FAF5EF] rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
                   >
                     <span className="text-2xl text-[#A1887F] mb-1">+</span>
                     <span className="text-xs text-[#A1887F]">{t('common.add')}</span>
