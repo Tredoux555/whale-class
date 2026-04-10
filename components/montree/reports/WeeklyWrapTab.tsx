@@ -282,15 +282,17 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   // Teacher summary
   const [expandedChild, setExpandedChild] = useState<string | null>(null);
 
+  // Parent report preview — click a child to preview their report
+  const [previewChild, setPreviewChild] = useState<string | null>(null);
+
   // Generation
   const [generating, setGenerating] = useState(false);
   const [genProgress, setGenProgress] = useState('');
   const [genDone, setGenDone] = useState(0);
   const [genTotal, setGenTotal] = useState(0);
 
-  // Selection
+  // Selection — always active, checkboxes always visible
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [selectionMode, setSelectionMode] = useState(false);
 
   // Parent report edits (session-local)
   const [narrativeEdits, setNarrativeEdits] = useState<Record<string, string>>({});
@@ -510,7 +512,6 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
 
       // Refresh data
       await fetchReports();
-      setSelectionMode(false);
       setSelectedIds(new Set());
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Generation failed');
@@ -636,18 +637,8 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Selection toggle */}
-          {reports.length > 0 && !generating && (
-            <button
-              onClick={() => { setSelectionMode(!selectionMode); if (selectionMode) setSelectedIds(new Set()); }}
-              className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${selectionMode ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-            >
-              {selectionMode ? (locale === 'zh' ? '取消' : 'Cancel') : (locale === 'zh' ? '选择' : 'Select')}
-            </button>
-          )}
-
-          {/* Generate buttons */}
-          {selectionMode && selectedIds.size > 0 ? (
+          {/* Generate selected OR all */}
+          {selectedIds.size > 0 ? (
             <button
               onClick={() => handleGenerate(Array.from(selectedIds))}
               disabled={generating}
@@ -666,8 +657,8 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
               {generating
                 ? `${genProgress || '...'} ${genDone}/${genTotal}`
                 : reports.some(r => r.parent_narrative)
-                  ? (locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate All')
-                  : (locale === 'zh' ? '✨ 生成' : '✨ Generate')}
+                  ? (locale === 'zh' ? '🔄 重新生成全部' : '🔄 Regenerate All')
+                  : (locale === 'zh' ? '✨ 生成全部' : '✨ Generate All')}
             </button>
           )}
         </div>
@@ -693,20 +684,20 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {/* Selection bar */}
-      {selectionMode && (
-        <div className="flex items-center justify-between bg-blue-50 px-4 py-2 border-b">
-          <span className="text-xs text-blue-700 font-medium">
+      {/* Selection bar — always visible when reports exist */}
+      {reports.length > 0 && (
+        <div className="flex items-center justify-between bg-blue-50/60 px-4 py-1.5 border-b">
+          <span className="text-[11px] text-blue-600">
             {selectedIds.size > 0
-              ? (locale === 'zh' ? `已选择 ${selectedIds.size}` : `${selectedIds.size} selected`)
-              : (locale === 'zh' ? '点击选择学生' : 'Tap to select')}
+              ? (locale === 'zh' ? `已选择 ${selectedIds.size} 名学生` : `${selectedIds.size} selected`)
+              : (locale === 'zh' ? '勾选学生后点击"生成"' : 'Select children to generate individually')}
           </span>
           <button
             onClick={() => {
               if (selectedIds.size === reports.length) setSelectedIds(new Set());
               else setSelectedIds(new Set(reports.map(r => r.child_id)));
             }}
-            className="text-xs text-blue-600 font-semibold"
+            className="text-[11px] text-blue-600 font-semibold"
           >
             {selectedIds.size === reports.length
               ? (locale === 'zh' ? '取消全选' : 'Deselect All')
@@ -726,9 +717,9 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {/* ═══ TEACHER REVIEW ═══ */}
+      {/* ═══ TEACHER REVIEW — clean list, click to expand ═══ */}
       {subView === 'teacher' && reports.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-4">
+        <div className="divide-y divide-gray-100">
           {sortedReports.map(r => {
             const firstName = r.child_name.split(' ')[0];
             const isExpanded = expandedChild === r.child_id;
@@ -736,53 +727,61 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             const totalWorks = r.parent_works.length;
             const isSelected = selectedIds.has(r.child_id);
             const areaEntries = getWorksForChild(r);
+            const hasReport = !!r.parent_narrative;
 
             return (
-              <div
-                key={r.child_id}
-                className={`rounded-xl border overflow-hidden transition-all ${
-                  isExpanded ? 'col-span-2 sm:col-span-3' : ''
-                } ${isSelected ? 'border-blue-400 ring-1 ring-blue-200' : hasFlagIssue ? 'border-amber-300 bg-amber-50/50' : 'border-gray-200 bg-white'}`}
-              >
-                {/* Compact card header */}
-                <button
-                  onClick={() => {
-                    if (selectionMode) {
-                      setSelectedIds(prev => {
-                        const next = new Set(prev);
-                        if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
-                        return next;
-                      });
-                      return;
-                    }
-                    setExpandedChild(isExpanded ? null : r.child_id);
-                  }}
-                  className={`w-full px-3 py-2.5 flex items-center gap-2.5 text-left transition-colors ${isExpanded ? 'bg-gray-50' : 'hover:bg-gray-50/50'}`}
-                >
-                  {selectionMode && (
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 text-[9px] ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}>
-                      {isSelected && '✓'}
-                    </div>
-                  )}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 ${hasFlagIssue ? 'bg-gradient-to-br from-amber-400 to-amber-500' : 'bg-gradient-to-br from-emerald-500 to-teal-600'}`}>
-                    {firstName.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-xs truncate">{firstName}</p>
-                    <p className="text-[10px] text-gray-400">
-                      {totalWorks} {locale === 'zh' ? '项' : 'works'}
-                      {hasFlagIssue && <span className="text-amber-600 ml-1">⚠ {r.flags_count}</span>}
-                    </p>
-                  </div>
-                  {isExpanded && <span className="text-gray-300 text-[10px]">▲</span>}
-                </button>
+              <div key={r.child_id} className={`bg-white ${isSelected ? 'bg-blue-50/40' : ''}`}>
+                {/* ── Row: checkbox + avatar + name + stats + chevron ── */}
+                <div className="flex items-center gap-2 px-4 py-2.5">
+                  {/* Checkbox */}
+                  <button
+                    onClick={() => setSelectedIds(prev => {
+                      const next = new Set(prev);
+                      if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
+                      return next;
+                    })}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[10px] transition-colors ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}
+                  >
+                    {isSelected && '✓'}
+                  </button>
 
-                {/* Expanded details */}
+                  {/* Click area for expand/collapse */}
+                  <button
+                    onClick={() => setExpandedChild(isExpanded ? null : r.child_id)}
+                    className="flex-1 flex items-center gap-2.5 text-left min-w-0"
+                  >
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 ${hasFlagIssue ? 'bg-gradient-to-br from-amber-400 to-amber-500' : 'bg-gradient-to-br from-emerald-500 to-teal-600'}`}>
+                      {firstName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 text-sm truncate">{r.child_name}</p>
+                    </div>
+
+                    {/* Status pills */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      {totalWorks > 0 && (
+                        <span className="text-[10px] text-gray-400 bg-gray-100 rounded-full px-2 py-0.5">
+                          {totalWorks} {locale === 'zh' ? '项' : 'works'}
+                        </span>
+                      )}
+                      {hasFlagIssue && (
+                        <span className="text-[10px] text-amber-700 bg-amber-100 rounded-full px-2 py-0.5">
+                          ⚠ {r.flags_count}
+                        </span>
+                      )}
+                      {hasReport && (
+                        <span className="text-[10px] text-emerald-700 bg-emerald-100 rounded-full px-1.5 py-0.5">✓</span>
+                      )}
+                      <span className={`text-gray-300 text-xs transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* ── Expanded details ── */}
                 {isExpanded && (
-                  <div className="px-3 pb-3 border-t border-gray-100 space-y-3">
+                  <div className="px-4 pb-4 pl-[52px] space-y-3 border-t border-gray-50">
                     {/* ── Guru Weekly Summary ── */}
                     {(() => {
-                      // Build a concise Montessori-perspective summary
                       const activeAreas = areaEntries.map(e => getAreaLabel(e.area));
                       const missingAreas = AREA_ORDER
                         .filter(a => !areaEntries.some(e => e.area === a))
@@ -790,7 +789,6 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                       const totalWk = r.parent_works.length;
                       const insight = r.key_insight ? cleanUUIDs(r.key_insight) : null;
 
-                      // Build a short guru-style observation
                       let guruSummary = '';
                       if (insight) {
                         guruSummary = insight;
@@ -933,105 +931,175 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         </div>
       )}
 
-      {/* ═══ PARENT REPORTS — beautiful, exactly as parents will see ═══ */}
+      {/* ═══ PARENT REPORTS — child list, click to preview one child's report ═══ */}
       {subView === 'parents' && reports.length > 0 && (
-        <div className="space-y-0">
-          {sortedReports.map(r => {
-            const firstName = r.child_name.split(' ')[0];
-            const narrative = getNarrative(r);
-            const photos = getPhotos(r);
-            const isEditing = editingNarrative === r.child_id;
+        <div>
+          {/* Parent invite link */}
+          <div className="px-4 py-2 bg-emerald-50/60 border-b flex items-center justify-between">
+            <p className="text-[11px] text-emerald-700">
+              {locale === 'zh'
+                ? '家长只能看到自己孩子的报告'
+                : 'Parents only see their own child\'s report'}
+            </p>
+            <a
+              href="/montree/dashboard/students"
+              className="text-[11px] text-emerald-600 font-semibold hover:underline"
+            >
+              {locale === 'zh' ? '邀请家长 →' : 'Invite Parents →'}
+            </a>
+          </div>
 
-            return (
-              <div key={r.child_id} className="bg-white">
-                {/* ── Child Header — elegant, warm ── */}
-                <div className="px-5 pt-8 pb-4">
-                  <div className="flex items-center gap-3">
-                    {selectionMode && (
-                      <button
-                        onClick={() => setSelectedIds(prev => {
-                          const next = new Set(prev);
-                          if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
-                          return next;
-                        })}
-                        className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[11px] ${selectedIds.has(r.child_id) ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
-                      >
-                        {selectedIds.has(r.child_id) && '✓'}
-                      </button>
-                    )}
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
-                      {firstName.charAt(0)}
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="font-bold text-gray-900 text-lg">{r.child_name}</h2>
-                      <p className="text-xs text-gray-400">
-                        {weekDisplay}
-                        {r.parent_status === 'sent' && <span className="ml-2 text-emerald-600 font-medium">{locale === 'zh' ? '✓ 已发送' : '✓ Sent'}</span>}
-                      </p>
-                    </div>
-                    {narrative && (
-                      <button
-                        onClick={() => {
-                          if (isEditing) { setEditingNarrative(null); }
-                          else {
-                            setEditingNarrative(r.child_id);
-                            if (narrativeEdits[r.child_id] === undefined) {
-                              setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
+          {!previewChild ? (
+            /* ── Child List — click to preview ── */
+            <div className="divide-y divide-gray-100">
+              {sortedReports.map(r => {
+                const firstName = r.child_name.split(' ')[0];
+                const hasNarrative = !!r.parent_narrative;
+                const photoCount = r.photo_count || r.parent_photos.length;
+                const isSelected = selectedIds.has(r.child_id);
+
+                return (
+                  <div key={r.child_id} className={`flex items-center gap-2 px-4 py-2.5 ${isSelected ? 'bg-blue-50/40' : 'bg-white'}`}>
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => setSelectedIds(prev => {
+                        const next = new Set(prev);
+                        if (next.has(r.child_id)) next.delete(r.child_id); else next.add(r.child_id);
+                        return next;
+                      })}
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 text-[10px] transition-colors ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300 hover:border-gray-400'}`}
+                    >
+                      {isSelected && '✓'}
+                    </button>
+
+                    {/* Click to preview */}
+                    <button
+                      onClick={() => setPreviewChild(r.child_id)}
+                      className="flex-1 flex items-center gap-2.5 text-left min-w-0"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        {firstName.charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 text-sm truncate">{r.child_name}</p>
+                        <p className="text-[10px] text-gray-400">
+                          {hasNarrative
+                            ? `${photoCount} ${locale === 'zh' ? '张照片' : 'photos'}`
+                            : (locale === 'zh' ? '未生成' : 'Not generated')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {hasNarrative && (
+                          <span className="text-[10px] text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">
+                            {locale === 'zh' ? '就绪' : 'Ready'}
+                          </span>
+                        )}
+                        {r.parent_status === 'sent' && (
+                          <span className="text-[10px] text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">
+                            {locale === 'zh' ? '已发送' : 'Sent'}
+                          </span>
+                        )}
+                        <span className="text-gray-300 text-xs">›</span>
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* ── Single child preview — exactly as parents will see ── */
+            (() => {
+              const r = reports.find(x => x.child_id === previewChild);
+              if (!r) return null;
+              const firstName = r.child_name.split(' ')[0];
+              const narrative = getNarrative(r);
+              const photos = getPhotos(r);
+              const isEditing = editingNarrative === r.child_id;
+
+              return (
+                <div className="bg-white">
+                  {/* Back button */}
+                  <button
+                    onClick={() => { setPreviewChild(null); setEditingNarrative(null); }}
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-600 font-medium hover:bg-emerald-50/50 w-full text-left border-b"
+                  >
+                    <span>←</span> {locale === 'zh' ? '返回列表' : 'Back to list'}
+                  </button>
+
+                  {/* Child Header — elegant, warm */}
+                  <div className="px-5 pt-6 pb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-md">
+                        {firstName.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <h2 className="font-bold text-gray-900 text-lg">{r.child_name}</h2>
+                        <p className="text-xs text-gray-400">
+                          {weekDisplay}
+                          {r.parent_status === 'sent' && <span className="ml-2 text-emerald-600 font-medium">{locale === 'zh' ? '✓ 已发送' : '✓ Sent'}</span>}
+                        </p>
+                      </div>
+                      {narrative && (
+                        <button
+                          onClick={() => {
+                            if (isEditing) { setEditingNarrative(null); }
+                            else {
+                              setEditingNarrative(r.child_id);
+                              if (narrativeEdits[r.child_id] === undefined) {
+                                setNarrativeEdits(prev => ({ ...prev, [r.child_id]: narrative }));
+                              }
                             }
-                          }
-                        }}
-                        className="text-xs text-emerald-600 font-medium px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-50 transition-colors"
-                      >
-                        {isEditing ? (locale === 'zh' ? '完成' : 'Done') : (locale === 'zh' ? '编辑' : 'Edit')}
-                      </button>
+                          }}
+                          className="text-xs text-emerald-600 font-medium px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                        >
+                          {isEditing ? (locale === 'zh' ? '完成' : 'Done') : (locale === 'zh' ? '编辑' : 'Edit')}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Narrative Introduction */}
+                  <div className="px-5 pb-4">
+                    {narrative ? (
+                      isEditing ? (
+                        <textarea
+                          value={narrativeEdits[r.child_id] ?? narrative}
+                          onChange={e => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
+                          className="w-full border border-gray-200 rounded-xl p-4 text-[15px] text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[120px] resize-y"
+                        />
+                      ) : (
+                        <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100">
+                          <p className="text-[15px] text-gray-700 leading-[1.8] tracking-wide">{narrative}</p>
+                        </div>
+                      )
+                    ) : (
+                      <div className="bg-gray-50 rounded-2xl p-5 border border-dashed border-gray-200">
+                        <p className="text-sm text-gray-400 italic text-center">
+                          {locale === 'zh' ? '点击"生成"创建家长报告' : 'Click "Generate" to create the parent report'}
+                        </p>
+                      </div>
                     )}
                   </div>
+
+                  {/* Photos — grouped by curriculum area in shelf order */}
+                  <ParentPhotosGrouped
+                    photos={photos}
+                    parentWorks={r.parent_works}
+                    childId={r.child_id}
+                    firstName={firstName}
+                    locale={locale}
+                    getAreaLabel={getAreaLabel}
+                    handleRemovePhoto={handleRemovePhoto}
+                  />
                 </div>
-
-                {/* ── Narrative Introduction — warm summary for parents ── */}
-                <div className="px-5 pb-4">
-                  {narrative ? (
-                    isEditing ? (
-                      <textarea
-                        value={narrativeEdits[r.child_id] ?? narrative}
-                        onChange={e => setNarrativeEdits(prev => ({ ...prev, [r.child_id]: e.target.value }))}
-                        className="w-full border border-gray-200 rounded-xl p-4 text-[15px] text-gray-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-emerald-400 min-h-[120px] resize-y"
-                      />
-                    ) : (
-                      <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100">
-                        <p className="text-[15px] text-gray-700 leading-[1.8] tracking-wide">{narrative}</p>
-                      </div>
-                    )
-                  ) : (
-                    <div className="bg-gray-50 rounded-2xl p-5 border border-dashed border-gray-200">
-                      <p className="text-sm text-gray-400 italic text-center">
-                        {locale === 'zh' ? '点击"生成"创建家长报告' : 'Click "Generate" to create the parent report'}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* ── Photos — grouped by curriculum area in shelf order ── */}
-                <ParentPhotosGrouped
-                  photos={photos}
-                  parentWorks={r.parent_works}
-                  childId={r.child_id}
-                  firstName={firstName}
-                  locale={locale}
-                  getAreaLabel={getAreaLabel}
-                  handleRemovePhoto={handleRemovePhoto}
-                />
-
-                {/* Divider between children */}
-                <div className="mx-8 border-b border-gray-100" />
-              </div>
-            );
-          })}
+              );
+            })()
+          )}
         </div>
       )}
 
-      {/* Sticky bottom: Send All */}
-      {subView === 'parents' && readyToSend > 0 && (
+      {/* Sticky bottom: Send All (only when viewing child list, not single preview) */}
+      {subView === 'parents' && readyToSend > 0 && !previewChild && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-3 z-20">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <p className="text-xs text-gray-500">
