@@ -19,6 +19,8 @@ interface ParentWork {
   status: string;
   parent_description?: string;
   why_it_matters?: string;
+  parent_description_zh?: string | null;
+  why_it_matters_zh?: string | null;
   photo_url?: string;
 }
 
@@ -26,6 +28,7 @@ interface Photo {
   id: string;
   url: string;
   work_name?: string | null;
+  work_name_zh?: string | null;
   caption?: string | null;
   captured_at?: string;
 }
@@ -206,7 +209,15 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
             {/* Photos in this area */}
             <div className="space-y-4">
               {grouped[areaKey].map(({ photo, matchedWork }) => {
-                const workDisplay = (locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : (photo.work_name || '');
+                const workDisplay = locale === 'zh'
+                  ? (matchedWork?.name_zh || photo.work_name_zh || photo.work_name || '')
+                  : (photo.work_name || '');
+                const descDisplay = locale === 'zh'
+                  ? (matchedWork?.parent_description_zh || matchedWork?.parent_description)
+                  : matchedWork?.parent_description;
+                const whyDisplay = locale === 'zh'
+                  ? (matchedWork?.why_it_matters_zh || matchedWork?.why_it_matters)
+                  : matchedWork?.why_it_matters;
 
                 return (
                   <div key={photo.id} className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm group relative">
@@ -228,14 +239,14 @@ function ParentPhotosGrouped({ photos, parentWorks, childId, firstName, locale, 
                         <h4 className="font-semibold text-gray-800 text-sm leading-snug">
                           {workDisplay}
                         </h4>
-                        {matchedWork?.parent_description && (
+                        {descDisplay && (
                           <p className="text-sm text-gray-600 leading-relaxed mt-2">
-                            {matchedWork.parent_description}
+                            {descDisplay}
                           </p>
                         )}
-                        {matchedWork?.why_it_matters && (
+                        {whyDisplay && (
                           <p className="text-xs text-gray-500 leading-relaxed mt-1.5 italic">
-                            {matchedWork.why_it_matters}
+                            {whyDisplay}
                           </p>
                         )}
                       </div>
