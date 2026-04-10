@@ -618,25 +618,25 @@ export default function GuruChatThread({
     }
   }
 
-  // Theme colors — teachers get violet/indigo, parents get botanical green
+  // Theme colors — teachers get warm brown earth tones, parents get botanical green
   const themeClasses = useMemo(() => ({
     headerGradient: isTeacher
-      ? 'bg-gradient-to-r from-violet-600 to-indigo-700'
+      ? 'bg-gradient-to-r from-[#5D4037] to-[#4E342E]'
       : 'bg-gradient-to-r from-[#0D3330] to-[#164340]',
     guruIcon: isTeacher ? '🎓' : '🌿',
     bgClass: isTeacher
-      ? 'bg-gradient-to-br from-violet-50 to-indigo-50'
+      ? 'bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3]'
       : HOME_THEME.pageBgGradient,
-    accentColor: isTeacher ? 'violet' : '[#0D3330]',
+    accentColor: isTeacher ? 'amber' : '[#0D3330]',
   }), [isTeacher]);
 
   // Loading state
   if (state === 'loading') {
     return (
-      <div className={`flex-1 flex items-center justify-center ${isTeacher ? 'bg-gradient-to-br from-violet-50 to-indigo-50' : HOME_THEME.pageBg}`}>
+      <div className={`flex-1 flex items-center justify-center ${isTeacher ? 'bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3]' : HOME_THEME.pageBg}`}>
         <div className="text-center">
           <div className="animate-pulse text-4xl mb-2">{themeClasses.guruIcon}</div>
-          <p className={`text-sm ${isTeacher ? 'text-gray-500' : HOME_THEME.subtleText}`}>{t('common.loading')}</p>
+          <p className={`text-sm ${isTeacher ? 'text-[#3E2723]/60' : HOME_THEME.subtleText}`}>{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -689,23 +689,24 @@ export default function GuruChatThread({
             imageUrl={msg.imageUrl}
             thinking={msg.thinking}
             isThinkingLive={isThinking && msg.id === messages[messages.length - 1]?.id && !msg.isUser}
+            isTeacher={isTeacher}
           />
         ))}
 
         {/* Thinking indicator — shows while waiting for first SSE event (before thinking or text arrives) */}
         {sending && !isStreaming && (
           <div className="flex items-center gap-2 mb-3">
-            <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-violet-600' : 'bg-[#0D3330]'} flex items-center justify-center`}>
+            <div className={`w-8 h-8 rounded-full ${isTeacher ? 'bg-[#5D4037]' : 'bg-[#0D3330]'} flex items-center justify-center`}>
               <span className="text-sm">{themeClasses.guruIcon}</span>
             </div>
-            <div className={`bg-white border ${isTeacher ? 'border-violet-200' : 'border-[#0D3330]/10'} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm`}>
+            <div className={`bg-white border ${isTeacher ? 'border-amber-200' : 'border-[#0D3330]/10'} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm`}>
               <div className="flex items-center gap-2">
                 <div className="flex gap-1">
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} />
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '150ms' }} />
-                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-violet-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '300ms' }} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-amber-400' : 'bg-[#0D3330]/30'} animate-pulse`} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-amber-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '150ms' }} />
+                  <div className={`w-1.5 h-1.5 rounded-full ${isTeacher ? 'bg-amber-400' : 'bg-[#0D3330]/30'} animate-pulse`} style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className={`text-xs ${isTeacher ? 'text-violet-400' : 'text-[#0D3330]/40'} transition-opacity duration-300`}>
+                <span className={`text-xs ${isTeacher ? 'text-amber-600' : 'text-[#0D3330]/40'} transition-opacity duration-300`}>
                   {thinkingPhase === 0
                     ? (t('guru.thinking') || 'Thinking...')
                     : thinkingPhase === 1
@@ -719,18 +720,18 @@ export default function GuruChatThread({
       </div>
 
       {/* Input area — fixed at bottom */}
-      <div className={`border-t ${isTeacher ? 'border-gray-200' : 'border-[#0D3330]/10'} bg-white px-3 py-3`}>
+      <div className={`border-t ${isTeacher ? 'border-[#D4C5B0]' : 'border-[#0D3330]/10'} bg-[#FFFDF8] px-3 py-3`}>
         {/* Image preview */}
         {pendingImage && (
           <div className="mb-2 flex items-center gap-2">
             {pendingImage.uploading ? (
               <div className="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-violet-400 border-t-transparent rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : (
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={pendingImage.url} alt="Upload preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+                <img src={pendingImage.url} alt="Upload preview" className="w-16 h-16 rounded-lg object-cover border border-[#D4C5B0]" />
                 <button
                   onClick={() => setPendingImage(null)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-sm"
@@ -758,7 +759,7 @@ export default function GuruChatThread({
             onClick={() => imageInputRef.current?.click()}
             disabled={sending || !!pendingImage}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${
-              isTeacher ? 'text-violet-500 hover:bg-violet-50' : 'text-[#0D3330]/60 hover:bg-[#0D3330]/5'
+              isTeacher ? 'text-amber-700 hover:bg-amber-50' : 'text-[#0D3330]/60 hover:bg-[#0D3330]/5'
             }`}
             title={t('guru.uploadImage') || 'Upload image'}
           >
@@ -782,7 +783,7 @@ export default function GuruChatThread({
               rows={1}
               className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none ${
                 isTeacher
-                  ? 'border-gray-200 bg-gray-50 text-gray-800 placeholder:text-gray-400 focus:border-violet-300 focus:ring-1 focus:ring-violet-200'
+                  ? 'border-[#D4C5B0] bg-[#FFFDF8] text-[#3E2723] placeholder:text-[#3E2723]/40 focus:border-amber-300 focus:ring-1 focus:ring-amber-200'
                   : 'border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10'
               }`}
               style={{ maxHeight: '120px' }}
@@ -794,7 +795,7 @@ export default function GuruChatThread({
             onClick={handleSend}
             disabled={!inputText.trim() || sending}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed ${
-              isTeacher ? 'bg-violet-600 hover:bg-violet-700' : HOME_THEME.primaryBtn
+              isTeacher ? 'bg-[#5D4037] hover:bg-[#4E342E]' : HOME_THEME.primaryBtn
             }`}
           >
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

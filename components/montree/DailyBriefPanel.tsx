@@ -128,9 +128,9 @@ export default function DailyBriefPanel() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 animate-pulse">
-        <div className="h-5 bg-gray-100 rounded w-40 mb-2" />
-        <div className="h-8 bg-gray-50 rounded w-full" />
+      <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] p-3 animate-pulse">
+        <div className="h-5 bg-[#FAF5EF] rounded w-40 mb-2" />
+        <div className="h-8 bg-[#FAF5EF] rounded w-full" />
       </div>
     );
   }
@@ -141,21 +141,21 @@ export default function DailyBriefPanel() {
   const allGood = totalActions === 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] overflow-hidden">
       {/* Summary bar — always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={t('brief.title')}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#FAF5EF] transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-lg">☀️</span>
           <div className="text-left">
-            <div className="text-sm font-semibold text-gray-700">
+            <div className="text-sm font-semibold text-[#3E2723]">
               {t('brief.title')}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-[#A1887F]">
               {allGood
                 ? t('brief.allGood')
                 : t('brief.actionCount').replace('{count}', String(totalActions))
@@ -171,11 +171,11 @@ export default function DailyBriefPanel() {
             </span>
           )}
           {allGood && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700">
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-800">
               ✓
             </span>
           )}
-          <span className={`text-gray-400 transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
+          <span className={`text-[#A1887F] transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
             ▼
           </span>
         </div>
@@ -183,31 +183,31 @@ export default function DailyBriefPanel() {
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-[#E6DDD7] pt-3 space-y-3">
           {/* Quick stats row */}
           <div className="flex gap-2">
-            <div className="flex-1 bg-emerald-50 rounded-lg px-2 py-1.5 text-center">
+            <div className="flex-1 bg-[#E8F5E9] rounded-lg px-2 py-1.5 text-center">
               <div className="text-base font-bold text-emerald-700">
                 {brief.attendance.present}/{brief.attendance.total}
               </div>
               <div className="text-[10px] text-emerald-600 font-medium">{t('brief.present')}</div>
             </div>
-            <div className="flex-1 bg-amber-50 rounded-lg px-2 py-1.5 text-center">
+            <div className="flex-1 bg-[#FFF8E7] rounded-lg px-2 py-1.5 text-center">
               <div className="text-base font-bold text-amber-700">{brief.stale_works.total}</div>
               <div className="text-[10px] text-amber-600 font-medium">{t('brief.toRevisit')}</div>
             </div>
-            <div className="flex-1 bg-blue-50 rounded-lg px-2 py-1.5 text-center">
-              <div className="text-base font-bold text-blue-700">{brief.conference_notes.drafts}</div>
-              <div className="text-[10px] text-blue-600 font-medium">{t('brief.drafts')}</div>
+            <div className="flex-1 bg-[#FFF8E7] rounded-lg px-2 py-1.5 text-center">
+              <div className="text-base font-bold text-[#5D4037]">{brief.conference_notes.drafts}</div>
+              <div className="text-[10px] text-[#8D6E63] font-medium">{t('brief.drafts')}</div>
             </div>
-            <div className="flex-1 bg-violet-50 rounded-lg px-2 py-1.5 text-center">
-              <div className="text-base font-bold text-violet-700">{brief.evidence.ready_for_mastery}</div>
-              <div className="text-[10px] text-violet-600 font-medium">{t('brief.ready')}</div>
+            <div className="flex-1 bg-[#FFF8E7] rounded-lg px-2 py-1.5 text-center">
+              <div className="text-base font-bold text-[#5D4037]">{brief.evidence.ready_for_mastery}</div>
+              <div className="text-[10px] text-[#8D6E63] font-medium">{t('brief.ready')}</div>
             </div>
             {brief.skill_intelligence && brief.skill_intelligence.total_flags > 0 && (
-              <div className="flex-1 bg-rose-50 rounded-lg px-2 py-1.5 text-center">
-                <div className="text-base font-bold text-rose-700">{brief.skill_intelligence.total_flags}</div>
-                <div className="text-[10px] text-rose-600 font-medium">{t('brief.skillInsights')}</div>
+              <div className="flex-1 bg-[#FFF8E7] rounded-lg px-2 py-1.5 text-center">
+                <div className="text-base font-bold text-[#8D6E63]">{brief.skill_intelligence.total_flags}</div>
+                <div className="text-[10px] text-[#8D6E63] font-medium">{t('brief.skillInsights')}</div>
               </div>
             )}
           </div>
@@ -283,7 +283,7 @@ export default function DailyBriefPanel() {
           )}
 
           {/* Pulse status footer */}
-          <div className="text-[10px] text-gray-400 text-center pt-1 border-t border-gray-50">
+          <div className="text-[10px] text-[#A1887F] text-center pt-1 border-t border-[#E6DDD7]">
             {brief.pulse.last_generated_at
               ? t('brief.pulseAgo').replace('{hours}', String(brief.pulse.hours_since_last || 0))
               : t('brief.noPulse')
