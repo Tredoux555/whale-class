@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { MONTESSORI_GLOSSARY_ZH } from '@/lib/montree/classifier/montessori-glossary-zh';
 
 export const maxDuration = 60;
 
@@ -123,24 +124,45 @@ export async function GET(request: NextRequest) {
       return name.trim();
     };
 
-    // Get Chinese work name for a given English work name (with fuzzy fallback)
+    // Get Chinese work name for a given English work name (with fuzzy fallback + glossary)
     const getChineseWorkName = (englishName: string): string | null => {
       if (!englishName || typeof englishName !== 'string') return null;
       const key = englishName.toLowerCase().trim();
-      // Exact match
+      // 1. Exact match from DB name_zh
       const exact = workNameToChinese.get(key);
       if (exact) return exact;
-      // Strip " - suffix" variants (e.g. "Chalk Board Writing - No lines" → "chalk board writing")
+      // 2. Strip " - suffix" variants (e.g. "Chalk Board Writing - No lines" → "chalk board writing")
       const base = key.replace(/\s*-\s*.+$/, '').trim();
       if (base !== key) {
         const baseMatch = workNameToChinese.get(base);
         if (baseMatch) return baseMatch;
       }
-      // Normalize spaces (e.g. "chalk board" → "chalkboard")
+      // 3. Normalize spaces (e.g. "chalk board" → "chalkboard")
       const collapsed = base.replace(/\s+/g, '');
       for (const [k, v] of workNameToChinese) {
         if (k.replace(/\s+/g, '') === collapsed) return v;
       }
+      // 4. Fallback to static Montessori glossary — exact match first
+      const glossaryExact = MONTESSORI_GLOSSARY_ZH[englishName.trim()];
+      if (glossaryExact) return glossaryExact;
+      // 5. Glossary fuzzy: try base name (stripped suffix), title-cased
+      const baseTitle = base.replace(/\b\w/g, c => c.toUpperCase());
+      if (baseTitle !== englishName.trim()) {
+        const glossaryBase = MONTESSORI_GLOSSARY_ZH[baseTitle];
+        if (glossaryBase) return glossaryBase;
+      }
+      // 6. Glossary substring: check if any glossary key is contained in (or contains) the work name
+      const nameLower = englishName.toLowerCase().trim();
+      let bestGlossaryMatch: string | null = null;
+      let bestGlossaryLen = 0;
+      for (const [gKey, gVal] of Object.entries(MONTESSORI_GLOSSARY_ZH)) {
+        const gLower = gKey.toLowerCase();
+        if (nameLower.includes(gLower) && gLower.length > bestGlossaryLen && gLower.length >= 4) {
+          bestGlossaryMatch = gVal;
+          bestGlossaryLen = gLower.length;
+        }
+      }
+      if (bestGlossaryMatch) return bestGlossaryMatch;
       return null;
     };
 

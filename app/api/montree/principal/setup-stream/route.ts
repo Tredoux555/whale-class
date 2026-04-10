@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
 import { legacySha256 } from '@/lib/montree/password';
+import { autoTranslateToChinese } from '@/lib/montree/auto-translate';
 
 function generateLoginCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -151,6 +152,12 @@ export async function POST(request: NextRequest) {
             emoji: '✅'
           });
 
+          // Fire-and-forget: batch translate all seeded works to Chinese
+          // This runs in the background — does NOT block the setup stream
+          batchTranslateWorksInBackground(createdClassroom.id).catch(err => {
+            console.error(`[Setup] Background translation failed for ${classroom.name}:`, err instanceof Error ? err.message : err);
+          });
+
           // Create teachers
           const teachersToCreate = classroom.teachers.filter((t: { name?: string }) => t.name?.trim());
 
@@ -292,4 +299,51 @@ async function seedFromStaticCurriculum(
   }
 
   return worksToInsert.length;
+}
+
+/**
+ * Background batch-translate all works in a classroom that are missing name_zh.
+ * Uses autoTranslateToChinese (glossary first, then Haiku) in batches of 5.
+ * Fire-and-forget — never blocks the caller.
+ */
+async function batchTranslateWorksInBackground(classroomId: string): Promise<void> {
+  const supabase = getSupabase();
+
+  const { data: works, error } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('name, parent_description, why_it_matters, name_zh')
+    .eq('classroom_id', classroomId)
+    .is('name_zh', null);
+
+  if (error || !works || works.length === 0) {
+    if (error) console.error('[Setup] Batch translate query error:', error.message);
+    return;
+  }
+
+  console.log(`[Setup] Background translating ${works.length} works for classroom ${classroomId}`);
+
+  const BATCH = 5;
+  let translated = 0;
+
+  for (let i = 0; i < works.length; i += BATCH) {
+    const batch = works.slice(i, i + BATCH);
+    await Promise.all(batch.map(w =>
+      autoTranslateToChinese({
+        classroomId,
+        workName: w.name,
+        parentDescription: w.parent_description || '',
+        whyItMatters: w.why_it_matters || '',
+      }).then(() => { translated++; })
+        .catch(err => {
+          console.error(`[Setup] Translate failed for "${w.name}":`, err instanceof Error ? err.message : err);
+        })
+    ));
+
+    // Brief delay between batches to avoid Anthropic rate limits
+    if (i + BATCH < works.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+
+  console.log(`[Setup] Background translation done: ${translated}/${works.length} works translated`);
 }
