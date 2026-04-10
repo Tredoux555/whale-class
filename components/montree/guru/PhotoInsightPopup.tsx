@@ -306,25 +306,25 @@ function PopupCard({
   // ---- IDENTIFIED: CLIP found a match ----
   if (isIdentified && workName && area) {
     return (
-      <div className="pointer-events-auto bg-[#FFFDF8] rounded-xl shadow-xl border border-[#D4C5B0] overflow-hidden relative">
+      <div className="pointer-events-auto bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden relative">
         {/* Header: tappable work name (opens correction picker) + area badge + close */}
         <div className="px-4 pt-3 pb-2 flex items-start gap-3">
           <AreaBadge area={area} size="sm" />
           <button
-            className="flex-1 min-w-0 text-left active:bg-[#FAF5EF] rounded -mx-1 px-1 -my-0.5 py-0.5 transition-colors"
+            className="flex-1 min-w-0 text-left active:bg-gray-50 rounded -mx-1 px-1 -my-0.5 py-0.5 transition-colors"
             onClick={onCorrect}
             disabled={isProcessing}
           >
             <div className="flex items-center gap-1.5">
-              <p className="font-semibold text-[#3E2723] text-sm leading-tight truncate">
+              <p className="font-semibold text-gray-800 text-sm leading-tight truncate">
                 {workName}
               </p>
               {/* Pencil icon — signals tappability */}
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-[#A1887F] flex-shrink-0">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-gray-400 flex-shrink-0">
                 <path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <p className="text-xs text-[#A1887F] mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               {Math.round(confidence * 100)}% {t('popup.sure')}
               {' · '}
               {t('popup.pickStatus')}
@@ -333,7 +333,7 @@ function PopupCard({
           {/* Close/dismiss button */}
           <button
             onClick={onDismiss}
-            className="text-[#A1887F] hover:text-[#5D4037] p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
+            className="text-gray-400 hover:text-gray-800 p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
             aria-label="Dismiss"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -383,7 +383,7 @@ function PopupCard({
 
         {/* Processing overlay */}
         {isProcessing && (
-          <div className="absolute inset-0 bg-[#FFFDF8]/60 flex items-center justify-center rounded-xl">
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center rounded-xl">
             <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
@@ -394,20 +394,20 @@ function PopupCard({
   // ---- NO MATCH: CLIP confidence too low ----
   if (isNoMatch) {
     return (
-      <div className="pointer-events-auto bg-[#FFFDF8] rounded-xl shadow-xl border border-[#D4C5B0] overflow-hidden relative">
+      <div className="pointer-events-auto bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden relative">
         <div className="px-4 pt-3 pb-2 flex items-start gap-3">
-          <span className="w-6 h-6 rounded-full bg-[#FAF5EF] flex items-center justify-center text-[#A1887F] text-xs flex-shrink-0">?</span>
+          <span className="w-6 h-6 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 text-xs flex-shrink-0">?</span>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-[#3E2723] text-sm leading-tight">
+            <p className="font-semibold text-gray-800 text-sm leading-tight">
               {t('popup.notSure')}
             </p>
-            <p className="text-xs text-[#A1887F] mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               {t('popup.helpTag')}
             </p>
           </div>
           <button
             onClick={onDismiss}
-            className="text-[#A1887F] hover:text-[#5D4037] p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
+            className="text-gray-400 hover:text-gray-800 p-0.5 -mt-0.5 -mr-1 flex-shrink-0"
             aria-label="Dismiss"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -419,7 +419,7 @@ function PopupCard({
         <div className="px-3 pb-3">
           <button
             onClick={onTagManually}
-            className="w-full py-2 bg-[#FAF5EF] hover:bg-[#E6DDD7] text-[#3E2723] rounded-lg text-sm font-medium transition-colors"
+            className="w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-800 rounded-lg text-sm font-medium transition-colors"
           >
             {t('popup.pickWork')}
           </button>
@@ -431,9 +431,9 @@ function PopupCard({
   // ---- ANALYZING state — show mini spinner toast ----
   if (entry.status === 'analyzing') {
     return (
-      <div className="pointer-events-auto bg-[#FFFDF8] rounded-xl shadow-lg border border-[#D4C5B0] px-4 py-3 flex items-center gap-3">
+      <div className="pointer-events-auto bg-white rounded-xl shadow-lg border border-gray-200 px-4 py-3 flex items-center gap-3">
         <div className="w-5 h-5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
-        <span className="text-sm text-[#3E2723]">
+        <span className="text-sm text-gray-800">
           {t('popup.identifying')}
         </span>
       </div>
@@ -443,10 +443,10 @@ function PopupCard({
   // ---- ERROR state ----
   if (entry.status === 'error') {
     return (
-      <div className="pointer-events-auto bg-[#FFFDF8] rounded-xl shadow-lg border border-red-200 px-4 py-3 flex items-center gap-3">
+      <div className="pointer-events-auto bg-white rounded-xl shadow-lg border border-red-200 px-4 py-3 flex items-center gap-3">
         <span className="text-red-500 text-lg flex-shrink-0">⚠</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-[#3E2723]">
+          <p className="text-sm text-gray-800">
             {entry.errorType === 'timeout'
               ? t('popup.tookTooLong')
               : entry.errorType === 'network'
@@ -462,7 +462,7 @@ function PopupCard({
         </button>
         <button
           onClick={onDismiss}
-          className="text-[#A1887F] hover:text-[#5D4037] p-0.5 flex-shrink-0"
+          className="text-gray-400 hover:text-gray-800 p-0.5 flex-shrink-0"
           aria-label="Dismiss"
         >
           <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

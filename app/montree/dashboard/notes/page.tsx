@@ -62,7 +62,7 @@ export default function NotesPage() {
 
   if (loading || !session) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] to-[#FFF8E7] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center">
         <div className="animate-pulse text-amber-700 text-lg">{t('common.loading')}</div>
       </div>
     );
@@ -78,17 +78,17 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FAF8F5] to-[#FFF8E7]">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <button
             onClick={() => router.back()}
-            className="px-3 py-2 rounded-lg bg-[#FFFDF8] shadow-sm hover:bg-[#FAF5EF] transition-colors text-[#6D5D4B]"
+            className="px-3 py-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors text-gray-600"
           >
             ← {t('common.back')}
           </button>
-          <h1 className="text-xl font-semibold text-[#3E2723]">
+          <h1 className="text-xl font-semibold text-gray-800">
             📝 {t('nav.notes')}
           </h1>
         </div>
