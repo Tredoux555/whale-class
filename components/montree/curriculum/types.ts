@@ -13,7 +13,9 @@ export interface Work {
   prerequisites?: string[];
   control_of_error?: string;
   parent_description?: string;
+  parent_description_zh?: string;
   why_it_matters?: string;
+  why_it_matters_zh?: string;
   teacher_notes?: string;
   quick_guide?: string;
   presentation_steps?: any[];
