@@ -1011,7 +1011,19 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
             /* ── Single child preview — exactly as parents will see ── */
             (() => {
               const r = reports.find(x => x.child_id === previewChild);
-              if (!r) return null;
+              if (!r) {
+                return (
+                  <div className="bg-white">
+                    <button
+                      onClick={() => setPreviewChild(null)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-600 font-medium hover:bg-emerald-50/50 w-full text-left border-b"
+                    >
+                      <span>←</span> {locale === 'zh' ? '返回列表' : 'Back to list'}
+                    </button>
+                    <p className="text-center py-12 text-gray-400 text-sm">{locale === 'zh' ? '报告不可用' : 'Report not available'}</p>
+                  </div>
+                );
+              }
               const firstName = r.child_name.split(' ')[0];
               const narrative = getNarrative(r);
               const photos = getPhotos(r);
