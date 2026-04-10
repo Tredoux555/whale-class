@@ -3,6 +3,7 @@
 
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getSupabase } from '@/lib/supabase-client';
+import { MONTESSORI_GLOSSARY_ZH } from '@/lib/montree/classifier/montessori-glossary-zh';
 
 interface TranslateInput {
   classroomId: string;
@@ -26,6 +27,14 @@ export async function autoTranslateToChinese(input: TranslateInput): Promise<voi
   if (!input.parentDescription && !input.whyItMatters) return;
 
   try {
+    // Try glossary for the work name first (free, no API call needed)
+    let nameZh: string | null = MONTESSORI_GLOSSARY_ZH[input.workName] || null;
+    if (!nameZh) {
+      // Try base name (strip "- suffix")
+      const base = input.workName.replace(/\s*-\s*.+$/, '').trim();
+      nameZh = MONTESSORI_GLOSSARY_ZH[base] || null;
+    }
+
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 1024,
@@ -33,7 +42,10 @@ export async function autoTranslateToChinese(input: TranslateInput): Promise<voi
       messages: [
         {
           role: 'user',
-          content: `Translate the following Montessori work descriptions into Chinese (Simplified). Return ONLY valid JSON with exactly two fields: "parent_description_zh" and "why_it_matters_zh". Do not include any other text.
+          content: `Translate the following Montessori work name and descriptions into Chinese (Simplified). Return ONLY valid JSON with exactly three fields: "name_zh", "parent_description_zh", and "why_it_matters_zh". Do not include any other text.
+
+Work name (English): ${input.workName}
+${nameZh ? `Known Chinese name: ${nameZh} (use this exactly for name_zh)` : ''}
 
 parent_description (English):
 ${input.parentDescription || '(none)'}
@@ -52,10 +64,11 @@ Return JSON:`,
     const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
     const parsed = JSON.parse(jsonStr);
 
+    const finalNameZh = nameZh || parsed.name_zh || null;
     const parentDescZh = parsed.parent_description_zh || null;
     const whyItMattersZh = parsed.why_it_matters_zh || null;
 
-    if (!parentDescZh && !whyItMattersZh) {
+    if (!finalNameZh && !parentDescZh && !whyItMattersZh) {
       console.warn(`[AutoTranslate] Empty translation for "${input.workName}"`);
       return;
     }
@@ -63,6 +76,7 @@ Return JSON:`,
     // Save to montree_classroom_curriculum_works
     const supabase = getSupabase();
     const updateData: Record<string, string> = {};
+    if (finalNameZh) updateData.name_zh = finalNameZh;
     if (parentDescZh) updateData.parent_description_zh = parentDescZh;
     if (whyItMattersZh) updateData.why_it_matters_zh = whyItMattersZh;
 
@@ -75,7 +89,7 @@ Return JSON:`,
     if (error) {
       console.error(`[AutoTranslate] DB update failed for "${input.workName}":`, error.message);
     } else {
-      console.log(`[AutoTranslate] ✓ Chinese translation saved for "${input.workName}"`);
+      console.log(`[AutoTranslate] ✓ Chinese translation saved for "${input.workName}" → ${finalNameZh || '(name skipped)'}`);
     }
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
