@@ -3,12 +3,12 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import Link from 'next/link';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
+import InviteParentModal from '@/components/montree/InviteParentModal';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -310,6 +310,10 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
   const [narrativeEdits, setNarrativeEdits] = useState<Record<string, string>>({});
   const [editingNarrative, setEditingNarrative] = useState<string | null>(null);
   const [photoEdits, setPhotoEdits] = useState<Record<string, Photo[]>>({});
+
+  // Invite parent modal
+  const [inviteChildId, setInviteChildId] = useState<string | null>(null);
+  const [inviteChildName, setInviteChildName] = useState('');
 
   // ─── Shelf state ──────────────────────────────────────────
   const [shelfWorks, setShelfWorks] = useState<Record<string, Array<{ area: string; work: string; work_zh?: string | null; status: string }>>>({});
@@ -946,19 +950,13 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
       {/* ═══ PARENT REPORTS — child list, click to preview one child's report ═══ */}
       {subView === 'parents' && reports.length > 0 && (
         <div>
-          {/* Parent invite link */}
-          <div className="px-4 py-2 bg-emerald-50/60 border-b flex items-center justify-between">
+          {/* Parent invite info banner */}
+          <div className="px-4 py-2 bg-emerald-50/60 border-b">
             <p className="text-[11px] text-emerald-700">
               {locale === 'zh'
-                ? '家长只能看到自己孩子的报告'
-                : 'Parents only see their own child\'s report'}
+                ? '家长只能看到自己孩子的报告。点击学生姓名旁的 🔑 邀请家长。'
+                : 'Parents only see their own child\'s report. Tap 🔑 next to a child to invite their parent.'}
             </p>
-            <Link
-              href="/montree/dashboard/students"
-              className="text-[11px] text-emerald-600 font-semibold hover:underline"
-            >
-              {locale === 'zh' ? '邀请家长 →' : 'Invite Parents →'}
-            </Link>
           </div>
 
           {!previewChild ? (
@@ -1013,6 +1011,20 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         )}
                         <span className="text-gray-300 text-xs">›</span>
                       </div>
+                    </button>
+                    {/* Invite parent — subtle key icon */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInviteChildId(r.child_id);
+                        setInviteChildName(r.child_name);
+                      }}
+                      className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-amber-500 hover:bg-amber-50 rounded-full flex-shrink-0 transition-colors"
+                      title={locale === 'zh' ? '邀请家长' : 'Invite Parent'}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                      </svg>
                     </button>
                   </div>
                 );
@@ -1153,6 +1165,15 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
         currentWorkName={wheelPickerCurrentWork}
         onSelectWork={handleShelfPickerSelect}
         onWorkAdded={handleRefreshPickerWorks}
+      />
+
+      {/* Invite Parent Modal */}
+      <InviteParentModal
+        childId={inviteChildId || ''}
+        childName={inviteChildName}
+        teacherId={getSession()?.teacher?.id}
+        isOpen={!!inviteChildId}
+        onClose={() => setInviteChildId(null)}
       />
     </div>
   );

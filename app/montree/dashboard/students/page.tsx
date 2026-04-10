@@ -612,7 +612,7 @@ export default function StudentsPage() {
             onClick={openAddForm}
             className="px-3 py-1.5 bg-emerald-500 text-white rounded-lg text-sm font-medium hover:bg-emerald-600"
           >
-            + {t('common.add')} {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
+            + {isHomeschoolParent(session) ? t('students.addChild') : t('students.addStudent')}
           </button>
         </div>
       </div>
