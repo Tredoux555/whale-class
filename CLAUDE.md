@@ -37,30 +37,61 @@ There are **4 separate "Montree" campaigns** all sent on 2026-03-28, NOT one. To
 - Two automatic follow-ups already configured: F1 ~5 days after original ("I wanted to make sure my previous email…"), F2 ~5 days after F1 ("I understand how busy things can get…")
 - Each campaign was a separate batch/chunk — not a "single resumable campaign." To send the rest, **build a NEW GMass campaign**, do NOT try to "resume" 50489320.
 
-**🚨 MONDAY APR 13, 9:00am +08:00 — CAMPAIGN A IS LOADED AND SCHEDULED IN GMASS. DO NOT REBUILD IT. JUST OPEN GMAIL → DRAFTS → "Montree" → CONFIRM SETTINGS UNCHANGED → ASK USER TO CLICK THE RED GMASS BUTTON. 🚨**
+**🚨 CAMPAIGN ORDER REVERSED Apr 10, 2026 — JOB APPLICATION FIRST, MONTREE PITCH SECOND 🚨**
 
-Strategic decision Apr 8 (after long deliberation): **Campaign B (teacher job application + resume) was CANCELLED.** Reason: attaching a resume that names current school to 345 strangers' inboxes is asymmetric risk — small upside (a few extra replies), big downside (one principal who knows someone at current school → awkward conversation Tredoux didn't choose). Campaign A (Montree pitch) is already a "teacher + builder" intro by subtext — interested principals will ask about availability themselves, and Tredoux can deploy the resume privately to warm leads only. Do NOT revive Campaign B without reopening this conversation.
+Strategic reversal Apr 10: **Job application email sends FIRST (starting Fri Apr 10), Montree pitch POSTPONED to ~Apr 27 as follow-up.** Rationale: personal "hire me" email is warmer/shorter, gets principals curious, then Montree pitch lands 2 weeks later for non-responders as the product follow-up. Resume deliberately NOT attached — no asymmetric risk from naming current school. Interested principals will ask for details privately.
 
-**Campaign A — LOADED IN GMASS DRAFT (Apr 8 session, ready to fire Mon Apr 13):**
-- To: `345-recipients-big-42c28b38@gmass.co` (cleaned 345-school list, sheet ID `1tlBY456CVLc9v6oyI6PH8uTQiG7lmlxLQnmLaC0M6GQ`)
-- Subject: `Montree`
-- Body: shortened sacred email #1 (~155 words, `{SchoolName}` merge tag, signed Tredoux / montree.xyz)
-- Attachment: NONE (resume removed deliberately)
-- Schedule: **Mon Apr 13, 9:00am +08:00** (Custom date/time in GMass)
-- Speed: 50 emails/day, Pause 5–10s between sends, Skip weekends ON, Skip holidays ON
+**Campaign C — JOB APPLICATION — ☠️ DEAD, SENT BLANK (Apr 10, 2026):**
+- Campaign ID: `50686495` / Schedule ID: `51331920`
+- Draft ID: `r614453887712204887` (Gmail message ID `19d761413fb0a98d`) — **TRASHED by user**
+- **WHAT HAPPENED**: Session 12 attempted to automate GMass via Chrome DOM manipulation. Body was set via `createElement`/`appendChild` which rendered visually but DID NOT update Gmail's internal draft state. GMass read the empty internal state and sent **335 blank emails** to the entire 345-school list at once (no throttle — DOM-set speed settings also didn't persist). ~74 bounced/blocked (54 "Address not found" + 10 "Message blocked" + 10 blocks), so ~261 schools received an empty email with subject "Montessori Teacher & Builder" and no body.
+- **Campaign is DEAD**: User trashed the draft → GMass detected draft in trash → stopped all further sends. GMass notification confirmed: "Successful sends: 0, Emails remaining: 0" (referring to the remaining queue, not the original blast).
+- **Auto follow-ups on this campaign**: Should be dead since the draft is trashed. Verify on gmass.co/dashboard that Campaign 50686495 shows no pending follow-ups. If follow-ups are still queued, manually cancel them — they would reference an empty email.
+- **🚨 CRITICAL LESSON**: DOM manipulation of Gmail compose windows does NOT update Gmail's internal state. `createElement`/`appendChild`, `innerHTML`, `execCommand('insertHTML')` — NONE of these work. GMass reads Gmail's internal state, not the visible DOM. Body, subject via `execCommand`, and speed/throttle settings set via DOM all fail silently. **NEVER attempt Chrome automation of GMass settings or compose body again.** All GMass interaction must be done manually by the user through GMass's own UI.
+
+**Campaign D — CORRECTION EMAIL (NEW, created Apr 10, 2026):**
+- Draft ID: `r3953882681879956838` (Gmail message ID `19d772d888d0a151`)
+- To: `345-recipients-big-42c28b38@gmass.co` (same list)
+- Subject: `Re: Montessori Teacher & Builder`
+- Body: plain text apology + full job application email (~100 words total, `{SchoolName}` merge tag)
+- Created via Gmail API `gmail_create_draft` with `isHtml: false` (plain text — HTML drafts via API show raw tags in Gmail compose)
+- Test email sent to self: **VERIFIED GOOD** — body intact, formatting clean, montree.xyz rendered as clickable link
+- Send as: **Replies** (threads with the original empty email each recipient received)
+- Speed: 50 emails/day, Pause 5–10s between sends, Skip weekends OFF, Skip holidays ON
 - Tracking: Opens ON, Clicks OFF
-- Auto Follow-up Stage 1: ON, no-reply after 5 days, sacred F1 prefilled
-- Auto Follow-up Stage 2: ON, no-reply after 10 days (5 after F1), sacred F2 prefilled
-- Stage 3: OFF, Send as: New messages
+- Auto Follow-up: **OFF** (one-shot correction, no follow-ups)
+- **Status**: User configuring GMass settings and firing manually as of end of Session 12. At 50/day, takes ~7 days to reach all ~345 recipients (done by ~Apr 17).
 
-**Monday morning checklist (next session, before user clicks Send):**
-1. Open Gmail, find Drafts → "Montree" (compose ID `CllgCHrgDRrsbSxTWQlPXNMCXtkhKwfmfTsNdVrQqfNqDqFBdgrQJRpQcXtZpsHqcqgzJSQFVMg`)
-2. Verify To = `345-recipients-big-42c28b38@gmass.co` (confirms sheet still linked), subject = `Montree`, no attachment, body intact
-3. Click GMass settings gear, verify: 04/13/2026 09:00am +08:00, both Stages still ON, Skip weekends ON, Clicks OFF
-4. Screenshot the loaded compose + settings for user
-5. **STOP. Tell user "Ready. Click the red GMass button when you want to fire." Do NOT click Send autonomously.**
-6. After Send, watch gmass.co/dashboard for the new campaign to confirm queued + throttling correctly
-7. Detailed handoff lives at `whale/docs/outreach/MONDAY_HANDOFF.md`
+**THE CORRECTION EMAIL BODY** (plain text, verified via test email Apr 10):
+```
+My apologies — it looks like my previous email was sent blank. Here's what I meant to say:
+
+Dear {SchoolName},
+
+My name is Tredoux. I'm an AMS-certified Montessori teacher for ages 3–6, and I also built Montree — the first AI-powered classroom management system designed specifically for Montessori schools.
+
+I'm looking for my next classroom. If you need a qualified teacher who can also bring your school into the future of Montessori education, I'd love to talk.
+
+Kind regards,
+Tredoux
+montree.xyz
+```
+
+**Campaign A — MONTREE PITCH (POSTPONED from Apr 13 → ~Apr 27):**
+- Draft ID: `r5432987450225472818` (Gmail message ID `19d6ca30b7406fee`)
+- To: `345-recipients-big-42c28b38@gmass.co` (same list)
+- Subject: `Montree`
+- Body: shortened sacred email #1 (~155 words, `{SchoolName}` merge tag)
+- **ACTION REQUIRED**: Open this draft in Gmail, click GMass settings gear, change schedule from 04/13/2026 → **04/27/2026 09:00am +08:00**
+- All other settings unchanged (50/day, Skip weekends ON, Opens ON, Clicks OFF, F1+F2 prefilled)
+
+**User checklist (UPDATED after Session 12 disaster):**
+1. ~~Open Gmail → fire Campaign C~~ — **DONE but sent blank.** Campaign C is dead.
+2. **Fire Campaign D (correction)** — user configuring GMass settings manually as of end of Session 12
+3. Monitor Campaign D on gmass.co/dashboard — verify 50/day throttle is actually working, check bounces
+4. Verify Campaign 50686495 (dead Campaign C) has NO pending follow-ups on gmass.co/dashboard
+5. Open Drafts → "Montree" → GMass settings → verify still scheduled for Apr 27
+6. Clean up bounce notifications: Gmail search `from:mailer-daemon after:2026/4/10` → select all → archive
 
 **Apr 7, 2026 — Cleaned list ready, mass send scheduled for next week / weekend (Apr 11-14):**
 - Ran MX-record scrub on all 412 unsent rows from `Montree_Global_Outreach.xlsx`
@@ -72,12 +103,10 @@ Strategic decision Apr 8 (after long deliberation): **Campaign B (teacher job ap
   - `whale/docs/outreach/Letter_Teacher_Application.html` — Campaign B body, attach resume PDF
   - `whale/docs/outreach/HOW_TO_INJECT.md` — step-by-step automation playbook for next session
 - **Resume updated Apr 7**: `whale/assets/personal/Tredoux_Resume_Tight.html` — DOB removed, headshot placeholder added (swap instructions in HTML comment). Next session: convert to `Tredoux_Resume_Draft3.pdf` via Chrome print-to-PDF or `mcp__Desktop_Commander__write_pdf`, attach to Campaign B.
-- **TODO for next session:** Pick up the Montree mass send. TWO campaigns to run, not one, spaced 5-7 days apart against the same cleaned list of 346 schools:
-  - **Campaign A — Montree pitch** (the first sacred email, shortened Apr 7). Pure product pitch.
-  - **Campaign B — Teacher job application** (the SECOND sacred email, "Teacher, builder, or both"). Attach `whale/assets/personal/Tredoux_Resume_Draft2.pdf` to this one. Runs 5-7 days AFTER Campaign A so no principal gets both in the same week.
-  - Steps: (1) ask user to confirm test send of BOTH emails was done, (2) ask user to confirm GMass paid plan daily cap, (3) drive Chrome to drive.google.com, find/upload the cleaned xlsx as a Google Sheet, (4) drive Chrome to mail.google.com, open GMass compose for Campaign A, paste sacred email 1, link sheet, configure F1+F2, schedule, PAUSE at final Send for user approval, (5) schedule Campaign B 5-7 days later with the second sacred email + attached resume PDF.
-- User's instruction: "set up all of this. concrete this time. We check the system over the next week. Make sure all the improvements are bulletproof and then go ahead with mass mailing next week or over the weekend"
-- Key checks before send: (1) test send to 2-3 safe addresses for inbox placement, (2) verify GMass plan daily cap on paid account, (3) warm up inbox with normal 1:1 sends, (4) configure new campaign with throttle ON, click tracking OFF, unsubscribe ON
+- **DONE Apr 10 — Campaign order reversed.** Job application (Campaign C) sends FIRST starting Apr 10. Montree pitch (Campaign A) postponed to Apr 27 as follow-up for non-responders. See campaign details above.
+- **☠️ Apr 10 — Campaign C sent 335 BLANK EMAILS.** Chrome DOM automation of Gmail compose failed silently. Body set via DOM didn't persist to Gmail's internal state. GMass read empty body and blasted all 335 at once (throttle settings also didn't persist). ~74 bounced/blocked, ~261 received empty email. Campaign killed when user trashed draft.
+- **Apr 10 — Campaign D (correction) created.** Plain text draft via Gmail API, subject "Re: Montessori Teacher & Builder", sends as replies to thread with the original blank. Test email verified good. User configuring GMass settings (50/day, no follow-ups) and firing manually.
+- **TODO for next session:** Monitor Campaign D delivery on gmass.co/dashboard. Verify 50/day throttle is working. Check open rates, bounces. Verify dead Campaign C (50686495) has no pending follow-ups. Verify Campaign A ("Montree") draft still scheduled for Apr 27. Clean up 54+ bounce notifications from inbox (`from:mailer-daemon after:2026/4/10` → archive).
 
 **THE SACRED EMAIL** (cold email body, exact wording — DO NOT rewrite without user approval. Tightened Apr 7, 2026 — removed "looking for a change in environment" block, ~330→~155 words):
 ```
@@ -106,7 +135,24 @@ Tredoux
 montree.xyz
 ```
 
-**THE SECOND SACRED EMAIL — Teacher Job Application** (finalized Apr 7, 2026. For the same 420-school list but a different angle: positioning Tredoux as a qualified Montessori teacher who ALSO built Montree. Run 5-7 days AFTER the Montree pitch campaign, not the same day, to avoid double-hitting principals. Attach `whale/assets/personal/Tredoux_Resume_Draft2.pdf` to this campaign.):
+**THE JOB APPLICATION SACRED EMAIL** (rewritten Apr 10, 2026. Short, warm, no resume. Sends FIRST, before the Montree pitch. Saved as `whale/docs/outreach/Letter_Job_Application.html`):
+```
+Subject: Montessori Teacher & Builder
+
+Dear {SchoolName},
+
+My name is Tredoux. I'm an AMS-certified Montessori teacher for ages 3–6, and I also built Montree — the first AI-powered classroom management system designed specifically for Montessori schools.
+
+I'm looking for my next classroom. If you need a qualified teacher who can also bring your school into the future of Montessori education, I'd love to talk.
+
+Kind regards,
+Tredoux
+montree.xyz
+```
+
+**THE OLD SECOND SACRED EMAIL — "Teacher, builder, or both"** (finalized Apr 7, SUPERSEDED by the shorter version above on Apr 10. Kept for reference only — do NOT use):
+<details><summary>Click to expand old version</summary>
+
 ```
 Subject: Teacher, builder, or both
 
@@ -126,6 +172,7 @@ Kind regards,
 Tredoux
 montree.xyz
 ```
+</details>
 
 **Follow-up 1** (subject becomes `Re: Montree`):
 > I wanted to make sure my previous email found its way to you. I'd welcome the chance to show you what Montree can do for your school.
@@ -137,11 +184,169 @@ montree.xyz
 >
 > Kind regards, Tredoux / montree.xyz
 
-**To resume sending next session:** The right move is to drive Chrome to `mail.google.com`, open the GMass dashboard (extension icon or `gmass.co/dashboard`), find Campaign 50489098, and either resume it or build a fresh GMass campaign pointing at the same Google Sheet filtered to `Status != Sent`. Do NOT bypass GMass with raw `gmail_create_draft` calls — it loses open tracking, follow-up sequencing, and spreadsheet sync. Repo-side "outreach" code in `app/montree/super-admin/marketing/outreach-campaign/page.tsx` and `app/api/montree/super-admin/npo-outreach/route.ts` is UNRELATED to GMass and should not be touched for this task. The uploaded xlsx historically lives at `/sessions/blissful-peaceful-babbage/mnt/uploads/Montree_Global_Outreach.xlsx`; user may re-upload.
+**To resume / monitor next session:**
+- **Campaign C (job application)**: **DEAD.** Sent 335 blank emails on Apr 10. Draft trashed, campaign killed. Campaign ID 50686495. **Check gmass.co/dashboard that no follow-ups are pending** — if they are, cancel them immediately (they'd follow up on an empty email).
+- **Campaign D (correction)**: Should be sending (started Apr 10). Check gmass.co/dashboard for delivery stats. Verify the 50/day throttle is actually working (unlike Campaign C where it wasn't). At 50/day, done by ~Apr 17. Subject: "Re: Montessori Teacher & Builder", sends as replies threading with the original blank email.
+- **Campaign A (Montree pitch)**: Scheduled for Apr 27. Open Drafts → "Montree" to verify schedule is intact. Do NOT send early — let Campaign D's correction reach everyone first, then Campaign C's (now Campaign D's) impressions settle.
+- **Bounce cleanup**: 54+ bounce notifications from `mailer-daemon@googlemail.com` still in inbox. Search `from:mailer-daemon after:2026/4/10` → select all → archive. Gmail API tools available in Cowork are read-only + draft creation — no archive/delete/modify capability.
+- **Master spreadsheet**: `whale/Montree_Master_Outreach.xlsx` has 770 schools total (420 global + 350 China). The China list (350 schools, 213 with phone numbers, 18 with emails) is a future expansion opportunity once the global campaign results are in.
+- **🚨 NEVER automate GMass via Chrome DOM manipulation.** All GMass settings and compose body must be set by the user manually through GMass's own UI. See Session 12 post-mortem for details.
+- Repo-side "outreach" code in `app/montree/super-admin/marketing/outreach-campaign/page.tsx` and `app/api/montree/super-admin/npo-outreach/route.ts` is UNRELATED to GMass and should not be touched for this task.
 
 ---
 
-## RECENT STATUS (Apr 8, 2026)
+## RECENT STATUS (Apr 11, 2026)
+
+### ⚡ Session 13 — Complete Chinese Translation Coverage + Auto-Translate Pipeline (Apr 10-11, 2026)
+
+**One commit pushed to main: `0a82fcf4`.**
+
+**THE PROBLEM:** All 384 Whale Class works had `name_zh = null` in `montree_classroom_curriculum_works`. When generating Chinese parent reports, work names appeared in English because there was no Chinese name to display. The review API's `getChineseWorkName()` only looked at the DB and had no fallback. Additionally, new works added to the curriculum (via principal setup, photo audit, etc.) were not always getting Chinese translations.
+
+**THE FIX — 4 files changed (commit `0a82fcf4`):**
+
+1. **`app/api/montree/reports/weekly-wrap/review/route.ts`** — `getChineseWorkName()` enhanced with 6-step fallback cascade:
+   - Step 1: DB exact match (`workNameToChinese` map from `name_zh` column)
+   - Step 2: Strip " - suffix" variants → DB match
+   - Step 3: Normalize spaces (collapse whitespace) → DB match
+   - Step 4: Static glossary exact match (`MONTESSORI_GLOSSARY_ZH`)
+   - Step 5: Glossary fuzzy — base name title-cased
+   - Step 6: Glossary substring — longest glossary key contained in work name (≥4 chars)
+   - Also added `parent_description_zh` and `why_it_matters_zh` to the review API response for each work
+
+2. **`lib/montree/auto-translate.ts`** — Now also translates and saves `name_zh` alongside `parent_description_zh` and `why_it_matters_zh`:
+   - Checks `MONTESSORI_GLOSSARY_ZH` first (free, no API call)
+   - Falls back to Haiku with 3-field JSON request
+   - Backward compatible — existing callers (classroom-setup, enrich-custom-work) get the upgrade for free
+
+3. **`app/api/montree/curriculum/batch-translate/route.ts`** — NEW endpoint `POST /api/montree/curriculum/batch-translate`:
+   - Authenticated via `verifySchoolRequest()`
+   - Loads all works missing `name_zh` for a classroom
+   - Glossary first (free), then Haiku in batches of 5 with 500ms delays
+   - Also fills missing `parent_description_zh` and `why_it_matters_zh`
+   - Returns stats: `{ total, alreadyDone, translated, failed, results }`
+   - 5-minute `maxDuration` for large classrooms
+
+4. **`app/api/montree/principal/setup-stream/route.ts`** — After seeding curriculum for a new classroom, fires `batchTranslateWorksInBackground()` as fire-and-forget:
+   - Queries all works with `name_zh = null`
+   - Calls `autoTranslateToChinese()` in batches of 5 with 500ms delays
+   - Never blocks the SSE setup stream
+   - New classrooms get Chinese translations automatically
+
+**Data migration — Whale Class 384/384 works translated:**
+- Ran `scripts/batch-translate-whale.ts` (one-off TypeScript script)
+- 384 works processed: ~40 via glossary, ~344 via Haiku
+- 0 failures after salvage logic (regex extraction of `name_zh` from truncated JSON)
+- 317/384 works now also have `parent_description_zh`
+- Cost: ~$0.50 total for Haiku calls
+
+**All 7 work creation paths audited for Chinese translation coverage:**
+
+| Path | File | Has Translation? |
+|------|------|-----------------|
+| Photo audit resolve (Path B) | `photo-audit/resolve/route.ts` | ✅ via `enrichCustomWorkInBackground` → `autoTranslateToChinese` |
+| Add custom work | `guru/photo-insight/add-custom-work/route.ts` | ✅ inline Sonnet translation (lines 307-342) |
+| Classroom setup ("Teach AI") | `classroom-setup/route.ts` | ✅ calls `autoTranslateToChinese` directly |
+| Principal setup stream | `principal/setup-stream/route.ts` | ✅ NEW — `batchTranslateWorksInBackground` |
+| Principal setup (non-stream) | `principal/setup/route.ts` | ❌ — bulk seed only, no translation. Low priority: rarely used (stream version is primary) |
+| Admin reseed curriculum | `admin/reseed-curriculum/route.ts` | ❌ — admin-only recovery tool. Use batch-translate endpoint after. |
+| Admin backfill curriculum | `admin/backfill-curriculum/route.ts` | ❌ — admin-only backfill. Use batch-translate endpoint after. |
+
+The 3 admin-only paths without auto-translate are acceptable — they're recovery/maintenance tools. If used, follow up with `/api/montree/curriculum/batch-translate` to fill in Chinese names.
+
+**Other fixes in this session (prior commits):**
+- `99ceed0f` — Fix "Add Add Student" duplicate text on Students page + embedded InviteParentModal per-child (replaces broken link to Students page)
+- `682a7c2f` — Fix invite banner text to reference SVG key icon instead of emoji
+- `aaef12ae` — Chinese localization: add `parent_description_zh`, `why_it_matters_zh`, and `work_name_zh` to Weekly Wrap review API
+
+**Key files changed:**
+- `app/api/montree/reports/weekly-wrap/review/route.ts` — `getChineseWorkName()` 6-step fallback, `fuzzyLookup()` helper, `workNameToDescZh`/`workNameToWhyZh` maps
+- `lib/montree/auto-translate.ts` — glossary check + 3-field translation (name_zh + descriptions)
+- `app/api/montree/curriculum/batch-translate/route.ts` — NEW batch endpoint
+- `app/api/montree/principal/setup-stream/route.ts` — `batchTranslateWorksInBackground()` + import
+- `components/montree/reports/WeeklyWrapTab.tsx` — `ParentPhotosGrouped` now uses `work_name_zh`, `parent_description_zh`, `why_it_matters_zh` when locale is zh; `InviteParentModal` embedded per-child
+- `app/montree/dashboard/students/page.tsx` — "Add Student" button text fix
+
+**Next session priorities:**
+1. **Test Chinese report generation end-to-end** — Generate a Weekly Wrap in Chinese locale and verify ALL work names render in Chinese
+2. **Monitor Campaign D** on gmass.co/dashboard — verify 50/day throttle working, check open rates
+3. **Verify dead Campaign C** (50686495) has no pending follow-ups on gmass.co/dashboard
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+
+---
+
+### ⚡ Session 12 — Campaign C Empty Email Disaster + Correction Campaign D (Apr 10, 2026)
+
+**No code commits.** Pure outreach/campaign recovery session.
+
+**☠️ THE DISASTER — 335 BLANK EMAILS SENT:**
+Session attempted to automate the GMass Campaign C send via Chrome DOM manipulation (`mcp__Claude_in_Chrome__javascript_tool`). Three cascading failures:
+1. **Body insertion failed silently**: Gmail's Trusted Types security blocks `innerHTML` and `execCommand('insertHTML')`. Worked around with `createElement`/`appendChild` which rendered visually in the compose window but **DID NOT update Gmail's internal draft state**. GMass reads the internal state, not the visible DOM.
+2. **Speed/throttle settings failed silently**: Set "50 emails/day" via DOM checkbox/input manipulation — also didn't persist to GMass's internal state. All 335 emails sent at once instead of 50/day.
+3. **GMass send button automation**: Programmatic click on the GMass button didn't trigger GMass's extension-sandboxed event handlers. User had to click manually — but the draft was already corrupted with empty body.
+
+**Result**: 335 emails sent with subject "Montessori Teacher & Builder" and completely empty body. ~74 bounced/blocked (54 "Address not found" from mailer-daemon + ~10 "Message blocked" + ~10 blocks). ~261 school principals received a blank email from tredoux555@gmail.com.
+
+**Campaign C killed**: User trashed the draft → GMass detected draft in trash → stopped campaign. GMass notification confirmed campaign dead (Schedule ID 51331920, "Successful sends: 0, Emails remaining: 0"). Campaign ID: 50686495.
+
+**Recovery — Campaign D (correction email):**
+1. Created plain text correction draft via `gmail_create_draft` API with `isHtml: false` (HTML drafts via API show raw tags in Gmail compose — discovered this the hard way when first attempt showed `<p>` tags)
+2. Draft ID: `r3953882681879956838`, subject "Re: Montessori Teacher & Builder", To: `345-recipients-big-42c28b38@gmass.co`
+3. Body: "My apologies — it looks like my previous email was sent blank. Here's what I meant to say:" + full job application sacred email with `{SchoolName}` merge tag
+4. Test email sent to self via GMass "Send Test" button — **verified good**: body intact, plain text formatting clean, montree.xyz clickable
+5. GMass settings configured **manually by user** (lesson learned): 50/day speed, 5-10s pause between sends, Skip holidays ON, Skip weekends OFF (want Fri+Sat+Sun sends), Opens ON, Clicks OFF, Auto follow-ups OFF, Send as replies (threads with original blank email)
+6. User firing Campaign D via red GMass button at end of session
+
+**Bounce notifications**: 54+ "Delivery Status Notification (Failure)" emails from `mailer-daemon@googlemail.com` flooding inbox. All from Apr 10 between 04:13-04:22 PDT. Gmail API tools available are read-only + draft creation — no archive/delete/modify. User instructed to clean up manually: search `from:mailer-daemon after:2026/4/10` → select all → archive.
+
+**Gmail API tools inventory (for future sessions):**
+Available: `gmail_search_messages`, `gmail_read_message`, `gmail_read_thread`, `gmail_create_draft`, `gmail_list_drafts`, `gmail_list_labels`, `gmail_get_profile`. **NOT available**: no send, archive, delete, trash, modify, or label-apply tools. The `gmail_list_labels` description mentions `gmail_modify_thread` but that tool is not actually connected.
+
+**🚨 HARD RULES FOR FUTURE GMASS SESSIONS:**
+1. **NEVER automate Gmail compose via DOM manipulation** — body, subject, settings set via DOM do not persist to Gmail's internal state
+2. **NEVER programmatically click GMass buttons** — extension runs in sandboxed context, doesn't respond to DOM-dispatched events
+3. **All GMass interaction must be manual** — user opens draft, user configures GMass settings in GMass UI, user clicks GMass send button
+4. **Claude's role is limited to**: creating drafts via `gmail_create_draft` API (plain text only, `isHtml: false`), searching/reading emails, and guiding the user through manual GMass steps
+5. **Always test first** — use GMass "Send Test" button before any real campaign send
+6. **HTML drafts via Gmail API show raw tags** — always use `isHtml: false` for drafts that will be opened in Gmail compose
+
+**Still TODO:**
+- Monitor Campaign D on gmass.co/dashboard — verify 50/day throttle is working
+- Verify dead Campaign C (50686495) has no pending follow-ups
+- Verify Campaign A ("Montree" pitch) draft still scheduled for Apr 27
+- Clean up bounce notifications from inbox
+- After Campaign D completes (~Apr 17): assess open rates and replies, decide whether the correction was sufficient or if a fresh Campaign E with new subject line is needed
+
+---
+
+### ⚡ Session 11 — Outreach Campaign Reversal + China School Sweep + Job Application Draft (Apr 10, 2026)
+
+**No code commits.** This was a pure outreach/campaign session.
+
+**Master spreadsheet consolidated** — `whale/Montree_Master_Outreach.xlsx` now has 770 schools total:
+- Tab 1: "Global Outreach (420)" — 420 international schools with emails
+- Tab 2: "China Montessori (350)" — expanded from 302 to 350 (48 new unique schools added via Baidu Maps sweep of tier-2 cities: Dalian, Harbin, Changchun, Nanning, Guiyang, Haikou, Shijiazhuang, Dongguan, Foshan, Wuxi, Nanchang, Lanzhou, Taiyuan)
+- Tab 3: "Summary" — counts by city/region
+- 213 China schools have phone numbers, 18 have emails
+
+**Campaign order REVERSED:**
+- **Old plan**: Campaign A (Montree pitch) first → Campaign B (job application) 5-7 days later
+- **New plan**: Campaign C (job application) first → Campaign A (Montree pitch) ~2 weeks later as follow-up
+- Rationale: personal "hire me" email is warmer/shorter, gets principals curious. Montree pitch lands later for non-responders as the product follow-up. No resume attached (asymmetric risk).
+
+**New sacred job application email written** (Apr 10):
+- ~70 words, AMS-certified Montessori teacher angle, mentions Montree but leads with the teacher
+- Saved as `whale/docs/outreach/Letter_Job_Application.html`
+- Gmail draft created via API: draft ID `r614453887712204887`, subject "Montessori Teacher & Builder", To: `345-recipients-big-42c28b38@gmass.co`
+
+**Campaign C ready to fire** — user needs to:
+1. Open draft in Gmail, configure GMass settings (50/day, Skip weekends OFF, follow-ups)
+2. Click the red GMass button
+3. Then postpone Campaign A draft ("Montree") from Apr 13 → Apr 27
+
+**China phone outreach CANCELLED** — call center pricing ($700-2,800) similar to Upwork, not worth it. Sticking to email only.
+
+---
 
 ### ⚡ Session 10 — Photo Audit Auto-Confirm Rails + Modal Layout + Schema Fix (Apr 8, 2026)
 
@@ -516,7 +721,7 @@ Each phase runs 3 rounds of its activity. Parallel agents used where possible. E
 
 ### ⚡ PRIORITY: Full Chinese Localization + Teacher Report JSON Repair
 
-**Chinese Localization — ✅ MOSTLY WORKING (commits from this session):**
+**Chinese Localization — ✅ COMPLETE (Session 13, Apr 11, 2026):**
 Full bilingual pipeline for Weekly Wrap + Weekly Admin Docs. When UI is set to Chinese, area labels, work names, photo descriptions, parent narratives, and flag badges all display in Chinese. English when in English.
 
 **✅ SWITCHED TO SONNET + TOOL_USE (commit `760d7c4c`):**
@@ -536,7 +741,9 @@ Haiku's Chinese JSON corruption issue is permanently solved by two changes:
 4. ~~**Visual memory overwriting Chinese descriptions**~~ — ✅ FIXED. Guard: `if (locale === 'zh' && dbDescriptions.has(vmKey)) continue;`
 5. ~~**Missing Chinese descriptions for 20+ works**~~ — ✅ FIXED. Added to `parent-descriptions-zh.ts`.
 6. ~~**Classroom variant names not matching**~~ — ✅ FIXED. Fuzzy matching (strip " - suffix", normalize spaces) in 4 files.
-7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `parent_description_zh`/`why_it_matters_zh`.
+7. **Auto-translate for new "Teach the AI" descriptions** — ✅ NEW. `lib/montree/auto-translate.ts` fire-and-forgets Haiku translation to Chinese after every Sonnet description generation. Stored in `name_zh`/`parent_description_zh`/`why_it_matters_zh`. **Session 13 upgrade**: now also translates `name_zh` (glossary first, then Haiku). All 384 Whale Class works have `name_zh` populated.
+8. **Batch-translate endpoint** — ✅ NEW (Session 13). `POST /api/montree/curriculum/batch-translate` translates all works missing `name_zh` in a classroom. Glossary first, then Haiku in batches of 5.
+9. **Principal setup auto-translate** — ✅ NEW (Session 13). `principal/setup-stream/route.ts` fires `batchTranslateWorksInBackground()` after seeding curriculum. New classrooms get Chinese translations automatically.
 
 **What was FIXED (next session = session 3):**
 1. ~~**Teacher report quality**~~ — ✅ FIXED (Apr 6 session 2). Content quality was "swapped" — both prompts rewritten.
