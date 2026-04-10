@@ -3,6 +3,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import Link from 'next/link';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
@@ -941,12 +942,12 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                 ? '家长只能看到自己孩子的报告'
                 : 'Parents only see their own child\'s report'}
             </p>
-            <a
+            <Link
               href="/montree/dashboard/students"
               className="text-[11px] text-emerald-600 font-semibold hover:underline"
             >
               {locale === 'zh' ? '邀请家长 →' : 'Invite Parents →'}
-            </a>
+            </Link>
           </div>
 
           {!previewChild ? (
