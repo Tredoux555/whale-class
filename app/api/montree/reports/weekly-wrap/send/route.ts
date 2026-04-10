@@ -13,6 +13,7 @@ import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 
+export const maxDuration = 120; // sending emails to 19 parents
 
 export async function POST(request: NextRequest) {
   try {
