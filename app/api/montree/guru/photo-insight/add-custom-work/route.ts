@@ -325,6 +325,7 @@ export async function POST(request: NextRequest) {
             .from('montree_classroom_curriculum_works')
             .update({
               name_zh: name_zh.trim().slice(0, 120),
+              name_chinese: name_zh.trim().slice(0, 120), // Keep both columns in sync
               parent_description_zh: (parent_description_zh || '').trim().slice(0, 1000) || null,
               why_it_matters_zh: (why_it_matters_zh || '').trim().slice(0, 1000) || null,
             })

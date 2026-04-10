@@ -76,7 +76,10 @@ Return JSON:`,
     // Save to montree_classroom_curriculum_works
     const supabase = getSupabase();
     const updateData: Record<string, string> = {};
-    if (finalNameZh) updateData.name_zh = finalNameZh;
+    if (finalNameZh) {
+      updateData.name_zh = finalNameZh;
+      updateData.name_chinese = finalNameZh; // Keep both columns in sync
+    }
     if (parentDescZh) updateData.parent_description_zh = parentDescZh;
     if (whyItMattersZh) updateData.why_it_matters_zh = whyItMattersZh;
 
