@@ -20,9 +20,15 @@ function UnifiedLoginContent() {
   const recoveryDone = useRef(false);
 
   // On mount: if already logged in (localStorage or cookie), skip login page
+  // BUT if a code param is present (parent invite link), don't auto-redirect —
+  // let the code submission handle the correct redirect for the parent role
   useEffect(() => {
     if (recoveryDone.current) return;
     recoveryDone.current = true;
+
+    // If a code is provided (parent invite / QR link), always process it fresh
+    // Don't redirect to teacher dashboard just because a teacher session exists
+    if (qrCode) return;
 
     const sess = getSession();
     if (sess) {
@@ -36,7 +42,7 @@ function UnifiedLoginContent() {
         router.replace(redirectTo || '/montree/dashboard');
       }
     });
-  }, [router, redirectTo]);
+  }, [router, redirectTo, qrCode]);
 
   // Auto-submit if code came from QR URL param
   useEffect(() => {
