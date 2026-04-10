@@ -176,14 +176,14 @@ export default function CurriculumPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
         <div className="animate-bounce text-5xl">📚</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] via-[#FFF8E7] to-[#F5E6D3]">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
       <Toaster position="top-center" richColors />
 
       {/* Contextual Tip Bubble */}
@@ -192,11 +192,11 @@ export default function CurriculumPage() {
       )}
 
       {/* Page sub-header — main nav is in DashboardHeader */}
-      <div className="bg-[#FFFDF8] border-b border-[#E6DDD7] px-4 py-3">
+      <div className="bg-white border-b border-gray-100 px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-[#3E2723]">📚 {t('curriculum.title')}</h1>
-            <p className="text-[#A1887F] text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
+            <h1 className="text-lg font-bold text-gray-800">📚 {t('curriculum.title')}</h1>
+            <p className="text-gray-400 text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
           </div>
           <div className="flex items-center gap-2">
             <WorkSearchBar
@@ -244,10 +244,10 @@ export default function CurriculumPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {curriculum.length === 0 ? (
-          <div className="bg-[#FFFDF8] rounded-2xl p-8 text-center shadow-sm">
+          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
             <span className="text-5xl mb-4 block">📚</span>
-            <h2 className="text-xl font-bold text-[#3E2723] mb-2">{t('curriculum.noCurriculum')}</h2>
-            <p className="text-[#A1887F] mb-6">{t('curriculum.noCurriculumDesc')}</p>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('curriculum.noCurriculum')}</h2>
+            <p className="text-gray-400 mb-6">{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
               className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold
                 shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
@@ -258,24 +258,24 @@ export default function CurriculumPage() {
           <>
             {/* Import/Re-import button */}
             <div className="mb-4 flex justify-between items-center">
-              <p className="text-sm text-[#A1887F]">{t('curriculum.tapToEdit')}</p>
+              <p className="text-sm text-gray-400">{t('curriculum.tapToEdit')}</p>
               <button onClick={handleImportCurriculum} disabled={importing}
                 className="text-sm px-4 py-2 bg-amber-100 text-amber-800 rounded-xl hover:bg-amber-200 disabled:opacity-50">
                 {importing ? t('curriculum.importing') : `📥 ${t('curriculum.reimportMaster')}`}
               </button>
             </div>
-            
+
             {/* Area Cards */}
             <div data-tutorial="area-cards" className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
               {Object.entries(byArea).map(([area, works]) => (
                 <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
-                  className={`bg-[#FFFDF8] rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
+                  className={`bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
                     ${selectedArea === area ? 'ring-2 ring-emerald-500' : ''}`}>
                   <div className="mb-2">
                     <AreaBadge area={area} size="lg" />
                   </div>
-                  <p className="font-semibold text-[#3E2723] capitalize">{t(('area.' + area) as any)}</p>
-                  <p className="text-sm text-[#A1887F]">{works.length} {t('curriculum.works')}</p>
+                  <p className="font-semibold text-gray-800 capitalize">{t(('area.' + area) as any)}</p>
+                  <p className="text-sm text-gray-400">{works.length} {t('curriculum.works')}</p>
                 </button>
               ))}
             </div>

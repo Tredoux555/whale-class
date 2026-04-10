@@ -235,7 +235,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-[#FAF8F5] via-[#FFF8E7] to-[#F5E6D3]'}`}>
+    <div className={`min-h-screen ${isParent ? HOME_THEME.pageBgGradient : 'bg-gradient-to-br from-emerald-50 via-white to-teal-50'}`}>
       <Toaster position="top-center" />
 
       {/* HOME PARENT "TODAY" VIEW — concern-first dashboard */}
@@ -337,22 +337,22 @@ export default function DashboardPage() {
               <button
                 onClick={() => setShowBulkImport(true)}
                 data-tutorial="student-grid"
-                className="block w-full bg-[#FFFDF8] rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
+                className="block w-full bg-white rounded-2xl shadow-md p-10 text-center hover:shadow-lg transition-shadow animate-pulse-ring"
               >
                 <span className="text-5xl mb-3 block">📋</span>
-                <p className="text-[#3E2723] font-semibold text-lg mb-1">
+                <p className="text-gray-800 font-semibold text-lg mb-1">
                   {t('bulkImport.title')}
                 </p>
-                <p className="text-[#A1887F] text-sm">
+                <p className="text-gray-400 text-sm">
                   {t('bulkImport.subtitle')}
                 </p>
               </button>
               <Link
                 href="/montree/dashboard/students"
-                className="block bg-[#FFFDF8]/60 border-2 border-dashed border-[#D4C5B0] hover:border-amber-400 hover:bg-[#FAF5EF] rounded-2xl transition-all p-6 text-center"
+                className="block bg-white/60 border-2 border-dashed border-gray-200 hover:border-amber-400 hover:bg-gray-50 rounded-2xl transition-all p-6 text-center"
               >
-                <span className="text-2xl text-[#A1887F] mb-1 block">+</span>
-                <p className="text-[#A1887F] text-sm">
+                <span className="text-2xl text-gray-400 mb-1 block">+</span>
+                <p className="text-gray-400 text-sm">
                   {t('dashboard.tapAddFirstStudent')}
                 </p>
               </Link>
@@ -362,27 +362,27 @@ export default function DashboardPage() {
               {/* ── Search Bar ── */}
               <div className="mb-4">
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A1887F] text-sm pointer-events-none">🔍</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
                   <input
                     ref={searchInputRef}
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('nav.searchStudents') || 'Jump to student...'}
-                    className="w-full bg-[#FFFDF8] rounded-xl border border-[#D4C5B0] shadow-sm pl-10 pr-9 py-2.5 text-sm text-[#3E2723] placeholder-[#A1887F] outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all"
+                    className="w-full bg-white rounded-xl border border-gray-200 shadow-sm pl-10 pr-9 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 transition-all"
                     autoComplete="off"
                   />
                   {searchQuery && (
                     <button
                       onClick={handleSearchClear}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-[#6D5D4B] text-sm"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-sm"
                     >
                       ✕
                     </button>
                   )}
                 </div>
                 {/* Student count */}
-                <p className="text-xs text-[#A1887F] mt-1.5 ml-1">
+                <p className="text-xs text-gray-400 mt-1.5 ml-1">
                   {searchQuery
                     ? `${filteredChildren.length} of ${children.length} ${t('common.students')}`
                     : `${children.length} ${t('common.students')}`
@@ -410,7 +410,7 @@ export default function DashboardPage() {
                     href={`/montree/dashboard/${child.id}`}
                     data-tutorial="student-card"
                     {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                    className="bg-[#FFFDF8] rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all p-3 flex flex-col items-center border border-[#E6DDD7]"
+                    className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all p-3 flex flex-col items-center border border-gray-100"
                   >
                     <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
                       {child.photo_url ? (
@@ -419,7 +419,7 @@ export default function DashboardPage() {
                         child.name.charAt(0)
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-[#3E2723] truncate w-full text-center">
+                    <p className="text-xs font-semibold text-gray-800 truncate w-full text-center">
                       {child.name.split(' ')[0]}
                     </p>
                   </Link>
@@ -430,10 +430,10 @@ export default function DashboardPage() {
                   <Link
                     href="/montree/dashboard/students"
                     data-tutorial="add-student-button"
-                    className="bg-[#FFFDF8]/60 border-2 border-dashed border-[#D4C5B0] hover:border-emerald-400 hover:bg-[#FAF5EF] rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
+                    className="bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
                   >
-                    <span className="text-2xl text-[#A1887F] mb-1">+</span>
-                    <span className="text-xs text-[#A1887F]">{t('common.add')}</span>
+                    <span className="text-2xl text-gray-400 mb-1">+</span>
+                    <span className="text-xs text-gray-400">{t('common.add')}</span>
                   </Link>
                 )}
               </div>
@@ -445,21 +445,21 @@ export default function DashboardPage() {
 
                   {/* ─── 📊 Classroom Intelligence ─── */}
                   {isEnabled('intelligence_panels') && (
-                    <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <button
                         onClick={() => toggleSection('intelligence')}
-                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-[#6D5D4B] hover:bg-[#FAF5EF] transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                       >
                         <span className="flex items-center gap-2">
                           <span className="text-base">📊</span>
                           {t('dashboard.classroomIntelligence') || 'Classroom Intelligence'}
                         </span>
-                        <span className={`text-[#A1887F] transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
+                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
                           ▼
                         </span>
                       </button>
                       {sectionsOpen.intelligence && (
-                        <div className="px-4 pb-4 space-y-3 border-t border-[#E6DDD7] pt-3">
+                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                           <div id="panel-attendance"><AttendanceWidget /></div>
                           <div id="panel-stale_works"><StaleWorksPanel /></div>
                           <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
@@ -479,21 +479,21 @@ export default function DashboardPage() {
 
                   {/* ─── 🛠️ Teacher Tools ─── */}
                   {isEnabled('teacher_tools') && (
-                    <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                       <button
                         onClick={() => toggleSection('tools')}
-                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-[#6D5D4B] hover:bg-[#FAF5EF] transition-colors"
+                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
                       >
                         <span className="flex items-center gap-2">
                           <span className="text-base">🛠️</span>
                           {t('dashboard.teacherTools') || 'Teacher Tools'}
                         </span>
-                        <span className={`text-[#A1887F] transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
+                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
                           ▼
                         </span>
                       </button>
                       {sectionsOpen.tools && (
-                        <div className="px-4 pb-4 space-y-3 border-t border-[#E6DDD7] pt-3">
+                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
                           {isEnabled('weekly_admin_docs') && <WeeklyAdminCard classroomId={session.classroom.id} children={children} />}
                           {isEnabled('shelf_autopilot') && <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />}
                         </div>

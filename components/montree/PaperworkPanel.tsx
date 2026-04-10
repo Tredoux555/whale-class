@@ -165,16 +165,16 @@ export default function PaperworkPanel() {
   if (loading) {
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8E7 100%)',
+        background: 'white',
         borderRadius: 16,
-        border: '1px solid rgba(139, 69, 19, 0.08)',
+        border: '1px solid #e5e7eb',
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(139, 69, 19, 0.06)' }} className="animate-pulse" />
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: '#f0fdf4' }} className="animate-pulse" />
           <div style={{ flex: 1 }}>
-            <div style={{ height: 14, width: 120, background: 'rgba(139, 69, 19, 0.06)', borderRadius: 6 }} className="animate-pulse" />
-            <div style={{ height: 10, width: 180, background: 'rgba(139, 69, 19, 0.04)', borderRadius: 4, marginTop: 6 }} className="animate-pulse" />
+            <div style={{ height: 14, width: 120, background: '#f0fdf4', borderRadius: 6 }} className="animate-pulse" />
+            <div style={{ height: 10, width: 180, background: '#f0fdf4', borderRadius: 4, marginTop: 6 }} className="animate-pulse" />
           </div>
         </div>
       </div>
@@ -191,9 +191,9 @@ export default function PaperworkPanel() {
 
   return (
     <div style={{
-      background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8E7 100%)',
+      background: 'white',
       borderRadius: 16,
-      border: '1px solid rgba(139, 69, 19, 0.08)',
+      border: '1px solid #e5e7eb',
       overflow: 'hidden',
     }}>
       {/* ── Summary Header ── */}
@@ -210,14 +210,14 @@ export default function PaperworkPanel() {
           cursor: 'pointer',
           transition: 'background 0.2s',
         }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139, 69, 19, 0.03)')}
+        onMouseEnter={e => (e.currentTarget.style.background = '#f0fdf4')}
         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {/* Circular progress ring */}
           <div style={{ position: 'relative', width: 40, height: 40 }}>
             <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
-              <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(139, 69, 19, 0.08)" strokeWidth="3.5" />
+              <circle cx="20" cy="20" r="16" fill="none" stroke="#e5e7eb" strokeWidth="3.5" />
               <circle
                 cx="20" cy="20" r="16" fill="none"
                 stroke={progressPct >= 80 ? '#4ade80' : progressPct >= 50 ? '#fbbf24' : '#F5B7B1'}
@@ -235,7 +235,7 @@ export default function PaperworkPanel() {
               justifyContent: 'center',
               fontSize: 11,
               fontWeight: 700,
-              color: '#5D4037',
+              color: '#374151',
               fontVariantNumeric: 'tabular-nums',
             }}>
               {on_track}
@@ -243,10 +243,10 @@ export default function PaperworkPanel() {
           </div>
 
           <div style={{ textAlign: 'left' }}>
-            <div style={{ fontSize: 14, fontWeight: 600, color: '#3E2723', letterSpacing: -0.2 }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#1f2937', letterSpacing: -0.2 }}>
               {t('paperwork.title')}
             </div>
-            <div style={{ fontSize: 12, color: '#8D6E63', marginTop: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span>Week {target_week} of {max_week}</span>
               {upToDate.length === total && (
                 <span style={{
@@ -279,7 +279,7 @@ export default function PaperworkPanel() {
             </span>
           )}
           <span style={{
-            color: '#A1887F',
+            color: '#9ca3af',
             transition: 'transform 0.25s ease',
             transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
             fontSize: 12,
@@ -293,7 +293,7 @@ export default function PaperworkPanel() {
       {expanded && (
         <div style={{
           padding: '0 20px 20px',
-          borderTop: '1px solid rgba(139, 69, 19, 0.06)',
+          borderTop: '1px solid #f3f4f6',
         }}>
           {/* Target week adjuster */}
           <div style={{
@@ -302,7 +302,7 @@ export default function PaperworkPanel() {
             justifyContent: 'space-between',
             padding: '12px 0 16px',
           }}>
-            <span style={{ fontSize: 12, color: '#8D6E63', fontWeight: 500 }}>
+            <span style={{ fontSize: 12, color: '#6b7280', fontWeight: 500 }}>
               School week
             </span>
             {editingTarget ? (
@@ -318,11 +318,11 @@ export default function PaperworkPanel() {
                     textAlign: 'center',
                     fontSize: 13,
                     fontWeight: 600,
-                    border: '1.5px solid rgba(139, 69, 19, 0.2)',
+                    border: '1.5px solid #d1d5db',
                     borderRadius: 8,
                     padding: '4px 6px',
-                    background: '#FFFDF8',
-                    color: '#3E2723',
+                    background: 'white',
+                    color: '#1f2937',
                     outline: 'none',
                   }}
                   autoFocus
@@ -337,7 +337,7 @@ export default function PaperworkPanel() {
                     fontSize: 12,
                     fontWeight: 600,
                     color: 'white',
-                    background: '#5D4037',
+                    background: '#059669',
                     border: 'none',
                     borderRadius: 8,
                     padding: '4px 10px',
@@ -350,7 +350,7 @@ export default function PaperworkPanel() {
                   onClick={() => setEditingTarget(false)}
                   style={{
                     fontSize: 12,
-                    color: '#A1887F',
+                    color: '#9ca3af',
                     background: 'none',
                     border: 'none',
                     cursor: 'pointer',
@@ -369,16 +369,16 @@ export default function PaperworkPanel() {
                   gap: 6,
                   fontSize: 13,
                   fontWeight: 600,
-                  color: '#5D4037',
-                  background: 'rgba(139, 69, 19, 0.06)',
-                  border: '1px solid rgba(139, 69, 19, 0.1)',
+                  color: '#374151',
+                  background: '#f3f4f6',
+                  border: '1px solid #d1d5db',
                   borderRadius: 8,
                   padding: '4px 12px',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139, 69, 19, 0.1)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139, 69, 19, 0.06)'; }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#e5e7eb'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#f3f4f6'; }}
               >
                 Week {target_week}
                 <span style={{ fontSize: 10, color: '#A1887F' }}>Edit</span>
@@ -556,11 +556,11 @@ function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild,
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '8px 10px',
-      background: '#FFFDF8',
+      background: 'white',
       borderRadius: 10,
       border: '1px solid rgba(76, 175, 80, 0.12)',
     }}>
-      <span style={{ fontSize: 13, fontWeight: 500, color: '#3E2723', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: 8 }}>
+      <span style={{ fontSize: 13, fontWeight: 500, color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: 8 }}>
         {child.name}
       </span>
       {isEditing ? (
@@ -642,17 +642,17 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
       alignItems: 'center',
       gap: 10,
       padding: '10px 12px',
-      background: '#FFFDF8',
+      background: 'white',
       borderRadius: 10,
       border: `1px solid ${borderColor}`,
     }}>
       {/* Name + progress */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#3E2723', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {child.name}
           </span>
-          <span style={{ fontSize: 10, color: '#A1887F', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, color: '#9ca3af', whiteSpace: 'nowrap', flexShrink: 0 }}>
             {weeksToGo} week{weeksToGo !== 1 ? 's' : ''} to go
           </span>
         </div>
@@ -660,7 +660,7 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
         <div style={{
           marginTop: 6,
           height: 5,
-          background: 'rgba(139, 69, 19, 0.06)',
+          background: '#f3f4f6',
           borderRadius: 3,
           overflow: 'hidden',
         }}>
@@ -690,9 +690,9 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
             style={{
               fontSize: 12,
               fontWeight: 700,
-              color: '#5D4037',
-              background: 'rgba(139, 69, 19, 0.06)',
-              border: '1px solid rgba(139, 69, 19, 0.1)',
+              color: '#374151',
+              background: '#f3f4f6',
+              border: '1px solid #d1d5db',
               borderRadius: 8,
               padding: '3px 10px',
               cursor: 'pointer',
@@ -708,7 +708,7 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
               disabled={!!isAdvancing}
               style={{
                 fontSize: 16,
-                color: '#8D6E63',
+                color: '#6b7280',
                 background: 'none',
                 border: 'none',
                 cursor: isAdvancing ? 'default' : 'pointer',
@@ -717,8 +717,8 @@ function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWee
                 lineHeight: 1,
                 transition: 'color 0.15s',
               }}
-              onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.color = '#5D4037'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#8D6E63'; }}
+              onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.color = '#374151'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; }}
             >
               {isAdvancing ? '...' : '→'}
             </button>
@@ -750,11 +750,11 @@ function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
           textAlign: 'center',
           fontSize: 12,
           fontWeight: 600,
-          border: '1.5px solid rgba(139, 69, 19, 0.2)',
+          border: '1.5px solid #d1d5db',
           borderRadius: 8,
           padding: '3px 4px',
-          background: '#FFFDF8',
-          color: '#3E2723',
+          background: 'white',
+          color: '#1f2937',
           outline: 'none',
         }}
         autoFocus
@@ -769,7 +769,7 @@ function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
           fontSize: 11,
           fontWeight: 600,
           color: 'white',
-          background: '#5D4037',
+          background: '#059669',
           border: 'none',
           borderRadius: 6,
           padding: '3px 8px',
@@ -782,7 +782,7 @@ function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
         onClick={onCancel}
         style={{
           fontSize: 11,
-          color: '#A1887F',
+          color: '#9ca3af',
           background: 'none',
           border: 'none',
           cursor: 'pointer',

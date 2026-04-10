@@ -720,7 +720,7 @@ export default function GuruChatThread({
       </div>
 
       {/* Input area — fixed at bottom */}
-      <div className={`border-t ${isTeacher ? 'border-[#D4C5B0]' : 'border-[#0D3330]/10'} bg-[#FFFDF8] px-3 py-3`}>
+      <div className={`border-t ${isTeacher ? 'border-gray-200' : 'border-[#0D3330]/10'} bg-white px-3 py-3`}>
         {/* Image preview */}
         {pendingImage && (
           <div className="mb-2 flex items-center gap-2">
@@ -731,7 +731,7 @@ export default function GuruChatThread({
             ) : (
               <div className="relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={pendingImage.url} alt="Upload preview" className="w-16 h-16 rounded-lg object-cover border border-[#D4C5B0]" />
+                <img src={pendingImage.url} alt="Upload preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
                 <button
                   onClick={() => setPendingImage(null)}
                   className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center shadow-sm"
@@ -759,7 +759,7 @@ export default function GuruChatThread({
             onClick={() => imageInputRef.current?.click()}
             disabled={sending || !!pendingImage}
             className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 disabled:opacity-30 ${
-              isTeacher ? 'text-violet-500 hover:bg-violet-50' : 'text-[#0D3330]/60 hover:bg-[#0D3330]/5'
+              isTeacher ? 'text-violet-500 hover:bg-violet-50' : 'text-[#0D3330]/60 hover:bg-white/10'
             }`}
             title={t('guru.uploadImage') || 'Upload image'}
           >
@@ -783,8 +783,8 @@ export default function GuruChatThread({
               rows={1}
               className={`w-full px-4 py-2.5 rounded-2xl border text-sm resize-none focus:outline-none ${
                 isTeacher
-                  ? 'border-[#D4C5B0] bg-[#FFFDF8] text-[#3E2723] placeholder:text-[#3E2723]/40 focus:border-violet-300 focus:ring-1 focus:ring-violet-200'
-                  : 'border-[#0D3330]/15 bg-[#FFFDF8] text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10'
+                  ? 'border-gray-200 bg-white text-gray-800 placeholder:text-gray-800/40 focus:border-violet-300 focus:ring-1 focus:ring-violet-200'
+                  : 'border-[#0D3330]/15 bg-white text-[#0D3330] placeholder:text-[#0D3330]/40 focus:border-[#0D3330]/30 focus:ring-1 focus:ring-[#0D3330]/10'
               }`}
               style={{ maxHeight: '120px' }}
             />

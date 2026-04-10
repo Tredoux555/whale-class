@@ -230,7 +230,7 @@ function AreaPickerWithSearch({
                 value={addWorkName}
                 onChange={e => setAddWorkName(e.target.value)}
                 maxLength={255}
-                className="w-full px-3 py-2 border border-[#E6DDD7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 autoFocus
               />
             </div>
@@ -241,7 +241,7 @@ function AreaPickerWithSearch({
               <select
                 value={addWorkArea}
                 onChange={e => setAddWorkArea(e.target.value)}
-                className="w-full px-3 py-2 border border-[#E6DDD7] rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400"
               >
                 {areas.map(a => (
                   <option key={a.key} value={a.key}>{a.label}</option>
@@ -258,7 +258,7 @@ function AreaPickerWithSearch({
                 maxLength={500}
                 rows={2}
                 placeholder={t('audit.descriptionPlaceholder') || "e.g., 'Children learn to blend st sound using objects'"}
-                className="w-full px-3 py-2 border border-[#E6DDD7] rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
               <div className="text-xs text-[#A1887F] text-right mt-0.5">{addWorkDesc.length}/500</div>
             </div>
@@ -274,21 +274,21 @@ function AreaPickerWithSearch({
                 ) : previewData ? (
                   <div className="space-y-2 text-sm">
                     <div>
-                      <span className="font-medium text-[#6D5D4B]">{t('audit.previewDescription') || 'Description:'}</span>
-                      <p className="text-[#3E2723] mt-0.5">{previewData.description}</p>
+                      <span className="font-medium text-gray-600">{t('audit.previewDescription') || 'Description:'}</span>
+                      <p className="text-gray-800 mt-0.5">{previewData.description}</p>
                     </div>
                     <div>
-                      <span className="font-medium text-[#6D5D4B]">{t('audit.previewParent') || 'For parents:'}</span>
-                      <p className="text-[#3E2723] mt-0.5">{previewData.parent_description}</p>
+                      <span className="font-medium text-gray-600">{t('audit.previewParent') || 'For parents:'}</span>
+                      <p className="text-gray-800 mt-0.5">{previewData.parent_description}</p>
                     </div>
                     <div>
-                      <span className="font-medium text-[#6D5D4B]">{t('audit.previewWhyMatters') || 'Why it matters:'}</span>
-                      <p className="text-[#3E2723] mt-0.5">{previewData.why_it_matters}</p>
+                      <span className="font-medium text-gray-600">{t('audit.previewWhyMatters') || 'Why it matters:'}</span>
+                      <p className="text-gray-800 mt-0.5">{previewData.why_it_matters}</p>
                     </div>
                     {previewData.materials?.length > 0 && (
                       <div>
-                        <span className="font-medium text-[#6D5D4B]">{t('audit.previewMaterials') || 'Materials:'}</span>
-                        <p className="text-[#3E2723] mt-0.5">{previewData.materials.join(', ')}</p>
+                        <span className="font-medium text-gray-600">{t('audit.previewMaterials') || 'Materials:'}</span>
+                        <p className="text-gray-800 mt-0.5">{previewData.materials.join(', ')}</p>
                       </div>
                     )}
                   </div>
@@ -334,12 +334,12 @@ function AreaPickerWithSearch({
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={t('audit.searchWorks') || 'Search works across all areas...'}
-            className="w-full pl-9 pr-3 py-2.5 border border-[#E6DDD7] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+            className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
             autoComplete="off"
           />
           {query && (
             <button onClick={() => setQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-[#6D5D4B] text-sm">
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1887F] hover:text-gray-600 text-sm">
               ✕
             </button>
           )}
@@ -353,14 +353,14 @@ function AreaPickerWithSearch({
                 <button
                   key={`${r.areaKey}-${r.work.name}-${i}`}
                   onClick={() => onSelectWork(r.work, r.areaKey)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-[#FAF8F5] text-left transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg hover:bg-gray-50 text-left transition-colors"
                 >
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0"
                     style={{ backgroundColor: r.areaColor }}>
                     {r.areaKey[0].toUpperCase()}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-medium text-[#3E2723] truncate">{r.work.name}</div>
+                    <div className="text-sm font-medium text-gray-800 truncate">{r.work.name}</div>
                     <div className="text-xs text-[#A1887F]">{r.areaLabel}</div>
                   </div>
                 </button>
@@ -395,7 +395,7 @@ function AreaPickerWithSearch({
                 <button
                   key={a.key}
                   onClick={() => onSelectArea(a.key)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg border hover:bg-[#FAF8F5] text-left"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg border hover:bg-gray-50 text-left"
                 >
                   <span className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
                     style={{ backgroundColor: a.color }}>
@@ -1757,9 +1757,9 @@ export default function PhotoAuditPage() {
 
   // ─── JSX ───
   return (
-    <div className="min-h-screen bg-[#FAF8F5] pb-24">
+    <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#FFFDF8] border-b border-[#E6DDD7] px-4 py-3">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">{locale === 'zh' ? '每周总结' : 'Weekly Wrap'}</h1>
           {isPhotoZone && (
@@ -1782,7 +1782,7 @@ export default function PhotoAuditPage() {
               <span>🧠 {t('audit.smartLearning')}</span>
               <span>{smartLearningStats.described}/{smartLearningStats.total} ({Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%)</span>
             </div>
-            <div className="w-full bg-[#E6DDD7] rounded-full h-1.5">
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
               <div
                 className="bg-amber-500 rounded-full h-1.5 transition-all duration-500"
                 style={{ width: `${Math.round((smartLearningStats.described / smartLearningStats.total) * 100)}%` }}
@@ -1800,7 +1800,7 @@ export default function PhotoAuditPage() {
                 key={tab.key}
                 onClick={() => setZone(tab.key)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-[#F5E6D3]/40 text-[#A1887F] hover:text-[#6D5D4B]'
+                  isActive ? tab.color + ' ring-2 ring-offset-1 ring-current' : 'bg-[#F5E6D3]/40 text-[#A1887F] hover:text-gray-600'
                 }`}
               >
                 {tab.label}{tab.count !== null ? ` (${tab.count})` : ''}
@@ -1818,7 +1818,7 @@ export default function PhotoAuditPage() {
               </span>
               <button
                 onClick={() => { reclassifyCancelledRef.current = true; }}
-                className="px-2 py-0.5 rounded text-xs bg-white text-[#6D5D4B] border hover:bg-[#F5E6D3]"
+                className="px-2 py-0.5 rounded text-xs bg-white text-gray-600 border hover:bg-[#F5E6D3]"
               >
                 {t('audit.reclassifyCancel') || 'Cancel'}
               </button>
@@ -1932,13 +1932,13 @@ export default function PhotoAuditPage() {
 
       {/* Floating action bar (photo audit only) */}
       {isPhotoZone && filteredPhotos.length > 0 && !loading && (
-        <div className="fixed bottom-0 left-0 right-0 bg-[#FFFDF8] border-t border-[#E6DDD7] px-4 py-3 z-20">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3 z-20">
           {selectedIds.size === 0 ? (
             /* No selection — just Select All */
             <div className="flex items-center justify-center">
               <button
                 onClick={selectAllVisible}
-                className="px-4 py-1.5 text-sm rounded border text-[#6D5D4B]"
+                className="px-4 py-1.5 text-sm rounded border text-gray-600"
               >
                 {t('audit.selectAll')} ({filteredPhotos.length})
               </button>
@@ -1969,7 +1969,7 @@ export default function PhotoAuditPage() {
               {haikusRunning && (
                 <button
                   onClick={() => { haikuCancelledRef.current = true; }}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-[#D4C5B0] text-[#6D5D4B]"
+                  className="px-3 py-1.5 text-sm rounded-lg border border-[#D4C5B0] text-gray-600"
                 >
                   Cancel
                 </button>
@@ -2008,7 +2008,7 @@ export default function PhotoAuditPage() {
           <div className="fixed top-3 left-3 z-[60]">
             <button
               onClick={() => setPickerArea('')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg text-sm font-medium text-[#3E2723] hover:bg-[#FAF8F5] active:bg-[#E6DDD7] transition-colors border border-[#E6DDD7]"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg text-sm font-medium text-gray-800 hover:bg-gray-50 active:bg-gray-200 transition-colors border border-gray-200"
             >
               <span>←</span>
               <span>{t('audit.changeArea')}</span>
@@ -2106,7 +2106,7 @@ export default function PhotoAuditPage() {
               </button>
               <button
                 onClick={handleUseFullPhoto}
-                className="w-full py-3 rounded-lg border border-[#D4C5B0] text-[#3E2723] font-medium text-sm"
+                className="w-full py-3 rounded-lg border border-[#D4C5B0] text-gray-800 font-medium text-sm"
               >
                 🖼️ {t('audit.useFullPhoto')}
               </button>
@@ -2139,7 +2139,7 @@ export default function PhotoAuditPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
           <div className="bg-white rounded-xl p-6 flex flex-col items-center gap-3">
             <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full" />
-            <p className="text-sm text-[#6D5D4B]">{t('audit.uploadingCrop')}</p>
+            <p className="text-sm text-gray-600">{t('audit.uploadingCrop')}</p>
           </div>
         </div>
       )}
@@ -2167,7 +2167,7 @@ export default function PhotoAuditPage() {
                     key={child.id}
                     onClick={() => handleToggleChild(child.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-                      checked ? 'bg-emerald-50 border border-emerald-200' : 'bg-[#FAF8F5] border border-transparent hover:bg-[#E6DDD7]'
+                      checked ? 'bg-emerald-50 border border-emerald-200' : 'bg-gray-50 border border-transparent hover:bg-gray-200'
                     }`}
                   >
                     <span className={`w-5 h-5 rounded border-2 flex items-center justify-center text-xs ${
@@ -2195,7 +2195,7 @@ export default function PhotoAuditPage() {
               </button>
               <button
                 onClick={() => setTaggingPhoto(null)}
-                className="flex-1 py-2.5 rounded-lg border text-[#6D5D4B] font-medium text-sm"
+                className="flex-1 py-2.5 rounded-lg border text-gray-600 font-medium text-sm"
               >
                 {t('common.cancel')}
               </button>
@@ -2232,20 +2232,20 @@ export default function PhotoAuditPage() {
               <div className="space-y-3">
                 <div>
                   <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.visualDescription')}</label>
-                  <p className="text-sm mt-0.5 bg-[#FAF8F5] rounded p-2">{describeResult.visual_description}</p>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.visual_description}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.parentDescription')}</label>
-                  <p className="text-sm mt-0.5 bg-[#FAF8F5] rounded p-2">{describeResult.parent_description}</p>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.parent_description}</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.whyItMatters')}</label>
-                  <p className="text-sm mt-0.5 bg-[#FAF8F5] rounded p-2">{describeResult.why_it_matters}</p>
+                  <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.why_it_matters}</p>
                 </div>
                 {describeResult.key_materials.length > 0 && (
                   <div>
                     <label className="text-xs font-medium text-[#A1887F] uppercase">{t('audit.keyMaterials')}</label>
-                    <p className="text-sm mt-0.5 bg-[#FAF8F5] rounded p-2">{describeResult.key_materials.join(', ')}</p>
+                    <p className="text-sm mt-0.5 bg-gray-50 rounded p-2">{describeResult.key_materials.join(', ')}</p>
                   </div>
                 )}
 
@@ -2259,7 +2259,7 @@ export default function PhotoAuditPage() {
                   </button>
                   <button
                     onClick={handleCancelReference}
-                    className="flex-1 py-2 rounded-lg border text-[#6D5D4B] font-medium text-sm"
+                    className="flex-1 py-2 rounded-lg border text-gray-600 font-medium text-sm"
                   >
                     {t('common.cancel')}
                   </button>
@@ -2338,7 +2338,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   return (
     <div className={`relative rounded-lg overflow-hidden border-2 ${
       selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''
-    } ${zoneColors[photo.zone] || 'border-[#E6DDD7]'}`}>
+    } ${zoneColors[photo.zone] || 'border-gray-200'}`}>
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
@@ -2359,7 +2359,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       )}
 
       {/* Photo — tap to view full size */}
-      <div className="aspect-square bg-[#E6DDD7] cursor-pointer" onClick={onPhotoTap}>
+      <div className="aspect-square bg-gray-200 cursor-pointer" onClick={onPhotoTap}>
         {photo.url ? (
           <img
             src={photo.url}
@@ -2566,7 +2566,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             <button
               onClick={onCorrect}
               disabled={processing}
-              className="flex-1 text-[10px] py-1.5 rounded bg-[#E6DDD7] text-[#6D5D4B] font-medium disabled:opacity-50"
+              className="flex-1 text-[10px] py-1.5 rounded bg-gray-200 text-gray-600 font-medium disabled:opacity-50"
             >
               ✏️ {t('audit.fix')}
             </button>
@@ -2597,7 +2597,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
             value={noteText}
             onChange={e => handleNoteChange(e.target.value)}
             placeholder={t('audit.addNote')}
-            className="w-full text-[10px] p-1.5 rounded border border-[#E6DDD7] bg-[#FAF8F5] resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
+            className="w-full text-[10px] p-1.5 rounded border border-gray-200 bg-gray-50 resize-none focus:outline-none focus:ring-1 focus:ring-blue-400 focus:border-blue-400 placeholder:text-gray-300"
             rows={2}
           />
           {noteSaving && <span className="absolute top-0.5 right-1 text-[8px] text-[#A1887F]">{t('audit.saving')}</span>}
