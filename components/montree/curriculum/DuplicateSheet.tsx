@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { toast } from 'sonner';
+import { useI18n } from '@/lib/montree/i18n';
 import type { WorkCandidate, DuplicateGroup } from '@/lib/montree/curriculum/duplicate-detection';
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function DuplicateSheet({ open, onClose, onConsolidated }: Props) {
+  const { locale } = useI18n();
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<DuplicateGroup[]>([]);
   const [totalWorks, setTotalWorks] = useState(0);
@@ -240,7 +242,7 @@ export default function DuplicateSheet({ open, onClose, onConsolidated }: Props)
                             />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-800 text-sm truncate">{work.name}</span>
+                                <span className="font-medium text-gray-800 text-sm truncate">{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</span>
                                 {isSelected && !isMerged && (
                                   <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">KEEP</span>
                                 )}

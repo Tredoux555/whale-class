@@ -48,7 +48,7 @@ export default function WorkWheelPicker({
   onAddExtra,
   onWorkAdded,
 }: WorkWheelPickerProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const wheelRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -355,7 +355,7 @@ export default function WorkWheelPicker({
                       <div className="w-2 h-2 rounded-full bg-white/20" />
                     )}
                   </div>
-                  <span className="flex-1 text-white text-sm font-medium truncate">{w.name}</span>
+                  <span className="flex-1 text-white text-sm font-medium truncate">{locale === 'zh' && w.name_chinese ? w.name_chinese : w.name}</span>
                   {w.area_name && (
                     <span
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wide"
@@ -428,7 +428,7 @@ export default function WorkWheelPicker({
                       ? 'text-white font-semibold text-[15px]'
                       : 'text-white/80 font-normal text-sm'
                   }`}>
-                    {work.name}
+                    {locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}
                   </p>
 
                   {/* Status label for selected */}
@@ -534,7 +534,7 @@ export default function WorkWheelPicker({
                               isSel ? 'bg-white/12 border border-white/20' : 'border border-transparent hover:bg-white/6'
                             }`}
                           >
-                            <span className="flex-1 text-white/90 text-sm font-medium truncate">{work.name}</span>
+                            <span className="flex-1 text-white/90 text-sm font-medium truncate">{locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}</span>
                             {isSel && (
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" className="shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
                             )}
@@ -582,7 +582,7 @@ export default function WorkWheelPicker({
             {/* Selected work name */}
             {selectedWork && (
               <p className="text-center text-white/40 text-xs tracking-wide">
-                {selectedWork.name}
+                {locale === 'zh' && selectedWork.name_chinese ? selectedWork.name_chinese : selectedWork.name}
               </p>
             )}
 

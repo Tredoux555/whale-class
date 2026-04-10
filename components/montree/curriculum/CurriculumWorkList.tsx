@@ -167,7 +167,7 @@ function ExpandedWorkDetails({
   onOpenFullDetails?: (workName: string, chineseName?: string) => void;
   onWorkUpdated?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [uploading, setUploading] = useState(false);
   const [currentPhotoUrl, setCurrentPhotoUrl] = useState(work.photo_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -327,7 +327,7 @@ function ExpandedWorkDetails({
       {work.parent_description && (
         <div className="bg-emerald-50 p-3 rounded-lg">
           <p className="font-semibold text-emerald-700 text-xs mb-1">👨‍👩‍👧 {t('curriculum.forParents')}</p>
-          <p className="text-sm text-emerald-800">{work.parent_description}</p>
+          <p className="text-sm text-emerald-800">{locale === 'zh' && work.parent_description_zh ? work.parent_description_zh : work.parent_description}</p>
         </div>
       )}
 
@@ -381,7 +381,7 @@ function ExpandedWorkDetails({
       {work.why_it_matters && (
         <div className="bg-blue-50 p-3 rounded-lg">
           <p className="font-semibold text-blue-700 text-xs mb-1">💡 {t('curriculum.whyItMatters')}</p>
-          <p className="text-sm text-blue-800">{work.why_it_matters}</p>
+          <p className="text-sm text-blue-800">{locale === 'zh' && work.why_it_matters_zh ? work.why_it_matters_zh : work.why_it_matters}</p>
         </div>
       )}
 

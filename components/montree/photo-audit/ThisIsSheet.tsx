@@ -21,6 +21,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useClassroomWorks, ClassroomWork } from '@/lib/montree/hooks/useClassroomWorks';
+import { useI18n } from '@/lib/montree/i18n';
 
 const AREAS: Array<{ key: string; label: string; color: string }> = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -68,6 +69,7 @@ export default function ThisIsSheet({
   photo,
   classroomId,
 }: Props) {
+  const { locale } = useI18n();
   const [query, setQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [addMode, setAddMode] = useState(false); // user tapped "add as new work"
@@ -132,14 +134,18 @@ export default function ThisIsSheet({
   // there's no work_id, so we skip the chip in that case).
   const aiGuess = useMemo<null | {
     work_name: string;
+    work_name_chinese?: string;
     work_id?: string;
     area_key: string;
     source: 'attached' | 'match';
   }>(() => {
     if (!photo) return null;
     if (photo.current_work_id && photo.current_work_name) {
+      // Try to find Chinese name from loaded works
+      const resolved = works.find(w => w.id === photo.current_work_id);
       return {
         work_name: photo.current_work_name,
+        work_name_chinese: resolved?.name_chinese || undefined,
         work_id: photo.current_work_id,
         area_key: photo.current_area || photo.sonnet_draft?.suggested_area || 'other',
         source: 'attached',
@@ -163,6 +169,7 @@ export default function ThisIsSheet({
       if (resolved) {
         return {
           work_name: resolved.name,
+          work_name_chinese: resolved.name_chinese || undefined,
           work_id: resolved.id,
           area_key: resolved.area_key,
           source: 'match',
@@ -391,7 +398,7 @@ export default function ThisIsSheet({
                       AI thinks
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 600, color: '#222' }}>
-                      {aiGuess.work_name}
+                      {locale === 'zh' && aiGuess.work_name_chinese ? aiGuess.work_name_chinese : aiGuess.work_name}
                     </div>
                   </div>
                   <div
@@ -492,7 +499,7 @@ export default function ThisIsSheet({
                       }}
                     >
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 15, color: '#222' }}>{w.name}</div>
+                        <div style={{ fontSize: 15, color: '#222' }}>{locale === 'zh' && w.name_chinese ? w.name_chinese : w.name}</div>
                       </div>
                       <div
                         style={{

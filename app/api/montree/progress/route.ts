@@ -176,8 +176,38 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // --- FETCH DB CHINESE NAMES (classroom-specific, covers custom works) ---
+  // Build a name→chinese map from the classroom curriculum for works that
+  // the static JSON doesn't cover (custom works, works added after static export).
+  const dbChineseMap = new Map<string, string>();
+  try {
+    // Get child's classroom_id
+    const { data: childData } = await supabase
+      .from('montree_children')
+      .select('classroom_id')
+      .eq('id', childId)
+      .maybeSingle();
+
+    if (childData?.classroom_id) {
+      const { data: currWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, name_chinese')
+        .eq('classroom_id', childData.classroom_id)
+        .not('name_chinese', 'is', null);
+
+      for (const w of currWorks || []) {
+        if (w.name_chinese) {
+          dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+        }
+      }
+    }
+  } catch {
+    // Non-fatal — static enrichment will still work
+  }
+
   // --- ADD FLAGS AND ENRICH ONCE ---
   // Combine flags and enrich in a single pass
+  // First: static JSON enrichment (270/329 works covered)
   const progressWithFlagsAndChineseNames = enrichWithChineseNames(
     progress.map(p => {
       const area = p.area || 'other';
@@ -186,7 +216,14 @@ export async function GET(request: NextRequest) {
       const isExtra = extrasSet.has(p.work_name?.toLowerCase());
       return { ...p, is_focus: isFocus, is_extra: isExtra };
     })
-  );
+  ).map(p => {
+    // Second pass: DB Chinese names as fallback for works not in static JSON
+    if (!p.chineseName && p.work_name) {
+      const dbName = dbChineseMap.get(p.work_name.toLowerCase().trim());
+      if (dbName) return { ...p, chineseName: dbName };
+    }
+    return p;
+  });
 
   // --- GROUP BY AREA from enriched progress ---
   const enrichedByArea: Record<string, any[]> = {};

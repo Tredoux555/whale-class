@@ -5,6 +5,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 // ============================================
 // TYPES
@@ -13,6 +14,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 export interface SpinnerWork {
   id: string;
   name: string;
+  name_chinese?: string;
   status?: 'not_started' | 'presented' | 'practicing' | 'mastered';
 }
 
@@ -49,6 +51,7 @@ export default function AreaSpinnerWheel({
   currentWorkId,
   onSelect,
 }: AreaSpinnerWheelProps) {
+  const { locale } = useI18n();
   // Find initial index
   const initialIndex = currentWorkId 
     ? works.findIndex(w => w.id === currentWorkId)
@@ -237,7 +240,7 @@ export default function AreaSpinnerWheel({
                     }}
                   >
                     <span className="text-lg text-gray-800 truncate max-w-[280px]">
-                      {work.name}
+                      {locale === 'zh' && work.name_chinese ? work.name_chinese : work.name}
                     </span>
                     {work.status && (
                       <span className="ml-2 text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">

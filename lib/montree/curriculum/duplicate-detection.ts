@@ -5,6 +5,7 @@
 export interface WorkCandidate {
   id: string;
   name: string;
+  name_chinese?: string;
   area_id: string | null;
   is_custom: boolean;
   source: string | null;
