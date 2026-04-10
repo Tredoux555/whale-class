@@ -1,5 +1,5 @@
 // app/api/montree/intelligence/paperwork/route.ts
-// Paperwork week tracker — GET returns all children with their current week, POST advances a child's week
+// Paperwork week tracker — GET returns all children with their current week, POST advances/sets weeks
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
 
     const supabase = getSupabase();
+
+    // Fetch children
     const { data: children, error } = await supabase
       .from('montree_children')
       .select('id, name, photo_url, paperwork_current_week')
@@ -26,12 +28,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Failed to fetch paperwork data' }, { status: 500 });
     }
 
-    // Calculate target week from school year start (Aug 18, 2025 → week 1)
-    // Each calendar week = 1 paperwork week
-    const schoolYearStart = new Date(2025, 7, 18); // Aug 18, 2025 (month is 0-indexed)
-    const now = new Date();
-    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const targetWeek = Math.min(MAX_WEEK, Math.max(1, Math.floor((now.getTime() - schoolYearStart.getTime()) / msPerWeek) + 1));
+    // Check for teacher-set target week override on the classroom
+    let targetWeek: number;
+    const { data: classroom } = await supabase
+      .from('montree_classrooms')
+      .select('paperwork_target_week')
+      .eq('id', auth.classroomId)
+      .maybeSingle();
+
+    if (classroom?.paperwork_target_week && classroom.paperwork_target_week >= 1 && classroom.paperwork_target_week <= MAX_WEEK) {
+      // Teacher has set the target week manually — use it
+      targetWeek = classroom.paperwork_target_week;
+    } else {
+      // Auto-calculate from school year start (Aug 18, 2025 → week 1)
+      const schoolYearStart = new Date(2025, 7, 18); // Aug 18, 2025 (month is 0-indexed)
+      const now = new Date();
+      const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      targetWeek = Math.min(MAX_WEEK, Math.max(1, Math.floor((now.getTime() - schoolYearStart.getTime()) / msPerWeek) + 1));
+    }
 
     const enriched = (children || []).map(child => {
       const week = child.paperwork_current_week || 1;
@@ -65,8 +79,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST: Update a child's paperwork week
-// Body: { child_id: string, action: 'advance' | 'set', week?: number }
+// POST: Update a child's paperwork week, or set the classroom target week
+// Body: { child_id?: string, action: 'advance' | 'set' | 'set_target', week?: number }
 export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -75,11 +89,28 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { child_id, action, week } = body;
 
+    const supabase = getSupabase();
+
+    // ── Set target week for the classroom ──
+    if (action === 'set_target' && typeof week === 'number') {
+      const newTarget = Math.max(1, Math.min(MAX_WEEK, week));
+      const { error: updateErr } = await supabase
+        .from('montree_classrooms')
+        .update({ paperwork_target_week: newTarget })
+        .eq('id', auth.classroomId);
+
+      if (updateErr) {
+        console.error('[Paperwork] Set target error:', updateErr);
+        return NextResponse.json({ success: false, error: 'Failed to update target week' }, { status: 500 });
+      }
+
+      return NextResponse.json({ success: true, target_week: newTarget });
+    }
+
+    // ── Update a child's week ──
     if (!child_id) {
       return NextResponse.json({ success: false, error: 'child_id is required' }, { status: 400 });
     }
-
-    const supabase = getSupabase();
 
     // Verify child belongs to this classroom
     const { data: child, error: childErr } = await supabase

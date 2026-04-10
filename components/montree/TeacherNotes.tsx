@@ -352,13 +352,13 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] overflow-hidden">
       {/* Header — prominent, always visible */}
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+      <div className="px-4 py-3 border-b border-[#E6DDD7] flex items-center gap-2">
         <span className="text-lg">📝</span>
-        <span className="font-semibold text-gray-800 text-sm">{t('teacherNotes.title')}</span>
+        <span className="font-semibold text-[#3E2723] text-sm">{t('teacherNotes.title')}</span>
         {notes.length > 0 && (
-          <span className="bg-emerald-100 text-emerald-700 text-xs px-2 py-0.5 rounded-full font-medium">
+          <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded-full font-medium">
             {notes.length}
           </span>
         )}
@@ -372,8 +372,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               onClick={() => setSelectedChildId(null)}
               className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                 selectedChildId === null
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-[#FAF5EF] text-[#A1887F] hover:bg-[#F5E6D3]'
               }`}
             >
               📋 {t('teacherNotes.classNote')}
@@ -384,8 +384,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                 onClick={() => setSelectedChildId(child.id)}
                 className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                   selectedChildId === child.id
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-[#FAF5EF] text-[#A1887F] hover:bg-[#F5E6D3]'
                 }`}
               >
                 {child.name}
@@ -403,7 +403,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
               ? t('teacherNotes.childNotePlaceholder', { name: children.find(c => c.id === selectedChildId)?.name || '' })
               : t('teacherNotes.placeholder')
             }
-            className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-gray-200 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:border-emerald-400 focus:outline-none resize-y"
+            className="flex-1 h-10 min-h-[40px] max-h-24 p-2.5 border border-[#D4C5B0] rounded-lg text-sm text-[#3E2723] placeholder-[#A1887F] focus:border-amber-400 focus:outline-none resize-y"
             maxLength={5000}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -424,7 +424,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           ) : (
             <button
               onClick={startRecording}
-              className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors flex-shrink-0"
+              className="px-3 py-2 bg-[#FAF5EF] text-[#6D5D4B] rounded-lg text-xs font-medium hover:bg-[#F5E6D3] transition-colors flex-shrink-0"
               title={t('teacherNotes.recordVoice')}
             >
               🎙️
@@ -435,7 +435,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
           <button
             onClick={handleSave}
             disabled={!content.trim() || saving}
-            className="px-3 py-2 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+            className="px-3 py-2 bg-[#5D4037] text-white rounded-lg text-xs font-medium hover:bg-[#4D2C27] disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors flex-shrink-0"
           >
             {saving ? '...' : t('teacherNotes.save')}
           </button>
@@ -443,34 +443,34 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
 
         {/* Notes list */}
         {loading ? (
-          <div className="text-center py-2 text-gray-400 text-sm">...</div>
+          <div className="text-center py-2 text-[#A1887F] text-sm">...</div>
         ) : notes.length === 0 ? (
-          <p className="text-center py-2 text-gray-400 text-xs">{t('teacherNotes.empty')}</p>
+          <p className="text-center py-2 text-[#A1887F] text-xs">{t('teacherNotes.empty')}</p>
         ) : (
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {notes.map((note) => (
-              <div key={note.id} className="bg-gray-50 rounded-lg p-3 group">
+              <div key={note.id} className="bg-[#FAF5EF] rounded-lg p-3 group">
                 {editingNoteId === note.id ? (
                   /* Edit mode */
                   <div className="space-y-2">
                     <textarea
                       value={editContent}
                       onChange={(e) => setEditContent(e.target.value)}
-                      className="w-full p-2.5 border border-emerald-300 rounded-lg text-sm text-gray-800 focus:border-emerald-400 focus:outline-none resize-y min-h-[60px]"
+                      className="w-full p-2.5 border border-amber-300 rounded-lg text-sm text-[#3E2723] focus:border-amber-400 focus:outline-none resize-y min-h-[60px]"
                       maxLength={5000}
                       autoFocus
                     />
                     <div className="flex items-center gap-2 justify-end">
                       <button
                         onClick={handleCancelEdit}
-                        className="px-3 py-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+                        className="px-3 py-1 text-xs text-[#A1887F] hover:text-[#3E2723] transition-colors"
                       >
                         {t('common.cancel')}
                       </button>
                       <button
                         onClick={handleSaveEdit}
                         disabled={!editContent.trim() || editSaving}
-                        className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-medium hover:bg-emerald-600 disabled:bg-emerald-300 disabled:cursor-not-allowed transition-colors"
+                        className="px-3 py-1 bg-[#5D4037] text-white rounded-lg text-xs font-medium hover:bg-[#4D2C27] disabled:bg-[#A1887F] disabled:cursor-not-allowed transition-colors"
                       >
                         {editSaving ? '...' : t('common.save')}
                       </button>
@@ -480,19 +480,19 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                   /* View mode */
                   <>
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-gray-800 whitespace-pre-wrap flex-1">{note.content}</p>
+                      <p className="text-sm text-[#3E2723] whitespace-pre-wrap flex-1">{note.content}</p>
                       {note.teacher_id === teacherId && (
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                           <button
                             onClick={() => handleStartEdit(note)}
-                            className="text-gray-400 hover:text-emerald-500 text-xs p-1"
+                            className="text-[#A1887F] hover:text-amber-600 text-xs p-1"
                             title={t('common.edit')}
                           >
                             ✏️
                           </button>
                           <button
                             onClick={() => handleDelete(note.id)}
-                            className="text-gray-400 hover:text-red-400 text-xs p-1"
+                            className="text-[#A1887F] hover:text-red-400 text-xs p-1"
                             title={t('common.delete')}
                           >
                             ✕
@@ -500,8 +500,8 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                         </div>
                       )}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-2 text-xs text-gray-400 flex-wrap">
-                      <span className="font-medium text-gray-500">{note.teacher_name}</span>
+                    <div className="mt-1.5 flex items-center gap-2 text-xs text-[#A1887F] flex-wrap">
+                      <span className="font-medium text-[#6D5D4B]">{note.teacher_name}</span>
                       <span>·</span>
                       <span>{formatTime(note.created_at)}</span>
                       {note.child_name ? (
@@ -514,7 +514,7 @@ export default function TeacherNotes({ classroomId, teacherId, teacherName, chil
                       ) : (
                         <>
                           <span>·</span>
-                          <span className="bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-medium">
+                          <span className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
                             📋 {t('teacherNotes.classNote')}
                           </span>
                         </>

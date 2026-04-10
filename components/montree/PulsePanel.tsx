@@ -138,9 +138,9 @@ export default function PulsePanel() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3 animate-pulse">
-        <div className="h-5 bg-gray-100 rounded w-36 mb-2" />
-        <div className="h-8 bg-gray-50 rounded w-full" />
+      <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] p-3 animate-pulse">
+        <div className="h-5 bg-[#FAF5EF] rounded w-36 mb-2" />
+        <div className="h-8 bg-[#FAF5EF] rounded w-full" />
       </div>
     );
   }
@@ -159,21 +159,21 @@ export default function PulsePanel() {
   const childrenWithStaleWorks = children.filter(c => c.stale_works > 0);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div className="bg-[#FFFDF8] rounded-2xl shadow-sm border border-[#E6DDD7] overflow-hidden">
       {/* Summary bar — always visible */}
       <button
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
         aria-label={t('pulse.title')}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#FAF5EF] transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-lg">💡</span>
           <div className="text-left">
-            <div className="text-sm font-semibold text-gray-700">
+            <div className="text-sm font-semibold text-[#3E2723]">
               {t('pulse.title')}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-[#A1887F]">
               {lastCompleted
                 ? t('pulse.lastGenerated').replace('{time}', formatTimeAgo(lastCompleted, t))
                 : t('pulse.neverGenerated')
@@ -184,11 +184,11 @@ export default function PulsePanel() {
 
         <div className="flex items-center gap-2">
           {hasData && (
-            <span className="text-xs font-bold px-2 py-1 rounded-full bg-violet-100 text-violet-700">
+            <span className="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-800">
               {children.length} {children.length === 1 ? t('pulse.child') : t('pulse.children')}
             </span>
           )}
-          <span className={`text-gray-400 transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
+          <span className={`text-[#A1887F] transition-transform duration-200 text-xs ${expanded ? 'rotate-180' : ''}`}>
             ▼
           </span>
         </div>
@@ -196,12 +196,12 @@ export default function PulsePanel() {
 
       {/* Expanded detail */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-[#E6DDD7] pt-3 space-y-3">
           {/* Generate button */}
           <button
             onClick={handleGenerate}
             disabled={generating || isInProgress}
-            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-violet-500 hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-[#5D4037] hover:bg-[#4E342E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {generating
               ? t('pulse.generating')
@@ -216,8 +216,8 @@ export default function PulsePanel() {
           {/* Generating progress indicator */}
           {generating && (
             <div className="flex items-center justify-center gap-2 py-2">
-              <div className="w-4 h-4 border-2 border-violet-300 border-t-violet-600 rounded-full animate-spin" />
-              <span className="text-xs text-gray-500">{t('pulse.analyzingChildren')}</span>
+              <div className="w-4 h-4 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+              <span className="text-xs text-[#A1887F]">{t('pulse.analyzingChildren')}</span>
             </div>
           )}
 
@@ -226,13 +226,13 @@ export default function PulsePanel() {
             <>
               {/* Stats row */}
               <div className="flex gap-2">
-                <div className="flex-1 bg-emerald-50 rounded-lg px-3 py-2 text-center">
+                <div className="flex-1 bg-[#E8F5E9] rounded-lg px-3 py-2 text-center">
                   <div className="text-lg font-bold text-emerald-700">{totalMastered}</div>
                   <div className="text-[10px] text-emerald-600 font-medium">{t('pulse.mastered')}</div>
                 </div>
-                <div className="flex-1 bg-blue-50 rounded-lg px-3 py-2 text-center">
-                  <div className="text-lg font-bold text-blue-700">{totalPracticing}</div>
-                  <div className="text-[10px] text-blue-600 font-medium">{t('pulse.practicing')}</div>
+                <div className="flex-1 bg-[#FFF8E7] rounded-lg px-3 py-2 text-center">
+                  <div className="text-lg font-bold text-amber-700">{totalPracticing}</div>
+                  <div className="text-[10px] text-amber-600 font-medium">{t('pulse.practicing')}</div>
                 </div>
                 {totalStaleWorks > 0 && (
                   <div className="flex-1 bg-amber-50 rounded-lg px-3 py-2 text-center">
@@ -259,15 +259,15 @@ export default function PulsePanel() {
               {/* Per-child cards */}
               <div className="space-y-1.5">
                 {children.map(child => (
-                  <div key={child.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                  <div key={child.id} className="flex items-center justify-between bg-[#FAF5EF] rounded-lg px-3 py-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-violet-200 flex items-center justify-center text-xs font-bold text-violet-700 flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-amber-200 flex items-center justify-center text-xs font-bold text-amber-800 flex-shrink-0">
                         {child.name.charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-sm text-gray-700 font-medium truncate">{child.name.split(' ')[0]}</div>
+                        <div className="text-sm text-[#3E2723] font-medium truncate">{child.name.split(' ')[0]}</div>
                         {child.recent_work && (
-                          <div className="text-[10px] text-gray-400 truncate">{child.recent_work}</div>
+                          <div className="text-[10px] text-[#A1887F] truncate">{child.recent_work}</div>
                         )}
                       </div>
                     </div>
@@ -288,7 +288,7 @@ export default function PulsePanel() {
                         </span>
                       )}
                       {child.total_photos > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#FAF5EF] text-[#A1887F] font-medium">
                           📸{child.total_photos}
                         </span>
                       )}

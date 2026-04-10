@@ -12,6 +12,7 @@ interface ChatBubbleProps {
   imageUrl?: string;
   thinking?: string;       // Extended thinking text from AI
   isThinkingLive?: boolean; // true while thinking is still streaming in
+  isTeacher?: boolean;      // true for teacher theme (warm earth tones), false for parent theme (botanical green)
 }
 
 function formatRelativeTime(dateStr: string, t: (key: string, params?: Record<string, string | number>) => string): string {
@@ -74,13 +75,40 @@ function renderInlineBold(text: string) {
   });
 }
 
-function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinkingLive }: ChatBubbleProps) {
+function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinkingLive, isTeacher = false }: ChatBubbleProps) {
   const { t } = useI18n();
   const [imgError, setImgError] = useState(false);
   const [thinkingExpanded, setThinkingExpanded] = useState(false);
   const thinkingRef = useRef<HTMLDivElement>(null);
 
   const showThinking = thinking && thinking.trim().length > 0;
+
+  // Thinking block colors based on theme
+  const thinkingColors = isTeacher
+    ? {
+        liveGradient: 'bg-gradient-to-br from-amber-50 to-orange-50',
+        liveBorder: 'border-amber-200/50',
+        liveDot: 'bg-amber-500',
+        liveText: 'text-amber-600',
+        liveContent: 'text-amber-900/70',
+        liveCursor: 'bg-amber-400/60',
+        collapsedButton: 'text-amber-500/70 hover:text-amber-600',
+        collapsedBg: 'bg-amber-50/50',
+        collapsedBorder: 'border-amber-200/30',
+        collapsedText: 'text-amber-900/50',
+      }
+    : {
+        liveGradient: 'bg-gradient-to-br from-[#0D3330]/10 to-[#164340]/10',
+        liveBorder: 'border-[#0D3330]/10',
+        liveDot: 'bg-[#0D3330]',
+        liveText: 'text-[#0D3330]/70',
+        liveContent: 'text-[#0D3330]/70',
+        liveCursor: 'bg-[#0D3330]/60',
+        collapsedButton: 'text-[#0D3330]/50 hover:text-[#0D3330]',
+        collapsedBg: 'bg-[#0D3330]/5',
+        collapsedBorder: 'border-[#0D3330]/10',
+        collapsedText: 'text-[#0D3330]/50',
+      };
 
   // Auto-scroll thinking block as it streams
   useEffect(() => {
@@ -106,17 +134,17 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
               /* LIVE THINKING — fully visible, auto-scrolling, prominent */
               <div
                 ref={thinkingRef}
-                className="bg-gradient-to-br from-violet-50 to-indigo-50 border border-violet-200/50 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm max-h-64 overflow-y-auto"
+                className={`${thinkingColors.liveGradient} border ${thinkingColors.liveBorder} rounded-2xl rounded-bl-md px-4 py-3 shadow-sm max-h-64 overflow-y-auto`}
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                  <span className="text-[11px] font-semibold text-violet-600 uppercase tracking-wider">
+                  <span className={`inline-block w-2 h-2 rounded-full ${thinkingColors.liveDot} animate-pulse`} />
+                  <span className={`text-[11px] font-semibold ${thinkingColors.liveText} uppercase tracking-wider`}>
                     Thinking
                   </span>
                 </div>
-                <p className="text-[13px] leading-relaxed text-violet-900/70 whitespace-pre-wrap">
+                <p className={`text-[13px] leading-relaxed ${thinkingColors.liveContent} whitespace-pre-wrap`}>
                   {thinking}
-                  <span className="inline-block w-1.5 h-4 bg-violet-400/60 animate-pulse rounded-sm ml-0.5 align-middle" />
+                  <span className={`inline-block w-1.5 h-4 ${thinkingColors.liveCursor} animate-pulse rounded-sm ml-0.5 align-middle`} />
                 </p>
               </div>
             ) : (
@@ -124,7 +152,7 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
               <div>
                 <button
                   onClick={() => setThinkingExpanded(!thinkingExpanded)}
-                  className="flex items-center gap-1.5 text-[11px] text-violet-500/70 hover:text-violet-600 transition-colors mb-1 ml-1"
+                  className={`flex items-center gap-1.5 text-[11px] ${thinkingColors.collapsedButton} transition-colors mb-1 ml-1`}
                 >
                   <svg
                     className={`w-3 h-3 transition-transform duration-200 ${thinkingExpanded ? 'rotate-90' : ''}`}
@@ -140,9 +168,9 @@ function ChatBubble({ content, isUser, timestamp, imageUrl, thinking, isThinking
                 {thinkingExpanded && (
                   <div
                     ref={thinkingRef}
-                    className="bg-violet-50/50 border border-violet-200/30 rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto"
+                    className={`${thinkingColors.collapsedBg} border ${thinkingColors.collapsedBorder} rounded-xl px-3 py-2 mb-1 max-h-48 overflow-y-auto`}
                   >
-                    <p className="text-[12px] leading-relaxed text-violet-900/50 whitespace-pre-wrap">
+                    <p className={`text-[12px] leading-relaxed ${thinkingColors.collapsedText} whitespace-pre-wrap`}>
                       {thinking}
                     </p>
                   </div>

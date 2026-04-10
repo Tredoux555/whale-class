@@ -176,14 +176,14 @@ export default function CurriculumPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] to-[#F5E6D3] flex items-center justify-center">
         <div className="animate-bounce text-5xl">📚</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen bg-gradient-to-br from-[#FAF8F5] via-[#FFF8E7] to-[#F5E6D3]">
       <Toaster position="top-center" richColors />
 
       {/* Contextual Tip Bubble */}
@@ -192,11 +192,11 @@ export default function CurriculumPage() {
       )}
 
       {/* Page sub-header — main nav is in DashboardHeader */}
-      <div className="bg-white border-b px-4 py-3">
+      <div className="bg-[#FFFDF8] border-b border-[#E6DDD7] px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-gray-800">📚 {t('curriculum.title')}</h1>
-            <p className="text-gray-500 text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
+            <h1 className="text-lg font-bold text-[#3E2723]">📚 {t('curriculum.title')}</h1>
+            <p className="text-[#A1887F] text-sm">{curriculum.length} {t('curriculum.worksAvailable')}</p>
           </div>
           <div className="flex items-center gap-2">
             <WorkSearchBar
@@ -223,7 +223,7 @@ export default function CurriculumPage() {
             <Link
               data-tutorial="browse-guide-link"
               href="/montree/dashboard/curriculum/browse"
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-[#F5E6D3] hover:bg-[#E6DDD7] text-[#5D4037] rounded-xl text-sm font-medium transition-colors"
             >
               <span>🔍</span>
               <span className="hidden sm:inline">{t('curriculum.browseGuide')}</span>
@@ -232,7 +232,7 @@ export default function CurriculumPage() {
               <button
                 data-tutorial="curriculum-add-button"
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[#5D4037] hover:bg-[#4E342E] text-white rounded-xl font-medium transition-colors"
               >
                 <span className="text-lg">➕</span>
                 <span className="hidden sm:inline">{t('weekview.addWork')}</span>
@@ -244,12 +244,12 @@ export default function CurriculumPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-6">
         {curriculum.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm">
+          <div className="bg-[#FFFDF8] rounded-2xl p-8 text-center shadow-sm">
             <span className="text-5xl mb-4 block">📚</span>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">{t('curriculum.noCurriculum')}</h2>
-            <p className="text-gray-500 mb-6">{t('curriculum.noCurriculumDesc')}</p>
+            <h2 className="text-xl font-bold text-[#3E2723] mb-2">{t('curriculum.noCurriculum')}</h2>
+            <p className="text-[#A1887F] mb-6">{t('curriculum.noCurriculumDesc')}</p>
             <button onClick={handleImportCurriculum} disabled={importing}
-              className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-bold 
+              className="bg-gradient-to-r from-[#5D4037] to-[#795548] text-white px-8 py-4 rounded-xl font-bold
                 shadow-lg hover:shadow-xl transition-all disabled:opacity-50">
               {importing ? t('curriculum.importing') : `📥 ${t('curriculum.importMaster')}`}
             </button>
@@ -258,7 +258,7 @@ export default function CurriculumPage() {
           <>
             {/* Import/Re-import button */}
             <div className="mb-4 flex justify-between items-center">
-              <p className="text-sm text-gray-500">{t('curriculum.tapToEdit')}</p>
+              <p className="text-sm text-[#A1887F]">{t('curriculum.tapToEdit')}</p>
               <button onClick={handleImportCurriculum} disabled={importing}
                 className="text-sm px-4 py-2 bg-amber-100 text-amber-800 rounded-xl hover:bg-amber-200 disabled:opacity-50">
                 {importing ? t('curriculum.importing') : `📥 ${t('curriculum.reimportMaster')}`}
@@ -269,13 +269,13 @@ export default function CurriculumPage() {
             <div data-tutorial="area-cards" className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
               {Object.entries(byArea).map(([area, works]) => (
                 <button key={area} onClick={() => setSelectedArea(selectedArea === area ? null : area)}
-                  className={`bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
-                    ${selectedArea === area ? 'ring-2 ring-emerald-500' : ''}`}>
+                  className={`bg-[#FFFDF8] rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all text-left
+                    ${selectedArea === area ? 'ring-2 ring-amber-500' : ''}`}>
                   <div className="mb-2">
                     <AreaBadge area={area} size="lg" />
                   </div>
-                  <p className="font-semibold text-gray-800 capitalize">{t(('area.' + area) as any)}</p>
-                  <p className="text-sm text-gray-500">{works.length} {t('curriculum.works')}</p>
+                  <p className="font-semibold text-[#3E2723] capitalize">{t(('area.' + area) as any)}</p>
+                  <p className="text-sm text-[#A1887F]">{works.length} {t('curriculum.works')}</p>
                 </button>
               ))}
             </div>
@@ -338,7 +338,7 @@ export default function CurriculumPage() {
       {curriculum.length > 0 && (
         <button
           onClick={() => setShowAddModal(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
+          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-[#5D4037] to-[#795548] text-white rounded-full shadow-lg hover:shadow-xl transition-all flex items-center justify-center text-2xl z-30 sm:hidden active:scale-95"
         >
           ➕
         </button>

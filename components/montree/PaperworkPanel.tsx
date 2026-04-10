@@ -31,6 +31,8 @@ export default function PaperworkPanel() {
   const [advancing, setAdvancing] = useState<string | null>(null);
   const [editingChild, setEditingChild] = useState<string | null>(null);
   const [editWeek, setEditWeek] = useState<number>(1);
+  const [editingTarget, setEditingTarget] = useState(false);
+  const [targetInput, setTargetInput] = useState<number>(1);
   const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
 
@@ -125,7 +127,7 @@ export default function PaperworkPanel() {
       if (res.ok) {
         const result = await res.json();
         if (result.success) {
-          fetchData(); // Refetch to get clean state
+          fetchData();
         }
       } else {
         toast.error(t('paperwork.updateFailed'));
@@ -140,15 +142,39 @@ export default function PaperworkPanel() {
     }
   }, [advancing, fetchData, t]);
 
+  const handleSetTargetWeek = useCallback(async (week: number) => {
+    try {
+      const res = await montreeApi('/api/montree/intelligence/paperwork', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_target', week }),
+      });
+      if (!mountedRef.current) return;
+      if (res.ok) {
+        setEditingTarget(false);
+        fetchData();
+      } else {
+        toast.error(t('paperwork.updateFailed'));
+      }
+    } catch {
+      toast.error(t('paperwork.updateFailed'));
+    }
+  }, [fetchData, t]);
+
   // Loading skeleton
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gray-100 animate-pulse" />
-          <div className="flex-1">
-            <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
-            <div className="h-3 w-48 bg-gray-50 rounded animate-pulse mt-1" />
+      <div style={{
+        background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8E7 100%)',
+        borderRadius: 16,
+        border: '1px solid rgba(139, 69, 19, 0.08)',
+        padding: '16px 20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(139, 69, 19, 0.06)' }} className="animate-pulse" />
+          <div style={{ flex: 1 }}>
+            <div style={{ height: 14, width: 120, background: 'rgba(139, 69, 19, 0.06)', borderRadius: 6 }} className="animate-pulse" />
+            <div style={{ height: 10, width: 180, background: 'rgba(139, 69, 19, 0.04)', borderRadius: 4, marginTop: 6 }} className="animate-pulse" />
           </div>
         </div>
       </div>
@@ -159,54 +185,280 @@ export default function PaperworkPanel() {
 
   const { target_week, max_week, on_track, total, children } = data;
   const behind = children.filter(c => c.status === 'behind');
-  const slightlyBehind = children.filter(c => c.status === 'slightly_behind');
-  const onTrackList = children.filter(c => c.status === 'on_track');
-
-  const statusColor = behind.length > 0
-    ? 'text-red-600 bg-red-50'
-    : slightlyBehind.length > 0
-    ? 'text-amber-600 bg-amber-50'
-    : 'text-emerald-600 bg-emerald-50';
+  const needsAttention = children.filter(c => c.status === 'slightly_behind');
+  const upToDate = children.filter(c => c.status === 'on_track');
+  const progressPct = Math.round((on_track / Math.max(total, 1)) * 100);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Summary bar */}
+    <div style={{
+      background: 'linear-gradient(135deg, #FFFDF8 0%, #FFF8E7 100%)',
+      borderRadius: 16,
+      border: '1px solid rgba(139, 69, 19, 0.08)',
+      overflow: 'hidden',
+    }}>
+      {/* ── Summary Header ── */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+        style={{
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 20px',
+          border: 'none',
+          background: 'transparent',
+          cursor: 'pointer',
+          transition: 'background 0.2s',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(139, 69, 19, 0.03)')}
+        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
       >
-        <div className="flex items-center gap-3">
-          <span className="text-lg">📝</span>
-          <div className="text-left">
-            <div className="text-sm font-semibold text-gray-800">{t('paperwork.title')}</div>
-            <div className="text-xs text-gray-500">
-              {t('paperwork.targetWeek')}: {target_week} / {max_week}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {/* Circular progress ring */}
+          <div style={{ position: 'relative', width: 40, height: 40 }}>
+            <svg width="40" height="40" viewBox="0 0 40 40" style={{ transform: 'rotate(-90deg)' }}>
+              <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(139, 69, 19, 0.08)" strokeWidth="3.5" />
+              <circle
+                cx="20" cy="20" r="16" fill="none"
+                stroke={progressPct >= 80 ? '#4ade80' : progressPct >= 50 ? '#fbbf24' : '#F5B7B1'}
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeDasharray={`${progressPct * 1.005} 100.5`}
+                style={{ transition: 'stroke-dasharray 0.6s ease' }}
+              />
+            </svg>
+            <span style={{
+              position: 'absolute',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#5D4037',
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {on_track}
+            </span>
+          </div>
+
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#3E2723', letterSpacing: -0.2 }}>
+              {t('paperwork.title')}
+            </div>
+            <div style={{ fontSize: 12, color: '#8D6E63', marginTop: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span>Week {target_week} of {max_week}</span>
+              {upToDate.length === total && (
+                <span style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  color: '#2E7D32',
+                  background: 'rgba(76, 175, 80, 0.1)',
+                  padding: '1px 8px',
+                  borderRadius: 10,
+                }}>
+                  All up to date
+                </span>
+              )}
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusColor}`}>
-            {on_track}/{total} {t('paperwork.onTrack')}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Friendly summary pill */}
+          {upToDate.length < total && (
+            <span style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: behind.length > 0 ? '#BF360C' : '#F57F17',
+              background: behind.length > 0 ? 'rgba(255, 138, 101, 0.12)' : 'rgba(255, 183, 77, 0.15)',
+              padding: '3px 10px',
+              borderRadius: 10,
+            }}>
+              {total - on_track} need{total - on_track === 1 ? 's' : ''} a catch-up
+            </span>
+          )}
+          <span style={{
+            color: '#A1887F',
+            transition: 'transform 0.25s ease',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            fontSize: 12,
+          }}>
+            ▼
           </span>
-          <span className={`text-gray-400 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>▼</span>
         </div>
       </button>
 
-      {/* Expanded detail */}
+      {/* ── Expanded Detail ── */}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 pt-3 space-y-3">
-          {/* Behind section */}
-          {behind.length > 0 && (
-            <div>
-              <div className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2">
-                🔴 {t('paperwork.behind')} ({behind.length})
+        <div style={{
+          padding: '0 20px 20px',
+          borderTop: '1px solid rgba(139, 69, 19, 0.06)',
+        }}>
+          {/* Target week adjuster */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 0 16px',
+          }}>
+            <span style={{ fontSize: 12, color: '#8D6E63', fontWeight: 500 }}>
+              School week
+            </span>
+            {editingTarget ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input
+                  type="number"
+                  min={1}
+                  max={max_week}
+                  value={targetInput}
+                  onChange={e => setTargetInput(Math.max(1, Math.min(max_week, parseInt(e.target.value) || 1)))}
+                  style={{
+                    width: 52,
+                    textAlign: 'center',
+                    fontSize: 13,
+                    fontWeight: 600,
+                    border: '1.5px solid rgba(139, 69, 19, 0.2)',
+                    borderRadius: 8,
+                    padding: '4px 6px',
+                    background: '#FFFDF8',
+                    color: '#3E2723',
+                    outline: 'none',
+                  }}
+                  autoFocus
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleSetTargetWeek(targetInput);
+                    if (e.key === 'Escape') setEditingTarget(false);
+                  }}
+                />
+                <button
+                  onClick={() => handleSetTargetWeek(targetInput)}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: 'white',
+                    background: '#5D4037',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Set
+                </button>
+                <button
+                  onClick={() => setEditingTarget(false)}
+                  style={{
+                    fontSize: 12,
+                    color: '#A1887F',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px 6px',
+                  }}
+                >
+                  Cancel
+                </button>
               </div>
-              <div className="space-y-1.5">
+            ) : (
+              <button
+                onClick={() => { setEditingTarget(true); setTargetInput(target_week); }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: '#5D4037',
+                  background: 'rgba(139, 69, 19, 0.06)',
+                  border: '1px solid rgba(139, 69, 19, 0.1)',
+                  borderRadius: 8,
+                  padding: '4px 12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(139, 69, 19, 0.1)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(139, 69, 19, 0.06)'; }}
+              >
+                Week {target_week}
+                <span style={{ fontSize: 10, color: '#A1887F' }}>Edit</span>
+              </button>
+            )}
+          </div>
+
+          {/* ── Up to Date ── */}
+          {upToDate.length > 0 && (
+            <Section
+              label={`Up to date (${upToDate.length})`}
+              color="#2E7D32"
+              bgColor="rgba(76, 175, 80, 0.06)"
+              defaultOpen={upToDate.length < total}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                {upToDate.map(child => (
+                  <CompactChildCard
+                    key={child.id}
+                    child={child}
+                    maxWeek={max_week}
+                    targetWeek={target_week}
+                    advancing={advancing}
+                    editingChild={editingChild}
+                    editWeek={editWeek}
+                    onAdvance={handleAdvance}
+                    onStartEdit={(id, week) => { setEditingChild(id); setEditWeek(week); }}
+                    onCancelEdit={() => setEditingChild(null)}
+                    onSetWeek={handleSetWeek}
+                    onEditWeekChange={setEditWeek}
+                  />
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {/* ── Needs Attention (slightly behind — 1-2 weeks) ── */}
+          {needsAttention.length > 0 && (
+            <Section
+              label={`Almost there (${needsAttention.length})`}
+              color="#E65100"
+              bgColor="rgba(255, 167, 38, 0.06)"
+              defaultOpen
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {needsAttention.map(child => (
+                  <ChildRow
+                    key={child.id}
+                    child={child}
+                    maxWeek={max_week}
+                    targetWeek={target_week}
+                    advancing={advancing}
+                    editingChild={editingChild}
+                    editWeek={editWeek}
+                    onAdvance={handleAdvance}
+                    onStartEdit={(id, week) => { setEditingChild(id); setEditWeek(week); }}
+                    onCancelEdit={() => setEditingChild(null)}
+                    onSetWeek={handleSetWeek}
+                    onEditWeekChange={setEditWeek}
+                  />
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {/* ── Needs Catch-Up (3+ weeks behind) ── */}
+          {behind.length > 0 && (
+            <Section
+              label={`Needs catch-up (${behind.length})`}
+              color="#BF360C"
+              bgColor="rgba(255, 138, 101, 0.06)"
+              defaultOpen
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {behind.map(child => (
                   <ChildRow
                     key={child.id}
                     child={child}
                     maxWeek={max_week}
+                    targetWeek={target_week}
                     advancing={advancing}
                     editingChild={editingChild}
                     editWeek={editWeek}
@@ -215,65 +467,10 @@ export default function PaperworkPanel() {
                     onCancelEdit={() => setEditingChild(null)}
                     onSetWeek={handleSetWeek}
                     onEditWeekChange={setEditWeek}
-                    t={t}
                   />
                 ))}
               </div>
-            </div>
-          )}
-
-          {/* Slightly behind section */}
-          {slightlyBehind.length > 0 && (
-            <div>
-              <div className="text-xs font-semibold text-amber-600 uppercase tracking-wider mb-2">
-                🟡 {t('paperwork.slightlyBehind')} ({slightlyBehind.length})
-              </div>
-              <div className="space-y-1.5">
-                {slightlyBehind.map(child => (
-                  <ChildRow
-                    key={child.id}
-                    child={child}
-                    maxWeek={max_week}
-                    advancing={advancing}
-                    editingChild={editingChild}
-                    editWeek={editWeek}
-                    onAdvance={handleAdvance}
-                    onStartEdit={(id, week) => { setEditingChild(id); setEditWeek(week); }}
-                    onCancelEdit={() => setEditingChild(null)}
-                    onSetWeek={handleSetWeek}
-                    onEditWeekChange={setEditWeek}
-                    t={t}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* On track section */}
-          {onTrackList.length > 0 && (
-            <div>
-              <div className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mb-2">
-                🟢 {t('paperwork.onTrackLabel')} ({onTrackList.length})
-              </div>
-              <div className="space-y-1.5">
-                {onTrackList.map(child => (
-                  <ChildRow
-                    key={child.id}
-                    child={child}
-                    maxWeek={max_week}
-                    advancing={advancing}
-                    editingChild={editingChild}
-                    editWeek={editWeek}
-                    onAdvance={handleAdvance}
-                    onStartEdit={(id, week) => { setEditingChild(id); setEditWeek(week); }}
-                    onCancelEdit={() => setEditingChild(null)}
-                    onSetWeek={handleSetWeek}
-                    onEditWeekChange={setEditWeek}
-                    t={t}
-                  />
-                ))}
-              </div>
-            </div>
+            </Section>
           )}
         </div>
       )}
@@ -281,22 +478,66 @@ export default function PaperworkPanel() {
   );
 }
 
-// Individual child row
-function ChildRow({
-  child,
-  maxWeek,
-  advancing,
-  editingChild,
-  editWeek,
-  onAdvance,
-  onStartEdit,
-  onCancelEdit,
-  onSetWeek,
-  onEditWeekChange,
-  t,
-}: {
+/* ── Collapsible Section ── */
+function Section({ label, color, bgColor, defaultOpen, children }: {
+  label: string;
+  color: string;
+  bgColor: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen ?? true);
+  return (
+    <div style={{ marginTop: 8 }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          fontWeight: 600,
+          color,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '4px 0',
+          textTransform: 'uppercase',
+          letterSpacing: 0.5,
+          width: '100%',
+        }}
+      >
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: color, opacity: 0.7, flexShrink: 0,
+        }} />
+        {label}
+        <span style={{
+          fontSize: 9,
+          transition: 'transform 0.2s',
+          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          marginLeft: 2,
+        }}>▼</span>
+      </button>
+      {open && (
+        <div style={{
+          marginTop: 6,
+          background: bgColor,
+          borderRadius: 12,
+          padding: 8,
+        }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Compact card for up-to-date children (grid layout) ── */
+function CompactChildCard({ child, maxWeek, targetWeek, advancing, editingChild, editWeek, onAdvance, onStartEdit, onCancelEdit, onSetWeek, onEditWeekChange }: {
   child: PaperworkChild;
   maxWeek: number;
+  targetWeek: number;
   advancing: string | null;
   editingChild: string | null;
   editWeek: number;
@@ -305,88 +546,251 @@ function ChildRow({
   onCancelEdit: () => void;
   onSetWeek: (id: string, week: number) => void;
   onEditWeekChange: (week: number) => void;
-  t: (key: string) => string;
 }) {
   const isEditing = editingChild === child.id;
   const isAdvancing = advancing === child.id;
-  const progressPct = Math.round((child.current_week / maxWeek) * 100);
-
-  const statusBg = child.status === 'behind'
-    ? 'bg-red-50 border-red-100'
-    : child.status === 'slightly_behind'
-    ? 'bg-amber-50 border-amber-100'
-    : 'bg-emerald-50 border-emerald-100';
 
   return (
-    <div className={`flex items-center gap-3 px-3 py-2.5 rounded-xl border ${statusBg}`}>
-      {/* Name */}
-      <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-gray-800 truncate">{child.name}</div>
-        <div className="flex items-center gap-2 mt-1">
-          {/* Progress bar */}
-          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                child.status === 'behind' ? 'bg-red-400' :
-                child.status === 'slightly_behind' ? 'bg-amber-400' : 'bg-emerald-400'
-              }`}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-gray-500 tabular-nums whitespace-nowrap">
-            {child.current_week}/{maxWeek}
-          </span>
-        </div>
-      </div>
-
-      {/* Week display + actions */}
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '8px 10px',
+      background: '#FFFDF8',
+      borderRadius: 10,
+      border: '1px solid rgba(76, 175, 80, 0.12)',
+    }}>
+      <span style={{ fontSize: 13, fontWeight: 500, color: '#3E2723', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginRight: 8 }}>
+        {child.name}
+      </span>
       {isEditing ? (
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            min={1}
-            max={maxWeek}
-            value={editWeek}
-            onChange={e => onEditWeekChange(Math.max(1, Math.min(maxWeek, parseInt(e.target.value) || 1)))}
-            className="w-14 text-center text-sm border border-gray-300 rounded-lg px-1 py-1"
-            autoFocus
-          />
-          <button
-            onClick={() => onSetWeek(child.id, editWeek)}
-            className="text-xs bg-violet-600 text-white px-2 py-1 rounded-lg hover:bg-violet-700"
-          >
-            ✓
-          </button>
-          <button
-            onClick={onCancelEdit}
-            className="text-xs text-gray-400 px-1.5 py-1 hover:text-gray-600"
-          >
-            ✕
-          </button>
-        </div>
+        <InlineEditor
+          week={editWeek}
+          maxWeek={maxWeek}
+          onChange={onEditWeekChange}
+          onConfirm={() => onSetWeek(child.id, editWeek)}
+          onCancel={onCancelEdit}
+        />
       ) : (
-        <div className="flex items-center gap-1.5">
-          {/* Week badge — tap to edit */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <button
             onClick={() => onStartEdit(child.id, child.current_week)}
-            className="text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-lg px-2.5 py-1 hover:border-violet-300 hover:text-violet-600 transition-colors tabular-nums"
-            title={t('paperwork.tapToEdit')}
+            style={{
+              fontSize: 11,
+              fontWeight: 600,
+              color: '#2E7D32',
+              background: 'rgba(76, 175, 80, 0.1)',
+              border: 'none',
+              borderRadius: 6,
+              padding: '2px 8px',
+              cursor: 'pointer',
+              fontVariantNumeric: 'tabular-nums',
+            }}
           >
             W{child.current_week}
           </button>
-          {/* Advance button */}
           {child.current_week < maxWeek && (
             <button
               onClick={() => onAdvance(child.id)}
               disabled={!!isAdvancing}
-              className="text-lg leading-none text-violet-600 hover:text-violet-800 disabled:opacity-40 transition-colors px-1"
-              title={t('paperwork.advanceWeek')}
+              style={{
+                fontSize: 14,
+                color: '#81C784',
+                background: 'none',
+                border: 'none',
+                cursor: isAdvancing ? 'default' : 'pointer',
+                opacity: isAdvancing ? 0.4 : 1,
+                padding: '0 2px',
+                lineHeight: 1,
+              }}
             >
-              {isAdvancing ? '⏳' : '→'}
+              {isAdvancing ? '...' : '→'}
             </button>
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ── Full child row for behind/slightly behind ── */
+function ChildRow({ child, maxWeek, targetWeek, advancing, editingChild, editWeek, onAdvance, onStartEdit, onCancelEdit, onSetWeek, onEditWeekChange }: {
+  child: PaperworkChild;
+  maxWeek: number;
+  targetWeek: number;
+  advancing: string | null;
+  editingChild: string | null;
+  editWeek: number;
+  onAdvance: (id: string) => void;
+  onStartEdit: (id: string, week: number) => void;
+  onCancelEdit: () => void;
+  onSetWeek: (id: string, week: number) => void;
+  onEditWeekChange: (week: number) => void;
+}) {
+  const isEditing = editingChild === child.id;
+  const isAdvancing = advancing === child.id;
+  const progressPct = Math.round((child.current_week / targetWeek) * 100);
+  const weeksToGo = targetWeek - child.current_week;
+
+  const isSlightly = child.status === 'slightly_behind';
+  const barColor = isSlightly ? '#FFB74D' : '#EF9A9A';
+  const borderColor = isSlightly ? 'rgba(255, 167, 38, 0.15)' : 'rgba(239, 154, 154, 0.2)';
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      padding: '10px 12px',
+      background: '#FFFDF8',
+      borderRadius: 10,
+      border: `1px solid ${borderColor}`,
+    }}>
+      {/* Name + progress */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: '#3E2723', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {child.name}
+          </span>
+          <span style={{ fontSize: 10, color: '#A1887F', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            {weeksToGo} week{weeksToGo !== 1 ? 's' : ''} to go
+          </span>
+        </div>
+        {/* Progress bar */}
+        <div style={{
+          marginTop: 6,
+          height: 5,
+          background: 'rgba(139, 69, 19, 0.06)',
+          borderRadius: 3,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            width: `${Math.min(progressPct, 100)}%`,
+            background: barColor,
+            borderRadius: 3,
+            transition: 'width 0.4s ease',
+          }} />
+        </div>
+      </div>
+
+      {/* Week + actions */}
+      {isEditing ? (
+        <InlineEditor
+          week={editWeek}
+          maxWeek={maxWeek}
+          onChange={onEditWeekChange}
+          onConfirm={() => onSetWeek(child.id, editWeek)}
+          onCancel={onCancelEdit}
+        />
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+          <button
+            onClick={() => onStartEdit(child.id, child.current_week)}
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              color: '#5D4037',
+              background: 'rgba(139, 69, 19, 0.06)',
+              border: '1px solid rgba(139, 69, 19, 0.1)',
+              borderRadius: 8,
+              padding: '3px 10px',
+              cursor: 'pointer',
+              fontVariantNumeric: 'tabular-nums',
+              transition: 'all 0.15s',
+            }}
+          >
+            W{child.current_week}
+          </button>
+          {child.current_week < maxWeek && (
+            <button
+              onClick={() => onAdvance(child.id)}
+              disabled={!!isAdvancing}
+              style={{
+                fontSize: 16,
+                color: '#8D6E63',
+                background: 'none',
+                border: 'none',
+                cursor: isAdvancing ? 'default' : 'pointer',
+                opacity: isAdvancing ? 0.4 : 1,
+                padding: '0 2px',
+                lineHeight: 1,
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => { if (!isAdvancing) e.currentTarget.style.color = '#5D4037'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#8D6E63'; }}
+            >
+              {isAdvancing ? '...' : '→'}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Shared inline week editor ── */
+function InlineEditor({ week, maxWeek, onChange, onConfirm, onCancel }: {
+  week: number;
+  maxWeek: number;
+  onChange: (w: number) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+      <input
+        type="number"
+        min={1}
+        max={maxWeek}
+        value={week}
+        onChange={e => onChange(Math.max(1, Math.min(maxWeek, parseInt(e.target.value) || 1)))}
+        style={{
+          width: 48,
+          textAlign: 'center',
+          fontSize: 12,
+          fontWeight: 600,
+          border: '1.5px solid rgba(139, 69, 19, 0.2)',
+          borderRadius: 8,
+          padding: '3px 4px',
+          background: '#FFFDF8',
+          color: '#3E2723',
+          outline: 'none',
+        }}
+        autoFocus
+        onKeyDown={e => {
+          if (e.key === 'Enter') onConfirm();
+          if (e.key === 'Escape') onCancel();
+        }}
+      />
+      <button
+        onClick={onConfirm}
+        style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'white',
+          background: '#5D4037',
+          border: 'none',
+          borderRadius: 6,
+          padding: '3px 8px',
+          cursor: 'pointer',
+        }}
+      >
+        ✓
+      </button>
+      <button
+        onClick={onCancel}
+        style={{
+          fontSize: 11,
+          color: '#A1887F',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '3px 4px',
+        }}
+      >
+        ✕
+      </button>
     </div>
   );
 }
