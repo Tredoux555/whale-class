@@ -47,7 +47,6 @@ interface Recommendation {
 interface ReportResult {
   child_id: string;
   child_name: string;
-  teacher_report: Record<string, unknown> | null;
   teacher_report_id: string | null;
   teacher_status: string | null;
   key_insight: string | null;

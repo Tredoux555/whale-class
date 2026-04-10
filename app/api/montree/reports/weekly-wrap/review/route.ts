@@ -68,6 +68,7 @@ export async function GET(request: NextRequest) {
     const resolveArea = (raw: string, workName?: string): string => {
       if (!raw && workName) return workNameToArea.get(workName.toLowerCase().trim()) || '';
       if (!raw) return '';
+      if (typeof raw !== 'string') raw = String(raw);
       // Already canonical?
       if (CANONICAL_AREAS.includes(raw)) return raw;
       // UUID → look up in area map
@@ -92,7 +93,8 @@ export async function GET(request: NextRequest) {
     // e.g. "Present Carrying a Mat as the foundational Practical Life work" → "Carrying a Mat"
     // e.g. "Continue Sand Tray Writing with increased frequency and observation" → "Sand Tray Writing"
     const cleanWorkName = (raw: string): string => {
-      if (!raw) return raw;
+      if (!raw) return raw || '';
+      if (typeof raw !== 'string') return String(raw);
       let name = raw.trim();
       // Strip leading action verbs
       name = name.replace(/^(Present|Continue|Introduce|Begin|Start|Explore|Practice|Review|Offer|Revisit|Try|Focus on|Work on|Encourage)\s+/i, '');
@@ -115,6 +117,7 @@ export async function GET(request: NextRequest) {
 
     // Get Chinese work name for a given English work name (with fuzzy fallback)
     const getChineseWorkName = (englishName: string): string | null => {
+      if (!englishName || typeof englishName !== 'string') return null;
       const key = englishName.toLowerCase().trim();
       // Exact match
       const exact = workNameToChinese.get(key);
@@ -133,9 +136,10 @@ export async function GET(request: NextRequest) {
       return null;
     };
 
-    // Strip UUIDs from text
+    // Strip UUIDs from text (coerce to string — JSONB values may be numbers/objects)
     const cleanUUIDs = (text: string): string => {
-      if (!text) return text;
+      if (!text) return text || '';
+      if (typeof text !== 'string') return String(text);
       return text
         .replace(/\s+in\s+[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
         .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '')
