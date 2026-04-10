@@ -22,6 +22,8 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
+export const maxDuration = 300; // 5 minutes — Sonnet reports for 19 children take time
+
 const MAX_CONCURRENT = 3; // Sonnet — lower concurrency to respect rate limits
 
 export async function POST(request: NextRequest) {

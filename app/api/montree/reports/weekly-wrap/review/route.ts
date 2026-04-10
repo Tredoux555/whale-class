@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
+export const maxDuration = 60;
+
 export async function GET(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
@@ -271,8 +273,7 @@ export async function GET(request: NextRequest) {
       return {
         child_id: childId,
         child_name: childMap.get(childId) || 'Unknown',
-        // Teacher data
-        teacher_report: data.teacher_report,
+        // Teacher data (cleaned/extracted fields only — raw teacher_report omitted to halve payload)
         teacher_report_id: data.teacher_report_id,
         teacher_status: data.teacher_status,
         key_insight: keyInsight || null,
@@ -292,7 +293,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ reports: results });
   } catch (error) {
-    console.error('Weekly wrap review error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Weekly wrap review error:', error instanceof Error ? { message: error.message, stack: error.stack?.split('\n').slice(0, 5).join('\n') } : error);
+    return NextResponse.json({ error: 'Internal server error', detail: error instanceof Error ? error.message : 'Unknown' }, { status: 500 });
   }
 }
