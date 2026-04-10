@@ -68,6 +68,8 @@ async function seedCurriculumForClassroom(
         area_id: areaUuid,
         work_key: work.work_key,
         name: work.name,
+        name_chinese: work.chineseName || null, // Seed Chinese name from static JSON
+        name_zh: work.chineseName || null, // Keep both columns in sync
         description: work.description || null,
         age_range: work.age_range || '3-6',
         sequence: work.sequence, // CORRECT global sequence from static files

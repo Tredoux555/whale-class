@@ -97,7 +97,10 @@ Return JSON:`,
 
             // Also update descriptions if they were translated and currently missing
             const updateData: Record<string, string> = {};
-            if (nameZh) updateData.name_zh = nameZh;
+            if (nameZh) {
+              updateData.name_zh = nameZh;
+              updateData.name_chinese = nameZh; // Keep both columns in sync
+            }
             if (parsed.parent_description_zh && !work.parent_description_zh) {
               updateData.parent_description_zh = parsed.parent_description_zh;
             }
@@ -116,7 +119,7 @@ Return JSON:`,
           }
 
           // 3. Glossary match — just save the name
-          const updateData: Record<string, string> = { name_zh: nameZh };
+          const updateData: Record<string, string> = { name_zh: nameZh, name_chinese: nameZh };
           await supabase
             .from('montree_classroom_curriculum_works')
             .update(updateData as Record<string, unknown>)
