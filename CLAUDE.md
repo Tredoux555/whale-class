@@ -248,11 +248,11 @@ montree.xyz
 | Add custom work | `guru/photo-insight/add-custom-work/route.ts` | ✅ inline Sonnet translation (lines 307-342) |
 | Classroom setup ("Teach AI") | `classroom-setup/route.ts` | ✅ calls `autoTranslateToChinese` directly |
 | Principal setup stream | `principal/setup-stream/route.ts` | ✅ NEW — `batchTranslateWorksInBackground` |
-| Principal setup (non-stream) | `principal/setup/route.ts` | ❌ — bulk seed only, no translation. Low priority: rarely used (stream version is primary) |
+| Principal setup (non-stream) | `principal/setup/route.ts` | ✅ NEW — `batchTranslateWorksInBackground` (same as stream version) |
 | Admin reseed curriculum | `admin/reseed-curriculum/route.ts` | ❌ — admin-only recovery tool. Use batch-translate endpoint after. |
 | Admin backfill curriculum | `admin/backfill-curriculum/route.ts` | ❌ — admin-only backfill. Use batch-translate endpoint after. |
 
-The 3 admin-only paths without auto-translate are acceptable — they're recovery/maintenance tools. If used, follow up with `/api/montree/curriculum/batch-translate` to fill in Chinese names.
+The 2 admin-only paths without auto-translate are acceptable — they're recovery/maintenance tools. If used, follow up with `/api/montree/curriculum/batch-translate` to fill in Chinese names.
 
 **Other fixes in this session (prior commits):**
 - `99ceed0f` — Fix "Add Add Student" duplicate text on Students page + embedded InviteParentModal per-child (replaces broken link to Students page)
