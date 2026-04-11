@@ -40,7 +40,7 @@ const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvi
 const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/flac', 'audio/webm'];
 
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 300 * 1024 * 1024; // 300MB — iPhone videos can be large
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB — Supabase storage per-file limit
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024;
 
 function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'audio' | null {
@@ -118,8 +118,28 @@ export async function POST(req: NextRequest) {
     );
 
     if (uploadError) {
-      console.error('[Upload Media] Supabase storage error:', uploadError.message);
-      return NextResponse.json({ error: `Upload to storage failed: ${uploadError.message}` }, { status: 500 });
+      const msg = uploadError.message || '';
+      console.error(`[Upload Media] Supabase storage error (${fileType}, ${(file.size / (1024 * 1024)).toFixed(1)}MB):`, msg);
+
+      // Surface specific, actionable error messages
+      if (msg.includes('Payload too large') || msg.includes('exceeded') || msg.includes('size')) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(0);
+        return NextResponse.json({
+          error: `Video too large for storage (${sizeMB}MB). The storage limit is 50MB per file. Try trimming your video or recording at lower quality.`
+        }, { status: 413 });
+      }
+      if (msg.includes('mime') || msg.includes('type')) {
+        return NextResponse.json({
+          error: `File type not supported: ${effectiveContentType}. Try converting to .mp4.`
+        }, { status: 400 });
+      }
+      if (msg.includes('quota') || msg.includes('space')) {
+        return NextResponse.json({
+          error: 'Storage is full. Please contact the administrator.'
+        }, { status: 507 });
+      }
+
+      return NextResponse.json({ error: `Upload failed: ${msg}` }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage.from('story-uploads').getPublicUrl(storagePath);
