@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Montessori Practical Life Curriculum — 100 Works from Zero to Normalization</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --green-deep: #1a4731;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #b7e4c7;
+    --green-wash: #f0faf4;
+    --cream: #fefcf6;
+    --warm-gray: #5c5552;
+    --text: #2c2420;
+    --border: #e8e0d8;
+    --phase1: #d4a574;
+    --phase2: #c17f59;
+    --phase3: #2d6a4f;
+    --phase4: #1a4731;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════ HERO ═══════ */
+  .hero {
+    background: linear-gradient(135deg, var(--green-deep) 0%, var(--green-mid) 50%, var(--green-light) 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    opacity: 0.85;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .hero .meta {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════ INTRO ═══════ */
+  .intro {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 30px 40px;
+  }
+  .intro h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--green-deep);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .intro p {
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .intro blockquote {
+    border-left: 3px solid var(--green-light);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: var(--green-wash);
+    border-radius: 0 12px 12px 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--green-deep);
+  }
+
+  /* ═══════ PHASE HEADER ═══════ */
+  .phase-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 30px 20px;
+  }
+  .phase-header .phase-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .phase-header h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.9rem;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .phase-header .phase-desc {
+    color: var(--warm-gray);
+    font-size: 0.92rem;
+    max-width: 680px;
+  }
+
+  /* ═══════ WORK CARDS ═══════ */
+  .works-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .work-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    page-break-inside: avoid;
+  }
+  .work-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+  .work-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px 16px;
+    cursor: pointer;
+  }
+
+  .work-number {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+  }
+
+  .work-info { flex: 1; min-width: 0; }
+  .work-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .work-develops {
+    font-size: 0.85rem;
+    color: var(--warm-gray);
+    line-height: 1.5;
+  }
+
+  .work-details {
+    padding: 0 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .detail-box {
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  .detail-box .detail-label {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .readiness-box {
+    background: #fef9ee;
+    border: 1px solid #f5e6c8;
+  }
+  .readiness-box .detail-label { color: #92600a; }
+  .readiness-box .detail-text { color: #7a5008; }
+
+  .home-box {
+    background: var(--green-wash);
+    border: 1px solid #c1e6d0;
+  }
+  .home-box .detail-label { color: var(--green-mid); }
+  .home-box .detail-text { color: #2a5a41; }
+
+  /* ═══════ SENSITIVE PERIOD CALLOUTS ═══════ */
+  .sensitive-period {
+    max-width: 900px;
+    margin: 10px auto;
+    padding: 0 30px;
+  }
+  .sensitive-period .sp-card {
+    background: linear-gradient(135deg, #f8f4ff, #f0e8ff);
+    border: 1px solid #e0d4f5;
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .sp-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .sp-text { font-size: 0.85rem; color: #4a3470; line-height: 1.6; }
+  .sp-text strong { color: #3b1d6e; }
+
+  /* ═══════ FOOTER ═══════ */
+  .footer {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--warm-gray);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .footer a { color: var(--green-mid); text-decoration: none; }
+  .footer .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+  }
+
+  /* ═══════ PRINT ═══════ */
+  @media print {
+    body { background: white; }
+    .hero { padding: 40px 30px 30px; }
+    .work-card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+    .work-details { grid-template-columns: 1fr 1fr; }
+    .sensitive-period .sp-card { background: #f8f4ff; }
+    @page { margin: 1.5cm; }
+  }
+
+  /* ═══════ MOBILE ═══════ */
+  @media (max-width: 640px) {
+    .hero { padding: 50px 20px 40px; }
+    .work-details { grid-template-columns: 1fr; }
+    .works-grid, .phase-header, .sensitive-period, .intro { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                   HERO                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="hero">
+  <h1>The Practical Life Curriculum</h1>
+  <p class="subtitle">100 works from zero to normalization — in the sequence Maria intended</p>
+  <p class="meta">Montree Home Curriculum Series &middot; Based on Montessori's original writings</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                  INTRO                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="intro">
+  <h2>Before You Begin</h2>
+  <p>Maria Montessori discovered that young children have an irresistible drive toward purposeful activity. She called it "work" — not because it is laborious, but because it is the child's means of constructing themselves. A child who can carry a glass of water without spilling has begun to master their will.</p>
+  <p>Practical Life is the gateway to everything in Montessori. It builds concentration, coordination of movement, independence, and a sense of order — the four pillars that make all other learning possible. A child who has not been prepared through Practical Life will struggle with Sensorial, Language, and Mathematics. A child who has been prepared will approach them with calm focus.</p>
+  <blockquote>"The first essential for the child's development is concentration. The child who concentrates is immensely happy." — Maria Montessori</blockquote>
+  <p>This curriculum is sequenced precisely. Each work prepares the child for the next. Do not skip ahead. If a child struggles with Work 12, they need more time with Works 1–11. Trust the sequence. Trust the child.</p>
+  <p><strong>How to use this:</strong> For each work, you'll find what it develops in the child, the readiness sign telling you when to introduce it, and a home version requiring nothing from a Montessori catalogue. Present each work slowly, with your hands, in silence. Then step back. The child's repetition is the work.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--         PHASE 1: THE FOUNDATIONS           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase1)">Phase 1 — Works 1–25</span>
+  <h2>The Foundations</h2>
+  <p class="phase-desc">Building basic concentration, gross motor coordination, and the understanding that every action has a sequence. The child learns: I can control my body. I can complete a task. I can do it myself.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 1 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">1</div>
+    <div class="work-info">
+      <div class="work-name">Carrying a Mat</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>order</strong> — the child learns the ritual of preparing a workspace, which becomes the foundation for every future work.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can walk steadily and shows interest in carrying objects. Often around 2.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A small yoga mat, bath mat, or folded towel. Show the child how to roll it, carry it with two hands, unroll it on the floor, and roll it back when done.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">2</div>
+    <div class="work-info">
+      <div class="work-name">Carrying a Chair</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>independence</strong> — a heavier, more complex carry requiring both hands, spatial awareness, and careful placement.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can carry the mat confidently. Shows interest in rearranging furniture or pulling chairs.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A child-sized chair or stool. Demonstrate: one hand on the back, one under the seat, lift, walk slowly, place gently without noise. The silence of placement is the goal.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">3</div>
+    <div class="work-info">
+      <div class="work-name">Carrying a Tray</div>
+      <div class="work-develops">Develops <strong>concentration</strong> and <strong>coordination</strong> — the tray introduces balance, level carrying, and the concept of transporting multiple items as one unit.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can walk while holding an object with two hands without looking at their feet.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A small wooden or plastic tray from your kitchen. Start empty, then add a cup, then a cup with water. The tray carries the child's entire work to and from the shelf — this becomes the ritual for every activity.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">4</div>
+    <div class="work-info">
+      <div class="work-name">Walking on the Line</div>
+      <div class="work-develops">Develops <strong>concentration</strong>, <strong>coordination</strong>, and <strong>order</strong> — heel-to-toe walking demands total body control and focused attention. Maria called it "the exercise of controlled movement."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child naturally walks on cracks, curbs, or edges. This is the sensitive period for refined movement expressing itself.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Masking tape or painter's tape in an ellipse on the floor. Start with simple walking. Later: carry a bell without ringing it, carry a glass of water without spilling, carry a spoon with a ball on it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">5</div>
+    <div class="work-info">
+      <div class="work-name">Opening and Closing — Doors</div>
+      <div class="work-develops">Develops <strong>independence</strong> and <strong>coordination</strong> — the child learns that they can enter and exit spaces on their own. The handle is a tool; the click of the latch is feedback.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reaches for door handles or stands at closed doors waiting to be let through.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Any interior door. Demonstrate slowly: hand on handle, press/turn, pull or push gently, walk through, close with two hands quietly. Emphasize the quiet closing — no slamming.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">6</div>
+    <div class="work-info">
+      <div class="work-name">Opening and Closing — Containers</div>
+      <div class="work-develops">Develops <strong>fine motor coordination</strong> and <strong>concentration</strong> — different lids require different hand movements: twist, press, pull, flip. Each container is a puzzle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child tries to open jars, boxes, or snap-lid containers on their own. The sensitive period for small objects is active.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 5–8 containers with different closures on a tray: screw-top jar, snap-lid box, hinged box, zip bag, drawstring bag, push-top water bottle. The child opens and closes each, left to right.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">7</div>
+    <div class="work-info">
+      <div class="work-name">Folding Cloths</div>
+      <div class="work-develops">Develops <strong>order</strong> and <strong>coordination</strong> — the child learns to match edges precisely, creating symmetry. This is geometry before geometry.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can sit and attend to a task for 2+ minutes. Has been carrying trays and mats successfully.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Start with a washcloth with a visible center line (iron a crease or draw a line). Fold in half. Then quarters. Then diagonals. Progress to napkins, hand towels, T-shirts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">8</div>
+    <div class="work-info">
+      <div class="work-name">Turning Pages of a Book</div>
+      <div class="work-develops">Develops <strong>fine motor control</strong> and <strong>concentration</strong> — the pincer grip in action, with the added motivation of discovering what comes next.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grabs at books but turns multiple pages at once, or crumples pages. They want to but can't isolate a single page yet.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Start with board books (thick pages), then move to regular picture books. Demonstrate: thumb and index finger at the top corner, lift one page, guide it over. Left to right — this is also pre-reading directionality.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">9</div>
+    <div class="work-info">
+      <div class="work-name">The Silence Game</div>
+      <div class="work-develops">Develops <strong>concentration</strong> and <strong>self-discipline</strong> — the deepest concentration exercise in all of Montessori. The child discovers that stillness is powerful.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can sit still for a few seconds at a time. Has experienced Walking on the Line. Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Sit together. Whisper "Let's make silence." Close your eyes. Listen. Start with 10 seconds and build. After silence, whisper what you heard. The child will be amazed at what they notice. This is meditation for children.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">10</div>
+    <div class="work-info">
+      <div class="work-name">Sitting and Standing Gracefully</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>order</strong> — conscious control over one of the most common movements. The child who can sit and stand with awareness has begun to control the will.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child crashes into chairs, scrapes them loudly, or collapses into sitting. The body can do it — the mind hasn't refined it yet.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Demonstrate in slow motion: approach chair, hands on back, pull out quietly, turn, lower body slowly, sit. Reverse to stand. The child discovers that ordinary movements can be beautiful when done with intention.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">11</div>
+    <div class="work-info">
+      <div class="work-name">Dry Transfer — Hands</div>
+      <div class="work-develops">Develops <strong>concentration</strong> and <strong>coordination</strong> — the first transfer activity. The child moves objects one at a time between two bowls, developing the pincer grip and left-to-right directionality.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can carry a tray to a table and sit. Shows interest in picking up and moving small objects.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two small bowls and large dried beans or wooden beads on a tray. Transfer one at a time from left bowl to right using three-finger grip (thumb, index, middle). Left to right prepares for reading direction.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 12 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">12</div>
+    <div class="work-info">
+      <div class="work-name">Spooning</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>concentration</strong> — the spoon is the child's first tool. Controlling an extension of the hand requires a new level of motor planning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Has mastered dry hand transfer. Tries to use spoons at mealtimes, even messily.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two bowls, one teaspoon, and rice or lentils on a tray. Transfer from left to right, one scoop at a time. The goal: no spills. When spills happen, they sweep — that's a bonus work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 13 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">13</div>
+    <div class="work-info">
+      <div class="work-name">Tonging</div>
+      <div class="work-develops">Develops <strong>fine motor coordination</strong> — the tongs require bilateral hand pressure, strengthening the exact muscles that will later hold a pencil.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Spooning is clean and confident. Child squeezes things (sponges, stress balls, your hand).</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Kitchen tongs (child-sized if possible) and cotton balls, pompoms, or large pasta between two bowls. Squeeze, lift, transfer, release. The "click" of the tongs is satisfying feedback.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 14 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">14</div>
+    <div class="work-info">
+      <div class="work-name">Tweezers Transfer</div>
+      <div class="work-develops">Develops <strong>fine motor precision</strong> and <strong>concentration</strong> — the pincer grip at its most refined. This is direct preparation for the writing grip.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Tongs are mastered. Child picks up tiny objects (crumbs, beads) between thumb and index finger easily. The sensitive period for small objects is at peak.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Blunt tweezers (craft or cooking tweezers), small beads or dried lentils, two small bowls or an ice cube tray. Each bead gets its own compartment.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 15 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">15</div>
+    <div class="work-info">
+      <div class="work-name">Pouring Dry Materials</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>concentration</strong> — the first pouring work. Two hands controlling a vessel, tipping at the right angle, stopping at the right moment. Pure motor planning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can carry a tray with items without spilling. Transfer activities are clean. Often around age 2.5–3.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two identical small pitchers (or measuring cups) and rice or lentils. Pour from left to right until empty, then back again. Start with just half a cup of material. The sound of the grain is the child's feedback.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 16 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">16</div>
+    <div class="work-info">
+      <div class="work-name">Pouring Water</div>
+      <div class="work-develops">Develops <strong>concentration</strong>, <strong>coordination</strong>, and <strong>independence</strong> — water demands precision because mistakes are immediately visible. Maria considered this a milestone: "The child who pours water without spilling has achieved a level of mastery."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Dry pouring is consistently clean. Child wants to pour their own water at meals.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two small glass pitchers (glass gives weight and real consequence — drops break, which teaches care). Start with colored water so spills are visible. Keep a small sponge on the tray for cleanup — the cleanup IS the work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 17 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">17</div>
+    <div class="work-info">
+      <div class="work-name">Sponging</div>
+      <div class="work-develops">Develops <strong>coordination</strong> and <strong>order</strong> — squeeze, absorb, transfer, wring. A four-step cycle that also teaches cause and effect: the sponge fills, the water moves, the surface dries.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has poured water and naturally wants to clean spills. Often picks up sponges or cloths and imitates wiping.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two small bowls, a natural sponge, and water. Demonstrate: dip sponge, squeeze over second bowl, repeat. Then use the sponge to clean a wet surface. This is also the beginning of "care of environment."</div>
+    </div>
+  </div>
+</div>
+
+<!-- 18 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">18</div>
+    <div class="work-info">
+      <div class="work-name">Basting (Turkey Baster)</div>
+      <div class="work-develops">Develops <strong>fine motor strength</strong> and <strong>concentration</strong> — squeeze the bulb, draw up water, release precisely. The visual feedback of water rising in the tube is fascinating.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Sponging is mastered. Child has hand strength to squeeze (can squeeze a stress ball or playdough easily).</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A turkey baster and two cups of colored water. Squeeze, draw, transfer, release. Add food coloring to make it magical. An ice cube tray as a target makes precision fun.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 19 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">19</div>
+    <div class="work-info">
+      <div class="work-name">Eye Dropper Transfer</div>
+      <div class="work-develops">Develops <strong>fine motor precision</strong> and <strong>concentration</strong> — the finest water transfer. Each drop requires exact pressure control. This is the peak of the transfer progression.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Basting is confident. Child is fascinated by drops, drips, and tiny amounts of liquid.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A medicine dropper or craft dropper, colored water, and an ice cube tray. One drop per compartment. Mix colors to explore what happens when red meets yellow. Science before science.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 20 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">20</div>
+    <div class="work-info">
+      <div class="work-name">Threading Large Beads</div>
+      <div class="work-develops">Develops <strong>concentration</strong>, <strong>coordination</strong>, and <strong>order</strong> — bilateral coordination (one hand holds, the other threads), visual tracking, and sequencing. Direct preparation for sewing and writing.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Tweezers transfer is mastered. Child lines things up or tries to poke sticks through holes.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Large wooden beads (or large pasta like rigatoni) and a shoelace with a stiffened tip. Thread on, thread off. Later: create a color pattern (red, blue, red, blue) — this is mathematical thinking.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 21 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">21</div>
+    <div class="work-info">
+      <div class="work-name">Velcro Frame</div>
+      <div class="work-develops">Develops <strong>independence</strong> and <strong>fine motor control</strong> — the easiest dressing frame. The satisfying rip of velcro is instant feedback. The child begins to understand: I can dress myself.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child pulls at their shoes or jacket closures. Interested in dressing/undressing.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Velcro shoes or any velcro-closure item. Or make a frame: stretch fabric over a picture frame, cut down the center, sew on velcro strips. Open from top to bottom, close from bottom to top.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 22 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">22</div>
+    <div class="work-info">
+      <div class="work-name">Snaps Frame</div>
+      <div class="work-develops">Develops <strong>fine motor precision</strong> and <strong>concentration</strong> — aligning two halves and pressing with the right force. Harder than velcro — the child must feel for the connection.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Velcro frame is mastered. Child can press with thumb and index finger simultaneously.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Any snap-button clothing (pajamas, baby onesies). Or a homemade frame with fabric and snap buttons from a craft store. Open top to bottom, close bottom to top.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 23 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">23</div>
+    <div class="work-info">
+      <div class="work-name">Large Buttons Frame</div>
+      <div class="work-develops">Develops <strong>independence</strong>, <strong>fine motor coordination</strong>, and <strong>concentration</strong> — the button requires a complex three-step maneuver: push through, grip on other side, pull. This is a cognitive milestone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Snaps are mastered. Child tries to button their own clothes or yours. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">An old shirt with large buttons, or a homemade frame. Demonstrate slowly: hold fabric, push button halfway through, reach behind with other hand, pull through. Undo top to bottom, do up bottom to top. Practice on the frame, then on real clothes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 24 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">24</div>
+    <div class="work-info">
+      <div class="work-name">Hand Washing</div>
+      <div class="work-develops">Develops <strong>independence</strong>, <strong>order</strong>, and <strong>concentration</strong> — a complete multi-step sequence: roll sleeves, wet hands, soap, scrub (front, back, between fingers), rinse, dry. This is the child's first full "cycle of activity."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child shows interest in water play. Can follow a 3+ step sequence. Often drawn to the sink.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A step stool at the bathroom sink, child-accessible soap (bar is better than pump — more steps, more coordination), and a dedicated hand towel at their height. Or: a basin on a low table with a pitcher of water, soap, nail brush, and towel. The basin version is the real Montessori method.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 25 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">25</div>
+    <div class="work-info">
+      <div class="work-name">Greetings</div>
+      <div class="work-develops">Develops <strong>social awareness</strong> and <strong>independence</strong> — the first Grace and Courtesy work. The child learns to initiate connection with another human being through eye contact, words, and a handshake or wave.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child is verbal (even minimally). Notices when people arrive or leave. The sensitive period for grace and courtesy is emerging.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Role-play: "Let's practice. I'll knock on the door. You open it and say 'Hello, welcome!' Then shake my hand." Practice with stuffed animals first if child is shy. The greeting ritual becomes a daily practice at the front door.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end works-grid -->
+
+<!-- ═══════════ SENSITIVE PERIOD CALLOUT ═══════════ -->
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🧠</div>
+    <div class="sp-text"><strong>Sensitive Period Note — Order (18–30 months peak):</strong> By the time a child reaches Work 25, they are likely deep in the sensitive period for order. You will notice them insisting on routines, getting upset when objects are out of place, and wanting everything done "the same way." This is not rigidity — it is the child constructing an internal map of reality. Honor it. Keep the works on the same shelf, in the same order, presented the same way.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--       PHASE 2: GROWING WILL               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase2)">Phase 2 — Works 26–50</span>
+  <h2>Growing Will</h2>
+  <p class="phase-desc">Refinement of movement, early independence in self-care, and the beginning of care for the environment. The child learns: I can take care of myself. I can take care of my world. My actions have real consequences.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 26-50 -->
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">26</div><div class="work-info"><div class="work-name">Small Buttons Frame</div><div class="work-develops">Develops <strong>fine motor precision</strong> — smaller buttons demand greater finger control and patience. The child who masters this can dress completely independently.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Large buttons are easy. Child buttons their own coat or shirt without frustration.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A dress shirt with small buttons, or sew small buttons onto fabric stretched on a frame. Real clothing practice is always better than a frame alone.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">27</div><div class="work-info"><div class="work-name">Zipper Frame</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>independence</strong> — the zipper requires two simultaneous actions: holding the base and pulling the tab. A bilateral coordination challenge.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Buttons are confident. Child pulls at jacket zippers or pencil case zippers.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A jacket with a separating zipper. Demonstrate: insert pin into retainer box, hold base with one hand, pull tab with the other. Closing is harder than opening. Practice both.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">28</div><div class="work-info"><div class="work-name">Buckles Frame</div><div class="work-develops">Develops <strong>fine motor coordination</strong> and <strong>problem-solving</strong> — the buckle has a prong, a strap, and holes. The child must align, insert, and fasten — a three-part mechanical puzzle.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Zippers are mastered. Child is interested in belts, watch bands, or sandal buckles.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">An old belt, a sandal with a buckle, or a child's backpack with a chest buckle. Demonstrate slowly: thread strap through buckle, push prong into hole, tuck strap end.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">29</div><div class="work-info"><div class="work-name">Lacing Frame</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>coordination</strong>, and <strong>order</strong> — over-under-pull, over-under-pull. The lacing pattern is sequential, bilateral, and rhythmic.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Threading beads is easy. Child attempts to lace shoes or weave things together.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A shoe with laces (no tying yet — just threading through eyelets), or punch holes in cardboard and lace with a shoelace. Criss-cross pattern: left over right, right over left, pull tight.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">30</div><div class="work-info"><div class="work-name">Bow Tying</div><div class="work-develops">Develops <strong>fine motor mastery</strong>, <strong>concentration</strong>, and <strong>independence</strong> — the most complex dressing frame. Two loops, a knot, and symmetry. Maria placed this near the end of Practical Life for good reason.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Lacing is confident. Child is around 4–5 years. Asks to tie their own shoes. Finger strength and bilateral coordination are well-developed.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A bow-tying frame (two ribbons on a board), or a large shoe. Use two different colored laces so the child can see which lace does what. "Make an X, tuck one under, pull. Make a loop, wrap, push through, pull both loops." Weeks of practice is normal.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">31</div><div class="work-info"><div class="work-name">Face Washing</div><div class="work-develops">Develops <strong>independence</strong> and <strong>self-care awareness</strong> — the child takes ownership of their own body. Multiple steps: wet cloth, soap, scrub gently, rinse cloth, wipe soap, dry.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Hand washing is independent. Child notices when face is dirty or has food on it.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A mirror at child height, a small basin of warm water, a washcloth, and a towel. Or at the sink with a step stool. The mirror is essential — the child sees the results of their own care.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">32</div><div class="work-info"><div class="work-name">Teeth Brushing</div><div class="work-develops">Develops <strong>coordination</strong>, <strong>independence</strong>, and <strong>order</strong> — circular motions, front-back-sides-tongue, rinse, spit. A daily ritual the child owns.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Face washing is established. Child shows interest in toothbrush or imitates brushing.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Child's toothbrush at their level, a small cup for rinsing, and a mirror. Demonstrate each area: top front, bottom front, top sides, bottom sides, tongue. A timer or song makes the 2-minute duration concrete.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">33</div><div class="work-info"><div class="work-name">Nose Blowing</div><div class="work-develops">Develops <strong>independence</strong> and <strong>self-awareness</strong> — the child learns to sense when they need to blow and to do it themselves. A small act of dignity.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child has a runny nose and wipes with hand or sleeve. Usually around 2.5–3 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small basket of tissues within reach and a waste basket. Demonstrate: take one tissue, cover nose, blow gently (practice blowing through nose onto hand to learn the sensation), fold, dispose. Always have tissues accessible — never make them ask.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">34</div><div class="work-info"><div class="work-name">Hair Brushing</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>independence</strong> — working behind the head without seeing requires spatial awareness and motor memory. The child grooms themselves.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child reaches for the hairbrush when they see you using it. Hand strength is sufficient to grip a brush.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A child-sized brush or comb, a mirror at their height. Demonstrate: hold hair at roots (to prevent pulling), brush from mid-length to ends, then from roots. Place the brush where the child can reach it as part of their morning routine.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">35</div><div class="work-info"><div class="work-name">Dressing Oneself — Complete</div><div class="work-develops">Develops <strong>full independence</strong> and <strong>order</strong> — the culmination of all dressing frame work. Selecting clothes, putting them on in sequence, fastening all closures. The child who dresses themselves owns their morning.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">All dressing frames through buttons/zippers mastered. Child attempts to dress independently, even if imperfectly. Around 3–3.5 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Low drawers or open shelves with clothing the child can reach. Limit choices to 2–3 options (respects the sensitive period for order). Lay clothes out in dressing order: underwear first, then pants, shirt, socks, shoes. A low hook for their coat.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">36</div><div class="work-info"><div class="work-name">Dusting</div><div class="work-develops">Develops <strong>coordination</strong>, <strong>order</strong>, and <strong>care for the environment</strong> — the first "care of environment" work. The child sees dust, removes it, and sees the clean surface. Visible cause and effect.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child has completed the foundation works and shows interest in cleaning or imitating household tasks.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small soft cloth or feather duster. Demonstrate on one shelf: left to right, top to bottom, lift objects, dust underneath, replace. The child learns systematic movement patterns.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">37</div><div class="work-info"><div class="work-name">Sweeping</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>order</strong> — the broom is a long tool requiring whole-body coordination. Sweeping toward a dustpan demands spatial planning.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Dusting established. Child picks up a broom or mimics sweeping. Usually loves this between 2.5–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A child-sized broom and dustpan (cut an adult broom handle if needed). Scatter something visible — torn paper, rice, crumbs. Demonstrate: sweep in one direction toward the dustpan. The child will do this for 30 minutes straight. That's normalization happening.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">38</div><div class="work-info"><div class="work-name">Mopping</div><div class="work-develops">Develops <strong>gross motor coordination</strong> and <strong>order</strong> — larger movements than sweeping, with the added element of water. Wring, mop, wring, mop — a rhythmic cycle.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Sweeping is well-established. Sponging/wringing skills from earlier transfers are solid.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A child-sized mop (or a sponge mop cut down), a small bucket with a wringer, and a defined area (the bathroom, a tiled section). Demonstrate the back-and-forth pattern. Start with a small spill, not the whole floor.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">39</div><div class="work-info"><div class="work-name">Table Scrubbing</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>coordination</strong>, and <strong>order</strong> — Maria's favorite Practical Life work. A complex 12+ step sequence that takes 30–45 minutes. The circular scrubbing motion and the wet-to-dry transformation is deeply satisfying.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Sponging and sweeping are mastered. Child can sustain attention for 15+ minutes. Usually around age 3–4.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small table or cutting board, a basin of warm soapy water, a scrub brush, a sponge for rinsing, a drying towel, and an apron. The sequence: put on apron → carry supplies → wet surface → apply soap → scrub in circles → sponge off soap → dry → inspect → return supplies. This work can occupy a child for an hour.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">40</div><div class="work-info"><div class="work-name">Plant Care — Watering</div><div class="work-develops">Develops <strong>care</strong>, <strong>responsibility</strong>, and <strong>order</strong> — the child's first experience nurturing a living thing. The plant depends on them. This is the birth of empathy through action.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Pouring water is mastered. Child notices plants, flowers, or the outdoors with interest.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small watering can (child-sized) and a plant at child height. Demonstrate: check soil (touch it — is it dry?), fill can, pour slowly at the base, stop when moist. A plant care chart on the wall (water Mon/Wed/Fri) introduces routine and time awareness.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">41</div><div class="work-info"><div class="work-name">Window Washing</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>concentration</strong> — spray, wipe in circles, dry. The glass reveals every streak — instant visual feedback on technique.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Table scrubbing established. Child is interested in reflections, glass, or mirrors.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A spray bottle (water with a drop of vinegar), a squeegee or cloth, and a low window or mirror. The spray bottle alone builds tremendous hand strength — perfect preparation for writing.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">42</div><div class="work-info"><div class="work-name">Please and Thank You</div><div class="work-develops">Develops <strong>social awareness</strong> and <strong>grace</strong> — not rote politeness but genuine gratitude and respect for others. The child practices the words until they become natural.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Greetings are natural. Child is in the sensitive period for grace and courtesy (3–4.5 years).</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Role-play: "May I have the salt, please?" "Thank you for passing it." Practice at every meal. Model it always. Never force — model, model, model. The child absorbs what they see far more than what they're told.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">43</div><div class="work-info"><div class="work-name">Saying Excuse Me</div><div class="work-develops">Develops <strong>social awareness</strong> and <strong>self-regulation</strong> — the child learns to interrupt politely, to wait for acknowledgment, and to navigate the social world with respect.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child interrupts frequently. They NEED to communicate but don't know how to navigate someone else's conversation.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Teach: place hand gently on parent's arm, wait silently. Parent places hand on child's to acknowledge, finishes their sentence, then turns to the child. Practice this exact sequence until it replaces shouting "MOMMY!"</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">44</div><div class="work-info"><div class="work-name">Shoe Polishing</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>order</strong>, and <strong>care</strong> — a complex multi-step sequence: lay newspaper, apply polish with cloth, wait, buff with brush, shine with clean cloth. The transformation is magical.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Table scrubbing mastered. Child can follow a 6+ step sequence. Notices when shoes are dirty.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Newspaper, a shoe polish (neutral or matching), a soft cloth for applying, a brush for buffing, and a polishing cloth. Use a parent's leather shoe to start. The before/after comparison teaches the child that their effort transforms things.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">45</div><div class="work-info"><div class="work-name">Wood Polishing</div><div class="work-develops">Develops <strong>concentration</strong> and <strong>care for environment</strong> — similar multi-step process to shoe polishing but on furniture. The child sees wood grain emerge under their effort.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Shoe polishing or table scrubbing established. Child takes pride in clean surfaces.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small wooden item (cutting board, wooden box), beeswax polish or olive oil on a cloth, and a buffing cloth. Apply in circles, wait, buff to shine. The scent of beeswax becomes associated with the satisfaction of caring for beautiful things.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">46</div><div class="work-info"><div class="work-name">Washing Fruits and Vegetables</div><div class="work-develops">Develops <strong>independence</strong>, <strong>coordination</strong>, and <strong>care</strong> — the first food preparation work. Real food, real water, a real contribution to the family meal.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Water pouring and sponging are confident. Child is interested in food and the kitchen. Usually 2.5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A colander, a bowl of water, and fruits or vegetables. Demonstrate: place in water, rub gently, rinse under tap, place in colander. Apples, potatoes, and carrots are perfect starters — sturdy, hard to damage, and the child eats what they washed.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">47</div><div class="work-info"><div class="work-name">Spreading</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>independence</strong> — the knife is a tool, not a toy. The child learns controlled lateral movement and the correct pressure for spreading without tearing.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Washing produce is confident. Child wants to "help" make their own food. Around 3 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A butter knife or spreader, bread or crackers, and soft spread (butter, cream cheese, hummus, jam). Demonstrate: hold bread with one hand, scoop with knife, spread from center outward. The child makes their own snack — and eats it. Purpose fulfilled.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">48</div><div class="work-info"><div class="work-name">Peeling — Easy Items</div><div class="work-develops">Develops <strong>fine motor control</strong> and <strong>concentration</strong> — the peel separates from the fruit under the child's fingers. Bananas, oranges, hard-boiled eggs — each has a different technique.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Spreading is confident. Child has good pincer grip strength from transfer activities.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Start with bananas (snap the top, peel down). Then clementines (start the peel, child continues). Then hard-boiled eggs (tap, crack, peel). A small bowl for waste and a plate for the food. Real food, real purpose.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">49</div><div class="work-info"><div class="work-name">Table Setting</div><div class="work-develops">Develops <strong>order</strong>, <strong>spatial awareness</strong>, and <strong>service to others</strong> — each item has a place. The placemat is a map. The child contributes to the family ritual of eating together.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child is in the sensitive period for order. Notices when things are "in the wrong place." Wants to help at mealtimes. Around 3–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A placemat with outlines drawn or traced for plate, fork, knife, spoon, cup, and napkin. Or a photo of the correct setting pinned nearby. Start with their own place, then extend to setting for the whole family. This is geography (spatial relations) and service combined.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase2)">50</div><div class="work-info"><div class="work-name">Sewing Cards</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>fine motor precision</strong>, and <strong>order</strong> — the needle (blunt) goes through the hole, pulls the thread, and creates a pattern. This is direct preparation for writing: hand control, crossing the midline, and sequential movement.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Threading beads and lacing are mastered. Child shows interest in sewing or stitching. Usually around 3.5–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Punch holes around the edge of a cardboard shape (heart, star, circle) with a hole punch. Thread a blunt plastic needle or shoelace. In-out, in-out. Later: follow a specific path (every other hole, or a pattern). Pre-made sewing cards are also available inexpensively.</div></div></div></div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🧠</div>
+    <div class="sp-text"><strong>Sensitive Period Note — Refined Movement (18–36 months peak):</strong> Through Phase 2, the child's sensitive period for refined movement is at its most intense. They will repeat transfers, scrubbing, and polishing not because you asked them to, but because their body is driven to refine these movements. A child who scrubs a table for 40 minutes is not "playing" — they are building the neural pathways for handwriting, mathematical manipulation, and scientific inquiry. Never interrupt this concentration.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--       PHASE 3: THE PREPARED CHILD          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase3)">Phase 3 — Works 51–75</span>
+  <h2>The Prepared Child</h2>
+  <p class="phase-desc">Care of environment expands, food preparation deepens, and social grace becomes natural. The child contributes meaningfully to family life. They are no longer practicing independence — they are living it.</p>
+</div>
+
+<div class="works-grid">
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">51</div><div class="work-info"><div class="work-name">Metal Polishing</div><div class="work-develops">Develops <strong>concentration</strong> and <strong>order</strong> — the most dramatic polishing work. Tarnished brass or silver transforms under the child's effort. The before-and-after is unmistakable.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Wood/shoe polishing are well-established. Child can sustain a 20+ minute work cycle.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A brass candlestick, small tray, or copper pot. Metal polish (Brasso), cotton balls for applying, a soft cloth for buffing, and newspaper to protect the table. The tarnish disappearing under their hands is pure magic.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">52</div><div class="work-info"><div class="work-name">Glass Polishing</div><div class="work-develops">Develops <strong>care</strong>, <strong>delicacy of touch</strong>, and <strong>concentration</strong> — glass demands gentleness. The child who polishes glass without breaking it has mastered controlled force.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Window washing is clean. Child handles fragile objects carefully.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A glass vase or jar, a soft lint-free cloth, and water with a drop of vinegar. Demonstrate the circular polish, holding firmly but gently. The transparency of clean glass is the reward. Use real glass — the risk teaches respect.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">53</div><div class="work-info"><div class="work-name">Flower Arranging</div><div class="work-develops">Develops <strong>aesthetic sense</strong>, <strong>coordination</strong>, and <strong>care</strong> — cutting stems, pouring water to the right level, arranging by height and color. Beauty is not frivolous — Maria considered it essential to the prepared environment.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Plant care is established. Child notices flowers, picks wildflowers, or comments on beauty. Around 3.5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small vase, child-safe scissors, a pitcher of water, and fresh flowers (from the garden, the market, or wildflowers). Cut stems at an angle, pour water to the line, arrange tallest in back. Change water every 2 days. The child brings beauty into their own home.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">54</div><div class="work-info"><div class="work-name">Dish Washing</div><div class="work-develops">Develops <strong>order</strong>, <strong>responsibility</strong>, and <strong>coordination</strong> — a complex sequence: scrape, wash, rinse, dry, put away. The child participates in the daily rhythm of family life.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Table scrubbing mastered. Child asks to help with dishes or stands at the sink watching.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A step stool at the sink, child-safe dishes (start with plastic, graduate to real), a scrub brush or sponge, dish soap, and a drying rack. Demonstrate: fill basin, add soap, scrub inside/outside, rinse under tap, place in rack. Start with their own plate and cup after meals.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">55</div><div class="work-info"><div class="work-name">Laundry — Hand Washing</div><div class="work-develops">Develops <strong>coordination</strong>, <strong>order</strong>, and <strong>independence</strong> — wet, soap, scrub, rinse, wring, hang. Maria's original classrooms had children washing their own cloths and napkins daily.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Table scrubbing and dish washing are established. Child notices dirty clothes or spills on clothing.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A basin, bar soap, a washboard (or just hands), and a drying line with clothespins at child height. Start with washcloths and napkins. Demonstrate: dip, rub soap, scrub, rinse, wring (twisting motion builds hand strength), pin on line. The clothespins alone are a fine motor exercise.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">56</div><div class="work-info"><div class="work-name">Folding Laundry</div><div class="work-develops">Develops <strong>order</strong>, <strong>precision</strong>, and <strong>contribution</strong> — matching edges, creating symmetry, sorting by owner. The child participates in a real household task.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Basic cloth folding from Phase 1 is mastered. Child can match edges consistently.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Start with washcloths and hand towels (square/rectangular, easy edges). Progress to T-shirts (fold in half, fold sleeves back, fold in half again). Then socks (match pairs, fold together). The child folds their own clothes and puts them in their drawer.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">57</div><div class="work-info"><div class="work-name">Peeling — With Peeler</div><div class="work-develops">Develops <strong>coordination</strong> and <strong>independence</strong> — the peeler is a sharp tool requiring bilateral coordination: hold the vegetable steady, draw the peeler away from the body, rotate, repeat.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Easy peeling mastered. Child has strong hand grip and understands "away from your body." Around 3.5–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A Y-shaped peeler (easier for children than straight peelers), a carrot or potato, a cutting board, and a compost bowl. Demonstrate: hold vegetable firmly at one end, draw peeler away from body, rotate, repeat. Peel goes into compost. The peeled vegetable goes into dinner.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">58</div><div class="work-info"><div class="work-name">Cutting Soft Foods</div><div class="work-develops">Develops <strong>coordination</strong>, <strong>independence</strong>, and <strong>concentration</strong> — the child uses a real knife for the first time. Bananas, mushrooms, strawberries — soft foods that yield to gentle pressure.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Spreading is confident. Peeling established. Child understands "careful" and "away from fingers." Around 3–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A child-safe knife (wavy chopper or crinkle cutter), a cutting board, and bananas or mushrooms. Demonstrate: "Bridge" (arch hand over food, cut under the bridge) or "Claw" (curl fingers, guide with knuckles). Start with banana slices — soft, safe, and immediately edible.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">59</div><div class="work-info"><div class="work-name">Cutting Harder Foods</div><div class="work-develops">Develops <strong>hand strength</strong>, <strong>concentration</strong>, and <strong>confidence</strong> — carrots, celery, apples require more force and a sharper blade. The child graduates to real kitchen participation.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Soft food cutting is clean and safe. Child uses proper hand position consistently. Around 4–5 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A small sharp knife (a paring knife, with supervision), a non-slip cutting board, and harder vegetables/fruits. Always cut round items in half first so they sit flat. The child who can cut a carrot safely is ready to help cook dinner.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">60</div><div class="work-info"><div class="work-name">Grating</div><div class="work-develops">Develops <strong>hand strength</strong>, <strong>coordination</strong>, and <strong>independence</strong> — the grater demands sustained downward pressure and controlled motion. Cheese, carrots, soap — each texture teaches different pressure.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Cutting established. Good hand strength (can squeeze a full sponge dry). Understands keeping fingers away from the grater surface.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A box grater (stable base) or flat grater on a cutting board, and cheese or carrots. Demonstrate: hold grater firmly, press food down along the surface, lift, repeat. Start with soft cheese — easier pressure. The child grates cheese for pizza night.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">61</div><div class="work-info"><div class="work-name">Juicing</div><div class="work-develops">Develops <strong>hand strength</strong> and <strong>independence</strong> — twisting and pressing a citrus fruit demands grip strength and rotational coordination. The reward is immediate: fresh juice.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Strong grip. Can twist lids off jars. Enjoys citrus fruits.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A manual citrus juicer (the kind you press and twist on), oranges or lemons cut in half, a small pitcher to catch juice, and a strainer for seeds. The child makes fresh orange juice for breakfast. Purpose incarnate.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">62</div><div class="work-info"><div class="work-name">Cracking Eggs</div><div class="work-develops">Develops <strong>fine motor control</strong> and <strong>concentration</strong> — the tap must be firm enough to crack but gentle enough not to shatter. Then: thumbs in, pull apart, shell in one hand, egg in the bowl. Exquisite precision.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Cutting and grating established. Child has refined finger control and understands gentle force. Around 4–5 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Eggs, a flat surface (not a bowl edge — flat surfaces make cleaner cracks), a bowl, and a small dish for shells. Demonstrate: tap tap tap (not smash), find the crack, thumbs in, pull apart over bowl. Expect broken yolks at first. They get better. Make scrambled eggs together.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">63</div><div class="work-info"><div class="work-name">Offering and Accepting Help</div><div class="work-develops">Develops <strong>social grace</strong> and <strong>empathy</strong> — the child learns to see when someone needs help and to offer it without being asked. Also: to accept help gracefully when offered.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child notices others struggling (a sibling reaching for something, a parent carrying bags). The sensitive period for grace and courtesy is at peak.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Role-play: "I see you're carrying a lot of groceries. Can I help?" "Thank you for offering — would you carry this bag?" Practice both offering AND accepting. Also practice: "No thank you, I can manage" — independence is respected too.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">64</div><div class="work-info"><div class="work-name">Table Manners</div><div class="work-develops">Develops <strong>self-discipline</strong>, <strong>social awareness</strong>, and <strong>order</strong> — napkin in lap, chewing with mouth closed, waiting for everyone to be served. The child joins the social ritual of dining.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Table setting mastered. Child eats at the table regularly and is in the grace and courtesy sensitive period.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Practice one manner at a time, not all at once. Week 1: napkin in lap. Week 2: waiting until everyone is served. Week 3: "May I please be excused?" Model silently — children notice everything. A "practice dinner" with stuffed animals makes it playful.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">65</div><div class="work-info"><div class="work-name">How to Interrupt Politely</div><div class="work-develops">Develops <strong>self-regulation</strong> and <strong>patience</strong> — the child learns that other people's conversations matter, and that they can wait without distress.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">"Excuse me" is established. Child still struggles with waiting when they have something urgent to say.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">The hand-on-arm method from Work 43, now extended: "When you put your hand on my arm, I'll put my hand on yours. That means I know you're waiting. Finish what I'm saying, then turn to you." Practice during phone calls — the hardest test.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">66</div><div class="work-info"><div class="work-name">Apologizing</div><div class="work-develops">Develops <strong>empathy</strong>, <strong>social responsibility</strong>, and <strong>self-awareness</strong> — not a forced "say sorry" but a genuine understanding: my action hurt someone, and I can repair it.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child shows remorse when they hurt someone (even if they can't articulate it). Usually 3+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Never force apologies. Instead model: "I knocked your tower over. I'm sorry — that must have been frustrating. Can I help you rebuild?" Teach the three parts: name what happened, name the feeling, offer repair. Role-play with dolls first if needed.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">67</div><div class="work-info"><div class="work-name">Observing Another's Work</div><div class="work-develops">Develops <strong>respect</strong>, <strong>self-regulation</strong>, and <strong>social awareness</strong> — the child learns to watch without touching, to be interested without interfering. Foundational classroom behavior.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child grabs others' things or interrupts play. They're interested in what others do but don't know the boundary.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">"Your sister is working. You can watch with your hands behind your back. When she's done, you can ask for a turn." Practice with siblings or when you're cooking: "Watch what I do — hands behind your back." The physical cue (hands behind back) gives the body a job.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">68</div><div class="work-info"><div class="work-name">Animal Care</div><div class="work-develops">Develops <strong>responsibility</strong>, <strong>empathy</strong>, and <strong>routine</strong> — a living creature depends on the child's daily action. Feed, water, clean — the consequences of neglect are real.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Plant care is a routine. Child shows tenderness toward animals. Understands that living things need food and water.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A family pet (fish, hamster, cat, dog) with specific child-assigned duties: fill water bowl, measure food, brush the cat. If no pet: a bird feeder outside the window, refilled weekly. The child charts what birds visit — this is science, care, and routine in one.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">69</div><div class="work-info"><div class="work-name">Making a Simple Snack</div><div class="work-develops">Develops <strong>independence</strong>, <strong>order</strong>, and <strong>executive function</strong> — plan the steps, gather ingredients, prepare, serve, clean up. A complete cycle of purposeful activity from start to finish.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Spreading, cutting, and washing are all established. Child can follow a multi-step plan. Around 3.5–4 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Start simple: crackers with cheese and apple slices. Create a visual recipe card (photos of each step). The child reads the card, gathers items, prepares, plates, and eats. Later: ants on a log, fruit salad, trail mix. A "snack shelf" in the fridge with pre-approved items the child can access anytime.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">70</div><div class="work-info"><div class="work-name">Paper Punching</div><div class="work-develops">Develops <strong>fine motor precision</strong> and <strong>concentration</strong> — pushing a pin through paper along a traced line. Direct preparation for writing: the hand learns to follow a path with controlled pressure.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Sewing cards mastered. Child shows interest in dots, patterns, and tracing. The sensitive period for writing may be emerging.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A felt pad or folded towel, paper with a simple shape drawn on it (circle, star), and a thumbtack or pushpin. Demonstrate: hold paper flat, push pin through along the line, close together. When finished, push out the shape — it separates like magic. Frame the art.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">71</div><div class="work-info"><div class="work-name">Running Stitch</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>bilateral coordination</strong>, and <strong>patience</strong> — the needle goes in on one side, comes out on the other, in a rhythm. Up-down-up-down. The child creates something tangible from thread.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Sewing cards and paper punching mastered. Child asks to sew or is fascinated by fabric and thread.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Burlap or loosely woven fabric (easier for a needle to pass through), a large blunt needle, and yarn or embroidery thread. Draw a straight line with marker. In-out, in-out along the line. When the child can sew a straight line, try a simple shape.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">72</div><div class="work-info"><div class="work-name">Braiding</div><div class="work-develops">Develops <strong>fine motor coordination</strong>, <strong>pattern recognition</strong>, and <strong>concentration</strong> — three strands, alternating crosses. Left over middle, right over middle, repeat. A mathematical pattern made physical.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Lacing frame mastered. Child can cross the midline easily. Usually 4+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Three thick ribbons or strips of fabric, taped to a table at one end. Use three different colors so the child can see the pattern. Left over middle (now the left IS the middle), right over middle. Secure the end with a rubber band. Graduate to braiding hair, dough, or friendship bracelets.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">73</div><div class="work-info"><div class="work-name">Sharing and Taking Turns</div><div class="work-develops">Develops <strong>self-regulation</strong>, <strong>patience</strong>, and <strong>social trust</strong> — the child learns that waiting doesn't mean losing. The item will return. Trust in social contracts.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child plays alongside others. Struggles with sharing but shows interest in cooperative play. Around 3.5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Use a timer: "You use it until the timer rings, then it's their turn." Start with 2-minute turns, lengthen over time. Also: "You can watch while you wait" (links to Work 67). Never force sharing of a child's own special objects — respect ownership first, then model generosity.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">74</div><div class="work-info"><div class="work-name">Walking Around Someone's Work</div><div class="work-develops">Develops <strong>spatial awareness</strong>, <strong>respect</strong>, and <strong>self-control</strong> — the child's mat is their territory. Others walk around it, never through it. This teaches respect for space, property, and concentration.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Observing another's work established. Child understands personal space but sometimes forgets in motion.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">When one child is working on a mat or at a table, others walk around — never through or over. Practice: place a mat in a hallway. Walk around it even though through would be faster. "We go around someone's work space, always." This translates to respecting concentration everywhere.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase3)">75</div><div class="work-info"><div class="work-name">Hosting — Serving Food and Drink to Guests</div><div class="work-develops">Develops <strong>grace</strong>, <strong>independence</strong>, and <strong>service to others</strong> — the child prepares a snack, pours drinks, carries them to guests, and offers with both hands. The ultimate integration of Practical Life skills: carrying, pouring, cutting, spreading, table setting, and social grace — all in one work.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Snack-making, pouring, table setting, and social greetings are all established. Child wants to "do something" when visitors arrive.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">When a guest arrives, the child prepares: cut fruit, crackers with spread, pour water or juice into a pitcher, carry the tray to the guest, offer with "Would you like a snack?" This is the moment every earlier work was building toward — real, purposeful contribution to real social life.</div></div></div></div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🧠</div>
+    <div class="sp-text"><strong>Sensitive Period Note — Grace & Courtesy (3–4.5 years peak):</strong> Phase 3 coincides with the child's most intense interest in social rules and manners. They are not performing politeness — they are absorbing the social code of their culture. A child who says "excuse me" without being prompted has internalized the lesson. They will correct others, insist on rules being followed, and be deeply satisfied by social rituals. This is the sensitive period working exactly as Maria described.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--       PHASE 4: NORMALIZATION               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase4)">Phase 4 — Works 76–100</span>
+  <h2>Normalization</h2>
+  <p class="phase-desc">Complex multi-step tasks, full independence, and the integration of all skills into daily life. The child who completes Phase 4 can run a household task from beginning to end, work for extended periods with deep concentration, and navigate social situations with grace. Maria called this the "normalized child" — not obedient, but free.</p>
+</div>
+
+<div class="works-grid">
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">76</div><div class="work-info"><div class="work-name">Making a Complete Meal — Sandwich</div><div class="work-develops">Develops <strong>executive function</strong>, <strong>independence</strong>, and <strong>order</strong> — planning ingredients, gathering, assembling in sequence, cutting, plating, and cleaning up. A full cycle of purposeful work.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Snack-making, spreading, and cutting are all confident. Child asks to make lunch. Around 4+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Visual recipe card with photos: bread → butter → filling → top bread → cut → plate. All ingredients at child height. The child makes their own lunch. They may make yours too.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">77</div><div class="work-info"><div class="work-name">Cooking — Stirring on Stove</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>patience</strong>, and <strong>trust</strong> — the child works with heat for the first time. Slow, careful stirring while watching for changes. Supervised independence near real danger.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child understands "hot" from experience (touching a warm cup). Follows safety instructions consistently. Around 4.5–5 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A step stool at the stove, a wooden spoon, and something forgiving (soup, oatmeal, scrambled eggs). Demonstrate: hold handle, stir slowly in circles, stay centered, never touch the pot sides. Stay within arm's reach. The trust you show the child here transforms their self-image.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">78</div><div class="work-info"><div class="work-name">Cooking — Measuring Ingredients</div><div class="work-develops">Develops <strong>mathematical thinking</strong>, <strong>precision</strong>, and <strong>order</strong> — cups, tablespoons, teaspoons. Level off with a knife. The child encounters fractions and proportions through real action.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Pouring is precise. Child is interested in "how much" and quantities. May recognize numbers.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Measuring cups and spoons, a recipe card with quantities shown visually (a picture of a 1-cup measure filled with flour). Start with baking — it demands precision. "We need 2 cups of flour" becomes a concrete math lesson the child can eat.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">79</div><div class="work-info"><div class="work-name">Cooking — Following a Full Recipe</div><div class="work-develops">Develops <strong>executive function</strong>, <strong>reading readiness</strong>, and <strong>sequencing</strong> — the recipe is a set of instructions. Read, gather, measure, combine, cook, serve. The child follows a plan from start to finish.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Measuring, stirring, cutting, and cracking eggs established. Child can follow a 10+ step sequence. Around 4.5–5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Create visual recipe cards with numbered steps and photos. Start with: pancakes, muffins, fruit salad, pasta with sauce. The child reads (or is read) each step, executes it, checks it off, and moves to the next. A full recipe takes 30–60 minutes of sustained concentration. This IS normalization.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">80</div><div class="work-info"><div class="work-name">Cross Stitch</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>pattern recognition</strong>, and <strong>patience</strong> — X after X in a grid. The child creates art through sustained, repetitive precision. Mathematics made visible.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Running stitch mastered. Child can follow a grid pattern and has patience for extended fine motor work.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Aida cloth (the gridded cross-stitch fabric), a blunt tapestry needle, and embroidery floss. Start with a simple pattern: one row of X's in one color. Then a heart or initial. Cross-stitch kits for children are readily available.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">81</div><div class="work-info"><div class="work-name">Sewing a Button</div><div class="work-develops">Develops <strong>fine motor mastery</strong>, <strong>independence</strong>, and <strong>practical problem-solving</strong> — the child can repair their own clothing. True functional independence.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Running stitch and cross stitch comfortable. Child notices when buttons fall off. Around 5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A felt square, a large button with 2 or 4 holes, a needle, and thread. Demonstrate: thread needle, knot end, push up through fabric and one button hole, down through the other, repeat 4–5 times, tie off. The child sews a real button back onto their own shirt. Functional independence at its finest.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">82</div><div class="work-info"><div class="work-name">Weaving</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>pattern recognition</strong>, and <strong>fine motor mastery</strong> — over-under-over-under across a warp. The child creates fabric from thread. Textile art and mathematics unified.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Braiding mastered. Child understands alternating patterns. Usually 4.5–5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A simple cardboard loom (cut notches in the top and bottom of cardboard, string yarn vertically for the warp). Weave with a large blunt needle or a popsicle stick shuttle. Over-under-over-under. Each row builds on the last. The finished piece becomes a coaster, a doll blanket, or a bookmark.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">83</div><div class="work-info"><div class="work-name">Hook and Eye Frame</div><div class="work-develops">Develops <strong>fine motor precision</strong> — the tiniest dressing frame closure. Thread the hook into the eye without seeing the connection. Pure tactile feedback.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">All other dressing frames mastered. Child is precise with fingers and patient with fiddly tasks.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A garment with hook-and-eye closures (bra, formal pants, some dresses), or sew hooks and eyes onto a frame. This is the most challenging dressing frame — save it for when the child's fingers are truly refined.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">84</div><div class="work-info"><div class="work-name">Safety Pins Frame</div><div class="work-develops">Develops <strong>precision</strong>, <strong>care</strong>, and <strong>confidence with tools</strong> — a sharp object that requires respect and control. Open, insert, close. The child learns that sharp things serve them when handled correctly.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Hook and eye mastered. Child understands "point away from you" and handles scissors safely.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Large safety pins and fabric. Demonstrate: open the clasp, push the point through both layers of fabric, close the clasp. The click of the safety pin closing is the control of error — if it clicks, it's done correctly.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">85</div><div class="work-info"><div class="work-name">Hair Washing</div><div class="work-develops">Develops <strong>full self-care independence</strong> — wet, apply shampoo, scrub scalp, rinse thoroughly. The child owns their entire hygiene routine.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Face washing, hand washing, teeth brushing, and hair brushing are all independent. Child wants to do bath time alone. Around 4.5–5 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Child-accessible shampoo and conditioner, a hand mirror (to check the back), and a washcloth for eyes. Demonstrate: wet hair, small amount of shampoo, scrub everywhere (top, sides, back, behind ears), rinse until water runs clear. Check with mirror. The child who washes their own hair is truly independent in self-care.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">86</div><div class="work-info"><div class="work-name">Covering Coughs and Sneezes</div><div class="work-develops">Develops <strong>social responsibility</strong> and <strong>self-awareness</strong> — the child protects others by controlling their own reflexes. A small act of community health.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Nose blowing established. Child understands germs at a basic level ("germs make people sick").</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Demonstrate: cough or sneeze into elbow (not hands — hands touch everything). "Vampire sneeze" makes it fun. Practice the motion without an actual sneeze. Then wash hands after. This is also a Grace and Courtesy lesson — caring for others' health.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">87</div><div class="work-info"><div class="work-name">Introductions</div><div class="work-develops">Develops <strong>social confidence</strong> and <strong>grace</strong> — the child introduces one person to another by name. "Mama, this is my friend Sam. Sam, this is my mama." A bridge between social worlds.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Greetings are natural. Child knows the names of friends and family. Around 4+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Role-play: "This is how you introduce two people who don't know each other. You say their names: 'Grandma, this is my friend Lily. Lily, this is my Grandma.'" Practice with stuffed animals, then at real gatherings. The child becomes a social connector.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">88</div><div class="work-info"><div class="work-name">Cleaning Up After a Meal — Complete</div><div class="work-develops">Develops <strong>responsibility</strong>, <strong>order</strong>, and <strong>service</strong> — clear plate, scrape food waste, stack dishes, wipe table, sweep under table, wash dishes. The child closes the cycle that began with table setting.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Dish washing, sweeping, and table wiping are all established. Child does each step individually but now combines them into one flow.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Create a visual checklist by the kitchen: 1) Clear your plate 2) Scrape into compost 3) Place in sink 4) Wipe your spot 5) Push in your chair. Start with their own place. Gradually extend to clearing for the whole family.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">89</div><div class="work-info"><div class="work-name">Plant Care — Full Cycle</div><div class="work-develops">Develops <strong>patience</strong>, <strong>observation</strong>, and <strong>scientific thinking</strong> — planting a seed, watering daily, observing growth, repotting, pruning. The child witnesses the entire life cycle through their own care.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Basic plant watering is routine. Child asks where food comes from or how plants grow.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A pot, soil, and fast-growing seeds (beans, sunflowers, herbs like basil). Plant together, water daily, and keep a growth journal (draw the plant each week). When it's big enough: harvest, eat, or transplant. The child sees the full arc from seed to table.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">90</div><div class="work-info"><div class="work-name">Ironing</div><div class="work-develops">Develops <strong>concentration</strong>, <strong>care</strong>, and <strong>respect for heat</strong> — the iron transforms wrinkled cloth into smooth fabric. Long, controlled strokes. The child works with a real tool that demands respect.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child has worked with heat (stove stirring). Understands "hot" and safety rules. Folding laundry is established. Around 5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A low ironing board or towel on a table, a travel-sized iron (lighter, smaller), and cloth napkins or handkerchiefs. Demonstrate: spray water, long smooth strokes in one direction, flip, repeat. Close supervision required. The transformation from wrinkled to smooth is immensely satisfying.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">91</div><div class="work-info"><div class="work-name">Sorting and Organizing — Drawers and Shelves</div><div class="work-develops">Develops <strong>order</strong>, <strong>categorization</strong>, and <strong>executive function</strong> — the child takes ownership of their physical space. Everything has a place; everything returns to its place.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child knows where things belong but their space has gotten disorganized. They feel the disorder — this IS the sensitive period for order maturing into environmental ownership.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Start with one drawer or shelf. Empty it together. Sort into keep/donate/trash. Decide where each item belongs. Label the locations (pictures for pre-readers). The child maintains this system daily. Extend to the whole room over weeks.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">92</div><div class="work-info"><div class="work-name">Packing a Bag — School or Outing</div><div class="work-develops">Develops <strong>executive function</strong>, <strong>independence</strong>, and <strong>planning</strong> — the child anticipates future needs, gathers items, checks a list, and takes responsibility for their own preparedness.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child forgets items frequently but is aware they forgot. Can follow a checklist.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A visual checklist by the door with pictures: water bottle, snack, hat, sunscreen, jacket. The child packs their own bag the night before. Review together the first few times, then let them own it. Forgetting something is the natural consequence — and the best teacher.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">93</div><div class="work-info"><div class="work-name">Time Awareness — Reading a Clock</div><div class="work-develops">Develops <strong>order</strong>, <strong>mathematical thinking</strong>, and <strong>self-regulation</strong> — the child connects abstract time to concrete daily rhythms. "It's 7:00 — time for breakfast."</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child asks "how long until..." or "is it time for..." Understands before/after and sequences. Around 4.5–5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">An analog clock at child height. Start with "the hour hand": when the big hand is on 12 and the small hand is on 7, it's 7 o'clock. Link to routines: "At 8, we leave for school." A daily visual schedule with clock faces alongside activities makes time concrete.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">94</div><div class="work-info"><div class="work-name">Money — Recognizing and Counting Coins</div><div class="work-develops">Develops <strong>mathematical thinking</strong>, <strong>independence</strong>, and <strong>practical numeracy</strong> — the child understands that coins represent value and that value can be exchanged for goods.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child is curious about money. Understands the concept of "buying." Can count to 10 reliably.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Real coins sorted by type. Learn names and values. Play "store" with real items and real prices (1 apple = 2 coins). Eventually: the child pays at a real store with exact change you've pre-counted together. Real transactions in the real world.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">95</div><div class="work-info"><div class="work-name">Baking — Full Project (Bread or Cookies)</div><div class="work-develops">Develops <strong>executive function</strong>, <strong>patience</strong>, <strong>measurement</strong>, and <strong>delayed gratification</strong> — mix, knead, wait, bake, wait, eat. The child learns that some rewards require sustained effort and patience.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Following a recipe, measuring, cracking eggs, and stove work are all established. Around 5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Simple bread recipe: flour, yeast, water, salt, sugar. The child measures, mixes, kneads (10 minutes of hand work!), shapes, waits for rising (delayed gratification), watches the oven, and shares the result. One baking session contains more learning than a week of worksheets.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">96</div><div class="work-info"><div class="work-name">Telephone/Video Call Etiquette</div><div class="work-develops">Develops <strong>social confidence</strong>, <strong>communication skills</strong>, and <strong>grace</strong> — the child communicates with someone they cannot see or touch. Voice, words, and manners must carry the entire interaction.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Greetings and introductions are confident. Child talks to family members on the phone and wants to participate more.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">Practice: "Hello, this is [name]. May I speak to Grandma?" and "Thank you for calling. Goodbye." Let the child call a grandparent independently. For video calls: look at the camera (not the screen), wait your turn to speak, wave goodbye. Real calls with real people.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">97</div><div class="work-info"><div class="work-name">First Aid — Treating a Minor Wound</div><div class="work-develops">Develops <strong>independence</strong>, <strong>calm under stress</strong>, and <strong>care for self</strong> — the child cleans a scrape, applies a bandage, and knows when to ask for help. Self-sufficiency at its most empowering.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child comes running for every small scrape. Understands "clean it, cover it" concept. Around 4.5+ years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A child-accessible first aid box (low shelf, labeled with a red cross): antiseptic wipes, adhesive bandages, cotton balls. Demonstrate on a doll: wipe the wound gently, dry, apply bandage. "If there's a lot of blood or it hurts a lot, come to me. Small scrapes — you can handle it yourself."</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">98</div><div class="work-info"><div class="work-name">Planning a Meal — Menu to Table</div><div class="work-develops">Develops <strong>executive function</strong>, <strong>mathematical thinking</strong>, and <strong>leadership</strong> — the child plans what to cook, lists ingredients, checks what's available, prepares the meal, sets the table, serves, and cleans up. The complete cycle from thought to action to completion.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">All cooking skills established. Child can follow multi-step recipes independently. Has opinions about food. Around 5–6 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">"You're in charge of Saturday lunch. What will you make?" Help the child: choose a recipe, write a shopping list, check the pantry, help shop, prepare the food, set the table, call the family to eat. This single work integrates every skill from Works 1–97. It is the summit of Practical Life.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">99</div><div class="work-info"><div class="work-name">Teaching a Younger Child</div><div class="work-develops">Develops <strong>mastery</strong>, <strong>empathy</strong>, and <strong>leadership</strong> — Maria observed that the highest form of learning is teaching. The older child demonstrates a work to a younger child, consolidating their own knowledge through service.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Child has mastered multiple works across all categories. Shows interest in younger children or siblings. Spontaneously explains how things work.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">"Can you show your little brother how to carry a tray?" The older child demonstrates slowly, just as you demonstrated to them. They discover gaps in their own understanding. They practice patience. They experience the joy of helping someone else grow. This is Montessori's mixed-age magic — at home.</div></div></div></div>
+
+<div class="work-card"><div class="work-header"><div class="work-number" style="background: var(--phase4)">100</div><div class="work-info"><div class="work-name">The Morning Routine — Complete Independence</div><div class="work-develops">Develops <strong>total self-regulation</strong>, <strong>order</strong>, and <strong>independence</strong> — the child wakes, dresses, washes, eats, cleans up, packs their bag, and is ready for the day — without being told. This is normalization. This is the work of Practical Life, completed.</div></div></div><div class="work-details"><div class="detail-box readiness-box"><div class="detail-label">👁️ Readiness Sign</div><div class="detail-text">Every component skill is established. The child does each step when prompted but not yet as a seamless flow. Around 5–6 years.</div></div><div class="detail-box home-box"><div class="detail-label">🏠 Home Version</div><div class="detail-text">A visual routine chart: 1) Wake up 2) Make bed 3) Dress 4) Wash face & brush teeth 5) Eat breakfast 6) Clear plate 7) Pack bag 8) Shoes and coat. The child follows the chart independently. No nagging. No reminders. The chart is the guide. When this flows — when the child moves through their morning with calm purpose and no adult direction — you are witnessing what Maria Montessori called "the normalized child." It begins with carrying a mat. It ends here.</div></div></div></div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🧠</div>
+    <div class="sp-text"><strong>Sensitive Period Note — Writing (3.5–4 years peak):</strong> By Phase 4, the child's hand has been prepared by 75+ works of carrying, pouring, scrubbing, threading, sewing, and cutting. When the sensitive period for writing arrives, the child's hand is ready. Maria called this the "explosion into writing" — it appears sudden but was prepared over years. Every transfer, every button, every stitch was building toward this moment. Practical Life IS the writing curriculum.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                  FOOTER                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="footer">
+  <div class="logo">Montree</div>
+  <p>The Montessori Practical Life Curriculum — 100 Works from Zero to Normalization</p>
+  <p style="margin-top: 8px">Based on the writings of Maria Montessori &middot; Compiled by the Montree Guru</p>
+  <p style="margin-top: 4px"><a href="https://montree.xyz">montree.xyz</a></p>
+  <p style="margin-top: 20px; font-size: 0.7rem; opacity: 0.5">"The child who concentrates is immensely happy." — Maria Montessori</p>
+</div>
+
+</body>
+</html>
