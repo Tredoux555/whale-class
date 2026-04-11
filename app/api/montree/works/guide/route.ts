@@ -165,6 +165,35 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // 6. Pre-generate Chinese translation in the background (fire-and-forget)
+    //    So the NEXT zh request is instant from cache, even for custom works.
+    if (classroomId && anthropic && (result.quick_guide || result.presentation_steps)) {
+      // Quick check if zh cache already exists — avoid redundant translation
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('guide_content_zh')
+        .eq('classroom_id', classroomId)
+        .ilike('name', `%${escapeIlike(workName)}%`)
+        .limit(1)
+        .maybeSingle()
+        .then(async ({ data: row }) => {
+          if (row?.guide_content_zh && typeof row.guide_content_zh === 'object') return; // already cached
+          try {
+            const translated = await translateGuideToZh(result);
+            const { error } = await supabase
+              .from('montree_classroom_curriculum_works')
+              .update({ guide_content_zh: translated })
+              .eq('classroom_id', classroomId)
+              .ilike('name', `%${escapeIlike(workName)}%`);
+            if (error) console.error('[Guide API] Background zh cache write failed:', error.message);
+            else console.log(`[Guide API] Background pre-cached zh guide for "${workName}"`);
+          } catch (err) {
+            console.error('[Guide API] Background zh translation failed:', err);
+          }
+        })
+        .catch((err: unknown) => console.error('[Guide API] Background zh check failed:', err));
+    }
+
     return NextResponse.json(result, {
       headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
     });
