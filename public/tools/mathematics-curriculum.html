@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Montessori Mathematics Curriculum — 100 Works from Zero to Abstraction</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --blue-deep: #0d2b45;
+    --blue-mid: #1a4a7a;
+    --blue-light: #2e7dba;
+    --blue-pale: #b8d8f0;
+    --blue-wash: #f0f6fc;
+    --cream: #fefcf6;
+    --warm-gray: #5c5552;
+    --text: #2c2420;
+    --border: #e8e0d8;
+    --phase1: #d4883e;
+    --phase2: #c06030;
+    --phase3: #2e7dba;
+    --phase4: #0d2b45;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════ HERO ═══════ */
+  .hero {
+    background: linear-gradient(135deg, #0d2b45 0%, #1a4a7a 50%, #2e7dba 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    opacity: 0.85;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .hero .meta {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════ INTRO ═══════ */
+  .intro {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 30px 40px;
+  }
+  .intro h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--blue-deep);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .intro p {
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .intro blockquote {
+    border-left: 3px solid var(--blue-light);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: var(--blue-wash);
+    border-radius: 0 12px 12px 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--blue-deep);
+  }
+
+  /* ═══════ PHASE HEADER ═══════ */
+  .phase-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 30px 20px;
+  }
+  .phase-header .phase-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 14px;
+  }
+  .phase-header h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .phase-header .phase-desc {
+    color: var(--warm-gray);
+    font-size: 0.95rem;
+    max-width: 650px;
+  }
+
+  /* ═══════ WORK GRID ═══════ */
+  .work-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 30px 40px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .work-card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+    position: relative;
+  }
+  .work-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  }
+
+  .work-card .work-number {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    opacity: 0.3;
+  }
+
+  .work-card h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.25;
+    padding-right: 40px;
+  }
+
+  .work-card .develops {
+    font-size: 0.82rem;
+    color: var(--warm-gray);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .work-card .develops strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .work-card .readiness {
+    font-size: 0.82rem;
+    color: var(--blue-mid);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .work-card .readiness strong {
+    font-weight: 600;
+  }
+
+  .work-card .home {
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--blue-wash);
+    padding: 12px 16px;
+    border-radius: 10px;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+  .work-card .home strong {
+    color: var(--blue-deep);
+    font-weight: 600;
+  }
+
+  /* ═══════ SENSITIVE PERIOD ═══════ */
+  .sensitive-period {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 30px 30px;
+  }
+  .sensitive-period .sp-box {
+    background: linear-gradient(135deg, #0d2b45 0%, #1a4a7a 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sensitive-period .sp-box::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -30%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .sensitive-period .sp-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+  .sensitive-period h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .sensitive-period .sp-age {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    margin-bottom: 14px;
+  }
+  .sensitive-period .sp-text {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    opacity: 0.9;
+  }
+
+  /* ═══════ FOOTER ═══════ */
+  .footer {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--warm-gray);
+    font-size: 0.8rem;
+  }
+  .footer a {
+    color: var(--blue-mid);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .footer .brand {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    color: var(--blue-deep);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  /* ═══════ PRINT ═══════ */
+  @media print {
+    .hero { padding: 40px 30px 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .work-card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    .sensitive-period .sp-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .phase-header { break-after: avoid; }
+    body { font-size: 11pt; }
+  }
+
+  /* ═══════ MOBILE ═══════ */
+  @media (max-width: 640px) {
+    .hero { padding: 50px 20px 40px; }
+    .intro { padding: 40px 20px 30px; }
+    .phase-header { padding: 40px 20px 16px; }
+    .work-grid { padding: 10px 20px 30px; }
+    .work-card { padding: 20px; }
+    .sensitive-period { padding: 10px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <h1>The Montessori Mathematics Curriculum</h1>
+  <div class="subtitle">100 works from zero to abstraction — built for the home</div>
+  <div class="meta">Montree · Home Curriculum Series</div>
+</div>
+
+<!-- ═══════════════════ INTRO ═══════════════════ -->
+<div class="intro">
+  <h2>The Mathematical Mind</h2>
+  <p>Montessori mathematics begins with the hands. Before a child ever writes a numeral, they hold quantity — they feel that four is heavier than two, that a thousand-cube is something you need both arms to carry. The genius of the method is that abstraction arrives not because we explain it, but because the child discovers it after hundreds of concrete encounters.</p>
+  <p>This curriculum gives you 100 works that follow that exact journey: from a toddler's first experience of "one and many" all the way to long division and the passage into abstract thought. Every work uses materials you already have at home or can make in minutes. No catalogue required.</p>
+  <blockquote>"The hands are the instruments of man's intelligence." — Maria Montessori</blockquote>
+  <p>Present them in order. Follow the child's pace. When the hands understand, the mind will follow.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--              PHASE 1 — THE CONCRETE MIND              -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase1);">Phase 1 · Works 1–25</div>
+  <h2 style="color: var(--phase1);">The Concrete Mind</h2>
+  <div class="phase-desc">Quantity before symbol. The child holds mathematics in their hands — counting real objects, feeling weight and length, building an unshakeable foundation of what numbers actually mean.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">01</span>
+    <h3>One and Many</h3>
+    <div class="develops"><strong>Develops:</strong> First concept of quantity — the difference between singular and plural</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can follow simple instructions; points to objects when named</div>
+    <div class="home"><strong>At home:</strong> Place one apple on the table. Then place a group of apples. "This is one apple. These are many apples." Repeat with spoons, blocks, shoes — any familiar objects. Let the child sort: one here, many there.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">02</span>
+    <h3>Big and Small Sorting</h3>
+    <div class="develops"><strong>Develops:</strong> Size discrimination — the visual foundation for understanding magnitude</div>
+    <div class="readiness"><strong>Ready when:</strong> Child notices size differences; reaches for the bigger cookie</div>
+    <div class="home"><strong>At home:</strong> Collect pairs of objects in two sizes — big spoon and little spoon, big ball and little ball. Have the child sort them into two groups. Introduce "bigger" and "smaller" as they work.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">03</span>
+    <h3>Long and Short Sorting</h3>
+    <div class="develops"><strong>Develops:</strong> Length discrimination — preparation for measurement and the number rods</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can visually compare two objects and indicate which is bigger</div>
+    <div class="home"><strong>At home:</strong> Cut ribbons, straws, or strips of paper in clearly different lengths. Ask the child to find the longest, then the shortest. Line them up from short to long.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">04</span>
+    <h3>Counting to Three with Objects</h3>
+    <div class="develops"><strong>Develops:</strong> One-to-one correspondence — the understanding that each count word maps to exactly one object</div>
+    <div class="readiness"><strong>Ready when:</strong> Child attempts to count (even inaccurately); points at objects sequentially</div>
+    <div class="home"><strong>At home:</strong> Place three stones on a tray. Touch each one as you count slowly: "One. Two. Three." Then ask: "Can you give me two stones?" Keep it physical — the hand touches each one.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">05</span>
+    <h3>Number Rods — Quantities 1–5</h3>
+    <div class="develops"><strong>Develops:</strong> Fixed quantity — each rod IS the number, not a collection of separate pieces</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can count to 3 reliably with objects; interested in comparing lengths</div>
+    <div class="home"><strong>At home:</strong> Cut 5 strips of cardboard in lengths proportional to 1–5 (e.g., 10cm, 20cm, 30cm, 40cm, 50cm). Alternate red and blue sections in 10cm units. Name each: "This is one. This is two." Let the child build the staircase.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">06</span>
+    <h3>Number Rods — Quantities 1–10</h3>
+    <div class="develops"><strong>Develops:</strong> The full set of base quantities; muscular memory of how "ten" feels compared to "one"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child confidently names rods 1–5 and builds the staircase independently</div>
+    <div class="home"><strong>At home:</strong> Extend to 10 strips. The ten-rod should be noticeably heavy and long — the child needs to carry it with both hands. This physical weight IS the mathematical concept. Build the staircase, name each rod.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">07</span>
+    <h3>Sandpaper Numerals 1–5</h3>
+    <div class="develops"><strong>Develops:</strong> Symbol recognition — connecting the written numeral to a quantity the child already knows</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the number rods 1–5 by name (can point to "three" when asked)</div>
+    <div class="home"><strong>At home:</strong> Cut numerals 1–5 from fine sandpaper and glue to cardboard. Trace each with two fingers while saying the name. The tactile sensation anchors the symbol in muscle memory. Three-period lesson: "This is 3. Show me 3. What is this?"</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">08</span>
+    <h3>Sandpaper Numerals 6–10</h3>
+    <div class="develops"><strong>Develops:</strong> Full symbol set for base-ten; bridges quantity knowledge to written form</div>
+    <div class="readiness"><strong>Ready when:</strong> Child traces 1–5 confidently and can name them without prompting</div>
+    <div class="home"><strong>At home:</strong> Same method — sandpaper on card. Introduce 6, 7, 8 as one group, then 9 and 0 together. Pay special attention to 6/9 reversal — always trace in the correct direction. "Zero means nothing — it's the empty set."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">09</span>
+    <h3>Number Rods and Cards</h3>
+    <div class="develops"><strong>Develops:</strong> Association — matching the symbol to the quantity it represents</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows both the rods (quantity) and the sandpaper numerals (symbol) independently</div>
+    <div class="home"><strong>At home:</strong> Write numerals 1–10 on small cards. Lay out the rods in staircase order. The child places the correct card at the end of each rod. This is the moment quantity meets symbol — watch for the click of understanding.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">10</span>
+    <h3>Spindle Boxes</h3>
+    <div class="develops"><strong>Develops:</strong> Zero as empty set; quantities as groups of individual units; counting accuracy</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can match numeral cards to number rods; understands quantities 1–10</div>
+    <div class="home"><strong>At home:</strong> Label 10 cups or compartments 0–9. Provide 45 identical small objects (beans, pasta, buttons). The child counts the correct number into each compartment. The "0" compartment stays empty — this is the child's first real encounter with zero.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">11</span>
+    <h3>Cards and Counters</h3>
+    <div class="develops"><strong>Develops:</strong> Odd and even; visual pattern of quantities; independent counting verification</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can count out specific quantities and place correct numeral with each group</div>
+    <div class="home"><strong>At home:</strong> Number cards 1–10 in a row. Under each card, the child places that many counters (buttons or coins) in pairs — two columns. Odd numbers have one counter sticking out at the bottom. "Can a partner walk through? Even. Does one get left out? Odd."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">12</span>
+    <h3>Counting Backwards from 10</h3>
+    <div class="develops"><strong>Develops:</strong> Reverse sequence — essential preparation for subtraction</div>
+    <div class="readiness"><strong>Ready when:</strong> Child counts forward to 10 confidently and knows the number sequence</div>
+    <div class="home"><strong>At home:</strong> Build a tower of 10 blocks. Remove one at a time, counting: "Ten, nine, eight…" Make it a game — "rocket launch countdown." Also practice with the number rod staircase in reverse order.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">13</span>
+    <h3>Memory Game of Numbers</h3>
+    <div class="develops"><strong>Develops:</strong> Working memory; independent counting; confidence with quantities to 10</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can count and fetch specific quantities; beginning to work independently</div>
+    <div class="home"><strong>At home:</strong> Whisper a number to the child. They walk across the room, collect that many objects from a basket, and bring them back. Check together. "I asked for seven — let's count. One, two… seven! Perfect." Increase distance for bigger challenge.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">14</span>
+    <h3>Number Line Walk</h3>
+    <div class="develops"><strong>Develops:</strong> Number as position on a line; preparation for addition as "steps forward"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows numerals 0–10 and counts with accuracy</div>
+    <div class="home"><strong>At home:</strong> Tape a number line 0–10 on the floor using masking tape and written numerals. The child stands on a number and takes steps forward or back. "You're on 4. Take 3 steps. Where are you now?" This IS addition and subtraction — they just don't know it yet.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">15</span>
+    <h3>Teen Quantity Building</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that teen numbers are "ten and some more" — the gateway to place value</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has a solid, confident grasp of 1–10; curious about bigger numbers</div>
+    <div class="home"><strong>At home:</strong> Bundle 10 straws or sticks together with a rubber band — this IS ten, one bundle. Place loose straws beside it. "Ten and one more is eleven. Ten and two more is twelve." The child builds each teen number physically.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">16</span>
+    <h3>Teen Numeral Cards</h3>
+    <div class="develops"><strong>Develops:</strong> Reading and writing teen numerals; seeing "1" in the tens place</div>
+    <div class="readiness"><strong>Ready when:</strong> Child builds teen quantities with bundles and understands "ten and ___"</div>
+    <div class="home"><strong>At home:</strong> Make two sets of cards: a "10" card and cards 1–9. Slide the unit card over the zero in "10" to make 11, 12, 13… The child sees that "13" means the "10" is hiding behind the "3." Match cards to quantities.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">17</span>
+    <h3>Ten Board — 11 to 19</h3>
+    <div class="develops"><strong>Develops:</strong> Systematic construction of teen numbers; fluency with the ten-plus pattern</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands teen numeral cards and can build teen quantities</div>
+    <div class="home"><strong>At home:</strong> Write "10" ten times in a column on a board or paper. Make small cards 1–9. The child slides a card next to the first "10" to make "11," places one bead beside it. Next line: slide "2" to make "12," place two beads. Continue to 19.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">18</span>
+    <h3>Ten Board — 10 to 99</h3>
+    <div class="develops"><strong>Develops:</strong> Counting by tens; the structure of two-digit numbers; decade names</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has mastered the teen board and knows that numbers continue past 19</div>
+    <div class="home"><strong>At home:</strong> Write "10, 20, 30, 40, 50, 60, 70, 80, 90" in a column. Same sliding cards 1–9. Slide "1" next to "20" to make "21." Add corresponding bead quantities. The child discovers the pattern: every decade is a new set of ten, and the units count up inside it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">19</span>
+    <h3>Hundred Chain (Skip Counting by 10)</h3>
+    <div class="develops"><strong>Develops:</strong> Linear counting to 100; visualizing what a hundred looks like laid end to end</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can count by tens to 100; knows decade names</div>
+    <div class="home"><strong>At home:</strong> String 100 beads (pasta or craft beads) in groups of 10 using different colors per decade. Stretch the chain across the floor. The child places number markers at each ten: 10, 20, 30… Count every bead to 100. This is a significant milestone — celebrate it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">20</span>
+    <h3>Golden Beads — Units, Tens, Hundreds, Thousands</h3>
+    <div class="develops"><strong>Develops:</strong> Place value — physically experiencing that 10 units make a ten-bar, 10 ten-bars make a hundred-square, 10 hundred-squares make a thousand-cube</div>
+    <div class="readiness"><strong>Ready when:</strong> Child counts to 100; understands that "ten" is a group; curious about big numbers</div>
+    <div class="home"><strong>At home:</strong> Unit: one small bead. Ten: 10 beads glued in a line on a stick. Hundred: 10 ten-bars glued into a flat square. Thousand: a cube made of 10 hundred-squares (use a small box). Let the child hold each. "Feel how heavy a thousand is compared to one."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">21</span>
+    <h3>Large Numeral Cards (1–9000)</h3>
+    <div class="develops"><strong>Develops:</strong> Reading large numbers; understanding how digits stack by place value</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can identify golden bead categories (unit, ten, hundred, thousand)</div>
+    <div class="home"><strong>At home:</strong> Make four sets of cards in different sizes: green units (1–9), blue tens (10–90), red hundreds (100–900), green thousands (1000–9000). Layer them: 2000 + 300 + 40 + 5 = 2345. The child sees that every digit has a place, and the zeros are hidden beneath.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">22</span>
+    <h3>Golden Bead Number Building</h3>
+    <div class="develops"><strong>Develops:</strong> Composing numbers — building any quantity using place value categories</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows both the golden bead categories and the large numeral cards</div>
+    <div class="home"><strong>At home:</strong> Show the child a large numeral card (e.g., 1342). They fetch the golden bead quantity: 1 thousand-cube, 3 hundred-squares, 4 ten-bars, 2 units. Verify by counting. Then reverse: show beads, child builds the numeral card.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">23</span>
+    <h3>Golden Bead Addition — Two Addends</h3>
+    <div class="develops"><strong>Develops:</strong> The concept of addition as "putting together" — with concrete materials showing the process</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can build four-digit numbers with golden beads; understands place value categories</div>
+    <div class="home"><strong>At home:</strong> Two trays, each with a numeral card and corresponding beads. "Let's put them together." Combine all units into one pile, all tens, all hundreds, all thousands. Count each category. If units exceed 9, exchange 10 units for 1 ten-bar — the child discovers carrying.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">24</span>
+    <h3>Golden Bead Subtraction</h3>
+    <div class="develops"><strong>Develops:</strong> Subtraction as "taking away" — with concrete materials showing borrowing/exchanging</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done golden bead addition and understands the exchange process</div>
+    <div class="home"><strong>At home:</strong> Start with a large number in beads (e.g., 3456). "We need to take away 1278." Take from units first — not enough? Exchange one ten-bar for 10 units, then take. The child physically breaks down larger categories. This IS borrowing — they're living it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">25</span>
+    <h3>Golden Bead Multiplication — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Multiplication as "the same quantity taken several times" — concrete and visual</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is fluent with golden bead addition and exchanging</div>
+    <div class="home"><strong>At home:</strong> Three trays each hold the same number (e.g., 1234). "We're taking 1234 three times." Combine all three trays — units together, tens together, etc. Exchange as needed. The child sees multiplication as repeated addition with their own hands.</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: NUMBERS ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Numbers and Quantity (3.5 – 5 years)</h3>
+    <div class="sp-age">Peak window: approximately age 4 to 4.5</div>
+    <div class="sp-text">You will know this period has arrived when your child starts counting everything — stairs, grapes, cars in the parking lot. They become fascinated with "how many" and may insist on knowing the exact quantity of things. They want to know what comes after 100. They line things up and sort by size. This is the moment to pour mathematical materials into their environment. The absorbent mind is building its number sense, and every concrete experience now becomes the foundation for abstract reasoning later. Do not rush to paper and pencil — keep it in the hands.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--            PHASE 2 — THE WORKING HAND                 -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase2);">Phase 2 · Works 26–50</div>
+  <h2 style="color: var(--phase2);">The Working Hand</h2>
+  <div class="phase-desc">Operations take form. The child works with stamp games, bead bars, and strip boards — still holding mathematics in their hands, but moving from the bulk of golden beads toward more efficient representations.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">26</span>
+    <h3>Golden Bead Division — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Division as "sharing equally" — the last of the four operations introduced concretely</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is comfortable with golden bead multiplication; understands exchanging</div>
+    <div class="home"><strong>At home:</strong> Build a large number (e.g., 3696) in beads. "We need to share equally between 3 people." Give out one category at a time — thousands first, then hundreds, then tens, then units. Can't share 3 ten-bars among 3? Each gets 1. Exchange remainders down. Each person's tray shows the quotient.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">27</span>
+    <h3>Stamp Game — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> More abstract representation of place value — tiles replace bulk materials</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done all four operations with golden beads and is ready for something "smaller"</div>
+    <div class="home"><strong>At home:</strong> Make small square tiles in four colours: green "1"s, blue "10"s, red "100"s, green "1000"s. These replace the bulky beads. Build numbers by laying out the right tiles. "Show me 2,453." The child counts out tiles by category.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">28</span>
+    <h3>Stamp Game Addition</h3>
+    <div class="develops"><strong>Develops:</strong> Addition with a more abstract material — same carrying process, faster execution</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can build numbers with stamp tiles and understands golden bead addition</div>
+    <div class="home"><strong>At home:</strong> Two numbers in stamp tiles. Combine categories. 10 or more green "1" tiles? Exchange for one blue "10" tile. Same process, smaller materials. The child now does four-digit addition in minutes rather than the long golden bead layout.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">29</span>
+    <h3>Stamp Game Subtraction</h3>
+    <div class="develops"><strong>Develops:</strong> Subtraction with efficient materials; borrowing/exchanging reinforced</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does stamp game addition fluently</div>
+    <div class="home"><strong>At home:</strong> Build the larger number in tiles. Take away the second number, category by category. Not enough units? Exchange one "10" tile for ten "1" tiles. The process is identical to golden beads but faster — the child is internalizing.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">30</span>
+    <h3>Stamp Game Multiplication</h3>
+    <div class="develops"><strong>Develops:</strong> Multiplication with efficient materials; seeing the pattern of repeated addition</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands stamp game operations; can multiply with golden beads</div>
+    <div class="home"><strong>At home:</strong> Same number built 3 or 4 times in stamp tiles. Combine. Exchange. The child is doing multi-digit multiplication concretely but efficiently — an elegant bridge between the bulky golden beads and the coming pencil-and-paper algorithms.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">31</span>
+    <h3>Stamp Game Division</h3>
+    <div class="develops"><strong>Develops:</strong> Long division process — sharing tiles equally among divisor groups</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can do golden bead division and stamp game multiplication</div>
+    <div class="home"><strong>At home:</strong> Build the dividend in tiles. Share among 2, 3, or 4 groups. Start from thousands, work down. Exchange any remainder into the next smaller category and continue sharing. The child is doing long division — physically, accurately, with understanding.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">32</span>
+    <h3>Addition Strip Board</h3>
+    <div class="develops"><strong>Develops:</strong> All addition combinations to 18; visual/spatial understanding of sums</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands addition as combining; ready to explore all combinations</div>
+    <div class="home"><strong>At home:</strong> Draw a grid numbered 1–18 across the top. Cut red strips (1–9) and blue strips (1–9). To add 5+7: place the red 5-strip, then the blue 7-strip end to end. Read where the blue strip ends: 12. Work through all combinations systematically.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">33</span>
+    <h3>Addition Strip Board — Recording</h3>
+    <div class="develops"><strong>Develops:</strong> Connecting physical strip work to written equations; building addition tables</div>
+    <div class="readiness"><strong>Ready when:</strong> Child uses the strip board fluently and wants to write things down</div>
+    <div class="home"><strong>At home:</strong> Provide a recording sheet. As the child works each combination on the strip board, they write the equation: 5 + 7 = 12. Over time, the child builds their own addition table — they discover patterns (commutative property) by seeing that 5+7 and 7+5 land in the same place.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">34</span>
+    <h3>Subtraction Strip Board</h3>
+    <div class="develops"><strong>Develops:</strong> All subtraction combinations from numbers up to 18; visual understanding of difference</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has completed addition strip board work; understands subtraction as "taking away"</div>
+    <div class="home"><strong>At home:</strong> Same grid. Place the red strip for the minuend (e.g., 12). Lay the blue strip for the subtrahend (e.g., 5) from the right end backward. The uncovered portion shows the difference: 7. Work through all combinations and record.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">35</span>
+    <h3>Multiplication Bead Bars</h3>
+    <div class="develops"><strong>Develops:</strong> Multiplication as arrays; visual representation of "groups of"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands multiplication as repeated addition; ready for more systematic exploration</div>
+    <div class="home"><strong>At home:</strong> Make bead bars by stringing beads on pipe cleaners (or use small counting rods): bars of 1 through 10. For 4 × 3: lay out four bars of 3 side by side. Count all beads: 12. The rectangle of beads IS the product — the child sees the shape of multiplication.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">36</span>
+    <h3>Multiplication Board</h3>
+    <div class="develops"><strong>Develops:</strong> Systematic exploration of all multiplication facts; building the times tables</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored multiplication with bead bars and wants to know "all the answers"</div>
+    <div class="home"><strong>At home:</strong> Draw a 10×10 grid. Mark columns 1–10 and rows 1–10. Using small beads or counters, the child fills: 3 × 4 means place 4 beads in each of 3 rows. Count all beads and write the product in the grid. The child builds their own multiplication table through discovery.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">37</span>
+    <h3>Division Board</h3>
+    <div class="develops"><strong>Develops:</strong> Systematic exploration of division facts; understanding division as sharing</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored multiplication on the board; understands equal sharing</div>
+    <div class="home"><strong>At home:</strong> Draw a grid with divisor markings 1–9 across the top. For 18 ÷ 3: place 18 beads, share equally into 3 columns. Each column gets 6 beads — the quotient. The child discovers that 18 ÷ 3 = 6 because 3 × 6 = 18.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">38</span>
+    <h3>Skip Counting Chains — 2s</h3>
+    <div class="develops"><strong>Develops:</strong> Skip counting by twos; preparation for multiplication facts; linear number sense</div>
+    <div class="readiness"><strong>Ready when:</strong> Child counts by ones to 100; beginning multiplication work</div>
+    <div class="home"><strong>At home:</strong> String beads in groups of 2 (alternating colours). Stretch the chain across the floor. Place an arrow marker at every second bead: 2, 4, 6, 8, 10… Count by 2s all the way. The child is building the 2-times table physically — 2, 4, 6, 8, 10 beads.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">39</span>
+    <h3>Skip Counting Chains — 3s and 4s</h3>
+    <div class="develops"><strong>Develops:</strong> Skip counting patterns; multiplication readiness; rhythmic counting</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has counted the 2-chain independently</div>
+    <div class="home"><strong>At home:</strong> Same method — bead chains in groups of 3 and groups of 4 with arrow markers. The 3-chain goes to 27 (3³), the 4-chain to 64 (4³). At the square numbers (9, 16), fold the chain into a square shape so the child sees it. At the cube numbers, build a cube.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">40</span>
+    <h3>Skip Counting Chains — 5s and 10s</h3>
+    <div class="develops"><strong>Develops:</strong> The anchor multiplication facts; connection to money and time</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done the 2, 3, and 4 chains</div>
+    <div class="home"><strong>At home:</strong> The 5-chain goes to 125 (5³) — stretch it long. The 10-chain goes to 1000 (10³) — this is the same hundred chain from Work 19, now counted by 10s. Place markers at every 50 and 100. The child begins to see the relationships: 5 × 2 = 10, 5 × 20 = 100.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">41</span>
+    <h3>Coin Counting and Money Games</h3>
+    <div class="develops"><strong>Develops:</strong> Applied mathematics — skip counting with real value; exchange and equivalence</div>
+    <div class="readiness"><strong>Ready when:</strong> Child skip counts by 5s and 10s; curious about money</div>
+    <div class="home"><strong>At home:</strong> Real coins (or paper replicas). Sort by type. Count: "10, 20, 30, 40 — that's 40 cents." Play shop — price items with stickers, make purchases, give change. The child applies addition, subtraction, and exchange to something deeply meaningful.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">42</span>
+    <h3>Dot Game — Addition with Carrying</h3>
+    <div class="develops"><strong>Develops:</strong> Recording addition with carrying on paper — the bridge to abstract written algorithms</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does stamp game addition fluently; can write numerals</div>
+    <div class="home"><strong>At home:</strong> Draw columns labeled Th, H, T, U in coloured pencils (green, red, blue, green). Write two addends. The child makes dots in each column for each digit, then counts dots. 10+ dots? Cross out ten, add one dot to the next column. Read the answer. This is the bridge to carrying on paper.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">43</span>
+    <h3>Dot Game — Subtraction with Borrowing</h3>
+    <div class="develops"><strong>Develops:</strong> Recording subtraction with borrowing on paper; the last step before pure pencil algorithms</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does dot game addition; understands exchanging from stamp game subtraction</div>
+    <div class="home"><strong>At home:</strong> Same column format. Write minuend and subtrahend. The child crosses out dots from the top number. Not enough dots in a column? Draw an arrow from the next column — cross out one dot there, add ten dots here. Read the remainder. Borrowing is now a paper procedure rooted in concrete understanding.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">44</span>
+    <h3>Fractions — The Whole</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that fractions begin with ONE whole — and that fractions are parts of that whole</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is comfortable with numbers to 1000; curious when they see a pizza sliced</div>
+    <div class="home"><strong>At home:</strong> A whole apple. "This is one whole." Cut it in half. "Now I have two halves. Each half is one of two equal parts." Put them back together — still one whole. Cut into quarters. Name each piece. The key: always start with the whole, always name the relationship to the whole.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">45</span>
+    <h3>Fraction Circles — Halves to Tenths</h3>
+    <div class="develops"><strong>Develops:</strong> Visual fraction sense — seeing that ½ is bigger than ¼; that 3/3 = 1 whole</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands that cutting the whole makes equal parts; can name halves and quarters</div>
+    <div class="home"><strong>At home:</strong> Cut identical circles from coloured paper. One stays whole (label "1"). Cut another into 2 equal pieces (label each "½"). Another into 3 pieces ("⅓"), another into 4 ("¼")… up to 10. Place them on the whole circle to show equivalence. "How many fourths make a whole? Let's check."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">46</span>
+    <h3>Fraction Equivalence</h3>
+    <div class="develops"><strong>Develops:</strong> The discovery that ½ = 2/4 = 3/6 — different names for the same amount</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored fraction circles and can name fractions; begins to notice "these look the same size"</div>
+    <div class="home"><strong>At home:</strong> Using the fraction circles: place ½ on the whole circle. "Can you find other pieces that cover exactly the same space?" The child discovers that 2 quarters, 3 sixths, 4 eighths, and 5 tenths all equal one half. Record each discovery.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">47</span>
+    <h3>Telling Time — Hours and Half-Hours</h3>
+    <div class="develops"><strong>Develops:</strong> Applied mathematics — reading analog clocks; connection between fractions and time</div>
+    <div class="readiness"><strong>Ready when:</strong> Child counts to 12; understands halves from fraction work</div>
+    <div class="home"><strong>At home:</strong> A clock with moveable hands (or make one from a paper plate with a brad fastener). Start with hours only: "When the big hand points to 12 and the little hand points to 3, it's 3 o'clock." Then half-hours: "The big hand has gone halfway around — half past 3." Connect to daily routine: "We eat lunch at 12 o'clock."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">48</span>
+    <h3>Measurement — Length</h3>
+    <div class="develops"><strong>Develops:</strong> Non-standard and standard measurement; comparison and estimation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child compares lengths spontaneously; asks "how big is it?"</div>
+    <div class="home"><strong>At home:</strong> Start non-standard: "How many hands long is the table?" Then introduce a ruler. Measure everything in the house. Record measurements in a notebook. Compare: "The bookshelf is 90 centimetres. The table is 120 centimetres. Which is longer? How much longer?"</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">49</span>
+    <h3>Measurement — Weight</h3>
+    <div class="develops"><strong>Develops:</strong> Comparison by weight; estimation; introduction to units of mass</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored length measurement; notices that some things are heavier than others</div>
+    <div class="home"><strong>At home:</strong> Make a simple balance from a coat hanger and two cups on strings. Place objects in each cup to compare. "Which is heavier — the apple or the orange?" Introduce a kitchen scale for standard measurement. Weigh baking ingredients — applied maths in action.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">50</span>
+    <h3>Measurement — Capacity</h3>
+    <div class="develops"><strong>Develops:</strong> Volume and capacity concepts; estimation; pouring control</div>
+    <div class="readiness"><strong>Ready when:</strong> Child loves water play; has done length and weight measurement</div>
+    <div class="home"><strong>At home:</strong> Measuring cups and a water basin. "How many small cups fill the big jug?" Estimate first, then test. Introduce standard units: "This cup holds 250 millilitres. The jug holds 1 litre. How many cups to fill the jug?" Record predictions and results.</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: EXACTNESS ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Exactness and Precision (3 – 6 years)</h3>
+    <div class="sp-age">Peak window: approximately age 4.5 to 5.5</div>
+    <div class="sp-text">This period emerges when your child starts insisting on getting things exactly right — lining up blocks perfectly, counting and recounting to make sure, becoming frustrated when something is "almost" but not exact. They want to measure precisely, cut on the line, count to the last bead. This is not rigidity — it is the mathematical mind awakening. It craves precision because precision is how the mind builds trust in its own reasoning. Feed this hunger with materials that have built-in control of error: strip boards where the answer can be verified, measurement tools that give exact numbers, fraction circles that must fit together perfectly.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--            PHASE 3 — THE REASONING MIND               -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase3);">Phase 3 · Works 51–75</div>
+  <h2 style="color: var(--phase3);">The Reasoning Mind</h2>
+  <div class="phase-desc">From materials to memory. The child begins to hold mathematics mentally — memorizing facts, solving equations on paper, and discovering patterns in numbers. The hands still touch materials, but the mind increasingly works alone.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">51</span>
+    <h3>Addition Memorization — Finger Charts</h3>
+    <div class="develops"><strong>Develops:</strong> Automatic recall of addition facts; speed and confidence</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has worked through the addition strip board and recorded all combinations</div>
+    <div class="home"><strong>At home:</strong> Make a chart with addends along the top and side. The child finds where a row and column meet: 6 + 8 = 14. Practice with random equation cards — child looks up the answer on the chart, then tries without looking. The chart scaffolds; the goal is independence from it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">52</span>
+    <h3>Subtraction Memorization — Finger Charts</h3>
+    <div class="develops"><strong>Develops:</strong> Automatic recall of subtraction facts; connection to inverse of addition</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is memorizing addition facts; has completed subtraction strip board</div>
+    <div class="home"><strong>At home:</strong> Same chart format for subtraction. The child notices that knowing 6 + 8 = 14 means 14 − 8 = 6. Draw equation cards — the child checks against the chart then works toward mental recall. Flashcard games, oral quiz during car rides.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">53</span>
+    <h3>Multiplication Memorization — Finger Charts</h3>
+    <div class="develops"><strong>Develops:</strong> Automatic recall of times tables; the foundation for all advanced mathematics</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has built the multiplication table on the board; skip counts fluently</div>
+    <div class="home"><strong>At home:</strong> A multiplication chart — but the child BUILT it during the board work, so it's familiar. Draw random fact cards (7 × 8). Look up on chart, then cover the chart and try. Practice one table at a time: all the 3s, then the 4s. Chant them rhythmically. The goal is instant recall.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">54</span>
+    <h3>Division Memorization — Finger Charts</h3>
+    <div class="develops"><strong>Develops:</strong> Automatic recall of division facts; inverse multiplication relationships</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is memorizing multiplication facts and sees the inverse relationship</div>
+    <div class="home"><strong>At home:</strong> Division chart. The child discovers: "If I know 7 × 8 = 56, then 56 ÷ 8 = 7." Equation cards, timed challenges, daily practice. Division is often the slowest to memorize — patience. The concrete board work gives it meaning; repetition gives it speed.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">55</span>
+    <h3>Written Addition — Standard Algorithm</h3>
+    <div class="develops"><strong>Develops:</strong> The formal pencil-and-paper addition procedure — now grounded in deep understanding</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done dot game addition; is memorizing addition facts; can write numerals neatly</div>
+    <div class="home"><strong>At home:</strong> Write two four-digit numbers in columns (units under units, tens under tens). Add each column. "If the sum is 10 or more, write the ones digit and carry the ten." The child already understands WHY from golden beads and stamp game — now the notation catches up to the understanding.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">56</span>
+    <h3>Written Subtraction — Standard Algorithm</h3>
+    <div class="develops"><strong>Develops:</strong> Formal subtraction with borrowing — the notation for what the child already does concretely</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does written addition; has done dot game subtraction with borrowing</div>
+    <div class="home"><strong>At home:</strong> Same column format. Subtract each column right to left. "Not enough in this column? Borrow from the next — cross out and add 10." The child has done this with beads, tiles, and dots — the algorithm is simply the written record of a process they've lived dozens of times.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">57</span>
+    <h3>Written Multiplication — Single-Digit Multiplier</h3>
+    <div class="develops"><strong>Develops:</strong> Multi-digit multiplication on paper; applying memorized facts in a structured algorithm</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows multiplication facts; has done stamp game multiplication</div>
+    <div class="home"><strong>At home:</strong> Write a four-digit number × a one-digit number. Multiply each digit, right to left, carrying as needed. "4 × 7 = 28. Write 8, carry 2." The child verifies with stamp game if unsure — the concrete backup remains available but is used less and less.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">58</span>
+    <h3>Written Division — Single-Digit Divisor</h3>
+    <div class="develops"><strong>Develops:</strong> Long division on paper — the most complex algorithm, now supported by deep concrete experience</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows division facts; has done stamp game division; can do written multiplication</div>
+    <div class="home"><strong>At home:</strong> Write dividend inside the bracket, divisor outside. Work left to right: "How many times does 3 go into 7? Twice, with 1 left over. Bring down the next digit." Verify each step with multiplication. If stuck, return to stamp game to see the physical sharing.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">59</span>
+    <h3>Word Problems — Single Operation</h3>
+    <div class="develops"><strong>Develops:</strong> Reading comprehension meets mathematical reasoning; identifying the operation in context</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does all four written operations; reads independently or with help</div>
+    <div class="home"><strong>At home:</strong> Write simple story problems from daily life: "You had 15 strawberries. You ate 6. How many are left?" The child must decide: add, subtract, multiply, or divide? Then solve. Start with real situations the child has experienced — shopping, cooking, sharing snacks.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">60</span>
+    <h3>Number Patterns and Sequences</h3>
+    <div class="develops"><strong>Develops:</strong> Pattern recognition — the heart of mathematical thinking</div>
+    <div class="readiness"><strong>Ready when:</strong> Child skip counts; can continue simple patterns (red, blue, red, blue…)</div>
+    <div class="home"><strong>At home:</strong> Start with visual patterns using objects: ABAB, ABCABC, AABB. Move to number patterns: 2, 4, 6, ___, ___. Then: 1, 3, 5, ___, ___. Then harder: 1, 2, 4, 7, 11, ___. The child fills in the blank and explains the rule. "It goes up by one more each time."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">61</span>
+    <h3>Squaring — Physical</h3>
+    <div class="develops"><strong>Develops:</strong> Square numbers as actual squares — the geometric meaning of "squared"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows multiplication facts; has made square shapes with bead chains</div>
+    <div class="home"><strong>At home:</strong> Using bead bars or counters: build a 3 × 3 square (9 beads arranged in a square), a 4 × 4 square (16), a 5 × 5 square (25). "We call it '3 squared' because the beads make a square. 3² = 9." The child SEES that squaring IS making a square. Record: 1² = 1, 2² = 4, 3² = 9…</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">62</span>
+    <h3>Cubing — Physical</h3>
+    <div class="develops"><strong>Develops:</strong> Cube numbers as actual cubes — extending the squaring concept to three dimensions</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands square numbers and has built squares physically</div>
+    <div class="home"><strong>At home:</strong> Using small blocks or sugar cubes: build a 2 × 2 × 2 cube (8 blocks), a 3 × 3 × 3 cube (27 blocks). "We call it '2 cubed' because the blocks make a cube. 2³ = 8." Count all the blocks. This connects to the bead chain cubes: the 3-chain's 27 beads, the 4-chain's 64 beads.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">63</span>
+    <h3>Fraction Addition — Same Denominator</h3>
+    <div class="develops"><strong>Develops:</strong> Operating on fractions — adding like parts</div>
+    <div class="readiness"><strong>Ready when:</strong> Child names fractions confidently; understands equivalence; adds whole numbers on paper</div>
+    <div class="home"><strong>At home:</strong> Using fraction circles: place ¼ and another ¼ on the whole. "One fourth plus one fourth is two fourths." Lay 2/4 alongside ½ — they're the same! Record: ¼ + ¼ = 2/4 = ½. Work through many examples: ⅓ + ⅓, ⅛ + 3/8. The circles verify every answer.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">64</span>
+    <h3>Fraction Subtraction — Same Denominator</h3>
+    <div class="develops"><strong>Develops:</strong> Subtracting like fractions; fraction sense for comparing results</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does fraction addition with same denominators</div>
+    <div class="home"><strong>At home:</strong> Start with ¾ on the whole circle. Remove ¼. "Three fourths minus one fourth is two fourths, which equals one half." Verify with the circles. Record the equation. Mix operations: "You have 5/8 of a pizza. You eat 3/8. What's left?"</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">65</span>
+    <h3>Fraction Comparison and Ordering</h3>
+    <div class="develops"><strong>Develops:</strong> Intuitive understanding that ⅓ > ¼; the smaller the denominator, the larger the piece</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has worked with fraction circles extensively and adds/subtracts like fractions</div>
+    <div class="home"><strong>At home:</strong> Challenge: "Which is bigger — ⅓ or ¼?" Place both on the whole circle to check. Order a set of fractions from smallest to largest: ⅛, ¼, ⅓, ½. "But wait — what about 3/8 vs ⅓?" This forces the child to think about equivalent fractions and common denominators — the next step.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">66</span>
+    <h3>Decimals — Introduction via Fractions</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that decimals are fractions in disguise — tenths, hundredths</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fractions to tenths; knows place value to thousands</div>
+    <div class="home"><strong>At home:</strong> The fraction 1/10 can also be written as 0.1. Using fraction circles, show that 3/10 = 0.3 and 7/10 = 0.7. Then extend: "If we cut each tenth into ten pieces, we get hundredths. 1/100 = 0.01." Use money: "A dime is one tenth of a dollar. A penny is one hundredth."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">67</span>
+    <h3>Decimal Addition and Subtraction</h3>
+    <div class="develops"><strong>Develops:</strong> Operating on decimals using place value alignment; applied fraction arithmetic</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands decimal notation and can read decimal numbers</div>
+    <div class="home"><strong>At home:</strong> Line up the decimal points and add/subtract just like whole numbers: 3.25 + 1.48 = 4.73. Use money as the concrete reference: "$3.25 + $1.48 — how much altogether?" The child already knows how to add with carrying; the decimal point just needs to stay in its place.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">68</span>
+    <h3>Telling Time — Minutes and Elapsed Time</h3>
+    <div class="develops"><strong>Develops:</strong> Reading time to the minute; calculating how much time has passed</div>
+    <div class="readiness"><strong>Ready when:</strong> Child tells time to the half-hour; skip counts by 5s</div>
+    <div class="home"><strong>At home:</strong> Practice reading the clock to five-minute intervals: "The big hand is on the 3, that's 15 minutes past." Then to the minute. Elapsed time: "We started at 2:15 and finished at 3:00. How long did that take?" Use a real clock during daily activities — cooking timers, walk durations.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">69</span>
+    <h3>Graphing and Data Collection</h3>
+    <div class="develops"><strong>Develops:</strong> Organizing information visually; reading and interpreting charts</div>
+    <div class="readiness"><strong>Ready when:</strong> Child counts and sorts; interested in collecting information</div>
+    <div class="home"><strong>At home:</strong> Choose a survey topic: "What's everyone's favourite fruit?" Collect data from family members. Make a bar graph with coloured squares. "How many people chose apples? Which fruit was most popular? How many more chose banana than orange?" The child sees numbers become a picture.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">70</span>
+    <h3>Geometry — Shape Identification</h3>
+    <div class="develops"><strong>Develops:</strong> Naming and classifying 2D shapes; vocabulary for geometric properties</div>
+    <div class="readiness"><strong>Ready when:</strong> Child notices shapes in the environment; has done sensorial geometry (geometric cabinet)</div>
+    <div class="home"><strong>At home:</strong> Go on a shape walk — find circles, squares, triangles, rectangles everywhere. Then get specific: "How many sides does a triangle have? A pentagon?" Cut shapes from paper. Count sides and corners. Sort by number of sides. "Shapes with 4 sides are called quadrilaterals — quad means four."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">71</span>
+    <h3>Geometry — Perimeter</h3>
+    <div class="develops"><strong>Develops:</strong> Measuring around a shape; addition applied to geometry</div>
+    <div class="readiness"><strong>Ready when:</strong> Child identifies shapes; measures length with a ruler</div>
+    <div class="home"><strong>At home:</strong> Measure around objects: "The book is 20cm + 15cm + 20cm + 15cm = 70cm around." Measure rooms by walking and counting steps. "The perimeter is the distance all the way around." Use string to measure irregular shapes — wrap the string, then straighten and measure.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">72</span>
+    <h3>Geometry — Area Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding area as the space inside a shape; multiplication applied to geometry</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands perimeter; knows multiplication; understands square numbers</div>
+    <div class="home"><strong>At home:</strong> Draw a rectangle on grid paper. Count the squares inside: "This rectangle is 4 squares long and 3 squares wide. That's 4 × 3 = 12 square units." Cover a table with square tiles and count. "Area is how much space the surface covers." Compare: a big book has more area than a small book.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">73</span>
+    <h3>Commutative and Associative Properties</h3>
+    <div class="develops"><strong>Develops:</strong> Discovering that 3+5 = 5+3 and (2+3)+4 = 2+(3+4) — mathematical laws from concrete experience</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is fluent with addition and multiplication; notices "these give the same answer"</div>
+    <div class="home"><strong>At home:</strong> Build 3 × 5 with beads (3 rows of 5). Rotate the mat: now it's 5 × 3 (5 rows of 3). Same number of beads! "The order doesn't change the answer — that's the commutative property." For associative: "(2+3)+4 = 5+4 = 9" and "2+(3+4) = 2+7 = 9." Same! Discover, don't lecture.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">74</span>
+    <h3>Estimation and Rounding</h3>
+    <div class="develops"><strong>Develops:</strong> Number sense — knowing approximately how big an answer should be before calculating</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does multi-digit operations; has a sense of number magnitude</div>
+    <div class="home"><strong>At home:</strong> Jar of beans — "How many do you think? Guess first, then count." Rounding: "287 is closest to 300. 312 is closest to 300 too. So 287 + 312 is about 600." Always estimate BEFORE calculating. "Does your answer make sense?" This builds the internal compass that catches errors.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">75</span>
+    <h3>Multi-Step Word Problems</h3>
+    <div class="develops"><strong>Develops:</strong> Complex reasoning — reading, planning, executing multiple operations in sequence</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does single-operation word problems; has all four written operations</div>
+    <div class="home"><strong>At home:</strong> "You have $10. You buy a book for $3.50 and a pencil for $1.25. How much change do you get?" The child must: add the purchases (3.50 + 1.25 = 4.75), then subtract from 10 (10.00 − 4.75 = 5.25). Teach the habit of underlining what the question asks, then planning the steps before calculating.</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: ORDER ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Order and Pattern (1 – 3.5 years, echoes through age 6)</h3>
+    <div class="sp-age">Peak window: approximately age 18 months to 2.5 years; mathematical echo at 4–6</div>
+    <div class="sp-text">The sensitive period for order — lining things up, insisting on sequence, needing things "in the right place" — is the earliest root of the mathematical mind. It resurfaces between ages 4 and 6 as a love of pattern, symmetry, and systematic exploration. You will see your child arranging objects by size, counting collections over and over, building repeating patterns with blocks. This is not play — it is the construction of mathematical intelligence. Every pattern discovered, every sequence completed, every set sorted becomes part of the internal framework for abstract reasoning. Honour it with materials that reward precision and reveal pattern.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--           PHASE 4 — THE PASSAGE TO ABSTRACTION         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase4);">Phase 4 · Works 76–100</div>
+  <h2 style="color: var(--phase4);">The Passage to Abstraction</h2>
+  <div class="phase-desc">The materials fall away. The child now thinks in numbers — solving problems mentally, working with larger numbers and more complex operations, and discovering the elegant structures that underpin all of mathematics.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">76</span>
+    <h3>Written Multiplication — Two-Digit Multiplier</h3>
+    <div class="develops"><strong>Develops:</strong> Multi-digit multiplication using partial products; scale and efficiency</div>
+    <div class="readiness"><strong>Ready when:</strong> Child multiplies by single digits fluently on paper; knows multiplication facts</div>
+    <div class="home"><strong>At home:</strong> 34 × 26: first multiply 34 × 6 (ones), then 34 × 20 (tens), then add the partial products. Show why the second line shifts left — because you're multiplying by tens, not ones. Use graph paper for column alignment. Verify with estimation: "34 × 26 is about 30 × 25 = 750."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">77</span>
+    <h3>Written Division — Two-Digit Divisor</h3>
+    <div class="develops"><strong>Develops:</strong> Long division with estimation; the most complex written algorithm in primary mathematics</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does long division with single-digit divisors fluently</div>
+    <div class="home"><strong>At home:</strong> 756 ÷ 18: "How many 18s in 75? About 4. 4 × 18 = 72. Remainder 3. Bring down the 6. How many 18s in 36? Exactly 2." Each step requires estimation, multiplication, and subtraction — the full toolkit working together. Start with friendly divisors (12, 15, 20) before harder ones.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">78</span>
+    <h3>Multiples and Factors</h3>
+    <div class="develops"><strong>Develops:</strong> Number theory — understanding the internal structure of numbers</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows multiplication facts; has done skip counting chains</div>
+    <div class="home"><strong>At home:</strong> "What numbers can you multiply to get 12?" The child finds: 1×12, 2×6, 3×4. These are the factor pairs of 12. List multiples of 3: 3, 6, 9, 12, 15… List multiples of 4: 4, 8, 12, 16, 20… "12 appears in both! It's a common multiple." Find the smallest common multiple (LCM). This work has deep Montessori roots in the bead cabinet.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">79</span>
+    <h3>Prime Numbers — The Sieve</h3>
+    <div class="develops"><strong>Develops:</strong> Discovery of prime numbers — the building blocks of all numbers</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands factors and multiples; can identify whether a number divides evenly</div>
+    <div class="home"><strong>At home:</strong> Write numbers 1–100 on a grid. Circle 2, then cross out all multiples of 2. Circle 3, cross out its multiples. Circle 5, cross out its multiples. Circle 7, cross out its multiples. The remaining uncrossed numbers are prime. "These are special — they can only be divided by 1 and themselves." The Sieve of Eratosthenes — the child discovers it, not memorizes it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">80</span>
+    <h3>Fraction Addition — Different Denominators</h3>
+    <div class="develops"><strong>Develops:</strong> Finding common denominators; combining unlike fractions</div>
+    <div class="readiness"><strong>Ready when:</strong> Child adds same-denominator fractions; understands equivalence; knows multiples</div>
+    <div class="home"><strong>At home:</strong> ½ + ⅓ — use the fraction circles first. "They're different sizes, we can't add them directly." Find a common size: sixths. ½ = 3/6, ⅓ = 2/6. Now: 3/6 + 2/6 = 5/6. Verify with the circles. The key skill: finding the LCD (least common denominator) using their knowledge of multiples.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">81</span>
+    <h3>Fraction Subtraction — Different Denominators</h3>
+    <div class="develops"><strong>Develops:</strong> Subtracting unlike fractions after finding common denominators</div>
+    <div class="readiness"><strong>Ready when:</strong> Child adds unlike fractions; finds common denominators</div>
+    <div class="home"><strong>At home:</strong> ¾ − ⅓ — convert to twelfths: 9/12 − 4/12 = 5/12. Always verify with fraction circles. Real-life problems: "The recipe calls for ¾ cup of flour. You've already put in ⅓ cup. How much more do you need?" The fractions are no longer abstract — they're tools for solving real problems.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">82</span>
+    <h3>Fraction Multiplication</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding "of" — ½ of ⅓ means half of a third</div>
+    <div class="readiness"><strong>Ready when:</strong> Child adds and subtracts fractions with unlike denominators</div>
+    <div class="home"><strong>At home:</strong> Fold a paper in thirds. Shade one third. Now fold that in half. "Half of one third is one sixth — ½ × ⅓ = ⅙." The algorithm (multiply numerators, multiply denominators) makes sense because the child has SEEN it by folding. Practice with fraction circles: ⅔ × ¾ — shade ⅔ of ¾ of the circle.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">83</span>
+    <h3>Fraction Division</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding division of fractions — "how many of these fit into that?"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child multiplies fractions; has a strong conceptual fraction foundation</div>
+    <div class="home"><strong>At home:</strong> "How many ¼ pieces fit into ½?" Use the fraction circles: two quarter pieces cover the half. So ½ ÷ ¼ = 2. Then introduce the rule: ½ ÷ ¼ = ½ × 4/1 = 2. "Invert and multiply" has a reason — and the child discovered it by fitting pieces together first.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">84</span>
+    <h3>Mixed Numbers and Improper Fractions</h3>
+    <div class="develops"><strong>Develops:</strong> Converting between mixed numbers (1½) and improper fractions (3/2)</div>
+    <div class="readiness"><strong>Ready when:</strong> Child operates on fractions fluently; understands fractions greater than one</div>
+    <div class="home"><strong>At home:</strong> Build 1½ with fraction circles — one whole plus one half. "How many halves total? Three halves — we write that 3/2." Convert: 2¼ = how many quarters? The whole = 4/4, so two wholes = 8/4, plus 1/4 = 9/4. Practice both directions. "Why would we want an improper fraction? It's easier to multiply."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">85</span>
+    <h3>Decimal Multiplication</h3>
+    <div class="develops"><strong>Develops:</strong> Multiplying decimals; understanding decimal place value in products</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does decimal addition/subtraction; multiplies whole numbers fluently</div>
+    <div class="home"><strong>At home:</strong> 2.5 × 3: "That's 2 × 3 plus 0.5 × 3 = 6 + 1.5 = 7.5." Then the shortcut: multiply as if there's no decimal (25 × 3 = 75), count decimal places (1), place the point (7.5). Use money: "$2.50 × 3 = $7.50." The child verifies that the shortcut matches the meaning.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">86</span>
+    <h3>Decimal Division</h3>
+    <div class="develops"><strong>Develops:</strong> Dividing decimals; real-world applications of precise sharing</div>
+    <div class="readiness"><strong>Ready when:</strong> Child multiplies decimals and does long division with whole numbers</div>
+    <div class="home"><strong>At home:</strong> "$7.50 shared between 3 people — how much each?" 7.50 ÷ 3 = 2.50. Long division with the decimal point carried straight up. Then harder: 7.5 ÷ 0.5 — "How many half-dollars in $7.50? Fifteen." Convert to equivalent whole-number division: 75 ÷ 5 = 15. Both methods, same answer.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">87</span>
+    <h3>Percentages — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding percent as "per hundred" — linking fractions, decimals, and percentages</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fractions and decimals; knows that 1/100 = 0.01</div>
+    <div class="home"><strong>At home:</strong> Draw a 10×10 grid (100 squares). Shade 25 squares. "25 out of 100 — we say 25 percent, or 25%." Connect: 25% = 25/100 = ¼ = 0.25. Shade 50 squares: "50% = ½." Real life: "This shirt is 20% off. The original price is $30. 20% of 30 is 6, so you save $6."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">88</span>
+    <h3>Ratio and Proportion — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding ratio as a relationship between two quantities</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fractions and equivalent fractions; can simplify fractions</div>
+    <div class="home"><strong>At home:</strong> "For every 2 red beads, we use 3 blue beads." Build the pattern: 2R-3B, 2R-3B, 2R-3B. "The ratio is 2:3." Double the recipe: 4R-6B — still 2:3. Cooking is the perfect context: "The recipe serves 4 but we need to serve 8. Double every ingredient." This is proportional reasoning.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">89</span>
+    <h3>Geometry — 3D Shapes and Nets</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding three-dimensional shapes; the relationship between faces, edges, and vertices</div>
+    <div class="readiness"><strong>Ready when:</strong> Child identifies 2D shapes; understands area; can visualize and build</div>
+    <div class="home"><strong>At home:</strong> Collect real 3D objects: a ball (sphere), a box (rectangular prism), a can (cylinder), a cone (party hat). Name faces, edges, corners. Then unfold boxes to see the "net" — the flat shape that folds into the 3D form. Cut nets from cardboard and fold: cube, triangular prism, pyramid. Count faces, edges, vertices.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">90</span>
+    <h3>Geometry — Volume</h3>
+    <div class="develops"><strong>Develops:</strong> Measuring three-dimensional space; connecting multiplication to spatial reasoning</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands area; can build 3D shapes; knows cubing</div>
+    <div class="home"><strong>At home:</strong> Build a box shape from unit cubes (sugar cubes or blocks): 3 long, 2 wide, 2 tall. Count: 12 cubes. "The volume is 3 × 2 × 2 = 12 cubic units." Connect to capacity: fill the box with water and pour into a measuring cup. "Volume is how much space something takes up — how much it can hold inside."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">91</span>
+    <h3>Geometry — Angles</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding angle as rotation; vocabulary (acute, right, obtuse); measurement in degrees</div>
+    <div class="readiness"><strong>Ready when:</strong> Child identifies shapes; understands turns and direction</div>
+    <div class="home"><strong>At home:</strong> Open a book to different widths. "This is a small angle — acute. This is a right angle — it makes an L shape. This is a big angle — obtuse." Hunt for right angles in the house (book corners, table edges, door frames). Use a protractor to measure: "This angle is 45 degrees — exactly half of a right angle."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">92</span>
+    <h3>Geometry — Symmetry and Transformation</h3>
+    <div class="develops"><strong>Develops:</strong> Line symmetry, rotation, and reflection — foundational geometric reasoning</div>
+    <div class="readiness"><strong>Ready when:</strong> Child recognizes shapes; interested in patterns and art; understands "same on both sides"</div>
+    <div class="home"><strong>At home:</strong> Fold paper in half, cut a shape, unfold — symmetry! "The fold line is the line of symmetry." Find symmetry in nature: butterflies, leaves, faces. Reflect shapes using a mirror. Rotate pattern blocks to see which positions look the same. "A square looks the same after a quarter turn — it has rotational symmetry."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">93</span>
+    <h3>Negative Numbers — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Extending the number line below zero; understanding debits, temperature, and depth</div>
+    <div class="readiness"><strong>Ready when:</strong> Child is comfortable with the number line; understands subtraction as movement left</div>
+    <div class="home"><strong>At home:</strong> Extend the number line past zero: …−3, −2, −1, 0, 1, 2, 3… "What's 3 − 5? Start at 3, walk 5 steps back: 3, 2, 1, 0, −1, −2. You end at −2." Use a thermometer: "Zero degrees. Five below zero is −5." Elevator: "Basement floors are −1, −2." The child sees that numbers don't stop at zero.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">94</span>
+    <h3>Order of Operations</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that the order of calculation matters; mathematical convention</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does all four operations fluently; encounters problems with multiple operations</div>
+    <div class="home"><strong>At home:</strong> "What's 3 + 4 × 2?" If you add first: 7 × 2 = 14. If you multiply first: 3 + 8 = 11. Which is right? Convention says multiply first. Introduce the rule: parentheses first, then multiplication/division, then addition/subtraction. Practice with problems that require the right order. Use parentheses to change the answer: "(3 + 4) × 2 = 14."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">95</span>
+    <h3>Algebraic Thinking — Missing Number</h3>
+    <div class="develops"><strong>Develops:</strong> Pre-algebra — finding the unknown; representing the unknown with a symbol</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows all four operations and their inverse relationships</div>
+    <div class="home"><strong>At home:</strong> "___ + 8 = 15. What number goes in the blank?" The child reasons: "15 − 8 = 7." Then use a box or letter: "n × 4 = 24. What is n?" This is algebra — and the child is ready for it because they understand the operations deeply. "If I know three things, I can find the fourth."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">96</span>
+    <h3>Algebraic Thinking — Simple Equations</h3>
+    <div class="develops"><strong>Develops:</strong> Solving for an unknown using inverse operations; balance as a metaphor for equality</div>
+    <div class="readiness"><strong>Ready when:</strong> Child solves missing number problems; understands that = means "the same as"</div>
+    <div class="home"><strong>At home:</strong> Use a balance scale: place 5 blocks + a mystery bag on one side, 12 blocks on the other. "5 + bag = 12. The bag has 7." On paper: "2x + 3 = 11. Take away 3 from both sides: 2x = 8. Divide both sides by 2: x = 4." Always verify: "Does 2(4) + 3 = 11? Yes!" The balance must stay balanced.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">97</span>
+    <h3>Coordinate Graphing</h3>
+    <div class="develops"><strong>Develops:</strong> Plotting points on a grid; connecting numbers to spatial position</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands number lines; works with graphs; ready for two dimensions</div>
+    <div class="home"><strong>At home:</strong> Draw two number lines crossing at zero — the x-axis and y-axis. "The point (3, 2) means go 3 right and 2 up." Plot points to make shapes: (1,1), (4,1), (4,3), (1,3) makes a rectangle. Play "treasure map" — hide a toy and give coordinates. Connect to map reading.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">98</span>
+    <h3>Probability — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding chance — certain, likely, unlikely, impossible; predicting outcomes</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fractions; can reason about what might happen</div>
+    <div class="home"><strong>At home:</strong> Bag with 3 red marbles and 1 blue. "If you reach in without looking, which colour are you more likely to pull?" Pull 20 times, record results. "We got red 15 times and blue 5 times — close to our prediction!" Coin flips, dice rolls, spinner wheels — the child discovers that mathematics can describe uncertainty.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">99</span>
+    <h3>Mathematical Reasoning — Puzzles and Proofs</h3>
+    <div class="develops"><strong>Develops:</strong> Logical thinking; persistence; the joy of a difficult problem solved</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has a broad mathematical toolkit; enjoys challenge; asks "why does that work?"</div>
+    <div class="home"><strong>At home:</strong> Logic puzzles: "I'm thinking of a number. If you double it and add 3, you get 17. What's the number?" Magic squares: arrange 1–9 in a 3×3 grid so every row, column, and diagonal sums to 15. The child learns that mathematics is not just calculating — it's thinking. The reward is the "aha!" moment.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">100</span>
+    <h3>The Great Lesson — The Story of Numbers</h3>
+    <div class="develops"><strong>Develops:</strong> Perspective — understanding that mathematics is humanity's greatest invention, not just a school subject</div>
+    <div class="readiness"><strong>Ready when:</strong> The child has journeyed through this entire curriculum and is ready to see the big picture</div>
+    <div class="home"><strong>At home:</strong> Tell the story of numbers: early humans using tally marks on bones, ancient Egyptians measuring the Nile, the invention of zero in India, Arabic numerals spreading across the world. "Every civilisation needed mathematics. And now YOU can do things that took humanity thousands of years to discover." Let the child feel the weight of that — they have inherited something extraordinary.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<div class="footer">
+  <div class="brand">Montree</div>
+  <p>The Montessori Mathematics Curriculum — 100 Works from Zero to Abstraction</p>
+  <p style="margin-top: 8px;">Created for parents who want to bring Montessori mathematics home.</p>
+  <p style="margin-top: 8px;"><a href="https://montree.xyz">montree.xyz</a></p>
+</div>
+
+</body>
+</html>
