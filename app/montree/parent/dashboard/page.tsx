@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n/context';
+import LanguageToggle from '@/components/montree/LanguageToggle';
+import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
+// --- Types ---
 
 interface Child {
   id: string;
@@ -25,65 +28,78 @@ interface WeeklyReport {
   created_at: string;
 }
 
-interface Stats {
-  works_this_week: number;
-  total_mastered: number;
-  total_works: number;
-}
-
-interface Activity {
+interface WorkItem {
   work_name: string;
-  chineseName?: string;
+  chineseName?: string | null;
   area: string;
   status: string;
-  updated_at: string;
+  completed_at: string;
+  photo_url: string | null;
+  photo_caption: string | null;
+  parent_description: string | null;
+  why_it_matters: string | null;
 }
 
-interface Announcement {
+interface AreaGroup {
+  area_key: string;
+  area_name: string;
+  works: WorkItem[];
+}
+
+interface FullReport {
   id: string;
-  title: string;
-  content: string;
-  priority: string;
+  week_number: number | null;
+  report_year: number | null;
+  week_start: string | null;
+  week_end: string | null;
+  parent_summary: string | null;
+  highlights: string[] | null;
+  areas_of_growth: string[] | null;
+  recommendations: string[] | null;
+  closing: string | null;
+  areas_explored: AreaGroup[] | null;
+  narrative: { summary?: string; generated_at?: string; model?: string } | null;
   created_at: string;
+  child: { name: string; nickname: string | null };
+  works_completed: WorkItem[];
+  all_photos?: { id: string; url: string; caption: string | null; work_name: string | null; captured_at: string }[];
 }
 
-interface Photo {
-  id: string;
-  thumbnail_url: string | null;
-  caption: string | null;
-  captured_at: string;
-}
+// --- Area Config ---
 
-interface Milestone {
-  id: string;
-  title: string;
-  area: string;
-  date: string;
-  icon: string;
+const AREA_CONFIG: Record<string, { emoji: string; label: string; labelZh: string; color: string }> = {
+  practical_life: { emoji: '🧹', label: 'Daily Living', labelZh: '日常生活', color: '#ec4899' },
+  sensorial: { emoji: '👁️', label: 'Senses & Discovery', labelZh: '感官探索', color: '#8b5cf6' },
+  mathematics: { emoji: '🔢', label: 'Numbers & Patterns', labelZh: '数学', color: '#3b82f6' },
+  math: { emoji: '🔢', label: 'Numbers & Patterns', labelZh: '数学', color: '#3b82f6' },
+  language: { emoji: '📚', label: 'Language & Reading', labelZh: '语言', color: '#f59e0b' },
+  cultural: { emoji: '🌍', label: 'World & Nature', labelZh: '文化', color: '#22c55e' },
+};
+
+function normalizeArea(area: string): string {
+  if (area === 'math') return 'mathematics';
+  return area;
 }
 
 export default function ParentDashboardPage() {
   const router = useRouter();
   const { t, locale } = useI18n();
   const [loading, setLoading] = useState(true);
-  const [parentName, setParentName] = useState('');
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   const [reports, setReports] = useState<WeeklyReport[]>([]);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
-  const [loadingReports, setLoadingReports] = useState(false);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [latestReport, setLatestReport] = useState<FullReport | null>(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+  const [pastReportsOpen, setPastReportsOpen] = useState(false);
 
-  // Check session and load data
+  // Lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // --- Auth & Init ---
   useEffect(() => {
     const sessionStr = localStorage.getItem('montree_parent_session');
-    if (!sessionStr) {
-      router.push('/montree/parent');
-      return;
-    }
+    if (!sessionStr) { router.push('/montree/parent'); return; }
 
     try {
       const session = JSON.parse(sessionStr);
@@ -93,28 +109,16 @@ export default function ParentDashboardPage() {
         router.push('/montree/parent');
         return;
       }
-      setParentName(session.name || 'Parent');
 
-      // Code-based auth: child is directly in session
       if (session.childId && session.childName) {
-        const directChild: Child = {
-          id: session.childId,
-          name: session.childName,
-          nickname: session.childName,
-        };
+        const directChild: Child = { id: session.childId, name: session.childName, nickname: session.childName };
         setChildren([directChild]);
         setSelectedChild(directChild);
         loadReports(session.childId);
-        loadStats(session.childId);
-        loadAnnouncements(session.childId);
-        loadPhotos(session.childId);
-        loadMilestones(session.childId);
         setLoading(false);
       } else if (session.parentId) {
-        // Legacy password-based auth: fetch children for this parent
         loadChildren(session.parentId);
       } else {
-        // Invalid session
         localStorage.removeItem('montree_parent_session');
         router.push('/montree/parent');
       }
@@ -123,15 +127,11 @@ export default function ParentDashboardPage() {
     }
   }, [router]);
 
+  // --- Data Loading ---
   const loadChildren = async (parentId: string) => {
     try {
       const res = await fetch(`/api/montree/parent/children?parentId=${parentId}`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadChildren failed:', res.status);
-        toast.error(t('parent.dashboard.failedToLoadChildren'));
-        setLoading(false);
-        return;
-      }
+      if (!res.ok) { toast.error(t('parent.dashboard.failedToLoadChildren')); setLoading(false); return; }
       const data = await res.json();
       if (data.children) {
         setChildren(data.children);
@@ -140,10 +140,6 @@ export default function ParentDashboardPage() {
           setSelectedChild(child);
           localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
           loadReports(child.id);
-          loadStats(child.id);
-          loadAnnouncements(child.id);
-          loadPhotos(child.id);
-          loadMilestones(child.id);
         }
       }
     } catch (err) {
@@ -155,102 +151,45 @@ export default function ParentDashboardPage() {
   };
 
   const loadReports = async (childId: string) => {
-    setLoadingReports(true);
     try {
       const res = await fetch(`/api/montree/parent/reports?childId=${childId}&locale=${locale}`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadReports failed:', res.status);
-        toast.error(t('parent.dashboard.failedToLoadReports'));
-        setLoadingReports(false);
-        return;
-      }
+      if (!res.ok) { toast.error(t('parent.dashboard.failedToLoadReports')); return; }
       const data = await res.json();
-      if (data.reports) {
+      if (data.reports && data.reports.length > 0) {
         setReports(data.reports);
+        // Auto-load the latest report
+        loadFullReport(data.reports[0].id);
+      } else {
+        setReports([]);
       }
     } catch (err) {
       console.error('Failed to load reports:', err);
       toast.error(t('parent.dashboard.failedToLoadReports'));
+    }
+  };
+
+  const loadFullReport = useCallback(async (reportId: string) => {
+    setLoadingReport(true);
+    try {
+      const res = await fetch(`/api/montree/parent/report/${reportId}?locale=${locale}`);
+      const data = await res.json();
+      if (res.ok && data.report) {
+        if (!data.report.child) data.report.child = { name: 'Child', nickname: null };
+        setLatestReport(data.report);
+      }
+    } catch (err) {
+      console.error('Failed to load full report:', err);
     } finally {
-      setLoadingReports(false);
+      setLoadingReport(false);
     }
-  };
-
-  const loadStats = async (childId: string) => {
-    try {
-      const res = await fetch(`/api/montree/parent/stats?child_id=${childId}`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadStats failed:', res.status);
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        setStats(data.stats);
-        setRecentActivity(data.recent_activity || []);
-      }
-    } catch (err) {
-      console.error('Failed to load stats:', err);
-    }
-  };
-
-  const loadAnnouncements = async (childId: string) => {
-    try {
-      const res = await fetch(`/api/montree/parent/announcements?child_id=${childId}&limit=3`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadAnnouncements failed:', res.status);
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        setAnnouncements(data.announcements || []);
-      }
-    } catch (err) {
-      console.error('Failed to load announcements:', err);
-    }
-  };
-
-  const loadPhotos = async (childId: string) => {
-    try {
-      const res = await fetch(`/api/montree/parent/photos?child_id=${childId}&limit=4`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadPhotos failed:', res.status);
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        setPhotos(data.photos || []);
-      }
-    } catch (err) {
-      console.error('Failed to load photos:', err);
-    }
-  };
-
-  const loadMilestones = async (childId: string) => {
-    try {
-      const res = await fetch(`/api/montree/parent/milestones?child_id=${childId}&limit=5`);
-      if (!res.ok) {
-        console.error('[ParentDashboard] loadMilestones failed:', res.status);
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        setMilestones(data.milestones || []);
-      }
-    } catch (err) {
-      console.error('Failed to load milestones:', err);
-    }
-  };
+  }, [locale]);
 
   const handleSelectChild = (child: Child) => {
     setSelectedChild(child);
-    // Save to localStorage for other pages
+    setLatestReport(null);
+    setPastReportsOpen(false);
     localStorage.setItem('montree_selected_child', JSON.stringify({ id: child.id, name: child.nickname || child.name }));
-    // Load all data
     loadReports(child.id);
-    loadStats(child.id);
-    loadAnnouncements(child.id);
-    loadPhotos(child.id);
-    loadMilestones(child.id);
   };
 
   const handleLogout = () => {
@@ -259,331 +198,458 @@ export default function ParentDashboardPage() {
     router.push('/montree/parent');
   };
 
-  const getAge = (dob: string | null | undefined) => {
-    if (!dob) return '';
-    const birth = new Date(dob);
-    if (isNaN(birth.getTime())) return '';
-    const now = new Date();
-    const years = now.getFullYear() - birth.getFullYear();
-    const months = now.getMonth() - birth.getMonth();
-    if (years < 1) return `${months}mo`;
-    if (months < 0) return `${years - 1}y ${12 + months}mo`;
-    return `${years}y ${months}mo`;
+  // --- Report Data ---
+  const allWorks: WorkItem[] = useMemo(() => {
+    if (!latestReport) return [];
+    if (latestReport.areas_explored && latestReport.areas_explored.length > 0) {
+      return latestReport.areas_explored.flatMap(ag => ag.works);
+    }
+    return latestReport.works_completed || [];
+  }, [latestReport]);
+
+  const photoWorks = useMemo(() => allWorks.filter(w => w.photo_url), [allWorks]);
+
+  const masteredCount = allWorks.filter(w => w.status === 'mastered' || w.status === 'completed').length;
+  const practicingCount = allWorks.filter(w => w.status === 'practicing').length;
+  const presentedCount = allWorks.filter(w => w.status === 'presented').length;
+
+  const lightboxPhotos = useMemo(() => {
+    return photoWorks.map(w => ({ url: w.photo_url!, caption: w.photo_caption || undefined, date: w.completed_at }));
+  }, [photoWorks]);
+
+  // Past reports = all except the first (latest)
+  const pastReports = reports.slice(1);
+
+  // --- Helpers ---
+  const childName = selectedChild?.nickname || selectedChild?.name || '';
+  const firstName = childName.split(' ')[0];
+
+  const getAreaConfig = (area: string) => AREA_CONFIG[normalizeArea(area)] || AREA_CONFIG['cultural'];
+  const getAreaLabel = (area: string) => {
+    const conf = getAreaConfig(area);
+    return locale === 'zh' ? conf.labelZh : conf.label;
   };
 
-  // Format week display with fallback to date range
-  const formatWeekDisplay = (report: WeeklyReport) => {
+  const getStatusInfo = (status: string) => {
+    const isZh = locale === 'zh';
+    switch (status) {
+      case 'mastered':
+      case 'completed':
+        return { label: isZh ? '已掌握' : 'Mastered', icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' };
+      case 'practicing':
+        return { label: isZh ? '练习中' : 'Practicing', icon: '🔄', color: 'text-blue-700', bg: 'bg-blue-50' };
+      case 'presented':
+        return { label: isZh ? '已展示' : 'Introduced', icon: '🌱', color: 'text-amber-700', bg: 'bg-amber-50' };
+      default:
+        return { label: isZh ? '已记录' : 'Documented', icon: '📸', color: 'text-purple-700', bg: 'bg-purple-50' };
+    }
+  };
+
+  const formatWeekRange = (report: WeeklyReport | FullReport) => {
     const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    if (report.week_start) {
+      const start = new Date(report.week_start);
+      const end = report.week_end ? new Date(report.week_end) : start;
+      const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'long', day: 'numeric' });
+      return `${fmt(start)} – ${fmt(end)}`;
+    }
     if (report.week_number && report.report_year) {
       return locale === 'zh'
         ? `${report.report_year}年 第${report.week_number}周`
         : `Week ${report.week_number}, ${report.report_year}`;
     }
-    // Fallback to date range
+    const created = new Date(report.created_at);
+    return created.toLocaleDateString(dateLocale, { month: 'long', day: 'numeric' });
+  };
+
+  const formatWeekShort = (report: WeeklyReport) => {
+    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
-      const formatDate = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
-      return `${formatDate(start)} - ${formatDate(end)}`;
+      const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
+      return `${fmt(start)} – ${fmt(end)}`;
     }
-    // Last resort: use created_at
-    const created = new Date(report.created_at);
-    const weekOf = locale === 'zh' ? '周' : 'Week of';
-    return `${weekOf} ${created.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' })}`;
+    if (report.week_number && report.report_year) {
+      return locale === 'zh'
+        ? `第${report.week_number}周`
+        : `Week ${report.week_number}`;
+    }
+    return new Date(report.created_at).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
   };
 
+  // --- Loading State ---
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4 animate-pulse">🌱</div>
-          <p className="text-gray-600">{t('common.loading')}</p>
+          <div className="w-12 h-12 rounded-full bg-emerald-100 animate-pulse mx-auto mb-4" />
+          <p className="text-gray-400 text-sm">{t('common.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+    <div className="min-h-screen bg-white">
       <Toaster position="top-center" />
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🌳</span>
-            <div>
-              <h1 className="font-bold text-gray-800">Montree</h1>
-              <p className="text-sm text-gray-500">{t('parent.dashboard.welcome').replace('{name}', parentName)}</p>
-            </div>
+
+      {/* ═══ Sticky Header ═══ */}
+      <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🌳</span>
+            <span className="font-semibold text-gray-800 text-sm">Montree</span>
           </div>
-          <button
-            onClick={handleLogout}
-            className="text-gray-500 hover:text-gray-700 text-sm"
-          >
-            {t('parent.dashboard.signOut')}
-          </button>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <button
+              onClick={handleLogout}
+              className="text-gray-400 hover:text-gray-600 text-sm transition-colors"
+            >
+              {t('parent.dashboard.signOut')}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto p-4">
-        {/* Child Selector (if multiple children) */}
+      <main className="max-w-lg mx-auto">
+
+        {/* ═══ Multi-child Selector ═══ */}
         {children.length > 1 && (
-          <div className="mb-6">
-            <h2 className="text-sm font-medium text-gray-700 mb-3">{t('parent.dashboard.yourChildren')}</h2>
-            <div className="flex gap-3 flex-wrap">
+          <div className="px-5 pt-4 pb-2">
+            <div className="flex gap-2 overflow-x-auto">
               {children.map(child => (
                 <button
                   key={child.id}
                   onClick={() => handleSelectChild(child)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                     selectedChild?.id === child.id
-                      ? 'border-emerald-500 bg-emerald-50'
-                      : 'border-gray-200 bg-white hover:border-emerald-300'
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-lg">
-                    {child.photo_url ? (
-                      <img src={child.photo_url} className="w-full h-full rounded-full object-cover" alt="" />
-                    ) : (
-                      child.name.charAt(0)
-                    )}
-                  </div>
-                  <div className="text-left">
-                    <div className="font-medium text-gray-800">{child.nickname || child.name}</div>
-                    {child.date_of_birth && <div className="text-xs text-gray-500">{getAge(child.date_of_birth)}</div>}
-                  </div>
+                  <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold">
+                    {child.name.charAt(0)}
+                  </span>
+                  {child.nickname || child.name}
                 </button>
               ))}
             </div>
           </div>
         )}
 
-        {/* Selected Child View */}
         {selectedChild ? (
-          <div className="space-y-6">
-            {/* Child Header */}
-            <div data-tutorial="parent-dashboard" className="bg-white rounded-2xl p-6 shadow-sm">
+          <>
+            {/* ═══ Child Hero ═══ */}
+            <div className="px-5 pt-8 pb-6">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-2xl">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-3xl font-bold shadow-lg shadow-emerald-200">
                   {selectedChild.photo_url ? (
                     <img src={selectedChild.photo_url} className="w-full h-full rounded-full object-cover" alt="" />
                   ) : (
-                    selectedChild.name.charAt(0)
+                    firstName.charAt(0)
                   )}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">
-                    {selectedChild.nickname || selectedChild.name}
-                  </h2>
-                  {selectedChild.date_of_birth && <p className="text-gray-500">{getAge(selectedChild.date_of_birth)} old</p>}
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    {firstName}
+                  </h1>
+                  {latestReport && (
+                    <p className="text-gray-400 text-sm mt-1">
+                      {formatWeekRange(latestReport)}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Announcements */}
-            {announcements.length > 0 && (
-              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-2xl p-4 shadow-sm border border-amber-200">
-                <h3 className="font-bold text-amber-800 mb-3 flex items-center gap-2">
-                  <span>📢</span> {t('parent.dashboard.announcements')}
-                </h3>
-                <div className="space-y-2">
-                  {announcements.map(ann => (
-                    <div key={ann.id} className="bg-white p-3 rounded-xl">
-                      <p className="font-medium text-gray-800">{ann.title}</p>
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{ann.content}</p>
-                      <p className="text-xs text-gray-400 mt-2">
-                        {new Date(ann.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                  ))}
+            {/* ═══ Latest Report Inline ═══ */}
+            {loadingReport ? (
+              <div className="px-5 py-12">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-4 bg-gray-100 rounded w-3/4" />
+                  <div className="h-4 bg-gray-100 rounded w-5/6" />
+                  <div className="h-4 bg-gray-100 rounded w-2/3" />
+                  <div className="h-48 bg-gray-100 rounded-xl mt-6" />
                 </div>
               </div>
-            )}
+            ) : latestReport ? (
+              <>
+                {/* Quick stats pills */}
+                {allWorks.length > 0 && (
+                  <div className="px-5 pb-4">
+                    <div className="flex gap-2 flex-wrap">
+                      {masteredCount > 0 && (
+                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                          ⭐ {masteredCount} {locale === 'zh' ? '掌握' : 'mastered'}
+                        </span>
+                      )}
+                      {practicingCount > 0 && (
+                        <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                          🔄 {practicingCount} {locale === 'zh' ? '练习' : 'practicing'}
+                        </span>
+                      )}
+                      {presentedCount > 0 && (
+                        <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
+                          🌱 {presentedCount} {locale === 'zh' ? '新展示' : 'new'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-            {/* Weekly Reports */}
-            <div data-tutorial="parent-weekly-reports" className="bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <span>📊</span> {t('parent.dashboard.weeklyReports')}
-              </h3>
+                {/* Narrative */}
+                {(latestReport.narrative?.summary || latestReport.parent_summary) && (
+                  <div className="px-5 pb-6">
+                    <div className="border-l-4 border-emerald-400 bg-emerald-50/50 rounded-r-xl px-5 py-4">
+                      <p className="text-gray-800 text-[15px] leading-relaxed">
+                        {latestReport.narrative?.summary || latestReport.parent_summary}
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-              {loadingReports ? (
-                <div className="text-center py-8 text-gray-500">
-                  {t('parent.dashboard.loadingReports')}
-                </div>
-              ) : reports.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-2">📝</div>
-                  <p className="text-gray-500">{t('parent.dashboard.noReportsYet')}</p>
-                  <p className="text-sm text-gray-400 mt-1">
-                    {t('parent.dashboard.reportsGenerated')}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {reports.map(report => (
-                    <Link
-                      key={report.id}
-                      href={`/montree/parent/report/${report.id}`}
-                      className="block p-4 border border-gray-200 rounded-xl hover:border-emerald-300 hover:bg-emerald-50 transition"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium text-gray-800">
-                            {formatWeekDisplay(report)}
+                {/* Photo divider */}
+                {photoWorks.length > 0 && (
+                  <div className="px-5 pb-3">
+                    <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">
+                      {locale === 'zh'
+                        ? `本周照片记录 · ${photoWorks.length}项`
+                        : `This Week's Moments · ${photoWorks.length} activities`}
+                    </p>
+                  </div>
+                )}
+
+                {/* Photo cards */}
+                <div className="space-y-0">
+                  {photoWorks.map((work, index) => {
+                    const displayName = locale === 'zh' && work.chineseName ? work.chineseName : work.work_name;
+                    const areaConf = getAreaConfig(work.area);
+                    const statusInfo = getStatusInfo(work.status);
+
+                    return (
+                      <div key={`${work.work_name}-${index}`} className="border-b border-gray-100">
+                        <button
+                          onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
+                          className="w-full block"
+                        >
+                          <img
+                            src={work.photo_url!}
+                            alt={displayName}
+                            className="w-full aspect-[4/3] object-cover"
+                            loading={index < 3 ? 'eager' : 'lazy'}
+                          />
+                        </button>
+                        <div className="px-5 py-4 space-y-3">
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5"
+                              style={{ backgroundColor: areaConf.color }}
+                            >
+                              {areaConf.emoji}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-gray-900 text-lg leading-tight">{displayName}</h3>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-gray-500">{getAreaLabel(work.area)}</span>
+                                <span className="text-gray-300">·</span>
+                                <span className={`text-xs font-medium ${statusInfo.color}`}>
+                                  {statusInfo.icon} {statusInfo.label}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          {report.parent_summary && (
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                              {report.parent_summary}
+                          {work.parent_description && (
+                            <p className="text-gray-700 text-[15px] leading-relaxed">{work.parent_description}</p>
+                          )}
+                          {work.why_it_matters && (
+                            <div className="bg-gray-50 rounded-xl px-4 py-3">
+                              <p className="text-xs font-semibold text-gray-500 mb-1">
+                                {locale === 'zh' ? '为什么重要' : 'Why this matters'}
+                              </p>
+                              <p className="text-gray-700 text-sm leading-relaxed">{work.why_it_matters}</p>
+                            </div>
+                          )}
+                          {work.photo_caption && (
+                            <div className="bg-blue-50 rounded-xl px-4 py-3">
+                              <p className="text-xs font-semibold text-blue-600 mb-1">
+                                {locale === 'zh' ? '老师的观察' : "Teacher's Note"}
+                              </p>
+                              <p className="text-blue-800 text-sm leading-relaxed">{work.photo_caption}</p>
+                            </div>
+                          )}
+                          {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
+                            <p className="text-gray-400 text-sm">
+                              {locale === 'zh'
+                                ? `${firstName}在${getAreaLabel(work.area)}方面进行了学习。`
+                                : `${firstName} explored this ${getAreaLabel(work.area).toLowerCase()} activity.`}
                             </p>
                           )}
                         </div>
-                        <span className="text-emerald-500">→</span>
                       </div>
-                    </Link>
-                  ))}
+                    );
+                  })}
                 </div>
-              )}
-            </div>
 
-            {/* Quick Stats */}
-            <div data-tutorial="parent-stats" className="grid grid-cols-2 gap-4">
-              <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-                <div className="text-3xl mb-1">🎯</div>
-                <div className="text-2xl font-bold text-emerald-600">{stats?.works_this_week ?? '--'}</div>
-                <div className="text-xs text-gray-500">{t('parent.dashboard.worksThisWeek')}</div>
-              </div>
-              <div className="bg-white rounded-xl p-4 shadow-sm text-center">
-                <div className="text-3xl mb-1">⭐</div>
-                <div className="text-2xl font-bold text-amber-500">{stats?.total_mastered ?? '--'}</div>
-                <div className="text-xs text-gray-500">{t('parent.dashboard.masteredSkills')}</div>
-              </div>
-            </div>
+                {/* Extra photos */}
+                {latestReport.all_photos && latestReport.all_photos.length > 0 && (() => {
+                  const usedUrls = new Set(photoWorks.map(w => w.photo_url));
+                  const extraPhotos = latestReport.all_photos!.filter(p => !usedUrls.has(p.url));
+                  if (extraPhotos.length === 0) return null;
+                  return (
+                    <div className="px-5 py-6 border-t border-gray-100">
+                      <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
+                        {locale === 'zh' ? '更多瞬间' : 'More Moments'}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {extraPhotos.map((photo, i) => (
+                          <button
+                            key={photo.id || i}
+                            onClick={() => { setLightboxIndex(photoWorks.length + i); setLightboxOpen(true); }}
+                            className="aspect-square rounded-xl overflow-hidden"
+                          >
+                            <img src={photo.url} alt={photo.caption || 'Activity'} className="w-full h-full object-cover" loading="lazy" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
-            {/* Photo Gallery Preview */}
-            {photos.length > 0 && (
-              <div data-tutorial="parent-photo-gallery" className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <span>📸</span> {t('parent.dashboard.photos')}
-                  </h3>
-                  <Link
-                    href="/montree/parent/photos"
-                    data-tutorial="photos-link"
-                    className="text-sm text-emerald-600 hover:text-emerald-700"
+                {/* Try this at home */}
+                {latestReport.recommendations && latestReport.recommendations.length > 0 && (
+                  <div className="px-5 py-6 border-t border-gray-100">
+                    <h2 className="font-bold text-gray-800 text-sm mb-3">
+                      {locale === 'zh' ? '💡 在家可以这样做' : '💡 Try This at Home'}
+                    </h2>
+                    <div className="space-y-2">
+                      {latestReport.recommendations.map((item, i) => (
+                        <p key={i} className="text-gray-600 text-sm leading-relaxed pl-4 relative">
+                          <span className="absolute left-0 text-emerald-400">•</span>
+                          {item}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Closing */}
+                {latestReport.closing && (
+                  <div className="px-5 py-6 border-t border-gray-100 text-center">
+                    <p className="text-gray-600 leading-relaxed">{latestReport.closing}</p>
+                  </div>
+                )}
+
+                {/* No activities */}
+                {allWorks.length === 0 && !latestReport.narrative?.summary && !latestReport.parent_summary && (
+                  <div className="px-5 py-16 text-center">
+                    <p className="text-4xl mb-3">📋</p>
+                    <p className="text-gray-400">
+                      {locale === 'zh' ? '本周暂无活动记录' : 'No activities recorded this week'}
+                    </p>
+                  </div>
+                )}
+              </>
+            ) : reports.length === 0 ? (
+              /* No reports at all */
+              <div className="px-5 py-20 text-center">
+                <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🌱</span>
+                </div>
+                <p className="text-gray-500 font-medium">
+                  {locale === 'zh' ? '老师正在准备第一份周报' : "Your child's first report is on its way"}
+                </p>
+                <p className="text-gray-400 text-sm mt-2">
+                  {locale === 'zh' ? '请稍后再来查看' : "Check back soon"}
+                </p>
+              </div>
+            ) : null}
+
+            {/* ═══ Past Reports — Collapsed ═══ */}
+            {pastReports.length > 0 && (
+              <div className="px-5 py-6 border-t border-gray-100">
+                <button
+                  onClick={() => setPastReportsOpen(!pastReportsOpen)}
+                  className="w-full flex items-center justify-between py-2 group"
+                >
+                  <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 transition-colors">
+                    {locale === 'zh'
+                      ? `以往周报 (${pastReports.length})`
+                      : `Past Reports (${pastReports.length})`}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${pastReportsOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
                   >
-                    {t('parent.dashboard.viewAll')}
-                  </Link>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {photos.map(photo => (
-                    <div key={photo.id} className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                      {photo.thumbnail_url ? (
-                        <img
-                          src={photo.thumbnail_url}
-                          alt={photo.caption || 'Photo'}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="text-xl">📷</span>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {pastReportsOpen && (
+                  <div className="mt-2 space-y-2">
+                    {pastReports.map(report => (
+                      <Link
+                        key={report.id}
+                        href={`/montree/parent/report/${report.id}`}
+                        className="flex items-center justify-between px-4 py-3 rounded-xl bg-gray-50 hover:bg-emerald-50 transition-colors group"
+                      >
+                        <div>
+                          <span className="text-sm font-medium text-gray-700 group-hover:text-emerald-700 transition-colors">
+                            {formatWeekShort(report)}
+                          </span>
+                          {report.parent_summary && (
+                            <p className="text-xs text-gray-400 mt-0.5 line-clamp-1">{report.parent_summary}</p>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                        <span className="text-gray-300 group-hover:text-emerald-500 transition-colors">→</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {/* Milestones Preview */}
-            {milestones.length > 0 && (
-              <div data-tutorial="parent-milestones" className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <span>⭐</span> {t('parent.dashboard.recentMilestones')}
-                  </h3>
-                  <Link
-                    href="/montree/parent/milestones"
-                    className="text-sm text-emerald-600 hover:text-emerald-700"
-                  >
-                    {t('parent.dashboard.viewAll')}
-                  </Link>
-                </div>
-                <div className="space-y-2">
-                  {milestones.slice(0, 3).map(m => (
-                    <div key={m.id} className="flex items-center gap-3 p-2 bg-amber-50 rounded-lg">
-                      <span className="text-lg">{m.icon}</span>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{m.title}</p>
-                        <p className="text-xs text-gray-500">{new Date(m.date).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Practice Games */}
-            <Link
-              href="/montree/dashboard/games"
-              className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center">
-                  <span className="text-3xl">🎮</span>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-bold text-lg">{t('parent.dashboard.practiceGames')}</h3>
-                  <p className="text-white/80 text-sm">{t('parent.dashboard.funActivities')}</p>
-                </div>
-                <span className="text-white text-xl">→</span>
-              </div>
-            </Link>
-
-            {/* Recent Activity */}
-            {recentActivity.length > 0 && (
-              <div className="bg-white rounded-2xl p-6 shadow-sm">
-                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span>🕐</span> {t('parent.dashboard.recentActivity')}
-                </h3>
-                <div className="space-y-3">
-                  {recentActivity.map((activity, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                      <span className="text-xl">
-                        {activity.area === 'practical_life' ? '🧹' :
-                         activity.area === 'sensorial' ? '👁️' :
-                         activity.area === 'mathematics' ? '🔢' :
-                         activity.area === 'language' ? '📚' : '🌍'}
-                      </span>
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800">{locale === 'zh' && activity.chineseName ? activity.chineseName : activity.work_name}</div>
-                        <div className="text-xs text-gray-500">
-                          {new Date(activity.updated_at).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        activity.status === 'completed' || activity.status === 'mastered'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : activity.status === 'practicing'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {activity.status === 'completed' || activity.status === 'mastered' ? t('parent.dashboard.statusMastered') :
-                         activity.status === 'practicing' ? t('parent.dashboard.statusPracticing') : t('parent.dashboard.statusStarted')}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+            {/* ═══ Footer ═══ */}
+            <div className="text-center text-xs text-gray-300 py-8">
+              Montree
+            </div>
+          </>
         ) : (
-          /* No Child Selected */
-          <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-            <div className="text-5xl mb-4">👆</div>
-            <p className="text-gray-600">{t('parent.dashboard.selectChild')}</p>
+          /* No Child Selected (multi-child only) */
+          <div className="px-5 py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">👆</span>
+            </div>
+            <p className="text-gray-500">{t('parent.dashboard.selectChild')}</p>
           </div>
         )}
       </main>
+
+      {/* ═══ Photo Lightbox ═══ */}
+      {latestReport && (() => {
+        const extraPhotos = (latestReport.all_photos || [])
+          .filter(p => !new Set(photoWorks.map(w => w.photo_url)).has(p.url));
+        const allLightboxPhotos = [
+          ...lightboxPhotos,
+          ...extraPhotos.map(p => ({ url: p.url, caption: p.caption || undefined, date: p.captured_at })),
+        ];
+        const safeIndex = Math.min(lightboxIndex, Math.max(allLightboxPhotos.length - 1, 0));
+        const currentPhoto = allLightboxPhotos[safeIndex];
+        return (
+          <PhotoLightbox
+            isOpen={lightboxOpen && allLightboxPhotos.length > 0}
+            onClose={() => setLightboxOpen(false)}
+            src={currentPhoto?.url || ''}
+            alt={currentPhoto?.caption || 'Activity photo'}
+            photos={allLightboxPhotos}
+            currentIndex={safeIndex}
+            onNavigate={(idx) => setLightboxIndex(idx)}
+          />
+        );
+      })()}
     </div>
   );
 }
