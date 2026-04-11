@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Montessori Language Curriculum — 100 Works from Sound to Story</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --green-deep: #1a4731;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #b7e4c7;
+    --green-wash: #f0faf4;
+    --cream: #fefcf6;
+    --warm-gray: #5c5552;
+    --text: #2c2420;
+    --border: #e8e0d8;
+    --phase1: #c0566e;
+    --phase2: #a63d72;
+    --phase3: #6b3fa0;
+    --phase4: #1a4731;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════ HERO ═══════ */
+  .hero {
+    background: linear-gradient(135deg, #4a1942 0%, #7b2d5f 40%, #c0566e 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    opacity: 0.85;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .hero .meta {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════ INTRO ═══════ */
+  .intro {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 30px 40px;
+  }
+  .intro h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--green-deep);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .intro p {
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .intro blockquote {
+    border-left: 3px solid var(--phase1);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: #fef5f7;
+    border-radius: 0 12px 12px 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: #4a1942;
+  }
+
+  /* ═══════ PHASE HEADER ═══════ */
+  .phase-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 30px 20px;
+  }
+  .phase-header .phase-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .phase-header h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.9rem;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .phase-header .phase-desc {
+    color: var(--warm-gray);
+    font-size: 0.92rem;
+    max-width: 680px;
+  }
+
+  /* ═══════ WORK CARDS ═══════ */
+  .works-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .work-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    page-break-inside: avoid;
+  }
+  .work-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+  .work-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px 16px;
+  }
+
+  .work-number {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+  }
+
+  .work-info { flex: 1; min-width: 0; }
+  .work-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .work-develops {
+    font-size: 0.85rem;
+    color: var(--warm-gray);
+    line-height: 1.5;
+  }
+
+  .work-details {
+    padding: 0 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .detail-box {
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  .detail-box .detail-label {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .readiness-box {
+    background: #fef9ee;
+    border: 1px solid #f5e6c8;
+  }
+  .readiness-box .detail-label { color: #92600a; }
+  .readiness-box .detail-text { color: #7a5008; }
+
+  .home-box {
+    background: var(--green-wash);
+    border: 1px solid #c1e6d0;
+  }
+  .home-box .detail-label { color: var(--green-mid); }
+  .home-box .detail-text { color: #2a5a41; }
+
+  /* ═══════ SENSITIVE PERIOD CALLOUTS ═══════ */
+  .sensitive-period {
+    max-width: 900px;
+    margin: 10px auto;
+    padding: 0 30px;
+  }
+  .sensitive-period .sp-card {
+    background: linear-gradient(135deg, #f8f4ff, #f0e8ff);
+    border: 1px solid #e0d4f5;
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .sp-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .sp-text { font-size: 0.85rem; color: #4a3470; line-height: 1.6; }
+  .sp-text strong { color: #3b1d6e; }
+
+  /* ═══════ FOOTER ═══════ */
+  .footer {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--warm-gray);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .footer a { color: var(--green-mid); text-decoration: none; }
+  .footer .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+  }
+
+  /* ═══════ PRINT ═══════ */
+  @media print {
+    body { background: white; }
+    .hero { padding: 40px 30px 30px; }
+    .work-card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+    .work-details { grid-template-columns: 1fr 1fr; }
+    .sensitive-period .sp-card { background: #f8f4ff; }
+    @page { margin: 1.5cm; }
+  }
+
+  /* ═══════ MOBILE ═══════ */
+  @media (max-width: 640px) {
+    .hero { padding: 50px 20px 40px; }
+    .work-details { grid-template-columns: 1fr; }
+    .works-grid, .phase-header, .sensitive-period, .intro { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                   HERO                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="hero">
+  <h1>The Language Curriculum</h1>
+  <p class="subtitle">100 works from first sound to first story — in the sequence Maria intended</p>
+  <p class="meta">Montree Home Curriculum Series &middot; Based on Montessori's original writings</p>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                  INTRO                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="intro">
+  <h2>Before You Begin</h2>
+  <p>Maria Montessori made a discovery that surprised even her: children do not learn to read first. They learn to write first. And before they write, they speak. And before they speak with precision, they listen. The entire Montessori language curriculum is built on this natural sequence — ear, mouth, hand, eye.</p>
+  <p>Language in Montessori is not a subject. It is the thread that runs through everything. The child who can name the parts of a flower has mastered more than vocabulary — they have learned to see with precision. The child who can sound out the word "cat" has not merely decoded letters — they have discovered that the sounds they already speak can be made visible.</p>
+  <blockquote>"Writing came like an explosion. These children wrote before they read, and they read as a natural consequence of writing." — Maria Montessori</blockquote>
+  <p>This curriculum is sequenced precisely. Spoken language prepares writing. Writing prepares reading. Reading opens grammar, word study, and the whole world of human knowledge. Each work depends on every work before it. Do not skip ahead. If a child struggles with Work 30, they need more time with Works 1–29.</p>
+  <p><strong>How to use this:</strong> For each work, you'll find what it develops in the child, the readiness sign telling you when to introduce it, and a home version requiring nothing from a Montessori catalogue. Language is uniquely suited to the home — you already have the most important material: your voice.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 1: THE EAR — SPOKEN LANGUAGE      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase1)">Phase 1 — Works 1–25</span>
+  <h2>The Ear</h2>
+  <p class="phase-desc">Building a rich vocabulary, precise pronunciation, and phonemic awareness — the ability to hear individual sounds within words. The child learns: I can name what I see. I can hear the sounds inside words. Language is mine.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 1 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">1</div>
+    <div class="work-info">
+      <div class="work-name">Naming the World — Objects in the Home</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>precision of language</strong> — the child learns that everything has a name, and that naming gives power over the environment.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child points at objects and looks to you expectantly, or says "What's that?" repeatedly. The vocabulary explosion has begun — typically 18–24 months.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Walk through the house naming everything precisely. Not "thing" but "colander." Not "flower" but "dahlia." Use the real name. The child's absorbent mind takes in complexity effortlessly — simplification is the adult's limitation, not the child's.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">2</div>
+    <div class="work-info">
+      <div class="work-name">Naming the World — Objects in Nature</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>classification</strong> — the outdoors is an infinite classified card set. The child learns to distinguish, compare, and name what they see.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child picks up leaves, rocks, insects and brings them to you. They want to know what everything is called.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">On every walk, name precisely: "That's a maple leaf. That's an oak leaf. See how the maple has five points?" Collect items. At home, sort them. This is classification before classification — vocabulary as the scaffold for thinking.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">3</div>
+    <div class="work-info">
+      <div class="work-name">Three-Period Lesson — Concrete Objects</div>
+      <div class="work-develops">Develops <strong>vocabulary acquisition</strong> and <strong>memory</strong> — Montessori's three-period lesson is the most powerful teaching technique in early childhood. It works because it matches how the brain actually learns.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can focus on you speaking for 30+ seconds. Has a vocabulary of at least 50 words. Usually around 2 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place 3 objects (e.g., apple, banana, grape). Period 1 — "This is an apple." Period 2 — "Show me the banana." (Longest phase — repeat many times, playfully.) Period 3 — Point: "What is this?" Only move to Period 3 when Period 2 is effortless.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">4</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Animals</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong>, <strong>visual discrimination</strong>, and <strong>classification</strong> — the child builds mental categories: these are birds, those are mammals. Each card is a window into the world.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child enjoys looking at picture books and naming animals. Can sit and attend to cards for 5+ minutes.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Print or cut out clear photos of 6–10 animals. Mount on cardstock. Use three-period lesson. Start with animals the child has seen in life. Farm animals, then wild animals, then insects, then ocean creatures — spiraling outward from experience.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">5</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Fruits and Vegetables</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>sensory connection</strong> — naming food the child can touch, smell, and taste makes language embodied. Abstract words become real.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child helps in the kitchen. Can identify at least 5 fruits or vegetables by name already.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Photograph the actual fruits and vegetables in your kitchen. Print them. Even better: use real objects first, then match to pictures. "This is an avocado. Show me the avocado. What is this?" The three-period lesson with food they can eat afterward.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">6</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Parts of the Body</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>body awareness</strong> — knowing the names of their own parts gives the child ownership of their body. This is language meeting self-construction.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can point to basic body parts (eyes, nose, mouth). Ready for precise names: "wrist," "elbow," "ankle," "shin."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">No cards needed at first. Touch and name: "This is your wrist. This is your forearm. This is your elbow." Start with the arm, then leg, then face, then torso. Add cards with labeled body part diagrams later.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">7</div>
+    <div class="work-info">
+      <div class="work-name">Object to Picture Matching</div>
+      <div class="work-develops">Develops <strong>abstraction</strong> and <strong>visual discrimination</strong> — the child connects a three-dimensional reality to its two-dimensional representation. This is the first step from concrete to abstract.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child recognizes photos of familiar objects. Points at pictures in books and names the real-world equivalent.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 5 small objects (toy car, shell, button, key, leaf). Photograph each. Print the photos. The child places each object on its matching photo. Simple but profound — they are learning that symbols can represent reality.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">8</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Transportation</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>cultural knowledge</strong> — vehicles fascinate children and expand language beyond the immediate environment into the wider world.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child notices vehicles — points at planes, watches trucks. Can name at least "car" and "bus." Ready for "excavator," "ambulance," "sailboat."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cards showing land, water, and air vehicles. Sort by type. Three-period lesson on each group. Match toy vehicles to cards. Take a "vehicle walk" — how many types can you spot in 15 minutes?</div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">9</div>
+    <div class="work-info">
+      <div class="work-name">Poems, Songs, and Fingerplays</div>
+      <div class="work-develops">Develops <strong>phonemic awareness</strong>, <strong>rhythm</strong>, and <strong>memory</strong> — rhyme and rhythm wire the brain for sound patterns. A child who can recite a poem has trained the ear for the sounds that make up words.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child bobs to music, attempts to sing along, or fills in the last word of familiar lines. Usually 2–2.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Sing the same 5–6 songs daily. Recite nursery rhymes with hand movements. Pause before the last word and let the child fill it in: "Twinkle twinkle little..." This is the first phonemic awareness exercise — hearing that words have predictable endings.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">10</div>
+    <div class="work-info">
+      <div class="work-name">Storytelling — Sequence Cards</div>
+      <div class="work-develops">Develops <strong>narrative thinking</strong> and <strong>temporal ordering</strong> — first, then, finally. The child learns that events unfold in order and that language can capture time.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child begins to recount events ("We went to park, then we ate"). Understands "first" and "then." Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw or print 3–4 cards showing a simple sequence: egg in pan, cooking, on plate, eating. The child arranges them in order and tells the story. Start with 3 cards, build to 6. Every bedtime routine can become a sequence story.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">11</div>
+    <div class="work-info">
+      <div class="work-name">Conversation and Discussion</div>
+      <div class="work-develops">Develops <strong>expressive language</strong>, <strong>turn-taking</strong>, and <strong>confidence</strong> — structured conversation teaches the child that their thoughts matter and that communication has a form.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child speaks in 3–4 word sentences. Begins to ask "why?" questions. Interrupts — not rudely, but because they have something to say.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">At meals or quiet moments, ask open questions: "What was the best part of your morning?" Listen. Wait. Do not correct grammar mid-sentence. Respond to the meaning. Model correct form naturally in your reply. This is how language is actually acquired — not by drill, but by being heard.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 12 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">12</div>
+    <div class="work-info">
+      <div class="work-name">Rhyming Games</div>
+      <div class="work-develops">Develops <strong>phonemic awareness</strong> — the ability to hear that "cat," "hat," and "mat" share a sound pattern. This is the ear training that makes reading possible later.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child enjoys songs with rhymes. May spontaneously create nonsense rhymes ("poo-poo, boo-boo, shoe-shoe"). Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Play "What rhymes with cat?" Accept nonsense words — "gat" and "blat" count. Rhyming is about hearing the sound pattern, not knowing real words. Collect pairs of rhyming objects in a basket (sock/rock, pan/fan). Match them.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 13 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">13</div>
+    <div class="work-info">
+      <div class="work-name">I Spy — Beginning Sounds</div>
+      <div class="work-develops">Develops <strong>phonemic isolation</strong> — the critical bridge between spoken and written language. The child learns to hear the first sound in a word, which is the foundation of all phonics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can rhyme at least some of the time. Has a vocabulary of 200+ words. Shows interest in letters or print. Usually 2.5–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place 3 objects on a tray (cup, ball, ring). "I spy with my little eye something that starts with /b/" (use the SOUND, never the letter name). Start with very different sounds. Always phonetic sounds: /k/ not "see," /s/ not "ess." This single game is the most important pre-reading activity in Montessori.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 14 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">14</div>
+    <div class="work-info">
+      <div class="work-name">I Spy — Ending Sounds</div>
+      <div class="work-develops">Develops <strong>phonemic isolation</strong> at the end of words — harder than beginning sounds because the ear must hold the whole word and isolate the last sound.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can consistently identify beginning sounds of familiar words. "Ball starts with /b/" is easy for them.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"I spy something that ends with /g/" (mug, dog, flag). Use the same 3-object tray format. Ending sounds prepare the child to decode whole words later — they need to hear both edges before they can hear the middle.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 15 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">15</div>
+    <div class="work-info">
+      <div class="work-name">I Spy — Middle Sounds</div>
+      <div class="work-develops">Develops <strong>complete phonemic awareness</strong> — the child can now hear all three positions of sound in a CVC word. This is the moment the ear is ready for reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can identify beginning AND ending sounds. "Cup starts with /k/ and ends with /p/" is achievable.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"I spy something with /a/ in the middle" (cat, pan, hat). This is the hardest I Spy — medial vowels are subtle. Don't rush it. Some children need weeks of practice. When they can segment all three sounds in "c-a-t," they are phonemically ready to read.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 16 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">16</div>
+    <div class="work-info">
+      <div class="work-name">Sound Segmenting — Clapping Syllables</div>
+      <div class="work-develops">Develops <strong>syllable awareness</strong> — the child discovers that words are made of beats. "El-e-phant" has three. "Cat" has one. This larger-unit segmenting supports fine-grained phonemic work.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can clap in rhythm. Enjoys songs and action games. Working on I Spy games concurrently.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Clap the child's name: "Kai-la" (2 claps). Walk around the house clapping everything: "re-frig-er-a-tor" (5!). Sort objects by syllable count. One-clap things here, two-clap things there. This is music meeting language meeting mathematics.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 17 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">17</div>
+    <div class="work-info">
+      <div class="work-name">Sound Blending — Oral</div>
+      <div class="work-develops">Develops <strong>sound synthesis</strong> — the reverse of segmenting. The child hears "/c/... /a/... /t/" and reconstructs "cat!" This is exactly what reading requires — assembling sounds into meaning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Can segment beginning sounds in I Spy. Enjoys word games. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"I'm thinking of an animal: /d/... /o/... /g/." Stretch each sound, pause between them. The child blends: "Dog!" Start with 2-sound words (/g/... /o/ = go), build to 3-sound CVC words. Make it a game — the child feels like a detective cracking a code.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 18 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">18</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Parts of a Plant</div>
+      <div class="work-develops">Develops <strong>scientific vocabulary</strong> and <strong>observation</strong> — root, stem, leaf, flower, fruit, seed. The child learns that naming is the beginning of understanding.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child shows interest in plants, flowers, or gardening. Can sit with classified cards for 10+ minutes. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Pick a plant from the garden or buy one. Identify each part together. Draw a simple diagram with labels. Make cards. Better yet — dissect a flower: pull off the petals, find the stamen, the pistil. Real botany for a three-year-old, and they love it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 19 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">19</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Geometric Shapes</div>
+      <div class="work-develops">Develops <strong>mathematical vocabulary</strong> and <strong>visual discrimination</strong> — "triangle," "rectangle," "oval." Precise geometric language connects to the Sensorial materials.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with Sensorial shape materials (or can sort shapes by type). Knows "circle" and "square" already.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut shapes from cardstock. Three-period lesson: "This is a pentagon. Show me the pentagon. What is this?" Go on a shape walk — find triangles in rooftops, circles in wheels, rectangles in windows. Language connects to the real world.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 20 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">20</div>
+    <div class="work-info">
+      <div class="work-name">Listening Games — Environmental Sounds</div>
+      <div class="work-develops">Develops <strong>auditory discrimination</strong> — the child trains the ear to distinguish between sounds, which directly supports phonemic awareness.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child responds to The Silence Game. Can sit quietly for 15+ seconds. Notices sounds ("I hear a bird!").</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Close eyes together. "What can you hear?" Count the sounds. Play "guess the sound" — tap a glass, crinkle paper, drip water. Record sounds and play them back. The ear that can distinguish a tap from a drip is the ear that will distinguish /b/ from /d/.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 21 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">21</div>
+    <div class="work-info">
+      <div class="work-name">Storytelling — Personal Narratives</div>
+      <div class="work-develops">Develops <strong>expressive language</strong>, <strong>memory</strong>, and <strong>narrative structure</strong> — the child tells stories about their own life. Their experience becomes language, and language becomes organized thought.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child recounts events from the day unprompted. Uses "and then" to chain events. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">After an outing, sit together: "Tell me about our trip to the market." Listen without interrupting. If they stall, gently prompt: "And then what happened?" Write their story down as they tell it (they'll be amazed to see their words become text). Read it back to them.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 22 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">22</div>
+    <div class="work-info">
+      <div class="work-name">Classified Cards — Musical Instruments</div>
+      <div class="work-develops">Develops <strong>vocabulary</strong> and <strong>cultural knowledge</strong> — the child expands language into the arts. Naming instruments also deepens auditory discrimination.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child shows interest in music, tries to play instruments, or asks about sounds they hear.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cards showing violin, drum, piano, flute, guitar, trumpet. Play a short clip of each instrument and match to the card. Sort by family: strings, percussion, woodwinds, brass. The child learns that categories exist everywhere — this is the classified mind forming.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 23 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">23</div>
+    <div class="work-info">
+      <div class="work-name">Descriptive Language — Adjectives in Life</div>
+      <div class="work-develops">Develops <strong>precision of expression</strong> — "big" becomes "enormous." "Nice" becomes "smooth" or "kind." The child learns that language can capture fine distinctions.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child uses basic adjectives (big, small, hot, cold). Ready for richer vocabulary. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">When the child says "big dog," expand: "Yes, an enormous dog!" Offer two words: "Is the towel damp or soaked?" Compare textures: "This is rough, this is smooth, this is silky." Cooking is perfect: "Is the avocado firm or mushy?" Sensorial vocabulary is linguistic precision.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 24 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">24</div>
+    <div class="work-info">
+      <div class="work-name">Oral Composition — Describing a Picture</div>
+      <div class="work-develops">Develops <strong>expressive language</strong> and <strong>observation</strong> — the child learns to translate what they see into words, building the vocabulary and sentence patterns they will later write.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can tell short stories. Uses 5+ word sentences. Enjoys looking at detailed pictures or illustrations.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Show a rich illustration from a picture book. "Tell me everything you see." Prompt: "What is the girl doing? Where is she? How does she feel? What might happen next?" The child is composing paragraphs orally — writing before writing.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 25 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">25</div>
+    <div class="work-info">
+      <div class="work-name">Sound Manipulation — Removing Sounds</div>
+      <div class="work-develops">Develops <strong>advanced phonemic awareness</strong> — "Say 'cat' without the /k/" → "at." The child who can manipulate sounds mentally is fully prepared for the explosion into writing.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can segment and blend all three positions of CVC words. I Spy games are easy and fun for them.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Say 'bat.' Now say it without the /b/." (at) "Say 'cup.' Now say it without the /p/." (cu) Start with removing initial sounds (easier), then final sounds. This is the pinnacle of phonemic awareness. If the child can do this, their ear is ready. The hand comes next.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- SENSITIVE PERIOD CALLOUT -->
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🌊</div>
+    <div class="sp-text"><strong>The Sensitive Period for Language (0–6 years)</strong> is the longest and most powerful of all sensitive periods. It peaks between 2–4 years with the vocabulary explosion — children absorb words effortlessly during this window. By age 6, the window closes and language must be learned through conscious effort. Everything in Phase 1 rides this wave. The child is not learning language — they are constructing it from within.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 2: THE HAND — WRITING             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase2)">Phase 2 — Works 26–50</span>
+  <h2>The Hand</h2>
+  <p class="phase-desc">Preparing the hand, connecting sound to symbol, and the explosion into writing. The child learns: I can make the sounds I speak visible. I can write before I can read. My hand knows what my ear has learned.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 26 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">26</div>
+    <div class="work-info">
+      <div class="work-name">Metal Insets — Straight Lines</div>
+      <div class="work-develops">Develops <strong>pencil control</strong>, <strong>lightness of touch</strong>, and <strong>concentration</strong> — the child traces a geometric shape, then fills it with parallel lines. This is the primary writing preparation in Montessori.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has a comfortable tripod grip from Practical Life (spooning, tonging, tweezers). Can hold a pencil and make marks. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a large square on paper. The child traces the outline, then fills it with parallel lines from left to right, trying not to cross the border. Use colored pencils. Start with the square (easiest), then circle, triangle. The goal is not the shape — it's the controlled, rhythmic hand movement.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 27 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">27</div>
+    <div class="work-info">
+      <div class="work-name">Metal Insets — Curved Lines</div>
+      <div class="work-develops">Develops <strong>wrist flexibility</strong> and <strong>pencil control</strong> — curved lines require the wrist to rotate, preparing for the curves in letters like a, c, d, g, o, q.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child fills shapes with straight lines neatly, staying mostly within borders.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a large circle. Fill with concentric curved lines, spiraling inward. Then fill shapes with wavy lines, zigzags, loops. Each pattern trains a different hand movement that will appear in letter formation. Two shapes per sitting is plenty — quality over quantity.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 28 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">28</div>
+    <div class="work-info">
+      <div class="work-name">Sandpaper Letters — Consonants (Set 1)</div>
+      <div class="work-develops">Develops <strong>sound-symbol association</strong> through <strong>three senses simultaneously</strong> — the child sees the letter, traces its shape with the finger, and hears the sound. Multisensory encoding makes the memory permanent.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can identify beginning sounds (I Spy is comfortable). Enjoys tracing shapes. Shows interest in letters — "What does that say?" Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut letters from fine sandpaper and glue onto cardstock. Start with s, m, t, a — high-frequency, easy-to-blend sounds. Trace with two fingers while saying the SOUND (never the name). "This says /s/." Three-period lesson. Introduce 2–3 per week maximum. The finger is writing before the pencil.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 29 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">29</div>
+    <div class="work-info">
+      <div class="work-name">Sandpaper Letters — Vowels</div>
+      <div class="work-develops">Develops <strong>vowel recognition</strong> — vowels are the heartbeat of every word. Without them, consonants are mute. The child discovers that these five sounds appear in every word they will ever read.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows 4–6 consonant sandpaper letters confidently. Can play I Spy with beginning sounds easily.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Make sandpaper vowels on a different color cardstock (blue for consonants, pink for vowels — matching Montessori convention). Short vowel sounds only: /a/ as in apple, /e/ as in egg, /i/ as in igloo, /o/ as in octopus, /u/ as in umbrella. These five sounds unlock all CVC words.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 30 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">30</div>
+    <div class="work-info">
+      <div class="work-name">Sandpaper Letters — Consonants (Set 2)</div>
+      <div class="work-develops">Develops <strong>complete alphabetic knowledge</strong> — the remaining consonants. By the end, the child knows every sound-symbol pair needed to write any phonetic word in English.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all vowels and first set of consonants fluently. Traces without looking at the shape — muscle memory is forming.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Complete the alphabet: b, c, d, f, g, h, j, k, l, n, p, r, w, x, y, z. Introduce 2–3 per week. Continue the three-period lesson method. The child now has every tool they need for the explosion into writing. It will come when the hand and ear are both ready — not when you decide, but when the child decides.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 31 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">31</div>
+    <div class="work-info">
+      <div class="work-name">Sand Tray Writing</div>
+      <div class="work-develops">Develops <strong>letter formation</strong> in a <strong>forgiving medium</strong> — mistakes disappear with a shake. The child writes without the pressure of permanence, building muscle memory for each letter.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows 10+ sandpaper letters by sound. Spontaneously traces letters in the air or on surfaces.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A shallow tray (baking sheet works) with a thin layer of fine sand, salt, or cornmeal. The child writes letters with their finger. Shake to erase. Practice the same letter 5–10 times, then move to the next. The tactile feedback of sand gives the finger more information than a pencil on paper.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 32 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">32</div>
+    <div class="work-info">
+      <div class="work-name">Chalkboard Writing</div>
+      <div class="work-develops">Develops <strong>large-motor letter formation</strong> — the whole arm moves, not just the fingers. Large letters on a vertical surface build the gross motor patterns that will later refine into small handwriting.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child forms letters in sand tray with correct strokes. Enjoys drawing and has stamina for 10+ minutes of mark-making.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A small chalkboard or easel. The child writes letters LARGE — filling the whole board. Start with their name. The erasability of chalk, like sand, removes fear of mistakes. The vertical surface strengthens the shoulder and arm. This is not penmanship yet — it's motor patterning.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 33 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">33</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — First Words (CVC)</div>
+      <div class="work-develops">Develops <strong>encoding</strong> — the child builds words from individual sounds. This IS writing — composition of words — without the motor challenge of handwriting. The mind writes while the hand catches up.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows most sandpaper letters by sound. Can segment CVC words orally ("c-a-t"). The two skills converge here. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut individual lowercase letters from cardstock (or use magnetic letters). Place a small object (cat figurine). "Let's build 'cat.' What's the first sound? /k/. Find the c. What's the next sound? /a/. Find the a." The child builds the word sound by sound. This moment — when they see their spoken word become visible — is the explosion Montessori described.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 34 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">34</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — CVC Word Lists</div>
+      <div class="work-develops">Develops <strong>fluency of encoding</strong> — repetition with different words solidifies the sound-to-letter connection. The child builds 5, then 10, then 20 words per session.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can build 3–4 CVC words independently with the moveable alphabet. Asks to "write more words."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Prepare a basket of small objects with CVC names: pig, hen, cup, rug, hat, fan, mop, bed. The child picks one, says the word, segments the sounds, builds it with letters. Then picks the next. No correction if the spelling is "fonetic" — the act of encoding is the work. Accuracy will come from reading.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 35 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">35</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — Short Phrases</div>
+      <div class="work-develops">Develops <strong>sentence construction</strong> — the child moves from single words to connected thought. "a red hat" is a phrase. It has meaning beyond any single word. Language becomes communication.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds CVC words quickly and accurately. Starts asking "How do I write...?" about longer ideas.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place two or three objects together: a big red cup, a fat cat. The child builds the phrase with the moveable alphabet. Encourage them to write descriptions of what they see. A photograph makes a wonderful prompt: "Write what you see." No sentences yet — just noun phrases and descriptive clusters.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 36 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">36</div>
+    <div class="work-info">
+      <div class="work-name">Handwriting on Paper — First Letters</div>
+      <div class="work-develops">Develops <strong>fine motor writing</strong> — the pencil on paper. After sand, chalk, and the moveable alphabet, the hand is ready. The letters will be imperfect and that is perfect.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child forms letters on chalkboard with correct strokes. Metal inset work shows lightness of touch and controlled lines. Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Unlined paper and a short, thick pencil (golf pencil or broken crayon encourages the tripod grip). The child writes letters they know well. Start with their name — the most important word. No lined paper yet — the lines will constrain a hand that isn't ready for constraints. Let the letters be big, free, and joyful.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 37 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">37</div>
+    <div class="work-info">
+      <div class="work-name">Handwriting — CVC Words</div>
+      <div class="work-develops">Develops <strong>encoding on paper</strong> — the child writes whole words with a pencil. The moveable alphabet trained the mind; now the hand follows. Writing becomes a single, fluid act.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can write most letters from memory on paper. Builds CVC words fluently with the moveable alphabet.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Use the same CVC object basket. Now the child writes the word instead of building it with letters. Sound it out, write each letter. The spelling may be phonetic ("eg" for "egg") — celebrate the encoding, not the convention. Conventional spelling comes through reading.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 38 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">38</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — First Sentences</div>
+      <div class="work-develops">Develops <strong>written composition</strong> — the child constructs complete thoughts. A sentence has a subject and a verb. "The cat sat" is a child's first authored text.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes CVC words confidently. Speaks in complete sentences. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Set up a small scene (toy dog on a mat). "Write what you see." The child builds: "the dog sat on the mat." Each word is a separate unit, placed left to right with finger-spaces between. This is composition — the mind organizing thought into written form. It is creative writing at its earliest and purest.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 39 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">39</div>
+    <div class="work-info">
+      <div class="work-name">Handwriting — Lined Paper Introduction</div>
+      <div class="work-develops">Develops <strong>spatial control</strong> — the child meets the lines that will organize their writing. The baseline, midline, and topline teach proportion and consistent size.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes words on unlined paper with consistent letter size. Letters are getting smaller naturally.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Wide-ruled paper (or make your own with lines 1 inch apart). Write a letter on the top line as a model. The child copies below. "Tall letters touch the top. Small letters stay in the middle. Tails go below." Keep sessions short — 5 minutes of careful writing is better than 20 minutes of fatigue.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 40 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">40</div>
+    <div class="work-info">
+      <div class="work-name">Sandpaper Digraphs</div>
+      <div class="work-develops">Develops <strong>knowledge of letter combinations</strong> that make a single sound — sh, ch, th, ck, qu. These are the bridge between the Pink and Blue series in reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all single sandpaper letters. Attempts to write words with digraphs but uses single letters ("fis" for "fish"). Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Make sandpaper digraphs on cardstock: sh, ch, th, ck (these four cover most early encounters). "These two letters work together to make one sound: /sh/." Trace both letters as one unit. "I spy something that starts with /sh/" (shoe, ship, shell). The child discovers that two letters can be one sound.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 41 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">41</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — Words with Blends</div>
+      <div class="work-develops">Develops <strong>encoding of consonant clusters</strong> — "stop," "frog," "swim." The child learns that some words start with two consonants pushed together.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes CVC words confidently. Can hear two sounds at the beginning of words: "What sounds do you hear at the start of 'frog'?" — "/f/... /r/!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Objects with initial blends: frog, snail, star, drum, flag, crab. The child builds each word. The challenge: not dropping the second consonant ("fog" instead of "frog"). If they do, say the word slowly, emphasizing both sounds. The ear must hear it before the hand can write it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 42 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">42</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — Words with Digraphs</div>
+      <div class="work-develops">Develops <strong>encoding of digraph words</strong> — "ship," "chin," "that." The child applies their new digraph knowledge to written composition.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows sandpaper digraphs. Can identify /sh/, /ch/, /th/ at the beginning of words.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Objects: shell, chip, thumb, sock (for ck ending). The child builds each word, selecting the digraph as a unit. If using magnetic letters, keep sh/ch/th together as pairs. The key insight: two letters, one sound, one movement. The child is encoding English's complexity with ease.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 43 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">43</div>
+    <div class="work-info">
+      <div class="work-name">Handwriting — Sentences on Paper</div>
+      <div class="work-develops">Develops <strong>written fluency</strong> — the child writes complete sentences with a pencil. Handwriting and composition merge into a single act of creation.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes words on lined paper with reasonable letter formation. Composes sentences with the moveable alphabet.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">The child writes about their day, their pet, their favorite thing. One sentence is enough at first. "I like my cat." Capital letter at the start, period at the end — introduce these as the "rules of writing" that make the reader's job easier. Celebrate every sentence as an authored work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 44 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">44</div>
+    <div class="work-info">
+      <div class="work-name">Creative Writing — Labels and Lists</div>
+      <div class="work-develops">Develops <strong>purposeful writing</strong> — the child writes for a reason. Labeling their drawings, making shopping lists, writing names on birthday cards. Writing becomes a tool for life.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes words and short sentences. Wants to label things. "Can I write on this?" Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Make labels for everything: "bed," "lamp," "door." Write a grocery list together. Write names on drawings. Write a "Do Not Touch" sign. Every label is a word with a purpose. The child discovers that writing has power — it changes the world. A sign on a door is obeyed.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 45 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">45</div>
+    <div class="work-info">
+      <div class="work-name">Metal Insets — Complex Patterns</div>
+      <div class="work-develops">Develops <strong>advanced pencil control</strong> — overlapping shapes, intricate fills, color blending. The hand develops stamina and precision that supports sustained writing.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child fills simple shapes neatly with lines staying inside borders. Wants to make "fancier" designs.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Trace two overlapping shapes (triangle on square). Fill each section with a different pattern — vertical in one, horizontal in another, diagonal in the overlap. Use 3–4 colors. This is art meeting motor preparation. The designs become beautiful — hang them up. The child sees that their hand can create beauty.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 46 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">46</div>
+    <div class="work-info">
+      <div class="work-name">Dictation — CVC Words</div>
+      <div class="work-develops">Develops <strong>listening and encoding simultaneously</strong> — the child hears a word and writes it. The ear drives the hand. This is the bridge between oral language and written language.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes CVC words independently (can segment sounds and form letters). Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"I'm going to say a word. You write it." Start with very familiar CVC words: cat, dog, sun, map. Say the word clearly. The child segments, writes each letter. No peeking at a model. If they get stuck, say the word slowly, stretching each sound. Celebrate the attempt — even "fonetic" spelling shows the mind at work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 47 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">47</div>
+    <div class="work-info">
+      <div class="work-name">Moveable Alphabet — Long Vowel Words</div>
+      <div class="work-develops">Develops <strong>awareness of vowel patterns</strong> — "cake," "bike," "rope." The child encounters the magic-e rule and other long vowel patterns through building words.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes CVC words easily. Encounters words in reading that don't follow CVC rules. "Why does 'cake' have an e?"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Show pairs: "cap" → "cape," "pin" → "pine," "rob" → "robe." Build both with moveable letters. "What changed? One letter made the vowel say its name." The child discovers the pattern through comparison, not explanation. They are scientists of language.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 48 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">48</div>
+    <div class="work-info">
+      <div class="work-name">Creative Writing — Journals</div>
+      <div class="work-develops">Develops <strong>daily writing habit</strong> and <strong>self-expression</strong> — the child writes about their own life, thoughts, and observations. Writing becomes a practice, not a task.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes sentences independently. Has ideas they want to capture. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A small notebook — their journal. Every day (or as often as they want), they write one entry. A sentence. A drawing with a caption. A question. Date each entry. Read old entries together. The child discovers that writing captures time — "I wrote this two weeks ago!" Their words persist. That's magic.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 49 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">49</div>
+    <div class="work-info">
+      <div class="work-name">Dictation — Short Sentences</div>
+      <div class="work-develops">Develops <strong>transcription fluency</strong> — the child writes sentences from dictation, holding an entire thought in working memory while the hand encodes it word by word.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can write individual words from dictation. Writes short sentences independently.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Write this: The dog ran fast." Say the whole sentence. The child holds it in mind and writes. If they forget, repeat it once more. Start with 3–4 word sentences, build to 6–7 words. This exercises working memory, encoding, and handwriting simultaneously — the triad of writing skill.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 50 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">50</div>
+    <div class="work-info">
+      <div class="work-name">Creative Writing — Short Stories</div>
+      <div class="work-develops">Develops <strong>narrative composition</strong> — the child writes a story with a beginning, middle, and end. All of Phase 1 and 2 converge here: vocabulary, phonemic awareness, handwriting, encoding, sentence construction.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes in their journal voluntarily. Tells elaborate stories orally. Wants to "make a book." Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fold 3–4 sheets of paper and staple: a book. The child writes a story. One sentence per page with an illustration. "Once there was a cat. The cat went to the park. The cat saw a bird. The end." Help with spelling only when asked. This is THEIR book. Celebrate it. Read it to relatives. Put it on the shelf with the other books.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- SENSITIVE PERIOD CALLOUT -->
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">✍️</div>
+    <div class="sp-text"><strong>The Sensitive Period for Writing (3.5–4.5 years)</strong> is one of Montessori's most dramatic discoveries. When the hand has been prepared through Practical Life and the ear through sound games, writing does not emerge gradually — it EXPLODES. Children who have never been taught to write suddenly produce words with an almost compulsive joy. This explosion cannot be timed or forced. It can only be prepared for. If it hasn't happened by 5, the child needs more preparation — not more pressure.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 3: THE EYE — READING              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase3)">Phase 3 — Works 51–75</span>
+  <h2>The Eye</h2>
+  <p class="phase-desc">From decoding words to reading for meaning. The child learns: I can read what I wrote. I can read what others wrote. I can read to learn about the world. Reading emerges naturally from writing — the child who writes "cat" one day reads "cat" the next.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 51 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">51</div>
+    <div class="work-info">
+      <div class="work-name">Pink Object Box — Reading CVC Words</div>
+      <div class="work-develops">Develops <strong>decoding</strong> — the child reads their first word by blending letter sounds. The connection between the symbol and the sound becomes reading. This is the complement of everything in Phase 2.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes CVC words with the moveable alphabet or on paper. Recognizes letters and their sounds fluently. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Small objects in a box: cat, dog, cup, hat, pin, mop. Write each name on a slip of paper. The child reads the slip, sounds it out: "/c/... /a/... /t/ — cat!" and places it next to the object. The first time a child reads a word independently, you will see the light in their eyes. They have cracked the code.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 52 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">52</div>
+    <div class="work-info">
+      <div class="work-name">Pink Series — CVC Word Cards</div>
+      <div class="work-develops">Develops <strong>reading fluency with CVC words</strong> — the child reads words without objects, building speed and confidence. The picture replaces the object as the concrete reference.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches word slips to objects correctly. Begins to read words spontaneously — on signs, food packages, books.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cards with a CVC picture on top and the word below (cut so the word separates). The child looks at the picture, reads the word, then matches them. Progress: word only (no picture) — the child reads from symbols alone. Word families help: cat, bat, hat, mat, sat all on one mat.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 53 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">53</div>
+    <div class="work-info">
+      <div class="work-name">Pink Series — CVC Sentences</div>
+      <div class="work-develops">Develops <strong>reading for meaning</strong> — the child reads a complete sentence and demonstrates understanding. Reading is no longer decoding individual words — it's constructing meaning from text.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads CVC words fluently. Begins reading two-word combinations. "The cat" and "big dog" are easy.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write simple CVC sentences on strips: "The cat sat on the mat." "The dog dug in the mud." The child reads the sentence and illustrates it, or acts it out with toys. The illustration proves comprehension — they didn't just decode sounds, they understood meaning.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 54 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">54</div>
+    <div class="work-info">
+      <div class="work-name">Command Cards — Action Reading</div>
+      <div class="work-develops">Develops <strong>reading comprehension through action</strong> — the child reads a command and performs it. "Run to the door." "Put the cup on the mat." Reading becomes a directive force in the world.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads simple sentences. Enjoys following instructions. The movement element makes reading irresistible.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write commands on folded slips: "Hop to the bed." "Clap six times." "Get a red cup." The child picks a slip, reads it silently, then performs the action. Make it a game — the sillier the command, the more they want to read. "Sit on the dog's bed" will produce hysterical laughter and perfect comprehension.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 55 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">55</div>
+    <div class="work-info">
+      <div class="work-name">Blue Object Box — Blends and Digraphs</div>
+      <div class="work-develops">Develops <strong>decoding of complex words</strong> — "frog," "ship," "drum." The child applies blend and digraph knowledge to reading. The Blue Series is the bridge between phonetic reading and fluent reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads CVC words fluently. Knows digraphs (sh, ch, th). Writes words with blends. Ready for 4–5 letter words.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Objects with blends and digraphs: frog, ship, drum, clock, truck, shell. Write labels. The child reads each label and matches to the object. These words feel harder, but the child who mastered CVC reading is ready — the pattern is the same, just with more sounds to blend.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 56 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">56</div>
+    <div class="work-info">
+      <div class="work-name">Blue Series — Word Cards</div>
+      <div class="work-develops">Develops <strong>fluency with consonant blends</strong> — reading longer words without object support. The child's decoding becomes faster as patterns repeat.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches Blue Object Box labels confidently. Reads blend/digraph words in books with support.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Picture-word cards for blend words: stamp, crisp, plant, shrimp. Sort by initial blend (st-, cr-, pl-, shr-). The child reads, matches, sorts. Progress to word-only cards. Introduce word families: -ing words (ring, king, sing), -ump words (bump, jump, pump).</div>
+    </div>
+  </div>
+</div>
+
+<!-- 57 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">57</div>
+    <div class="work-info">
+      <div class="work-name">Blue Series — Sentences</div>
+      <div class="work-develops">Develops <strong>sentence-level reading with complex words</strong> — the child reads sentences containing blends and digraphs, maintaining fluency and comprehension.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads Blue Series word cards fluently. Reads simple books with support.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"The frog swam in the pond." "The ship went past the dock." Write on strips. The child reads and illustrates. Introduce more complex sentence structures: "The brown frog jumped off the big rock and swam to the other side." Longer sentences build working memory and comprehension simultaneously.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 58 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">58</div>
+    <div class="work-info">
+      <div class="work-name">Puzzle Words — High-Frequency Sight Words</div>
+      <div class="work-develops">Develops <strong>recognition of irregular words</strong> — "the," "said," "was," "they." These words don't follow phonetic rules and must be recognized by sight. They are the glue of English sentences.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child stumbles on words like "the," "was," "said" while reading. These words can't be sounded out phonetically. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write each puzzle word on a card. "This is a tricky word — it doesn't follow the rules. This word is 'the.' It's in almost every sentence." Introduce 2–3 per week. Practice: spot "the" in a book — how many can you find? Build sentences with puzzle words mixed with phonetic words. Read daily.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 59 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">59</div>
+    <div class="work-info">
+      <div class="work-name">Phonogram Introduction — Double Vowels</div>
+      <div class="work-develops">Develops <strong>knowledge of vowel teams</strong> — "ai," "ee," "oa," "ea." Two vowels together make a single sound. This unlocks hundreds of words that aren't decodable with single-letter phonics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads CVC and blend words fluently. Encounters words like "rain," "tree," "boat" and can't decode them. Ready for the Green Series.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Make phonogram cards (like sandpaper letters but for pairs): ai, ee, oa, ea. "When these two letters are together, they say /ai/ as in 'rain.'" Build a phonogram booklet: ai page has rain, train, snail, paint. The child reads and illustrates each. Start with 4 phonograms, add more over weeks.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 60 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">60</div>
+    <div class="work-info">
+      <div class="work-name">Green Object Box — Phonogram Words</div>
+      <div class="work-develops">Develops <strong>decoding of phonogram words</strong> — "boat," "train," "sheep." The Green Series represents English spelling in its full complexity. The child is now a reader.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows 4+ phonograms. Can identify them in printed words.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Objects: boat, train, sheep, leaf, bee, goat. Label cards. The child reads each label, identifies the phonogram ("I see 'oa' — /oa/ — boat!"), and matches to the object. The decoding strategy: find the phonogram first, then blend the rest. This is systematic phonics at its most elegant.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 61 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">61</div>
+    <div class="work-info">
+      <div class="work-name">Green Series — Word Cards and Sorting</div>
+      <div class="work-develops">Develops <strong>phonogram pattern recognition</strong> — sorting words by their vowel pattern trains the eye to spot phonograms automatically.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads Green Object Box labels confidently. Notices phonogram patterns: "Rain and train both have 'ai'!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Word cards sorted by phonogram: ai column (rain, tail, paint), ee column (tree, bee, feet), oa column (boat, coat, road). The child reads each word, identifies the phonogram, and places it in the right column. This is classification applied to reading — the same mental operation as sorting animals by type.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 62 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">62</div>
+    <div class="work-info">
+      <div class="work-name">Green Series — Sentences and Passages</div>
+      <div class="work-develops">Develops <strong>connected reading with phonograms</strong> — the child reads multi-sentence passages containing all three series. They are reading real text now.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads Green word cards. Reads simple books with minimal support. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write short paragraphs mixing all word types: "The green frog sat on a leaf by the stream. A bee flew past. The frog jumped into the cool water." The child reads the passage and retells it. Comprehension questions: "Where was the frog? What flew past?" Connected text is the goal — isolated words are preparation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 63 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">63</div>
+    <div class="work-info">
+      <div class="work-name">Phonogram Booklets — Advanced Phonograms</div>
+      <div class="work-develops">Develops <strong>mastery of English spelling patterns</strong> — igh, ough, tion, ous, and dozens more. Each phonogram booklet is a key that unlocks a family of words.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads basic phonogram words fluently. Encounters unfamiliar patterns in books and asks "What does 'igh' say?"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Introduce one new phonogram per week: igh (light, night, fight), ow (snow, blow, show), ou (cloud, house, mouse). Make a mini-booklet for each: the phonogram on the cover, words inside with illustrations. Over months, the child builds a personal phonogram library — their reference for every spelling pattern in English.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 64 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">64</div>
+    <div class="work-info">
+      <div class="work-name">Reading Classification — Labeling the World</div>
+      <div class="work-develops">Develops <strong>reading for purpose</strong> — the child reads labels, signs, menus, instructions. Reading is not just a school skill — it's a survival skill, a life tool, a superpower.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads words they encounter in daily life — cereal boxes, street signs, shop names. Reading is becoming automatic.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Go on a "reading walk." The child reads every sign they see: STOP, OPEN, EXIT, NO PARKING. In the kitchen: read recipe steps together. At the store: read shopping list items. The child discovers that the world is full of text, and they can decode all of it. This is the moment reading becomes power.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 65 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">65</div>
+    <div class="work-info">
+      <div class="work-name">Reading Analysis — Parts of a Sentence</div>
+      <div class="work-develops">Develops <strong>syntactic awareness</strong> — the child learns that a sentence has parts: "who" (subject) and "what they did" (predicate). This is the first step toward grammar through reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads sentences fluently. Can answer "who?" and "what happened?" questions about text. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write a sentence on a strip: "The tall girl ran fast." Cut it between "girl" and "ran." "This part tells us WHO. This part tells us WHAT THEY DID." Rearrange subjects and predicates from different sentences: "The tall girl / ate the cake." "The dog / ran fast." Language becomes a puzzle with interchangeable parts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 66 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">66</div>
+    <div class="work-info">
+      <div class="work-name">Interpretive Reading — Poetry</div>
+      <div class="work-develops">Develops <strong>expression</strong> and <strong>comprehension through performance</strong> — the child reads a poem aloud with feeling. Reading is no longer mechanical — it's artistic.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads fluently enough that decoding doesn't exhaust their attention. Can focus on meaning and expression.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Choose a short poem with rhythm and rhyme. Read it to the child first. Then they read it. "Can you make it sound like a whisper? Like you're excited? Like you're sad?" The same words sound different depending on HOW they're read. This is the art of reading — the child becomes a performer of text.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 67 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">67</div>
+    <div class="work-info">
+      <div class="work-name">Interpretive Reading — Dialogue</div>
+      <div class="work-develops">Develops <strong>reading with character voices</strong> — the child encounters quotation marks and learns that characters speak. Reading becomes theater.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads fluently with some expression. Encounters dialogue in books and asks about the quotation marks.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write a short dialogue: 'The cat said, "I am hungry." The dog said, "Me too!" ' Read it together — one person is the cat, one is the dog. Swap roles. The child discovers that reading can be acted out, and that the marks on the page tell them when someone is speaking. This is drama embedded in literacy.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 68 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">68</div>
+    <div class="work-info">
+      <div class="work-name">Non-Fiction Reading — Simple Information Texts</div>
+      <div class="work-develops">Develops <strong>reading to learn</strong> — the child reads about real subjects: animals, planets, weather. Reading transitions from a skill to learn to a tool for learning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child asks factual questions: "How big is the moon? What do dolphins eat?" Shows interest in real-world knowledge. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Simple non-fiction readers from the library (DK Readers, National Geographic Kids). After reading: "What did you learn? What surprised you?" The child discovers that books contain answers. This is the bridge from "learning to read" to "reading to learn" — one of the most important transitions in a child's intellectual life.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 69 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">69</div>
+    <div class="work-info">
+      <div class="work-name">Reading Comprehension — Retelling</div>
+      <div class="work-develops">Develops <strong>deep comprehension</strong> — the child reads a passage and retells it in their own words. Retelling reveals whether meaning was constructed, not just decoded.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads short books independently. Can answer questions about what they read.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">After reading a story: "Tell it back to me." No peeking at the book. The child reconstructs the narrative from memory. If they miss a part, gently prompt: "What happened after the bear found the honey?" Retelling is comprehension made visible — it shows you exactly what the child understood.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 70 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">70</div>
+    <div class="work-info">
+      <div class="work-name">Reading Comprehension — Prediction</div>
+      <div class="work-develops">Develops <strong>inferential thinking</strong> — the child reads part of a story and predicts what happens next. They are constructing meaning beyond the text — the highest form of reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child retells stories accurately. Begins to anticipate plot events while being read to: "I bet the fox is going to trick him!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Read to the middle of a story and stop. "What do you think will happen next? Why?" Read on. "Were you right?" It doesn't matter if they're right — it matters that they're thinking beyond the words. Prediction engages the child as an active participant in the story, not a passive receiver of text.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 71 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">71</div>
+    <div class="work-info">
+      <div class="work-name">Silent Reading — Independent Practice</div>
+      <div class="work-develops">Develops <strong>internal reading voice</strong> and <strong>reading stamina</strong> — the child reads without speaking, processing text within the mind. This is mature reading.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads aloud fluently. Sometimes moves lips while reading. Begins to read without vocalizing. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Create a daily silent reading time. The child chooses a book and reads alone. Start with 5 minutes, build to 15–20. You read too — modeling is everything. After silent reading, share: "What happened in your book?" The child discovers that reading is a private, internal world they can enter any time they choose.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 72 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">72</div>
+    <div class="work-info">
+      <div class="work-name">Reading Aloud — Fluency and Prosody</div>
+      <div class="work-develops">Develops <strong>expressive oral reading</strong> — reading with appropriate pace, pauses, and intonation. A child who reads aloud beautifully has fully integrated decoding and comprehension.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads sentences without halting at every word. Naturally pauses at periods and raises voice at question marks.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">The child reads aloud to a younger sibling, a pet, or a stuffed animal. Reading to an audience — even an audience that can't respond — transforms reading from a skill into a performance. Record the child reading and play it back. They'll hear their own progress and be amazed.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 73 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">73</div>
+    <div class="work-info">
+      <div class="work-name">Reading Response — Drawing and Writing About Books</div>
+      <div class="work-develops">Develops <strong>reflective thinking</strong> about text — the child reads, then draws or writes their response. Reading and writing merge into a single literacy cycle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has opinions about books: "I liked the part where..." Wants to share their thoughts about what they read.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">After reading, the child draws their favorite scene and writes one sentence about it. Or they write a letter to a character: "Dear Bear, you should have shared the honey." This is the beginning of literary response — engaging with text as a thinking person, not just a decoder.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 74 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">74</div>
+    <div class="work-info">
+      <div class="work-name">Chapter Books — Sustained Reading</div>
+      <div class="work-develops">Develops <strong>reading stamina</strong> and <strong>narrative memory</strong> — the child reads a story that spans multiple sittings. They must remember characters, plot, and setting across days.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child finishes picture books quickly and wants "longer stories." Reads for 15+ minutes independently. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Choose an early chapter book: Frog and Toad, Owl at Home, Henry and Mudge. Read one chapter per night. Before each new chapter: "What happened last time?" The child exercises narrative memory. The delayed gratification of a multi-day story builds patience, anticipation, and deep engagement with text.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 75 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">75</div>
+    <div class="work-info">
+      <div class="work-name">Research Reading — Following a Question</div>
+      <div class="work-develops">Develops <strong>information literacy</strong> — the child reads to answer a question they care about. "How do butterflies grow?" They search, find, read, and report. Reading becomes research.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child asks deep "why" and "how" questions. Reads non-fiction with interest. Can sustain a topic of inquiry for days.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">When the child asks a big question, say "Let's find out." Get a library book on the topic. The child reads (with support as needed), finds the answer, and tells you what they learned. Write it down or draw it. They have conducted their first research project. The question-driven reader is a lifelong learner.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- SENSITIVE PERIOD CALLOUT -->
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">📖</div>
+    <div class="sp-text"><strong>The Sensitive Period for Reading (4.5–5.5 years)</strong> follows the explosion into writing. Montessori observed that children who had written extensively began reading spontaneously — as a natural consequence, not a separate skill. The child who writes "cat" one day picks up a book the next and realizes: "I can read this." If writing has been thorough, reading arrives with quiet inevitability. It is not taught. It is discovered.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 4: THE MIND — GRAMMAR & MASTERY   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase4)">Phase 4 — Works 76–100</span>
+  <h2>The Mind</h2>
+  <p class="phase-desc">Grammar, word study, and the architecture of language. The child learns: Language has structure. Words have families. Sentences have rules. I can use language to think, persuade, create, and understand anything written by anyone, anywhere, in any time.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 76 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">76</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Noun</div>
+      <div class="work-develops">Develops <strong>grammatical awareness</strong> — the noun is the naming word. The black triangle in Montessori grammar. The child discovers that every object they've named since Phase 1 belongs to a category called "noun."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads and writes sentences fluently. Has a rich vocabulary from Phase 1 work. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Look around. Name everything you can see." Write each name on a label. "All these words are NAMING WORDS. We call them nouns. A noun names a person, place, or thing." Label everything in a room. The child walks through a forest of nouns, surrounded by language they now understand at a structural level.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 77 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">77</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Article</div>
+      <div class="work-develops">Develops <strong>understanding of determiners</strong> — "a," "an," "the." The smallest words with the biggest grammatical role. The child discovers that nouns rarely stand alone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands nouns. Naturally uses articles in speech. Ready to notice them in text.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Bring me A cup." "Bring me THE cup." What's the difference? "A" means any cup. "THE" means a specific cup. Write sentences on strips, highlight articles in a different color. The child sees that these tiny words point to nouns like a finger pointing at an object. Small word, big job.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 78 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">78</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Adjective</div>
+      <div class="work-develops">Develops <strong>descriptive precision</strong> in grammar — the child discovers that adjectives modify nouns. "Ball" becomes "red ball," "big red ball," "big red bouncy ball." Language gains color and texture.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child uses adjectives naturally in speech and writing. Understands nouns and articles. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Bring me a pencil." (Which one?) "Bring me a RED pencil." "Bring me a LONG RED pencil." Each adjective narrows the choice. The child experiments: how many adjectives can you stack? "The small, round, blue, smooth stone." They discover that adjectives are the words that help a noun become specific.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 79 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">79</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Verb</div>
+      <div class="work-develops">Develops <strong>understanding of action words</strong> — the verb is the red circle in Montessori grammar, the energy of the sentence. Without a verb, nothing happens. The child discovers what makes language move.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows nouns, articles, and adjectives. Uses vivid verbs in speech. Around 5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write action words on slips: jump, spin, clap, whisper, crawl. The child reads and performs. "These are DOING WORDS — verbs." Then play: "The dog [verb]." What could the dog do? Run, sleep, bark, dig. The verb brings the sentence to life. Without it, you only have a picture — with it, you have a movie.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 80 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">80</div>
+    <div class="work-info">
+      <div class="work-name">Grammar Box 1 — Article + Noun</div>
+      <div class="work-develops">Develops <strong>grammatical analysis</strong> — the child sorts words from a sentence into grammar categories. This is sentence analysis at its most concrete and tactile.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can identify nouns and articles in sentences. Enjoys sorting and categorizing activities.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write "the dog" on a strip. Cut the words apart. Make two columns: "Article" and "Noun." The child places "the" under Article, "dog" under Noun. Do 10 phrases. The child physically manipulates grammar — it's concrete, not abstract. They SEE the structure of language laid out on the table.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 81 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">81</div>
+    <div class="work-info">
+      <div class="work-name">Grammar Box 2 — Article + Adjective + Noun</div>
+      <div class="work-develops">Develops <strong>understanding of noun phrases</strong> — the child sees how articles, adjectives, and nouns work together as a unit.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child sorts Grammar Box 1 phrases confidently. Can identify adjectives in sentences.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"The big dog." Three columns now: Article / Adjective / Noun. The child reads, cuts, sorts. Then the magic: swap adjectives across phrases. "The big dog" becomes "the tiny dog." "The red ball" becomes "the green ball." Grammar becomes a game of interchangeable parts — language as Lego.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 82 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">82</div>
+    <div class="work-info">
+      <div class="work-name">Grammar Box 3 — Adding the Verb</div>
+      <div class="work-develops">Develops <strong>complete sentence analysis</strong> — the child now sorts full sentences: article + adjective + noun + verb. They see the skeleton of every sentence ever written.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child sorts Grammar Box 2 phrases confidently. Knows all four parts of speech introduced so far.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"The small cat slept." Four columns. The child reads, cuts, sorts. Then swap verbs: "The small cat ran / danced / hid." Every swap creates a different meaning. The child discovers that grammar isn't rules to memorize — it's a system for generating infinite meaning from finite parts.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 83 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">83</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Adverb</div>
+      <div class="work-develops">Develops <strong>understanding of how actions are modified</strong> — "ran" becomes "ran quickly," "ran slowly," "ran silently." Adverbs add precision to verbs the way adjectives add precision to nouns.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands nouns, adjectives, and verbs. Uses adverbs in speech: "He ran really fast!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Walk." Now: "Walk slowly. Walk quickly. Walk gracefully. Walk angrily." Same verb, totally different action. Write adverbs on slips and pair with command cards. "Eat [quietly]." "Sing [loudly]." "Draw [carefully]." The child experiences grammar physically — they feel the difference an adverb makes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 84 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">84</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Pronoun</div>
+      <div class="work-develops">Develops <strong>understanding of reference</strong> — "he," "she," "it," "they" replace nouns. The child discovers that language has shortcuts, and that these shortcuts depend on knowing what came before.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes multiple sentences about the same subject and repeats the noun: "The dog ran. The dog ate. The dog slept." Ready for "he/she/it."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"The girl sang a song. The girl danced." Now replace: "She danced." "What does 'she' replace? The girl!" Write sentences with the noun, then rewrite with the pronoun. The child sees that pronouns are replacement words — they point back to a noun the reader already knows.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 85 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">85</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Preposition</div>
+      <div class="work-develops">Develops <strong>spatial and relational language</strong> — "on," "under," "beside," "through," "between." Prepositions describe where things are in relation to each other.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child uses prepositions in speech naturally. Sorts Grammar Box 3 sentences. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Put the cup ON the table. Put the cup UNDER the table. Put the cup BESIDE the table." Same cup, same table, different preposition — completely different result. Write command cards: "Stand BEHIND the chair." "Jump OVER the pillow." Prepositions are physical — the child learns them with their whole body.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 86 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">86</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Conjunction</div>
+      <div class="work-develops">Develops <strong>understanding of connective words</strong> — "and," "but," "or," "because." Conjunctions join ideas. They are the bridges between thoughts, making complex sentences possible.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes simple sentences and wants to combine ideas: "I like cake and I like ice cream." Uses "and" and "but" in speech.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write two simple sentences on separate strips: "I like cats." "I like dogs." Now connect them: "I like cats AND dogs." Try "but": "I like cats BUT not dogs." Try "because": "I like cats BECAUSE they are soft." Each conjunction changes the meaning. Language becomes flexible, powerful, precise.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 87 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">87</div>
+    <div class="work-info">
+      <div class="work-name">Introduction to the Interjection</div>
+      <div class="work-develops">Develops <strong>awareness of emotional expression in text</strong> — "Oh! Wow! Ouch! Hooray!" Interjections are the feelings that burst through grammar. The child discovers that writing can capture emotion.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all major parts of speech. Enjoys expressive reading. Naturally exclaims: "Yay! Wow! Ew!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"What do you say when you're surprised? When something hurts? When you're happy?" Write each interjection with its exclamation mark. "Oh!" "Ouch!" "Hooray!" Read them with feeling. Add them to sentences: "Oh, the cake fell!" The child discovers that grammar includes emotion — words don't just describe and name, they feel.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 88 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">88</div>
+    <div class="work-info">
+      <div class="work-name">Sentence Analysis — Subject and Predicate</div>
+      <div class="work-develops">Develops <strong>understanding of sentence architecture</strong> — every sentence divides into two parts: who or what (subject) and what about it (predicate). This is the deep structure of all human communication.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child sorts Grammar Boxes confidently. Reads and writes complex sentences. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write sentences on long strips. The child asks two questions: "WHO did something?" (subject — circle it) and "What did they DO?" (predicate — underline it). "The tall brown dog / chased the ball across the park." Subject and predicate. Every sentence. Every language. This is universal grammar made visible.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 89 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">89</div>
+    <div class="work-info">
+      <div class="work-name">Word Families — Short Vowel Patterns</div>
+      <div class="work-develops">Develops <strong>pattern recognition in spelling</strong> — the -at family (cat, bat, hat, mat, sat, flat), the -in family (pin, bin, win, thin). Words belong to families, just like people.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads and writes fluently. Notices that words look similar: "Cat and hat both end in -at!" Around 5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write "-at" on a card. How many words can the child build by adding different beginnings? c-at, b-at, h-at, m-at, fl-at, ch-at, spl-at. Make a word family house — "-at" is the family name on the door, all the words live inside. Repeat for -ig, -ot, -un, -en. The child discovers that English has patterns, and patterns make spelling predictable.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 90 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">90</div>
+    <div class="work-info">
+      <div class="work-name">Word Families — Long Vowel Patterns</div>
+      <div class="work-develops">Develops <strong>advanced spelling pattern recognition</strong> — the -ake family (cake, bake, lake, shake), the -ight family (light, night, sight). The child extends word family thinking to complex phonograms.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands short vowel word families. Reads phonogram words. Can identify the pattern in "cake" and "lake."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Build long vowel family houses: -ake (cake, bake, lake, shake, flake), -ight (light, night, fight, bright), -een (green, keen, screen, fifteen). These families are larger and the child can generate them independently. Challenge: "How many -ake words can you write in one minute?" Speed builds automaticity.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 91 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">91</div>
+    <div class="work-info">
+      <div class="work-name">Compound Words</div>
+      <div class="work-develops">Develops <strong>morphological awareness</strong> — "sun" + "flower" = "sunflower." The child discovers that words can be built from smaller words, and meaning is additive.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads multisyllabic words. Notices long words that contain familiar short words: "Pancake has 'pan' AND 'cake'!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write word pairs on separate cards: sun + flower, rain + bow, cup + board, tooth + brush. The child combines them. Draw a picture of each compound word — "cupboard" doesn't look like a cup or a board, but it once did. Language has history, and compound words are fossils of how people used to think.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 92 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">92</div>
+    <div class="work-info">
+      <div class="work-name">Prefixes — un-, re-, pre-</div>
+      <div class="work-develops">Develops <strong>understanding of word building</strong> — a prefix changes a word's meaning: "do" → "undo," "write" → "rewrite." The child gains the power to decode thousands of unfamiliar words.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands compound words. Reads multisyllabic words. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Happy." Add "un-": "unhappy." What changed? "Not happy." Try more: unlock, unfair, unkind. Then "re-": redo, rewrite, repaint. "Re-" means "again." "Pre-" means "before": preview, preheat. Three prefixes unlock hundreds of words. The child becomes a word detective — encountering an unknown word and cracking it open.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 93 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">93</div>
+    <div class="work-info">
+      <div class="work-name">Suffixes — -ing, -ed, -er, -est</div>
+      <div class="work-develops">Develops <strong>understanding of word endings</strong> — "jump" → "jumping" → "jumped" → "jumper." Suffixes change tense, comparison, and word type. Grammar becomes visible at the word level.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child uses suffixed words in speech and writing. Understands prefixes. Ready for the other end of the word.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write a base word: "jump." Add -ing: "jumping" (happening now). Add -ed: "jumped" (already happened). Add -er: "jumper" (a person who jumps). Write the base word on a card with detachable suffix cards. The child physically attaches suffixes and reads the new word. Words are modular — pieces that snap together.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 94 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">94</div>
+    <div class="work-info">
+      <div class="work-name">Synonyms</div>
+      <div class="work-develops">Develops <strong>vocabulary depth</strong> — "big" also means "large," "huge," "enormous," "massive," "gigantic." The child discovers that every idea can be expressed in multiple ways, each with a slightly different shade of meaning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has a large vocabulary. Sometimes asks "What's another word for...?" Enjoys word play.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write "happy" in the center of a page. Draw a sun around it. On each ray, write a synonym: glad, joyful, cheerful, delighted, thrilled, ecstatic. Which is the biggest happy? "Ecstatic!" Which is the smallest? "Glad." Synonyms aren't identical — they're a spectrum. The child's writing becomes richer as they choose the EXACT right word.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 95 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">95</div>
+    <div class="work-info">
+      <div class="work-name">Antonyms</div>
+      <div class="work-develops">Develops <strong>understanding of opposition</strong> — hot/cold, big/small, light/dark. The child discovers that language captures contrast, and that knowing what something ISN'T helps define what it IS.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands synonyms. Uses opposite words in speech. Enjoys comparison activities.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write pairs on cards: hot/cold, fast/slow, loud/quiet, empty/full, ancient/modern. Match them. Draw pictures of each pair. Play "opposite day" — say the opposite of everything for 5 minutes. "Hello" means "goodbye." The child discovers that meaning is relational — we understand "hot" better because we know "cold."</div>
+    </div>
+  </div>
+</div>
+
+<!-- 96 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">96</div>
+    <div class="work-info">
+      <div class="work-name">Homonyms</div>
+      <div class="work-develops">Develops <strong>understanding of multiple meanings</strong> — "bat" (animal) and "bat" (baseball), "bark" (tree) and "bark" (dog). The child discovers that context determines meaning — one of reading's deepest skills.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child encounters confusing sentences in reading: "I saw a bat" — which bat? Enjoys word puzzles and riddles.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Write "bat" and draw both meanings. "The word is the same but the meaning is different — how do you know which one?" Context. Write two sentences: "The bat flew at night." "She swung the bat." The child figures out which is which. Homonyms teach that words are flexible — meaning lives in context, not in isolation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 97 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">97</div>
+    <div class="work-info">
+      <div class="work-name">Spelling Rules — Patterns and Exceptions</div>
+      <div class="work-develops">Develops <strong>conventional spelling awareness</strong> — the child learns the rules that govern English spelling: silent-e, doubling consonants, i before e. Not memorization — pattern recognition.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes frequently. Spelling is largely phonetic but they notice discrepancies: "Why isn't 'night' spelled 'nit'?"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Introduce one rule at a time. Silent-e: "hop" → "hope." "When we add an e at the end, the vowel says its name." Collect 10 examples. Then the next rule: doubling (running, sitting — why two n's? two t's?). Each rule is a key. Exceptions exist — acknowledge them honestly. English spelling is messy and beautiful, like English history.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 98 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">98</div>
+    <div class="work-info">
+      <div class="work-name">Creative Writing — Personal Essays</div>
+      <div class="work-develops">Develops <strong>writing as thinking</strong> — the child writes about their opinions, experiences, and ideas in organized form. Writing is no longer just communication — it's a tool for thought.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child writes fluently in their journal. Has strong opinions and can articulate reasons. Around 6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Write about your favorite season. Tell me WHY it's your favorite." Or: "If you could have any animal, what would it be and why?" The child writes a paragraph: topic sentence, reasons, conclusion. This is essay writing in its embryonic form — the structure that will carry them through every academic paper they'll ever write.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 99 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">99</div>
+    <div class="work-info">
+      <div class="work-name">Creative Writing — Fiction Stories</div>
+      <div class="work-develops">Develops <strong>narrative imagination</strong> — the child writes stories that didn't happen. They invent characters, conflicts, and resolutions. The mind that can write fiction can imagine alternative worlds.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child reads chapter books. Writes personal essays. Has a rich inner world of pretend play and storytelling.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Provide a prompt: "A girl found a tiny door in the garden wall." The child writes the story. Beginning (what happened?), middle (what went wrong?), end (how was it resolved?). Make it a book with illustrations. Read it to the family. The child who writes fiction has mastered language — they are using it to create worlds.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 100 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">100</div>
+    <div class="work-info">
+      <div class="work-name">The Total Reader — Independent Literacy</div>
+      <div class="work-develops">Develops <strong>complete linguistic independence</strong> — the child reads for pleasure, writes to express, speaks with precision, listens with comprehension. They have constructed themselves through language. They are normalized.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">The child chooses to read. They write without being asked. They use rich vocabulary naturally. They analyze language with curiosity. This is not a sign to look for — it is a state that arrives.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">There is no home version for this work. This work IS the home. A house full of books. Conversations at dinner. Letters to grandparents. Stories before bed. A parent who reads. A child who sees that language is not a school subject but the medium of human connection. You have given them the world in words. The rest is theirs.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- SENSITIVE PERIOD CALLOUT -->
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🌳</div>
+    <div class="sp-text"><strong>Normalization through Language</strong> — Maria Montessori observed that the child who has mastered language undergoes a profound transformation. They become calm, focused, socially aware, and intellectually curious. This is not because language makes children smarter — it is because language gives the developing mind its most powerful tool for organizing experience, expressing will, and connecting with others. The normalized child does not just use language. They think in it, dream in it, and build their world with it.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--                  FOOTER                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="footer">
+  <div class="logo">Montree</div>
+  <p>The Montessori Language Curriculum — 100 works from first sound to first story.</p>
+  <p style="margin-top: 8px;">Grounded in Maria Montessori's original writings and developmental observations.</p>
+  <p style="margin-top: 12px;"><a href="https://montree.xyz">montree.xyz</a></p>
+</div>
+
+</body>
+</html>
