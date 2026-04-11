@@ -117,15 +117,51 @@ export async function GET(request: NextRequest) {
     };
 
     // 5. Translate to Chinese if locale is zh and we have content
-    if (locale === 'zh' && anthropic && (result.quick_guide || result.presentation_steps)) {
-      try {
-        const translated = await translateGuideToZh(result);
-        return NextResponse.json(translated, {
-          headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
-        });
-      } catch (err) {
-        console.error('Translation failed, returning English:', err);
-        // Fall through to return English version
+    if (locale === 'zh' && (result.quick_guide || result.presentation_steps)) {
+      // 5a. Check DB cache first — guide_content_zh column on classroom curriculum
+      if (classroomId) {
+        try {
+          const { data: cached } = await supabase
+            .from('montree_classroom_curriculum_works')
+            .select('guide_content_zh')
+            .eq('classroom_id', classroomId)
+            .ilike('name', `%${escapeIlike(workName)}%`)
+            .limit(1)
+            .maybeSingle();
+
+          if (cached?.guide_content_zh && typeof cached.guide_content_zh === 'object') {
+            // Serve from cache — instant
+            return NextResponse.json({ ...result, ...cached.guide_content_zh }, {
+              headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
+            });
+          }
+        } catch (err) {
+          console.error('[Guide API] Cache read failed:', err);
+        }
+      }
+
+      // 5b. No cache — translate via Sonnet and cache the result
+      if (anthropic) {
+        try {
+          const translated = await translateGuideToZh(result);
+          // Fire-and-forget: cache translation to DB
+          if (classroomId) {
+            supabase
+              .from('montree_classroom_curriculum_works')
+              .update({ guide_content_zh: translated })
+              .eq('classroom_id', classroomId)
+              .ilike('name', `%${escapeIlike(workName)}%`)
+              .then(({ error }) => {
+                if (error) console.error('[Guide API] Cache write failed:', error.message);
+                else console.log(`[Guide API] Cached zh guide for "${workName}"`);
+              });
+          }
+          return NextResponse.json(translated, {
+            headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
+          });
+        } catch (err) {
+          console.error('Translation failed, returning English:', err);
+        }
       }
     }
 
