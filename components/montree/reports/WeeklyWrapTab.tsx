@@ -54,6 +54,7 @@ interface ReportResult {
   teacher_report_id: string | null;
   teacher_status: string | null;
   key_insight: string | null;
+  teacher_guidance: string | null;
   recommendations: Recommendation[];
   area_analyses: Array<{ area: string; area_label: string; area_label_zh?: string; works_count: number; narrative: string }>;
   flags: Flag[];
@@ -831,6 +832,16 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
                         </div>
                       ) : null;
                     })()}
+
+                    {/* ── Developmental Guidance ── */}
+                    {r.teacher_guidance && (
+                      <div className="mt-2 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 border border-emerald-100">
+                        <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider mb-1">
+                          {locale === 'zh' ? '发展评估' : 'Developmental Guidance'}
+                        </p>
+                        <p className="text-xs text-gray-700 leading-relaxed">{r.teacher_guidance}</p>
+                      </div>
+                    )}
 
                     {/* Works as chips */}
                     {areaEntries.length > 0 && (

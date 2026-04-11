@@ -83,6 +83,7 @@ export interface TeacherReportContent {
     reasoning: string;
   }>;
   key_insight: string;
+  teacher_guidance: string;
 }
 
 // ── Area Labels ──
@@ -244,7 +245,9 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
     }
   ],
 
-  "key_insight": "A brief, actionable teacher summary — 2-3 sentences MAX. Sentence 1: Quick status read (on track / needs attention / thriving + one-line why). Sentence 2-3: Specific shelf action items for next week — name exact works to present or continue, referencing the recommendations above. Write like a consultant's sticky note, not an essay. Example tone: '${firstName} is building strong concentration through repetition in practical life — on track. Next week: present Color Box 2 (ready after mastering Box 1), continue Sand Tray Writing daily, introduce Spindle Boxes to bridge into math.' No Montessori lectures, no developmental philosophy — the teacher already knows that. Just status + next moves."
+  "key_insight": "A brief, actionable teacher summary — 2-3 sentences MAX. Sentence 1: Quick status read (on track / needs attention / thriving + one-line why). Sentence 2-3: Specific shelf action items for next week — name exact works to present or continue, referencing the recommendations above. Write like a consultant's sticky note, not an essay. Example tone: '${firstName} is building strong concentration through repetition in practical life — on track. Next week: present Color Box 2 (ready after mastering Box 1), continue Sand Tray Writing daily, introduce Spindle Boxes to bridge into math.' No Montessori lectures, no developmental philosophy — the teacher already knows that. Just status + next moves.",
+
+  "teacher_guidance": "A SHORT developmental assessment (2-3 sentences MAX) that tells the teacher: (1) Which areas ${firstName} spent time in this week and which areas were neglected, (2) Whether this pattern is appropriate for ${firstName}'s age (${ageYears}y ${ageMonths}m) and developmental stage, (3) What to gently guide them toward next week. Example: '${firstName} spent most of the week in Sensorial and Practical Life, with no engagement in Language or Mathematics. At ${ageYears}y${ageMonths}m this is developmentally typical — building concentration and fine motor foundations. Guide toward Sandpaper Letters and Number Rods this week to begin bridging into academics.' Keep it conversational and direct — this is the teacher's quick weekly compass, not a report."
 }
 
 ═══ RULES ═══
@@ -346,6 +349,21 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
     key_insight: locale === 'zh'
       ? `${firstName}本周参与了${photos.length}项活动。${analysis.recommended_works.length > 0 ? `建议下周关注${analysis.recommended_works.slice(0, 3).map(w => `${getAreaLabel(w.area, locale)}的${getChineseNameForWork(w.work_name) || w.work_name}`).join('、')}。` : ''}`
       : `${firstName} engaged with ${photos.length} activities this week. ${analysis.recommended_works.length > 0 ? `I recommend focusing on ${analysis.recommended_works.slice(0, 3).map(w => `${w.work_name} in ${getAreaLabel(w.area, locale)}`).join(', ')} in the coming week.` : ''}`,
+
+    teacher_guidance: (() => {
+      const activeAreas = Object.keys(areaWorks).map(a => getAreaLabel(a, locale)).join(', ');
+      const allAreas = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+      const missingAreas = allAreas
+        .filter(a => !areaWorks[a])
+        .map(a => getAreaLabel(a, locale));
+      const missingStr = missingAreas.length > 0 ? missingAreas.join(', ') : '';
+      const ageYrs = Math.floor(child.age);
+      const ageMos = Math.round((child.age - ageYrs) * 12);
+      if (locale === 'zh') {
+        return `${firstName}本周主要在${activeAreas}方面活跃。${missingStr ? `${missingStr}领域缺少参与。` : ''}对于${ageYrs}岁${ageMos}个月的孩子来说，${ageYrs <= 3 ? '集中在日常生活和感官领域是正常的发展模式' : '建议适当引导探索其他领域'}。`;
+      }
+      return `${firstName} was mostly active in ${activeAreas} this week.${missingStr ? ` No engagement in ${missingStr}.` : ''} At ${ageYrs}y${ageMos}m, ${ageYrs <= 3 ? 'focus on practical life and sensorial is developmentally typical' : 'consider gently guiding exploration into underrepresented areas'}.`;
+    })(),
   };
 }
 
@@ -486,6 +504,9 @@ export async function generateTeacherReport(
         key_insight: isZh
           ? `${firstName}本周没有记录到活动。建议关注出勤情况。`
           : `${firstName} had no documented activities this week. Consider reviewing attendance and engagement.`,
+        teacher_guidance: isZh
+          ? `${firstName}本周没有记录到任何活动。需要关注出勤和参与情况。`
+          : `No documented activities for ${firstName} this week. Review attendance and consider whether the child needs more support engaging with the classroom materials.`,
       },
       generatedAt: new Date().toISOString(),
     };
@@ -595,11 +616,15 @@ export async function generateTeacherReport(
               type: 'string',
               description: 'Brief 2-3 sentence actionable summary. Sentence 1: quick status (on track/needs attention/thriving + why). Sentences 2-3: specific shelf actions for next week (exact work names). No essays — write like a consultant sticky note.',
             },
+            teacher_guidance: {
+              type: 'string',
+              description: 'Short developmental assessment (2-3 sentences). Which areas the child engaged with vs neglected this week, whether the pattern is age-appropriate, and what to guide them toward next week. Example: "Amy spent most of the week in Sensorial and Practical Life, with no engagement in Language or Mathematics. At 3y8m this is developmentally typical. Guide toward Sandpaper Letters and Number Rods this week."',
+            },
           },
           required: [
             'developmental_snapshot', 'sensitive_periods', 'area_analyses',
             'concentration', 'normalization_narrative', 'flags',
-            'recommendations', 'key_insight',
+            'recommendations', 'key_insight', 'teacher_guidance',
           ],
         },
       }],
