@@ -197,6 +197,85 @@ montree.xyz
 
 ## RECENT STATUS (Apr 11, 2026)
 
+### ⚡ Session 15 — Complete Home Curriculum Guide Suite (5 areas × 100 works) + Library Integration (Apr 11, 2026)
+
+**Six commits pushed to main: `50acbb64` (Practical Life, prev session), `505a10ca` (Language), `ffd0d9fc` (Sensorial), `8ba5d56b` (Mathematics), `888c0aab` (Cultural), `17ad1873` (Library page).**
+
+**THE TASK:** Create a complete set of Montessori home curriculum HTML files — one for each of the 5 curriculum areas — in a beautiful, printable format accessible from `montree.xyz/tools/`. Each follows an identical structure: 100 works from developmental zero to mastery, organized in 4 developmental phases of 25 works, with sensitive period callouts between phases. Every work card includes: name, what it develops, readiness signs, and a home version requiring NO Montessori catalogue materials.
+
+**Files created (all in `public/tools/`):**
+
+| File | Phases | Colour Scheme | Size |
+|------|--------|---------------|------|
+| `practical-life-curriculum.html` | Foundations → Growing Will → Prepared Child → Normalization | Green | 127KB |
+| `language-curriculum.html` | The Ear → The Hand → The Eye → The Mind | Pink/Purple | 139KB |
+| `sensorial-curriculum.html` | Dimension & Order → Colour Form & Pattern → Hidden Senses → Sensation to Abstraction | Purple/Amber | 141KB |
+| `mathematics-curriculum.html` | Concrete Mind → Working Hand → Reasoning Mind → Passage to Abstraction | Blue | 87KB |
+| `cultural-curriculum.html` | Near World → Living World → Wider World → Cosmic View | Deep Purple | 96KB |
+
+**Design system (consistent across all 5):**
+- Typography: Cormorant Garamond (headings, quotes) + Inter (body)
+- Google Fonts loaded via `@import`
+- CSS variables per file for phase colours (`--phase1` through `--phase4`)
+- Hero: full-width gradient banner with title, subtitle, meta
+- Intro: Montessori quote in styled blockquote, 2-3 paragraphs of context
+- Phase headers: coloured pill tag + serif heading + description
+- Work cards: white with subtle shadow, number badge top-right, four fields (name, develops, readiness, home version in tinted box)
+- Sensitive period callouts: dark gradient box with glow effect, age range, descriptive text
+- Print CSS: `break-inside: avoid` on cards, `print-color-adjust: exact` on gradients
+- Mobile responsive: stacked layout at 640px breakpoint
+- Footer: Montree brand + link to montree.xyz
+
+**Content grounding:**
+- Language: grounded in `lib/curriculum/data/language.json` (45 works across 5 categories)
+- Sensorial: grounded in `lib/curriculum/data/sensorial.json` (35 works across 10 categories)
+- Cultural: grounded in `lib/curriculum/data/cultural.json` (63 works across 7 categories: Geography, History, Botany, Zoology, Science, Art, Music)
+- Mathematics: no `mathematics.json` exists — grounded in standard Montessori math sequence (number rods, golden beads, stamp game, strip boards, bead chains, fraction circles, etc.)
+- Practical Life: created in prior session, grounded in standard Montessori practical life sequence
+- Sensitive periods: referenced from `lib/montree/guru/knowledge/sensitive-periods.ts` (8 periods with age ranges and peak windows)
+
+**Library page integration (commit `17ad1873`):**
+- Added "Home Curriculum Guides" card to `app/montree/library/page.tsx` between Picture Bank and Browse the Library
+- Emerald accent gradient to match Montessori brand
+- Five colour-coded pill buttons (one per area) with direct links to `/tools/*.html`
+- Each pill opens in a new tab (`target="_blank"`)
+- Pill colours match each curriculum's hero gradient: Practical Life (#40916c), Sensorial (#d4883e), Language (#c0566e), Mathematics (#2e7dba), Cultural (#8b6bb5)
+- Uses `<a>` tags (not Next.js `<Link>`) since these are static HTML files outside the Next.js router
+- `onClick={(e) => e.stopPropagation()}` on pills to prevent the parent card click from interfering
+
+**Production URLs:**
+- `montree.xyz/tools/practical-life-curriculum.html`
+- `montree.xyz/tools/language-curriculum.html`
+- `montree.xyz/tools/sensorial-curriculum.html`
+- `montree.xyz/tools/mathematics-curriculum.html`
+- `montree.xyz/tools/cultural-curriculum.html`
+- Library page: `montree.xyz/montree/library`
+
+**Middleware note:** Static `.html` files in `public/tools/` are excluded from Next.js middleware processing by the matcher regex at `middleware.ts` line 353 (excludes `.html` extension). No middleware changes needed.
+
+**Technical issues encountered and resolved this session:**
+- **Git lock files**: `fatal: cannot lock ref 'HEAD': Unable to create '.git/HEAD.lock'` — resolved by `rm -f .git/index.lock .git/HEAD.lock` via Desktop Commander before each git operation
+- **Railway Docker Hub network error**: `dial tcp [2600:1f18:...]:443: connect: network is unreachable` when pulling `node:20-slim` — resolved by pushing empty retry commit to trigger new build (transient Docker Hub issue)
+- **404 on production for new HTML files**: caused by the Docker Hub build failure above, not a code issue. Retry deploy fixed it.
+
+**Key files changed this session:**
+- `public/tools/practical-life-curriculum.html` — 100-work Practical Life (prev session, committed this session)
+- `public/tools/language-curriculum.html` — 100-work Language
+- `public/tools/sensorial-curriculum.html` — 100-work Sensorial
+- `public/tools/mathematics-curriculum.html` — 100-work Mathematics
+- `public/tools/cultural-curriculum.html` — 100-work Cultural
+- `app/montree/library/page.tsx` — Home Curriculum Guides card with 5 pill links
+
+**Next session priorities:**
+1. **Verify all 5 curriculum guides render on production** — hard-refresh each URL after Railway deploy
+2. **Monitor Campaign D** on gmass.co/dashboard — verify 50/day throttle working, check open rates
+3. **Verify dead Campaign C** (50686495) has no pending follow-ups on gmass.co/dashboard
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+5. **Test new classroom creation end-to-end** — create a test classroom via principal setup, verify Chinese names are auto-seeded (Session 14 fix)
+6. **Consider adding an index/landing page** for `/tools/` that links to all curriculum guides (currently no index — direct URLs only)
+
+---
+
 ### ⚡ Session 14 — Comprehensive Chinese Locale Fix: Dual-Column Root Cause + All UI Components (Apr 11, 2026)
 
 **Two commits pushed to main: `1f7b2dea` + `7976f5bc`.**
