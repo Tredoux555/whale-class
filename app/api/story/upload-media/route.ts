@@ -39,9 +39,9 @@ const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'imag
 const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'];
 const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/flac', 'audio/webm'];
 
-const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
-const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB — Supabase storage per-file limit
-const MAX_AUDIO_SIZE = 50 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB — bucket raised to 1GB
+const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
 
 function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'audio' | null {
   if (IMAGE_TYPES.includes(mimeType)) return 'image';
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
       if (msg.includes('Payload too large') || msg.includes('exceeded') || msg.includes('size')) {
         const sizeMB = (file.size / (1024 * 1024)).toFixed(0);
         return NextResponse.json({
-          error: `Video too large for storage (${sizeMB}MB). The storage limit is 50MB per file. Try trimming your video or recording at lower quality.`
+          error: `Video too large for storage (${sizeMB}MB). Maximum is 500MB. Try trimming your video or recording at lower quality.`
         }, { status: 413 });
       }
       if (msg.includes('mime') || msg.includes('type')) {

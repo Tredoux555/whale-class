@@ -63,7 +63,7 @@ const MEDIA_CONFIG = {
     mimePrefix: 'video/',
     allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp', '3g2'],
     allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'],
-    maxSize: 50 * 1024 * 1024, // 50MB — Supabase storage per-file limit
+    maxSize: 500 * 1024 * 1024, // 500MB — bucket raised to 1GB
     defaultExt: 'mp4',
     filenamePrefix: 'admin_video',
   },
@@ -298,7 +298,7 @@ export async function POST(req: NextRequest) {
       if (msg.includes('Payload too large') || msg.includes('exceeded') || msg.includes('size')) {
         const sizeMB = (file.size / (1024 * 1024)).toFixed(0);
         return NextResponse.json({
-          error: `File too large for storage (${sizeMB}MB). The storage limit is 50MB per file. Try a shorter video or lower quality recording.`
+          error: `File too large for storage (${sizeMB}MB). Maximum is 500MB. Try a shorter video or lower quality recording.`
         }, { status: 413 });
       }
       if (msg.includes('mime') || msg.includes('type')) {
