@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Montessori Cultural Curriculum — 100 Works from Wonder to Understanding</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --purple-deep: #2d1b4e;
+    --purple-mid: #5b3a8c;
+    --purple-light: #8b6bb5;
+    --purple-pale: #d4c5e8;
+    --purple-wash: #f6f2fa;
+    --cream: #fefcf6;
+    --warm-gray: #5c5552;
+    --text: #2c2420;
+    --border: #e8e0d8;
+    --phase1: #d4883e;
+    --phase2: #b55a30;
+    --phase3: #5b3a8c;
+    --phase4: #2d1b4e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ═══════ HERO ═══════ */
+  .hero {
+    background: linear-gradient(135deg, #2d1b4e 0%, #5b3a8c 50%, #8b6bb5 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    opacity: 0.85;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .hero .meta {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ═══════ INTRO ═══════ */
+  .intro {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 30px 40px;
+  }
+  .intro h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--purple-deep);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .intro p {
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .intro blockquote {
+    border-left: 3px solid var(--purple-light);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: var(--purple-wash);
+    border-radius: 0 12px 12px 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--purple-deep);
+  }
+
+  /* ═══════ PHASE HEADER ═══════ */
+  .phase-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 30px 20px;
+  }
+  .phase-header .phase-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 14px;
+  }
+  .phase-header h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .phase-header .phase-desc {
+    color: var(--warm-gray);
+    font-size: 0.95rem;
+    max-width: 650px;
+  }
+
+  /* ═══════ WORK GRID ═══════ */
+  .work-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 30px 40px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .work-card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px 28px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: box-shadow 0.2s;
+    position: relative;
+  }
+  .work-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  }
+
+  .work-card .work-number {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    opacity: 0.3;
+  }
+
+  .work-card h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.25;
+    padding-right: 40px;
+  }
+
+  .work-card .develops {
+    font-size: 0.82rem;
+    color: var(--warm-gray);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .work-card .develops strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .work-card .readiness {
+    font-size: 0.82rem;
+    color: var(--purple-mid);
+    margin-bottom: 8px;
+    line-height: 1.55;
+  }
+  .work-card .readiness strong {
+    font-weight: 600;
+  }
+
+  .work-card .home {
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--purple-wash);
+    padding: 12px 16px;
+    border-radius: 10px;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+  .work-card .home strong {
+    color: var(--purple-deep);
+    font-weight: 600;
+  }
+
+  /* ═══════ SENSITIVE PERIOD ═══════ */
+  .sensitive-period {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 30px 30px;
+  }
+  .sensitive-period .sp-box {
+    background: linear-gradient(135deg, #2d1b4e 0%, #5b3a8c 100%);
+    color: white;
+    border-radius: 16px;
+    padding: 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sensitive-period .sp-box::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -30%;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .sensitive-period .sp-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+  .sensitive-period h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .sensitive-period .sp-age {
+    font-size: 0.85rem;
+    opacity: 0.75;
+    margin-bottom: 14px;
+  }
+  .sensitive-period .sp-text {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    opacity: 0.9;
+  }
+
+  /* ═══════ FOOTER ═══════ */
+  .footer {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--warm-gray);
+    font-size: 0.8rem;
+  }
+  .footer a {
+    color: var(--purple-mid);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .footer .brand {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.4rem;
+    color: var(--purple-deep);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  /* ═══════ PRINT ═══════ */
+  @media print {
+    .hero { padding: 40px 30px 30px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .work-card { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+    .sensitive-period .sp-box { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .phase-header { break-after: avoid; }
+    body { font-size: 11pt; }
+  }
+
+  /* ═══════ MOBILE ═══════ */
+  @media (max-width: 640px) {
+    .hero { padding: 50px 20px 40px; }
+    .intro { padding: 40px 20px 30px; }
+    .phase-header { padding: 40px 20px 16px; }
+    .work-grid { padding: 10px 20px 30px; }
+    .work-card { padding: 20px; }
+    .sensitive-period { padding: 10px 20px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <h1>The Montessori Cultural Curriculum</h1>
+  <div class="subtitle">100 works from wonder to understanding — built for the home</div>
+  <div class="meta">Montree · Home Curriculum Series</div>
+</div>
+
+<!-- ═══════════════════ INTRO ═══════════════════ -->
+<div class="intro">
+  <h2>The Cosmic Curriculum</h2>
+  <p>Montessori called this "Cosmic Education" — the idea that every child deserves to see how everything connects. The leaf is connected to the tree, the tree to the forest, the forest to the climate, the climate to the planet. Geography, biology, history, art, music, science — these are not separate subjects. They are one story, told from different angles.</p>
+  <p>This curriculum gives you 100 works that take your child from their first encounter with the natural world — touching earth and water, watching seeds grow — all the way to understanding ecosystems, timelines, and the creative expressions of human civilisation. Every work uses materials you can find at home, in your garden, or at the library.</p>
+  <blockquote>"The child who has felt a strong love for his surroundings and for all living creatures, who has discovered joy and enthusiasm in work, gives us reason to hope." — Maria Montessori</blockquote>
+  <p>Begin with what is nearest — the child's own world. Then spiral outward. The universe is the final classroom.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--          PHASE 1 — THE NEAR WORLD                     -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase1);">Phase 1 · Works 1–25</div>
+  <h2 style="color: var(--phase1);">The Near World</h2>
+  <div class="phase-desc">What the child can see, touch, and experience directly — the garden, the weather, the animals nearby, the seasons turning. Science begins with observation. Geography begins at the front door.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">01</span>
+    <h3>Nature Walk and Collection</h3>
+    <div class="develops"><strong>Develops:</strong> Observation — the foundation of all scientific thinking; wonder and attention to detail</div>
+    <div class="readiness"><strong>Ready when:</strong> Child walks independently and picks things up with fascination; notices insects, leaves, stones</div>
+    <div class="home"><strong>At home:</strong> Walk slowly. Let the child lead. Bring a small basket. Collect what interests them — a feather, a smooth stone, a fallen leaf, a seed pod. At home, arrange the collection on a tray. Name what you can. This is the nature table — the child's first laboratory.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">02</span>
+    <h3>Living vs Non-Living</h3>
+    <div class="develops"><strong>Develops:</strong> Classification — the most fundamental scientific skill; distinguishing life from matter</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has a nature collection; asks "is this alive?"; notices that plants grow but stones don't</div>
+    <div class="home"><strong>At home:</strong> Two baskets labeled "Living" and "Non-Living." Gather items: a leaf, a rock, a flower, a coin, a snail shell, a feather. "Does it grow? Does it need water? Did it come from something alive?" Sort together. A feather is tricky — it came from a living bird but isn't alive itself. Discuss these puzzles.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">03</span>
+    <h3>Plant vs Animal</h3>
+    <div class="develops"><strong>Develops:</strong> Further classification — understanding the two great kingdoms of living things</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can sort living from non-living; knows that plants and animals are both alive</div>
+    <div class="home"><strong>At home:</strong> Picture cards or toy figurines: sort into "Plant" and "Animal." "Plants make their own food from sunlight. Animals must find food and eat it. Plants are rooted — animals move." What about a mushroom? A sponge? Some things challenge the categories — and that's where real science begins.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">04</span>
+    <h3>Parts of a Plant</h3>
+    <div class="develops"><strong>Develops:</strong> Plant anatomy vocabulary; understanding that each part has a function</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows plants are living things; has observed plants growing; curious about what's inside</div>
+    <div class="home"><strong>At home:</strong> Pull up a whole plant (a weed works perfectly). Lay it on paper. Point and name: "Roots — they drink water from the soil. Stem — it carries the water up. Leaves — they catch sunlight. Flower — it makes seeds." The child draws and labels. Hang the diagram on the nature table.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">05</span>
+    <h3>Planting a Seed</h3>
+    <div class="develops"><strong>Develops:</strong> Life cycle understanding; patience; responsibility; the scientific skill of observation over time</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the parts of a plant; asks where plants come from; has the patience to water daily</div>
+    <div class="home"><strong>At home:</strong> A clear cup, a damp paper towel, a bean seed. Press the seed against the glass so the child can watch. Water lightly. Observe daily — the root appears first, then the stem, then the leaves. Draw each stage in a nature journal. Transfer to soil when ready. The child has witnessed the whole miracle.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">06</span>
+    <h3>Leaf Shape Collection</h3>
+    <div class="develops"><strong>Develops:</strong> Botanical classification; visual discrimination; vocabulary for shape and form</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows parts of a plant; notices that trees have different-shaped leaves</div>
+    <div class="home"><strong>At home:</strong> Collect leaves from different trees and plants. Press them in a book or between wax paper. Sort by shape: heart, oval, needle, fan, hand-shaped. Name them where you can. Make leaf rubbings with crayons. The child discovers that the natural world has order — there are kinds and types, not chaos.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">07</span>
+    <h3>Parts of a Flower</h3>
+    <div class="develops"><strong>Develops:</strong> Deeper botanical anatomy; understanding reproduction in plants</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows plant parts; interested in flowers; has the fine motor skill to dissect carefully</div>
+    <div class="home"><strong>At home:</strong> Get a large, simple flower (a lily or tulip works well). Carefully pull it apart. Name each part: petals, sepals, stamen (the pollen-makers), pistil (the seed-maker). Use a magnifying glass to see pollen. "The petals are beautiful for a reason — they attract bees, who carry pollen from flower to flower."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">08</span>
+    <h3>Weather Observation Chart</h3>
+    <div class="develops"><strong>Develops:</strong> Daily scientific observation; recording data; weather vocabulary</div>
+    <div class="readiness"><strong>Ready when:</strong> Child notices the weather; asks "why is it raining?"; can draw simple symbols</div>
+    <div class="home"><strong>At home:</strong> Make a weather chart with columns for each day. Every morning, the child looks outside and draws a symbol: sun, clouds, rain, wind. Add temperature if you have a thermometer. After a month, look for patterns: "We had 12 sunny days and 8 rainy days. More sunny than rainy!" This is data science at its purest.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">09</span>
+    <h3>Seasons of the Year</h3>
+    <div class="develops"><strong>Develops:</strong> Cyclical time; understanding that nature has rhythms; preparation for calendar and history work</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has observed weather over weeks; notices trees changing; talks about "when it was cold"</div>
+    <div class="home"><strong>At home:</strong> Divide a large circle into four sections: spring, summer, autumn, winter. In each section, draw or paste pictures of what happens — flowers blooming, swimming, leaves falling, snow. Walk the same path each season and photograph the same tree. "The Earth goes around the sun once — that's one year, four seasons."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">10</span>
+    <h3>Sink and Float</h3>
+    <div class="develops"><strong>Develops:</strong> The scientific method — predict, test, observe, conclude; introduction to density</div>
+    <div class="readiness"><strong>Ready when:</strong> Child loves water play; can make predictions; interested in "what will happen if…?"</div>
+    <div class="home"><strong>At home:</strong> A basin of water and a tray of objects: cork, stone, leaf, coin, apple, key, sponge. Before each test: "Will it sink or float? Why do you think so?" Drop it in. Record results in two columns. "Heavy things sink and light things float — or do they? The apple is heavy but it floats!" The child bumps up against real science.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">11</span>
+    <h3>Magnetic Exploration</h3>
+    <div class="develops"><strong>Develops:</strong> Invisible forces; prediction and testing; classifying by material property</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done sink/float; ready for another "predict and test" experiment</div>
+    <div class="home"><strong>At home:</strong> A magnet and a tray of objects: paper clip, wooden block, coin, nail, aluminium foil, plastic toy. "Which ones will the magnet attract?" Test each. Sort into "magnetic" and "not magnetic." The child discovers the pattern: metal things made of iron or steel are magnetic. Go on a magnet hunt around the house.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">12</span>
+    <h3>States of Matter</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that matter exists in three forms; observation of transformation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done sink/float and magnet experiments; notices ice melting; asks about steam</div>
+    <div class="home"><strong>At home:</strong> An ice cube in a pot. "This is solid — it has shape." Watch it melt. "Now it's liquid — it flows and takes the shape of the pot." Heat it (with supervision). "Steam! Now it's a gas — it rises and fills the air." The same water, three forms. Freeze it again. "We can change it back. The water isn't gone — it's transformed."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">13</span>
+    <h3>Colour Mixing</h3>
+    <div class="develops"><strong>Develops:</strong> Colour theory; cause and effect; preparation for art and the colour boxes</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows primary colours; enjoys painting; curious about "what colour will it make?"</div>
+    <div class="home"><strong>At home:</strong> Three cups of water, food colouring: red, yellow, blue. "What happens when we mix red and yellow?" The child pours and stirs. Orange! Then red + blue = purple, blue + yellow = green. Record each discovery. Mix all three — brown or grey. "Three colours make every colour in the world."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">14</span>
+    <h3>Animal Classification — Vertebrate and Invertebrate</h3>
+    <div class="develops"><strong>Develops:</strong> Zoological classification; the concept that animals have structural differences we can observe</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the difference between plants and animals; interested in animal bodies</div>
+    <div class="home"><strong>At home:</strong> Picture cards or toy animals. "Feel your back — those bumps are your vertebrae, your backbone. Animals with backbones are called vertebrates." Sort: dog, fish, bird, snake — all have backbones. Worm, jellyfish, spider, snail — no backbone. "Most animals on Earth are invertebrates — insects alone outnumber us millions to one."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">15</span>
+    <h3>Five Classes of Vertebrates</h3>
+    <div class="develops"><strong>Develops:</strong> Deeper zoological classification; understanding body coverings, breathing, and reproduction</div>
+    <div class="readiness"><strong>Ready when:</strong> Child sorts vertebrates from invertebrates; asks "what kind of animal is this?"</div>
+    <div class="home"><strong>At home:</strong> Five sorting mats: Fish (scales, gills, cold), Amphibian (moist skin, water and land), Reptile (dry scales, cold), Bird (feathers, beak, warm), Mammal (fur/hair, milk, warm). Sort animal cards into classes. "A whale is a mammal — it breathes air and feeds milk. A penguin is a bird — it has feathers, even though it can't fly."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">16</span>
+    <h3>Parts of a Fish</h3>
+    <div class="develops"><strong>Develops:</strong> Animal anatomy; vocabulary; understanding form and function</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the five classes; interested in how animal bodies work</div>
+    <div class="home"><strong>At home:</strong> A picture of a fish (or a real fish from the market). Point and name: fins (for swimming), gills (for breathing underwater), scales (for protection), tail (for propulsion), lateral line (for sensing vibrations). The child draws and labels. "Every part has a job — nothing is wasted."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">17</span>
+    <h3>Parts of a Bird</h3>
+    <div class="develops"><strong>Develops:</strong> Comparative anatomy — how birds are built differently from fish</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied fish anatomy; ready to compare another class</div>
+    <div class="home"><strong>At home:</strong> Observe birds at a feeder or park. Name parts: beak (different shapes for different foods), feathers (for flight and warmth), wings, talons/feet, tail feathers. Compare beaks: "A pelican has a scoop. A hawk has a hook. A hummingbird has a straw." Form follows function — a principle the child begins to grasp.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">18</span>
+    <h3>Insect Study</h3>
+    <div class="develops"><strong>Develops:</strong> Invertebrate anatomy; the "three-part body" rule; attention to the smallest creatures</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows vertebrate vs invertebrate; fascinated by bugs</div>
+    <div class="home"><strong>At home:</strong> Catch an insect in a clear jar (release it after). Observe with a magnifying glass. "All insects have three body parts: head, thorax, abdomen. Six legs — always six. Many have wings." Draw what you see. Compare: is a spider an insect? No — eight legs, two body parts. "Spider is an arachnid, not an insect."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">19</span>
+    <h3>Butterfly Life Cycle</h3>
+    <div class="develops"><strong>Develops:</strong> Metamorphosis — the stunning transformation from egg to adult; life cycle vocabulary</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied insects; understands that living things grow and change</div>
+    <div class="home"><strong>At home:</strong> If possible, order a caterpillar kit and observe the real transformation. Otherwise, use picture cards: egg → caterpillar (larva) → chrysalis (pupa) → butterfly (adult). Arrange in a circle — it's a cycle, not a line. "The caterpillar doesn't just grow wings — it completely dissolves inside the chrysalis and rebuilds itself." Wonder is the point.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">20</span>
+    <h3>Sandpaper Globe — Land and Water</h3>
+    <div class="develops"><strong>Develops:</strong> The most fundamental geographic concept — our planet has land and water, and we can feel the difference</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored the natural world nearby; ready to think about the whole Earth</div>
+    <div class="home"><strong>At home:</strong> Make a globe: inflate a balloon, papier-mâché it, paint oceans blue and continents with textured paint or glue sand on the land areas. The child runs their hands over it. "Rough is land. Smooth is water. There's much more water than land." Eyes closed: "Point to land. Point to water." The whole Earth, in their hands.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">21</span>
+    <h3>Continent Globe</h3>
+    <div class="develops"><strong>Develops:</strong> The seven continents — named and colour-coded; spatial awareness of where things are on Earth</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the sandpaper globe; understands "land" and "water" on Earth</div>
+    <div class="home"><strong>At home:</strong> Paint or label the continents on the globe in Montessori colours: Africa (green), Europe (red), Asia (yellow), North America (orange), South America (pink), Antarctica (white), Australia/Oceania (brown). Name each. "We live on ___." Sing a continent song. The child begins to locate themselves on the planet.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">22</span>
+    <h3>Days of the Week</h3>
+    <div class="develops"><strong>Develops:</strong> Time sequence; routine and rhythm; the structure of the week</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands "today," "tomorrow," "yesterday"; has a sense of daily routine</div>
+    <div class="home"><strong>At home:</strong> Seven cards, one per day. Lay them in a circle (the week repeats). "Today is Wednesday. What day was yesterday? What day comes tomorrow?" Link days to activities: "Monday is library day. Saturday is park day." The child moves a clip or marker to the current day each morning. The week has shape and rhythm.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">23</span>
+    <h3>Months and the Calendar</h3>
+    <div class="develops"><strong>Develops:</strong> Longer time cycles; the structure of the year; connection between months and seasons</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the days of the week; understands seasons; recognises their birthday</div>
+    <div class="home"><strong>At home:</strong> A large wall calendar the child can touch. Name the month, count the days. "January, February, March…" — learn the sequence. Mark birthdays, holidays, special events. "How many days until your birthday?" The child begins to navigate time — not just experiencing it, but understanding its structure.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">24</span>
+    <h3>Free Drawing and Painting</h3>
+    <div class="develops"><strong>Develops:</strong> Creative expression; fine motor control; the confidence to make marks without a "right answer"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can hold a pencil or brush; makes marks deliberately; shows interest in colour and form</div>
+    <div class="home"><strong>At home:</strong> Quality paper and good materials — thick crayons, watercolours, real paintbrushes. No colouring books (they teach children their own drawings aren't good enough). Let the child draw whatever they want. Name what they show you with genuine interest. Hang their work. Art begins with freedom.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">25</span>
+    <h3>Singing and Movement to Music</h3>
+    <div class="develops"><strong>Develops:</strong> Musical expression; rhythm and pitch; gross motor coordination; joy</div>
+    <div class="readiness"><strong>Ready when:</strong> Child moves to music spontaneously; hums or sings fragments; claps along to a beat</div>
+    <div class="home"><strong>At home:</strong> Sing together every day — folk songs, nursery rhymes, songs from your culture. Dance freely to different kinds of music: fast, slow, classical, jazz. No performance, no audience — just the experience of music moving through the body. "Music is another language. Your body already speaks it."</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: SENSORY EXPLORATION ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Sensory Exploration and Small Objects (18 months – 5 years)</h3>
+    <div class="sp-age">Peak window: approximately age 2 to 4</div>
+    <div class="sp-text">Your child picks up every tiny stone, examines every insect, collects every seed. They want to touch everything, smell flowers, listen to birds, taste raindrops. This is not distraction — it is the construction of a detailed, sensory-rich mental map of the world. The cultural curriculum rides this wave. Every nature walk, every leaf pressed, every flower dissected, every texture compared feeds this extraordinary hunger for sensory data about the real world. Do not rush past these moments. The child who has thoroughly explored the near world with all their senses will be the one who most deeply understands the far world when the time comes.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--          PHASE 2 — THE LIVING WORLD                    -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase2);">Phase 2 · Works 26–50</div>
+  <h2 style="color: var(--phase2);">The Living World</h2>
+  <div class="phase-desc">Deeper into botany, zoology, and the physical sciences. The child studies life cycles, habitats, and ecosystems — and begins to understand that every living thing has a place and a purpose in the web of life.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">26</span>
+    <h3>Parts of a Leaf — Detailed</h3>
+    <div class="develops"><strong>Develops:</strong> Botanical anatomy at a finer level; vocabulary: blade, petiole, veins, margin</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows basic plant parts; has collected and sorted leaves; ready for finer detail</div>
+    <div class="home"><strong>At home:</strong> A large leaf and a magnifying glass. "This flat part is the blade — it catches sunlight. This stem is the petiole — it connects to the branch. See these lines? They're veins — they carry water and food." Trace the veins with a finger. Make a detailed drawing. Compare veins in different leaves — parallel vs branching.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">27</span>
+    <h3>Parts of a Root</h3>
+    <div class="develops"><strong>Develops:</strong> Underground plant anatomy; understanding absorption and anchoring</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows all above-ground plant parts; curious about what's below the soil</div>
+    <div class="home"><strong>At home:</strong> Carefully dig up a plant (a carrot is perfect — it IS a root). Wash it gently. "The main root goes deep — it anchors the plant. These tiny root hairs absorb water from the soil." Compare a carrot (taproot) with grass (fibrous roots). "Two designs, same job — getting water from the earth."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">28</span>
+    <h3>Seeds — Types and Dispersal</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding seed structure and the clever ways plants spread their offspring</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has planted seeds and watched them grow; curious about where seeds come from</div>
+    <div class="home"><strong>At home:</strong> Collect seeds: dandelion puffs (wind), burrs (animal fur), berries (animal eating), maple helicopters (wind/gravity), coconut (water). "How does each seed travel?" Sort by dispersal method. Open a bean seed to find the embryo inside. "Every seed is a tiny plant, packed with food, waiting for the right moment."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">29</span>
+    <h3>Plant Life Cycle — Complete</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding the full cycle: seed → germination → growth → flower → pollination → fruit → seed</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has planted seeds, studied flowers, and understands basic plant anatomy</div>
+    <div class="home"><strong>At home:</strong> Draw the complete cycle as a circle. Use a bean plant the child has grown as the reference. "The seed grew into a plant. The plant made flowers. Bees visited the flowers. The flowers became pods. Inside the pods — new seeds!" Grow a bean plant to full maturity so the child witnesses the entire cycle firsthand.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">30</span>
+    <h3>Botany Experiment — What Plants Need</h3>
+    <div class="develops"><strong>Develops:</strong> Experimental design; controlled variables; understanding plant requirements</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has grown plants; can predict and record; asks "what if…?"</div>
+    <div class="home"><strong>At home:</strong> Plant four identical seedlings. Give one: no water. One: no light (box over it). One: no soil (just water). One: everything. Observe daily for two weeks. Record what happens with drawings. "Which plant is healthiest? What does that tell us?" The child discovers that plants need light, water, AND soil — through evidence, not authority.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">31</span>
+    <h3>Parts of a Frog — Amphibian Anatomy</h3>
+    <div class="develops"><strong>Develops:</strong> Comparative anatomy across vertebrate classes; understanding adaptation to two environments</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied fish and bird anatomy; knows amphibians live in water and on land</div>
+    <div class="home"><strong>At home:</strong> A picture or figurine of a frog. "Webbed feet for swimming, strong legs for jumping, moist skin for breathing through. Eyes on top of the head — why? So it can hide in water with just its eyes above the surface." Compare to the fish: "The fish has gills, the frog has lungs. The frog can leave the water — the fish cannot."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">32</span>
+    <h3>Parts of a Turtle — Reptile Anatomy</h3>
+    <div class="develops"><strong>Develops:</strong> Reptile body structure; understanding the shell as both skeleton and protection</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied other vertebrate classes; interested in reptiles</div>
+    <div class="home"><strong>At home:</strong> A picture or figurine of a turtle. "The shell is actually part of its skeleton — ribs fused together. Scutes are the sections of the shell. Dry, scaly skin. Cold-blooded — it sits in the sun to warm up." Compare: "A turtle carries its home. A bird builds a nest. A fish has no shelter at all." Different solutions, same problem.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">33</span>
+    <h3>Parts of a Horse — Mammal Anatomy</h3>
+    <div class="develops"><strong>Develops:</strong> Mammal body structure; understanding our own class of animals</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied fish, bird, frog, and turtle anatomy; ready for mammals</div>
+    <div class="home"><strong>At home:</strong> A picture or figurine of a horse. "Mane, hooves, tail, muzzle. Hair all over — mammals have hair or fur. Warm-blooded — the body stays warm no matter the weather. Baby horses drink milk." Then: "Humans are mammals too — we have hair, we're warm-blooded, babies drink milk. We belong to the animal kingdom."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">34</span>
+    <h3>Frog Life Cycle — Metamorphosis</h3>
+    <div class="develops"><strong>Develops:</strong> Amphibian metamorphosis; another example of radical transformation in nature</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied the butterfly life cycle; knows frog anatomy</div>
+    <div class="home"><strong>At home:</strong> Picture cards in a circle: eggs (frogspawn) → tadpole (tail, gills) → tadpole with legs → froglet (tail shrinking, lungs developing) → adult frog. "It starts life in water breathing through gills — like a fish. It ends life on land breathing through lungs — like us." Two complete transformations in nature — the child sees the pattern.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">35</span>
+    <h3>Animal Habitats</h3>
+    <div class="develops"><strong>Develops:</strong> Ecology — understanding that animals live where their needs are met</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the five vertebrate classes; has a sense of different environments</div>
+    <div class="home"><strong>At home:</strong> Make habitat cards: forest, ocean, desert, arctic, grassland, rainforest. Sort animal cards into habitats. "Why does the polar bear live in the arctic? Thick fur, white camouflage, hunts seals on ice." Discuss: "Could a camel survive in the arctic? Why not?" The child learns that habitat and adaptation are partners.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">36</span>
+    <h3>Food Chains</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding energy flow through ecosystems; the interdependence of living things</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows animal habitats and diets; understands that animals eat other living things</div>
+    <div class="home"><strong>At home:</strong> Draw a chain: Sun → Grass → Grasshopper → Frog → Snake → Hawk. "The sun feeds the grass. The grasshopper eats the grass. The frog eats the grasshopper. What happens if we remove the frogs?" The child discovers that pulling one link affects everything else. This is the foundation of ecological thinking.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">37</span>
+    <h3>World Puzzle Map</h3>
+    <div class="develops"><strong>Develops:</strong> Geographic knowledge — continent shapes, names, and positions; the relationship between globe and flat map</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the continent globe; ready for more detailed geography; has the fine motor for puzzles</div>
+    <div class="home"><strong>At home:</strong> Print a world map outline. Cut each continent as a puzzle piece (colour-coded to match the globe). The child assembles the world. "This flat map shows the same thing as the globe — just unfolded." Name continents and major oceans. Trace each continent and make a booklet: the child's own atlas.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">38</span>
+    <h3>Land and Water Forms</h3>
+    <div class="develops"><strong>Develops:</strong> Geographic vocabulary — island/lake, peninsula/gulf, isthmus/strait; understanding landform pairs</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows land and water on the globe; has done the puzzle map; ready for specific forms</div>
+    <div class="home"><strong>At home:</strong> Use clay or sand in a baking tray with water. Build an island — water all around. "The opposite is a lake — land all around the water." Build each pair: peninsula (land sticking into water) / gulf (water sticking into land), isthmus (narrow land bridge) / strait (narrow water channel). "Every land form has a water form that is its mirror."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">39</span>
+    <h3>Flags of the World</h3>
+    <div class="develops"><strong>Develops:</strong> Cultural awareness; symbol recognition; connection between countries and their visual identity</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the continents; interested in "where people live"; notices flags at events</div>
+    <div class="home"><strong>At home:</strong> Print or draw flags of countries the child has a connection to — your country, countries of friends, countries from stories. "Every country has a flag — its colours and symbols tell a story." Match flags to countries on the map. "Japan's flag has a red circle — the rising sun." Start with 10 flags, grow the collection over months.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">40</span>
+    <h3>Birthday Celebration — Walking Around the Sun</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding a year as one orbit of the sun; personal history; the connection between age and the solar system</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows months and seasons; has a globe; understands birthdays</div>
+    <div class="home"><strong>At home:</strong> Place a candle (the sun) in the centre. The child holds a globe and walks around the candle once for each year of life. For each orbit, a parent shares a memory from that year. "You went around the sun once — you were one! Again — you turned two!" After all orbits: "You have traveled around the sun ___ times. That is your age." Profound and beautiful.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">41</span>
+    <h3>Personal Timeline</h3>
+    <div class="develops"><strong>Develops:</strong> Historical thinking begins with the self — ordering events in time; understanding "before" and "after"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done the birthday celebration; interested in baby photos; asks "when I was little…"</div>
+    <div class="home"><strong>At home:</strong> A long strip of paper. Divide into years (0, 1, 2, 3, 4…). Paste a photo from each year. Write key events: "Born. First steps. Started school. Lost a tooth." The child sees their own life as a line of events — the same structure they'll later use for the history of civilisation.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">42</span>
+    <h3>Rhythm Instruments — Exploring Beat</h3>
+    <div class="develops"><strong>Develops:</strong> Rhythmic awareness; coordination; the concept of steady beat vs pattern</div>
+    <div class="readiness"><strong>Ready when:</strong> Child moves to music; claps along; interested in making sounds</div>
+    <div class="home"><strong>At home:</strong> Homemade instruments: a pot lid cymbal, a rice-filled container shaker, wooden spoons as drumsticks, a rubber-band guitar. Clap a steady beat — the child joins in. Then: "Copy my pattern." Clap-clap-pause. Clap-clap-pause. Move from steady beat to rhythmic patterns. Play along to recorded music. The child discovers that music has structure.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">43</span>
+    <h3>Collage and Mixed Media</h3>
+    <div class="develops"><strong>Develops:</strong> Composition — arranging elements to create a whole; fine motor cutting and gluing; creative decision-making</div>
+    <div class="readiness"><strong>Ready when:</strong> Child can cut with scissors; enjoys arranging things; has done free drawing and painting</div>
+    <div class="home"><strong>At home:</strong> Magazines, coloured paper, fabric scraps, natural materials (leaves, feathers). The child cuts, tears, and arranges pieces on paper before gluing. "Where does this go? What colours look good together?" No template — the child makes all compositional decisions. Hang the finished work. Art is thinking with your hands.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">44</span>
+    <h3>Clay and Sculpture</h3>
+    <div class="develops"><strong>Develops:</strong> Three-dimensional thinking; hand strength; representation of real objects in a new medium</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done 2D art; enjoys playdough; ready for more intentional 3D creation</div>
+    <div class="home"><strong>At home:</strong> Real clay or salt dough (1 cup salt, 2 cups flour, 1 cup water). Start with simple forms: a ball, a snake, a bowl. Then real objects: "Can you make a fish? A leaf? A person?" The child learns that 3D objects have multiple views — the front looks different from the side. Air-dry and paint. Keep the best pieces.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">45</span>
+    <h3>Animals of the Continents</h3>
+    <div class="develops"><strong>Develops:</strong> Biogeography — understanding that different continents have different animals</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the seven continents; knows vertebrate classes and animal habitats</div>
+    <div class="home"><strong>At home:</strong> Animal figurines or picture cards. Place the puzzle map or a world map on the floor. "Where does the kangaroo live? Australia. The elephant? Africa and Asia. The jaguar? South America." Place each animal on its continent. The child begins to see that geography shapes life — isolation creates uniqueness.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">46</span>
+    <h3>Continent Puzzle Maps — Individual</h3>
+    <div class="develops"><strong>Develops:</strong> Country-level geography; the political organisation of continents</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the world puzzle map and continent names; ready for more detail</div>
+    <div class="home"><strong>At home:</strong> Print outline maps of each continent with country borders. Start with the child's own continent. Name the countries while the child colours or labels them. "This is our country. These are our neighbours." Move to other continents one by one. Make a booklet for each. The world becomes specific — not just "Africa" but "Kenya, Tanzania, South Africa…"</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">47</span>
+    <h3>Nature Journal</h3>
+    <div class="develops"><strong>Develops:</strong> Scientific observation and recording; drawing skills in service of science; patience and attention</div>
+    <div class="readiness"><strong>Ready when:</strong> Child draws recognisable objects; has a nature table; goes on regular nature walks</div>
+    <div class="home"><strong>At home:</strong> A dedicated blank notebook. On every nature walk: stop, look closely, draw what you see. Date each entry. "Today I drew a ladybug. It has 7 spots on its left wing and 6 on its right." Over months, the journal becomes a record of seasons, growth, and the child's own improving powers of observation. Scientists keep journals. So does your child.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">48</span>
+    <h3>Simple Machines — Levers and Ramps</h3>
+    <div class="develops"><strong>Develops:</strong> Physics concepts — force, effort, load; understanding that tools amplify human strength</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done sink/float and magnet experiments; asks "how does that work?"</div>
+    <div class="home"><strong>At home:</strong> A ruler across a block = lever. "Place the heavy book at one end. Push down on the other. You lifted something heavy with a small push!" A board propped on books = ramp. "Roll a toy car up the ramp vs lifting it straight up — which is easier?" The child discovers that simple machines make work easier — the beginning of engineering.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">49</span>
+    <h3>Clock Work — Telling Time</h3>
+    <div class="develops"><strong>Develops:</strong> Reading analog clocks; understanding hours as divisions of the day</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows numbers 1–12; understands the daily routine; curious about "what time is it?"</div>
+    <div class="home"><strong>At home:</strong> A clock with moveable hands. Start with hours: "When the big hand is at 12 and the small hand is at 7, it's 7 o'clock — wake up time!" Link times to daily life: "We eat lunch at 12. Bedtime is 7:30." The child sets the clock to match activities. Time becomes a tool they can read, not a mystery.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">50</span>
+    <h3>Solar System — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Cosmic awareness — our planet is one of many circling a star; scale and perspective</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done the birthday walk (Earth orbiting the sun); knows the globe; looks at the night sky with wonder</div>
+    <div class="home"><strong>At home:</strong> Fruits as planets: a watermelon (Jupiter), grapefruit (Saturn), oranges (Uranus, Neptune), apple (Earth), grape (Mars), peppercorn (Mercury). Walk the "solar system" across a field — the distances are astonishing. "Earth is here. Jupiter is way over there. And the nearest star after the sun? It would be in the next city." Scale blows the mind open.</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: CULTURE ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Culture and Social Belonging (2.5 – 6 years)</h3>
+    <div class="sp-age">Peak window: approximately age 3.5 to 5.5</div>
+    <div class="sp-text">Around age three, your child begins to notice that people are different — they speak different languages, eat different foods, wear different clothes, celebrate different holidays. This is not idle curiosity; the child is constructing their understanding of where they belong in the human family. They absorb cultural norms, traditions, and values with the same effortless intensity with which they absorbed language. Feed this period with stories from many cultures, flags and maps, songs in other languages, food from different traditions. The goal is not tolerance taught — it is belonging felt. A child who knows the world's diversity as a natural fact will never need to be taught to respect it.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--         PHASE 3 — THE WIDER WORLD                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase3);">Phase 3 · Works 51–75</div>
+  <h2 style="color: var(--phase3);">The Wider World</h2>
+  <div class="phase-desc">History, human civilisation, deeper science, and artistic discipline. The child moves from observing the natural world to understanding how humans have shaped it — and how they can shape it too.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">51</span>
+    <h3>Timeline of Life</h3>
+    <div class="develops"><strong>Develops:</strong> Deep time — understanding that life on Earth is billions of years old; perspective on human existence</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done personal timeline; knows the solar system; grasps "long ago"</div>
+    <div class="home"><strong>At home:</strong> A long strip of paper — as long as your hallway. Mark major eras: single-celled life, fish, dinosaurs, mammals, humans. "If this strip is all of Earth's history, humans arrived in the very last centimetre." Draw creatures for each era. The child realises that humans are very new — and that life is very, very old.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">52</span>
+    <h3>Dinosaur Study</h3>
+    <div class="develops"><strong>Develops:</strong> Palaeontology; understanding extinction; classification of ancient life</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has seen the timeline of life; fascinated by big animals; understands "long ago"</div>
+    <div class="home"><strong>At home:</strong> Dinosaur figurines or picture cards. Sort by diet: herbivore (plant-eater) vs carnivore (meat-eater). By period: Triassic, Jurassic, Cretaceous. "Dinosaurs lived for 165 million years. Humans have been here for about 300,000. What happened to them?" Discuss extinction. Bury toy dinosaur "bones" in sand and let the child excavate like a palaeontologist.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">53</span>
+    <h3>Fundamental Needs of Humans</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding universal human needs — material and spiritual — across all cultures and times</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows about different countries; has done the timeline of life; understands that people need things to survive</div>
+    <div class="home"><strong>At home:</strong> Two categories. Material needs: food, shelter, clothing, transport, defence. Spiritual needs: love, art, music, religion, education. "Every human who ever lived needed these things. The caveman needed shelter — he used a cave. We need shelter — we use a house. Same need, different solution." Compare across cultures and time periods.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">54</span>
+    <h3>Early Humans and the First Tools</h3>
+    <div class="develops"><strong>Develops:</strong> Human history; understanding that technology is as old as humanity; appreciation for innovation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fundamental needs; has a sense of "very long ago"</div>
+    <div class="home"><strong>At home:</strong> Look at pictures of stone tools, cave paintings, early shelters. "The first humans made tools from stone. They painted on cave walls. They discovered fire." Try it: make a simple stone tool by rubbing two rocks together. Draw on a "cave wall" (brown paper on the wall). "Every invention started with someone solving a problem."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">55</span>
+    <h3>Ancient Civilisations — Egypt</h3>
+    <div class="develops"><strong>Develops:</strong> Historical knowledge; understanding that great civilisations rose and shaped the world</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands early humans; ready for the concept of civilisation; interested in "kingdoms"</div>
+    <div class="home"><strong>At home:</strong> Pictures of pyramids, the Nile, hieroglyphics, mummies. "The Egyptians built pyramids so tall they stood for 4,500 years. They invented a way to write using pictures called hieroglyphics." The child writes their name in hieroglyphics, builds a pyramid from blocks or sand, finds Egypt on the map. History becomes a place, not just a word.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">56</span>
+    <h3>Ancient Civilisations — China, Greece, or Rome</h3>
+    <div class="develops"><strong>Develops:</strong> Comparative history; understanding that many great civilisations existed simultaneously</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied Egypt; interested in "what else was happening in the world?"</div>
+    <div class="home"><strong>At home:</strong> Choose one that connects to the child's heritage or interest. China: the Great Wall, paper, silk, tea. Greece: the Olympics, democracy, columns. Rome: roads, aqueducts, the Colosseum. Find the civilisation on the map. Build a model. "While Egypt was building pyramids, China was building walls. The world was full of people solving problems in different ways."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">57</span>
+    <h3>Map Skills — Reading a Legend</h3>
+    <div class="develops"><strong>Develops:</strong> Applied geography — using maps as tools; understanding symbols, scale, and direction</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the world map and continents; ready for functional map reading</div>
+    <div class="home"><strong>At home:</strong> A real map of your local area. "This blue line is a river. This green area is a park. This red line is a main road." Find your house. Trace the route to school, to the shops. "Which direction is the park? North." Introduce the compass rose. Then make a treasure map of the garden — the child creates their own legend.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">58</span>
+    <h3>Ecosystems and Biomes</h3>
+    <div class="develops"><strong>Develops:</strong> Systems thinking — understanding that climate, plants, and animals form interconnected communities</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows habitats, food chains, and world geography</div>
+    <div class="home"><strong>At home:</strong> Choose five biomes: tropical rainforest, desert, grassland, tundra, ocean. For each, research: climate, plants, animals, and how they depend on each other. Build a shoebox diorama of one biome. "The rainforest has more species than any other biome because it's warm and wet all year. The desert has fewer — but the ones that survive are masters of conservation."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">59</span>
+    <h3>Water Cycle</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding cycles in nature; connecting weather, geography, and the states of matter</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows states of matter; has done weather observation; understands evaporation and rain</div>
+    <div class="home"><strong>At home:</strong> Draw the cycle: Sun heats ocean → water evaporates → rises → cools into clouds (condensation) → rain falls (precipitation) → rivers flow back to ocean → repeat. Demonstrate: seal a bowl of water in plastic wrap in the sun. Water evaporates, condenses on the wrap, drips back down. "You just made a tiny weather system."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">60</span>
+    <h3>Rocks and Minerals</h3>
+    <div class="develops"><strong>Develops:</strong> Earth science — understanding that the ground beneath us has its own story</div>
+    <div class="readiness"><strong>Ready when:</strong> Child collects rocks; has done sink/float; ready for geological classification</div>
+    <div class="home"><strong>At home:</strong> Collect different rocks. Test: scratch with a fingernail, a coin, a nail (hardness). Drop vinegar on each (limestone fizzes). "There are three kinds: ignite from volcanoes, sedimentary from layers, metamorphic from heat and pressure." Start a rock collection with labels. Visit a geology exhibit if possible. The ground has a billion-year history.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">61</span>
+    <h3>Volcano and Earthquake</h3>
+    <div class="develops"><strong>Develops:</strong> Plate tectonics at a child's level; understanding that the Earth is dynamic, not static</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied rocks; knows the globe; ready for dramatic earth science</div>
+    <div class="home"><strong>At home:</strong> Build a volcano from clay around a bottle. Baking soda + vinegar = eruption. "Real volcanoes happen because the inside of the Earth is hot liquid rock. It pushes through cracks." Show a map of volcanoes — the "Ring of Fire." "The surface of the Earth is made of giant plates that float on liquid rock. When they push together — earthquakes. When they pull apart — volcanoes."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">62</span>
+    <h3>Human Body — External Parts</h3>
+    <div class="develops"><strong>Develops:</strong> Self-knowledge; body vocabulary; the understanding that humans are biological organisms</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied animal anatomy; curious about their own body</div>
+    <div class="home"><strong>At home:</strong> Lie on a large paper, trace the child's body. Label parts together: head, neck, torso, arms, hands, fingers, legs, feet, toes. Then finer: wrist, elbow, shoulder, hip, knee, ankle. "You are an animal too — a mammal. You have the same basic plan as the horse: head, body, limbs. But your hands can do something no other animal can — make tools."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">63</span>
+    <h3>Human Body — Internal Organs</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding what's inside us; the concept that organs have specific functions</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows external body parts; asks "what's inside my tummy?"; not squeamish</div>
+    <div class="home"><strong>At home:</strong> On the body outline: draw and label major organs. Heart: "It pumps blood — feel your pulse." Lungs: "Breathe in — they fill with air." Stomach: "It breaks down food." Brain: "It controls everything — thinking, feeling, moving." Use a stethoscope to hear the heart. "Your body is the most complex machine that exists."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">64</span>
+    <h3>The Five Senses — Scientific Study</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding how we perceive the world; connecting sensory organs to brain function</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows internal organs; has done sensorial work; ready to connect senses to science</div>
+    <div class="home"><strong>At home:</strong> Five stations. Sight: identify objects at distance. Hearing: close eyes, identify sounds. Touch: mystery bag — identify objects by feel alone. Smell: identify scents blindfolded. Taste: sweet, sour, salty, bitter samples. "Each sense has a special organ that sends messages to the brain. The brain makes sense of all five — at once, all the time."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">65</span>
+    <h3>Nutrition and Food Groups</h3>
+    <div class="develops"><strong>Develops:</strong> Health science; understanding that food is fuel; classification of foods by function</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows internal organs; helps in the kitchen; asks "is this healthy?"</div>
+    <div class="home"><strong>At home:</strong> Sort food pictures (or real foods) into groups: fruits, vegetables, grains, protein, dairy. "Grains give you energy. Protein builds your muscles. Vegetables give you vitamins." Plan a balanced meal together. "Does our plate have something from each group?" Cook a meal together and name what each ingredient does for the body.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">66</span>
+    <h3>Continent Studies — Deep Dive</h3>
+    <div class="develops"><strong>Develops:</strong> Rich cultural and geographic knowledge of one continent; research skills</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows all continents and basic geography; ready to go deep on one</div>
+    <div class="home"><strong>At home:</strong> Choose one continent for a week-long study. Map the countries. Learn 5 flags. Cook a traditional dish. Listen to music from the region. Learn 5 words in a language spoken there. Study one animal unique to the continent. Make a booklet. "We didn't just learn about Africa — we tasted it, heard it, mapped it. Now we know it."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">67</span>
+    <h3>Art Appreciation — Great Artists</h3>
+    <div class="develops"><strong>Develops:</strong> Aesthetic awareness; art vocabulary; understanding that art is a human universal</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does their own art; notices paintings and images; asks "who made that?"</div>
+    <div class="home"><strong>At home:</strong> Print high-quality reproductions of art. One artist per week. Look closely: "What do you see? What colours did they use? How does it make you feel?" The child can try the artist's technique — pointillism after Seurat, bold lines after Matisse, nature scenes after Monet. Art appreciation isn't passive — it's looking, then making.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">68</span>
+    <h3>Music Appreciation — Listening to Classical Music</h3>
+    <div class="develops"><strong>Develops:</strong> Active listening; recognising instruments and musical structure; emotional response to music</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored rhythm instruments; moves to music; can listen attentively for several minutes</div>
+    <div class="home"><strong>At home:</strong> One piece per week. Listen together. "What instruments can you hear? Is it fast or slow? Does it feel happy or sad?" Draw what the music makes you feel. Learn one fact about the composer. The goal is not knowledge — it's relationship. "This music was written 200 years ago, and it still makes us feel something. That's the power of art."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">69</span>
+    <h3>Pitch Exploration — High and Low Sounds</h3>
+    <div class="develops"><strong>Develops:</strong> Auditory discrimination of pitch; preparation for musical notation and scales</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored rhythm; can distinguish loud/soft; interested in musical sounds vs noise</div>
+    <div class="home"><strong>At home:</strong> Fill glass bottles with different amounts of water. Tap with a spoon. "Which is higher? Which is lower?" Arrange from low to high — the child has made a scale. Sing high and low notes. "Tap your head for high sounds, tap your knees for low sounds." Play a guessing game with the bottles — the child develops the ear for pitch.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">70</span>
+    <h3>Printmaking and Pattern</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding repetition and pattern in art; the concept of the printed image</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done painting and collage; can plan a composition; interested in patterns</div>
+    <div class="home"><strong>At home:</strong> Cut a potato in half, carve a simple shape. Dip in paint, press on paper. Repeat to make a pattern. Then: leaves dipped in paint for nature prints. Then: string wrapped around a block for line prints. "Every stamp is the same — but the pattern you make with it is yours." Connect to wallpaper, fabric design, wrapping paper.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">71</span>
+    <h3>Cultural Celebrations Around the World</h3>
+    <div class="develops"><strong>Develops:</strong> Cross-cultural awareness; understanding that all peoples celebrate, but differently</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows about different countries and cultures; participates in family celebrations</div>
+    <div class="home"><strong>At home:</strong> Each month, learn about a celebration from another culture: Diwali, Lunar New Year, Eid, Hanukkah, Day of the Dead, Mid-Autumn Festival. Make a craft, cook a food, learn a song. Find the country on the map. "People everywhere celebrate — light, harvest, new beginnings, ancestors. The details differ. The human need is the same."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">72</span>
+    <h3>Botany Experiments — Photosynthesis</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding how plants make food; the foundation of all food chains</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done "what plants need" experiment; understands that plants are the base of food chains</div>
+    <div class="home"><strong>At home:</strong> Cover part of a leaf with foil for a week. Remove the foil — the covered part is pale. "The green parts used sunlight to make food — photosynthesis. The covered part couldn't get light, so it stopped making food and lost its colour." Another experiment: place a water plant in a jar in sunlight — tiny bubbles appear. "Those bubbles are oxygen — the plant is breathing out."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">73</span>
+    <h3>Simple Circuits and Electricity</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding electrical energy; circuits as pathways; scientific experimentation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has done simple machines, magnets, and states of matter; asks "how does the light turn on?"</div>
+    <div class="home"><strong>At home:</strong> A battery, a small LED bulb, and wire. Connect: battery → wire → bulb → wire → battery. "When the path is complete, electricity flows and the light turns on. Break the path — it goes off. That's a circuit." Add a switch (a paper clip you can lift). Test what conducts electricity: coin (yes), rubber band (no), pencil lead (yes!). "Electricity needs a complete circle."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">74</span>
+    <h3>Light and Shadow</h3>
+    <div class="develops"><strong>Develops:</strong> Optics at a child's level; understanding that light travels in straight lines</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored colour mixing and simple circuits; notices shadows; asks "why is my shadow long in the evening?"</div>
+    <div class="home"><strong>At home:</strong> A flashlight and objects. "Shine the light on your hand — shadow on the wall. Move closer — shadow gets bigger. Move away — smaller." Make shadow puppets. "Light can't go through your hand — that's why there's a shadow." Go outside: mark your shadow at morning, noon, and afternoon. "It changes because the Earth is turning and the sun moves across the sky."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">75</span>
+    <h3>Sound and Vibration</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that sound is vibration; connecting physics to the music they already love</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored pitch; done simple physics experiments; curious about how sound works</div>
+    <div class="home"><strong>At home:</strong> Stretch a rubber band over an open box. Pluck it — see it vibrate, hear the sound. Tighten it — higher pitch. Loosen — lower pitch. "Sound IS vibration. The rubber band shakes the air, the air shakes your eardrum, your brain hears music." Touch your throat while humming. "Feel the vibration? That's your voice — your vocal cords vibrating."</div>
+  </div>
+</div>
+
+<!-- ═══════ SENSITIVE PERIOD: IMAGINATION ═══════ -->
+<div class="sensitive-period">
+  <div class="sp-box">
+    <div class="sp-label">Sensitive Period</div>
+    <h3>Imagination and the Reasoning Mind (5 – 7 years)</h3>
+    <div class="sp-age">Peak window: approximately age 5.5 to 7</div>
+    <div class="sp-text">Around age five, a shift occurs. The child who was absorbed in the concrete, touchable world begins to think beyond it. They ask "what was it like when dinosaurs were alive?" and "what happens at the bottom of the ocean?" and "why did people build pyramids?" This is the imagination — not fantasy, but the power to mentally visit places they cannot physically go. Montessori called this the "reasoning mind" and said it was the gateway to all higher learning. The cultural curriculum at this stage feeds the imagination with truth: real history, real science, real stories of human achievement. The child's mind travels through time and across the globe — carried by facts, not fiction.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--         PHASE 4 — THE COSMIC VIEW                      -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="phase-header">
+  <div class="phase-tag" style="background: var(--phase4);">Phase 4 · Works 76–100</div>
+  <h2 style="color: var(--phase4);">The Cosmic View</h2>
+  <div class="phase-desc">Everything connects. The child sees patterns across subjects, understands systems and cycles, and begins to grasp their own place in the story of the universe. This is cosmic education — the heart of Montessori's vision.</div>
+</div>
+
+<div class="work-grid">
+  <div class="work-card">
+    <span class="work-number">76</span>
+    <h3>The Story of the Universe</h3>
+    <div class="develops"><strong>Develops:</strong> Cosmic perspective — the biggest possible context for everything the child has learned</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied the solar system, the timeline of life, ancient civilisations; ready for the biggest story</div>
+    <div class="home"><strong>At home:</strong> Tell the story simply: "Long ago, there was nothing. Then — an explosion of energy. Particles formed. Stars formed. Stars exploded and made new elements. Our sun formed. The planets formed. Earth cooled. Rain fell for millions of years. Life began in the ocean." This is Montessori's first Great Lesson. Tell it with wonder. The child's eyes should be wide.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">77</span>
+    <h3>The Coming of Life</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding evolution as a story of adaptation; each creature's "cosmic task"</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has heard the Story of the Universe; knows the timeline of life</div>
+    <div class="home"><strong>At home:</strong> "Every living thing has a job in the web of life. Plants make oxygen. Bees pollinate flowers. Worms enrich the soil. Even bacteria break down dead things so nutrients return to the earth." The child chooses a living thing and researches its "cosmic task." "If earthworms disappeared, what would happen?" Everything matters. Everything is connected.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">78</span>
+    <h3>The Coming of Humans</h3>
+    <div class="develops"><strong>Develops:</strong> Appreciation for human innovation; understanding that our story is part of the Earth's story</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has heard the Coming of Life; studied early humans and ancient civilisations</div>
+    <div class="home"><strong>At home:</strong> "Humans are the only species that passes knowledge to the next generation through writing. Every invention builds on the last. The wheel led to the cart, the cart to the car, the car to the rocket." Make a timeline of human inventions: fire, wheel, writing, printing press, electricity, internet. "You are standing on the shoulders of every human who ever lived."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">79</span>
+    <h3>Climate and Climate Zones</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding why different parts of Earth have different weather; connecting latitude to climate</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the globe, weather, seasons, and biomes</div>
+    <div class="home"><strong>At home:</strong> Draw the Earth with lines: equator, tropics, arctic circles. "Near the equator — hot all year. Near the poles — cold all year. In between — seasons." Shine a flashlight on a globe: direct light at the equator (warm), angled light at the poles (cold). "The tilt of the Earth creates seasons. The curve of the Earth creates climate zones."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">80</span>
+    <h3>Conservation and Human Impact</h3>
+    <div class="develops"><strong>Develops:</strong> Environmental awareness; understanding that humans can both harm and heal the natural world</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands ecosystems, food chains, and habitats; asks about pollution or endangered animals</div>
+    <div class="home"><strong>At home:</strong> "Forests are being cut down. Oceans are filling with plastic. Animals are losing their homes." Don't sugarcoat, but don't despair. "What can WE do?" Plant a tree. Reduce waste. Clean up a beach or park. "One person can't fix everything. But everyone doing something — that's how the Earth heals." The child becomes a steward, not a bystander.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">81</span>
+    <h3>Map-Making — Create Your Own</h3>
+    <div class="develops"><strong>Develops:</strong> Spatial thinking; the ability to represent three-dimensional space in two dimensions</div>
+    <div class="readiness"><strong>Ready when:</strong> Child reads maps with a legend; understands bird's-eye view; has done treasure maps</div>
+    <div class="home"><strong>At home:</strong> Map your house: stand in each room and draw its shape from above. Place rooms relative to each other. Add a legend: door = rectangle, window = square. Then map your street, your neighbourhood. "A cartographer creates maps. You are a cartographer." The child learns that every map is someone's interpretation of space — including their own.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">82</span>
+    <h3>Inventors and Inventions</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that innovation solves problems; inspiration from real human stories</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied ancient civilisations and the Coming of Humans; asks "who invented that?"</div>
+    <div class="home"><strong>At home:</strong> One inventor per week: the wheel (unknown), paper (Cai Lun), printing press (Gutenberg), lightbulb (Edison), airplane (Wright brothers), computer (many contributors). For each: what problem did they solve? How did it change the world? "Every object you use was invented by someone who saw a problem and refused to accept it."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">83</span>
+    <h3>The Story of Writing</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that writing is humanity's greatest invention — the ability to store thought outside the brain</div>
+    <div class="readiness"><strong>Ready when:</strong> Child reads and writes; has studied ancient civilisations; ready for the "why" of writing</div>
+    <div class="home"><strong>At home:</strong> "Cave paintings. Tally marks on bones. Egyptian hieroglyphics. Sumerian cuneiform. The Phoenician alphabet — the ancestor of the letters you write today." Try each: paint on a "cave wall," press marks in clay, write in hieroglyphics. "Before writing, knowledge died with the person who held it. After writing, it could live forever."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">84</span>
+    <h3>The Story of Numbers</h3>
+    <div class="develops"><strong>Develops:</strong> Mathematical history; understanding that our number system was invented, not discovered</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has a solid mathematical foundation; has done the Story of Writing; curious about origins</div>
+    <div class="home"><strong>At home:</strong> "Tally marks on a cave wall — the first numbers. Roman numerals: I, V, X. The invention of zero — in India, the most revolutionary idea in mathematics. Arabic numerals spread across the world and became the 1, 2, 3 you use today." Write numbers in different systems. "Without zero, there is no place value. Without place value, there is no modern mathematics."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">85</span>
+    <h3>Stars and Constellations</h3>
+    <div class="develops"><strong>Develops:</strong> Astronomy; pattern recognition in the sky; connection to ancient cultures who used stars for navigation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows the solar system; interested in the night sky; understands that stars are distant suns</div>
+    <div class="home"><strong>At home:</strong> Go outside on a clear night. Find the Big Dipper, Orion, the North Star. "Ancient sailors used these patterns to navigate the oceans. Different cultures saw different pictures in the same stars." Make a star viewer: poke constellation patterns in a dark card, hold up to light. "Every star you see is a sun. Many have their own planets. The universe is unimaginably vast."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">86</span>
+    <h3>Earth's Layers and Plate Tectonics</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding Earth's internal structure; the dynamic nature of the planet's surface</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied rocks, volcanoes, and earthquakes; ready for a systematic explanation</div>
+    <div class="home"><strong>At home:</strong> Cut a hard-boiled egg in half. "The shell is the crust — thin and cracked into plates. The white is the mantle — thick and slowly flowing. The yolk is the core — incredibly hot." Draw Earth's layers. Then draw the plates and show how they move: pulling apart (ocean ridges), pushing together (mountains), sliding past each other (earthquakes).</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">87</span>
+    <h3>Microscope Work — The Invisible World</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that there is a world beyond what our eyes can see; scientific tool use</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied cells, senses, and living things; careful with equipment; fascinated by detail</div>
+    <div class="home"><strong>At home:</strong> A simple magnifying glass or inexpensive microscope. Look at: an onion skin (cells!), a drop of pond water (organisms moving!), a grain of salt (crystal structure!), a hair, a feather barb. "There are entire worlds too small for your eyes — but not too small for your mind." Draw what you see. "You are doing what real scientists do."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">88</span>
+    <h3>Bridges and Structures — Engineering</h3>
+    <div class="develops"><strong>Develops:</strong> Applied physics; understanding that structure determines strength; creative problem-solving</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied simple machines; builds things; asks "how does that stay up?"</div>
+    <div class="home"><strong>At home:</strong> Challenge: build the strongest bridge from paper and tape between two stacks of books. Test with weights. "Why did the flat paper collapse but the folded paper held? Folds create strength." Try arches with blocks, triangles with sticks. "Engineers solve the problem of 'how do I hold up something heavy with something light?' — and it's one of humanity's oldest questions."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">89</span>
+    <h3>World Music — Instruments and Traditions</h3>
+    <div class="develops"><strong>Develops:</strong> Global musical awareness; understanding that every culture makes music, differently</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has explored rhythm, pitch, and classical music; interested in different sounds</div>
+    <div class="home"><strong>At home:</strong> Listen to music from five continents: African drumming, Indian sitar, Chinese erhu, Australian didgeridoo, South American pan flute. "Every culture invented instruments from what they had — wood, animal skins, bamboo, metal." Find each country on the map. Try to make a simple version of one instrument. "Music is a universal language with a thousand dialects."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">90</span>
+    <h3>Weaving and Textile Arts</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding one of humanity's oldest technologies; pattern creation; fine motor mastery</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has good fine motor skills; understands patterns; interested in how cloth is made</div>
+    <div class="home"><strong>At home:</strong> Make a simple loom from a cardboard rectangle with notches cut at top and bottom. Warp it with yarn. The child weaves: over, under, over, under. Change colours for stripes. "Every piece of cloth you've ever worn was woven — threads crossing threads. People have been weaving for 27,000 years." The child makes a small mat or bookmark.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">91</span>
+    <h3>Research Project — Chosen Topic</h3>
+    <div class="develops"><strong>Develops:</strong> Independent research skills; the ability to pursue a question to its answer</div>
+    <div class="readiness"><strong>Ready when:</strong> Child reads; has broad knowledge; has a burning question about something specific</div>
+    <div class="home"><strong>At home:</strong> The child chooses a topic: a specific animal, country, inventor, planet, volcano — anything. Together, find books or reliable sources. The child takes notes, draws illustrations, and creates a small report or poster. Present it to the family. "You didn't wait for a teacher to tell you. You wanted to know — so you found out. That is what a scholar does."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">92</span>
+    <h3>World Religions and Philosophies — Introduction</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that humans everywhere ask big questions; respect for diverse answers</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied multiple cultures; asks "why do people believe different things?"</div>
+    <div class="home"><strong>At home:</strong> "People all over the world ask: where did we come from? What happens when we die? How should we treat each other? Different cultures have found different answers." Introduce 5–6 traditions simply and respectfully. Find each on the map. "We don't need to agree with every answer to respect the people asking the question."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">93</span>
+    <h3>Economic Concepts — Trade and Money</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding how human communities organise the exchange of goods; history of commerce</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands fundamental needs; has done money work in maths; knows about ancient civilisations</div>
+    <div class="home"><strong>At home:</strong> "Before money, people traded: I have wheat, you have fish — let's swap. But what if I don't want fish? Money solved this — a thing everyone accepts." Look at coins from different countries. Play a barter game, then introduce "coins" to see why money is easier. "Trade connected civilisations. The Silk Road carried silk from China to Rome. Ideas traveled with the goods."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">94</span>
+    <h3>Coding and Logical Thinking</h3>
+    <div class="develops"><strong>Develops:</strong> Computational thinking; sequencing; the understanding that machines follow instructions</div>
+    <div class="readiness"><strong>Ready when:</strong> Child does multi-step problems; understands sequence; interested in "how computers work"</div>
+    <div class="home"><strong>At home:</strong> Unplugged coding: write instructions for making a sandwich — the "robot" (parent) follows them EXACTLY. "Put peanut butter on bread" — but which side? The child learns that instructions must be precise and sequential. Then try a simple block-coding app. "A computer does exactly what you tell it — nothing more, nothing less. You must think clearly."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">95</span>
+    <h3>Architecture — Buildings That Changed the World</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding that buildings reflect the values and capabilities of their civilisation</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied ancient civilisations; done bridges/structures; interested in impressive buildings</div>
+    <div class="home"><strong>At home:</strong> Study five iconic structures: Egyptian pyramids, Greek Parthenon, Roman Colosseum, Chinese Great Wall, Gothic cathedral. "Why did they build it? How did they build it without modern tools?" Build a model of one. Find each on the map. "A civilisation's greatest buildings tell you what they valued most — gods, entertainment, defence, beauty."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">96</span>
+    <h3>Democracy and Community</h3>
+    <div class="develops"><strong>Develops:</strong> Civic understanding; the concept that communities make decisions together</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands ancient Greece; participates in family decisions; has a sense of fairness</div>
+    <div class="home"><strong>At home:</strong> "In ancient Athens, citizens gathered and voted on decisions. This was called democracy — rule by the people." Hold a family meeting: vote on a weekend activity. Everyone gets one vote. Discuss rules: "Why do we have rules? Who makes them? What if a rule is unfair?" The child learns that governance is something humans create — and that they have a voice in it.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">97</span>
+    <h3>Migration — Why People Move</h3>
+    <div class="develops"><strong>Develops:</strong> Understanding human movement across the globe; empathy for diverse human experiences</div>
+    <div class="readiness"><strong>Ready when:</strong> Child knows world geography; has studied civilisations and fundamental needs; ready for complex human stories</div>
+    <div class="home"><strong>At home:</strong> "Humans have always moved — following food, escaping danger, seeking better lives." Trace early human migration out of Africa on a map. Discuss why your family lives where it does. "Almost everyone you know has ancestors who moved from somewhere else." Migration is not an exception — it is the human story.</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">98</span>
+    <h3>Interconnection Project — "How Is Everything Connected?"</h3>
+    <div class="develops"><strong>Develops:</strong> Systems thinking — the crown jewel of cosmic education; seeing the web that links all knowledge</div>
+    <div class="readiness"><strong>Ready when:</strong> Child has studied multiple subjects deeply; begins to notice connections spontaneously</div>
+    <div class="home"><strong>At home:</strong> Start with one object: a loaf of bread. "Where does it come from?" Wheat (botany) → grown in soil (geology) → watered by rain (water cycle) → harvested by people (human needs) → transported by truck (engineering) → bought with money (economics) → baked in an oven (physics) → shared at dinner (culture). "Everything connects to everything. That is the cosmic lesson."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">99</span>
+    <h3>Service Project — Giving Back</h3>
+    <div class="develops"><strong>Develops:</strong> Social responsibility; the understanding that knowledge creates obligation; empathy in action</div>
+    <div class="readiness"><strong>Ready when:</strong> Child understands community, needs, and conservation; wants to help; asks "what can I do?"</div>
+    <div class="home"><strong>At home:</strong> The child chooses a project: plant a garden for pollinators, collect supplies for a shelter, write letters to seniors, clean up a park, teach a younger child something they've learned. Plan it together, execute it, reflect on it. "You've learned so much about the world. Now the world needs something from you."</div>
+  </div>
+
+  <div class="work-card">
+    <span class="work-number">100</span>
+    <h3>The Great Lesson — The Cosmic Task</h3>
+    <div class="develops"><strong>Develops:</strong> Purpose — the understanding that every person has something to contribute to the story of life</div>
+    <div class="readiness"><strong>Ready when:</strong> The child has journeyed through this entire curriculum and is ready for the final question</div>
+    <div class="home"><strong>At home:</strong> "The stars have a cosmic task — they create elements. The plants have a cosmic task — they create oxygen. The earthworm has a cosmic task — it creates soil. Every living thing contributes something that the rest of life depends on. Humans are the only species that can CHOOSE its cosmic task. You have learned about the world — its history, its science, its art, its people. Now the question is: what will YOU contribute?" Let the child sit with this. It is the beginning of everything that comes next.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<div class="footer">
+  <div class="brand">Montree</div>
+  <p>The Montessori Cultural Curriculum — 100 Works from Wonder to Understanding</p>
+  <p style="margin-top: 8px;">Created for parents who want to bring Montessori's cosmic education home.</p>
+  <p style="margin-top: 8px;"><a href="https://montree.xyz">montree.xyz</a></p>
+</div>
+
+</body>
+</html>
