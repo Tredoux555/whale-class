@@ -267,49 +267,7 @@ export default function FocusWorksSection({
               {isExpanded && (
                 <div className="mt-1 ml-7 p-3 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-100 space-y-3">
 
-                  {/* Guru Advice for this area */}
-                  {guruDetail && (
-                    <div className="p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-100">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-semibold text-violet-700 flex items-center gap-1">
-                          🧠 {t('focusWorks.guruAdvice')}
-                        </span>
-                        <CopyButton
-                          text={`${t('focusWorks.thisWeek')}: ${guruDetail.this_week}\n${t('focusWorks.nextWeek')}: ${guruDetail.next_week}`}
-                          onCopy={copyText}
-                        />
-                      </div>
-                      <div>
-                        <div className="text-xs font-semibold text-violet-600 mb-0.5">
-                          {t('focusWorks.thisWeek').toUpperCase()}
-                        </div>
-                        <p className={`text-sm text-gray-700 leading-relaxed ${expandedAdvice !== area ? 'line-clamp-2' : ''}`}>
-                          {guruDetail.this_week}
-                        </p>
-                      </div>
-                      {expandedAdvice === area ? (
-                        <div className="mt-2">
-                          <div className="text-xs font-semibold text-indigo-600 mb-0.5">
-                            {t('focusWorks.nextWeek').toUpperCase()}
-                          </div>
-                          <p className="text-sm text-gray-700 leading-relaxed">{guruDetail.next_week}</p>
-                          <button
-                            onClick={() => setExpandedAdvice(null)}
-                            className="text-xs text-violet-500 hover:text-violet-700 mt-1"
-                          >
-                            {t('common.close')}
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setExpandedAdvice(area)}
-                          className="text-xs text-violet-500 hover:text-violet-700 mt-1"
-                        >
-                          {t('focusWorks.showMore')}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {/* Guru Advice — hidden to reduce clutter, code preserved */}
 
                   {/* Work controls — only if focus work exists */}
                   {focusWork ? (
@@ -379,12 +337,7 @@ export default function FocusWorksSection({
                         </div>
                       </div>
 
-                      {/* Personalized Teaching Instructions */}
-                      <TeachingInstructions
-                        childId={childId}
-                        workName={focusWork.work_name}
-                        area={focusWork.area}
-                      />
+                      {/* Teaching Instructions — hidden to reduce clutter, code preserved */}
                     </>
                   ) : (
                     /* No focus work — show add button */
