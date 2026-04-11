@@ -1,0 +1,2429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Montessori Sensorial Curriculum — 100 Works from Sensation to Abstraction</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --green-deep: #1a4731;
+    --green-mid: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #b7e4c7;
+    --green-wash: #f0faf4;
+    --cream: #fefcf6;
+    --warm-gray: #5c5552;
+    --text: #2c2420;
+    --border: #e8e0d8;
+    --phase1: #d4883e;
+    --phase2: #b55a30;
+    --phase3: #6b4c9a;
+    --phase4: #1a4731;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .hero {
+    background: linear-gradient(135deg, #2d1b4e 0%, #6b4c9a 40%, #d4883e 100%);
+    color: white;
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+  .hero .subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    opacity: 0.85;
+    font-weight: 400;
+    max-width: 600px;
+    margin: 0 auto 24px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+  .hero .meta {
+    font-size: 0.8rem;
+    opacity: 0.55;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .intro {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 30px 40px;
+  }
+  .intro h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.8rem;
+    color: var(--green-deep);
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .intro p {
+    color: var(--warm-gray);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+  .intro blockquote {
+    border-left: 3px solid var(--phase1);
+    padding: 16px 24px;
+    margin: 24px 0;
+    background: #fdf6ee;
+    border-radius: 0 12px 12px 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: #2d1b4e;
+  }
+
+  .phase-header {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 30px 20px;
+  }
+  .phase-header .phase-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 12px;
+  }
+  .phase-header h2 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.9rem;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .phase-header .phase-desc {
+    color: var(--warm-gray);
+    font-size: 0.92rem;
+    max-width: 680px;
+  }
+
+  .works-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .work-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+    page-break-inside: avoid;
+  }
+  .work-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+
+  .work-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px 16px;
+  }
+
+  .work-number {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: white;
+  }
+
+  .work-info { flex: 1; min-width: 0; }
+  .work-name {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .work-develops {
+    font-size: 0.85rem;
+    color: var(--warm-gray);
+    line-height: 1.5;
+  }
+
+  .work-details {
+    padding: 0 24px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .detail-box {
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.83rem;
+    line-height: 1.55;
+  }
+  .detail-box .detail-label {
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .readiness-box {
+    background: #fef9ee;
+    border: 1px solid #f5e6c8;
+  }
+  .readiness-box .detail-label { color: #92600a; }
+  .readiness-box .detail-text { color: #7a5008; }
+
+  .home-box {
+    background: var(--green-wash);
+    border: 1px solid #c1e6d0;
+  }
+  .home-box .detail-label { color: var(--green-mid); }
+  .home-box .detail-text { color: #2a5a41; }
+
+  .sensitive-period {
+    max-width: 900px;
+    margin: 10px auto;
+    padding: 0 30px;
+  }
+  .sensitive-period .sp-card {
+    background: linear-gradient(135deg, #f8f4ff, #f0e8ff);
+    border: 1px solid #e0d4f5;
+    border-radius: 14px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .sp-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+  .sp-text { font-size: 0.85rem; color: #4a3470; line-height: 1.6; }
+  .sp-text strong { color: #3b1d6e; }
+
+  .footer {
+    text-align: center;
+    padding: 60px 30px;
+    color: var(--warm-gray);
+    font-size: 0.8rem;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .footer a { color: var(--green-mid); text-decoration: none; }
+  .footer .logo {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green-deep);
+    margin-bottom: 8px;
+  }
+
+  @media print {
+    body { background: white; }
+    .hero { padding: 40px 30px 30px; }
+    .work-card { break-inside: avoid; border: 1px solid #ddd; box-shadow: none; }
+    .sensitive-period .sp-card { background: #f8f4ff; }
+    @page { margin: 1.5cm; }
+  }
+
+  @media (max-width: 640px) {
+    .hero { padding: 50px 20px 40px; }
+    .work-details { grid-template-columns: 1fr; }
+    .works-grid, .phase-header, .sensitive-period, .intro { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>The Sensorial Curriculum</h1>
+  <p class="subtitle">100 works from sensation to abstraction — training the instruments of intelligence</p>
+  <p class="meta">Montree Home Curriculum Series &middot; Based on Montessori's original writings</p>
+</div>
+
+<div class="intro">
+  <h2>Before You Begin</h2>
+  <p>Maria Montessori called the senses "the instruments of intelligence." Before a child can think abstractly, they must first perceive concretely. The Sensorial materials are not toys — they are keys. Each one isolates a single quality (size, color, weight, temperature, sound) and invites the child to perceive distinctions that the untrained sense would miss.</p>
+  <p>A child who can arrange ten cubes in perfect graduated order has not merely stacked blocks — they have internalized the concept of a series. A child who can match thirty-two shades of color has not merely sorted cards — they have refined their visual perception to a degree most adults never achieve. These perceptions become the raw material of thought.</p>
+  <blockquote>"The senses, being explorers of the world, open the way to knowledge." — Maria Montessori</blockquote>
+  <p>Sensorial work follows Practical Life. The child who has mastered concentration, coordination, and order through Practical Life is ready to apply those skills to the systematic refinement of each sense. Do not skip Practical Life. The Sensorial materials require the foundation it builds.</p>
+  <p><strong>How to use this:</strong> For each work, you'll find what it develops, the readiness sign, and a home version. Many Sensorial works use household materials that offer the same isolation of quality as the classroom materials. Present each work slowly, with minimal words — the senses learn through experience, not explanation.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 1: DIMENSION AND ORDER            -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase1)">Phase 1 — Works 1–25</span>
+  <h2>Dimension and Order</h2>
+  <p class="phase-desc">Training the eye to perceive size, length, width, and height with precision. The child builds the concept of a series — things arranged from smallest to largest — which is the sensorial foundation of mathematics.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 1 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">1</div>
+    <div class="work-info">
+      <div class="work-name">Cylinder Block 1 — Varying Diameter</div>
+      <div class="work-develops">Develops <strong>visual discrimination of width</strong> and <strong>fine motor precision</strong> — the child grasps each knobbed cylinder with the writing grip and places it in its matching socket. Only one cylinder fits each hole perfectly.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can carry a tray, sit and focus for 5+ minutes, and has completed basic Practical Life transfer activities. Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 5 containers of the same height but different diameters (film canisters, spice jars, small cups). Trace each on cardboard to make matching circles. The child places each object on its matching circle. The control of error is visual — a jar that's too wide doesn't fit the smaller circle.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">2</div>
+    <div class="work-info">
+      <div class="work-name">Cylinder Block 2 — Varying Height</div>
+      <div class="work-develops">Develops <strong>visual discrimination of height</strong> — cylinders share the same diameter but increase in height. The child isolates a single dimension while holding another constant.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with Cylinder Block 1 successfully. Can identify "tall" and "short" in conversation.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 5 dowels (or cardboard tubes) to different heights, all the same diameter. Stand them in a row of play-dough bases of the same width. The child arranges from shortest to tallest. The key: only height varies. Everything else is identical. This isolation is what makes it Sensorial.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">3</div>
+    <div class="work-info">
+      <div class="work-name">Cylinder Block 3 — Varying Diameter and Height</div>
+      <div class="work-develops">Develops <strong>discrimination of two dimensions simultaneously</strong> — the cylinders vary in both width and height. The child must perceive a more complex relationship.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works confidently with Blocks 1 and 2. Can describe objects as "wider" or "taller."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Nesting cups or Russian dolls (matryoshka). Each piece is both wider AND taller than the next. The child orders them, nests them, discovers the proportional relationship. The biggest holds all the others — that's a concrete experience of mathematical series.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">4</div>
+    <div class="work-info">
+      <div class="work-name">Cylinder Block 4 — Inverse Relationship</div>
+      <div class="work-develops">Develops <strong>perception of inverse proportion</strong> — as diameter increases, height decreases. The most challenging block, requiring the child to hold two opposing dimensions in mind.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child completes Blocks 1–3 with confidence. The inverse relationship is the hardest to perceive — most children are ready around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill 5 containers: the widest gets the least water, the narrowest gets the most. The child discovers that the "biggest" container can hold the least. This is counterintuitive and profound — the child is experiencing inverse proportion with their hands before they'll ever encounter it in mathematics.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">5</div>
+    <div class="work-info">
+      <div class="work-name">Combined Cylinder Blocks</div>
+      <div class="work-develops">Develops <strong>complex visual problem-solving</strong> — mixing cylinders from multiple blocks. The child must discriminate fine differences across many variables simultaneously.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with each block individually without errors. Seeks greater challenge. Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Mix all your graded objects from Works 1–4 together. The child sorts them back into their original groups, then orders each group. This is classification + seriation combined — the two foundational operations of logical thought.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">6</div>
+    <div class="work-info">
+      <div class="work-name">The Pink Tower</div>
+      <div class="work-develops">Develops <strong>visual discrimination of three-dimensional size</strong> — ten cubes varying in all three dimensions. The child perceives volume differences and builds a graduated tower. This is the iconic Montessori material.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can carry heavy objects carefully. Has worked with cylinder blocks. Can stack 5+ blocks without knocking them over. Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 10 boxes of graduated sizes (gift boxes, food boxes, small cardboard boxes). Paint them all the same color — this is crucial. The child arranges from largest to smallest, building a tower. One color forces the eye to focus on SIZE alone, not color. The tower reveals: each piece is bigger than the one above and smaller than the one below.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">7</div>
+    <div class="work-info">
+      <div class="work-name">The Brown Stair (Broad Stair)</div>
+      <div class="work-develops">Develops <strong>visual discrimination of width and height with constant length</strong> — ten prisms of the same length but graduating width. The child perceives "thick" and "thin" as isolated qualities.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with the Pink Tower. Can use language like "big" and "small." Ready to isolate "thick" and "thin."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 10 strips of cardboard, all the same length (30cm) but graduating widths from 1cm to 10cm. The child arranges them from thinnest to thickest, creating a stair pattern. Run a finger down the stair — the hand feels what the eye sees. Length stays the same; only width changes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">8</div>
+    <div class="work-info">
+      <div class="work-name">The Red Rods (Long Rods)</div>
+      <div class="work-develops">Develops <strong>visual discrimination of length</strong> — ten rods of the same width but graduating length from 10cm to 100cm. The child perceives length as an isolated quality and experiences the number system sensorially.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with the Pink Tower and Brown Stair. Can judge "long" and "short." Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 10 strips of tape, ribbon, or paper: 10cm, 20cm, 30cm... up to 100cm. All the same color and width. The child arranges them from shortest to longest, aligned at one end. The stair pattern appears. Each rod is exactly one unit longer than the previous — this IS the number line, experienced with the hands.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 9 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">9</div>
+    <div class="work-info">
+      <div class="work-name">Grading by Size — Free Exploration</div>
+      <div class="work-develops">Develops <strong>seriation as a transferable skill</strong> — the child applies graduated ordering to any set of objects. The concept has moved from a specific material to a general ability.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child arranges Pink Tower, Brown Stair, and Red Rods confidently. Begins spontaneously ordering random objects by size.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect natural objects: 10 stones, 10 sticks, 10 leaves. The child arranges each set from smallest to largest. No two are identical — unlike the classroom materials, nature requires judgment. "Is this stone bigger or is this one?" The child applies the concept of grading to the imperfect, beautiful real world.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">10</div>
+    <div class="work-info">
+      <div class="work-name">Knobless Cylinders — Single Color</div>
+      <div class="work-develops">Develops <strong>refined size discrimination without the knob clue</strong> — the knobless cylinders have no handles and no sockets. The child must judge size visually and by touch alone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child masters all four knobbed cylinder blocks. Seeks challenge. Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 10 coins of the same type (pennies, or washers from the hardware store) — grade by diameter, or 10 beads of graduated size. No knobs, no sockets, no matching holes. Just the objects and the child's eye. Arrange in order. The absence of the built-in control of error means the child must self-correct through observation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 11 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">11</div>
+    <div class="work-info">
+      <div class="work-name">Knobless Cylinders — Two Colors Combined</div>
+      <div class="work-develops">Develops <strong>comparison across two graded sets</strong> — two sets of knobless cylinders interleaved. The child discovers relationships between sets: "This yellow is between these two reds."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with single knobless set confidently. Can compare objects from different groups.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Two sets of graduated objects in different categories: 10 buttons by diameter AND 10 beads by diameter. Mix them on the table. Sort into groups, then arrange each group in order, then interleave: biggest button, biggest bead, next button, next bead. The child builds a double series — a concept that underlies all data comparison.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 12 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">12</div>
+    <div class="work-info">
+      <div class="work-name">Pink Tower Extensions — Pattern Building</div>
+      <div class="work-develops">Develops <strong>spatial reasoning</strong> and <strong>creative problem-solving</strong> — the child uses the graded cubes to build new structures: horizontal, diagonal, inverted, spiraling. The material becomes a design tool.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds the standard tower quickly and seeks variation. "Can I build it sideways?"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Using your 10 graduated boxes: build a wall (flat, not stacked), a staircase (offset), a spiral. Combine with the Brown Stair strips to make two-material patterns. The child discovers that graded objects are building blocks for infinite designs. This is architecture meeting mathematics — and it's deeply satisfying.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 13 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">13</div>
+    <div class="work-info">
+      <div class="work-name">Comparing Two Graduated Series</div>
+      <div class="work-develops">Develops <strong>relational thinking</strong> — the child places the Pink Tower cubes on the Brown Stair prisms, discovering that the smallest cube matches the narrowest prism. Two materials, one underlying mathematical principle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works independently with both Pink Tower and Brown Stair. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Arrange your graduated boxes in a tower AND your graduated strips in a stair. Now compare: place the smallest box on the thinnest strip. They correspond. The child discovers that different materials can encode the same series — a cube and a strip can both represent "the third one." This is the beginning of abstract mathematical thinking.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 14 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">14</div>
+    <div class="work-info">
+      <div class="work-name">Grading at a Distance</div>
+      <div class="work-develops">Develops <strong>visual memory and estimation</strong> — the materials are spread across the room. The child carries one piece at a time and places it in the correct position. The eye must remember the series while the body moves.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds the Pink Tower or Red Rods with zero errors. Needs a new challenge with familiar materials.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place the 10 graduated objects on the opposite side of the room. The child walks to get one, carries it to the mat, places it, walks back for the next. They must hold the mental image of the series while moving. This transforms a visual task into a memory task — the mind is working without the eyes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 15 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">15</div>
+    <div class="work-info">
+      <div class="work-name">The Language of Dimension — Comparative and Superlative</div>
+      <div class="work-develops">Develops <strong>mathematical vocabulary</strong> — "thick, thicker, thickest." "Long, longer, longest." The child attaches precise language to the sensory experiences they've already internalized.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child arranges graduated materials confidently. Uses basic size words. Ready for comparative forms.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Using any graduated set, introduce the three-period lesson with comparative language: "This is thick. This is thicker. This is the thickest." Hold two: "Which is longer?" Hold three: "Which is the shortest?" The child already PERCEIVES the difference — now they can NAME it. Language crystallizes sensory experience into communicable thought.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 16 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">16</div>
+    <div class="work-info">
+      <div class="work-name">Sorting by One Property</div>
+      <div class="work-develops">Develops <strong>classification</strong> — the child sorts a mixed collection by a single property: all the big ones here, all the small ones there. This is the sensorial basis of set theory.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can grade by size. Enjoys grouping things. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A basket of mixed buttons: sort by size (big/small), then by color, then by shape, then by number of holes. The SAME collection sorted FOUR different ways. The child discovers that objects belong to multiple categories depending on what property you focus on — the foundation of flexible thinking.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 17 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">17</div>
+    <div class="work-info">
+      <div class="work-name">Sorting by Two Properties</div>
+      <div class="work-develops">Develops <strong>two-dimensional classification</strong> — sort by size AND color simultaneously. Big red ones here, small red ones there, big blue ones here. This is the Venn diagram experienced with hands.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child sorts by one property quickly. Begins to notice: "These are all big AND red."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Use colored blocks or buttons. Make a grid on the table: colors along the top, sizes down the side. The child places each object in the correct cell: big-red, small-red, big-blue, small-blue. A 2×3 grid is a data table — the child is doing data analysis with their hands.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 18 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">18</div>
+    <div class="work-info">
+      <div class="work-name">Pattern Recognition — AB Patterns</div>
+      <div class="work-develops">Develops <strong>pattern perception</strong> — red-blue-red-blue. The child sees a repeating unit and can predict what comes next. Patterns are the language of mathematics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can sort by color and size. Notices repeating patterns in the environment. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Make a pattern with objects: red bead, blue bead, red bead, blue bead. "What comes next?" Then: big-small-big-small. Then: fork-spoon-fork-spoon. The child extends the pattern. Build to ABC patterns: red-blue-green-red-blue-green. Every pattern the child recognizes strengthens the neural circuits for mathematical reasoning.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 19 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">19</div>
+    <div class="work-info">
+      <div class="work-name">Estimation and Self-Correction</div>
+      <div class="work-develops">Develops <strong>self-assessment</strong> — the child builds a graduated series, then checks their work by measuring or comparing adjacent pieces. The control of error lives in the child, not the adult.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child occasionally makes errors in grading and doesn't notice. Ready for self-checking techniques.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">After the child arranges a graduated set, run your finger along the top edge. If it's smooth (a consistent stair), it's correct. If there's a bump, two pieces are swapped. The child finds and fixes the error themselves. This technique — build, check, self-correct — is the scientific method in miniature.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 20 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">20</div>
+    <div class="work-info">
+      <div class="work-name">Blindfold Grading — Touch Only</div>
+      <div class="work-develops">Develops <strong>stereognostic perception</strong> for size — the child grades objects without sight, relying entirely on touch. The tactile sense becomes refined enough to judge dimensions that the eye once handled alone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades visual materials perfectly. Enjoys "eyes closed" games. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Blindfold the child (or close eyes). Place 5 graduated objects in random order. The child feels each one, compares by touch, and arranges them. Remove the blindfold and check. The amazement when they're correct builds confidence in their own perception. "I can know without seeing."</div>
+    </div>
+  </div>
+</div>
+
+<!-- 21 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">21</div>
+    <div class="work-info">
+      <div class="work-name">Superimposed Size Comparisons</div>
+      <div class="work-develops">Develops <strong>precise visual comparison</strong> — placing one object on top of another to see the size difference. The overhang reveals the exact amount of difference between two objects.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child compares objects by holding them side by side. Ready for more precise comparison technique.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Stack two graduated cards. The border of the larger card shows exactly how much bigger it is. "See how much bigger? Just a little bit." This technique transfers to real life: "Is this book bigger than that one? Stack them and check." The child learns that comparison can be measured, not just estimated.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 22 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">22</div>
+    <div class="work-info">
+      <div class="work-name">Measuring with Non-Standard Units</div>
+      <div class="work-develops">Develops <strong>the concept of measurement</strong> — "This table is 8 pencils long." The child discovers that any object can be a unit of measure, and that measurement is comparison to a standard.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child uses comparative language confidently (longer, shorter, bigger). Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"How many handspans wide is the table?" "How many steps from the door to the bed?" "How many blocks tall is the vase?" Different units give different numbers — the table is 8 hands or 3 books. The child discovers that measurement depends on the unit. This is the sensorial precursor to standard measurement and place value.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 23 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">23</div>
+    <div class="work-info">
+      <div class="work-name">Constructing a Size Sequence from Memory</div>
+      <div class="work-develops">Develops <strong>mental representation of a series</strong> — the child draws or builds a graduated sequence without the objects present. The series has been internalized — it lives in the mind.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds all graduated materials from memory (at a distance). Can close eyes and describe the Pink Tower. Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Give the child paper and pencil. "Draw 5 circles from small to big." "Draw 10 lines from short to long." The child creates a graduated series from their mental image. If the sizes are evenly spaced, the concept is fully internalized. This drawing IS the number line — mathematics made visible by a child's hand.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 24 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">24</div>
+    <div class="work-info">
+      <div class="work-name">Finding Identical Pairs</div>
+      <div class="work-develops">Develops <strong>exact matching</strong> — the child identifies two objects that are exactly the same. Pairing is the sensorial basis of equality in mathematics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child can grade and sort. Ready for the precision of exact matching. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect pairs of identical objects: two identical buttons, two identical coins, two identical crayons. Mix 5 pairs on the table. The child finds the matches. The key: the match must be EXACT — not just "close." This trains the eye to see precise differences and to accept only true equality.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 25 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase1)">25</div>
+    <div class="work-info">
+      <div class="work-name">Odd One Out — Size</div>
+      <div class="work-develops">Develops <strong>discrimination within a set</strong> — in a group of similar objects, one is different. Finding it requires scanning the whole set and comparing each member to the others.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches pairs easily. Can describe similarities and differences between objects.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place 4 identical spoons and 1 slightly different spoon (different size or shape). "Which one doesn't belong?" Start obvious, make it subtler. Then: 4 same-size buttons and 1 slightly larger. The child's eye sharpens with each round — they develop the visual precision of a jeweler examining gems.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🔬</div>
+    <div class="sp-text"><strong>The Sensitive Period for Sensory Exploration (0–5 years)</strong> drives the child to touch, taste, smell, listen to, and examine everything in their environment. This period peaks between 18–36 months, but the refinement of perception continues through age 5. The Sensorial materials harness this drive, channeling undirected exploration into systematic refinement. A child in this period doesn't just want to touch things — they NEED to, in the same way they need food and sleep.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 2: COLOR, FORM, AND PATTERN       -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase2)">Phase 2 — Works 26–50</span>
+  <h2>Color, Form, and Pattern</h2>
+  <p class="phase-desc">Training the eye to perceive color gradations, geometric forms, and spatial relationships. The child learns to see what most adults overlook — the precise shade of green, the exact angle of a triangle, the symmetry hidden in a design.</p>
+</div>
+
+<div class="works-grid">
+
+<!-- 26 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">26</div>
+    <div class="work-info">
+      <div class="work-name">Color Box 1 — Primary Colors</div>
+      <div class="work-develops">Develops <strong>color naming</strong> and <strong>matching</strong> — three pairs of primary color tablets: red, yellow, blue. The child matches identical colors and learns their names through the three-period lesson.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child points at colors and shows interest. May know some color names already. Around 2.5–3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 6 squares of paper or cardstock: 2 red, 2 yellow, 2 blue. The child matches the pairs. Three-period lesson: "This is red. Show me blue. What color is this?" Handle by the edges (not the color face) to keep focus on the color itself. Start with only 3 pairs — not 10. Mastery of these three unlocks all color work.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 27 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">27</div>
+    <div class="work-info">
+      <div class="work-name">Color Box 2 — Secondary and Tertiary Colors</div>
+      <div class="work-develops">Develops <strong>color vocabulary expansion</strong> — eleven pairs now: red, yellow, blue, green, orange, purple, pink, brown, gray, black, white. The child's color world expands dramatically.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches and names primary colors confidently. Shows interest in other colors: "What color is that?"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Add pairs: green, orange, purple, pink, brown, gray, black, white. Mix all 22 squares. The child finds the matching pairs. Then play color scavenger hunt: "Find something orange in this room." Color vocabulary connects the Sensorial to the real world — and prepares for art, science, and descriptive language.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 28 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">28</div>
+    <div class="work-info">
+      <div class="work-name">Color Box 3 — Color Gradations (Single Color)</div>
+      <div class="work-develops">Develops <strong>chromatic discrimination</strong> — seven shades of one color, from darkest to lightest. The child perceives subtle differences that the untrained eye would call "the same color."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches Color Box 2 easily. Notices that the sky is "lighter blue" than the ocean. Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect paint chips from the hardware store — one color, seven shades. The child arranges from darkest to lightest. Start with blue (easiest to grade). Try: "Can you put them in order with your eyes closed?" Color gradation is the same operation as the Pink Tower — a series — applied to color instead of size. The mind is building the same structure through different senses.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 29 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">29</div>
+    <div class="work-info">
+      <div class="work-name">Color Box 3 — Multiple Color Gradations</div>
+      <div class="work-develops">Develops <strong>refined chromatic perception across colors</strong> — grading multiple colors simultaneously. Nine colors, seven shades each: 63 tablets arranged in a stunning rainbow of gradation.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades one color easily. Can perceive the difference between shade 3 and shade 4 of the same hue.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect paint chips for 5+ colors (red, blue, green, yellow, purple), 5–7 shades each. Mix them all. The child first sorts by color family, then grades each family from dark to light. Lay them out in rows — a rainbow gradient appears. This is one of the most beautiful results in all of Montessori. Children gasp at what they've created.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 30 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">30</div>
+    <div class="work-info">
+      <div class="work-name">Color Mixing — Primary to Secondary</div>
+      <div class="work-develops">Develops <strong>understanding of color theory</strong> — red + yellow = orange. The child discovers that colors are not fixed — they can be created. This is science, art, and wonder fused together.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows primary and secondary colors by name. Has graded at least one color. Curious about "how colors are made."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Water + food coloring in small cups. Red + yellow → orange. Red + blue → purple. Yellow + blue → green. Use eyedroppers for precision (bonus fine motor!). The child predicts, tests, and discovers. "What happens if I add MORE red?" They vary the proportions and see the shades shift. This is experimental science at age 3.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 31 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">31</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Cabinet — Circles</div>
+      <div class="work-develops">Develops <strong>visual discrimination of curved forms</strong> — the child traces circles of different sizes, feeling the continuous curve with no corners. The circle is the first geometric form introduced because it's the most different from all others.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has completed Color Box 1-2 work. Can trace shapes with a finger. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut circles of 5 different sizes from cardboard. The child traces each with their finger, feeling the continuous edge. "A circle has no corners." Sort by size. Match circle cutouts to their frames (trace the circles onto a sheet, cut out the holes). The finger tracing is the key — geometry is learned through touch before sight.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 32 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">32</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Cabinet — Rectangles</div>
+      <div class="work-develops">Develops <strong>discrimination of rectangular forms</strong> — different proportions of the same shape. A square is a special rectangle. The child traces corners and straight edges, contrasting with the circle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has traced circles. Knows the word "corner." Can trace a straight line with their finger.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 5 rectangles of different proportions: square, nearly square, long-thin, wide-flat, and very elongated. The child traces each: "How many corners? Four! How many sides? Four! But this one is wider..." All rectangles share properties (4 sides, 4 corners) but each looks different. Same category, different members — classification at work again.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 33 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">33</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Cabinet — Triangles</div>
+      <div class="work-develops">Develops <strong>discrimination of triangular forms</strong> — equilateral, isosceles, right-angled, scalene, obtuse. The child discovers that "triangle" is a family, not a single shape.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with circles and rectangles. Knows that a triangle has 3 sides and 3 corners.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 5 different triangles: equal sides, tall-thin, flat-wide, right-angled, and one with all sides different. Trace each. "All triangles have 3 sides. But look how different they are!" Name them informally: "the tall triangle," "the flat triangle," "the one with a square corner." Formal names come later — perception comes first.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 34 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">34</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Cabinet — Polygons</div>
+      <div class="work-develops">Develops <strong>discrimination of regular polygons</strong> — pentagon (5), hexagon (6), heptagon (7), octagon (8), nonagon (9), decagon (10). The child sees that the more sides, the closer the shape gets to a circle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows circles, rectangles, and triangles. Curious about shapes with more sides.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut regular polygons from cardboard: pentagon through decagon. Arrange them in order: 5 sides, 6 sides, 7... The child traces each, counting sides. Place the decagon next to the circle: "They're almost the same!" This discovery — that a circle is an infinite polygon — is one of the most beautiful ideas in mathematics, and a 4-year-old finds it with their finger.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 35 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">35</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Cabinet — Curved Figures</div>
+      <div class="work-develops">Develops <strong>discrimination of curved forms</strong> — oval, ellipse, curvilinear triangle, quatrefoil. The child perceives that curves can create forms beyond the circle.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows straight-sided shapes well. Ready for the subtlety of curves. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut an oval, an egg shape, and a leaf shape. "These are all curved, but they're not circles." Trace each. "The oval is like a stretched circle. The egg is wider at one end. The leaf has a point." The child discovers that curves are as varied as straight lines — and more mysterious.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 36 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">36</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Solids</div>
+      <div class="work-develops">Develops <strong>3D form perception</strong> — sphere, cube, cylinder, cone, prism, pyramid. The child holds the solid, feels its surfaces, edges, and vertices. Geometry becomes three-dimensional.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with 2D Geometric Cabinet shapes. Notices 3D shapes: "That building looks like a triangle on top." Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect household objects: ball (sphere), box (rectangular prism), can (cylinder), ice cream cone (cone), Toblerone box (triangular prism). Blindfold the child. They feel each and name it. "This one rolls. This one has flat faces. This one has a point." Then match to base shapes: the cylinder's base is a circle. The prism's base is a rectangle. 3D connects to 2D.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 37 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">37</div>
+    <div class="work-info">
+      <div class="work-name">Constructive Triangles — Rectangular Box</div>
+      <div class="work-develops">Develops <strong>understanding that triangles construct other shapes</strong> — two right triangles make a rectangle. Two isosceles triangles make a rhombus. The child discovers that the triangle is the building block of all geometry.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows triangles, rectangles, and other shapes from the Geometric Cabinet. Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut triangles from colored paper. Mark the edges that join with a black line. The child matches black-lined edges to form rectangles, parallelograms, and larger triangles. "Two triangles made a rectangle!" Cut a square diagonally — "A square IS two triangles." This is transformational geometry — shapes hiding inside other shapes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 38 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">38</div>
+    <div class="work-info">
+      <div class="work-name">Constructive Triangles — Triangular Box</div>
+      <div class="work-develops">Develops <strong>construction of larger triangles from smaller ones</strong> — the child builds an equilateral triangle from three smaller triangles, discovering that shapes scale.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with rectangular constructive triangles. Understands that triangles combine to form shapes.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut a large equilateral triangle. Cut it into 4 smaller triangles (one cut from each midpoint). The child reassembles them. Then: cut it into 3 parts, then 2. Each division reveals a different internal structure. The child is discovering fractions, symmetry, and spatial reasoning simultaneously — without a single number.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 39 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">39</div>
+    <div class="work-info">
+      <div class="work-name">Constructive Triangles — Hexagonal Box</div>
+      <div class="work-develops">Develops <strong>understanding of complex constructions</strong> — six equilateral triangles form a hexagon. The child builds it and sees the Star of David pattern emerge. Geometry becomes beautiful.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with both rectangular and triangular constructive triangles. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 6 equilateral triangles (same size, same color). Arrange around a center point — a hexagon appears. Add 6 more pointing outward — a star appears. The child discovers that simple pieces create complex, symmetrical beauty. This is the principle behind honeycombs, snowflakes, and Islamic art — and a 4-year-old can see it.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 40 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">40</div>
+    <div class="work-info">
+      <div class="work-name">Blue Constructive Triangles — Free Design</div>
+      <div class="work-develops">Develops <strong>creative spatial reasoning</strong> — all triangles are the same color (no guiding black lines). The child discovers constructions through experimentation, not instruction.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with all guided constructive triangle boxes. Ready for open-ended exploration.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 12 identical right triangles from blue paper. No lines, no guides. "What can you make?" The child experiments: a square, a rectangle, a house shape, a pinwheel, a diamond. Take a photo of each creation. Over days, they'll discover dozens of constructions. This is geometry as creative play — the child IS a geometer.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 41 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">41</div>
+    <div class="work-info">
+      <div class="work-name">Superimposed Geometric Figures</div>
+      <div class="work-develops">Develops <strong>perception of overlap and transparency</strong> — two shapes placed over each other create a new region. The child sees that geometric relationships create new forms.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all basic geometric shapes. Enjoys constructive triangle work. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut shapes from transparent colored paper (or tracing paper with color). Overlap a red circle and a blue square — where they overlap becomes purple. "What new shape does the overlap make?" The child traces the overlap region. This is set intersection made visible — and it's gorgeous. Hang the results on a window for a stained-glass effect.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 42 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">42</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Shape Tracing</div>
+      <div class="work-develops">Develops <strong>hand-eye coordination for geometric forms</strong> — the child traces shapes onto paper, preparing for geometry drawing and writing letters that contain these forms.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child traces shapes with finger confidently. Has pencil control from metal inset work. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place a cardboard shape on paper. Trace around it with a pencil. Remove the shape — the form remains on the paper. Color it in. The child creates geometric art: trace a circle, a triangle inside it, a square inside that. Geometric nesting — each shape contained by the next. This is also direct preparation for the metal insets in Language.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 43 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">43</div>
+    <div class="work-info">
+      <div class="work-name">Symmetry — Mirror Designs</div>
+      <div class="work-develops">Develops <strong>perception of bilateral symmetry</strong> — the child creates a design on one side and mirrors it on the other. Symmetry is one of the deepest patterns in nature and mathematics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds patterns and notices when things are "even." Folds paper in half and notices both sides match. Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a vertical line down the center of a page. Place 3 shapes on the left side. The child places matching shapes in mirror positions on the right. Or: fold paper, paint on one side, press together — a symmetrical butterfly appears. The child discovers that beauty often comes from balance, and balance comes from symmetry.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 44 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">44</div>
+    <div class="work-info">
+      <div class="work-name">Tessellations — Covering a Surface</div>
+      <div class="work-develops">Develops <strong>understanding of space-filling patterns</strong> — some shapes tile perfectly (squares, triangles, hexagons) and some don't (circles, pentagons). The child discovers a fundamental property of geometry.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with constructive triangles and knows multiple geometric shapes. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 20 identical squares. Tile a surface — no gaps. Now try 20 circles — gaps everywhere. Try 20 equilateral triangles — they tile perfectly too! "Which shapes cover the floor with no gaps?" The child discovers tessellation through experimentation. Walk around the house and find tessellations: tiles, brickwork, fabric patterns. They're everywhere.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 45 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">45</div>
+    <div class="work-info">
+      <div class="work-name">Binomial Cube</div>
+      <div class="work-develops">Develops <strong>3D spatial reasoning and pattern matching</strong> — 8 pieces in two colors that form a cube. The child builds it by matching face colors, unknowingly constructing (a+b)³. This is algebra made concrete.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with geometric solids and constructive triangles. Enjoys 3D puzzles. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Build a 3D puzzle from 8 small boxes: paint faces so that matching faces touch when assembled into a cube. The child matches colors to build the cube. They don't need to know it's algebra — they experience the spatial relationships directly. When they encounter (a+b)³ in high school, they'll recognize an old friend.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 46 -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">46</div>
+    <div class="work-info">
+      <div class="work-name">Trinomial Cube</div>
+      <div class="work-develops">Develops <strong>advanced 3D pattern recognition</strong> — 27 pieces in three colors that form a larger cube. The child manages more variables and more complex spatial relationships. This is (a+b+c)³.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds the binomial cube independently. Seeks greater challenge. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">This is harder to replicate at home, but a similar challenge: take 27 small blocks, paint them in 3-color patterns, and reassemble. Or use a simple 3×3×3 building block set where the child must follow a color pattern on each layer. The challenge is managing 3 layers and 3 colors — the working memory exercise is as valuable as the spatial reasoning.</div>
+    </div>
+  </div>
+</div>
+
+<!-- 47-50 quick but quality -->
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">47</div>
+    <div class="work-info">
+      <div class="work-name">Geometry in the Environment</div>
+      <div class="work-develops">Develops <strong>applied geometric perception</strong> — the child sees shapes everywhere: the rectangle of a door, the circle of a clock, the triangle of a rooftop. The abstract becomes real.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all basic shapes and solids. Begins noticing: "That window is a rectangle!" Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Go on a "shape walk." The child names every shape they see: circular manhole cover, rectangular mailbox, triangular yield sign, hexagonal bolt head. Take photos. Make a shape scrapbook. The child discovers that geometry is not something in a drawer — it is the structure of the built world. Architects and engineers use the same shapes the child just traced.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">48</div>
+    <div class="work-info">
+      <div class="work-name">Color in Nature</div>
+      <div class="work-develops">Develops <strong>applied color perception</strong> — the child observes and matches colors in the natural world. A leaf is not just "green" — it's a specific shade that changes with the season.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades paint chips easily. Notices color variations: "That leaf is a different green." Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Take a paint chip collection outside. Hold each chip against a flower, a leaf, the sky, a rock. "Can you find an exact match?" The child becomes a color scientist. Collect natural items and create a color spectrum: white stone → pale yellow dandelion → golden leaf → orange berry → red petal → deep purple plum. Nature's Color Box 3.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">49</div>
+    <div class="work-info">
+      <div class="work-name">Tangram Puzzles</div>
+      <div class="work-develops">Develops <strong>spatial transformation</strong> — seven pieces form hundreds of designs. The child rotates, flips, and combines shapes to create animals, houses, letters. Geometry becomes play.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with constructive triangles and creates free designs. Enjoys puzzles. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut a square into the 7 tangram pieces (2 large triangles, 1 medium, 2 small, 1 square, 1 parallelogram). Start by putting the square back together. Then try: make a cat, a house, a person, a boat. Printable tangram outlines are free online. Each puzzle requires mental rotation — one of the strongest predictors of mathematical ability.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase2)">50</div>
+    <div class="work-info">
+      <div class="work-name">Geometric Design — Creating Art from Shapes</div>
+      <div class="work-develops">Develops <strong>aesthetic appreciation of geometry</strong> — the child creates mandalas, mosaics, and patterns from geometric shapes. Art and mathematics merge. Beauty and logic are the same thing.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child traces shapes, knows tessellations and symmetry. Creates designs spontaneously.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Provide geometric shape cutouts in multiple colors and sizes. The child creates a design on paper and glues them down. Encourage symmetry, patterns, and repetition. Display the artwork. Islamic geometric art, quilt patterns, and cathedral rose windows all use the same principles — and a 4-year-old can create beauty with the same building blocks.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🔷</div>
+    <div class="sp-text"><strong>The Sensitive Period for Small Objects (18–42 months)</strong> drives the child to examine tiny details that adults overlook: a crumb on the floor, an ant on the sidewalk, a thread on a sweater. This fascination is not random — it is the child building their powers of observation. Sensorial materials channel this drive, giving the child progressively subtler distinctions to perceive: the slight difference between shade 4 and shade 5 of blue, the millimeter difference between two cylinders.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 3: THE HIDDEN SENSES              -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase3)">Phase 3 — Works 51–75</span>
+  <h2>The Hidden Senses</h2>
+  <p class="phase-desc">Training the senses beyond sight: touch, weight, temperature, sound, smell, taste, and the stereognostic sense — the ability to perceive form through touch alone. The child discovers that the eyes are just one of many ways to know the world.</p>
+</div>
+
+<div class="works-grid">
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">51</div>
+    <div class="work-info">
+      <div class="work-name">Touch Boards — Rough and Smooth</div>
+      <div class="work-develops">Develops <strong>tactile discrimination</strong> — the child feels the difference between rough and smooth surfaces. This is the simplest tactile exercise and the foundation for all touch work that follows.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child touches everything and comments on how it feels. Can focus on a tactile task. Around 3 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Glue sandpaper on one half of a cardboard strip and leave the other half smooth. The child runs fingertips from one side to the other with eyes closed. "This side is rough. This side is smooth." The transition — the moment the finger crosses from rough to smooth — is the discovery. Start with eyes open, then close them. The finger becomes the eye.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">52</div>
+    <div class="work-info">
+      <div class="work-name">Touch Tablets — Grading Textures</div>
+      <div class="work-develops">Develops <strong>refined tactile grading</strong> — 5 pairs of surfaces from roughest to smoothest. The child matches pairs and grades the series, applying the same seriation concept from Phase 1 to a new sense.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child distinguishes rough from smooth easily. Ready for subtle gradations.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 5 pairs of sandpaper (5 different grits: 60, 100, 150, 220, 400). Mount on small cardboard squares. The child matches pairs by touch alone (eyes closed), then grades from roughest to smoothest. The differences are subtle — 150 and 220 grit feel almost the same. The fingertip can learn to tell them apart. Hardware stores sell sandpaper variety packs for this exact purpose.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">53</div>
+    <div class="work-info">
+      <div class="work-name">Fabric Matching</div>
+      <div class="work-develops">Develops <strong>tactile discrimination of complex textures</strong> — silk, cotton, wool, velvet, linen, denim. Each fabric has a unique feel. The child matches pairs by touch alone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades touch tablets. Shows interest in how fabrics feel: "This blanket is so soft!"</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut pairs of fabric swatches: silk, cotton, wool, velvet, corduroy, denim, fleece, burlap. Place one set in a basket, one set on the table. Blindfolded, the child feels a table swatch, then reaches into the basket to find its match. The fingertips become so refined that they can distinguish cotton weaves from cotton knits — a distinction most adults couldn't name.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">54</div>
+    <div class="work-info">
+      <div class="work-name">Sorting Grains and Seeds</div>
+      <div class="work-develops">Develops <strong>tactile and visual discrimination of fine differences</strong> — rice, lentils, barley, millet. Each grain has a unique size, shape, and texture. Sorting develops both the touch sense and the patience of sustained attention.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has fine motor control for small objects. Can focus for 10+ minutes. Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Mix a tablespoon each of rice, lentils, and dried peas in a small bowl. Three sorting cups. The child separates each type using fingers (not a spoon — the touch is the point). Start with 3 very different grains. Progress to harder: long rice vs. short rice, green lentils vs. brown lentils. This is meditation for a child's hands.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">55</div>
+    <div class="work-info">
+      <div class="work-name">Baric Tablets — Weight Discrimination</div>
+      <div class="work-develops">Develops <strong>the baric (weight) sense</strong> — three sets of tablets of different weights but identical size and appearance. The child perceives weight independently of sight.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child notices that objects differ in weight: "This book is heavy but that one is light." Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill 6 identical small containers (film canisters, pill bottles) in pairs: 2 with sand (heavy), 2 with rice (medium), 2 with cotton (light). Seal them so the child can't see inside. Eyes closed, they sort by weight into 3 groups, then match pairs. "These two feel the same." The hands become a scale — weighing without numbers.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">56</div>
+    <div class="work-info">
+      <div class="work-name">Baric Grading — Light to Heavy</div>
+      <div class="work-develops">Develops <strong>refined weight seriation</strong> — 5+ objects arranged from lightest to heaviest. The child applies the grading concept to weight, building a series they can feel but not see.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches baric pairs confidently. Can identify 3 weight categories.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">5 identical bags filled with increasing amounts of rice: 20g, 40g, 60g, 80g, 100g. The child arranges from lightest to heaviest with eyes closed. Start with 3 (easy), build to 5 (harder). The child discovers that weight, like size, forms a series — and the same mental operation (ordering) applies to an invisible quality.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">57</div>
+    <div class="work-info">
+      <div class="work-name">Thermic Tablets</div>
+      <div class="work-develops">Develops <strong>the thermic (temperature) sense</strong> — tablets of different materials (metal, wood, felt, stone) feel different temperatures to the touch, even at room temperature. The child perceives thermal conductivity.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child comments on temperature: "The floor is cold!" "Your hands are warm." Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect flat objects of the same size: a metal spoon, a wooden spoon, a plastic card, a stone tile, a felt square. All at room temperature, but they feel different. The child matches pairs with eyes closed: "These two feel cold" (metal), "These two feel warm" (wood). Why do they feel different? The child is sensing thermal conductivity — physics through fingertips.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">58</div>
+    <div class="work-info">
+      <div class="work-name">Thermic Bottles — Water Temperature</div>
+      <div class="work-develops">Develops <strong>temperature grading with actual heat</strong> — bottles filled with water at different temperatures. The child grades from coldest to hottest.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child discriminates thermic tablets. Understands "hot" and "cold" as a spectrum, not just two states.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill 4 identical bottles with water at different temperatures: cold (fridge), cool (tap), warm, and hot (not burning — test on your wrist first). The child arranges from coldest to hottest. Match pairs too. This work must be done quickly (temperatures equalize) — the urgency adds focus. Safety note: "hot" means comfortably warm, never scalding.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">59</div>
+    <div class="work-info">
+      <div class="work-name">Sound Boxes — Matching</div>
+      <div class="work-develops">Develops <strong>auditory discrimination</strong> — pairs of cylinders filled with different materials produce different sounds when shaken. The child matches pairs by sound alone.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child enjoys sound games from Language work. Can close eyes and identify environmental sounds. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">6 identical opaque containers (film canisters, pill bottles). Fill in pairs: 2 with rice, 2 with sand, 2 with buttons. Seal. Mark each pair on the bottom (for checking). The child shakes, listens, and matches: "These two sound the same!" Start with 3 very different pairs, progress to 6 pairs with subtler differences (rice vs. quinoa).</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">60</div>
+    <div class="work-info">
+      <div class="work-name">Sound Grading — Quiet to Loud</div>
+      <div class="work-develops">Develops <strong>auditory seriation</strong> — the child grades sounds from quietest to loudest, applying the ordering principle to hearing.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches sound pairs confidently. Can distinguish "louder" and "softer."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill 5 identical containers with increasing amounts of rice: a pinch, a teaspoon, a tablespoon, 2 tablespoons, 3 tablespoons. Shake each — they produce sounds from whisper-quiet to distinctly loud. The child grades them. Mark the bottoms for self-checking. The same operation as the Pink Tower — seriation — now applied to sound.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">61</div>
+    <div class="work-info">
+      <div class="work-name">Pitch Discrimination — High and Low</div>
+      <div class="work-develops">Develops <strong>perception of musical pitch</strong> — the child distinguishes high notes from low notes. This is preparation for the Montessori bells and for musical education.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades sounds by volume. Enjoys singing. Hums at different pitches. Around 3.5–4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill 5 glasses with different amounts of water. Tap each with a spoon — they ring at different pitches. The child arranges from lowest pitch (most water) to highest (least water). Play a note, then another: "Which was higher?" The child's ear refines. These water glasses are a rudimentary xylophone — the child is making music and science simultaneously.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">62</div>
+    <div class="work-info">
+      <div class="work-name">Montessori Bells — Matching Pitch</div>
+      <div class="work-develops">Develops <strong>refined pitch matching</strong> — two sets of bells, one fixed and one moveable. The child strikes a fixed bell and searches the moveable set for its match. Pure tone discrimination.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child distinguishes high from low notes. Can hum a tone they hear. Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Use a xylophone, piano app, or tuned water glasses. Play a note on one instrument. "Find the same note on this one." Start with notes far apart (C and G), progress to adjacent notes (C and D). The child's ear sharpens with practice. Children who do this work early develop pitch recognition that serves them for life in music, language, and listening.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">63</div>
+    <div class="work-info">
+      <div class="work-name">Smelling Bottles — Matching Scents</div>
+      <div class="work-develops">Develops <strong>the olfactory sense</strong> — pairs of bottles containing different scents. The child matches by smell alone. Olfaction is the most neglected sense in education, yet the most directly connected to memory.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child comments on smells: "That smells like flowers!" "I don't like that smell." Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">6 identical opaque containers. Fill in pairs with cotton soaked in: vanilla extract, lemon juice, coffee. Close them. The child opens, sniffs, matches. Start with 3 very different scents. Progress to subtler pairs: cinnamon vs. nutmeg, mint vs. basil. Label the bottoms for checking. The nose, like the fingertip, can learn to make distinctions the untrained nose would miss.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">64</div>
+    <div class="work-info">
+      <div class="work-name">Smelling Bottles — Naming and Classifying</div>
+      <div class="work-develops">Develops <strong>olfactory vocabulary and classification</strong> — the child names scents and sorts them: food smells, flower smells, spice smells. Language meets the nose.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches scent pairs. Can identify at least 3 scents by name.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Expand to 8–10 scent bottles. The child identifies each: "This is cinnamon. This is lavender." Sort: spices in one group, fruits in another, herbs in a third. Cook together and smell each ingredient before it goes in. "What does cumin smell like? Let's remember." The kitchen becomes a sensorial laboratory.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">65</div>
+    <div class="work-info">
+      <div class="work-name">Tasting Bottles — Sweet, Sour, Salty, Bitter</div>
+      <div class="work-develops">Develops <strong>the gustatory sense</strong> — the child tastes solutions representing the four basic tastes. They discover that the tongue perceives categories, not just "good" and "bad."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child is willing to taste new things. Can follow the instruction "Take a small sip." Around 3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">4 small cups: sugar water (sweet), lemon water (sour), salt water (salty), diluted unsweetened cocoa (bitter). The child sips each with a small spoon and names the taste. "Which do you like best? Which is the strongest?" Pair with food: "Is this apple sweet or sour?" The tongue is a sense organ like the eye and ear — it can be trained.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">66</div>
+    <div class="work-info">
+      <div class="work-name">Taste Grading — Concentration</div>
+      <div class="work-develops">Develops <strong>gustatory seriation</strong> — the child grades 4 cups of the same taste from mildest to strongest. "A little salty, more salty, very salty, extremely salty."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child identifies the four basic tastes. Can compare: "This is sweeter than that."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">4 cups of sugar water with increasing sweetness: barely sweet, mildly sweet, sweet, very sweet. The child sips (rinse mouth with plain water between) and grades from least to most. Repeat with salty solutions. The tongue learns the same seriation the eye learned with the Pink Tower — a series from least to most.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">67</div>
+    <div class="work-info">
+      <div class="work-name">Mystery Bag — Familiar Objects</div>
+      <div class="work-develops">Develops <strong>the stereognostic sense</strong> — perceiving form through touch alone. The child reaches into a bag, feels an object, and identifies it without seeing. The hands become eyes.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has refined touch sense from fabric matching and texture work. Enjoys "guess what" games. Around 3–3.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A cloth bag with 5 familiar objects: spoon, ball, key, block, toy car. The child reaches in, feels without looking, and names the object before pulling it out. Start easy (very different shapes), progress to similar objects (two different spoons). The thrill of guessing correctly builds confidence in non-visual perception.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">68</div>
+    <div class="work-info">
+      <div class="work-name">Mystery Bag — Geometric Solids</div>
+      <div class="work-develops">Develops <strong>stereognostic perception of geometric forms</strong> — the child identifies sphere, cube, cylinder, cone, and pyramid by touch. Mathematical forms are perceived through the hands.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child names geometric solids visually. Enjoys the mystery bag. Ready to combine both skills.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Place household geometric objects in a bag: ball (sphere), block (cube), can (cylinder), funnel (cone). The child feels and names the form. "It has flat faces and sharp edges — it's a cube!" Then match: feel the object in the bag, find its twin on the table. Stereognostic perception of geometry is the deepest form of spatial intelligence.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">69</div>
+    <div class="work-info">
+      <div class="work-name">Stereognostic Sorting</div>
+      <div class="work-develops">Develops <strong>tactile classification</strong> — the child sorts objects by category (round things vs. flat things, smooth vs. rough) using touch alone. Classification without sight.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child identifies objects in the mystery bag reliably. Can describe objects by feel.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Blindfolded, the child sorts 10 objects into two bowls: "Round things here, flat things here." Or: "Soft things and hard things." Or: "Smooth and rough." Then remove the blindfold and check. Each new sorting criterion exercises the touch sense in a different way. The hands learn that every object has multiple tactile properties — just as the buttons had multiple visual properties.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">70</div>
+    <div class="work-info">
+      <div class="work-name">Sound and Silence — Auditory Awareness</div>
+      <div class="work-develops">Develops <strong>awareness of sound in the environment</strong> — the child sits in silence and catalogs every sound they hear. This is The Silence Game applied to auditory discrimination.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has experienced The Silence Game from Practical Life. Can sit quietly for 30+ seconds.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Sit together outside. Close eyes. "How many different sounds can you count?" The wind. A bird. A car. A dog. A plane. The child may count 10+ sounds in what seemed like silence. Then: "Which is closest? Which is farthest? Which is the quietest?" The world is full of sound — the trained ear hears what the untrained ear dismisses as silence.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">71</div>
+    <div class="work-info">
+      <div class="work-name">Material Identification — Blindfolded</div>
+      <div class="work-develops">Develops <strong>multi-sensory identification</strong> — the child identifies materials (wood, metal, glass, fabric, stone, plastic) by touch, temperature, weight, and sound. Multiple hidden senses converge.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has worked with thermic tablets, baric tablets, and texture matching. Around 4–4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect items of different materials: wooden spoon, metal spoon, glass marble, fabric scrap, stone, plastic toy. Blindfolded, the child identifies the material: "Metal — it's cold and smooth and heavy." They're using touch, temperature, AND weight simultaneously. This multi-sensory integration is how the brain actually processes the world — rarely one sense at a time.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">72</div>
+    <div class="work-info">
+      <div class="work-name">The Sensory Walk</div>
+      <div class="work-develops">Develops <strong>embodied sensory awareness</strong> — the child walks barefoot on different surfaces: grass, sand, tiles, carpet, wood, pebbles. The feet become sensory organs.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has developed touch discrimination with hands. Ready to extend sensory awareness to the whole body.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Create a sensory path: a line of trays or surfaces. Tray 1: smooth stones. Tray 2: sand. Tray 3: dried beans. Tray 4: a wet towel. Tray 5: bubble wrap. The child walks barefoot, eyes closed if willing, describing each sensation. "Cold! Bumpy! Squishy!" The whole body is a sensory instrument — Montessori knew this a century before embodied cognition became a research field.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">73</div>
+    <div class="work-info">
+      <div class="work-name">Taste-Smell Connection</div>
+      <div class="work-develops">Develops <strong>understanding of multi-sensory integration</strong> — the child discovers that taste and smell work together. Pinch the nose and taste an apple — it barely tastes like anything. Release — flavor floods back.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has done both smelling and tasting exercises. Curious about how senses work together.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Blindfold the child. Pinch their nose gently. Offer a piece of apple. "What does it taste like?" ("Sweet, but... nothing?") Release the nose — "Oh! Apple!" Try with different foods. The child discovers that "flavor" is actually taste + smell combined. This is genuine neuroscience, experienced firsthand. The senses do not work alone.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">74</div>
+    <div class="work-info">
+      <div class="work-name">The Language of Sensation</div>
+      <div class="work-develops">Develops <strong>vocabulary for sensory experience</strong> — "rough," "smooth," "pungent," "mellow," "shrill," "resonant." The child learns precise words for what they feel, hear, smell, and taste.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child perceives fine sensory distinctions but lacks words: "It's like... not smooth but not rough." Ready for "coarse," "textured," "grainy."</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">When the child describes a sensation, offer the precise word: "You're right — that sandpaper isn't just rough, it's coarse. This one is fine-grained." For sounds: "dull" vs. "resonant." For scents: "sharp" vs. "mellow." For tastes: "tangy" vs. "bland." Each word is a concept — naming a sensation makes it thinkable.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase3)">75</div>
+    <div class="work-info">
+      <div class="work-name">Sensory Journal</div>
+      <div class="work-develops">Develops <strong>reflective sensory awareness</strong> — the child draws or writes about what they perceived today. "I heard 7 sounds in the garden. The loudest was a plane. The quietest was a bee." Sensation becomes conscious knowledge.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has rich sensory vocabulary. Can describe experiences in detail. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A small notebook for sensory observations. After each walk, meal, or sensory exercise, the child records what they noticed: "The soup was salty and hot. The bread was rough outside and soft inside." Draw what they saw. This practice — noticing, naming, recording — is the foundation of scientific observation. Scientists do exactly this. So does the child.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">👂</div>
+    <div class="sp-text"><strong>The Sensitive Period for Order (1–3.5 years)</strong> manifests powerfully in Sensorial work. The child who insists that everything be "in its place" is expressing the same drive that makes them arrange the Pink Tower perfectly and sort touch tablets precisely. Order is not rigidity — it is the mind's way of making sense of chaos. Every grading, matching, and sorting activity in the Sensorial curriculum satisfies this deep need for order, transforming it into a love of precision.</div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!--    PHASE 4: ABSTRACTION AND MASTERY        -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="phase-header">
+  <span class="phase-tag" style="background: var(--phase4)">Phase 4 — Works 76–100</span>
+  <h2>From Sensation to Abstraction</h2>
+  <p class="phase-desc">The child moves from perceiving with the senses to thinking with concepts. They draw what they've built, describe what they've felt, measure what they've compared, and discover that every Sensorial experience contains a mathematical or scientific idea. The hands prepared the mind. Now the mind takes flight.</p>
+</div>
+
+<div class="works-grid">
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">76</div>
+    <div class="work-info">
+      <div class="work-name">Drawing the Pink Tower</div>
+      <div class="work-develops">Develops <strong>representational thinking</strong> — the child draws the tower from observation, translating 3D experience into 2D representation. Abstraction begins when the hand draws what the eye has seen.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child builds the tower perfectly and can draw recognizable objects. Around 4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Build a graduated tower. Place paper and colored pencil nearby. "Draw what you see." The child draws 10 squares getting smaller — a representation of the series. This drawing IS a graph. They've translated physical reality into a symbol on paper. The journey from sensation to abstraction has begun.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">77</div>
+    <div class="work-info">
+      <div class="work-name">Mapping Textures</div>
+      <div class="work-develops">Develops <strong>data collection and recording</strong> — the child creates a tactile map of a room, recording what each surface feels like. This is the scientific method: observe, record, classify.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has refined touch discrimination. Can describe textures with precise vocabulary.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a simple map of the child's room. The child touches every surface and labels it: "smooth" (desk), "soft" (bed), "rough" (carpet), "cold" (window). Use color codes. The child has created a data visualization — a map of sensory properties. This is how scientists document their observations, and the child does it naturally.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">78</div>
+    <div class="work-info">
+      <div class="work-name">Measuring with Standard Units</div>
+      <div class="work-develops">Develops <strong>formal measurement</strong> — the child uses a ruler, measuring tape, or scale. Non-standard units become standard. "3 hands long" becomes "30 centimeters long."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has measured with non-standard units. Understands that different units give different numbers. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A child-friendly ruler or measuring tape. "How tall is the chair? Let's measure." The child reads the number. Measure everything. Record results. "The chair is 80 centimeters. The table is 75 centimeters. The chair is TALLER than the table!" The numbers confirm what the eyes already knew — but now the knowledge is precise and communicable.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">79</div>
+    <div class="work-info">
+      <div class="work-name">Weighing with a Balance</div>
+      <div class="work-develops">Develops <strong>formal weight measurement</strong> — the child uses a balance scale. Heavy and light become quantifiable. "Which is heavier?" has a definitive answer.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has graded baric tablets. Understands "heavier" and "lighter." Around 4.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A simple balance scale (or make one from a hanger and two cups). "Which is heavier — this apple or this orange?" Place them on the scale. The side that drops is heavier. Try to find two things that balance — equality! The child discovers that weight can be compared objectively, not just estimated. The balance scale is one of humanity's oldest measuring instruments.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">80</div>
+    <div class="work-info">
+      <div class="work-name">Temperature Reading</div>
+      <div class="work-develops">Develops <strong>formal temperature measurement</strong> — the child reads a thermometer. "Warm" and "cold" become numbers. The thermic sense connects to mathematics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has graded thermic bottles. Recognizes numbers. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">A large, easy-to-read thermometer (outdoor or cooking). "Feel this water — is it warm or cold? Let's see what the thermometer says: 24 degrees." Measure bath water, outdoor temperature, inside the fridge. Record daily temperature for a week. The child creates a data set — and discovers that their thermic sense was approximately right all along.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">81</div>
+    <div class="work-info">
+      <div class="work-name">Classifying by Multiple Attributes</div>
+      <div class="work-develops">Develops <strong>logical classification</strong> — the child sorts objects using 3+ criteria simultaneously. This is Boolean logic: big AND red AND round. The mind that can classify can think systematically.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child sorts by two properties easily. Can describe an object using 3+ attributes. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Find all the things that are big AND red AND smooth." The child searches the room. "The red ball! That's big, red, and smooth." Then: "Find something small AND blue AND rough." Three-attribute classification is genuinely challenging — even for some adults. The child who can do this has built the mental machinery for database queries, scientific taxonomy, and systematic thinking.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">82</div>
+    <div class="work-info">
+      <div class="work-name">Making Predictions — "What Will Happen?"</div>
+      <div class="work-develops">Develops <strong>hypothesis formation</strong> — "If I mix red and white paint, what color will I get?" The child predicts an outcome based on prior sensory experience. This is the scientific method.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has done color mixing and multiple sensory exercises. Begins to anticipate results.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"If I add more water to this bottle, will the sound be higher or lower?" The child predicts, then tests. "If I mix this heavy bag and this light bag, will the new bag be heavier or lighter than the heavy one?" Predict, test, conclude. Every prediction exercises the ability to reason from experience — the foundation of all scientific and mathematical thinking.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">83</div>
+    <div class="work-info">
+      <div class="work-name">Sensory Experiments — Variables</div>
+      <div class="work-develops">Develops <strong>understanding of controlled experiments</strong> — change one thing, keep everything else the same, observe what happens. The Sensorial principle of isolation of quality becomes the scientific method.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child makes predictions. Understands "same" and "different." Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Does a heavy ball roll faster than a light ball?" Use the same ramp, same surface, different balls. "Does hot water dissolve sugar faster than cold water?" Same amount of sugar, same cup size, different temperatures. One variable changes, the rest stay the same. The child discovers that controlled experiments give clear answers — just as isolating one quality in Sensorial gave clear perception.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">84</div>
+    <div class="work-info">
+      <div class="work-name">Geometry and Art — Mandalas</div>
+      <div class="work-develops">Develops <strong>aesthetic geometry</strong> — the child creates circular, symmetrical designs using compass movements and geometric principles. Mathematics becomes art. Art reveals mathematics.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child creates geometric designs from shapes. Understands symmetry. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a circle. Divide it into 6 or 8 equal wedges (fold the paper). The child fills each section with the same pattern — symmetrically. Use colors from their Color Box work. The result is a mandala — a meditative geometric artwork. Hang it up. The child sees that mathematical precision creates beauty, and beauty IS mathematical precision.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">85</div>
+    <div class="work-info">
+      <div class="work-name">Fraction Circles — Sensorial Introduction</div>
+      <div class="work-develops">Develops <strong>the concept of parts and wholes</strong> — the child sees a circle divided into halves, thirds, quarters. They reassemble the parts. The whole is made of parts. Parts make the whole.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands the circle and works with constructive triangles. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut circles from cardstock. One whole. One cut in half. One in thirds. One in quarters. The child reassembles each and sees that 2 halves = 1 whole, 3 thirds = 1 whole. "It takes 4 quarters to make the whole circle." Cut a pizza, a pie, an apple the same way. Fractions are real — they live in the kitchen, not just in textbooks.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">86</div>
+    <div class="work-info">
+      <div class="work-name">Volume Exploration — Pouring and Comparing</div>
+      <div class="work-develops">Develops <strong>the concept of volume</strong> — the child pours water between containers of different shapes and discovers that volume is independent of shape. A tall, thin glass can hold the same as a short, wide bowl.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has done Practical Life pouring. Understands "more" and "less." Around 4 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Fill a tall, narrow glass with water. "Is this more water or less water than this short, wide bowl?" Pour from one to the other. They hold the same! Piaget called this "conservation" and said children under 7 can't understand it. Montessori children, trained through Sensorial work, often get it by 4 or 5 — because they've experienced volume with their hands.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">87</div>
+    <div class="work-info">
+      <div class="work-name">Area Exploration — Covering Surfaces</div>
+      <div class="work-develops">Develops <strong>the concept of area</strong> — the child covers a surface with square units and counts how many fit. The surface has a measurable size, and that size is a number.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands tessellation. Can count reliably to 20+. Around 4.5–5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Cut 20 identical squares (like Post-its). "How many squares does it take to cover this book?" The child tiles and counts: "12 squares!" Now cover a larger book: "20 squares!" "Which book has more area?" Area is not abstract — it's the number of squares that fit. The child measures without a formula, understanding area concretely before encountering it formally.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">88</div>
+    <div class="work-info">
+      <div class="work-name">Perimeter — Walking the Edge</div>
+      <div class="work-develops">Develops <strong>the concept of perimeter</strong> — the child walks around the edge of a shape (table, rug, room) and measures the distance. Perimeter is the path around a boundary.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child understands area. Can measure with a ruler or tape. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"How far is it around this table?" The child uses a measuring tape and walks the edge, measuring each side. Add them up. "The table's perimeter is 4 meters." Now measure the rug. Which has a bigger perimeter? The child discovers that perimeter and area are different — a long, thin shape can have a big perimeter but small area. This distinction is subtle and important.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">89</div>
+    <div class="work-info">
+      <div class="work-name">Graphing Sensory Data</div>
+      <div class="work-develops">Develops <strong>data visualization</strong> — the child creates bar graphs of their sensory observations: "How many round things did I find? How many square things?" Data becomes visual.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child collects and classifies data. Can count and record numbers. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Count the shapes in the kitchen: 5 circles, 3 rectangles, 2 triangles. Draw a bar graph: one bar per shape, height shows the count. "Circles win!" Now do colors in the garden, or sounds in the park. The child creates their own data visualizations — the same tool that scientists, journalists, and analysts use every day.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">90</div>
+    <div class="work-info">
+      <div class="work-name">Optical Illusions — When Senses Deceive</div>
+      <div class="work-develops">Develops <strong>critical thinking about perception</strong> — the child encounters illusions where the eye is "wrong." Two lines look different lengths but aren't. This teaches that perception must be verified.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has refined visual perception. Can measure with tools. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Show the Müller-Lyer illusion: two lines with arrows pointing in and out. "Which is longer?" The child guesses. Measure — they're the same! "Your eyes were tricked!" This is one of the most important lessons in all of Sensorial: the senses are powerful, but not infallible. Measurement and verification complete what perception begins.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">91</div>
+    <div class="work-info">
+      <div class="work-name">Building 3D Models from 2D Plans</div>
+      <div class="work-develops">Develops <strong>spatial reasoning between dimensions</strong> — the child looks at a flat drawing and builds the 3D structure it represents. This is the skill of architects and engineers.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child works with geometric solids and constructive triangles. Can follow visual instructions. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Draw a simple block structure from the side (2 blocks wide, 3 tall). The child builds it with real blocks. Then draw it from above. Can they build it from a top-down view? Then from the front AND the side. Multiple views of the same object — the child develops the ability to rotate objects in their mind. This mental rotation skill predicts success in mathematics and engineering.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">92</div>
+    <div class="work-info">
+      <div class="work-name">Nature Classification — Leaves, Rocks, Shells</div>
+      <div class="work-develops">Develops <strong>scientific classification of natural objects</strong> — the child sorts natural specimens by multiple properties: shape, color, texture, size. This is biology's classification system, experienced with real objects.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child classifies by multiple attributes. Collects natural objects. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Collect 20 leaves. Sort by shape (round, pointed, lobed). Sort again by color (green, yellow, brown). Sort again by size. Sort again by texture (smooth, fuzzy, waxy). The SAME collection, FOUR different classifications. This is real taxonomy — the system Linnaeus used, the system biologists still use, the system a child can master with leaves from the yard.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">93</div>
+    <div class="work-info">
+      <div class="work-name">Color Theory — Warm and Cool Colors</div>
+      <div class="work-develops">Develops <strong>abstract color concepts</strong> — "warm" colors (red, orange, yellow) and "cool" colors (blue, green, purple). The child categorizes colors by their emotional and visual temperature.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child grades multiple colors. Has done thermic work. Can connect sensory domains ("red feels warm"). Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Spread out all your color cards. "Which colors feel warm to you? Which feel cool?" The child sorts — and discovers that their answers align with universal color theory. Paint a picture using only warm colors. Then only cool colors. Compare the moods. The child discovers that color carries emotion — this is the foundation of visual art and design.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">94</div>
+    <div class="work-info">
+      <div class="work-name">Sound Composition — Making Music</div>
+      <div class="work-develops">Develops <strong>creative auditory expression</strong> — the child uses their refined ear to create simple melodies, rhythms, and compositions. The ear that can discriminate can also create.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child matches pitches and grades sounds. Enjoys singing and rhythm. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Using water glasses tuned to different pitches, the child composes a simple melody. Tap out a rhythm. "Play it again — can you remember it?" Write it down as colored dots (high note = top, low = bottom). The child has composed music and created a notation system. Mozart started this way — every musician does.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">95</div>
+    <div class="work-info">
+      <div class="work-name">Designing a Sensory Experience for Others</div>
+      <div class="work-develops">Develops <strong>empathy and creative application</strong> — the child designs a sensory activity for a sibling or friend. They must think about another person's experience. Teaching what you know is the deepest learning.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has mastered multiple sensory exercises. Shows interest in "teaching" others. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Can you make a mystery bag for your brother?" "Can you create a smell-matching game for me?" The child selects objects, prepares materials, and guides another person through the activity. In doing so, they review everything they know, anticipate difficulties, and experience the joy of sharing knowledge. The teacher is always the best student.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">96</div>
+    <div class="work-info">
+      <div class="work-name">Geometry in Architecture — Observing Buildings</div>
+      <div class="work-develops">Develops <strong>applied geometric observation</strong> — the child analyzes buildings for their geometric components: arches, columns, domes, rectangular windows. Architecture is geometry made habitable.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child knows all basic shapes and solids. Notices geometry in the environment. Around 5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Walk past buildings. "What shapes can you find?" Rectangular doors, circular windows, triangular roofs, cylindrical columns. Photograph each. At home, design a building using geometric shapes on paper. "My house has a hexagonal window and a dome roof." The child becomes an architect — someone who sees the geometry inside the beauty, and the beauty inside the geometry.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">97</div>
+    <div class="work-info">
+      <div class="work-name">The Sensory Vocabulary Test</div>
+      <div class="work-develops">Develops <strong>linguistic precision for sensory experience</strong> — the child demonstrates their ability to describe any object using vocabulary from all senses: "It's smooth, heavy, cool, matte, odorless, and shaped like an ellipse."</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has rich sensory vocabulary across all domains. Around 5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Hand the child any object. They describe it using as many sensory words as possible: "It's a stone. It's heavy, smooth, cold, oval, gray with white streaks, odorless, and it makes a dull sound when I tap it." Count the descriptors. Can they reach 10? The child who can describe an object in 10 ways has 10 neural pathways to that object. They know it 10 times more deeply.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">98</div>
+    <div class="work-info">
+      <div class="work-name">Inventing a New Sensorial Material</div>
+      <div class="work-develops">Develops <strong>creative and analytical thinking</strong> — the child designs their own sensorial exercise. They must identify a quality to isolate, create a control of error, and sequence the challenge. They become the material designer.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has completed all major sensorial areas. Shows creative problem-solving. Around 5.5–6 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">"Can you invent a game that tests someone's sense of touch?" The child might create: fill bags with different amounts of cotton and sort by softness. Or: bottles with liquids of different thickness. They are designing an experiment — choosing a variable, isolating it, creating a graded series. Maria Montessori did exactly this. Now the child does it too.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">99</div>
+    <div class="work-info">
+      <div class="work-name">The Great Connection — Sensorial to Mathematics</div>
+      <div class="work-develops">Develops <strong>awareness that mathematics IS sensory experience formalized</strong> — the Pink Tower IS counting. Color grading IS data ordering. Weight matching IS equality. Everything the child has done is mathematics without numbers.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">Child has completed Sensorial work and is beginning Mathematics materials. Around 5–5.5 years.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">Revisit the Pink Tower. "How many cubes?" 10. "The smallest is 1 centimeter. The next is 2 centimeters." The child ALREADY knew this — their hands told them. Now the numbers confirm it. Revisit the Red Rods — they ARE the number line. The color gradation IS data ordering. The child realizes: "I've been doing math all along." The senses prepared the mind. The mind was ready all along.</div>
+    </div>
+  </div>
+</div>
+
+<div class="work-card">
+  <div class="work-header">
+    <div class="work-number" style="background: var(--phase4)">100</div>
+    <div class="work-info">
+      <div class="work-name">The Observing Mind — Sensorial Mastery</div>
+      <div class="work-develops">Develops <strong>complete perceptual intelligence</strong> — the child perceives the world with trained senses, names what they perceive with precision, measures when perception isn't enough, and knows that the senses are the gateway to all understanding.</div>
+    </div>
+  </div>
+  <div class="work-details">
+    <div class="detail-box readiness-box">
+      <div class="detail-label">👁️ Readiness Sign</div>
+      <div class="detail-text">The child sees a sunset and names 5 colors in it. Feels a fabric and identifies the weave. Hears a melody and picks out the high note. This is not a sign to look for — it is a state that arrives.</div>
+    </div>
+    <div class="detail-box home-box">
+      <div class="detail-label">🏠 Home Version</div>
+      <div class="detail-text">There is no home version for this work. This work IS the home, the garden, the sky, the meal, the music, the conversation, the texture of a blanket, the warmth of a bath, the silence of snow. A child whose senses have been trained carries their Sensorial education everywhere. They do not just live in the world — they perceive it fully, name it precisely, and understand it deeply. The senses opened the way to knowledge. The mind walked through.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="sensitive-period">
+  <div class="sp-card">
+    <div class="sp-icon">🌟</div>
+    <div class="sp-text"><strong>The Sensorial Mind at Work</strong> — Maria Montessori wrote that the purpose of Sensorial education is not to give the child new impressions, but to bring order to the impressions already flooding in. The untrained child is overwhelmed by sensation. The trained child is empowered by it. They see more, hear more, feel more — and they understand what they perceive. The Sensorial curriculum transforms the child from a passive receiver of impressions into an active explorer of reality. This is the mind that is ready for mathematics, science, language, and art. This is the prepared mind.</div>
+  </div>
+</div>
+
+
+<div class="footer">
+  <div class="logo">Montree</div>
+  <p>The Montessori Sensorial Curriculum — 100 works from sensation to abstraction.</p>
+  <p style="margin-top: 8px;">Grounded in Maria Montessori's original writings and developmental observations.</p>
+  <p style="margin-top: 12px;"><a href="https://montree.xyz">montree.xyz</a></p>
+</div>
+
+</body>
+</html>
