@@ -352,11 +352,10 @@ export default function StoryViewer() {
     if (!file) return;
 
     // Pre-upload validation — catch size issues before wasting bandwidth
-    // Supabase storage bucket defaults to 50MB per-file limit
     const isVideo = file.type.startsWith('video/') || /\.(mov|mp4|webm|avi|mkv|m4v|3gp)$/i.test(file.name);
     const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
-    const maxSize = 50 * 1024 * 1024; // 50MB — Supabase storage per-file limit
-    const maxLabel = '50MB';
+    const maxSize = isVideo ? 500 * 1024 * 1024 : 50 * 1024 * 1024; // 500MB video, 50MB others
+    const maxLabel = isVideo ? '500MB' : '50MB';
 
     if (file.size > maxSize) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);

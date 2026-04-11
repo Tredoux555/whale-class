@@ -142,10 +142,10 @@ export const useAdminMessage = (getSession: () => string | null, onMessageSent: 
           setMessageError(data.error || 'Failed to send document');
         }
       } else if (selectedVideo) {
-        // Pre-upload size check — Supabase storage bucket defaults to 50MB per-file limit
-        if (selectedVideo.size > 50 * 1024 * 1024) {
+        // Pre-upload size check
+        if (selectedVideo.size > 500 * 1024 * 1024) {
           const sizeMB = (selectedVideo.size / (1024 * 1024)).toFixed(1);
-          setMessageError(`Video is too large (${sizeMB}MB). Maximum is 50MB. Try trimming the video or recording at lower quality (720p instead of 4K).`);
+          setMessageError(`Video is too large (${sizeMB}MB). Maximum is 500MB. Try trimming the video or recording at lower quality (720p instead of 4K).`);
           setSendingMessage(false);
           return;
         }
