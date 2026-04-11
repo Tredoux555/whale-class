@@ -289,6 +289,7 @@ export async function GET(request: NextRequest) {
       }));
       const flagsCount = teacherFlags.length;
       const keyInsight = cleanUUIDs((data.teacher_report?.key_insight as string) || '');
+      const teacherGuidance = cleanUUIDs((data.teacher_report?.teacher_guidance as string) || '');
       // Resolve recommendation areas from UUID to canonical key
       const recommendationsRaw = asArray<{
         area: string; area_label: string; work: string; reasoning: string;
@@ -336,6 +337,7 @@ export async function GET(request: NextRequest) {
         teacher_report_id: data.teacher_report_id,
         teacher_status: data.teacher_status,
         key_insight: keyInsight || null,
+        teacher_guidance: teacherGuidance || null,
         recommendations,
         area_analyses: areaAnalyses,
         flags: teacherFlags,
