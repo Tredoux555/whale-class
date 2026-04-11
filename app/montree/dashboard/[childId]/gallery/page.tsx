@@ -1084,17 +1084,7 @@ export default function GalleryPage() {
         <GuruContextBubble pageKey="gallery" role="parent" />
       )}
 
-      {/* Invite Parent link (parent reports now handled via Weekly Wrap) */}
-      {session && !isHomeschoolParent(session) && (
-        <div className="flex justify-end">
-          <button
-            onClick={() => setInviteModalOpen(true)}
-            className="text-xs text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            ✉️ {t('reports.inviteParent')}
-          </button>
-        </div>
-      )}
+      {/* Invite Parent link — hidden, parent flow now handled via Weekly Wrap send */}
 
       {/* ══════════════════════════════════════════════
           VIEW CONTROLS + AREA FILTER + SELECTION
