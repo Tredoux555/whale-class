@@ -197,6 +197,93 @@ montree.xyz
 
 ## RECENT STATUS (Apr 11, 2026)
 
+### ⚡ Session 16 — Parent Dashboard Redesign + Camera 4:3 Viewfinder + Hide Invite Parent (Apr 11, 2026)
+
+**Two commits pushed to main: `8651f8cf` (parent dashboard), `81e5ab0b` (camera viewfinder + hide invite parent).**
+
+**THE TASK:** Three user requests in one session:
+1. Strip the parent dashboard down to essentials — child name hero + latest report inline + collapsed past reports
+2. Hide the "Invite Parent" link on the teacher's child gallery page
+3. Overhaul the camera capture system — fix landscape black space, add 4:3 WYSIWYG viewfinder overlay matching parent report aspect ratio
+
+**A. Parent Dashboard Complete Rewrite (commit `8651f8cf`):**
+- **File**: `app/montree/parent/dashboard/page.tsx` — 655 lines, complete rewrite (was ~590 lines of cluttered sections)
+- **Removed**: announcements, stats panels, photo gallery section, milestones, games, recent activity — ALL stripped
+- **What remains**:
+  - Sticky header: Montree logo + language toggle + sign out
+  - Multi-child selector (horizontal pill buttons, only shows if >1 child)
+  - Child hero: large avatar circle (gradient with initial, or photo) + first name (large, bold) + week date range
+  - Quick stat pills: mastered/practicing/new counts with emoji + color badges
+  - Narrative summary: emerald left-border blockquote with full parent narrative
+  - Photo cards: full-width 4:3 images with area badge, work name, status pill, `parent_description`, `why_it_matters` box, teacher note box. Tappable for lightbox.
+  - Extra photos: 2-col grid for report photos without work assignments
+  - Recommendations: "Try This at Home" section
+  - Closing: centered closing message
+  - Past Reports: collapsed accordion with chevron toggle, links to individual report pages via `<Link>`
+  - Footer: minimal "Montree" text
+- **Auto-loads latest report**: `loadReports()` → `loadFullReport(reports[0].id)` — no user tap needed, report is inline immediately
+- **Bilingual**: all labels, stat pills, area names, status badges, empty states in EN/ZH via `locale`
+- **New imports**: `LanguageToggle`, `PhotoLightbox` (lightbox wired for all photo works + extras)
+- **Design**: clean white background, max-w-lg centered, emerald accent color, no cards/borders — content-forward magazine feel
+
+**B. Hide Invite Parent (commit `81e5ab0b`):**
+- **File**: `app/montree/dashboard/[childId]/gallery/page.tsx`
+- Lines 1087-1097: replaced invite parent button block with comment `{/* Invite Parent link — hidden, parent flow now handled via Weekly Wrap send */}`
+- `InviteParentModal` component import and definition left in place (unused but harmless — tree-shaking removes it from client bundle)
+
+**C. Camera 4:3 Viewfinder Overlay (commit `81e5ab0b`):**
+- **File**: `components/montree/media/CameraCapture.tsx` — 821 lines (was 742)
+- **New constant**: `TARGET_ASPECT = 4/3` — matches parent report photo display (`aspect-[4/3] object-cover`)
+- **New state**: `viewfinder: { x, y, w, h } | null` — computed rectangle of the 4:3 zone, `isLandscape: boolean`
+- **New ref**: `containerRef` on the camera view div for dimension tracking
+- **`updateViewfinder()` callback**: calculates largest 4:3 rectangle fitting container with 4% margin. Called by ResizeObserver, `onloadedmetadata`, window resize, and orientationchange.
+- **Viewfinder overlay** (z-10, pointer-events-none):
+  - 4 dark panels (`bg-black/45`) around the clear 4:3 zone
+  - White corner brackets (4 corners, 24px arms, 2.5px thick, `bg-white/80`)
+  - Subtle "4:3" label below the zone (`text-white/50`)
+- **Three-tier capture in `capturePhoto()`**:
+  - Tier 1: `!vw || !vh` — video dimensions unavailable, raw frame fallback
+  - Tier 2: `!viewfinder` — ResizeObserver race, centered 4:3 crop from video directly
+  - Tier 3: viewfinder-mapped crop (primary path) — `object-cover` coordinate mapping:
+    ```
+    scale = Math.max(cw/vw, ch/vh)
+    offX = (cw - vw*scale) / 2, offY = (ch - vh*scale) / 2
+    srcX = (viewfinder.x - offX) / scale, srcY = (viewfinder.y - offY) / scale
+    srcW = viewfinder.w / scale, srcH = viewfinder.h / scale
+    ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH)
+    ```
+  - Math verified numerically: portrait (390×700, 1920×1080 video) → 554×415 crop = 4:3 ✓; landscape (700×390, 1920×1080 video) → 1312×984 crop = 4:3 ✓
+- **Landscape compact controls**: `isLandscape` detection (`cw > ch`), capture button shrinks `w-20 h-20 → w-16 h-16`, switch camera `w-14 h-14 → w-12 h-12`, `py-4 → py-2`
+- **Listener cleanup**: ResizeObserver with `.disconnect()`, named `handleOrientation` function properly removed (fixed anonymous arrow function memory leak), `onloadedmetadata` callback on video element
+- **`showViewfinder` guard**: hidden during capture preview, video mode, and error state
+
+**Key technical decisions:**
+- **Object-cover coordinate mapping**: `Math.max(cw/vw, ch/vh)` computes the CSS `object-cover` scale factor. Display offset accounts for the overflow crop. Viewfinder display coords map to video pixel coords via `(displayCoord - offset) / scale`.
+- **ResizeObserver over window.resize**: more reliable for container dimension changes (especially orientation changes on mobile where the browser chrome resizes the container independently of the window)
+- **`onloadedmetadata`**: fires when video stream dimensions become available — more reliable than `setTimeout` for initial viewfinder calculation
+- **Three-tier fallback**: ensures capture never fails regardless of timing — Tier 1 is pure fallback, Tier 2 is correct-math-without-viewfinder, Tier 3 is the WYSIWYG path
+
+**Bugs fixed during implementation:**
+- Memory leak: `orientationchange` listener used anonymous arrow → fixed with named `handleOrientation`
+- Timing fragility: `setTimeout(updateViewfinder, 200)` → replaced with `onloadedmetadata` callback
+- Null viewfinder race: added Tier 2 centered crop fallback for captures before ResizeObserver fires
+
+**Key files changed this session:**
+- `app/montree/parent/dashboard/page.tsx` — complete rewrite (parent-facing dashboard)
+- `components/montree/media/CameraCapture.tsx` — 4:3 viewfinder overlay + auto-crop
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — invite parent link hidden
+
+**Next session priorities:**
+1. **Test camera viewfinder on phone** — hard-refresh capture page on production, verify 4:3 overlay renders correctly in both portrait and landscape, verify captured photos are correctly cropped to the viewfinder zone
+2. **Test parent dashboard on production** — verify latest report loads inline, photo lightbox works, past reports accordion functions
+3. **Monitor Campaign D** on gmass.co/dashboard — verify 50/day throttle working, check open rates (should be done by ~Apr 17)
+4. **Verify dead Campaign C** (50686495) has no pending follow-ups on gmass.co/dashboard
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+6. **Consider `/tools/` index page** — landing page linking to all 5 curriculum guides (currently direct URLs only)
+7. **Test new classroom creation end-to-end** — create a test classroom via principal setup, verify Chinese names are auto-seeded (Session 14 fix)
+
+---
+
 ### ⚡ Session 15 — Complete Home Curriculum Guide Suite (5 areas × 100 works) + Library Integration (Apr 11, 2026)
 
 **Six commits pushed to main: `50acbb64` (Practical Life, prev session), `505a10ca` (Language), `ffd0d9fc` (Sensorial), `8ba5d56b` (Mathematics), `888c0aab` (Cultural), `17ad1873` (Library page).**

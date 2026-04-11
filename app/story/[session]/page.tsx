@@ -352,14 +352,19 @@ export default function StoryViewer() {
     if (!file) return;
 
     // Pre-upload validation — catch size issues before wasting bandwidth
+    // Supabase storage bucket defaults to 50MB per-file limit
     const isVideo = file.type.startsWith('video/') || /\.(mov|mp4|webm|avi|mkv|m4v|3gp)$/i.test(file.name);
     const isAudio = file.type.startsWith('audio/') || /\.(mp3|wav|m4a|ogg|aac|flac)$/i.test(file.name);
-    const maxSize = isVideo ? 300 * 1024 * 1024 : isAudio ? 50 * 1024 * 1024 : 50 * 1024 * 1024;
-    const maxLabel = isVideo ? '300MB' : '50MB';
+    const maxSize = 50 * 1024 * 1024; // 50MB — Supabase storage per-file limit
+    const maxLabel = '50MB';
 
     if (file.size > maxSize) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      setUploadError(`File is too large (${sizeMB}MB). Maximum size is ${maxLabel}. Try a shorter video or lower quality.`);
+      setUploadError(
+        isVideo
+          ? `Video is too large (${sizeMB}MB). Maximum is ${maxLabel}. Try trimming the video or recording at lower quality (720p instead of 4K).`
+          : `File is too large (${sizeMB}MB). Maximum size is ${maxLabel}.`
+      );
       return;
     }
 

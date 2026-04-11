@@ -63,7 +63,7 @@ const MEDIA_CONFIG = {
     mimePrefix: 'video/',
     allowedExts: ['mp4', 'mov', 'avi', 'webm', 'mkv', 'm4v', '3gp', '3g2'],
     allowedMimes: ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'],
-    maxSize: 300 * 1024 * 1024, // 300MB
+    maxSize: 50 * 1024 * 1024, // 50MB — Supabase storage per-file limit
     defaultExt: 'mp4',
     filenamePrefix: 'admin_video',
   },
@@ -291,8 +291,28 @@ export async function POST(req: NextRequest) {
     );
 
     if (uploadError) {
-      console.error(`[Send ${mediaType}] Upload error:`, uploadError.message);
-      return NextResponse.json({ error: `Failed to upload ${mediaType}: ${uploadError.message}` }, { status: 500 });
+      const msg = uploadError.message || '';
+      console.error(`[Send ${mediaType}] Upload error (${(file.size / (1024 * 1024)).toFixed(1)}MB):`, msg);
+
+      // Surface specific, actionable error messages
+      if (msg.includes('Payload too large') || msg.includes('exceeded') || msg.includes('size')) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(0);
+        return NextResponse.json({
+          error: `File too large for storage (${sizeMB}MB). The storage limit is 50MB per file. Try a shorter video or lower quality recording.`
+        }, { status: 413 });
+      }
+      if (msg.includes('mime') || msg.includes('type')) {
+        return NextResponse.json({
+          error: `File type not supported. Try converting to .mp4.`
+        }, { status: 400 });
+      }
+      if (msg.includes('quota') || msg.includes('space')) {
+        return NextResponse.json({
+          error: 'Storage is full. Please contact the administrator.'
+        }, { status: 507 });
+      }
+
+      return NextResponse.json({ error: `Failed to upload ${mediaType}: ${msg}` }, { status: 500 });
     }
 
     const { data: urlData } = supabase.storage
