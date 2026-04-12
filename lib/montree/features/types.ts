@@ -35,7 +35,9 @@ export type FeatureKey =
   | 'shelf_autopilot'
   | 'paperwork_tracker'
   // Capture page tools
-  | 'daily_language_6';
+  | 'daily_language_6'
+  // Onboarding
+  | 'tell_guru_onboarding';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
