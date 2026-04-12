@@ -13,6 +13,15 @@ export interface LoginLog {
   user_agent: string | null;
 }
 
+export interface Visit {
+  id: number;
+  username: string;
+  visited_at: string;
+  last_active_at: string;
+  duration_seconds: number;
+  ip_address: string | null;
+}
+
 export interface Message {
   id: number;
   week_start_date: string;
