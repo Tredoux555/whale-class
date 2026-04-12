@@ -195,7 +195,240 @@ montree.xyz
 
 ---
 
-## RECENT STATUS (Apr 11, 2026)
+## RECENT STATUS (Apr 12, 2026)
+
+### ⚡ Session 19 — OBS Setup + Video Manager Upload Fix + Story Log Fix + Tell Guru Bug Fixes (Apr 12, 2026)
+
+**Three commits pushed to main: `21a5ffb2`, `97c56ae3`, `e7f2d644`.**
+
+**THE TASK:** Four separate tasks: revert dashboard card layout, fix video uploads, fix Story log spam, fix Tell Guru card bugs. Plus OBS Studio setup for screen recording.
+
+**A. Dashboard Card Layout Revert — `21a5ffb2`:**
+- Session 18 changed dashboard to `aspect-square` cards with `content-center` grid alignment
+- On phone these bunched at the bottom with huge whitespace above — user requested revert
+- Restored original `gridTemplateRows: repeat(rows, 1fr)` viewport-filling pattern
+- Removed `aspect-square` and `content-center` from card/grid
+- **Key file**: `app/montree/dashboard/page.tsx`
+
+**B. Video Manager Signed URL Upload — (part of `97c56ae3` context, separate feature):**
+- Root cause: large video files proxied through Railway → TLS errors (`ERR_SSL_BAD_RECORD_MAC_ALERT`, `ERR_CONNECTION_CLOSED`)
+- Fix: two-step signed URL upload — client gets signed URL from server (small JSON request), then uploads directly to Supabase bypassing Railway entirely
+- Added `export const maxDuration = 120` to route
+- Mode 1: JSON request → server generates signed URL + saves metadata → returns `{ signedUrl }`
+- Mode 2: Client PUTs file directly to Supabase signed URL (bypasses Railway)
+- **Key files**: `app/api/admin/video-manager/route.ts`, `app/admin/video-manager/page.tsx`
+
+**C. Story Login Log Spam Fix — `97c56ae3`:**
+- Railway logs spamming `[Upload Media] Session columns missing — retrying without: login_log_id` and similar on every message send
+- Root cause: `app/api/story/admin/send/route.ts`, `app/api/story/upload-media/route.ts`, and `app/api/story/message/route.ts` were inserting `login_log_id`, `session_token`, `is_from_admin` columns that were never added to production DB
+- Fix: removed all session-linking fields and retry logic from all three routes. Inserts now use core fields only (week_start_date, message_type, content/url, author, expires_at, is_expired)
+- Zero "Session columns missing" warnings going forward
+- **Key files**: `app/api/story/admin/send/route.ts`, `app/api/story/upload-media/route.ts`, `app/api/story/message/route.ts`
+
+**D. Tell Guru Bug Fixes — `e7f2d644`:**
+
+Two bugs fixed:
+
+*Bug 1 — "Tell me about Child" instead of child's real name:*
+- Root cause: `childName` prop sourced from `session?.classroom?.children?.find(...)` — but `MontreeSession.classroom` type only has `{ id, name, age_group }`. No `children` array exists on the session object. Always returned `undefined`, always fell back to `'Child'`.
+- Fix: added `onboardingChildName` state. Profile check `useEffect` now fetches child name in parallel from `/api/montree/children/${childId}` (returns `{ success: true, child: { name, ... } }`). Sets `onboardingChildName` from `childData.child.name`.
+- TellGuruCard now receives real name. Fallback changed from `'Child'` → `'this child'`.
+
+*Bug 2 — Card reappears after completing onboarding:*
+- Root cause: Profile GET endpoint had `Cache-Control: private, max-age=120, stale-while-revalidate=300`. Browser cached `{ profile: null }` response for 2 minutes. After onboarding saved the profile to DB, navigating away and back within 2 minutes served the stale cached null, making `hasProfile = false` and showing the card again.
+- Fix: Changed profile GET `Cache-Control` to `no-store`.
+- **Key files**: `app/montree/dashboard/[childId]/page.tsx`, `app/api/montree/children/[childId]/profile/route.ts`
+
+**E. OBS Studio Setup (no git commit — local Mac config only):**
+- User had OBS 32.1.1 installed but unconfigured
+- Scene collection "Tredoux" created at `~/Library/Application Support/obs-studio/basic/scenes/Tredoux.json`
+- Profile output paths updated to Desktop (`~/Library/Application Support/obs-studio/basic/profiles/Untitled/basic.ini`)
+- **User manually set up** (via OBS UI — JSON injection approach failed because OBS overwrites the file when active):
+  - Scene "Tredoux2" with sources: macOS Screen Capture (Display Capture, Built-in Retina 1440×900) + Video Capture Device (FaceTime HD Camera)
+  - Webcam visible top-right of preview
+  - System audio captured (macOS Audio Capture channel — green bars moving on speaker output)
+  - **Microphone NOT yet configured** — user needs to go to OBS Settings → Audio → Mic/Auxiliary Audio → Built-in Microphone (or DJI Mic Mini when receiver is plugged in)
+- Recording saves to Desktop as `.mov` file, named `YYYY-MM-DD HH-MM-SS`
+- **DJI Mic Mini**: plug receiver into USB-C → shows up automatically as audio device → select in OBS Settings → Audio
+
+**YouTube videos downloaded this session (H.264 MP4, Desktop):**
+- `Jack Hartmann - Animal Habitats.mp4` (~37MB, 720p) — `https://www.youtube.com/watch?v=knynl6dFonU`
+- `Circle of Life.mp4` (~24MB, 720p) — `https://www.youtube.com/watch?v=GibiNy4d4gc`
+- Pipeline: `~/Library/Python/3.14/bin/yt-dlp --cookies-from-browser chrome --remote-components ejs:github -f "bestvideo[height<=720]+bestaudio" --merge-output-format mp4 -o ~/Desktop/"%(title)s.%(ext)s" "URL"` then re-encode: `ffmpeg -i input.mp4 -c:v libx264 -crf 28 -preset fast -vf "scale=-2:720" -c:a aac -movflags +faststart output.mp4`
+- QuickTime incompatibility note: YouTube downloads default to AV1/VP9 codec. Re-encode to H.264 with ffmpeg command above before using in class.
+
+**Health checks:**
+- ✅ Dashboard revert: viewport-filling grid restored
+- ✅ Story routes: no dead column inserts
+- ✅ Tell Guru: name fetched from child API, cache disabled on profile endpoint
+- ✅ OBS: screen + webcam recording working, files save to Desktop
+- ✅ All 3 commits deployed to Railway
+
+**Next session priorities:**
+1. **Add mic to OBS** — Settings → Audio → Mic/Auxiliary Audio → Built-in Microphone. Test voice is captured.
+2. **Test Tell Guru on production** — tap a child without a profile, verify name shows correctly (not "Child"), complete voice description, navigate away and back — card should NOT reappear
+3. **Monitor Campaign D** on gmass.co/dashboard — should be finishing up (~Apr 17). Check open rates and bounce rate.
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts
+5. **Test Classroom Builder duplicate detection** — type an existing student name, verify "Already in classroom" warning
+6. **Test parent dashboard on phone** — verify latest report loads inline, photo lightbox works
+7. **Consider "Tell Guru" post-Classroom-Builder flow** — after adding students via Classroom Builder, prompt teacher to describe each new child
+
+---
+
+### ⚡ Session 18 — Dashboard Polish + "Tell Guru" Voice Onboarding + Security Fix (Apr 12, 2026)
+
+**Ten commits pushed to main: `f48cc08f` through `35c501b7`.**
+
+**THE TASK:** Multiple UI polish requests + a new voice-first child onboarding feature + a security fix.
+
+**A. Dashboard Polish (6 commits):**
+- **`f48cc08f`** — Added 'Molly' to WHALE_CLASS_ORDER (position 19, 21 names total)
+- **`e0671f30`** — Capture page: moved capture button to RIGHT side (thumb-friendly), child tagging grid now auto-fits screen with zero scrolling using dynamic CSS Grid (`gridTemplateColumns: repeat(cols, 1fr)`, `gridTemplateRows: repeat(rows, 1fr)`)
+- **`7cb0cf07`** — Added ← back button to child tagging screen (router.back())
+- **`3778c0b1`** — Story photos: `object-cover h-48` → `object-contain` (show full photos)
+- **`8d92773c`** — Dashboard: students-only screen. Removed Paperwork Tracker, Teacher Tools, Birthday Banner, Daily Brief from page (all still accessible via "..." menu). Student grid uses same auto-fit pattern as capture page.
+- **`aea5527f`** — Dashboard: square student cards. Changed from stretched rectangles (`gridTemplateRows: repeat(rows, 1fr)`) to `aspect-square` cards with `content-center` grid alignment.
+- **`96e04c44`** — Dashboard: removed "+" Add card from grid. Students are now added exclusively via Classroom Builder in the "..." menu.
+
+**B. SECURITY FIX — `0116145c`:**
+- **Story login page** (`app/story/page.tsx`) was showing "Recent Updates" section with message activity (usernames, "sent a message", timestamps) — completely broke the secrecy of the messaging system.
+- **Removed**: `RecentMessage` interface, `recentMessages` state, `useEffect` fetch to `/api/story/recent-messages`, `getTypeIcon()`, `formatTime()`, all JSX rendering messages.
+- Page now shows ONLY the login form (Parent Name + Access Code + button).
+
+**C. Paperwork Tracker Priority — `dfc0d7f6`:**
+- Students sorted by `weeks_behind` descending within each section (most behind first)
+- Reversed section render order: "Needs catch-up" FIRST → "Almost there" → "Up to date" (collapsed by default)
+- **Key file**: `components/montree/PaperworkPanel.tsx` (lines 187-189, 389-474)
+
+**D. Classroom Builder Duplicate Detection — `35c501b7`:**
+- Preview step now checks new names against existing children in classroom
+- Names that already exist show "Already in classroom" and are skipped
+- Case-insensitive comparison using `Set` of existing names
+- **Key file**: `app/montree/dashboard/classroom-builder/page.tsx` (lines 129-131)
+
+**E. "Tell Guru" Voice Onboarding — `02dd3118` (THE BIG FEATURE):**
+
+New voice-first onboarding for children without mental profiles. When teacher taps into a child with no `montree_child_mental_profiles` row, a green card appears: "Tell me about [Child]" with a mic button.
+
+**Flow:**
+1. Teacher taps mic → speaks freely about the child (experience, personality, strengths, challenges)
+2. Recording timer with encouraging messages ("Take your time..." → "Great, keep going..." → "Wonderful detail!")
+3. Tap stop → Whisper transcribes → Sonnet extracts structured profile via `tool_use`
+4. Profile saved to `montree_child_mental_profiles`, curriculum positions seeded, raw transcript saved as teacher note
+5. Card disappears → normal child view, now enriched
+
+**Also supports "or type instead"** — textarea fallback if voice isn't practical.
+
+**Extraction via Sonnet `tool_use`** (`save_child_profile` tool):
+- Experience level: new / some / experienced / advanced
+- Curriculum levels per area: 0-100 scale mapped to Montessori progression landmarks
+- Temperament: 9 traits on 1-5 scale (activity, persistence, adaptability, mood, etc.)
+- Learning modality: visual / auditory / kinesthetic (1-5)
+- Focus: baseline minutes, optimal time of day
+- Sensitive periods: 6 periods with status
+- Context: family notes, special considerations, strategies, triggers
+
+**Curriculum seeding**: For non-new children, seeds `montree_child_work_progress` based on extracted levels. E.g., if teacher says "she's been doing Montessori for 2 years, loves the pink tower" → sensorial set to ~35%, first third of sensorial works marked mastered, next few practicing/presented.
+
+**Key files:**
+- `components/montree/onboarding/TellGuruCard.tsx` — voice recording UI (331 lines)
+- `app/api/montree/children/[childId]/onboard/route.ts` — Sonnet extraction + DB writes (364 lines)
+- `app/montree/dashboard/[childId]/page.tsx` — hasProfile state + conditional render
+
+**F. Health Check Results (end of session):**
+- **Production pages**: ✅ All loading (montree.xyz → 302, /story → 200, /montree/login → 200, /tools/*.html → 200)
+- **Story security**: ✅ No "recent updates" or message activity visible on /story page (grep confirms 0 matches)
+- **API auth**: ✅ Protected endpoints return 401 without cookies (correct)
+- **Code audit**: ✅ All 11 files pass — no missing imports, no memory leaks, no security issues, no logic bugs
+- **Railway deploy**: ✅ All 10 commits deployed (35c501b7 on main)
+
+**Key architectural decisions this session:**
+- **Auto-fit grid pattern**: Reusable CSS Grid approach with dynamic `cols`/`rows` and `1fr` sizing. Applied to both capture page child selector and dashboard student grid. The capture page uses `gridTemplateRows: repeat(rows, 1fr)` (fills viewport) while the dashboard uses `aspect-square` + `content-center` (natural sizing, centered).
+- **Voice-first over forms**: Replaced the complex Add Student modal (Name + Age + Gender + Time at School + Current Work per Area) with voice recording. A 30-second voice note gives Sonnet more context than 6 form fields ever could.
+- **Single entry point for adding students**: Classroom Builder is now THE way to add students. The complex Add Student modal and the dashboard "+" card are both gone. Classroom Builder handles both bulk setup and single additions with built-in duplicate detection.
+
+**Key files changed this session (11 files, +880/-280 lines):**
+- `app/api/montree/children/[childId]/onboard/route.ts` — NEW: voice transcript → profile extraction
+- `components/montree/onboarding/TellGuruCard.tsx` — NEW: voice recording + onboarding UI
+- `app/montree/dashboard/[childId]/page.tsx` — hasProfile check + TellGuruCard render
+- `app/montree/dashboard/page.tsx` — students-only grid, removed sections
+- `app/montree/dashboard/capture/page.tsx` — button right + no-scroll grid + back button
+- `app/montree/dashboard/classroom-builder/page.tsx` — duplicate name detection
+- `app/story/page.tsx` — SECURITY: removed Recent Updates
+- `app/story/[session]/page.tsx` — full photos (object-contain)
+- `components/montree/PaperworkPanel.tsx` — sort by most behind first
+- `components/montree/media/CameraCapture.tsx` — capture button to right side
+- `lib/montree/weekly-admin/child-order.ts` — added Molly
+
+**Next session priorities:**
+1. **Test "Tell Guru" on production** — add a test student via Classroom Builder, tap into them, verify the voice card appears, record a description, verify profile is extracted and curriculum seeded
+2. **Test Classroom Builder duplicate detection** — type an existing name (e.g., "Amy"), verify it shows "Already in classroom" on preview
+3. **Test dashboard on phone** — verify square cards look good, no scrolling, capture button on right is comfortable
+4. **Monitor Campaign D** on gmass.co/dashboard — should be done by ~Apr 17
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+6. **Consider adding "Tell Guru" to the post-Classroom-Builder flow** — after creating students, prompt teacher to tell Guru about each one (guided walkthrough)
+7. **Consider removing the old Add Student modal entirely** — it's still accessible from the Students page but no longer the primary path
+
+---
+
+### ⚡ Session 17 — Complete Quick Guide Chinese Pre-Cache + Auto-Generation Pipeline (Apr 12, 2026)
+
+**One commit pushed to main: `ac5426f2` (guide route auto-Chinese-generation).**
+
+**THE TASK:** Pre-cache Chinese translations of ALL quick guides so Chinese school users never wait for an API call. Also build in automatic Chinese generation for any future works (including custom works).
+
+**A. Batch Translation — All 384 Whale Class Works Now Have Both English + Chinese Quick Guides:**
+- **38 custom works** had NO `quick_guide` at all (created via Photo Audit, never got guide content). Generated both English and Chinese for all 38 using Haiku `tool_use` structured output.
+- **346 standard works** had English guides but no Chinese. Translated all to Chinese via Haiku `tool_use`.
+- **20 works** initially got stub guides (<50 chars — Haiku echoed the work name back instead of generating content). Regenerated with stronger prompts forcing 200+ word output. All now 3000-6800 chars.
+- **DB state: 384/384 works have `quick_guide` (English) + `guide_content_zh` (Chinese JSONB).** Zero API calls needed for any user opening quick guides in either language.
+- Scripts used: `scripts/batch-translate-guides-haiku.js`, `scripts/generate-custom-guides.js`, `scripts/fix-short-guides.js` (all one-off, can be deleted)
+- Cost: ~$0.40 total (Haiku `tool_use` calls)
+- Network issues on user's Mac caused intermittent `TypeError: fetch failed` errors throughout — scripts had retry logic with 30s timeouts per API call, ran multiple cleanup passes
+
+**B. Code Change — Auto-Generate Chinese in Background (commit `ac5426f2`):**
+- **File**: `app/api/montree/works/guide/route.ts` — lines 168-195
+- When an English quick guide is served and `classroomId` exists, a fire-and-forget background check runs:
+  1. Query DB for `guide_content_zh` on that work
+  2. If null → call existing `translateGuideToZh()` (Sonnet) → cache result to `guide_content_zh`
+- **Covers all future works automatically**: any custom work created via Photo Audit, add-custom-work, or classroom setup will get its Chinese guide pre-cached the first time anyone opens the English version
+- The English response returns immediately — background translation doesn't block the user
+- Idempotent: checks cache existence before translating, so repeated English requests don't trigger redundant translations
+
+**C. Migration 169 — `guide_content_zh` Column (already run in prior session):**
+- `ALTER TABLE montree_classroom_curriculum_works ADD COLUMN IF NOT EXISTS guide_content_zh JSONB;`
+- JSONB structure matches the guide API response: `{ quick_guide, presentation_steps, materials, direct_aims, control_of_error, why_it_matters, parent_description, name }`
+
+**D. `story_message_history.is_from_admin` Column — ✅ FIXED (user ran SQL Apr 12):**
+- Migration `20260118_story_session_linking.sql` existed in git but was never executed on production
+- Railway logs showed repeated: `[Upload Media] Session columns missing — retrying without: Could not find the 'is_from_admin' column`
+- User ran `ALTER TABLE story_message_history ADD COLUMN IF NOT EXISTS is_from_admin BOOLEAN DEFAULT FALSE;` in Supabase SQL Editor
+- Code already had retry fallback stripping the column — now the column exists, retries won't trigger, logs will be clean
+
+**Key technical decisions:**
+- **Haiku `tool_use` over raw JSON**: Haiku consistently produces malformed JSON when asked to output raw text (unescaped quotes, fullwidth punctuation in Chinese). `tool_use` structured output eliminates this entirely — the API handles JSON serialization. Same pattern used for teacher reports.
+- **Background pre-generation on English requests**: Rather than requiring a separate Chinese request to trigger caching, English requests opportunistically pre-generate Chinese. This means the first parent who opens a guide in Chinese gets instant response even if no Chinese user has visited before.
+- **Sequential processing with 30s timeouts**: Parallel Haiku calls would be faster but risk rate limiting. Sequential with per-call timeouts ensures progress even with flaky network — failures skip quickly and cleanup passes catch them.
+
+**Key files changed this session:**
+- `app/api/montree/works/guide/route.ts` — background Chinese pre-generation (lines 168-195)
+
+**Audit results (verified programmatically):**
+- 384/384 works: `quick_guide` populated ✅
+- 384/384 works: `guide_content_zh` populated ✅
+- 0 works with short English guides (<50 chars) ✅
+- 0 works with short Chinese guides (<20 chars) ✅
+- All `guide_content_zh` values are valid JSONB objects with `quick_guide` string field ✅
+
+**Next session priorities:**
+1. **Test quick guides on production** — hard-refresh a work's quick guide in both English and Chinese locale, verify instant load (no spinner/delay)
+2. **Monitor Campaign D** on gmass.co/dashboard — should be done by ~Apr 17, check open rates
+3. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+4. **Test camera viewfinder on phone** (from Session 16) — verify 4:3 overlay + crop
+5. **Test parent dashboard on production** (from Session 16) — verify latest report loads inline
+6. **Consider cleaning up one-off scripts**: `scripts/batch-translate-guides-haiku.js`, `scripts/generate-custom-guides.js`, `scripts/fix-short-guides.js` can be deleted
+
+---
 
 ### ⚡ Session 16 — Parent Dashboard Redesign + Camera 4:3 Viewfinder + Hide Invite Parent (Apr 11, 2026)
 
@@ -1352,7 +1585,7 @@ Both local and production connect to the SAME Supabase database.
 
 ## Migrations Run (production)
 
-All migrations through 164 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class), 164 (cropped_storage_path on montree_media — run Apr 7 via Supabase SQL editor). **Migration 166 (`montree_global_works_staging`) still pending** from prior session. The Apr 7 self-learning loop SQL also added safety-net columns to `montree_visual_memory` (negative_descriptions, key_materials, description_confidence, source, source_media_id, photo_url, updated_at) — all `IF NOT EXISTS`, idempotent.
+All migrations through 169 have been run. Key ones: 147 (smart learning columns), 148 (classroom onboarding), 152-154 (teacher OS foundation), 155 (teacher OS foundation DDL), 156 (visitor tracking), 157 (teacher notes child_id), 158 (paperwork_current_week), 159 (teacher_confirmed media), 160 (dashboard feature gates + Whale Class enabled), 161 (enable weekly_admin_docs for Whale Class), 164 (cropped_storage_path on montree_media — run Apr 7 via Supabase SQL editor), 169 (guide_content_zh JSONB on montree_classroom_curriculum_works — run Apr 11). **Migration 166 (`montree_global_works_staging`) still pending** from prior session. The Apr 7 self-learning loop SQL also added safety-net columns to `montree_visual_memory` (negative_descriptions, key_materials, description_confidence, source, source_media_id, photo_url, updated_at) — all `IF NOT EXISTS`, idempotent. **Apr 12**: `story_message_history.is_from_admin BOOLEAN DEFAULT FALSE` added via Supabase SQL Editor (migration `20260118_story_session_linking.sql` was in git but never run).
 
 ---
 
