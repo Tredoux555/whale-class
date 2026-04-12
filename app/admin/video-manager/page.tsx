@@ -108,33 +108,54 @@ export default function VideoManagerPage() {
 
   async function uploadVideo() {
     if (!uploadFile || !uploadTitle) return;
-    
+
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', uploadFile);
-      formData.append('title', uploadTitle);
-      formData.append('category', uploadCategory);
-      if (uploadWeek) formData.append('week', uploadWeek);
-
+      // Step 1: Get signed upload URL from server (small JSON request — no large file)
       const res = await fetch('/api/admin/video-manager', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: uploadTitle,
+          category: uploadCategory,
+          week: uploadWeek || undefined,
+          fileName: uploadFile.name,
+          contentType: uploadFile.type,
+        })
       });
       const data = await res.json();
-      
-      if (data.success) {
-        setVideos(prev => [data.video, ...prev]);
-        setShowUpload(false);
-        setUploadFile(null);
-        setUploadTitle('');
-        setUploadWeek('');
-        setUploadCategory('song-of-week');
-      } else {
-        alert('Failed to upload: ' + data.error);
+
+      if (!data.success || !data.signedUrl) {
+        alert('Failed to prepare upload: ' + (data.error || 'unknown error'));
+        setUploading(false);
+        return;
       }
+
+      // Step 2: Upload file directly to Supabase (browser → Supabase, bypasses server)
+      const uploadRes = await fetch(data.signedUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': uploadFile.type || 'video/mp4',
+        },
+        body: uploadFile
+      });
+
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text().catch(() => 'Upload failed');
+        alert('Failed to upload file: ' + errText);
+        setUploading(false);
+        return;
+      }
+
+      // Success — metadata already saved by server in step 1
+      setVideos(prev => [data.video, ...prev]);
+      setShowUpload(false);
+      setUploadFile(null);
+      setUploadTitle('');
+      setUploadWeek('');
+      setUploadCategory('song-of-week');
     } catch (err) {
-      alert('Failed to upload video');
+      alert('Failed to upload video: ' + (err instanceof Error ? err.message : 'unknown'));
     }
     setUploading(false);
   }

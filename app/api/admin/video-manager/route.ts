@@ -33,9 +33,72 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Allow up to 120s for large video uploads
+export const maxDuration = 120;
+
 // POST - Upload new video
+// Supports two modes:
+// 1. mode=signed-url: Returns a signed upload URL for direct browser→Supabase upload (preferred for large files)
+// 2. Default: Proxies upload through server (legacy, may fail for large files on Railway)
 export async function POST(request: NextRequest) {
   try {
+    const contentType = request.headers.get('content-type') || '';
+
+    // Mode 1: Generate signed upload URL (client uploads directly to Supabase)
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      const { title, category, week, fileName: originalName, contentType: fileContentType } = body;
+
+      if (!title || !category || !originalName) {
+        return NextResponse.json({
+          success: false,
+          error: 'Missing required fields: title, category, fileName'
+        }, { status: 400 });
+      }
+
+      const id = `vid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const extension = originalName.split('.').pop() || 'mp4';
+      const storagePath = `videos/${id}.${extension}`;
+
+      const supabase = createSupabaseAdmin();
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUploadUrl(storagePath);
+
+      if (signedError || !signedData) {
+        console.error('Signed URL error:', signedError);
+        return NextResponse.json({
+          success: false,
+          error: `Failed to create upload URL: ${signedError?.message || 'unknown'}`
+        }, { status: 500 });
+      }
+
+      // Get the public URL for after upload completes
+      const { data: urlData } = supabase.storage
+        .from(STORAGE_BUCKET)
+        .getPublicUrl(storagePath);
+
+      // Save metadata now (video will be available once client uploads)
+      const video: Video = {
+        id,
+        title,
+        category,
+        videoUrl: urlData.publicUrl,
+        uploadedAt: new Date().toISOString(),
+        ...(week && { week })
+      };
+      await addVideo(video);
+
+      return NextResponse.json({
+        success: true,
+        signedUrl: signedData.signedUrl,
+        token: signedData.token,
+        path: signedData.path,
+        video
+      });
+    }
+
+    // Mode 2: Legacy FormData proxy upload (kept as fallback)
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
     const title = formData.get('title') as string;
@@ -43,9 +106,9 @@ export async function POST(request: NextRequest) {
     const week = formData.get('week') as string | null;
 
     if (!file || !title || !category) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Missing required fields: file, title, category' 
+      return NextResponse.json({
+        success: false,
+        error: 'Missing required fields: file, title, category'
       }, { status: 400 });
     }
 
@@ -57,7 +120,7 @@ export async function POST(request: NextRequest) {
     // Upload to Supabase Storage
     const supabase = createSupabaseAdmin();
     const buffer = await file.arrayBuffer();
-    
+
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .upload(`videos/${fileName}`, buffer, {
@@ -69,7 +132,7 @@ export async function POST(request: NextRequest) {
       console.error('Upload error:', uploadError);
       return NextResponse.json({
         success: false,
-        error: 'Failed to upload video'
+        error: `Failed to upload video: ${uploadError.message}`
       }, { status: 500 });
     }
 

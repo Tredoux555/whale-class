@@ -3,9 +3,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { encryptMessage } from '@/lib/message-encryption';
 import {
   getCurrentWeekStart,
-  getSessionToken,
   verifyStoryAdminToken,
-  getAdminLoginLogId,
 } from '@/lib/story/story-admin-auth';
 
 // Allow large uploads (video up to 300MB — mobile 4G can take a few min)
@@ -147,11 +145,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const sessionToken = getSessionToken(authHeader);
     const contentType = req.headers.get('content-type') || '';
     const supabase = getSupabase();
     const weekStartDate = getCurrentWeekStart();
-    const loginLogId = await getAdminLoginLogId(supabase, sessionToken);
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);
@@ -172,8 +168,9 @@ export async function POST(req: NextRequest) {
       const trimmedMessage = message.trim();
       const encryptedMessage = encryptMessage(trimmedMessage);
 
-      // Core fields always present; session linking fields may not exist in DB yet
-      const textRecord: Record<string, unknown> = {
+      // Core fields only — session linking columns (login_log_id, session_token, is_from_admin)
+      // were never added to production story_message_history table
+      const textRecord = {
         week_start_date: weekStartDate,
         message_type: 'text',
         message_content: encryptedMessage,
@@ -181,26 +178,8 @@ export async function POST(req: NextRequest) {
         expires_at: expiresAt.toISOString(),
         is_expired: false,
       };
-      // Session linking — add only if columns exist (migration may not have run)
-      if (sessionToken) textRecord.session_token = sessionToken;
-      if (loginLogId) textRecord.login_log_id = loginLogId;
-      textRecord.is_from_admin = true;
 
       let { error: textInsertError } = await supabase.from('story_message_history').insert(textRecord);
-
-      // If insert fails due to unknown column, retry without session fields
-      if (textInsertError && (textInsertError.message?.includes('column') || textInsertError.code === '42703')) {
-        console.warn('[Send] Session columns missing — retrying without:', textInsertError.message);
-        const { error: retryError } = await supabase.from('story_message_history').insert({
-          week_start_date: weekStartDate,
-          message_type: 'text',
-          message_content: encryptedMessage,
-          author: adminUsername,
-          expires_at: expiresAt.toISOString(),
-          is_expired: false,
-        });
-        textInsertError = retryError;
-      }
 
       if (textInsertError) {
         console.error('[Send] Text message DB insert failed:', textInsertError);
@@ -322,8 +301,8 @@ export async function POST(req: NextRequest) {
     const mediaUrl = urlData.publicUrl;
     const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
 
-    // Core fields always present; session linking fields may not exist in DB yet
-    const mediaRecord: Record<string, unknown> = {
+    // Core fields only — session linking columns not present in production
+    const mediaRecord = {
       week_start_date: weekStartDate,
       message_type: mediaType,
       message_content: encryptedCaption,
@@ -333,27 +312,8 @@ export async function POST(req: NextRequest) {
       expires_at: expiresAt.toISOString(),
       is_expired: false,
     };
-    if (sessionToken) mediaRecord.session_token = sessionToken;
-    if (loginLogId) mediaRecord.login_log_id = loginLogId;
-    mediaRecord.is_from_admin = true;
 
     let { error: mediaInsertError } = await supabase.from('story_message_history').insert(mediaRecord);
-
-    // Retry without session fields if columns don't exist
-    if (mediaInsertError && (mediaInsertError.message?.includes('column') || mediaInsertError.code === '42703')) {
-      console.warn('[Send] Session columns missing on media — retrying without:', mediaInsertError.message);
-      const { error: retryError } = await supabase.from('story_message_history').insert({
-        week_start_date: weekStartDate,
-        message_type: mediaType,
-        message_content: encryptedCaption,
-        media_url: mediaUrl,
-        media_filename: file.name || filename,
-        author: adminUsername,
-        expires_at: expiresAt.toISOString(),
-        is_expired: false,
-      });
-      mediaInsertError = retryError;
-    }
 
     // CHECK constraint fallback: if 'document' isn't in the allowed enum yet,
     // store as 'image' — readers detect documents by filename extension.
