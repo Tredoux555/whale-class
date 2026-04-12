@@ -14,34 +14,50 @@ function getJWTSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-// Log admin login to database
+// Log admin login to database (with retry, matching user auth pattern)
 async function logAdminLogin(
   supabase: ReturnType<typeof getSupabase>,
   username: string,
   token: string,
   ip: string,
   userAgent: string
-): Promise<void> {
-  try {
+): Promise<boolean> {
+  const payload = {
+    username,
+    login_at: new Date().toISOString(),
+    session_token: token.substring(0, 50),
+    ip_address: ip,
+    user_agent: userAgent
+  };
 
-    const { data, error } = await supabase.from('story_admin_login_logs').insert({
-      username,
-      login_at: new Date().toISOString(),
-      session_token: token.substring(0, 50),
-      ip_address: ip,
-      user_agent: userAgent
-    }).select('id').maybeSingle();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const { data, error } = await supabase
+        .from('story_admin_login_logs')
+        .insert(payload)
+        .select('id')
+        .maybeSingle();
 
-    if (error) {
-      console.error('[AdminAuth] Login log INSERT FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
-    } else if (!data) {
-      console.error('[AdminAuth] Login log INSERT returned no data — row may not have been created');
-    } else {
-      console.log(`[AdminAuth] Login logged: user=${username} ip=${ip} log_id=${data.id}`);
+      if (!error && data) {
+        console.log(`[AdminAuth] Login logged: user=${username} ip=${ip} log_id=${data.id} attempt=${attempt}`);
+        return true;
+      }
+
+      if (error?.code === '23505') {
+        console.log(`[AdminAuth] Login log already exists (attempt ${attempt})`);
+        return true;
+      }
+
+      console.error(`[AdminAuth] Login log attempt ${attempt}/3 FAILED:`, error?.code, error?.message);
+    } catch (e) {
+      console.error(`[AdminAuth] Login log attempt ${attempt}/3 exception:`, e);
     }
-  } catch (e) {
-    console.error('[AdminAuth] Login log exception:', e);
+
+    if (attempt < 3) await new Promise(r => setTimeout(r, 200));
   }
+
+  console.error(`[AdminAuth] LOGIN LOG FAILED ALL 3 ATTEMPTS: user=${username} ip=${ip}`);
+  return false;
 }
 
 export async function POST(req: NextRequest) {
