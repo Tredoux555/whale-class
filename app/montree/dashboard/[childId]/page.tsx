@@ -73,6 +73,7 @@ export default function WeekPage() {
 
   // "Tell Guru" onboarding — show card when no mental profile exists
   const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
+  const [onboardingChildName, setOnboardingChildName] = useState<string>('');
 
   // Guru weekly summary state — single object instead of 7 individual useState calls
   const [guruSettings, setGuruSettings] = useState<{
@@ -259,10 +260,15 @@ export default function WeekPage() {
   useEffect(() => {
     if (!childId) return;
     setHasProfile(null); // reset while loading
-    montreeApi(`/api/montree/children/${childId}/profile`)
-      .then(r => r.ok ? r.json() : null)
-      .then(data => setHasProfile(!!data?.profile))
-      .catch(() => setHasProfile(true)); // On error, don't block — assume profile exists
+    // Fetch profile + child name in parallel
+    Promise.all([
+      montreeApi(`/api/montree/children/${childId}/profile`).then(r => r.ok ? r.json() : null),
+      montreeApi(`/api/montree/children/${childId}`).then(r => r.ok ? r.json() : null),
+    ]).then(([profileData, childData]) => {
+      setHasProfile(!!profileData?.profile);
+      if (childData?.child?.name) setOnboardingChildName(childData.child.name);
+      else if (childData?.name) setOnboardingChildName(childData.name);
+    }).catch(() => setHasProfile(true)); // On error, don't block — assume profile exists
   }, [childId]);
 
   // Fetch on mount and when childId changes
@@ -636,7 +642,7 @@ export default function WeekPage() {
       {hasProfile === false && (
         <TellGuruCard
           childId={childId}
-          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          childName={onboardingChildName || 'this child'}
           classroomId={session?.classroom?.id || ''}
           onComplete={() => setHasProfile(true)}
         />

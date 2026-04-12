@@ -54,7 +54,7 @@ export async function GET(
       success: true,
       profile: profile || null,
     });
-    response.headers.set('Cache-Control', 'private, max-age=120, stale-while-revalidate=300');
+    response.headers.set('Cache-Control', 'no-store');
     return response;
 
   } catch (error) {
