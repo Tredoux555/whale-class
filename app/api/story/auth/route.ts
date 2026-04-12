@@ -7,27 +7,48 @@ import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger'
 // NOTE: Hardcoded plaintext passwords removed in Phase 4 security hardening.
 // All users must authenticate via bcrypt hashes in the story_users table.
 
-async function logLogin(username: string, ip: string, userAgent: string, token: string) {
-  try {
-    const supabase = getSupabase();
-    const { data, error } = await supabase.from('story_login_logs').insert({
-      username,
-      login_at: new Date().toISOString(),
-      session_token: token.substring(0, 50),
-      ip_address: ip,
-      user_agent: userAgent
-    }).select('id').maybeSingle();
+async function logLogin(username: string, ip: string, userAgent: string, token: string): Promise<boolean> {
+  const shortToken = token.substring(0, 50);
+  const payload = {
+    username,
+    login_at: new Date().toISOString(),
+    session_token: shortToken,
+    ip_address: ip,
+    user_agent: userAgent
+  };
 
-    if (error) {
-      console.error('[Auth] Login log INSERT FAILED — code:', error.code, 'message:', error.message, 'details:', error.details, 'hint:', error.hint);
-    } else if (!data) {
-      console.error('[Auth] Login log INSERT returned no data — row may not have been created');
-    } else {
-      console.log(`[Auth] Login logged: user=${username} ip=${ip} log_id=${data.id}`);
+  // Try up to 3 times — the single most important write in the Story system
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const supabase = getSupabase();
+      const { data, error } = await supabase
+        .from('story_login_logs')
+        .insert(payload)
+        .select('id')
+        .maybeSingle();
+
+      if (!error && data) {
+        console.log(`[Auth] Login logged: user=${username} ip=${ip} log_id=${data.id} attempt=${attempt}`);
+        return true;
+      }
+
+      // Check if row already exists (duplicate session_token from retry)
+      if (error?.code === '23505') {
+        console.log(`[Auth] Login log already exists for token (attempt ${attempt})`);
+        return true;
+      }
+
+      console.error(`[Auth] Login log attempt ${attempt}/3 FAILED:`, error?.code, error?.message);
+    } catch (e) {
+      console.error(`[Auth] Login log attempt ${attempt}/3 exception:`, e);
     }
-  } catch (e) {
-    console.error('[Auth] Login log exception:', e);
+
+    // Brief pause before retry
+    if (attempt < 3) await new Promise(r => setTimeout(r, 200));
   }
+
+  console.error(`[Auth] LOGIN LOG FAILED ALL 3 ATTEMPTS: user=${username} ip=${ip} token=${shortToken}`);
+  return false;
 }
 
 export async function POST(req: NextRequest) {
@@ -86,10 +107,11 @@ export async function POST(req: NextRequest) {
           .setExpirationTime('24h')
           .sign(getJWTSecret());
 
-        // Log the login
-        await logLogin(username, ip, userAgent, token);
+        // Log the login (3 retries). Even if all fail, return token —
+        // heartbeat self-heal will catch it, and Z can still use the site.
+        const logged = await logLogin(username, ip, userAgent, token);
 
-        return NextResponse.json({ session: token });
+        return NextResponse.json({ session: token, _loginLogged: logged });
       }
     }
   } catch (e) {

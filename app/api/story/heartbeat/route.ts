@@ -40,6 +40,9 @@ export async function POST(req: NextRequest) {
     // row in story_login_logs. If the original POST /api/story/auth call
     // was rate-limited (shared IP) or its insert silently failed, this
     // recovers the missing login so the admin dashboard sees Z every time.
+    //
+    // This is the LAST LINE OF DEFENSE. If this also fails, the login is
+    // truly lost. So we retry twice and log loudly.
     try {
       const { data: existing } = await supabase
         .from('story_login_logs')
@@ -51,19 +54,38 @@ export async function POST(req: NextRequest) {
       if (!existing) {
         const ip = getClientIP(req.headers);
         const userAgent = getUserAgent(req.headers);
-        const { error: insErr } = await supabase
-          .from('story_login_logs')
-          .insert({
-            username,
-            login_at: new Date().toISOString(),
-            session_token: shortToken,
-            ip_address: ip,
-            user_agent: userAgent,
-          });
-        if (insErr) {
-          console.error('[Heartbeat] Self-heal login log insert failed:', insErr.message);
-        } else {
-          console.log(`[Heartbeat] Self-healed login log: user=${username} ip=${ip}`);
+        let healed = false;
+
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          const { error: insErr } = await supabase
+            .from('story_login_logs')
+            .insert({
+              username,
+              login_at: new Date().toISOString(),
+              session_token: shortToken,
+              ip_address: ip,
+              user_agent: userAgent,
+            });
+
+          if (!insErr) {
+            console.log(`[Heartbeat] Self-healed login log: user=${username} ip=${ip} attempt=${attempt}`);
+            healed = true;
+            break;
+          }
+
+          // Duplicate key means it was inserted between our SELECT and INSERT — that's fine
+          if (insErr.code === '23505') {
+            console.log(`[Heartbeat] Login log already exists (race condition ok): user=${username}`);
+            healed = true;
+            break;
+          }
+
+          console.error(`[Heartbeat] Self-heal attempt ${attempt}/2 FAILED: code=${insErr.code} msg=${insErr.message}`);
+          if (attempt < 2) await new Promise(r => setTimeout(r, 300));
+        }
+
+        if (!healed) {
+          console.error(`[Heartbeat] SELF-HEAL FAILED ALL ATTEMPTS: user=${username} token=${shortToken}`);
         }
       }
     } catch (e) {
