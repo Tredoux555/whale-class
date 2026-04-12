@@ -392,18 +392,16 @@ export default function DashboardPage() {
 
               {/* Birthday Banner, Daily Brief, Teacher Notes — moved out of main grid view */}
 
-              {/* ── Student Grid — auto-fits screen, no scrolling ── */}
+              {/* ── Student Grid — compact squares, centered ── */}
               {(() => {
                 const items = filteredChildren.length + (searchQuery ? 0 : 1); // +1 for Add card
                 const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
-                const rows = Math.ceil(items / cols);
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid gap-2 overflow-hidden"
+                    className="flex-1 grid gap-2 overflow-hidden content-center"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
-                      gridTemplateRows: `repeat(${rows}, 1fr)`,
                     }}
                   >
                     {filteredChildren.map((child, index) => (
@@ -412,7 +410,7 @@ export default function DashboardPage() {
                         href={`/montree/dashboard/${child.id}`}
                         data-tutorial="student-card"
                         {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                        className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
+                        className="aspect-square bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100"
                       >
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
                           {child.photo_url ? (
@@ -432,7 +430,7 @@ export default function DashboardPage() {
                       <Link
                         href="/montree/dashboard/students"
                         data-tutorial="add-student-button"
-                        className="bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all flex flex-col items-center justify-center min-h-0"
+                        className="aspect-square bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all flex flex-col items-center justify-center"
                       >
                         <span className="text-2xl text-gray-400">+</span>
                         <span className="text-xs text-gray-400">{t('common.add')}</span>
