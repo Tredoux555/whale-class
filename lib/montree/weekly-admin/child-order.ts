@@ -22,6 +22,7 @@ const WHALE_CLASS_ORDER: string[] = [
   'Kayla',
   'Stella',
   'Ryan',
+  'Molly',
 ];
 
 /**
