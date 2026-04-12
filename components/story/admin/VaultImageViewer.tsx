@@ -39,7 +39,7 @@ export function VaultImageViewer({
     return () => { document.body.style.overflow = ''; };
   }, []);
 
-  const hasAlbum = albumTotal != null && albumTotal > 1;
+  const hasAlbum = typeof albumTotal === 'number' && albumTotal > 1;
 
   return (
     <div

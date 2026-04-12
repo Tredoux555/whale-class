@@ -56,9 +56,11 @@ export default function AdminDashboard() {
     handleVaultDelete,
     handleVaultView,
     handleCloseViewer,
+    handleVaultLock,
     albumIndex,
     thumbnails,
     loadingThumbnails,
+    failedThumbnails,
     navigateAlbum,
     loadThumbnail,
   } = useVault(getSession);
@@ -256,10 +258,7 @@ export default function AdminDashboard() {
                 vaultPassword={vaultPassword}
                 onVaultPasswordChange={setVaultPassword}
                 onVaultUnlock={handleVaultUnlock}
-                onVaultLock={() => {
-                  setVaultUnlocked(false);
-                  setVaultPassword('');
-                }}
+                onVaultLock={handleVaultLock}
                 vaultError={vaultError}
                 vaultFiles={vaultFiles}
                 uploadingVault={uploadingVault}
@@ -276,6 +275,7 @@ export default function AdminDashboard() {
                 albumIndex={albumIndex}
                 thumbnails={thumbnails}
                 loadingThumbnails={loadingThumbnails}
+                failedThumbnails={failedThumbnails}
                 onNavigateAlbum={navigateAlbum}
                 onLoadThumbnail={loadThumbnail}
               />
