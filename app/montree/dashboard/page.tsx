@@ -329,7 +329,7 @@ export default function DashboardPage() {
           TEACHER DASHBOARD — Search → Students → Pulse → Tools
           ═══════════════════════════════════════════════════ */}
       {!isParent && (
-        <main className="max-w-6xl mx-auto px-4 pt-5 pb-8">
+        <main className="max-w-6xl mx-auto px-4 pt-3 pb-2 flex flex-col" style={{ height: 'calc(100dvh - 56px)' }}>
 
           {children.length === 0 ? (
             /* Empty state — bulk import or add manually */
@@ -360,7 +360,7 @@ export default function DashboardPage() {
           ) : (
             <>
               {/* ── Search Bar ── */}
-              <div className="mb-4">
+              <div className="mb-2">
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
                   <input
@@ -390,120 +390,59 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              {/* 📝 Teacher Notes moved to /montree/dashboard/notes (nav icon in header) */}
+              {/* Birthday Banner, Daily Brief, Teacher Notes — moved out of main grid view */}
 
-              {/* ── Birthday Banner ── */}
-              {session?.classroom?.id && <BirthdayBanner />}
-
-              {/* ── Daily Brief Panel (feature-gated) ── */}
-              {session?.classroom?.id && isEnabled('daily_brief') && (
-                <div className="mb-4">
-                  <DailyBriefPanel />
-                </div>
-              )}
-
-              {/* ── Student Grid ── */}
-              <div data-tutorial="student-grid" className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 mb-6">
-                {filteredChildren.map((child, index) => (
-                  <Link
-                    key={child.id}
-                    href={`/montree/dashboard/${child.id}`}
-                    data-tutorial="student-card"
-                    {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                    className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all p-3 flex flex-col items-center border border-gray-100"
+              {/* ── Student Grid — auto-fits screen, no scrolling ── */}
+              {(() => {
+                const items = filteredChildren.length + (searchQuery ? 0 : 1); // +1 for Add card
+                const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
+                const rows = Math.ceil(items / cols);
+                return (
+                  <div
+                    data-tutorial="student-grid"
+                    className="flex-1 grid gap-2 overflow-hidden"
+                    style={{
+                      gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                      gridTemplateRows: `repeat(${rows}, 1fr)`,
+                    }}
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-xl sm:text-2xl overflow-hidden mb-2 shadow-md">
-                      {child.photo_url ? (
-                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
-                      ) : (
-                        child.name.charAt(0)
-                      )}
-                    </div>
-                    <p className="text-xs font-semibold text-gray-800 truncate w-full text-center">
-                      {child.name.split(' ')[0]}
-                    </p>
-                  </Link>
-                ))}
-
-                {/* Add Student Card — only show when not searching */}
-                {!searchQuery && (
-                  <Link
-                    href="/montree/dashboard/students"
-                    data-tutorial="add-student-button"
-                    className="bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all p-3 flex flex-col items-center justify-center min-h-[100px]"
-                  >
-                    <span className="text-2xl text-gray-400 mb-1">+</span>
-                    <span className="text-xs text-gray-400">{t('common.add')}</span>
-                  </Link>
-                )}
-              </div>
-
-
-              {/* ── Collapsible Sections (below student grid) — feature-gated ── */}
-              {session?.classroom?.id && (isEnabled('intelligence_panels') || isEnabled('teacher_tools') || isEnabled('paperwork_tracker')) && (
-                <div className="space-y-3">
-
-                  {/* ─── 📊 Classroom Intelligence ─── */}
-                  {isEnabled('intelligence_panels') && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                      <button
-                        onClick={() => toggleSection('intelligence')}
-                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    {filteredChildren.map((child, index) => (
+                      <Link
+                        key={child.id}
+                        href={`/montree/dashboard/${child.id}`}
+                        data-tutorial="student-card"
+                        {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
                       >
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">📊</span>
-                          {t('dashboard.classroomIntelligence') || 'Classroom Intelligence'}
-                        </span>
-                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.intelligence ? 'rotate-180' : ''}`}>
-                          ▼
-                        </span>
-                      </button>
-                      {sectionsOpen.intelligence && (
-                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                          <div id="panel-attendance"><AttendanceWidget /></div>
-                          <div id="panel-stale_works"><StaleWorksPanel /></div>
-                          <div id="panel-conference_notes"><ConferenceNotesPanel /></div>
-                          <div id="panel-evidence"><EvidencePanel /></div>
-                          <div id="panel-pulse"><PulsePanel /></div>
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
+                          {child.photo_url ? (
+                            <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
+                          ) : (
+                            child.name.charAt(0)
+                          )}
                         </div>
-                      )}
-                    </div>
-                  )}
+                        <p className="text-xs font-semibold text-gray-800 truncate w-full text-center mt-1 px-1">
+                          {child.name.split(' ')[0]}
+                        </p>
+                      </Link>
+                    ))}
 
-                  {/* ─── 📋 Paperwork Tracker (standalone section) ─── */}
-                  {isEnabled('paperwork_tracker') && (
-                    <div id="paperwork-tracker">
-                      <PaperworkPanel />
-                    </div>
-                  )}
-
-                  {/* ─── 🛠️ Teacher Tools ─── */}
-                  {isEnabled('teacher_tools') && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                      <button
-                        onClick={() => toggleSection('tools')}
-                        className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                    {/* Add Student Card — only show when not searching */}
+                    {!searchQuery && (
+                      <Link
+                        href="/montree/dashboard/students"
+                        data-tutorial="add-student-button"
+                        className="bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all flex flex-col items-center justify-center min-h-0"
                       >
-                        <span className="flex items-center gap-2">
-                          <span className="text-base">🛠️</span>
-                          {t('dashboard.teacherTools') || 'Teacher Tools'}
-                        </span>
-                        <span className={`text-gray-400 transition-transform duration-200 ${sectionsOpen.tools ? 'rotate-180' : ''}`}>
-                          ▼
-                        </span>
-                      </button>
-                      {sectionsOpen.tools && (
-                        <div className="px-4 pb-4 space-y-3 border-t border-gray-100 pt-3">
-                          {isEnabled('weekly_admin_docs') && <WeeklyAdminCard classroomId={session.classroom.id} children={children} />}
-                          {isEnabled('shelf_autopilot') && <ShelfAutopilotCard classroomId={session.classroom.id} children={children} />}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                        <span className="text-2xl text-gray-400">+</span>
+                        <span className="text-xs text-gray-400">{t('common.add')}</span>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })()}
 
-
-                </div>
-              )}
+              {/* Intelligence + Paperwork + Teacher Tools accessible via ··· menu */}
             </>
           )}
         </main>
