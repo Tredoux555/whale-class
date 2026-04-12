@@ -302,7 +302,7 @@ export default function DashboardHeader() {
           {/* Language toggle — always visible */}
           <LanguageToggle />
 
-          {/* === DAILY DRIVERS — 3 icons: Capture, Notes, Photo Audit (Weekly Wrap merged into Photo Audit) === */}
+          {/* === SINGLE DAILY DRIVER — Capture only, everything else in More menu === */}
           <Link
             href="/montree/dashboard/capture"
             data-guide="nav-capture"
@@ -313,26 +313,13 @@ export default function DashboardHeader() {
           >
             📸
           </Link>
-          <Link
-            href="/montree/dashboard/notes"
-            data-guide="nav-notes"
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname === '/montree/dashboard/notes' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-            }`}
-            title={t('nav.notes')}
-          >
-            📝
-          </Link>
-          <Link
-            href="/montree/dashboard/photo-audit"
-            data-guide="nav-setup"
-            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
-              pathname?.startsWith('/montree/dashboard/photo-audit') || pathname === '/montree/dashboard/weekly-wrap' ? 'bg-white/40 ring-2 ring-white/50' : 'bg-white/20 hover:bg-white/30'
-            }`}
-            title={t('audit.title')}
-          >
-            🔍
-          </Link>
+
+          {/* Inbox — keep visible for notification badge */}
+          <InboxButton
+            conversationId={session.teacher.id}
+            userName={session.teacher.name || 'Teacher'}
+            data-tutorial="inbox-button"
+          />
 
           {/* === MORE MENU — everything else === */}
           {!isHome && (
@@ -349,6 +336,28 @@ export default function DashboardHeader() {
 
               {showMoreMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] min-w-[200px] py-1">
+                  <Link
+                    href="/montree/dashboard/notes"
+                    data-guide="nav-notes"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/notes' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">📝</span>
+                    <span>{t('nav.notes')}</span>
+                  </Link>
+                  <Link
+                    href="/montree/dashboard/photo-audit"
+                    data-guide="nav-setup"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname?.startsWith('/montree/dashboard/photo-audit') || pathname === '/montree/dashboard/weekly-wrap' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">🔍</span>
+                    <span>{t('audit.title')}</span>
+                  </Link>
                   <Link
                     href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
                     data-tutorial="guru-link"
@@ -461,24 +470,21 @@ export default function DashboardHeader() {
                     <span className="text-base">🏗️</span>
                     <span>{t('nav.classroomBuilder') || 'Classroom Setup'}</span>
                   </Link>
+
+                  {/* Divider before logout */}
+                  <div className="border-t border-gray-100 my-1" />
+
+                  <button
+                    onClick={() => { setShowMoreMenu(false); clearSession(); router.push('/montree/login'); }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <span className="text-base">🚪</span>
+                    <span>{t('auth.logout')}</span>
+                  </button>
                 </div>
               )}
             </div>
           )}
-
-          {/* Inbox — keep visible (message notifications) */}
-          <InboxButton
-            conversationId={session.teacher.id}
-            userName={session.teacher.name || 'Teacher'}
-            data-tutorial="inbox-button"
-          />
-
-          <button
-            onClick={() => { clearSession(); router.push('/montree/login'); }}
-            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors font-medium text-sm flex-shrink-0 whitespace-nowrap"
-          >
-            {t('auth.logout')}
-          </button>
         </div>
       </div>
 
