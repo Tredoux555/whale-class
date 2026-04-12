@@ -59,9 +59,11 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   };
   const activeTab = getActiveTab();
 
-  const tabs = [
-    { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
-    { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
+  // Review tab hidden — Photo Audit is now the single review flow.
+  // Gallery page still works via direct URL if needed later.
+  const tabs: { id: string; label: string; href: string }[] = [
+    // { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
+    // { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
 
   // Don't show loading spinner - render immediately with fallbacks
@@ -103,25 +105,27 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Tab Bar - Full width */}
-      <div className="bg-white border-b z-30 shadow-sm">
-        <div className="flex w-full">
-          {tabs.map(tab => (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              data-guide={`tab-${tab.id}`}
-              className={`flex-1 py-3 font-medium text-center text-xs sm:text-sm truncate px-1 ${
-                activeTab === tab.id
-                  ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500'
-                  : 'text-gray-500 hover:bg-gray-50'
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
+      {/* Tab Bar - Hidden when only one or zero tabs (Review tab removed, Photo Audit is the review flow) */}
+      {tabs.length > 1 && (
+        <div className="bg-white border-b z-30 shadow-sm">
+          <div className="flex w-full">
+            {tabs.map(tab => (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                data-guide={`tab-${tab.id}`}
+                className={`flex-1 py-3 font-medium text-center text-xs sm:text-sm truncate px-1 ${
+                  activeTab === tab.id
+                    ? 'bg-emerald-100 text-emerald-700 border-b-2 border-emerald-500'
+                    : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-4 py-4">
