@@ -197,6 +197,98 @@ montree.xyz
 
 ## RECENT STATUS (Apr 12, 2026)
 
+### ⚡ Session 20 — Daily Language 6 + Tell Guru Feature Gate + Story Visits + Weekly Activity Summary + New Icon (Apr 12, 2026)
+
+**Seven commits pushed to main: `a10317ca`, `47358e68`, `b38cc7b4`, `a55311a4`, `8202d91d`, `c7dc287e`.**
+
+**THE SESSION:** Six distinct features/fixes, all feature-gated behind super-admin toggles. Plus a complete icon redesign.
+
+**A. Daily Language 6 — `a10317ca`:**
+- Pink collapsible widget "📖 Today's Language 6" on the capture page's tag-child screen
+- Shows 6 children who most need a Language area observation, excluding those already seen today
+- Ordered: never-seen-in-language first → oldest observation date ascending
+- API: `GET /api/montree/dashboard/daily-language-6` — queries montree_media → works → areas (area_key='language'), handles group photos via montree_media_children junction table
+- Component: `components/montree/capture/DailyLanguageSix.tsx` — child pills with avatar, name, color-coded days badge (red=Never/14d+, amber=7-14d, blue=recent), tappable to toggle child selection
+- Feature-gated: `isEnabled('daily_language_6')` — migration 170 defines + enables for Whale Class
+- **Key files**: `app/api/montree/dashboard/daily-language-6/route.ts`, `components/montree/capture/DailyLanguageSix.tsx`, `app/montree/dashboard/capture/page.tsx`
+
+**B. Tell Guru Onboarding Bug Fix + Feature Gate — `47358e68`:**
+- **Root cause found**: Sonnet `tool_use` returned floats (e.g., 3.5) for INT CHECK(1-5) columns in `montree_child_mental_profiles`. DB rejected the upsert silently, code marked it non-fatal, returned success. Card reappeared because profile was never actually saved.
+- **Fix**: Added `clamp15()` (rounds + clamps to 1-5) and `validSP()` (validates enum values) validators in onboard route. Profile save failure now returns HTTP 500.
+- **Feature-gated**: `isEnabled('tell_guru_onboarding')` — both the useEffect profile check and the TellGuruCard render are gated. Migration 171 defines feature but does NOT enable for any school (hidden until ready for testing).
+- **Key files**: `app/api/montree/children/[childId]/onboard/route.ts`, `app/montree/dashboard/[childId]/page.tsx`
+
+**C. Story Admin: Hide Admin Logins — `b38cc7b4`:**
+- User only wants to see Z's logins, not their own admin logins
+- Removed `story_admin_login_logs` fetch entirely from login-logs route
+- Now only queries `story_login_logs` (user sessions)
+- **Key file**: `app/api/story/admin/login-logs/route.ts`
+
+**D. Story Visit Tracking — `a55311a4`:**
+- New `story_visits` table tracks every time Z opens/returns to the Story page
+- Heartbeat (fires every 30s) checks gap since last `last_seen_at` — if >5 minutes, inserts new visit row
+- Otherwise updates `last_active_at` on most recent visit (duration tracking)
+- Admin API: `GET /api/story/admin/visits` returns visits with computed `duration_seconds`
+- ActivityLogTab rewritten to show "👀 Page Visits" with today's visits highlighted, "stayed Xm" duration
+- **Migration 172**: `story_visits` table (id, username, visited_at, last_active_at, ip_address, user_agent) + indexes
+- **Key files**: `app/api/story/heartbeat/route.ts`, `app/api/story/admin/visits/route.ts`, `app/story/admin/dashboard/components/ActivityLogTab.tsx`, `app/story/admin/dashboard/hooks/useLoginLogs.ts`
+
+**E. Weekly Activity Summary — `8202d91d`:**
+- Short Haiku-generated sentence above the shelf on child week view: "Last week Eric focused heavily on Sensorial. This week, try guiding him toward Language."
+- API: `GET /api/montree/children/[childId]/activity-summary` — queries previous week's confirmed photos, counts area distribution, generates 1-2 sentence summary via Haiku (~$0.001/call)
+- Cached in child's `settings` JSONB (`activity_summary: { text, week_start, generated_at }`) — only regenerates when week rolls over
+- Fallback chain: cached → no-data template → Haiku → template fallback
+- Component: `components/montree/child/WeeklyActivitySummary.tsx` — warm amber gradient bar with 💡 icon
+- Feature-gated: `isEnabled('weekly_activity_summary')` — migration 173 defines + enables for Whale Class
+- **Key files**: `app/api/montree/children/[childId]/activity-summary/route.ts`, `components/montree/child/WeeklyActivitySummary.tsx`, `app/montree/dashboard/[childId]/page.tsx`
+
+**F. New Montree Icon — `c7dc287e`:**
+- Replaced old teal "M" square with abstract geometric tree
+- 5 overlapping emerald circles = 5 Montessori curriculum areas forming a canopy
+- Delicate branching trunk, golden accent dot (sunlight/insight)
+- Deep forest green background, iOS-style rounded corners
+- Generated at 4096px (4x supersampled), downsampled via Lanczos to all sizes
+- **Files replaced**: `icon.svg`, `icon-512.png`, `icon-192.png`, `apple-touch-icon.png` (180px), `favicon-32x32.png`, `montree-icon-only.png`
+- **New file**: `montree-icon-1024.png` (master resolution)
+- Design philosophy: "Verdant Geometry" — documented in `docs/montree-icon-philosophy.md`
+
+**Migrations run this session:**
+- ✅ Migration 170 — `daily_language_6` feature flag (enabled for Whale Class)
+- ✅ Migration 171 — `tell_guru_onboarding` feature flag (NOT enabled — hidden until ready)
+- ✅ Migration 172 — `story_visits` table + indexes
+- ✅ Migration 173 — `weekly_activity_summary` feature flag (enabled for Whale Class)
+
+**Full code audit (2 parallel agents):**
+- All 6 commits passed security, auth, memory leak, type safety, Supabase pattern, and feature flag checks
+- One minor theoretical race condition on concurrent activity summary Haiku calls (low severity, worst case = wasted $0.001 call)
+- All new features properly gated behind `isEnabled()` with safe defaults (OFF unless explicitly enabled)
+
+**Key files changed this session (15 files, ~800 lines added):**
+- `app/api/montree/dashboard/daily-language-6/route.ts` — NEW: Language observation recommendations
+- `components/montree/capture/DailyLanguageSix.tsx` — NEW: capture page widget
+- `app/montree/dashboard/capture/page.tsx` — DailyLanguageSix integration
+- `app/api/montree/children/[childId]/onboard/route.ts` — clamp/validate fixes
+- `app/api/montree/children/[childId]/activity-summary/route.ts` — NEW: Haiku weekly summary
+- `components/montree/child/WeeklyActivitySummary.tsx` — NEW: summary display component
+- `app/montree/dashboard/[childId]/page.tsx` — Tell Guru gate + WeeklyActivitySummary integration
+- `app/api/story/admin/login-logs/route.ts` — admin logins hidden
+- `app/api/story/heartbeat/route.ts` — visit tracking added
+- `app/api/story/admin/visits/route.ts` — NEW: visits API
+- `app/story/admin/dashboard/components/ActivityLogTab.tsx` — rewritten for visits
+- `lib/montree/features/types.ts` — 3 new feature keys
+- `public/icon.svg` + all PNG icons — new Montree tree icon
+
+**Next session priorities:**
+1. **Test Weekly Activity Summary on production** — tap into a child, verify the amber summary bar appears above the shelf with a Haiku-generated sentence
+2. **Test Daily Language 6 on production** — open capture page, verify pink bar shows 6 children with Language observation stats
+3. **Test Story visit tracking** — have Z open the Story page, check admin dashboard for visit entries with duration
+4. **Monitor Campaign D** on gmass.co/dashboard — should be finishing up (~Apr 17)
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+6. **Consider enabling `tell_guru_onboarding`** — the clamp/validate fix should resolve the reappearing card bug. Test on a single child first via Supabase: `INSERT INTO montree_school_features (school_id, feature_key, enabled) VALUES ('c6280fae-567c-45ed-ad4d-934eae79aabc', 'tell_guru_onboarding', true) ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;`
+7. **Chrome bookmark icon cache** — delete and re-add the Montree Chrome Apps bookmark to pick up the new tree icon
+
+---
+
 ### ⚡ Session 19 — OBS Setup + Video Manager Upload Fix + Story Log Fix + Tell Guru Bug Fixes (Apr 12, 2026)
 
 **Three commits pushed to main: `21a5ffb2`, `97c56ae3`, `e7f2d644`.**
