@@ -25,6 +25,7 @@ import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
+import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
@@ -69,6 +70,9 @@ export default function WeekPage() {
   const [curriculum, setCurriculum] = useState<Record<string, CurriculumWork[]>>({});
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
+
+  // "Tell Guru" onboarding — show card when no mental profile exists
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
 
   // Guru weekly summary state — single object instead of 7 individual useState calls
   const [guruSettings, setGuruSettings] = useState<{
@@ -250,6 +254,16 @@ export default function WeekPage() {
     if (!childId) return;
     fetchGuruSettings();
   }, [childId, fetchGuruSettings]);
+
+  // Check if child has a mental profile (for Tell Guru onboarding)
+  useEffect(() => {
+    if (!childId) return;
+    setHasProfile(null); // reset while loading
+    montreeApi(`/api/montree/children/${childId}/profile`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => setHasProfile(!!data?.profile))
+      .catch(() => setHasProfile(true)); // On error, don't block — assume profile exists
+  }, [childId]);
 
   // Fetch on mount and when childId changes
   useEffect(() => {
@@ -616,6 +630,16 @@ export default function WeekPage() {
         <div className="flex justify-end">
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
+      )}
+
+      {/* Tell Guru onboarding — shown when child has no mental profile */}
+      {hasProfile === false && (
+        <TellGuruCard
+          childId={childId}
+          childName={session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          classroomId={session?.classroom?.id || ''}
+          onComplete={() => setHasProfile(true)}
+        />
       )}
 
       {/* FOCUS WORKS — Unified area view with inline Guru advice */}
