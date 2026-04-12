@@ -371,18 +371,18 @@ function CaptureContent() {
         </div>
       )}
 
-      {/* Header */}
-      <div className={`relative z-10 px-4 ${selectedEvent ? 'pb-3' : 'pt-12 pb-3'}`}>
-        <h2 className="text-white text-xl font-bold text-center">
+      {/* Header — compact */}
+      <div className={`relative z-10 px-4 ${selectedEvent ? 'pb-2' : 'pt-10 pb-2'}`}>
+        <h2 className="text-white text-lg font-bold text-center">
           {t('capture.whoIsThis')}
         </h2>
-        <p className="text-white/60 text-sm text-center mt-1">
+        <p className="text-white/60 text-xs text-center mt-0.5">
           {t('capture.tagChildHint')}
         </p>
       </div>
 
       {/* Select All + Event picker row */}
-      <div className="relative z-10 px-4 py-2 flex items-center justify-between">
+      <div className="relative z-10 px-4 py-1.5 flex items-center justify-between">
         <button
           onClick={() => {
             if (selectedChildIds.length === children.length) {
@@ -407,61 +407,70 @@ function CaptureContent() {
         )}
       </div>
 
-      {/* Child grid */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-4 py-2">
+      {/* Child grid — auto-fits screen, never scrolls */}
+      <div className="relative z-10 flex-1 overflow-hidden px-3 py-1">
         {loadingChildren ? (
           <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-8 w-8 border-4 border-emerald-500 border-t-transparent" />
           </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-3">
-            {children.map(child => {
-              const isSelected = selectedChildIds.includes(child.id);
-              return (
-                <button
-                  key={child.id}
-                  onClick={() => toggleChild(child.id)}
-                  className={`
-                    flex flex-col items-center gap-2 p-3 rounded-2xl transition-all
-                    ${isSelected
-                      ? 'bg-emerald-500/30 ring-2 ring-emerald-400'
-                      : 'bg-white/10 active:bg-white/20'
-                    }
-                  `}
-                >
-                  <div className={`
-                    w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold transition-all
-                    ${isSelected
-                      ? 'bg-emerald-500 text-white scale-110'
-                      : 'bg-white/20 text-white/80'
-                    }
-                  `}>
-                    {child.photo_url ? (
-                      <img src={child.photo_url} alt={child.name} className="w-full h-full rounded-full object-cover" />
-                    ) : (
-                      child.name.charAt(0)
-                    )}
-                  </div>
-                  <span className={`text-sm font-medium ${isSelected ? 'text-emerald-300' : 'text-white/70'}`}>
-                    {child.name}
-                  </span>
-                  {isSelected && (
-                    <span className="text-emerald-400 text-xs">✓</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        ) : (() => {
+          const count = children.length;
+          // Dynamic columns: 4 for ≤24 children, 5 for 25+
+          const cols = count <= 24 ? 4 : 5;
+          const rows = Math.ceil(count / cols);
+          return (
+            <div
+              className="h-full grid gap-2"
+              style={{
+                gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                gridTemplateRows: `repeat(${rows}, 1fr)`,
+              }}
+            >
+              {children.map(child => {
+                const isSelected = selectedChildIds.includes(child.id);
+                return (
+                  <button
+                    key={child.id}
+                    onClick={() => toggleChild(child.id)}
+                    className={`
+                      flex flex-col items-center justify-center rounded-xl transition-all min-h-0
+                      ${isSelected
+                        ? 'bg-emerald-500/30 ring-2 ring-emerald-400'
+                        : 'bg-white/10 active:bg-white/20'
+                      }
+                    `}
+                  >
+                    <div className={`
+                      w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
+                      ${isSelected
+                        ? 'bg-emerald-500 text-white'
+                        : 'bg-white/20 text-white/80'
+                      }
+                    `}>
+                      {child.photo_url ? (
+                        <img src={child.photo_url} alt={child.name} className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        child.name.charAt(0)
+                      )}
+                    </div>
+                    <span className={`text-xs font-medium mt-1 leading-tight ${isSelected ? 'text-emerald-300' : 'text-white/70'}`}>
+                      {child.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
-      {/* Bottom actions */}
-      <div className="relative z-10 px-4 pb-8 pt-3 flex flex-col gap-2">
+      {/* Bottom actions — compact */}
+      <div className="relative z-10 px-4 pb-6 pt-2 flex flex-col gap-1">
         <button
           onClick={handleSaveWithTags}
           disabled={selectedChildIds.length === 0}
           className={`
-            w-full py-4 rounded-2xl font-bold text-lg transition-all
+            w-full py-3 rounded-2xl font-bold text-base transition-all
             ${selectedChildIds.length > 0
               ? 'bg-emerald-500 text-white active:scale-[0.98]'
               : 'bg-white/10 text-white/30'
@@ -477,7 +486,7 @@ function CaptureContent() {
         </button>
         <button
           onClick={handleSkipTagging}
-          className="w-full py-3 text-white/50 text-sm font-medium"
+          className="w-full py-2 text-white/50 text-sm font-medium"
         >
           {t('capture.skipTagging')}
         </button>
