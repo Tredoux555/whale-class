@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
 const AREA_LABELS: Record<string, { en: string; zh: string }> = {
@@ -96,6 +97,9 @@ export async function GET(request: NextRequest) {
       console.error('auto-fill: children error:', childrenRes.error.message);
       return NextResponse.json({ error: 'Failed to fetch children' }, { status: 500 });
     }
+
+    // Apply custom classroom order (matches physical seating arrangement)
+    childrenRes.data = sortChildrenByCustomOrder(childrenRes.data || []);
 
     const children = childrenRes.data || [];
     if (children.length === 0) {
