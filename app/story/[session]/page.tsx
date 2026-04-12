@@ -163,14 +163,15 @@ export default function StoryViewer() {
     }
   }, [getSession]);
 
-  // Check for new messages periodically (every 10 seconds)
+  // Check for new messages + media periodically (every 10 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
-      loadStory(true); // Silent refresh
+      loadStory(true); // Silent refresh — text content
+      loadMedia();     // Refresh media — so new photos appear for both users
     }, 10000);
-    
+
     return () => clearInterval(interval);
-  }, [loadStory]);
+  }, [loadStory, loadMedia]);
 
   // Send heartbeat every 30 seconds to track activity
   useEffect(() => {

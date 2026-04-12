@@ -5,6 +5,7 @@ import { formatTime } from '../utils';
 
 interface ActivityLogTabProps {
   loginLogs: LoginLog[];
+  error?: string | null;
 }
 
 function formatDuration(loginAt: string, logoutAt: string): string {
@@ -19,11 +20,16 @@ function formatDuration(loginAt: string, logoutAt: string): string {
   return `${hours}h ${remainingMins}m`;
 }
 
-export function ActivityLogTab({ loginLogs }: ActivityLogTabProps) {
+export function ActivityLogTab({ loginLogs, error }: ActivityLogTabProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
       <h2 className="text-lg font-bold text-gray-800 mb-4">📋 Activity Log</h2>
-      {loginLogs.length === 0 ? (
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          Failed to load logs: {error}
+        </div>
+      )}
+      {loginLogs.length === 0 && !error ? (
         <div className="text-center py-8 text-gray-500">No activity recorded</div>
       ) : (
         <div className="overflow-x-auto">
