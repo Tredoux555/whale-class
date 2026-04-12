@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { VaultFile } from '../types';
 import { formatTime, getVaultFileIcon, isImageFile } from '../utils';
 import { VaultImageViewer } from '@/components/story/admin/VaultImageViewer';
@@ -20,6 +21,12 @@ interface VaultTabProps {
   loadingView: boolean;
   onVaultView: (fileId: number, filename: string) => void;
   onCloseViewer: () => void;
+  // Album props
+  albumIndex: number;
+  thumbnails: Record<number, string>;
+  loadingThumbnails: Record<number, boolean>;
+  onNavigateAlbum: (direction: 'prev' | 'next') => void;
+  onLoadThumbnail: (fileId: number) => void;
 }
 
 export function VaultTab({
@@ -37,8 +44,26 @@ export function VaultTab({
   viewingImage,
   loadingView,
   onVaultView,
-  onCloseViewer
+  onCloseViewer,
+  albumIndex,
+  thumbnails,
+  loadingThumbnails,
+  onNavigateAlbum,
+  onLoadThumbnail,
 }: VaultTabProps) {
+  const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
+  const nonImageFiles = vaultFiles.filter(f => !isImageFile(f.filename));
+
+  // Trigger thumbnail loading for visible images
+  useEffect(() => {
+    if (!vaultUnlocked) return;
+    imageFiles.forEach(f => {
+      if (!thumbnails[f.id] && !loadingThumbnails[f.id]) {
+        onLoadThumbnail(f.id);
+      }
+    });
+  }, [vaultUnlocked, imageFiles.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <>
       {viewingImage && (
@@ -46,6 +71,11 @@ export function VaultTab({
           imageUrl={viewingImage.url}
           filename={viewingImage.filename}
           onClose={onCloseViewer}
+          onPrev={() => onNavigateAlbum('prev')}
+          onNext={() => onNavigateAlbum('next')}
+          albumIndex={albumIndex}
+          albumTotal={imageFiles.length}
+          loading={loadingView}
         />
       )}
     <div className="space-y-4">
@@ -88,7 +118,7 @@ export function VaultTab({
               </button>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-2">
               <label className="block text-sm font-medium text-gray-700 mb-2">Upload Photo or Video</label>
               <input
                 type="file"
@@ -113,45 +143,100 @@ export function VaultTab({
               <p>Vault is empty. Upload photos or videos to get started.</p>
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-sm font-bold text-gray-800 mb-4">Stored Files ({vaultFiles.length})</h3>
-              <div className="space-y-2">
-                {vaultFiles.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                    <div className="flex items-center gap-3 flex-1">
-                      <span className="text-lg">{getVaultFileIcon(file.filename)}</span>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">{file.filename}</p>
-                        <p className="text-xs text-gray-500">{formatTime(file.uploaded_at)}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {isImageFile(file.filename) && (
-                        <button
+            <>
+              {/* Photo Album Grid */}
+              {imageFiles.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-4">
+                  <h3 className="text-sm font-bold text-gray-800 mb-3">
+                    Photos ({imageFiles.length})
+                  </h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {imageFiles.map((file) => {
+                      const thumbUrl = thumbnails[file.id];
+                      const isLoading = loadingThumbnails[file.id];
+
+                      return (
+                        <div
+                          key={file.id}
+                          className="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-pointer hover:ring-2 hover:ring-indigo-400 transition-all"
                           onClick={() => onVaultView(file.id, file.filename)}
-                          disabled={loadingView}
-                          className="px-3 py-1 text-xs bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200 transition-colors disabled:opacity-50"
                         >
-                          {loadingView ? '⟳ Loading...' : '👁 View'}
-                        </button>
-                      )}
-                      <button
-                        onClick={() => onVaultDownload(file.id, file.filename)}
-                        className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                      >
-                        ⬇ Download
-                      </button>
-                      <button
-                        onClick={() => onVaultDelete(file.id)}
-                        className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                      >
-                        🗑 Delete
-                      </button>
-                    </div>
+                          {thumbUrl ? (
+                            <img
+                              src={thumbUrl}
+                              alt={file.filename}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              {isLoading ? (
+                                <div className="w-6 h-6 border-2 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
+                              ) : (
+                                <span className="text-2xl">🖼️</span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Hover overlay with date + actions */}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
+                            <p className="text-white text-[10px] truncate mb-1">{file.filename}</p>
+                            <p className="text-white/60 text-[9px]">{formatTime(file.uploaded_at)}</p>
+                            <div className="flex gap-1 mt-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); onVaultDownload(file.id, file.filename); }}
+                                className="px-1.5 py-0.5 text-[9px] bg-white/20 text-white rounded hover:bg-white/30 transition-colors"
+                              >
+                                ⬇
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); onVaultDelete(file.id); }}
+                                className="px-1.5 py-0.5 text-[9px] bg-red-500/40 text-white rounded hover:bg-red-500/60 transition-colors"
+                              >
+                                🗑
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+
+              {/* Non-image files list */}
+              {nonImageFiles.length > 0 && (
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="text-sm font-bold text-gray-800 mb-4">Other Files ({nonImageFiles.length})</h3>
+                  <div className="space-y-2">
+                    {nonImageFiles.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div className="flex items-center gap-3 flex-1">
+                          <span className="text-lg">{getVaultFileIcon(file.filename)}</span>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-800">{file.filename}</p>
+                            <p className="text-xs text-gray-500">{formatTime(file.uploaded_at)}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => onVaultDownload(file.id, file.filename)}
+                            className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                          >
+                            ⬇ Download
+                          </button>
+                          <button
+                            onClick={() => onVaultDelete(file.id)}
+                            className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+                          >
+                            🗑 Delete
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
