@@ -392,16 +392,18 @@ export default function DashboardPage() {
 
               {/* Birthday Banner, Daily Brief, Teacher Notes — moved out of main grid view */}
 
-              {/* ── Student Grid — compact squares, centered ── */}
+              {/* ── Student Grid — fills viewport height ── */}
               {(() => {
                 const items = filteredChildren.length;
                 const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
+                const rows = Math.ceil(items / cols);
                 return (
                   <div
                     data-tutorial="student-grid"
-                    className="flex-1 grid gap-2 overflow-hidden content-center"
+                    className="flex-1 grid gap-2 overflow-hidden"
                     style={{
                       gridTemplateColumns: `repeat(${cols}, 1fr)`,
+                      gridTemplateRows: `repeat(${rows}, 1fr)`,
                     }}
                   >
                     {filteredChildren.map((child, index) => (
@@ -410,7 +412,7 @@ export default function DashboardPage() {
                         href={`/montree/dashboard/${child.id}`}
                         data-tutorial="student-card"
                         {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
-                        className="aspect-square bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100"
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
                       >
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
                           {child.photo_url ? (
