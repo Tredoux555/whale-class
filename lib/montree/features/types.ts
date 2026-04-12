@@ -33,7 +33,9 @@ export type FeatureKey =
   | 'intelligence_panels'
   | 'teacher_tools'
   | 'shelf_autopilot'
-  | 'paperwork_tracker';
+  | 'paperwork_tracker'
+  // Capture page tools
+  | 'daily_language_6';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;

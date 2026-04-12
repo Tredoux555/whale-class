@@ -19,6 +19,8 @@ import {
 } from '@/lib/montree/background-task-store';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import EventPicker from '@/components/montree/media/EventPicker';
+import DailyLanguageSix from '@/components/montree/capture/DailyLanguageSix';
+import { useFeatures } from '@/hooks/useFeatures';
 
 // ============================================
 // TYPES
@@ -49,6 +51,7 @@ function CaptureLoading() {
 function CaptureContent() {
   const router = useRouter();
   const { t } = useI18n();
+  const { isEnabled } = useFeatures();
   const searchParams = useSearchParams();
 
   // Pre-selected child from URL (e.g. from week view capture button)
@@ -415,6 +418,14 @@ function CaptureContent() {
           </button>
         )}
       </div>
+
+      {/* Daily Language 6 — recommendations for language area observation (feature-gated) */}
+      {isEnabled('daily_language_6') && (
+        <DailyLanguageSix
+          selectedChildIds={selectedChildIds}
+          onToggleChild={toggleChild}
+        />
+      )}
 
       {/* Child grid — auto-fits screen, never scrolls */}
       <div className="relative z-10 flex-1 overflow-hidden px-3 py-1">
