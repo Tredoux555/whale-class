@@ -272,7 +272,7 @@ export default function FocusWorksSection({
                   {/* Work controls — only if focus work exists */}
                   {focusWork ? (
                     <>
-                      {/* Quick Guide + Capture buttons */}
+                      {/* Quick Guide button — Capture removed, main nav capture is sufficient */}
                       <div className="flex gap-2">
                         <button
                           {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
@@ -280,13 +280,6 @@ export default function FocusWorksSection({
                           className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                         >
                           📖 {t('focusWorks.quickGuide')}
-                        </button>
-                        <button
-                          {...(areaIdx === 0 ? { 'data-guide': 'capture-btn' } : {})}
-                          onClick={() => window.location.href = `/montree/dashboard/capture?child=${childId}&workName=${encodeURIComponent(focusWork.work_name)}&area=${encodeURIComponent(focusWork.area)}`}
-                          className="flex-1 py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-emerald-600 active:scale-95"
-                        >
-                          📸 {t('focusWorks.capture')}
                         </button>
                       </div>
 
