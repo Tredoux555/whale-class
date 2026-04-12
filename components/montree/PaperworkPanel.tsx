@@ -184,8 +184,8 @@ export default function PaperworkPanel() {
   if (!data) return null;
 
   const { target_week, max_week, on_track, total, children } = data;
-  const behind = children.filter(c => c.status === 'behind');
-  const needsAttention = children.filter(c => c.status === 'slightly_behind');
+  const behind = children.filter(c => c.status === 'behind').sort((a, b) => b.weeks_behind - a.weeks_behind);
+  const needsAttention = children.filter(c => c.status === 'slightly_behind').sort((a, b) => b.weeks_behind - a.weeks_behind);
   const upToDate = children.filter(c => c.status === 'on_track');
   const progressPct = Math.round((on_track / Math.max(total, 1)) * 100);
 
@@ -386,17 +386,17 @@ export default function PaperworkPanel() {
             )}
           </div>
 
-          {/* ── Up to Date ── */}
-          {upToDate.length > 0 && (
+          {/* ── Needs Catch-Up (3+ weeks behind) — shown FIRST ── */}
+          {behind.length > 0 && (
             <Section
-              label={`Up to date (${upToDate.length})`}
-              color="#2E7D32"
-              bgColor="rgba(76, 175, 80, 0.06)"
-              defaultOpen={upToDate.length < total}
+              label={`Needs catch-up (${behind.length})`}
+              color="#BF360C"
+              bgColor="rgba(255, 138, 101, 0.06)"
+              defaultOpen
             >
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
-                {upToDate.map(child => (
-                  <CompactChildCard
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {behind.map(child => (
+                  <ChildRow
                     key={child.id}
                     child={child}
                     maxWeek={max_week}
@@ -415,7 +415,7 @@ export default function PaperworkPanel() {
             </Section>
           )}
 
-          {/* ── Needs Attention (slightly behind — 1-2 weeks) ── */}
+          {/* ── Almost There (slightly behind — 1-2 weeks) ── */}
           {needsAttention.length > 0 && (
             <Section
               label={`Almost there (${needsAttention.length})`}
@@ -444,17 +444,17 @@ export default function PaperworkPanel() {
             </Section>
           )}
 
-          {/* ── Needs Catch-Up (3+ weeks behind) ── */}
-          {behind.length > 0 && (
+          {/* ── Up to Date — collapsed by default ── */}
+          {upToDate.length > 0 && (
             <Section
-              label={`Needs catch-up (${behind.length})`}
-              color="#BF360C"
-              bgColor="rgba(255, 138, 101, 0.06)"
-              defaultOpen
+              label={`Up to date (${upToDate.length})`}
+              color="#2E7D32"
+              bgColor="rgba(76, 175, 80, 0.06)"
+              defaultOpen={false}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {behind.map(child => (
-                  <ChildRow
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 6 }}>
+                {upToDate.map(child => (
+                  <CompactChildCard
                     key={child.id}
                     child={child}
                     maxWeek={max_week}
