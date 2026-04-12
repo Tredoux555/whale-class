@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 import { encryptMessage, decryptMessage } from '@/lib/message-encryption';
 
-// Helper to extract session token from auth header
-function getSessionToken(authHeader: string | null): string | null {
-  if (!authHeader) return null;
-  const token = authHeader.replace('Bearer ', '');
-  return token.substring(0, 50); // Same format as stored in login_logs
-}
-
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('authorization');
@@ -16,8 +9,6 @@ export async function POST(req: NextRequest) {
     if (!username) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const sessionToken = getSessionToken(authHeader);
 
     const body = await req.json();
     const { message, author } = body;
@@ -39,23 +30,7 @@ export async function POST(req: NextRequest) {
 
     const encryptedMessage = encryptMessage(trimmedMsg);
 
-    // Get the login_log_id for this session
-    let loginLogId: number | null = null;
-    if (sessionToken) {
-      const { data: loginLog } = await supabase
-        .from('story_login_logs')
-        .select('id')
-        .eq('session_token', sessionToken)
-        .order('login_at', { ascending: false })
-        .limit(1)
-        .single();
-      
-      if (loginLog) {
-        loginLogId = loginLog.id;
-      }
-    }
-
-    // Save to history for admin - now with session linking
+    // Save to history for admin
     const { error: historyError } = await supabase.from('story_message_history').insert({
       week_start_date: weekStart,
       message_type: 'text',
