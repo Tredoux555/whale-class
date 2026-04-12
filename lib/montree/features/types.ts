@@ -37,7 +37,9 @@ export type FeatureKey =
   // Capture page tools
   | 'daily_language_6'
   // Onboarding
-  | 'tell_guru_onboarding';
+  | 'tell_guru_onboarding'
+  // Child week view
+  | 'weekly_activity_summary';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;

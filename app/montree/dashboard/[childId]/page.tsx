@@ -26,6 +26,7 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
 import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
+import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
@@ -648,6 +649,11 @@ export default function WeekPage() {
           classroomId={session?.classroom?.id || ''}
           onComplete={() => setHasProfile(true)}
         />
+      )}
+
+      {/* Weekly Activity Summary — short AI sentence above the shelf */}
+      {isEnabled('weekly_activity_summary') && (
+        <WeeklyActivitySummary childId={childId} />
       )}
 
       {/* FOCUS WORKS — Unified area view with inline Guru advice */}
