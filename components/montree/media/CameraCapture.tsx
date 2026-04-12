@@ -778,7 +778,22 @@ export default function CameraCapture({
               )}
             </div>
 
-            {/* Capture button (center) */}
+            {/* Switch camera (center) */}
+            <button
+              onClick={switchCamera}
+              disabled={cameraState !== 'ready'}
+              className={`${isLandscape ? 'w-12 h-12' : 'w-14 h-14'} flex items-center justify-center bg-white/20 rounded-full text-white disabled:opacity-50 active:scale-90 transition-transform`}
+            >
+              <svg width={isLandscape ? 24 : 28} height={isLandscape ? 24 : 28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+                <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
+                <circle cx="12" cy="12" r="3" />
+                <path d="m18 22-3-3 3-3" />
+                <path d="m6 2 3 3-3 3" />
+              </svg>
+            </button>
+
+            {/* Capture button (right — easy thumb reach) */}
             <button
               onClick={handleMainButton}
               disabled={cameraState === 'initializing'}
@@ -797,21 +812,6 @@ export default function CameraCapture({
               ) : (
                 <div className={`${isLandscape ? 'w-12 h-12' : 'w-16 h-16'} rounded-full bg-white`} />
               )}
-            </button>
-
-            {/* Switch camera (right) */}
-            <button
-              onClick={switchCamera}
-              disabled={cameraState !== 'ready'}
-              className={`${isLandscape ? 'w-12 h-12' : 'w-14 h-14'} flex items-center justify-center bg-white/20 rounded-full text-white disabled:opacity-50 active:scale-90 transition-transform`}
-            >
-              <svg width={isLandscape ? 24 : 28} height={isLandscape ? 24 : 28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
-                <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="m18 22-3-3 3-3" />
-                <path d="m6 2 3 3-3 3" />
-              </svg>
             </button>
           </div>
         )}
