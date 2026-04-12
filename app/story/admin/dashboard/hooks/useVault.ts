@@ -14,7 +14,10 @@ export const useVault = (getSession: () => string | null) => {
   const [albumIndex, setAlbumIndex] = useState(0);
   const [thumbnails, setThumbnails] = useState<Record<number, string>>({});
   const [loadingThumbnails, setLoadingThumbnails] = useState<Record<number, boolean>>({});
+  const [failedThumbnails, setFailedThumbnails] = useState<Record<number, boolean>>({});
   const thumbnailsRef = useRef<Record<number, string>>({});
+  const requestedRef = useRef<Set<number>>(new Set()); // track which IDs we've already requested
+  const abortRef = useRef<AbortController | null>(null); // cancel batch loading on lock
 
   const loadVaultFiles = useCallback(async () => {
     const session = getSession();
@@ -31,35 +34,59 @@ export const useVault = (getSession: () => string | null) => {
     }
   }, [getSession]);
 
+  // Revoke all cached object URLs
+  const revokeAllThumbnails = useCallback(() => {
+    Object.values(thumbnailsRef.current).forEach(url => {
+      try { window.URL.revokeObjectURL(url); } catch { /* ignore */ }
+    });
+    thumbnailsRef.current = {};
+    requestedRef.current = new Set();
+    setThumbnails({});
+    setLoadingThumbnails({});
+    setFailedThumbnails({});
+  }, []);
+
   // Load a single thumbnail
-  const loadThumbnail = useCallback(async (fileId: number) => {
-    if (thumbnailsRef.current[fileId]) return; // already loaded
+  const loadThumbnail = useCallback(async (fileId: number, signal?: AbortSignal) => {
+    if (thumbnailsRef.current[fileId] || requestedRef.current.has(fileId)) return;
+    requestedRef.current.add(fileId);
     setLoadingThumbnails(prev => ({ ...prev, [fileId]: true }));
     try {
       const session = getSession();
       const res = await fetch(`/api/story/admin/vault/download/${fileId}`, {
-        headers: { 'Authorization': `Bearer ${session}` }
+        headers: { 'Authorization': `Bearer ${session}` },
+        signal,
       });
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         thumbnailsRef.current[fileId] = url;
         setThumbnails(prev => ({ ...prev, [fileId]: url }));
+      } else {
+        setFailedThumbnails(prev => ({ ...prev, [fileId]: true }));
       }
     } catch (err) {
-      console.error('Thumbnail load error:', err);
+      if ((err as Error)?.name !== 'AbortError') {
+        console.error('Thumbnail load error:', err);
+        setFailedThumbnails(prev => ({ ...prev, [fileId]: true }));
+      }
     } finally {
       setLoadingThumbnails(prev => ({ ...prev, [fileId]: false }));
     }
   }, [getSession]);
 
-  // Load all image thumbnails progressively
+  // Load all image thumbnails progressively (cancellable)
   const loadAllThumbnails = useCallback(async (files: VaultFile[]) => {
+    // Cancel any in-flight batch
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     const imageFiles = files.filter(f => isImageFile(f.filename));
-    // Load in batches of 3
     for (let i = 0; i < imageFiles.length; i += 3) {
+      if (controller.signal.aborted) break;
       const batch = imageFiles.slice(i, i + 3);
-      await Promise.all(batch.map(f => loadThumbnail(f.id)));
+      await Promise.all(batch.map(f => loadThumbnail(f.id, controller.signal)));
     }
   }, [loadThumbnail]);
 
@@ -74,7 +101,7 @@ export const useVault = (getSession: () => string | null) => {
         },
         body: JSON.stringify({ password: vaultPassword })
       });
-      const data = await res.json();
+      await res.json();
       if (res.ok) {
         setVaultUnlocked(true);
         setVaultPassword('');
@@ -96,6 +123,16 @@ export const useVault = (getSession: () => string | null) => {
     }
   }, [getSession, vaultPassword, loadAllThumbnails]);
 
+  const handleVaultLock = useCallback(() => {
+    // Cancel any in-flight thumbnail loads
+    if (abortRef.current) abortRef.current.abort();
+    // Revoke all object URLs to free memory
+    revokeAllThumbnails();
+    setVaultUnlocked(false);
+    setVaultPassword('');
+    setViewingImage(null);
+  }, [revokeAllThumbnails]);
+
   const handleVaultUpload = useCallback(async (file: File) => {
     setUploadingVault(true);
     setVaultError('');
@@ -114,9 +151,9 @@ export const useVault = (getSession: () => string | null) => {
       const data = await res.json();
       if (res.ok) {
         await loadVaultFiles();
-        // Reload thumbnails for new file
+        // Load thumbnail for new file
         if (data.file && isImageFile(data.file.filename || file.name)) {
-          loadThumbnail(data.file.id);
+          await loadThumbnail(data.file.id);
         }
       } else {
         setVaultError(data.error || 'Upload failed');
@@ -166,18 +203,27 @@ export const useVault = (getSession: () => string | null) => {
         if (thumbnailsRef.current[fileId]) {
           window.URL.revokeObjectURL(thumbnailsRef.current[fileId]);
           delete thumbnailsRef.current[fileId];
+          requestedRef.current.delete(fileId);
           setThumbnails(prev => {
             const next = { ...prev };
             delete next[fileId];
             return next;
           });
         }
+        // Close viewer if viewing deleted photo
+        if (viewingImage) {
+          const currentImageFiles = vaultFiles.filter(f => isImageFile(f.filename));
+          const currentFile = currentImageFiles[albumIndex];
+          if (currentFile?.id === fileId) {
+            setViewingImage(null);
+          }
+        }
         await loadVaultFiles();
       }
     } catch {
       setVaultError('Delete failed');
     }
-  }, [getSession, loadVaultFiles]);
+  }, [getSession, loadVaultFiles, viewingImage, vaultFiles, albumIndex]);
 
   const handleVaultView = useCallback(async (fileId: number, filename: string) => {
     // If we already have the thumbnail, use it directly
@@ -202,16 +248,15 @@ export const useVault = (getSession: () => string | null) => {
         thumbnailsRef.current[fileId] = url;
         setThumbnails(prev => ({ ...prev, [fileId]: url }));
         setViewingImage({ url, filename });
-        // Find album index
         const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
         const idx = imageFiles.findIndex(f => f.id === fileId);
         setAlbumIndex(idx >= 0 ? idx : 0);
       } else {
-        alert('Failed to load image');
+        setVaultError('Failed to load image');
       }
     } catch (err) {
       console.error('View error:', err);
-      alert('Failed to load image');
+      setVaultError('Failed to load image');
     } finally {
       setLoadingView(false);
     }
@@ -220,7 +265,7 @@ export const useVault = (getSession: () => string | null) => {
   // Album navigation
   const navigateAlbum = useCallback(async (direction: 'prev' | 'next') => {
     const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
-    if (imageFiles.length === 0) return;
+    if (imageFiles.length <= 1) return;
 
     const newIndex = direction === 'next'
       ? (albumIndex + 1) % imageFiles.length
@@ -245,9 +290,12 @@ export const useVault = (getSession: () => string | null) => {
           thumbnailsRef.current[targetFile.id] = url;
           setThumbnails(prev => ({ ...prev, [targetFile.id]: url }));
           setViewingImage({ url, filename: targetFile.filename });
+        } else {
+          setVaultError('Failed to load image');
         }
       } catch (err) {
         console.error('Album nav error:', err);
+        setVaultError('Failed to load image');
       } finally {
         setLoadingView(false);
       }
@@ -255,7 +303,6 @@ export const useVault = (getSession: () => string | null) => {
   }, [getSession, vaultFiles, albumIndex]);
 
   const handleCloseViewer = useCallback(() => {
-    // Don't revoke — we keep thumbnails cached
     setViewingImage(null);
   }, []);
 
@@ -277,10 +324,12 @@ export const useVault = (getSession: () => string | null) => {
     handleVaultDelete,
     handleVaultView,
     handleCloseViewer,
+    handleVaultLock,
     // Album extras
     albumIndex,
     thumbnails,
     loadingThumbnails,
+    failedThumbnails,
     navigateAlbum,
     loadThumbnail,
   };

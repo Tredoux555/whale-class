@@ -25,6 +25,7 @@ interface VaultTabProps {
   albumIndex: number;
   thumbnails: Record<number, string>;
   loadingThumbnails: Record<number, boolean>;
+  failedThumbnails: Record<number, boolean>;
   onNavigateAlbum: (direction: 'prev' | 'next') => void;
   onLoadThumbnail: (fileId: number) => void;
 }
@@ -48,21 +49,22 @@ export function VaultTab({
   albumIndex,
   thumbnails,
   loadingThumbnails,
+  failedThumbnails,
   onNavigateAlbum,
   onLoadThumbnail,
 }: VaultTabProps) {
   const imageFiles = vaultFiles.filter(f => isImageFile(f.filename));
   const nonImageFiles = vaultFiles.filter(f => !isImageFile(f.filename));
 
-  // Trigger thumbnail loading for visible images
+  // Trigger thumbnail loading for any new images (e.g. after upload)
   useEffect(() => {
     if (!vaultUnlocked) return;
     imageFiles.forEach(f => {
-      if (!thumbnails[f.id] && !loadingThumbnails[f.id]) {
+      if (!thumbnails[f.id] && !loadingThumbnails[f.id] && !failedThumbnails[f.id]) {
         onLoadThumbnail(f.id);
       }
     });
-  }, [vaultUnlocked, imageFiles.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [vaultUnlocked, vaultFiles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -171,6 +173,8 @@ export function VaultTab({
                             <div className="w-full h-full flex items-center justify-center">
                               {isLoading ? (
                                 <div className="w-6 h-6 border-2 border-gray-300 border-t-indigo-500 rounded-full animate-spin" />
+                              ) : failedThumbnails[file.id] ? (
+                                <span className="text-xl text-gray-400">✕</span>
                               ) : (
                                 <span className="text-2xl">🖼️</span>
                               )}
