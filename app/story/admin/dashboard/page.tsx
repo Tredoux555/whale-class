@@ -55,7 +55,12 @@ export default function AdminDashboard() {
     handleVaultDownload,
     handleVaultDelete,
     handleVaultView,
-    handleCloseViewer
+    handleCloseViewer,
+    albumIndex,
+    thumbnails,
+    loadingThumbnails,
+    navigateAlbum,
+    loadThumbnail,
   } = useVault(getSession);
   const {
     sharedFiles,
@@ -268,6 +273,11 @@ export default function AdminDashboard() {
                 loadingView={loadingView}
                 onVaultView={handleVaultView}
                 onCloseViewer={handleCloseViewer}
+                albumIndex={albumIndex}
+                thumbnails={thumbnails}
+                loadingThumbnails={loadingThumbnails}
+                onNavigateAlbum={navigateAlbum}
+                onLoadThumbnail={loadThumbnail}
               />
             )}
 

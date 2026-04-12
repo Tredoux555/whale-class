@@ -1,70 +1,111 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 interface VaultImageViewerProps {
   imageUrl: string;
   filename: string;
   onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  albumIndex?: number;
+  albumTotal?: number;
+  loading?: boolean;
 }
 
-export function VaultImageViewer({ imageUrl, filename, onClose }: VaultImageViewerProps) {
-  // Handle ESC key press
+export function VaultImageViewer({
+  imageUrl,
+  filename,
+  onClose,
+  onPrev,
+  onNext,
+  albumIndex,
+  albumTotal,
+  loading,
+}: VaultImageViewerProps) {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+    if (e.key === 'ArrowLeft' && onPrev) onPrev();
+    if (e.key === 'ArrowRight' && onNext) onNext();
+  }, [onClose, onPrev, onNext]);
+
   useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleKeyDown]);
 
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, [onClose]);
-
-  // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, []);
+
+  const hasAlbum = albumTotal != null && albumTotal > 1;
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/95 z-50 flex flex-col"
       onClick={onClose}
     >
-      <div
-        className="relative max-w-7xl max-h-full flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header with filename and close button */}
-        <div className="flex items-center justify-between mb-4 px-4 py-2 bg-black bg-opacity-50 rounded-t-lg">
-          <p className="text-white font-medium text-sm truncate max-w-md">
-            {filename}
-          </p>
-          <button
-            onClick={onClose}
-            className="ml-4 text-white hover:text-gray-300 transition-colors text-2xl font-bold"
-            aria-label="Close"
-          >
-            ×
-          </button>
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-4 py-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 min-w-0">
+          {hasAlbum && (
+            <span className="text-white/50 text-sm font-medium whitespace-nowrap">
+              {(albumIndex ?? 0) + 1} / {albumTotal}
+            </span>
+          )}
+          <p className="text-white/80 text-sm truncate">{filename}</p>
         </div>
+        <button
+          onClick={onClose}
+          className="ml-4 text-white/70 hover:text-white transition-colors text-2xl font-light w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10"
+        >
+          ×
+        </button>
+      </div>
+
+      {/* Main image area with nav arrows */}
+      <div className="flex-1 flex items-center justify-center relative min-h-0 px-2 pb-4">
+        {/* Prev arrow */}
+        {hasAlbum && onPrev && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPrev(); }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white/80 hover:bg-black/60 hover:text-white transition-all text-2xl"
+            aria-label="Previous"
+          >
+            ‹
+          </button>
+        )}
 
         {/* Image */}
-        <div className="flex items-center justify-center">
-          <img
-            src={imageUrl}
-            alt={filename}
-            className="max-w-full max-h-[calc(100vh-120px)] object-contain rounded-lg shadow-2xl"
-          />
+        <div className="flex items-center justify-center w-full h-full" onClick={e => e.stopPropagation()}>
+          {loading ? (
+            <div className="text-white/60 text-lg">Loading...</div>
+          ) : (
+            <img
+              src={imageUrl}
+              alt={filename}
+              className="max-w-full max-h-full object-contain rounded-lg select-none"
+              draggable={false}
+            />
+          )}
         </div>
 
-        {/* Footer hint */}
-        <div className="mt-4 text-center text-gray-300 text-sm">
-          Press ESC or click outside to close
-        </div>
+        {/* Next arrow */}
+        {hasAlbum && onNext && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onNext(); }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white/80 hover:bg-black/60 hover:text-white transition-all text-2xl"
+            aria-label="Next"
+          >
+            ›
+          </button>
+        )}
+      </div>
+
+      {/* Bottom hint */}
+      <div className="text-center text-white/30 text-xs pb-3 flex-shrink-0" onClick={e => e.stopPropagation()}>
+        {hasAlbum ? '← → to browse · ESC to close' : 'ESC to close'}
       </div>
     </div>
   );
