@@ -26,6 +26,7 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
 import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
+import { useFeatures } from '@/hooks/useFeatures';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
@@ -55,6 +56,7 @@ export default function WeekPage() {
   const params = useParams();
   const router = useRouter();
   const { t, locale } = useI18n();
+  const { isEnabled } = useFeatures();
   const childId = params.childId as string;
   const session = getSession();
 
@@ -256,9 +258,9 @@ export default function WeekPage() {
     fetchGuruSettings();
   }, [childId, fetchGuruSettings]);
 
-  // Check if child has a mental profile (for Tell Guru onboarding)
+  // Check if child has a mental profile (for Tell Guru onboarding — skip if feature disabled)
   useEffect(() => {
-    if (!childId) return;
+    if (!childId || !isEnabled('tell_guru_onboarding')) return;
     setHasProfile(null); // reset while loading
     // Fetch profile + child name in parallel
     Promise.all([
@@ -638,8 +640,8 @@ export default function WeekPage() {
         </div>
       )}
 
-      {/* Tell Guru onboarding — shown when child has no mental profile */}
-      {hasProfile === false && (
+      {/* Tell Guru onboarding — shown when child has no mental profile (feature-gated) */}
+      {isEnabled('tell_guru_onboarding') && hasProfile === false && (
         <TellGuruCard
           childId={childId}
           childName={onboardingChildName || 'this child'}

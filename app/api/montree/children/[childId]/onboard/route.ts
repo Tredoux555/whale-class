@@ -184,32 +184,46 @@ Create a warm summary that confirms back to the teacher what you understood.`,
     console.log(`[Onboard] Extracted profile for ${childName}:`, JSON.stringify(extracted).slice(0, 500));
 
     // Save mental profile
+    // Helper: validate sensitive period value (DB has CHECK constraint)
+    const VALID_SP = new Set(['active', 'waning', 'complete', 'not_started']);
+    const validSP = (v: unknown, fallback: string): string => {
+      return typeof v === 'string' && VALID_SP.has(v) ? v : fallback;
+    };
+
+    // Helper: clamp to INT 1-5 range (DB has CHECK constraints that reject floats/out-of-range)
+    const clamp15 = (v: unknown): number | null => {
+      if (v == null) return null;
+      const n = Math.round(Number(v));
+      if (isNaN(n)) return null;
+      return Math.max(1, Math.min(5, n));
+    };
+
     const profileData: Record<string, unknown> = {
       child_id: childId,
-      // Temperament
-      temperament_activity_level: extracted.activity_level ?? null,
+      // Temperament (clamped to INT 1-5 — DB rejects floats/out-of-range)
+      temperament_activity_level: clamp15(extracted.activity_level),
       temperament_regularity: null, // Not typically inferred from voice
-      temperament_initial_reaction: extracted.initial_reaction ?? null,
-      temperament_adaptability: extracted.adaptability ?? null,
-      temperament_intensity: extracted.intensity ?? null,
-      temperament_mood_quality: extracted.mood_quality ?? null,
-      temperament_distractibility: extracted.distractibility ?? null,
-      temperament_persistence: extracted.persistence ?? null,
-      temperament_sensory_threshold: extracted.sensory_threshold ?? null,
-      // Learning modality
-      learning_modality_visual: extracted.learning_visual ?? null,
-      learning_modality_auditory: extracted.learning_auditory ?? null,
-      learning_modality_kinesthetic: extracted.learning_kinesthetic ?? null,
+      temperament_initial_reaction: clamp15(extracted.initial_reaction),
+      temperament_adaptability: clamp15(extracted.adaptability),
+      temperament_intensity: clamp15(extracted.intensity),
+      temperament_mood_quality: clamp15(extracted.mood_quality),
+      temperament_distractibility: clamp15(extracted.distractibility),
+      temperament_persistence: clamp15(extracted.persistence),
+      temperament_sensory_threshold: clamp15(extracted.sensory_threshold),
+      // Learning modality (also 1-5)
+      learning_modality_visual: clamp15(extracted.learning_visual),
+      learning_modality_auditory: clamp15(extracted.learning_auditory),
+      learning_modality_kinesthetic: clamp15(extracted.learning_kinesthetic),
       // Focus
-      baseline_focus_minutes: extracted.baseline_focus_minutes ?? null,
+      baseline_focus_minutes: extracted.baseline_focus_minutes != null ? Math.round(Number(extracted.baseline_focus_minutes)) || null : null,
       optimal_time_of_day: extracted.optimal_time_of_day ?? null,
       // Sensitive periods
-      sensitive_period_order: extracted.sensitive_period_order ?? 'active',
-      sensitive_period_language: extracted.sensitive_period_language ?? 'active',
-      sensitive_period_movement: extracted.sensitive_period_movement ?? 'active',
-      sensitive_period_sensory: extracted.sensitive_period_sensory ?? 'active',
-      sensitive_period_small_objects: extracted.sensitive_period_small_objects ?? 'not_started',
-      sensitive_period_grace_courtesy: extracted.sensitive_period_grace_courtesy ?? 'not_started',
+      sensitive_period_order: validSP(extracted.sensitive_period_order, 'active'),
+      sensitive_period_language: validSP(extracted.sensitive_period_language, 'active'),
+      sensitive_period_movement: validSP(extracted.sensitive_period_movement, 'active'),
+      sensitive_period_sensory: validSP(extracted.sensitive_period_sensory, 'active'),
+      sensitive_period_small_objects: validSP(extracted.sensitive_period_small_objects, 'not_started'),
+      sensitive_period_grace_courtesy: validSP(extracted.sensitive_period_grace_courtesy, 'not_started'),
       // Context
       family_notes: extracted.family_notes ?? null,
       special_considerations: extracted.special_considerations ?? null,
@@ -225,10 +239,13 @@ Create a warm summary that confirms back to the teacher what you understood.`,
 
     if (profileError) {
       console.error('[Onboard] Profile save error:', profileError);
-      // Non-fatal — continue with curriculum seeding
-    } else {
-      console.log(`[Onboard] Profile saved for ${childName}`);
+      // This IS fatal — if profile doesn't save, the onboarding card will reappear
+      return NextResponse.json(
+        { success: false, error: `Profile save failed: ${profileError.message}` },
+        { status: 500 }
+      );
     }
+    console.log(`[Onboard] Profile saved for ${childName}`);
 
     // Save raw transcript as a teacher note for guru context
     try {
