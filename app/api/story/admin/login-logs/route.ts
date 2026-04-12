@@ -13,25 +13,15 @@ export async function GET(req: NextRequest) {
 
     const supabase = getSupabase();
 
-    // Fetch both user and admin login logs in parallel
-    const [userLogsRes, adminLogsRes] = await Promise.all([
-      supabase
-        .from('story_login_logs')
-        .select('id, username, login_at, logout_at, ip_address, user_agent')
-        .order('login_at', { ascending: false })
-        .limit(limit),
-      supabase
-        .from('story_admin_login_logs')
-        .select('id, username, login_at, logout_at, ip_address, user_agent')
-        .order('login_at', { ascending: false })
-        .limit(limit),
-    ]);
+    // Fetch only user login logs (admin logins excluded — not useful for monitoring Z)
+    const userLogsRes = await supabase
+      .from('story_login_logs')
+      .select('id, username, login_at, logout_at, ip_address, user_agent')
+      .order('login_at', { ascending: false })
+      .limit(limit);
 
     if (userLogsRes.error) {
       console.error('[LoginLogs] User logs error:', userLogsRes.error.message);
-    }
-    if (adminLogsRes.error) {
-      console.error('[LoginLogs] Admin logs error:', adminLogsRes.error.message);
     }
 
     interface LogRow {
@@ -43,27 +33,15 @@ export async function GET(req: NextRequest) {
       user_agent: string | null;
     }
 
-    const mapRow = (row: LogRow, role: string) => ({
+    const logs = ((userLogsRes.data || []) as LogRow[]).map(row => ({
       id: row.id,
       username: row.username,
-      role,
+      role: 'user',
       login_at: row.login_at,
       logout_at: row.logout_at || null,
       ip_address: row.ip_address,
       user_agent: row.user_agent,
-    });
-
-    const userLogs = ((userLogsRes.data || []) as LogRow[]).map(r => mapRow(r, 'user'));
-    const adminLogs = ((adminLogsRes.data || []) as LogRow[]).map(r => mapRow(r, 'admin'));
-
-    // Merge and sort by login_at descending
-    const logs = [...userLogs, ...adminLogs]
-      .sort((a, b) => {
-        const ta = new Date(a.login_at).getTime() || 0;
-        const tb = new Date(b.login_at).getTime() || 0;
-        return tb - ta;
-      })
-      .slice(0, limit);
+    }));
 
     return NextResponse.json({ logs });
   } catch (error) {
