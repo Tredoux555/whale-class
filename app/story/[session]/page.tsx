@@ -769,7 +769,7 @@ export default function StoryViewer() {
                             <img
                               src={item.url}
                               alt={item.filename || 'Classroom photo'}
-                              className="w-full h-48 object-cover"
+                              className="w-full object-contain"
                             />
                             <div className="p-2 text-sm text-gray-500">
                               <span className="font-medium">{item.author}</span>
