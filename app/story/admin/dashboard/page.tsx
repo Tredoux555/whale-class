@@ -27,7 +27,7 @@ export default function AdminDashboard() {
 
   const { getSession, verifySession, handleLogout } = useAuthSession();
   const { onlineUsers, onlineCount, totalUsers, loadOnlineUsers } = useOnlineUsers(getSession);
-  const { loginLogs, loginLogsError, loadLoginLogs } = useLoginLogs(getSession);
+  const { loginLogs, visits, loginLogsError, loadLoginLogs } = useLoginLogs(getSession);
   const {
     messages,
     statistics,
@@ -232,7 +232,7 @@ export default function AdminDashboard() {
 
             {activeTab === 'online' && <OnlineUsersTab onlineUsers={onlineUsers} />}
 
-            {activeTab === 'logs' && <ActivityLogTab loginLogs={loginLogs} error={loginLogsError} />}
+            {activeTab === 'logs' && <ActivityLogTab visits={visits} error={loginLogsError} />}
 
             {activeTab === 'messages' && (
               <MessagesTab
