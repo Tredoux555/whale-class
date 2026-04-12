@@ -1,10 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#3B82F6"/>
-      <stop offset="100%" style="stop-color:#6366F1"/>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0C2E22"/>
+      <stop offset="100%" style="stop-color:#163D30"/>
     </linearGradient>
   </defs>
   <rect width="100" height="100" rx="22" fill="url(#bg)"/>
-  <text x="50" y="68" font-size="55" text-anchor="middle">🌳</text>
+  <!-- Trunk -->
+  <polygon points="49,78 51,78 50.5,42 49.5,42" fill="#1D6B48" opacity="0.9"/>
+  <!-- Branches -->
+  <line x1="50" y1="55" x2="32" y2="46" stroke="#1D6B48" stroke-width="0.6" opacity="0.7"/>
+  <line x1="50" y1="50" x2="68" y2="38" stroke="#1D6B48" stroke-width="0.5" opacity="0.7"/>
+  <line x1="50" y1="46" x2="30" y2="30" stroke="#1D6B48" stroke-width="0.5" opacity="0.7"/>
+  <line x1="50" y1="43" x2="50" y2="20" stroke="#1D6B48" stroke-width="0.5" opacity="0.7"/>
+  <line x1="50" y1="44" x2="70" y2="26" stroke="#1D6B48" stroke-width="0.4" opacity="0.7"/>
+  <!-- Canopy circles -->
+  <circle cx="37" cy="38" r="13" fill="#2A7D58" opacity="0.65"/>
+  <circle cx="63" cy="34" r="11.5" fill="#35956A" opacity="0.63"/>
+  <circle cx="50" cy="26" r="14" fill="#47AB7E" opacity="0.6"/>
+  <circle cx="34" cy="24" r="10" fill="#62C396" opacity="0.58"/>
+  <circle cx="66" cy="22" r="9" fill="#47AB7E" opacity="0.56"/>
+  <!-- Secondary -->
+  <circle cx="44" cy="44" r="6.5" fill="#2A7D58" opacity="0.43"/>
+  <circle cx="56" cy="42" r="6" fill="#35956A" opacity="0.41"/>
+  <circle cx="50" cy="35" r="5.5" fill="#47AB7E" opacity="0.45"/>
+  <!-- Tertiary -->
+  <circle cx="28" cy="30" r="5" fill="#62C396" opacity="0.31"/>
+  <circle cx="72" cy="28" r="4.5" fill="#35956A" opacity="0.29"/>
+  <circle cx="40" cy="18" r="5" fill="#82D9AE" opacity="0.31"/>
+  <circle cx="60" cy="16" r="4.5" fill="#62C396" opacity="0.29"/>
+  <circle cx="50" cy="14" r="4.5" fill="#82D9AE" opacity="0.33"/>
+  <!-- Gold accent -->
+  <circle cx="50.5" cy="19.5" r="3.5" fill="#E8C96A" opacity="0.15"/>
+  <circle cx="50.5" cy="19.5" r="2" fill="#E8C96A" opacity="0.9"/>
+  <circle cx="50.5" cy="19.5" r="1" fill="#F5E09A"/>
 </svg>
