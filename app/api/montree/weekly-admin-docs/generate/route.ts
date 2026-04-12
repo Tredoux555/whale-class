@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import {
   generateWeeklySummary,
   generateWeeklyPlan,
@@ -91,7 +92,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
     }
 
-    const children = childrenRes.data || [];
+    // Apply custom classroom order (matches physical seating arrangement)
+    const children = sortChildrenByCustomOrder(childrenRes.data || []);
     const notes = notesRes.data || [];
 
     // Build notes lookup: child_id -> { area -> note }

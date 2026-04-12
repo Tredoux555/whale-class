@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -104,9 +105,8 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       if (controller.signal.aborted) return;
 
       if (childrenData.children) {
-        const sorted = childrenData.children.sort((a: Child, b: Child) =>
-          a.name.localeCompare(b.name)
-        );
+        // Custom classroom order (matches physical seating arrangement)
+        const sorted = sortChildrenByCustomOrder(childrenData.children as Child[]);
         setChildren(sorted);
       }
 
