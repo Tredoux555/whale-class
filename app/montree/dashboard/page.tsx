@@ -394,7 +394,7 @@ export default function DashboardPage() {
 
               {/* ── Student Grid — compact squares, centered ── */}
               {(() => {
-                const items = filteredChildren.length + (searchQuery ? 0 : 1); // +1 for Add card
+                const items = filteredChildren.length;
                 const cols = items <= 16 ? 4 : items <= 25 ? 5 : 6;
                 return (
                   <div
@@ -425,17 +425,7 @@ export default function DashboardPage() {
                       </Link>
                     ))}
 
-                    {/* Add Student Card — only show when not searching */}
-                    {!searchQuery && (
-                      <Link
-                        href="/montree/dashboard/students"
-                        data-tutorial="add-student-button"
-                        className="aspect-square bg-white/60 border-2 border-dashed border-gray-200 hover:border-emerald-400 hover:bg-gray-50 rounded-2xl transition-all flex flex-col items-center justify-center"
-                      >
-                        <span className="text-2xl text-gray-400">+</span>
-                        <span className="text-xs text-gray-400">{t('common.add')}</span>
-                      </Link>
-                    )}
+                    {/* Add students via Classroom Builder in ··· menu */}
                   </div>
                 );
               })()}
