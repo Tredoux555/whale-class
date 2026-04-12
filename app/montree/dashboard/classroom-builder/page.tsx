@@ -115,7 +115,7 @@ export default function ClassroomBuilderPage() {
     return () => { cancelled = true; };
   }, [router]);
 
-  // Parse pasted text into student rows
+  // Parse pasted text into student rows — skips names that already exist in classroom
   const handlePreview = useCallback(() => {
     const nameLines = namesText.split('\n').map(l => l.trim()).filter(Boolean);
     const bdayLines = birthdaysText.split('\n').map(l => l.trim());
@@ -125,9 +125,19 @@ export default function ClassroomBuilderPage() {
       return;
     }
 
+    // Build set of existing child names for duplicate detection
+    const existingNames = new Set(
+      (session?.classroom?.children || []).map((c: { name: string }) => c.name.toLowerCase().trim())
+    );
+
     const parsed: ParsedStudent[] = nameLines.map((name, i) => {
       const bdayRaw = bdayLines[i] || '';
       const bdayParsed = parseBirthday(bdayRaw);
+
+      // Skip names that already exist in classroom
+      if (existingNames.has(name.toLowerCase().trim())) {
+        return { name, birthday: null, birthdayRaw: bdayRaw, valid: false, error: 'Already in classroom' };
+      }
 
       // Validate name
       if (name.length > 200) {
@@ -152,7 +162,7 @@ export default function ClassroomBuilderPage() {
 
     setStudents(parsed);
     setStep('preview');
-  }, [namesText, birthdaysText]);
+  }, [namesText, birthdaysText, session]);
 
   // Submit to API
   const handleSubmit = useCallback(async () => {
