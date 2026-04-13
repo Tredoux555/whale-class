@@ -231,8 +231,8 @@ Create a warm summary that confirms back to the teacher what you understood.`,
       special_considerations: extracted.special_considerations ?? null,
       successful_strategies: extracted.successful_strategies ?? [],
       challenging_triggers: extracted.challenging_triggers ?? [],
-      // Store raw transcript for future guru context
-      updated_by: 'voice_onboard',
+      // updated_by is UUID — use the authenticated teacher's userId
+      updated_by: auth.userId,
     };
 
     const { error: profileError } = await supabase
