@@ -130,13 +130,21 @@ export default function FocusWorksSection({
     }
   }, [childId, onRefreshGamePlan]);
 
+  // Clamp activePhase if game plan changes (refresh or child navigation)
+  const phaseCount = gamePlan?.phases?.length || 0;
+  const clampedPhase = phaseCount > 0 ? Math.min(activePhase, phaseCount - 1) : 0;
+  if (clampedPhase !== activePhase) {
+    // Schedule state update for next tick to avoid setState during render
+    setTimeout(() => setActivePhase(clampedPhase), 0);
+  }
+
   // Compute days since game plan update
   const planDaysSinceUpdate = gamePlan ? Math.floor(
     (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
   ) : 0;
 
-  // Get active phase works for display
-  const activePhaseData = gamePlan?.phases?.[activePhase] || null;
+  // Get active phase works for display (use clamped value for safety)
+  const activePhaseData = gamePlan?.phases?.[clampedPhase] || null;
 
   // Evidence tracking — loaded once per child, cached in state
   const [evidenceMap, setEvidenceMap] = useState<Record<string, {
@@ -262,7 +270,7 @@ export default function FocusWorksSection({
                   key={i}
                   onClick={() => setActivePhase(i)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
-                    activePhase === i
+                    clampedPhase === i
                       ? 'bg-amber-500 text-white'
                       : 'bg-white/80 text-gray-500 hover:bg-amber-100 border border-amber-200/50'
                   }`}
@@ -284,7 +292,7 @@ export default function FocusWorksSection({
               </div>
               {/* Phase works as chips */}
               <div className="flex flex-wrap gap-1.5">
-                {activePhaseData.works.map((work, wi) => (
+                {(activePhaseData.works || []).map((work, wi) => (
                   <span
                     key={wi}
                     className="px-2 py-1 text-xs bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100"
