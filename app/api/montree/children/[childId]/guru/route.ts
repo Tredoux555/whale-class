@@ -31,7 +31,19 @@ const CHILD_GURU_TOOL_NAMES = [
   'get_prioritized_recommendations', // What should this child do next?
   'get_child_recent_activity',       // What has this child done recently?
 ];
-const CHILD_GURU_TOOLS = GURU_TOOLS.filter(t => CHILD_GURU_TOOL_NAMES.includes(t.name));
+const CHILD_GURU_TOOLS = [
+  ...GURU_TOOLS.filter(t => CHILD_GURU_TOOL_NAMES.includes(t.name)),
+  // Custom tool: refresh game plan (not in shared GURU_TOOLS)
+  {
+    name: 'refresh_game_plan',
+    description: 'Refresh or update the game plan for this child. Call this when the teacher asks to update, change, or regenerate the game plan.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {},
+      required: [] as string[],
+    },
+  },
+];
 
 // Strip markdown formatting — keep it feeling like a human chat
 function stripMarkdown(text: string): string {
@@ -68,6 +80,7 @@ RULES:
 - If the teacher says "fill the shelf" or "put X on her shelf" — use set_focus_work.
 - If the teacher asks "what should I do next?" — use get_prioritized_recommendations, then answer in plain language.
 - If the teacher says "what has she been doing?" — use get_child_recent_activity.
+- If the teacher asks to "update the game plan" or "refresh the plan" or "new game plan" — use refresh_game_plan.
 - For notes like "Amy chose to do pouring work" — save_observation with the note text, and if a curriculum work matches, also call update_progress.
 - Always use the area enum: practical_life, sensorial, mathematics, language, cultural.
 - Keep responses SHORT. The teacher is standing in a classroom with 20 children.`;
@@ -188,11 +201,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
               // Execute the tool
               let result: ToolResult;
               try {
-                result = await executeTool(
-                  block.name,
-                  block.input as Record<string, unknown>,
-                  childId
-                );
+                // Custom handler for refresh_game_plan (not in shared executeTool)
+                if (block.name === 'refresh_game_plan') {
+                  const refreshRes = await fetch(new URL(`/api/montree/children/${childId}/game-plan/refresh?locale=${locale || 'en'}`, request.url), {
+                    method: 'POST',
+                    headers: { cookie: request.headers.get('cookie') || '' },
+                  });
+                  const refreshData = await refreshRes.json();
+                  result = refreshData.success
+                    ? { success: true, message: 'Game plan updated' }
+                    : { success: false, message: 'Failed to refresh game plan' };
+                } else {
+                  result = await executeTool(
+                    block.name,
+                    block.input as Record<string, unknown>,
+                    childId
+                  );
+                }
               } catch (err) {
                 console.error(`[ChildGuru] Tool ${block.name} error:`, err);
                 result = { success: false, message: `Tool ${block.name} failed` };

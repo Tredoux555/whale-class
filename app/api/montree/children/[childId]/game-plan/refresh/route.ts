@@ -107,8 +107,20 @@ export async function POST(
     const previousNudge = (existingPlan as Record<string, unknown>)?.nudge || (existingPlan as Record<string, unknown>)?.headline || '';
     const previousWorks = (existingPlan as Record<string, unknown>)?.works || [];
 
-    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+    // Check locale from request body or URL
+    let locale = 'en';
+    try {
+      const url = new URL(request.url);
+      locale = url.searchParams.get('locale') || 'en';
+      if (locale === 'en') {
+        const b = await request.json().catch(() => ({}));
+        locale = b.locale || 'en';
+      }
+    } catch { /* no body or no locale */ }
+    const isZh = locale === 'zh';
 
+    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+${isZh ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n' : ''}
 CHILD: ${child.name}
 PREVIOUS NUDGE: "${previousNudge}"
 PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
