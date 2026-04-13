@@ -4,7 +4,7 @@
 // Can execute tools: set shelf works, update progress, save observations, search curriculum.
 // Reuses existing Guru infrastructure (context-builder, tool-executor, tool-definitions).
 
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
@@ -12,6 +12,7 @@ import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { buildChildContext, formatContextForPrompt } from '@/lib/montree/guru/context-builder';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
+import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { checkRateLimit } from '@/lib/rate-limiter';
 
 export const maxDuration = 60;
@@ -56,6 +57,119 @@ function stripMarkdown(text: string): string {
     .replace(/^[-*]\s+/gm, '')          // - bullets → plain
     .replace(/^\d+\.\s+/gm, '')         // 1. numbered → plain
     .replace(/`(.+?)`/g, '$1');         // `code` → code
+}
+
+// In-process game plan refresh — avoids Railway internal fetch SSL errors
+async function refreshGamePlanInProcess(
+  supabase: ReturnType<typeof getSupabase>,
+  childId: string,
+  locale?: string,
+): Promise<ToolResult> {
+  try {
+    if (!anthropic) return { success: false, message: 'AI not configured' };
+
+    const isZh = locale === 'zh';
+
+    // Fetch child + existing game plan + profile + progress
+    const [childResult, profileResult, progressResult, notesResult] = await Promise.all([
+      supabase.from('montree_children').select('name, date_of_birth, settings').eq('id', childId).maybeSingle(),
+      supabase.from('montree_child_mental_profiles').select('*').eq('child_id', childId).maybeSingle(),
+      supabase.from('montree_child_work_progress').select('work_name, area, status').eq('child_id', childId),
+      supabase.from('montree_teacher_notes').select('content, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(5),
+    ]);
+
+    const child = childResult.data as { name: string; date_of_birth: string | null; settings: Record<string, unknown> } | null;
+    if (!child) return { success: false, message: 'Child not found' };
+
+    const existingPlan = child.settings?.game_plan as Record<string, unknown> | undefined;
+    const profile = profileResult.data as {
+      family_notes?: string | null;
+      special_considerations?: string | null;
+    } | null;
+    const progress = (progressResult.data || []) as Array<{ work_name: string; area: string; status: string }>;
+    const notes = (notesResult.data || []) as Array<{ content: string; created_at: string }>;
+
+    // Build progress summary
+    const progressByArea: Record<string, { mastered: string[]; practicing: string[]; presented: string[] }> = {};
+    for (const p of progress) {
+      if (!progressByArea[p.area]) progressByArea[p.area] = { mastered: [], practicing: [], presented: [] };
+      const bucket = p.status === 'mastered' ? 'mastered' : p.status === 'practicing' ? 'practicing' : 'presented';
+      progressByArea[p.area][bucket].push(p.work_name);
+    }
+
+    const progressSummary = Object.entries(progressByArea)
+      .map(([area, data]) => {
+        const parts = [];
+        if (data.mastered.length) parts.push(`mastered: ${data.mastered.join(', ')}`);
+        if (data.practicing.length) parts.push(`practicing: ${data.practicing.join(', ')}`);
+        if (data.presented.length) parts.push(`presented: ${data.presented.join(', ')}`);
+        return `${area}: ${parts.join(' | ')}`;
+      })
+      .join('\n');
+
+    const recentNotes = notes
+      .map(n => `[${new Date(n.created_at).toLocaleDateString()}] ${n.content}`)
+      .join('\n');
+
+    const previousNudge = existingPlan?.nudge || existingPlan?.headline || '';
+    const previousWorks = existingPlan?.works || [];
+
+    const GAME_PLAN_TOOL = {
+      name: 'create_game_plan' as const,
+      description: 'Create a brief, warm game plan nudge for a tired teacher.',
+      input_schema: {
+        type: 'object' as const,
+        properties: {
+          nudge: { type: 'string' as const, description: 'One warm sentence. Max 25 words.' },
+          works: { type: 'array' as const, items: { type: 'string' as const }, description: '3-5 specific works.' },
+          direction: { type: 'string' as const, description: 'Area progression in arrow format.' },
+        },
+        required: ['nudge', 'works', 'direction'] as string[],
+      },
+    };
+
+    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+${isZh ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n' : ''}
+CHILD: ${child.name}
+PREVIOUS NUDGE: "${previousNudge}"
+PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
+
+${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
+${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
+${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
+
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+
+    const response = await anthropic.messages.create({
+      model: HAIKU_MODEL,
+      max_tokens: 500,
+      tools: [GAME_PLAN_TOOL],
+      tool_choice: { type: 'tool', name: 'create_game_plan' },
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const toolBlock = response.content.find(b => b.type === 'tool_use');
+    if (!toolBlock || toolBlock.type !== 'tool_use') {
+      return { success: false, message: 'AI generation failed' };
+    }
+
+    const plan = toolBlock.input as Record<string, unknown>;
+    const updatedPlan = {
+      ...plan,
+      generated_at: existingPlan?.generated_at || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      child_name: child.name,
+      source: 'refresh',
+    };
+
+    await updateChildSettings(childId, { game_plan: updatedPlan });
+    console.log(`[ChildGuru] Game plan refreshed in-process for ${child.name}`);
+
+    return { success: true, message: 'Game plan updated' };
+  } catch (err) {
+    console.error('[ChildGuru] In-process game plan refresh error:', err);
+    return { success: false, message: 'Failed to refresh game plan' };
+  }
 }
 
 function buildSystemPrompt(childContext: string, childName: string, locale?: string): string {
@@ -201,16 +315,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
               // Execute the tool
               let result: ToolResult;
               try {
-                // Custom handler for refresh_game_plan (not in shared executeTool)
+                // Custom handler for refresh_game_plan — in-process (no internal fetch)
                 if (block.name === 'refresh_game_plan') {
-                  const refreshRes = await fetch(new URL(`/api/montree/children/${childId}/game-plan/refresh?locale=${locale || 'en'}`, request.url), {
-                    method: 'POST',
-                    headers: { cookie: request.headers.get('cookie') || '' },
-                  });
-                  const refreshData = await refreshRes.json();
-                  result = refreshData.success
-                    ? { success: true, message: 'Game plan updated' }
-                    : { success: false, message: 'Failed to refresh game plan' };
+                  result = await refreshGamePlanInProcess(supabase, childId, locale);
                 } else {
                   result = await executeTool(
                     block.name,
