@@ -46,9 +46,10 @@ function stripMarkdown(text: string): string {
     .replace(/`(.+?)`/g, '$1');         // `code` → code
 }
 
-function buildSystemPrompt(childContext: string, childName: string): string {
+function buildSystemPrompt(childContext: string, childName: string, locale?: string): string {
+  const isZh = locale === 'zh';
   return `You are the teacher's quick assistant for ${childName}. You live on the child's page — the teacher is looking at this child right now.
-
+${isZh ? '\nLANGUAGE: Reply in Chinese (中文). Use Montessori work names in Chinese where possible. Keep the same warm, brief tone.\n' : ''}
 PERSONALITY:
 - Brief. Warm. Practical. Like a colleague who whispers the answer.
 - Responses: 1-3 sentences max unless the teacher asks for detail.
@@ -111,9 +112,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
         // --- Parse body ---
         const body = await request.json();
-        const { message, history } = body as {
+        const { message, history, locale } = body as {
           message: string;
           history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+          locale?: string;
         };
 
         if (!message?.trim()) {
@@ -139,7 +141,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
 
         const contextText = formatContextForPrompt(childContext);
-        const systemPrompt = buildSystemPrompt(contextText, childContext.name);
+        const systemPrompt = buildSystemPrompt(contextText, childContext.name, locale);
 
         // --- Build messages (last 10 turns max to keep tokens low) ---
         const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
