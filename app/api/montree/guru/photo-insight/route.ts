@@ -2038,8 +2038,24 @@ Match this description to the correct Montessori work. Use the visual identifica
           .eq('work_name', finalWorkName)
           .maybeSingle();
 
-        const currentRank = STATUS_RANK[existingProgress?.status || 'not_started'] || 0;
-        const newRank = STATUS_RANK[masteryEvidence!] || 0;
+        const currentStatus = existingProgress?.status || 'not_started';
+        const currentRank = STATUS_RANK[currentStatus] || 0;
+
+        // Photo-count-driven P/P/M progression:
+        // - No prior record → "presented" (first photo = teacher showed the child)
+        // - Status is "presented" → "practicing" (child returned to it independently)
+        // - Status is "practicing" or "mastered" → leave it (mastered is teacher-only)
+        let targetStatus: string;
+        if (currentStatus === 'not_started') {
+          targetStatus = 'presented';
+        } else if (currentStatus === 'presented') {
+          targetStatus = 'practicing';
+        } else {
+          // Already practicing or mastered — don't touch it
+          targetStatus = currentStatus;
+        }
+
+        const newRank = STATUS_RANK[targetStatus] || 0;
 
         // Only upgrade status, never downgrade (teacher override protection)
         if (newRank > currentRank) {
@@ -2047,13 +2063,18 @@ Match this description to the correct Montessori work. Use the visual identifica
             child_id,
             work_name: finalWorkName,
             area: finalArea,
-            status: masteryEvidence,
+            status: targetStatus,
             updated_at: new Date().toISOString(),
             notes: `[Guru Smart Capture] ${input.observation}`,
           };
 
-          // Set mastered_at only on first mastery
-          if (masteryEvidence === 'mastered' && !existingProgress?.mastered_at) {
+          // Set presented_at on first presentation
+          if (targetStatus === 'presented') {
+            updateRecord.presented_at = new Date().toISOString();
+          }
+
+          // Set mastered_at only on first mastery (teacher-driven, but keep the guard)
+          if (targetStatus === 'mastered' && !existingProgress?.mastered_at) {
             updateRecord.mastered_at = new Date().toISOString();
           }
 
@@ -2065,7 +2086,7 @@ Match this description to the correct Montessori work. Use the visual identifica
             console.error('[PhotoInsight] Failed to update progress:', progressError);
           } else {
             autoUpdated = true;
-            console.log(`[PhotoInsight] Auto-updated ${finalWorkName} → ${masteryEvidence} for child ${child_id}`);
+            console.log(`[PhotoInsight] Auto-updated ${finalWorkName}: ${currentStatus} → ${targetStatus} for child ${child_id}`);
           }
         }
       } catch (err) {
@@ -2085,7 +2106,7 @@ Match this description to the correct Montessori work. Use the visual identifica
             work_name: finalWorkName,
             area: finalArea,
             work_id: classroomWorkId,
-            status: masteryEvidence || 'presented',
+            status: 'presented',
             source: 'smart_capture',
           }, { onConflict: 'child_id,work_name' });
 

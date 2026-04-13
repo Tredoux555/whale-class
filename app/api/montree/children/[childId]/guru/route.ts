@@ -275,3 +275,44 @@ export async function POST(request: NextRequest, context: RouteContext) {
     },
   });
 }
+
+// --- GET: Load chat history for this child ---
+export async function GET(request: NextRequest, context: RouteContext) {
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof Response) return auth;
+
+    const { childId } = await context.params;
+    const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
+    if (!access.allowed) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from('montree_guru_interactions')
+      .select('question, response, asked_at')
+      .eq('child_id', childId)
+      .eq('model_used', HAIKU_MODEL) // Only child guru messages (not photo-insight etc)
+      .order('asked_at', { ascending: true })
+      .limit(50);
+
+    if (error) {
+      console.error('[ChildGuru] Failed to load history:', error);
+      return NextResponse.json({ messages: [] });
+    }
+
+    // Convert DB rows to chat message pairs
+    const messages = (data || []).flatMap((row, i) => [
+      { id: `h-user-${i}`, role: 'user', content: row.question, timestamp: row.asked_at },
+      { id: `h-asst-${i}`, role: 'assistant', content: row.response || '', timestamp: row.asked_at },
+    ]);
+
+    return NextResponse.json({ messages }, {
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  } catch (err) {
+    console.error('[ChildGuru] GET error:', err);
+    return NextResponse.json({ messages: [] });
+  }
+}

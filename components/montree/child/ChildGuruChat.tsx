@@ -39,6 +39,27 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+
+  // Load chat history from DB on first open
+  useEffect(() => {
+    if (!isOpen || historyLoaded) return;
+    setHistoryLoaded(true);
+    fetch(`/api/montree/children/${childId}/guru`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : { messages: [] })
+      .then(data => {
+        if (data.messages?.length) {
+          setMessages(data.messages.map((m: { id: string; role: string; content: string }) => ({
+            id: m.id,
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+            actions: [],
+          })));
+        }
+      })
+      .catch(() => { /* silent — empty chat is fine */ });
+  }, [isOpen, historyLoaded, childId]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
