@@ -125,6 +125,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
         body: JSON.stringify({
           message: text.trim(),
           history: getHistory(),
+          locale,
         }),
         signal: controller.signal,
         credentials: 'include',
