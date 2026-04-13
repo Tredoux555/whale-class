@@ -21,9 +21,10 @@ interface Message {
 interface Props {
   childId: string;
   childName: string;
+  onAction?: () => void; // Called after tool actions so parent can refresh data
 }
 
-export default function ChildGuruChat({ childId, childName }: Props) {
+export default function ChildGuruChat({ childId, childName, onAction }: Props) {
   const { t, locale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -115,6 +116,7 @@ export default function ChildGuruChat({ childId, childName }: Props) {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
+      let hadAction = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -136,6 +138,7 @@ export default function ChildGuruChat({ childId, childName }: Props) {
                   : m
               ));
             } else if (data.type === 'action') {
+              if (data.success) hadAction = true;
               setMessages(prev => prev.map(m =>
                 m.id === assistantMsg.id
                   ? { ...m, actions: [...(m.actions || []), { tool: data.tool, success: data.success, message: data.message }] }
@@ -164,6 +167,11 @@ export default function ChildGuruChat({ childId, childName }: Props) {
       setMessages(prev => prev.map(m =>
         m.id === assistantMsg.id ? { ...m, isStreaming: false } : m
       ));
+
+      // If tools executed, tell the parent page to refresh its data
+      if (hadAction && onAction) {
+        setTimeout(() => onAction(), 300); // Small delay for DB writes to settle
+      }
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       console.error('[ChildGuru] Send error:', err);

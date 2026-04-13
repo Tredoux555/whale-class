@@ -823,6 +823,7 @@ export default function WeekPage() {
         <ChildGuruChat
           childId={childId}
           childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
+          onAction={fetchAssignments}
         />
       )}
     </div>
