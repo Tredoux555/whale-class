@@ -113,6 +113,11 @@ export default function FocusWorksSection({
   const [fillingShelf, setFillingShelf] = useState(false);
   const [shelfFilled, setShelfFilled] = useState(false);
 
+  // Reset shelf-filled state when switching children or game plan changes
+  useEffect(() => {
+    setShelfFilled(false);
+  }, [childId, gamePlan]);
+
   // Compute game plan display values first (used by callbacks below)
   const planDaysSinceUpdate = gamePlan ? Math.floor(
     (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
