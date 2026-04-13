@@ -140,6 +140,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
     try {
       const res = await montreeApi(`/api/montree/children/${childId}/onboard`, {
         method: 'POST',
+        timeout: 120000, // 120s — two Sonnet calls (profile extraction + game plan generation)
         body: JSON.stringify({
           transcript: text,
           classroom_id: classroomId,
