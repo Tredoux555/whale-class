@@ -1,14 +1,16 @@
 // app/api/montree/children/[childId]/onboard/route.ts
-// "Tell Guru about this child" — voice transcript → structured profile extraction
+// "Tell Guru about this child" — voice transcript → structured profile extraction + game plan
 // Uses Sonnet tool_use to extract mental profile + curriculum level from teacher's spoken description
+// Then generates a structured game plan with phases, goals, and works
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 
-export const maxDuration = 60; // 60s — Sonnet extraction can take a while
+export const maxDuration = 120; // 120s — profile extraction + game plan generation
 
 interface RouteContext {
   params: Promise<{ childId: string }>;
@@ -277,10 +279,32 @@ Create a warm summary that confirms back to the teacher what you understood.`,
       }
     }
 
+    // ── GAME PLAN GENERATION ──
+    // After profile is saved, generate a structured game plan for this child
+    // using the teacher's transcript + extracted profile data
+    let gamePlan: Record<string, unknown> | null = null;
+    try {
+      gamePlan = await generateGamePlan(
+        childName,
+        transcript,
+        extracted,
+        cid,
+        ageNote,
+      );
+      if (gamePlan) {
+        await updateChildSettings(childId, { game_plan: gamePlan });
+        console.log(`[Onboard] Game plan saved for ${childName}`);
+      }
+    } catch (planErr) {
+      console.error('[Onboard] Game plan generation error:', planErr);
+      // Non-fatal — profile is already saved, game plan can be generated later
+    }
+
     return NextResponse.json({
       success: true,
       summary: extracted.summary,
       experience_level: expLevel,
+      game_plan: gamePlan,
     });
 
   } catch (error) {
@@ -378,4 +402,169 @@ async function seedCurriculumPositions(
       }
     }
   }
+}
+
+// ──────────────────────────────────────────────────────────
+// GAME PLAN GENERATION
+// ──────────────────────────────────────────────────────────
+
+const GAME_PLAN_TOOL = {
+  name: 'create_game_plan' as const,
+  description: 'Create a structured, actionable game plan for this child based on what the teacher described. The plan should have 3-4 phases spanning the remainder of the semester, with specific Montessori works and milestones.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      headline: {
+        type: 'string' as const,
+        description: 'One warm sentence summarizing the plan direction. E.g. "Build confidence through Practical Life while immersing Molly in English through sensorial language work."',
+      },
+      priority_areas: {
+        type: 'array' as const,
+        items: { type: 'string' as const },
+        description: 'Top 2-3 curriculum areas to prioritize, in order. E.g. ["Language", "Practical Life", "Sensorial"]',
+      },
+      parent_goals: {
+        type: ['string', 'null'] as unknown as 'string',
+        description: 'What the parents want, as mentioned by the teacher. E.g. "English to rocketship forward"',
+      },
+      phases: {
+        type: 'array' as const,
+        items: {
+          type: 'object' as const,
+          properties: {
+            title: { type: 'string' as const, description: 'Phase title, e.g. "Weeks 1-2: Settle & Trust"' },
+            goal: { type: 'string' as const, description: 'One sentence describing what success looks like at end of this phase' },
+            works: {
+              type: 'array' as const,
+              items: { type: 'string' as const },
+              description: 'Specific Montessori works to present during this phase (3-6 works)',
+            },
+            strategies: {
+              type: 'array' as const,
+              items: { type: 'string' as const },
+              description: 'Teacher strategies for this phase (2-3 strategies)',
+            },
+          },
+          required: ['title', 'goal', 'works', 'strategies'],
+        },
+        description: '3-4 phases covering the remainder of the semester',
+      },
+      weekly_check_questions: {
+        type: 'array' as const,
+        items: { type: 'string' as const },
+        description: '3-5 quick yes/no questions the teacher can ask themselves each week to gauge progress. E.g. "Is she choosing work independently?" "Any new English words this week?"',
+      },
+      language_note: {
+        type: ['string', 'null'] as unknown as 'string',
+        description: 'If the child has a language barrier or is an ELL, specific strategies for language acquisition through Montessori materials. Null if not applicable.',
+      },
+    },
+    required: ['headline', 'priority_areas', 'phases', 'weekly_check_questions'],
+  },
+};
+
+async function generateGamePlan(
+  childName: string,
+  transcript: string,
+  extractedProfile: Record<string, unknown>,
+  classroomId: string | undefined,
+  ageNote: string,
+): Promise<Record<string, unknown> | null> {
+  if (!anthropic) return null;
+
+  // Fetch available curriculum works for context (so the plan references real works)
+  let availableWorks = '';
+  if (classroomId) {
+    try {
+      const supabase = getSupabase();
+      const { data: areas } = await supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id, area_key')
+        .eq('classroom_id', classroomId);
+
+      if (areas && areas.length > 0) {
+        const typedAreas = areas as Array<{ id: string; area_key: string }>;
+        const worksByArea: Record<string, string[]> = {};
+        for (const area of typedAreas) {
+          const { data: works } = await supabase
+            .from('montree_classroom_curriculum_works')
+            .select('name')
+            .eq('classroom_id', classroomId)
+            .eq('area_id', area.id)
+            .order('sequence', { ascending: true })
+            .limit(15);
+          if (works && works.length > 0) {
+            worksByArea[area.area_key] = (works as Array<{ name: string }>).map(w => w.name);
+          }
+        }
+        availableWorks = Object.entries(worksByArea)
+          .map(([area, names]) => `${area}: ${names.join(', ')}`)
+          .join('\n');
+      }
+    } catch (err) {
+      console.error('[Onboard] Error fetching works for game plan:', err);
+    }
+  }
+
+  const expLevel = extractedProfile.experience_level || 'new';
+  const profileSummary = extractedProfile.summary || '';
+
+  const prompt = `You are a master Montessori guide with 20 years of experience. A teacher just onboarded a new child and you need to create a practical, week-by-week game plan.
+
+CHILD: ${childName}
+${ageNote}
+EXPERIENCE LEVEL: ${expLevel}
+PROFILE SUMMARY: ${profileSummary}
+
+TEACHER'S FULL DESCRIPTION:
+"${transcript}"
+
+EXTRACTED DATA:
+- Practical Life level: ${extractedProfile.curriculum_practical_life ?? 'not mentioned'}%
+- Sensorial level: ${extractedProfile.curriculum_sensorial ?? 'not mentioned'}%
+- Language level: ${extractedProfile.curriculum_language ?? 'not mentioned'}%
+- Mathematics level: ${extractedProfile.curriculum_mathematics ?? 'not mentioned'}%
+- Cultural level: ${extractedProfile.curriculum_cultural ?? 'not mentioned'}%
+- Family notes: ${extractedProfile.family_notes || 'none'}
+- Special considerations: ${extractedProfile.special_considerations || 'none'}
+
+${availableWorks ? `AVAILABLE WORKS IN THIS CLASSROOM (use THESE exact names in your plan):\n${availableWorks}` : ''}
+
+IMPORTANT GUIDELINES:
+- We are halfway through the second semester, so plan for roughly 8-10 weeks remaining
+- If the child is brand new to Montessori, Phase 1 MUST be about settling in, building trust, learning ground rules
+- If the child has a language barrier, weave language acquisition INTO every area (not just Language area). Montessori materials are inherently multi-sensory and perfect for ELL children.
+- Be specific with work names — use the available works list above when possible
+- Each phase should build on the previous one
+- Strategies should be practical things the teacher can DO, not abstract advice
+- Weekly check questions should be quick pulse-checks, not essay prompts
+
+Create a game plan that a teacher can actually follow starting tomorrow.`;
+
+  console.log(`[Onboard] Generating game plan for ${childName}...`);
+
+  const response = await anthropic.messages.create({
+    model: AI_MODEL,
+    max_tokens: 3000,
+    tools: [GAME_PLAN_TOOL],
+    tool_choice: { type: 'tool', name: 'create_game_plan' },
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const toolBlock = response.content.find(b => b.type === 'tool_use');
+  if (!toolBlock || toolBlock.type !== 'tool_use') {
+    console.error('[Onboard] No tool_use in game plan response');
+    return null;
+  }
+
+  const plan = toolBlock.input as Record<string, unknown>;
+
+  // Wrap with metadata
+  return {
+    ...plan,
+    generated_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    child_name: childName,
+    source: 'onboard',
+  };
 }

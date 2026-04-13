@@ -9,11 +9,13 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 
+import type { GamePlan } from '@/components/montree/child/GamePlanCard';
+
 interface Props {
   childId: string;
   childName: string;
   classroomId: string;
-  onComplete: () => void; // Called when profile is saved
+  onComplete: (gamePlan?: GamePlan) => void; // Called when profile is saved, optionally with game plan
 }
 
 type Stage = 'prompt' | 'recording' | 'transcribing' | 'processing' | 'done' | 'error';
@@ -27,6 +29,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
   const [recordingTime, setRecordingTime] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [extractedSummary, setExtractedSummary] = useState('');
+  const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -148,9 +151,14 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       }
       const data = await res.json();
       setExtractedSummary(data.summary || '');
+
+      if (data.game_plan) {
+        setGamePlan(data.game_plan);
+      }
+
       setStage('done');
-      // Small delay so teacher can see the success state
-      setTimeout(() => onComplete(), 2000);
+      // Longer delay so teacher can read the summary + see game plan note
+      setTimeout(() => onComplete(data.game_plan ? (data.game_plan as GamePlan) : undefined), 3000);
     } catch (err) {
       console.error('[TellGuru] Processing error:', err);
       setErrorMsg(locale === 'zh' ? '处理失败，请再试一次' : 'Processing failed. Please try again.');
@@ -310,6 +318,16 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             <p className="text-sm text-gray-500 max-w-sm mx-auto">
               {extractedSummary}
             </p>
+          )}
+          {gamePlan && (
+            <div className="mt-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
+              <p className="text-xs text-amber-700 font-medium">
+                🗺️ {locale === 'zh' ? '学习计划已生成' : 'Game plan ready'}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {gamePlan.headline}
+              </p>
+            </div>
           )}
         </div>
       )}
