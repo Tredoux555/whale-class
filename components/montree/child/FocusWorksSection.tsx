@@ -48,6 +48,7 @@ export interface FocusWorksSectionProps {
   smartNoteProcessing?: string | null;
   gamePlan?: GamePlan | null;
   onRefreshGamePlan?: (newPlan: GamePlan) => void;
+  onShelfFilled?: () => void;
 }
 
 // Status config with translated labels
@@ -103,11 +104,48 @@ export default function FocusWorksSection({
   smartNoteProcessing,
   gamePlan,
   onRefreshGamePlan,
+  onShelfFilled,
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
   const statusConfig = getStatusConfig(t);
   const [refreshingPlan, setRefreshingPlan] = useState(false);
+  const [fillingShelf, setFillingShelf] = useState(false);
+  const [shelfFilled, setShelfFilled] = useState(false);
+
+  // Compute game plan display values first (used by callbacks below)
+  const planDaysSinceUpdate = gamePlan ? Math.floor(
+    (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
+  ) : 0;
+  const planNudge = gamePlan?.nudge || gamePlan?.headline || '';
+  const planWorks = gamePlan?.works || gamePlan?.phases?.[0]?.works || [];
+  const planDirection = gamePlan?.direction || gamePlan?.priority_areas?.join(' → ') || '';
+
+  // Check if there are empty area slots that plan works could fill
+  const hasEmptySlots = gamePlan && planWorks.length > 0 &&
+    AREAS.some(area => !focusWorks.find(w => normalizeArea(w.area) === area));
+
+  const handleFillShelf = useCallback(async () => {
+    if (!planWorks.length) return;
+    setFillingShelf(true);
+    try {
+      const res = await montreeApi(`/api/montree/children/${childId}/fill-shelf`, {
+        method: 'POST',
+        body: JSON.stringify({ works: planWorks }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.filled?.length > 0) {
+          setShelfFilled(true);
+          onShelfFilled?.(); // parent refreshes focus works
+        }
+      }
+    } catch (err) {
+      console.error('[FillShelf] Error:', err);
+    } finally {
+      setFillingShelf(false);
+    }
+  }, [childId, planWorks, onShelfFilled]);
 
   const handleRefreshPlan = useCallback(async () => {
     if (!onRefreshGamePlan) return;
@@ -127,20 +165,6 @@ export default function FocusWorksSection({
       setRefreshingPlan(false);
     }
   }, [childId, onRefreshGamePlan]);
-
-  // Compute days since game plan update
-  const planDaysSinceUpdate = gamePlan ? Math.floor(
-    (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
-  ) : 0;
-
-  // Detect format: new compact (has nudge) vs legacy (has phases)
-  const isCompactPlan = !!(gamePlan?.nudge);
-  // Get the display nudge — new format uses nudge, legacy falls back to headline
-  const planNudge = gamePlan?.nudge || gamePlan?.headline || '';
-  // Get works to show — new format uses top-level works, legacy uses first phase works
-  const planWorks = gamePlan?.works || gamePlan?.phases?.[0]?.works || [];
-  // Get direction — new format uses direction, legacy uses priority_areas joined with arrows
-  const planDirection = gamePlan?.direction || gamePlan?.priority_areas?.join(' → ') || '';
 
   // Evidence tracking — loaded once per child, cached in state
   const [evidenceMap, setEvidenceMap] = useState<Record<string, {
@@ -236,9 +260,9 @@ export default function FocusWorksSection({
             </div>
           </div>
 
-          {/* Works chips */}
+          {/* Works chips + fill shelf button */}
           {planWorks.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
               {planWorks.map((work, wi) => (
                 <span
                   key={wi}
@@ -247,6 +271,24 @@ export default function FocusWorksSection({
                   {work}
                 </span>
               ))}
+              {/* Fill shelf button — only when empty slots exist */}
+              {hasEmptySlots && !shelfFilled && (
+                <button
+                  onClick={handleFillShelf}
+                  disabled={fillingShelf}
+                  className="px-2.5 py-1 text-xs bg-amber-500 text-white rounded-lg font-medium hover:bg-amber-600 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1"
+                >
+                  {fillingShelf ? (
+                    <div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    '↓'
+                  )}
+                  {locale === 'zh' ? '填充书架' : 'Fill shelf'}
+                </button>
+              )}
+              {shelfFilled && (
+                <span className="px-2.5 py-1 text-xs text-emerald-600 font-medium">✓ {locale === 'zh' ? '已填充' : 'Done'}</span>
+              )}
             </div>
           )}
 

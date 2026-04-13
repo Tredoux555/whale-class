@@ -703,6 +703,7 @@ export default function WeekPage() {
         smartNoteProcessing={smartNoteProcessing}
         gamePlan={gamePlan}
         onRefreshGamePlan={(updatedPlan) => setGamePlan(updatedPlan)}
+        onShelfFilled={fetchAssignments}
       />
       </div>
 
