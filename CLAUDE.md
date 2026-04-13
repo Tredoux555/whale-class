@@ -197,6 +197,99 @@ montree.xyz
 
 ## RECENT STATUS (Apr 13, 2026)
 
+### ⚡ Session 22 — Child Guru Production Fixes + English Corner Language Tracker (Apr 13, 2026)
+
+**Three commits pushed to main: `6846749a`, `73ad1488`.**
+
+**THE SESSION:** Fixed three production-breaking bugs in the Child Guru from Session 21, then built the English Corner — a real-time Language area tracker showing which children have visited English this week and who still needs to come.
+
+**A. Child Guru Production Fixes — `6846749a`:**
+
+Three bugs that were crashing in Railway logs:
+
+1. **`NextResponse is not defined`** — GET handler for chat history used `NextResponse.json()` but only `NextRequest` was imported. Added `NextResponse` to the import.
+
+2. **`ERR_SSL_WRONG_VERSION_NUMBER` on game plan refresh** — The `refresh_game_plan` tool used `fetch()` to call a sibling API route internally. Railway's internal loopback via HTTPS causes SSL errors (same issue as Session 10 photo-audit resolve route). **Fix:** Replaced the internal fetch with a full in-process implementation (`refreshGamePlanInProcess()`) that directly queries Supabase, builds the Haiku prompt, calls the API, and saves via `updateChildSettings()`. No HTTP involved — runs entirely in-process.
+
+3. **Chinese locale not reaching game plan refresh** — The `locale` parameter was being read from the POST body and passed to `buildSystemPrompt()` correctly, but the old internal fetch for game plan refresh constructed a URL query param that wasn't being forwarded properly through Railway's SSL layer. The in-process refactor fixes this — `locale` passes directly as a function argument and controls whether Haiku generates the nudge/direction in Chinese.
+
+**Key architectural pattern — In-process route calls on Railway:**
+Railway internal loopback via HTTPS fails with SSL errors. When one API route needs to call another, DON'T use `fetch()` — instead, extract the core logic into a shared function and call it directly. This is the same pattern used in Session 10 for photo-audit resolve (`correctionsPost(synthetic)` replaced internal fetch to corrections route). The `refreshGamePlanInProcess()` function (~110 lines) does everything the `/api/montree/children/[childId]/game-plan/refresh` route does: fetches child data + profile + progress + notes, builds a progress summary, calls Haiku with `tool_use` structured output, and saves via `updateChildSettings()`.
+
+**Key file**: `app/api/montree/children/[childId]/guru/route.ts` — Added `NextResponse` import (line 7), `updateChildSettings` import (line 15), `refreshGamePlanInProcess()` function (lines 63-173), replaced internal fetch call (line 320).
+
+**B. English Corner — Language Area Tracker — `73ad1488`:**
+
+New feature-gated page showing which children have done Language area work this week and who hasn't. Real-time from tagged photos.
+
+**The page (`/montree/dashboard/language-tracker`):**
+- Progress bar: X/20 visited this week
+- **"Not Yet" section first** (red dot) — children with NO Language photos this week. Displayed as a 2-3 column grid of tappable child pills. Teacher sees immediately who to call over.
+- **"Visited" section below** (green checkmark) — each child with their specific Language works shown as emerald pills with day badges (Mon, Tue, Wed, etc.). Shows work count per child.
+- Every child card tappable → navigates to their child page
+- Bilingual: all labels in EN/ZH via `locale`
+- Refresh button at bottom
+- 🎉 celebration state when everyone has visited
+
+**The API (`GET /api/montree/dashboard/language-tracker`):**
+- Resolves `language` area ID for classroom via `montree_classroom_curriculum_areas`
+- Gets all language work IDs from `montree_classroom_curriculum_works`
+- Queries `montree_media` for photos this week (Mon-Sun) with language work_id
+- Also checks group photos via `montree_media_children` junction table
+- Deduplicates works per child (keeps most recent)
+- Returns `{ visited[], notYet[], weekStart, weekEnd, totalChildren, visitedCount }`
+- Auth: `verifySchoolRequest()`, no-store cache
+
+**Menu integration:**
+- 🇬🇧 English Corner link added to DashboardHeader ··· dropdown menu
+- Feature-gated: `isEnabled('english_corner')`
+- Positioned after RAZ Reading Tracker, before Paperwork Tracker
+
+**Feature enablement:**
+- Migration 175: enables `english_corner` for Whale Class
+- Feature definition already existed (migration 149) — just needed the school-level enable
+- User ran the enable SQL manually in Supabase SQL Editor
+
+**Key files (3 new, 1 modified):**
+- `app/api/montree/dashboard/language-tracker/route.ts` — NEW: Language tracker API (~190 lines)
+- `app/montree/dashboard/language-tracker/page.tsx` — NEW: English Corner page (~240 lines)
+- `migrations/175_enable_english_corner_whale_class.sql` — NEW: Enable for Whale Class
+- `components/montree/DashboardHeader.tsx` — Added 🇬🇧 English Corner link to ··· menu
+
+**DailyLanguageSix removed from capture page? NO — left in place.** The Daily Language 6 widget on the capture page (Session 20) is a different feature with a different purpose (nudge during photo tagging). English Corner is the review facility. They coexist. User said "leave it out of the capture function" referring to the tracker, not asking to remove the existing widget. If user later wants Daily Language 6 removed from capture, that's a separate task.
+
+**Commits this session (full list including carryover from Session 21 continuation):**
+- `cd27a059` — Child Guru: API + UI + wiring (Session 21)
+- `a804093d` — CLAUDE.md update
+- `cdd772fd` — Strip markdown from Guru responses
+- `76f2202a` — Auto-refresh page after tool actions
+- `5c5c44a4` — Persist chat history + auto P/P/M from photo count
+- `4c11b970` — Game Plan label
+- `1e6f7556` — Chinese locale for Guru
+- `9508d280` — Fix DB columns (response → response_insight)
+- `6d5908ad` — Game plan refresh tool + Chinese locale + bolder label
+- `6846749a` — **Fix: NextResponse import, in-process game plan refresh, Chinese locale**
+- `73ad1488` — **English Corner: Language area tracker**
+
+**Auto P/P/M from photo count (built in Session 21 continuation, commit `5c5c44a4`):**
+- First photo of a work → status set to `presented` (+ `presented_at` timestamp)
+- Second photo of same work → status upgraded to `practicing`
+- `mastered` is teacher-only manual — never set automatically
+- Upgrade-only: never downgrades status
+- Lives in `app/api/montree/guru/photo-insight/route.ts` (~lines 2031-2090)
+
+**Next session priorities:**
+1. **Test Child Guru on production** — tap the green chat bubble on any child's page. Test: "what should I do next with Molly?", "fill her shelf with sensorial works", "update the game plan". Verify actions execute (shelf updates, observations saved, game plan refreshes).
+2. **Test game plan refresh in Chinese** — switch to Chinese locale, ask Guru "更新游戏计划" or "refresh the game plan". Verify nudge and direction come back in Chinese.
+3. **Test English Corner on production** — ··· menu → 🇬🇧 English Corner. Verify children with Language photos this week show in "Visited" with work pills. Verify children without show in "Not Yet".
+4. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17 target)
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27
+6. **Run migration 175** on production if not already done (user ran the SQL manually this session)
+7. **Photo audit: Jimmy's work** — user identified flat colored discs (red, yellow, blue) graded by size on a mat. Likely Knobless Cylinders viewed from above, but user wasn't sure. Needs in-person verification before fixing the photo audit card.
+8. **Consider removing DailyLanguageSix from capture page** — user said "its no good there" and "confusing." The English Corner tracker replaces its purpose. May want to disable `daily_language_6` feature flag or remove the component from capture page entirely.
+
+---
+
 ### ⚡ Session 21 — Unified Game Plan + Shelf Card, Haiku Switch, Fill Shelf Auto-Populate + Child Guru (Apr 13, 2026)
 
 **Six commits pushed to main: `788d2791`, `26e49437`, `97b9d1ef`, `4a949e74`, `2bd449ac`, `cd27a059`.**
