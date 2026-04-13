@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 
 export const maxDuration = 120; // 120s — profile extraction + game plan generation
@@ -410,56 +410,25 @@ async function seedCurriculumPositions(
 
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
-  description: 'Create a structured, actionable game plan for this child based on what the teacher described. The plan should have 3-4 phases spanning the remainder of the semester, with specific Montessori works and milestones.',
+  description: 'Create a brief, warm game plan nudge for a tired teacher. This is NOT a lesson plan — it is a compass heading. One sentence the teacher reads in 2 seconds and knows where to start.',
   input_schema: {
     type: 'object' as const,
     properties: {
-      headline: {
+      nudge: {
         type: 'string' as const,
-        description: 'One warm sentence summarizing the plan direction. E.g. "Build confidence through Practical Life while immersing Molly in English through sensorial language work."',
+        description: 'One warm, practical sentence that tells the teacher where to start with this child. Speaks directly to the teacher. Max 25 words. E.g. "She needs to feel safe before she can learn. Practical Life is her anchor — name everything she touches in English."',
       },
-      priority_areas: {
+      works: {
         type: 'array' as const,
         items: { type: 'string' as const },
-        description: 'Top 2-3 curriculum areas to prioritize, in order. E.g. ["Language", "Practical Life", "Sensorial"]',
+        description: '3-5 specific Montessori works to present first. Use EXACT names from the classroom curriculum. These are the starting point, not a full plan.',
       },
-      parent_goals: {
-        type: ['string', 'null'] as unknown as 'string',
-        description: 'What the parents want, as mentioned by the teacher. E.g. "English to rocketship forward"',
-      },
-      phases: {
-        type: 'array' as const,
-        items: {
-          type: 'object' as const,
-          properties: {
-            title: { type: 'string' as const, description: 'Phase title, e.g. "Weeks 1-2: Settle & Trust"' },
-            goal: { type: 'string' as const, description: 'One sentence describing what success looks like at end of this phase' },
-            works: {
-              type: 'array' as const,
-              items: { type: 'string' as const },
-              description: 'Specific Montessori works to present during this phase (3-6 works)',
-            },
-            strategies: {
-              type: 'array' as const,
-              items: { type: 'string' as const },
-              description: 'Teacher strategies for this phase (2-3 strategies)',
-            },
-          },
-          required: ['title', 'goal', 'works', 'strategies'],
-        },
-        description: '3-4 phases covering the remainder of the semester',
-      },
-      weekly_check_questions: {
-        type: 'array' as const,
-        items: { type: 'string' as const },
-        description: '3-5 quick yes/no questions the teacher can ask themselves each week to gauge progress. E.g. "Is she choosing work independently?" "Any new English words this week?"',
-      },
-      language_note: {
-        type: ['string', 'null'] as unknown as 'string',
-        description: 'If the child has a language barrier or is an ELL, specific strategies for language acquisition through Montessori materials. Null if not applicable.',
+      direction: {
+        type: 'string' as const,
+        description: 'The area progression in arrow format, max 5 words. E.g. "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['headline', 'priority_areas', 'phases', 'weekly_check_questions'],
+    required: ['nudge', 'works', 'direction'],
   },
 };
 
@@ -509,43 +478,20 @@ async function generateGamePlan(
   const expLevel = extractedProfile.experience_level || 'new';
   const profileSummary = extractedProfile.summary || '';
 
-  const prompt = `You are a master Montessori guide with 20 years of experience. A teacher just onboarded a new child and you need to create a practical, week-by-week game plan.
+  const prompt = `A teacher just described a child. Give them a compass heading — not a lesson plan.
 
-CHILD: ${childName}
-${ageNote}
-EXPERIENCE LEVEL: ${expLevel}
-PROFILE SUMMARY: ${profileSummary}
+CHILD: ${childName} | ${ageNote} | Experience: ${expLevel}
+TEACHER SAID: "${transcript}"
+${extractedProfile.family_notes ? `FAMILY: ${extractedProfile.family_notes}` : ''}
+${availableWorks ? `CLASSROOM WORKS (use EXACT names):\n${availableWorks}` : ''}
 
-TEACHER'S FULL DESCRIPTION:
-"${transcript}"
+Write ONE warm sentence a tired teacher reads in 2 seconds and knows where to start. Then pick 3-5 works to present first. Keep it human.`;
 
-EXTRACTED DATA:
-- Practical Life level: ${extractedProfile.curriculum_practical_life ?? 'not mentioned'}%
-- Sensorial level: ${extractedProfile.curriculum_sensorial ?? 'not mentioned'}%
-- Language level: ${extractedProfile.curriculum_language ?? 'not mentioned'}%
-- Mathematics level: ${extractedProfile.curriculum_mathematics ?? 'not mentioned'}%
-- Cultural level: ${extractedProfile.curriculum_cultural ?? 'not mentioned'}%
-- Family notes: ${extractedProfile.family_notes || 'none'}
-- Special considerations: ${extractedProfile.special_considerations || 'none'}
-
-${availableWorks ? `AVAILABLE WORKS IN THIS CLASSROOM (use THESE exact names in your plan):\n${availableWorks}` : ''}
-
-IMPORTANT GUIDELINES:
-- We are halfway through the second semester, so plan for roughly 8-10 weeks remaining
-- If the child is brand new to Montessori, Phase 1 MUST be about settling in, building trust, learning ground rules
-- If the child has a language barrier, weave language acquisition INTO every area (not just Language area). Montessori materials are inherently multi-sensory and perfect for ELL children.
-- Be specific with work names — use the available works list above when possible
-- Each phase should build on the previous one
-- Strategies should be practical things the teacher can DO, not abstract advice
-- Weekly check questions should be quick pulse-checks, not essay prompts
-
-Create a game plan that a teacher can actually follow starting tomorrow.`;
-
-  console.log(`[Onboard] Generating game plan for ${childName}...`);
+  console.log(`[Onboard] Generating game plan for ${childName} (Haiku)...`);
 
   const response = await anthropic.messages.create({
-    model: AI_MODEL,
-    max_tokens: 3000,
+    model: HAIKU_MODEL,
+    max_tokens: 500,
     tools: [GAME_PLAN_TOOL],
     tool_choice: { type: 'tool', name: 'create_game_plan' },
     messages: [{ role: 'user', content: prompt }],

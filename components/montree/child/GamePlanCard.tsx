@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
 import { montreeApi } from '@/lib/montree/api';
 
+// Legacy phase structure (for backward compatibility with existing plans)
 interface GamePlanPhase {
   title: string;
   goal: string;
@@ -17,12 +18,18 @@ interface GamePlanPhase {
 }
 
 export interface GamePlan {
-  headline: string;
-  priority_areas: string[];
+  // New compact format (Haiku)
+  nudge?: string;
+  works?: string[];
+  direction?: string;
+  // Legacy format (Sonnet) — kept for backward compat with existing plans
+  headline?: string;
+  priority_areas?: string[];
   parent_goals?: string | null;
-  phases: GamePlanPhase[];
-  weekly_check_questions: string[];
+  phases?: GamePlanPhase[];
+  weekly_check_questions?: string[];
   language_note?: string | null;
+  // Metadata (both formats)
   generated_at: string;
   updated_at: string;
   child_name: string;
