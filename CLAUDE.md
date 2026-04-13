@@ -197,11 +197,11 @@ montree.xyz
 
 ## RECENT STATUS (Apr 13, 2026)
 
-### ⚡ Session 21 — Unified Game Plan + Shelf Card, Haiku Switch, Fill Shelf Auto-Populate (Apr 13, 2026)
+### ⚡ Session 21 — Unified Game Plan + Shelf Card, Haiku Switch, Fill Shelf Auto-Populate + Child Guru (Apr 13, 2026)
 
-**Five commits pushed to main: `788d2791`, `26e49437`, `97b9d1ef`, `4a949e74`, `2bd449ac`.**
+**Six commits pushed to main: `788d2791`, `26e49437`, `97b9d1ef`, `4a949e74`, `2bd449ac`, `cd27a059`.**
 
-**THE SESSION:** Merged the standalone Game Plan card and "This Week's Focus" shelf into a single unified card. Rewrote game plan generation from Sonnet to Haiku with a radically simplified output. Added one-click shelf auto-populate from game plan works.
+**THE SESSION:** Merged the standalone Game Plan card and "This Week's Focus" shelf into a single unified card. Rewrote game plan generation from Sonnet to Haiku with a radically simplified output. Added one-click shelf auto-populate from game plan works. Built the Child Guru — lightweight AI chat embedded on each child's page.
 
 **A. Merge Game Plan + This Week's Focus — `788d2791`:**
 - GamePlanCard was a standalone expandable card showing phases, strategies, weekly check questions
@@ -261,22 +261,42 @@ montree.xyz
 - **Fill shelf as one-click**: Resolving work names to areas is non-trivial (case-insensitive DB lookup against classroom curriculum). Doing this server-side keeps the client simple — just POST the work name strings and the server handles the rest.
 - **Backward compat via fallback chains**: Existing children with Sonnet plans still render correctly. No migration needed. Plans naturally upgrade to Haiku format on next refresh.
 
-**Key files changed this session (5 files, ~250 lines added, ~300 deleted):**
+**F. Child Guru — AI Chat on Each Child's Page — `cd27a059`:**
+- Lightweight Haiku chat bubble embedded on every child's page — floating green button bottom-right
+- Opens to 360×480px panel with message history, voice recording, and text input
+- **Voice-first**: mic button is primary. MediaRecorder → Whisper transcription → send as message
+- **Ephemeral**: chat messages live in React state only (cleared between page visits). Actions persist to DB (shelf changes, progress updates, observations all go through existing tool infrastructure).
+- **8 curated tools** from the existing 23-tool Guru toolkit: `set_focus_work`, `clear_focus_work`, `update_progress`, `save_observation`, `browse_curriculum`, `search_curriculum`, `get_prioritized_recommendations`, `get_child_recent_activity`
+- **Multi-round tool execution**: up to 3 rounds — Haiku calls tools, results fed back, Haiku continues reasoning or composes final response
+- **SSE streaming**: ReadableStream with `data: JSON\n\n` format. Event types: status, text, action, error, done
+- **Action badges**: tool results shown as inline badges (✓ Shelf updated, ✓ Progress updated, ✓ Observation saved, etc.)
+- **System prompt**: "Brief. Warm. Practical. Like a colleague who whispers the answer. 1-3 sentences max."
+- **Reuses existing infrastructure**: `buildChildContext()`, `formatContextForPrompt()`, `executeTool()`, `GURU_TOOLS`, Whisper `/api/montree/guru/transcribe`
+- **Auth**: `verifySchoolRequest()` + `verifyChildBelongsToSchool()` + rate limit (60 req/min)
+- **Bilingual**: all labels have EN/ZH variants via `locale`
+- **Teacher-only**: hidden from homeschool parent view via `!isHomeschoolParent(session)` guard
+- **Audit fixes**: removed `mode: 'child_guru'` from `montree_guru_interactions` insert (column doesn't exist — Session 10 finding). Added `responseText` accumulator to capture actual AI response text for DB logging instead of echoing user message.
+- **Key files**: `app/api/montree/children/[childId]/guru/route.ts` (NEW, 263 lines), `components/montree/child/ChildGuruChat.tsx` (NEW, 415 lines), `app/montree/dashboard/[childId]/page.tsx` (import + render)
+
+**Key files changed this session (8 files, ~940 lines added, ~300 deleted):**
 - `components/montree/child/FocusWorksSection.tsx` — game plan header integration, fill shelf button, shelfFilled reset
-- `app/montree/dashboard/[childId]/page.tsx` — removed standalone GamePlanCard render, wired new props to FocusWorksSection
+- `app/montree/dashboard/[childId]/page.tsx` — removed standalone GamePlanCard render, wired FocusWorksSection props + Child Guru
 - `app/api/montree/children/[childId]/onboard/route.ts` — Haiku switch, simplified GAME_PLAN_TOOL schema
 - `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — Haiku switch, simplified schema
 - `app/api/montree/children/[childId]/fill-shelf/route.ts` — NEW: resolve plan works → shelf areas → upsert
+- `app/api/montree/children/[childId]/guru/route.ts` — NEW: Child Guru SSE endpoint with 8-tool Haiku
+- `components/montree/child/ChildGuruChat.tsx` — NEW: floating chat bubble UI with voice + text
 - `components/montree/child/GamePlanCard.tsx` — interface updated for backward compat (component no longer rendered standalone)
 
 **Next session priorities:**
-1. **Test Haiku game plan on production** — Molly currently has the old Sonnet plan (backward compat renders it). Hit "Refresh" to get new Haiku format. Verify nudge is ≤25 words, works are real curriculum names, direction is arrow format.
-2. **Test "Fill shelf" on production** — After refreshing Molly's plan, verify amber button appears next to work chips. Tap it. Verify shelf areas populate and button changes to "✓ Done".
-3. **Onboard remaining children with game plans** — User plans to onboard all 20 children with voice descriptions + game plans. Each will get Haiku compact format.
-4. **Monitor Campaign D** on gmass.co/dashboard — should be finishing up or done by now (~Apr 17 target)
-5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts
-6. **Consider enabling `tell_guru_onboarding`** for Whale Class — the clamp/validate fix (Session 20) should resolve the reappearing card bug. Test on one child first.
-7. **AI promo video** for Montree — lower priority, user said "I have what I need for now"
+1. **Test Child Guru on production** — tap the green chat bubble on any child's page. Test voice input ("what should I do next with Molly?"), text input ("fill her shelf with sensorial works"), and verify tool actions execute (shelf updates, observations saved).
+2. **Test Haiku game plan on production** — Hit "Refresh" to get new Haiku format. Verify nudge is ≤25 words, works are real curriculum names, direction is arrow format.
+3. **Test "Fill shelf" on production** — After refreshing plan, verify amber button appears next to work chips. Tap it. Verify shelf areas populate.
+4. **Onboard remaining children with game plans** — User plans to onboard all 20 children with voice descriptions + game plans.
+5. **Monitor Campaign D** on gmass.co/dashboard — should be finishing up or done by now (~Apr 17 target)
+6. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts
+7. **Consider enabling `tell_guru_onboarding`** for Whale Class — the clamp/validate fix (Session 20) should resolve the reappearing card bug.
+8. **Consider removing standalone Guru tab** — Child Guru on each child's page may make the standalone `/montree/dashboard/guru` tab redundant for child-specific queries. Keep it for classroom-wide questions.
 
 ---
 
