@@ -29,6 +29,7 @@ import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
+import ChildGuruChat from '@/components/montree/child/ChildGuruChat';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
@@ -814,6 +815,14 @@ export default function WeekPage() {
           onNavigateHome={() => {
             router.push('/montree/dashboard');
           }}
+        />
+      )}
+
+      {/* Child Guru — AI chat bubble */}
+      {!isHomeschoolParent(session) && (
+        <ChildGuruChat
+          childId={childId}
+          childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
         />
       )}
     </div>
