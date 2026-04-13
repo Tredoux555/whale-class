@@ -254,10 +254,11 @@ export default function FocusWorksSection({
       {/* Game Plan integrated header — or plain title */}
       {gamePlan ? (
         <div className="mb-4 space-y-2.5">
-          {/* Nudge — the one sentence */}
+          {/* Game Plan label + nudge */}
           <div className="flex items-start gap-2.5">
             <span className="text-lg mt-0.5">🧭</span>
             <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-500 mb-0.5">{locale === 'zh' ? '游戏计划' : 'Game Plan'}</p>
               <p className="text-sm text-gray-700 leading-relaxed">{planNudge}</p>
               {planDirection && (
                 <p className="text-[11px] text-amber-600 font-medium mt-1">{planDirection}</p>
