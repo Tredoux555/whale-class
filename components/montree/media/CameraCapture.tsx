@@ -59,10 +59,12 @@ export default function CameraCapture({
   useEffect(() => {
     const check = () => setIsLandscape(window.innerWidth > window.innerHeight);
     check();
+    const handleOrientation = () => setTimeout(check, 150);
     window.addEventListener('resize', check);
-    window.addEventListener('orientationchange', () => setTimeout(check, 150));
+    window.addEventListener('orientationchange', handleOrientation);
     return () => {
       window.removeEventListener('resize', check);
+      window.removeEventListener('orientationchange', handleOrientation);
     };
   }, []);
 
