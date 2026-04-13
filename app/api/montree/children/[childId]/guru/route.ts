@@ -244,7 +244,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
             school_id: auth.schoolId,
             classroom_id: childContext.classroom_id,
             question: message,
-            response: allActions.length > 0
+            question_type: 'child_guru',
+            response_insight: allActions.length > 0
               ? `[Actions: ${allActions.map(a => `${a.tool}(${a.result.success ? '✓' : '✗'})`).join(', ')}] ${responseText.slice(0, 500)}`
               : responseText.slice(0, 500) || 'chat response',
             model_used: HAIKU_MODEL,
@@ -293,9 +294,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const supabase = getSupabase();
     const { data, error } = await supabase
       .from('montree_guru_interactions')
-      .select('question, response, asked_at')
+      .select('question, response_insight, asked_at')
       .eq('child_id', childId)
-      .eq('model_used', HAIKU_MODEL) // Only child guru messages (not photo-insight etc)
+      .eq('question_type', 'child_guru')
       .order('asked_at', { ascending: true })
       .limit(50);
 
@@ -307,7 +308,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // Convert DB rows to chat message pairs
     const messages = (data || []).flatMap((row, i) => [
       { id: `h-user-${i}`, role: 'user', content: row.question, timestamp: row.asked_at },
-      { id: `h-asst-${i}`, role: 'assistant', content: row.response || '', timestamp: row.asked_at },
+      { id: `h-asst-${i}`, role: 'assistant', content: row.response_insight || '', timestamp: row.asked_at },
     ]);
 
     return NextResponse.json({ messages }, {
