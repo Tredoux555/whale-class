@@ -195,7 +195,90 @@ montree.xyz
 
 ---
 
-## RECENT STATUS (Apr 12, 2026)
+## RECENT STATUS (Apr 13, 2026)
+
+### ⚡ Session 21 — Unified Game Plan + Shelf Card, Haiku Switch, Fill Shelf Auto-Populate (Apr 13, 2026)
+
+**Five commits pushed to main: `788d2791`, `26e49437`, `97b9d1ef`, `4a949e74`, `2bd449ac`.**
+
+**THE SESSION:** Merged the standalone Game Plan card and "This Week's Focus" shelf into a single unified card. Rewrote game plan generation from Sonnet to Haiku with a radically simplified output. Added one-click shelf auto-populate from game plan works.
+
+**A. Merge Game Plan + This Week's Focus — `788d2791`:**
+- GamePlanCard was a standalone expandable card showing phases, strategies, weekly check questions
+- FocusWorksSection was the 5-area shelf below it
+- User said "it's two systems doing the same function" — merged them into one card
+- FocusWorksSection now receives `gamePlan`, `onRefreshGamePlan`, `onShelfFilled` props
+- When a game plan exists: amber gradient background, 🧭 nudge sentence at top, work chips, direction arrow, then the 5 shelf areas below. Footer shows "Updated today" + Refresh link.
+- When no game plan: plain white card with just the shelf (unchanged behavior)
+- Standalone `<GamePlanCard>` removed from child page render (component file kept for type export `GamePlan`)
+- `WeeklyActivitySummary` hidden when gamePlan exists (game plan replaces it): `{!gamePlan && isEnabled('weekly_activity_summary') && ...}`
+- **Key files**: `components/montree/child/FocusWorksSection.tsx`, `app/montree/dashboard/[childId]/page.tsx`
+
+**B. Fix: clamp activePhase on plan change — `26e49437`:**
+- When game plan refreshes with fewer phases or navigating between children, `activePhase` state could index beyond the phases array
+- Fixed with `const clampedPhase = phaseCount > 0 ? Math.min(activePhase, phaseCount - 1) : 0;` and deferred state sync
+- Also guarded `(activePhaseData.works || []).map()` for malformed phases missing works array
+
+**C. Haiku Game Plan — Radically Simplified — `97b9d1ef`:**
+- User feedback on Sonnet output: "this was written by sonnet and is way too complicated... teachers wont read this. They already know the details they just want a prompt for a tired brain."
+- **Model switch**: `AI_MODEL` (Sonnet) → `HAIKU_MODEL` in both `onboard/route.ts` and `game-plan/refresh/route.ts`
+- **Schema reduction**: Old Sonnet schema had headline, priority_areas, parent_goals, phases (each with title/goal/works/strategies), weekly_check_questions, language_note. New Haiku schema has 3 fields:
+  - `nudge` (string, max 25 words) — "One warm sentence a tired teacher reads in 2 seconds"
+  - `works` (string[], 3-5) — specific Montessori works to present next, EXACT names from curriculum
+  - `direction` (string) — area progression in arrow format, e.g. "Practical Life → Sensorial → Language"
+- **max_tokens**: 3000 → 500
+- **Cost**: ~$0.001/plan (Haiku) vs ~$0.03/plan (Sonnet) — 30x cheaper
+- **Backward compat**: GamePlan interface keeps both old and new fields. FocusWorksSection has fallback chain: `planNudge = gamePlan?.nudge || gamePlan?.headline || ''`, `planWorks = gamePlan?.works || gamePlan?.phases?.[0]?.works || []`, `planDirection = gamePlan?.direction || gamePlan?.priority_areas?.join(' → ') || ''`
+- Existing Sonnet-generated plans still render correctly through fallbacks
+- **Key files**: `app/api/montree/children/[childId]/onboard/route.ts` (lines 411-516), `app/api/montree/children/[childId]/game-plan/refresh/route.ts`, `components/montree/child/GamePlanCard.tsx` (interface only)
+
+**D. Fill Shelf Button — Auto-Populate from Game Plan — `4a949e74`:**
+- Amber "Fill shelf ↓" button appears inline next to work chips when game plan has works AND empty area slots exist on the shelf
+- One tap: POST to `/api/montree/children/[childId]/fill-shelf` with `{ works: planWorks }`
+- API resolves work names to areas via case-insensitive lookup against `montree_classroom_curriculum_works`
+- Only fills empty area slots — never overwrites existing focus works
+- Upserts to both `montree_child_focus_works` (set_by: 'game_plan') and `montree_child_work_progress` (status: 'presented')
+- On success: shows "✓ Done" badge, calls `onShelfFilled` → parent page refreshes focus works via `fetchAssignments()`
+- Bilingual: "Fill shelf" / "填充书架", "Done" / "已填充"
+- **Key files**: `app/api/montree/children/[childId]/fill-shelf/route.ts` (NEW, 128 lines), `components/montree/child/FocusWorksSection.tsx`
+
+**E. Fix: shelfFilled state reset on child change — `2bd449ac`:**
+- **Bug found in audit**: `shelfFilled` local state in FocusWorksSection persisted when navigating between children. After filling shelf for child A, child B would show "Done" instead of "Fill shelf" button.
+- **Fix**: `useEffect(() => { setShelfFilled(false); }, [childId, gamePlan]);`
+- **Key file**: `components/montree/child/FocusWorksSection.tsx`
+
+**Audit results (end of session):**
+- ✅ FocusWorksSection backward compat fallback chains correct
+- ✅ fill-shelf API: auth verified, `.maybeSingle()`, case-insensitive lookup, dedup via `filledAreas` set, upserts both tables
+- ✅ Haiku game plan: both onboard and refresh routes use `HAIKU_MODEL`, tight 3-field tool schema
+- ✅ GamePlan interface supports both Haiku compact and Sonnet legacy formats
+- ✅ TypeScript: no new errors from session files (pre-existing `next/server` module resolution and Supabase `never` type inference unchanged)
+- ✅ shelfFilled stale state bug found and fixed
+
+**Key architectural decisions:**
+- **Haiku over Sonnet for game plans**: Sonnet writes essays. Teachers don't read essays. Haiku with a tight `tool_use` schema produces exactly the 2-second-read output teachers need. 30x cheaper too.
+- **Unified card over two separate components**: Game plan and shelf were conceptually the same thing — "what should I do with this child this week?" Merging removes visual clutter and cognitive overhead.
+- **Fill shelf as one-click**: Resolving work names to areas is non-trivial (case-insensitive DB lookup against classroom curriculum). Doing this server-side keeps the client simple — just POST the work name strings and the server handles the rest.
+- **Backward compat via fallback chains**: Existing children with Sonnet plans still render correctly. No migration needed. Plans naturally upgrade to Haiku format on next refresh.
+
+**Key files changed this session (5 files, ~250 lines added, ~300 deleted):**
+- `components/montree/child/FocusWorksSection.tsx` — game plan header integration, fill shelf button, shelfFilled reset
+- `app/montree/dashboard/[childId]/page.tsx` — removed standalone GamePlanCard render, wired new props to FocusWorksSection
+- `app/api/montree/children/[childId]/onboard/route.ts` — Haiku switch, simplified GAME_PLAN_TOOL schema
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — Haiku switch, simplified schema
+- `app/api/montree/children/[childId]/fill-shelf/route.ts` — NEW: resolve plan works → shelf areas → upsert
+- `components/montree/child/GamePlanCard.tsx` — interface updated for backward compat (component no longer rendered standalone)
+
+**Next session priorities:**
+1. **Test Haiku game plan on production** — Molly currently has the old Sonnet plan (backward compat renders it). Hit "Refresh" to get new Haiku format. Verify nudge is ≤25 words, works are real curriculum names, direction is arrow format.
+2. **Test "Fill shelf" on production** — After refreshing Molly's plan, verify amber button appears next to work chips. Tap it. Verify shelf areas populate and button changes to "✓ Done".
+3. **Onboard remaining children with game plans** — User plans to onboard all 20 children with voice descriptions + game plans. Each will get Haiku compact format.
+4. **Monitor Campaign D** on gmass.co/dashboard — should be finishing up or done by now (~Apr 17 target)
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts
+6. **Consider enabling `tell_guru_onboarding`** for Whale Class — the clamp/validate fix (Session 20) should resolve the reappearing card bug. Test on one child first.
+7. **AI promo video** for Montree — lower priority, user said "I have what I need for now"
+
+---
 
 ### ⚡ Session 20 — Daily Language 6 + Tell Guru Feature Gate + Story Visits + Weekly Activity Summary + New Icon (Apr 12, 2026)
 
