@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 
 export const maxDuration = 60;
@@ -17,49 +17,25 @@ interface RouteContext {
 
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
-  description: 'Create an updated game plan incorporating the child\'s recent progress.',
+  description: 'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next.',
   input_schema: {
     type: 'object' as const,
     properties: {
-      headline: {
+      nudge: {
         type: 'string' as const,
-        description: 'One warm sentence summarizing the updated plan direction.',
+        description: 'One warm sentence telling the teacher what to focus on next. Max 25 words. Acknowledges progress if any.',
       },
-      priority_areas: {
+      works: {
         type: 'array' as const,
         items: { type: 'string' as const },
-        description: 'Top 2-3 curriculum areas to prioritize',
+        description: '3-5 specific works to present next. Use EXACT names from the classroom curriculum.',
       },
-      parent_goals: {
-        type: ['string', 'null'] as unknown as 'string',
-        description: 'Parent goals (carry forward from previous plan if still relevant)',
-      },
-      phases: {
-        type: 'array' as const,
-        items: {
-          type: 'object' as const,
-          properties: {
-            title: { type: 'string' as const },
-            goal: { type: 'string' as const },
-            works: { type: 'array' as const, items: { type: 'string' as const } },
-            strategies: { type: 'array' as const, items: { type: 'string' as const } },
-          },
-          required: ['title', 'goal', 'works', 'strategies'],
-        },
-      },
-      weekly_check_questions: {
-        type: 'array' as const,
-        items: { type: 'string' as const },
-      },
-      language_note: {
-        type: ['string', 'null'] as unknown as 'string',
-      },
-      progress_note: {
-        type: ['string', 'null'] as unknown as 'string',
-        description: 'A brief note on what progress has been made since the last plan, and what has been adjusted.',
+      direction: {
+        type: 'string' as const,
+        description: 'The area progression in arrow format. E.g. "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['headline', 'priority_areas', 'phases', 'weekly_check_questions'],
+    required: ['nudge', 'works', 'direction'],
   },
 };
 
@@ -128,39 +104,26 @@ export async function POST(
       .map(n => `[${new Date(n.created_at).toLocaleDateString()}] ${n.content}`)
       .join('\n');
 
-    const prompt = `You are a master Montessori guide. A child's game plan needs refreshing based on their actual progress.
+    const previousNudge = (existingPlan as Record<string, unknown>)?.nudge || (existingPlan as Record<string, unknown>)?.headline || '';
+    const previousWorks = (existingPlan as Record<string, unknown>)?.works || [];
+
+    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
 
 CHILD: ${child.name}
-${child.date_of_birth ? `DOB: ${child.date_of_birth}` : ''}
+PREVIOUS NUDGE: "${previousNudge}"
+PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
 
-PREVIOUS GAME PLAN:
-${existingPlan ? JSON.stringify(existingPlan, null, 2) : 'No previous plan exists.'}
+${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
+${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
+${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-${profile ? `PROFILE:
-- Family notes: ${profile.family_notes || 'none'}
-- Special considerations: ${profile.special_considerations || 'none'}
-- Strategies that work: ${(profile.successful_strategies || []).join(', ') || 'none noted'}
-- Challenges: ${(profile.challenging_triggers || []).join(', ') || 'none noted'}` : ''}
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
 
-CURRENT PROGRESS:
-${progressSummary || 'No progress data yet.'}
-
-RECENT TEACHER NOTES:
-${recentNotes || 'No recent notes.'}
-
-Create an UPDATED game plan that:
-1. Acknowledges what has been achieved
-2. Adjusts phases based on actual progress (advance phases if child is ahead, slow down if struggling)
-3. Keeps parent goals in mind
-4. Introduces new works that build on what the child has mastered
-5. Keeps the same warm, practical tone
-6. Has 3-4 phases for the remaining weeks of the semester`;
-
-    console.log(`[GamePlan] Refreshing plan for ${child.name} (${childId})`);
+    console.log(`[GamePlan] Refreshing plan for ${child.name} (Haiku)`);
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
-      max_tokens: 3000,
+      model: HAIKU_MODEL,
+      max_tokens: 500,
       tools: [GAME_PLAN_TOOL],
       tool_choice: { type: 'tool', name: 'create_game_plan' },
       messages: [{ role: 'user', content: prompt }],
