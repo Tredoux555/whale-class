@@ -247,21 +247,43 @@ export default function CameraCapture({
         audio: withAudio,
       };
 
+      // Timeout wrapper — protects against hung getUserMedia calls on mobile
+      // when a prior stream hasn't fully released (caused "camera won't open" freezes)
+      const withTimeout = <T,>(p: Promise<T>, ms: number, label: string): Promise<T> =>
+        Promise.race([
+          p,
+          new Promise<T>((_, reject) =>
+            setTimeout(() => reject(new Error(`getUserMedia timeout (${label})`)), ms)
+          ),
+        ]);
+
       let stream: MediaStream;
       try {
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        stream = await withTimeout(navigator.mediaDevices.getUserMedia(constraints), 8000, 'primary');
       } catch (firstErr) {
         if (withAudio) {
           console.warn('Camera+audio failed, retrying video-only:', firstErr);
           try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: constraints.video, audio: false });
+            stream = await withTimeout(
+              navigator.mediaDevices.getUserMedia({ video: constraints.video, audio: false }),
+              8000,
+              'video-only'
+            );
           } catch (secondErr) {
             console.warn('HD video failed, retrying basic:', secondErr);
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false });
+            stream = await withTimeout(
+              navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false }),
+              8000,
+              'basic'
+            );
           }
         } else if (firstErr instanceof Error && firstErr.name === 'OverconstrainedError') {
           console.warn('HD constraints failed, retrying basic:', firstErr);
-          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false });
+          stream = await withTimeout(
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false }),
+            8000,
+            'basic'
+          );
         } else {
           throw firstErr;
         }
@@ -305,7 +327,11 @@ export default function CameraCapture({
         clearInterval(timerRef.current);
       }
     };
-  }, [facingMode, startCamera]);
+    // IMPORTANT: do NOT include startCamera in deps — it closes over `t` from useI18n
+    // which can change identity on re-render, causing an infinite init loop that
+    // hangs getUserMedia on mobile. Re-init only when facing or captureMode changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [facingMode, captureMode]);
 
   // ============================================
   // CAPTURE PHOTO — FULL FRAME (no crop overlay)
