@@ -9,6 +9,7 @@ import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { GamePlan } from '@/components/montree/child/GamePlanCard';
 
 export interface Assignment {
   work_name: string;
@@ -45,6 +46,8 @@ export interface FocusWorksSectionProps {
   isHomeschoolParent?: boolean;
   guruAreaDetails?: Record<string, AreaDetail> | null;
   smartNoteProcessing?: string | null;
+  gamePlan?: GamePlan | null;
+  onRefreshGamePlan?: (newPlan: GamePlan) => void;
 }
 
 // Status config with translated labels
@@ -98,10 +101,42 @@ export default function FocusWorksSection({
   isHomeschoolParent: isParent = false,
   guruAreaDetails,
   smartNoteProcessing,
+  gamePlan,
+  onRefreshGamePlan,
 }: FocusWorksSectionProps) {
   const { t, locale } = useI18n();
   const [expandedAdvice, setExpandedAdvice] = useState<string | null>(null);
   const statusConfig = getStatusConfig(t);
+  const [activePhase, setActivePhase] = useState(0);
+  const [refreshingPlan, setRefreshingPlan] = useState(false);
+  const [showCheckQuestions, setShowCheckQuestions] = useState(false);
+
+  const handleRefreshPlan = useCallback(async () => {
+    if (!onRefreshGamePlan) return;
+    setRefreshingPlan(true);
+    try {
+      const res = await montreeApi(`/api/montree/children/${childId}/game-plan/refresh`, {
+        method: 'POST',
+        timeout: 120000,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.game_plan) onRefreshGamePlan(data.game_plan as GamePlan);
+      }
+    } catch (err) {
+      console.error('[GamePlan] Refresh error:', err);
+    } finally {
+      setRefreshingPlan(false);
+    }
+  }, [childId, onRefreshGamePlan]);
+
+  // Compute days since game plan update
+  const planDaysSinceUpdate = gamePlan ? Math.floor(
+    (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
+  ) : 0;
+
+  // Get active phase works for display
+  const activePhaseData = gamePlan?.phases?.[activePhase] || null;
 
   // Evidence tracking — loaded once per child, cached in state
   const [evidenceMap, setEvidenceMap] = useState<Record<string, {
@@ -182,8 +217,103 @@ export default function FocusWorksSection({
   };
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <h2 className="font-bold text-gray-800 mb-3">{t('focusWorks.title')}</h2>
+    <div className={`rounded-2xl p-4 shadow-sm ${gamePlan ? 'bg-gradient-to-b from-amber-50 to-white border border-amber-200/60' : 'bg-white'}`}>
+      {/* Game Plan integrated header — or plain title */}
+      {gamePlan ? (
+        <div className="mb-4 space-y-3">
+          {/* Game plan title + priority areas */}
+          <div className="flex items-start gap-3">
+            <span className="text-2xl mt-0.5">🗺️</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-sm font-bold text-gray-800">
+                  {locale === 'zh' ? '学习计划' : 'Game Plan'}
+                </h2>
+                <div className="flex gap-1 flex-wrap">
+                  {gamePlan.priority_areas?.slice(0, 3).map((area) => (
+                    <span
+                      key={area}
+                      className="px-1.5 py-0.5 text-[10px] font-medium bg-amber-200/60 text-amber-800 rounded-full"
+                    >
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-600 mt-1">{gamePlan.headline}</p>
+            </div>
+          </div>
+
+          {/* Language strategy note */}
+          {gamePlan.language_note && (
+            <div className="bg-blue-50/70 rounded-xl px-3 py-2 border border-blue-100">
+              <p className="text-xs text-gray-600">
+                <span className="text-blue-600 font-medium">🌍 </span>
+                {gamePlan.language_note}
+              </p>
+            </div>
+          )}
+
+          {/* Phase tabs */}
+          {gamePlan.phases?.length > 1 && (
+            <div className="flex gap-1 overflow-x-auto pb-1">
+              {gamePlan.phases.map((phase, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActivePhase(i)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors ${
+                    activePhase === i
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-white/80 text-gray-500 hover:bg-amber-100 border border-amber-200/50'
+                  }`}
+                >
+                  {phase.title.split(':')[0] || `Phase ${i + 1}`}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Active phase summary — works + strategies in compact view */}
+          {activePhaseData && (
+            <div className="bg-white/70 rounded-xl p-3 border border-amber-100 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-xs font-bold text-gray-700">{activePhaseData.title}</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5">{activePhaseData.goal}</p>
+                </div>
+              </div>
+              {/* Phase works as chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {activePhaseData.works.map((work, wi) => (
+                  <span
+                    key={wi}
+                    className="px-2 py-1 text-xs bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100"
+                  >
+                    {work}
+                  </span>
+                ))}
+              </div>
+              {/* Strategies collapsed */}
+              {activePhaseData.strategies?.length > 0 && (
+                <div className="space-y-1">
+                  {activePhaseData.strategies.map((strategy, si) => (
+                    <div key={si} className="flex items-start gap-1.5">
+                      <span className="text-amber-400 text-[10px] mt-0.5">→</span>
+                      <p className="text-[11px] text-gray-500">{strategy}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="border-t border-amber-200/40" />
+        </div>
+      ) : (
+        <h2 className="font-bold text-gray-800 mb-3">{t('focusWorks.title')}</h2>
+      )}
+
       <div className="space-y-2">
         {AREAS.map((area, areaIdx) => {
           // Find the focus work for this area
@@ -378,6 +508,60 @@ export default function FocusWorksSection({
           );
         })}
       </div>
+
+      {/* Game Plan footer — weekly check questions + refresh */}
+      {gamePlan && (
+        <div className="mt-4 space-y-3">
+          {/* Weekly check questions — collapsible */}
+          {gamePlan.weekly_check_questions?.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowCheckQuestions(!showCheckQuestions)}
+                className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <span className={`transition-transform ${showCheckQuestions ? 'rotate-90' : ''}`}>▸</span>
+                <span className="font-medium">{locale === 'zh' ? '每周检查' : 'Weekly Pulse Check'}</span>
+                <span className="text-gray-300">({gamePlan.weekly_check_questions.length})</span>
+              </button>
+              {showCheckQuestions && (
+                <div className="mt-2 space-y-1.5 ml-4">
+                  {gamePlan.weekly_check_questions.map((q, qi) => (
+                    <div key={qi} className="flex items-start gap-2 px-3 py-2 bg-amber-50/50 rounded-lg">
+                      <span className="text-gray-300 text-xs">○</span>
+                      <p className="text-xs text-gray-600">{q}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Footer — last updated + refresh */}
+          <div className="flex items-center justify-between pt-2 border-t border-amber-100">
+            <p className="text-[10px] text-gray-400">
+              {locale === 'zh' ? '计划更新于' : 'Plan updated'}{' '}
+              {planDaysSinceUpdate === 0
+                ? (locale === 'zh' ? '今天' : 'today')
+                : `${planDaysSinceUpdate}${locale === 'zh' ? '天前' : 'd ago'}`
+              }
+            </p>
+            <button
+              onClick={handleRefreshPlan}
+              disabled={refreshingPlan}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {refreshingPlan ? (
+                <div className="w-3 h-3 border-2 border-amber-300 border-t-amber-600 rounded-full animate-spin" />
+              ) : (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              )}
+              {locale === 'zh' ? '刷新计划' : 'Refresh Plan'}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

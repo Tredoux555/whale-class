@@ -26,7 +26,6 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
 import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
-import GamePlanCard from '@/components/montree/child/GamePlanCard';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
@@ -676,21 +675,12 @@ export default function WeekPage() {
         />
       )}
 
-      {/* Game Plan — shown when a game plan exists for this child */}
-      {gamePlan && (
-        <GamePlanCard
-          childId={childId}
-          gamePlan={gamePlan}
-          onRefresh={(updatedPlan) => setGamePlan(updatedPlan)}
-        />
-      )}
-
-      {/* Weekly Activity Summary — short AI sentence above the shelf */}
-      {isEnabled('weekly_activity_summary') && (
+      {/* Weekly Activity Summary — only when NO game plan (game plan replaces this) */}
+      {!gamePlan && isEnabled('weekly_activity_summary') && (
         <WeeklyActivitySummary childId={childId} />
       )}
 
-      {/* FOCUS WORKS — Unified area view with inline Guru advice */}
+      {/* FOCUS WORKS — Unified area view, merged with Game Plan when available */}
       <div data-tutorial="focus-section">
       <FocusWorksSection
         focusWorks={focusWorks}
@@ -711,6 +701,8 @@ export default function WeekPage() {
         isHomeschoolParent={isHomeschoolParent(session)}
         guruAreaDetails={guruSettings.areaDetails}
         smartNoteProcessing={smartNoteProcessing}
+        gamePlan={gamePlan}
+        onRefreshGamePlan={(updatedPlan) => setGamePlan(updatedPlan)}
       />
       </div>
 
