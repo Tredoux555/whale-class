@@ -26,6 +26,8 @@ import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
 import PrintButton from '@/components/montree/child/PrintButton';
 import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
+import GamePlanCard from '@/components/montree/child/GamePlanCard';
+import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
@@ -77,6 +79,8 @@ export default function WeekPage() {
   // "Tell Guru" onboarding — show card when no mental profile exists
   const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
   const [onboardingChildName, setOnboardingChildName] = useState<string>('');
+  // Game plan — stored in child.settings.game_plan
+  const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
 
   // Guru weekly summary state — single object instead of 7 individual useState calls
   const [guruSettings, setGuruSettings] = useState<{
@@ -259,19 +263,37 @@ export default function WeekPage() {
     fetchGuruSettings();
   }, [childId, fetchGuruSettings]);
 
-  // Check if child has a mental profile (for Tell Guru onboarding — skip if feature disabled)
+  // Check if child has a mental profile (for Tell Guru onboarding) + fetch game plan
   useEffect(() => {
-    if (!childId || !isEnabled('tell_guru_onboarding')) return;
-    setHasProfile(null); // reset while loading
-    // Fetch profile + child name in parallel
-    Promise.all([
-      montreeApi(`/api/montree/children/${childId}/profile`).then(r => r.ok ? r.json() : null),
-      montreeApi(`/api/montree/children/${childId}`).then(r => r.ok ? r.json() : null),
-    ]).then(([profileData, childData]) => {
-      setHasProfile(!!profileData?.profile);
+    if (!childId) return;
+
+    // Always try to fetch child data + game plan (game plan shows regardless of feature flag)
+    const fetchChild = montreeApi(`/api/montree/children/${childId}`).then(r => r.ok ? r.json() : null);
+
+    // Only check profile if feature is enabled
+    const fetchProfile = isEnabled('tell_guru_onboarding')
+      ? montreeApi(`/api/montree/children/${childId}/profile`).then(r => r.ok ? r.json() : null)
+      : Promise.resolve(null);
+
+    if (isEnabled('tell_guru_onboarding')) {
+      setHasProfile(null); // reset while loading
+    }
+
+    Promise.all([fetchProfile, fetchChild]).then(([profileData, childData]) => {
+      if (isEnabled('tell_guru_onboarding')) {
+        setHasProfile(!!profileData?.profile);
+      }
       if (childData?.child?.name) setOnboardingChildName(childData.child.name);
       else if (childData?.name) setOnboardingChildName(childData.name);
-    }).catch(() => setHasProfile(true)); // On error, don't block — assume profile exists
+
+      // Extract game plan from child settings
+      const settings = childData?.child?.settings || childData?.settings;
+      if (settings?.game_plan) {
+        setGamePlan(settings.game_plan as GamePlan);
+      }
+    }).catch(() => {
+      if (isEnabled('tell_guru_onboarding')) setHasProfile(true);
+    });
   }, [childId]);
 
   // Fetch on mount and when childId changes
@@ -647,7 +669,19 @@ export default function WeekPage() {
           childId={childId}
           childName={onboardingChildName || 'this child'}
           classroomId={session?.classroom?.id || ''}
-          onComplete={() => setHasProfile(true)}
+          onComplete={(newGamePlan) => {
+            setHasProfile(true);
+            if (newGamePlan) setGamePlan(newGamePlan);
+          }}
+        />
+      )}
+
+      {/* Game Plan — shown when a game plan exists for this child */}
+      {gamePlan && (
+        <GamePlanCard
+          childId={childId}
+          gamePlan={gamePlan}
+          onRefresh={(updatedPlan) => setGamePlan(updatedPlan)}
         />
       )}
 
