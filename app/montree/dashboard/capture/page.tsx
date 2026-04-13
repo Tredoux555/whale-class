@@ -350,7 +350,7 @@ function CaptureContent() {
 
       {/* Photo preview as background */}
       {photoPreview && (
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 pointer-events-none">
           <img
             src={photoPreview}
             alt="Captured"

@@ -1,6 +1,6 @@
 // components/montree/media/CameraCapture.tsx
-// Camera capture with 4:3 viewfinder overlay — WYSIWYG for parent reports
-// Photos are auto-cropped to the 4:3 zone on capture
+// Camera capture — clean fullscreen viewfinder matching native iOS camera feel
+// No 4:3 overlay — photos are captured at native video resolution, cropped later if needed
 
 'use client';
 
@@ -25,7 +25,6 @@ type CameraState = 'initializing' | 'ready' | 'recording' | 'captured' | 'error'
 type CaptureMode = 'photo' | 'video';
 
 const MAX_VIDEO_DURATION = 30; // seconds
-const TARGET_ASPECT = 4 / 3; // Width:Height ratio for parent report display
 
 // ============================================
 // COMPONENT
@@ -40,7 +39,6 @@ export default function CameraCapture({
   const { t } = useI18n();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -55,72 +53,18 @@ export default function CameraCapture({
   const [currentFacing, setCurrentFacing] = useState(facingMode);
   const [recordingTime, setRecordingTime] = useState(0);
   const albumInputRef = useRef<HTMLInputElement>(null);
-
-  // Viewfinder dimensions (updated on resize)
-  const [viewfinder, setViewfinder] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
   const [isLandscape, setIsLandscape] = useState(false);
 
-  // ============================================
-  // VIEWFINDER CALCULATION
-  // ============================================
-
-  const updateViewfinder = useCallback(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const cw = container.offsetWidth;
-    const ch = container.offsetHeight;
-    const landscape = cw > ch;
-    setIsLandscape(landscape);
-
-    // Calculate the largest 4:3 rectangle that fits within the container with margin
-    const margin = 0.04; // 4% margin on each side
-    const availW = cw * (1 - margin * 2);
-    const availH = ch * (1 - margin * 2);
-    const availRatio = availW / availH;
-
-    let zoneW: number, zoneH: number;
-    if (availRatio > TARGET_ASPECT) {
-      // Container wider than 4:3 — constrained by height
-      zoneH = availH;
-      zoneW = availH * TARGET_ASPECT;
-    } else {
-      // Container taller than 4:3 — constrained by width
-      zoneW = availW;
-      zoneH = availW / TARGET_ASPECT;
-    }
-
-    setViewfinder({
-      x: (cw - zoneW) / 2,
-      y: (ch - zoneH) / 2,
-      w: zoneW,
-      h: zoneH,
-    });
-  }, []);
-
+  // Track orientation
   useEffect(() => {
-    updateViewfinder();
-
-    // Use ResizeObserver for accurate container dimension tracking
-    const container = containerRef.current;
-    let ro: ResizeObserver | null = null;
-    if (container && typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(() => updateViewfinder());
-      ro.observe(container);
-    }
-
-    // Fallback: also listen for window resize + orientation change
-    const handleResize = () => updateViewfinder();
-    const handleOrientation = () => setTimeout(updateViewfinder, 150);
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', handleOrientation);
-
+    const check = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    check();
+    window.addEventListener('resize', check);
+    window.addEventListener('orientationchange', () => setTimeout(check, 150));
     return () => {
-      if (ro) ro.disconnect();
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('orientationchange', handleOrientation);
+      window.removeEventListener('resize', check);
     };
-  }, [updateViewfinder]);
+  }, []);
 
   // ============================================
   // NATIVE CAMERA (Capacitor — iOS/Android)
@@ -181,6 +125,7 @@ export default function CameraCapture({
           onCancel();
           return;
         }
+        // Native camera failed — fall through to web camera
         console.error('Native camera error, falling back to web:', err);
         setCameraState('initializing');
       }
@@ -324,8 +269,6 @@ export default function CameraCapture({
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Recalculate viewfinder once video metadata (dimensions) are available
-        videoRef.current.onloadedmetadata = () => updateViewfinder();
         await videoRef.current.play();
         setCameraState('ready');
         setCurrentFacing(facing);
@@ -344,7 +287,7 @@ export default function CameraCapture({
       setError(errorMessage);
       setCameraState('error');
     }
-  }, [updateViewfinder]);
+  }, [t]);
 
   useEffect(() => {
     startCamera(facingMode, captureMode === 'video');
@@ -363,11 +306,11 @@ export default function CameraCapture({
   }, [facingMode, startCamera]);
 
   // ============================================
-  // CAPTURE PHOTO — AUTO-CROP TO 4:3
+  // CAPTURE PHOTO — FULL FRAME (no crop overlay)
   // ============================================
 
   const capturePhoto = useCallback(() => {
-    if (!videoRef.current || !canvasRef.current || !containerRef.current) return;
+    if (!videoRef.current || !canvasRef.current) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -378,50 +321,16 @@ export default function CameraCapture({
     const vh = video.videoHeight;
 
     if (!vw || !vh) {
-      // Video dimensions not available yet — capture raw frame as best-effort
+      // Video not ready yet — capture display dimensions as fallback
       console.warn('[CameraCapture] Video dimensions not ready, capturing raw frame');
       canvas.width = video.clientWidth || 1920;
       canvas.height = video.clientHeight || 1440;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    } else if (!viewfinder) {
-      // Viewfinder not calculated yet (ResizeObserver race) — do centered 4:3 crop from video directly
-      console.warn('[CameraCapture] Viewfinder not ready, using centered 4:3 crop');
-      const videoRatio = vw / vh;
-      let sx = 0, sy = 0, sw = vw, sh = vh;
-      if (videoRatio > TARGET_ASPECT) {
-        sw = vh * TARGET_ASPECT;
-        sx = (vw - sw) / 2;
-      } else {
-        sh = vw / TARGET_ASPECT;
-        sy = (vh - sh) / 2;
-      }
-      canvas.width = Math.round(sw);
-      canvas.height = Math.round(sh);
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
     } else {
-      // Calculate 4:3 crop centered on the video feed
-      // This matches the viewfinder overlay the teacher sees
-      const container = containerRef.current;
-      const cw = container.offsetWidth;
-      const ch = container.offsetHeight;
-
-      // How object-cover scales the video into the container
-      const scale = Math.max(cw / vw, ch / vh);
-      const dispW = vw * scale;
-      const dispH = vh * scale;
-      const offX = (cw - dispW) / 2;
-      const offY = (ch - dispH) / 2;
-
-      // Map viewfinder rectangle from display coords → video pixel coords
-      // viewfinder is guaranteed non-null here (null case handled above)
-      const srcX = Math.max(0, (viewfinder.x - offX) / scale);
-      const srcY = Math.max(0, (viewfinder.y - offY) / scale);
-      const srcW = Math.min(viewfinder.w / scale, vw - srcX);
-      const srcH = Math.min(viewfinder.h / scale, vh - srcY);
-
-      canvas.width = Math.round(srcW);
-      canvas.height = Math.round(srcH);
-      ctx.drawImage(video, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+      // Capture full native resolution from the video feed
+      canvas.width = vw;
+      canvas.height = vh;
+      ctx.drawImage(video, 0, 0, vw, vh);
     }
 
     canvas.toBlob(
@@ -439,7 +348,7 @@ export default function CameraCapture({
       'image/jpeg',
       0.9
     );
-  }, [viewfinder]);
+  }, [t]);
 
   // ============================================
   // VIDEO RECORDING
@@ -488,7 +397,7 @@ export default function CameraCapture({
       console.error('Recording error:', err);
       setError(t('camera.error.recordingFailed'));
     }
-  }, []);
+  }, [t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -546,13 +455,12 @@ export default function CameraCapture({
   };
 
   // ============================================
-  // RENDER
+  // RENDER — iOS-native camera feel
   // ============================================
 
   const isRecording = cameraState === 'recording';
   const isCaptured = cameraState === 'captured';
   const previewUrl = captureMode === 'photo' ? capturedPhoto?.dataUrl : capturedVideo?.dataUrl;
-  const showViewfinder = !isCaptured && captureMode === 'photo' && viewfinder && cameraState !== 'error';
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
@@ -567,46 +475,8 @@ export default function CameraCapture({
         className="hidden"
       />
 
-      {/* Mode toggle (top center) */}
-      {allowVideo && !isCaptured && !isRecording && (
-        <div className="absolute left-1/2 -translate-x-1/2 z-30 flex bg-black/50 rounded-full p-1" style={{ top: 'max(12px, env(safe-area-inset-top, 12px))' }}>
-          <button
-            onClick={() => handleModeChange('photo')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              captureMode === 'photo' ? 'bg-white text-black' : 'text-white hover:bg-white/20'
-            }`}
-          >
-            📷 {t('camera.photo')}
-          </button>
-          <button
-            onClick={() => handleModeChange('video')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              captureMode === 'video' ? 'bg-white text-black' : 'text-white hover:bg-white/20'
-            }`}
-          >
-            🎥 {t('camera.video')}
-          </button>
-        </div>
-      )}
-
-      {/* Camera indicator (top right) */}
-      {!isCaptured && (
-        <div className="absolute right-3 z-30 px-3 py-1 bg-black/50 rounded-full text-white text-xs font-medium" style={{ top: 'max(14px, env(safe-area-inset-top, 14px))' }}>
-          {currentFacing === 'user' ? `🤳 ${t('camera.front')}` : `📷 ${t('camera.back')}`}
-        </div>
-      )}
-
-      {/* Recording indicator */}
-      {isRecording && (
-        <div className="absolute left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-red-600 text-white px-4 py-1.5 rounded-full" style={{ top: 'max(14px, env(safe-area-inset-top, 14px))' }}>
-          <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-          <span className="font-mono font-bold">{formatTime(recordingTime)}</span>
-          <span className="text-white/70 text-sm">/ {formatTime(MAX_VIDEO_DURATION)}</span>
-        </div>
-      )}
-
-      {/* ═══ Camera View ═══ */}
-      <div ref={containerRef} className="flex-1 relative overflow-hidden">
+      {/* ═══ Camera View — full screen, no overlay ═══ */}
+      <div className="flex-1 relative overflow-hidden bg-black">
         {cameraState === 'error' ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white">
             <div className="text-6xl mb-4">📷</div>
@@ -626,7 +496,7 @@ export default function CameraCapture({
           )
         ) : (
           <>
-            {/* Live camera feed */}
+            {/* Live camera feed — fullscreen, no cropping overlay */}
             <video
               ref={videoRef}
               autoPlay
@@ -635,184 +505,149 @@ export default function CameraCapture({
               className="absolute inset-0 w-full h-full object-cover"
             />
 
+            {/* Loading spinner — only shown during initialization */}
             {cameraState === 'initializing' && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-20">
+              <div className="absolute inset-0 flex items-center justify-center bg-black z-20">
                 <div className="flex flex-col items-center text-white">
-                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent mb-4" />
-                  <p className="text-lg">{t('camera.starting')}</p>
-                </div>
-              </div>
-            )}
-
-            {/* ═══ 4:3 Viewfinder Overlay ═══ */}
-            {showViewfinder && (
-              <div className="absolute inset-0 z-10 pointer-events-none">
-                {/* Dark overlay — 4 panels around the clear zone */}
-                {/* Top */}
-                <div
-                  className="absolute left-0 right-0 top-0 bg-black/45"
-                  style={{ height: viewfinder.y }}
-                />
-                {/* Bottom */}
-                <div
-                  className="absolute left-0 right-0 bottom-0 bg-black/45"
-                  style={{ height: `calc(100% - ${viewfinder.y + viewfinder.h}px)` }}
-                />
-                {/* Left */}
-                <div
-                  className="absolute left-0 bg-black/45"
-                  style={{ top: viewfinder.y, height: viewfinder.h, width: viewfinder.x }}
-                />
-                {/* Right */}
-                <div
-                  className="absolute right-0 bg-black/45"
-                  style={{ top: viewfinder.y, height: viewfinder.h, width: `calc(100% - ${viewfinder.x + viewfinder.w}px)` }}
-                />
-
-                {/* Corner brackets — premium camera feel */}
-                {(() => {
-                  const s = 24; // bracket arm length
-                  const bw = 2.5; // bracket thickness
-                  const corners = [
-                    // top-left
-                    { top: viewfinder.y, left: viewfinder.x },
-                    // top-right
-                    { top: viewfinder.y, left: viewfinder.x + viewfinder.w - s },
-                    // bottom-left
-                    { top: viewfinder.y + viewfinder.h - s, left: viewfinder.x },
-                    // bottom-right
-                    { top: viewfinder.y + viewfinder.h - s, left: viewfinder.x + viewfinder.w - s },
-                  ];
-
-                  return corners.map((pos, i) => {
-                    const isTop = i < 2;
-                    const isLeft = i % 2 === 0;
-                    return (
-                      <div key={i} className="absolute" style={{ top: pos.top, left: pos.left, width: s, height: s }}>
-                        {/* Horizontal arm */}
-                        <div
-                          className="absolute bg-white/80"
-                          style={{
-                            [isTop ? 'top' : 'bottom']: 0,
-                            [isLeft ? 'left' : 'right']: 0,
-                            width: s,
-                            height: bw,
-                            borderRadius: bw / 2,
-                          }}
-                        />
-                        {/* Vertical arm */}
-                        <div
-                          className="absolute bg-white/80"
-                          style={{
-                            [isTop ? 'top' : 'bottom']: 0,
-                            [isLeft ? 'left' : 'right']: 0,
-                            width: bw,
-                            height: s,
-                            borderRadius: bw / 2,
-                          }}
-                        />
-                      </div>
-                    );
-                  });
-                })()}
-
-                {/* Subtle label */}
-                <div
-                  className="absolute left-1/2 -translate-x-1/2 text-white/50 text-xs font-medium tracking-wide"
-                  style={{ top: viewfinder.y + viewfinder.h + 8 }}
-                >
-                  4:3
+                  <div className="animate-spin rounded-full h-10 w-10 border-[3px] border-white/30 border-t-white mb-3" />
                 </div>
               </div>
             )}
           </>
         )}
+
+        {/* Switch camera — top right (iOS-style) */}
+        {!isCaptured && cameraState === 'ready' && !isRecording && (
+          <button
+            onClick={switchCamera}
+            className="absolute z-30 w-11 h-11 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-full text-white active:scale-90 transition-transform"
+            style={{ top: 'max(16px, env(safe-area-inset-top, 16px))', right: 16 }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
+              <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
+              <circle cx="12" cy="12" r="3" />
+              <path d="m18 22-3-3 3-3" />
+              <path d="m6 2 3 3-3 3" />
+            </svg>
+          </button>
+        )}
+
+        {/* Recording indicator — top center */}
+        {isRecording && (
+          <div className="absolute left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-red-600/90 backdrop-blur-sm text-white px-4 py-1.5 rounded-full" style={{ top: 'max(16px, env(safe-area-inset-top, 16px))' }}>
+            <div className="w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
+            <span className="font-mono font-bold text-sm">{formatTime(recordingTime)}</span>
+            <span className="text-white/60 text-xs">/ {formatTime(MAX_VIDEO_DURATION)}</span>
+          </div>
+        )}
       </div>
 
-      {/* ═══ Controls ═══ */}
+      {/* ═══ Controls — bottom bar ═══ */}
       <div
-        className={`bg-black/80 backdrop-blur-sm ${isLandscape ? 'py-2' : ''}`}
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="bg-black"
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }}
       >
         {isCaptured ? (
+          /* ── Post-capture: Retake / Use Photo ── */
           <div className={`flex items-center justify-between px-6 ${isLandscape ? 'py-2' : 'py-4'}`}>
             <button
               onClick={retake}
-              className="flex items-center gap-2 px-6 py-3 bg-white/10 text-white rounded-xl font-medium hover:bg-white/20 transition-colors"
+              className="text-white font-medium text-base active:opacity-70 transition-opacity"
             >
-              <span className="text-xl">↺</span>
-              <span>{t('camera.retake')}</span>
+              {t('camera.retake')}
             </button>
 
             <button
               onClick={confirmCapture}
-              className="flex items-center gap-2 px-8 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-colors"
+              className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity"
             >
-              <span className="text-xl">✓</span>
-              <span>{t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}</span>
+              {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
             </button>
           </div>
         ) : (
-          <div className={`flex items-center justify-between px-6 ${isLandscape ? 'py-2' : 'py-4'}`}>
-            {/* Cancel + Album (left) */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={onCancel}
-                disabled={isRecording}
-                className="w-12 h-12 flex items-center justify-center text-white text-xl disabled:opacity-50"
-              >
-                ✕
-              </button>
-              {!isRecording && captureMode === 'photo' && (
+          /* ── Live camera controls ── */
+          <div className="flex flex-col items-center">
+            {/* Mode toggle — above capture button (iOS-style bottom position) */}
+            {allowVideo && !isRecording && (
+              <div className="flex gap-6 py-2">
                 <button
-                  onClick={handleNativeAlbumPick}
-                  className="w-12 h-12 flex items-center justify-center bg-white/20 rounded-full text-white active:scale-90 transition-transform"
-                  title={t('camera.album')}
+                  onClick={() => handleModeChange('photo')}
+                  className={`text-sm font-semibold transition-colors ${
+                    captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
+                  }`}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <polyline points="21 15 16 10 5 21" />
-                  </svg>
+                  {t('camera.photo').toUpperCase()}
                 </button>
-              )}
+                <button
+                  onClick={() => handleModeChange('video')}
+                  className={`text-sm font-semibold transition-colors ${
+                    captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
+                  }`}
+                >
+                  {t('camera.video').toUpperCase()}
+                </button>
+              </div>
+            )}
+
+            {/* Main row: Cancel / Album — [Capture] */}
+            <div className={`flex items-center w-full px-6 ${isLandscape ? 'py-2' : 'py-3'}`}>
+              {/* Left: Cancel + Album */}
+              <div className="flex items-center gap-3 flex-1">
+                <button
+                  onClick={onCancel}
+                  disabled={isRecording}
+                  className="text-white text-[15px] font-medium disabled:opacity-30 active:opacity-70 transition-opacity"
+                >
+                  {t('common.cancel') || 'Cancel'}
+                </button>
+                {!isRecording && captureMode === 'photo' && (
+                  <button
+                    onClick={handleNativeAlbumPick}
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors"
+                    title={t('camera.album')}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+
+              {/* Center: Capture button — THE big button */}
+              <button
+                onClick={handleMainButton}
+                disabled={cameraState === 'initializing'}
+                className={`
+                  ${isLandscape ? 'w-[60px] h-[60px]' : 'w-[72px] h-[72px]'}
+                  rounded-full flex items-center justify-center
+                  transition-transform active:scale-95
+                  disabled:opacity-30 disabled:pointer-events-none
+                  ${isRecording
+                    ? 'bg-transparent border-[3px] border-white'
+                    : captureMode === 'video'
+                      ? 'bg-transparent border-[3px] border-white'
+                      : 'bg-transparent border-[3px] border-white'
+                  }
+                `}
+              >
+                {isRecording ? (
+                  /* Stop: red rounded square */
+                  <div className={`${isLandscape ? 'w-5 h-5' : 'w-6 h-6'} bg-red-500 rounded-[4px]`} />
+                ) : captureMode === 'video' ? (
+                  /* Video ready: red circle */
+                  <div className={`${isLandscape ? 'w-[48px] h-[48px]' : 'w-[58px] h-[58px]'} rounded-full bg-red-500`} />
+                ) : (
+                  /* Photo: white circle inside ring */
+                  <div className={`${isLandscape ? 'w-[50px] h-[50px]' : 'w-[62px] h-[62px]'} rounded-full bg-white`} />
+                )}
+              </button>
+
+              {/* Right: spacer for balance */}
+              <div className="flex-1" />
             </div>
-
-            {/* Switch camera (center) */}
-            <button
-              onClick={switchCamera}
-              disabled={cameraState !== 'ready'}
-              className={`${isLandscape ? 'w-12 h-12' : 'w-14 h-14'} flex items-center justify-center bg-white/20 rounded-full text-white disabled:opacity-50 active:scale-90 transition-transform`}
-            >
-              <svg width={isLandscape ? 24 : 28} height={isLandscape ? 24 : 28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
-                <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
-                <circle cx="12" cy="12" r="3" />
-                <path d="m18 22-3-3 3-3" />
-                <path d="m6 2 3 3-3 3" />
-              </svg>
-            </button>
-
-            {/* Capture button (right — easy thumb reach) */}
-            <button
-              onClick={handleMainButton}
-              disabled={cameraState === 'initializing'}
-              className={`${isLandscape ? 'w-16 h-16' : 'w-20 h-20'} rounded-full flex items-center justify-center disabled:opacity-50 transition-all active:scale-95 ${
-                isRecording
-                  ? 'bg-red-500 border-4 border-red-300'
-                  : captureMode === 'video'
-                    ? 'bg-red-500 border-4 border-red-300'
-                    : 'bg-white border-4 border-white/30'
-              }`}
-            >
-              {isRecording ? (
-                <div className={`${isLandscape ? 'w-6 h-6' : 'w-8 h-8'} bg-white rounded-sm`} />
-              ) : captureMode === 'video' ? (
-                <div className={`${isLandscape ? 'w-6 h-6' : 'w-8 h-8'} bg-white rounded-full`} />
-              ) : (
-                <div className={`${isLandscape ? 'w-12 h-12' : 'w-16 h-16'} rounded-full bg-white`} />
-              )}
-            </button>
           </div>
         )}
       </div>
