@@ -33,12 +33,26 @@ const CHILD_GURU_TOOL_NAMES = [
 ];
 const CHILD_GURU_TOOLS = GURU_TOOLS.filter(t => CHILD_GURU_TOOL_NAMES.includes(t.name));
 
+// Strip markdown formatting — keep it feeling like a human chat
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')   // **bold** → bold
+    .replace(/\*(.+?)\*/g, '$1')        // *italic* → italic
+    .replace(/__(.+?)__/g, '$1')        // __bold__ → bold
+    .replace(/_(.+?)_/g, '$1')          // _italic_ → italic
+    .replace(/^#+\s+/gm, '')            // ### headers → plain
+    .replace(/^[-*]\s+/gm, '')          // - bullets → plain
+    .replace(/^\d+\.\s+/gm, '')         // 1. numbered → plain
+    .replace(/`(.+?)`/g, '$1');         // `code` → code
+}
+
 function buildSystemPrompt(childContext: string, childName: string): string {
   return `You are the teacher's quick assistant for ${childName}. You live on the child's page — the teacher is looking at this child right now.
 
 PERSONALITY:
 - Brief. Warm. Practical. Like a colleague who whispers the answer.
 - Responses: 1-3 sentences max unless the teacher asks for detail.
+- NEVER use markdown formatting — no **bold**, no *italics*, no bullet points, no headers. Write plain conversational text only. You're chatting, not writing a document.
 - When recommending works, use EXACT curriculum names.
 - When the teacher describes something the child did, save it as an observation automatically.
 - When the teacher asks to change the shelf or update progress, do it immediately with tools.
@@ -199,10 +213,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
             }
           }
 
-          // If there was text, stream it out
+          // If there was text, strip markdown and stream it out
           if (textContent) {
-            responseText += textContent;
-            controller.enqueue(sseEvent('text', { content: textContent }));
+            const cleaned = stripMarkdown(textContent);
+            responseText += cleaned;
+            controller.enqueue(sseEvent('text', { content: cleaned }));
           }
 
           // If there were tool calls, feed results back and continue the loop
