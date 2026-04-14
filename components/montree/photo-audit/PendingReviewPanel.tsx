@@ -22,6 +22,7 @@ interface PendingPhoto {
   child_id: string | null;
   child_name: string;
   child_names: string[];
+  child_ids: string[];
   url: string | null;
   thumbnail_path: string | null;
   captured_at: string | null;
@@ -81,12 +82,13 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
         child_id: p.child_id,
         child_name: p.child_name || 'Unknown',
         child_names: p.child_names || [],
+        child_ids: p.child_ids || [],
         url: p.url,
         thumbnail_path: p.thumbnail_path,
         captured_at: p.captured_at,
       }));
       if (childId) {
-        rows = rows.filter(p => p.child_id === childId || p.child_names.includes(childId));
+        rows = rows.filter(p => p.child_id === childId || p.child_ids.includes(childId));
       }
       setPhotos(rows);
       setSelected(prev => {
