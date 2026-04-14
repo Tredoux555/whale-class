@@ -60,7 +60,11 @@ export async function GET(request: NextRequest) {
     if (!includeConfirmed) {
       mediaQuery = mediaQuery.neq('teacher_confirmed', true);
     }
-    if (zone === 'green') {
+    if (zone === 'pending_review') {
+      // Photos that landed with the review-before-process gate enabled — AI
+      // identification was deliberately deferred until the teacher approves.
+      mediaQuery = mediaQuery.eq('identification_status', 'pending_review');
+    } else if (zone === 'green') {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
     } else if (zone === 'untagged') {
       mediaQuery = mediaQuery.is('work_id', null);
@@ -244,8 +248,8 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Client-side zone filter for green/amber/red (untagged already filtered server-side)
-    const filtered = zone === 'all' || zone === 'untagged'
+    // Client-side zone filter for green/amber/red (untagged + pending_review already filtered server-side)
+    const filtered = zone === 'all' || zone === 'untagged' || zone === 'pending_review'
       ? photos
       : photos.filter(p => p.zone === zone);
 

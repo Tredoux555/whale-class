@@ -152,6 +152,19 @@ export async function POST(request: NextRequest) {
       status: media.identification_status,
     });
   }
+
+  // Review-before-process gate: when status is 'pending_review' the teacher
+  // hasn't approved this photo for AI processing yet. Bail unless force=true
+  // (the batch-process endpoint always forces). This catches stray
+  // fire-and-forget calls from older clients that don't honor ai_deferred.
+  if (!body.force && media.identification_status === 'pending_review') {
+    return NextResponse.json({
+      success: true,
+      skipped: true,
+      reason: 'pending teacher review',
+      status: 'pending_review',
+    });
+  }
   // When forced, clear stale draft so the new pipeline writes a fresh one
   if (body.force) {
     await supabase

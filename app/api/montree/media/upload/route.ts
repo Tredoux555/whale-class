@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { isFeatureEnabled } from '@/lib/montree/features/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -122,6 +123,22 @@ export async function POST(request: NextRequest) {
         });
     }
 
+    // Review-before-process gate: when this feature is enabled for the school,
+    // photos land with identification_status='pending_review' and the client
+    // skips firing the AI pipeline. Teachers batch-process later in the Review
+    // tab. Saves API costs on duplicate/blurry shots.
+    // Skipped when the teacher already manually tagged a work (work_id set) —
+    // there's nothing for the AI to identify in that case.
+    let aiDeferred = false;
+    if (!work_id && (classroom_id || auth.classroomId)) {
+      try {
+        aiDeferred = await isFeatureEnabled(supabase, effectiveSchoolId, 'review_before_process');
+      } catch (err) {
+        console.error('[Upload] review_before_process flag check failed (defaulting to AI auto-fire):', err);
+        aiDeferred = false;
+      }
+    }
+
     // Create database record
     const mediaRecord = {
       school_id: effectiveSchoolId,
@@ -140,7 +157,8 @@ export async function POST(request: NextRequest) {
       caption: caption || null,
       tags: tags || [],
       sync_status: 'synced',
-      processing_status: 'complete'
+      processing_status: 'complete',
+      ...(aiDeferred ? { identification_status: 'pending_review' } : {}),
     };
 
     const { data: media, error: dbError } = await supabase
@@ -175,6 +193,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           media,
+          ai_deferred: aiDeferred,
           warning: 'Photo saved but group tagging partially failed'
         });
       }
@@ -201,6 +220,7 @@ export async function POST(request: NextRequest) {
       success: true,
       media,
       url,
+      ai_deferred: aiDeferred,
     });
 
   } catch (error) {

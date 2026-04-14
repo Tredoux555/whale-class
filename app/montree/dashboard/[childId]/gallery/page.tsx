@@ -17,6 +17,8 @@ import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
+import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
+import { useFeaturesContext } from '@/lib/montree/features';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import EventAttendanceModal from '@/components/montree/events/EventAttendanceModal';
 import type { MontreeMedia } from '@/lib/montree/media/types';
@@ -101,6 +103,8 @@ export default function GalleryPage() {
   const { t, locale } = useI18n();
   const session = getSession();
   const tagPhotoParam = searchParams.get('tagPhoto');
+  const { isEnabled } = useFeaturesContext();
+  const reviewBeforeProcess = isEnabled('review_before_process');
 
   // Core state
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
@@ -1078,6 +1082,11 @@ export default function GalleryPage() {
 
       {/* Offline Photo Queue Status */}
       <PhotoQueueBanner childId={childId} />
+
+      {/* Review-before-process: photos waiting for teacher to approve AI run */}
+      {reviewBeforeProcess && (
+        <PendingReviewPanel childId={childId} compact onProcessed={() => fetchPhotos()} />
+      )}
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
