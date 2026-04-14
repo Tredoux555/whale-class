@@ -29,7 +29,7 @@ import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
-import ChildGuruChat from '@/components/montree/child/ChildGuruChat';
+import BigMicPanel from '@/components/montree/child/BigMicPanel';
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
@@ -681,6 +681,15 @@ export default function WeekPage() {
         <WeeklyActivitySummary childId={childId} />
       )}
 
+      {/* BIG MIC — primary voice control for this child. Swipe down for the shelf. */}
+      {!isHomeschoolParent(session) && hasProfile !== false && (
+        <BigMicPanel
+          childId={childId}
+          childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'this child'}
+          onAction={fetchAssignments}
+        />
+      )}
+
       {/* FOCUS WORKS — Unified area view, merged with Game Plan when available */}
       <div data-tutorial="focus-section">
       <FocusWorksSection
@@ -818,14 +827,7 @@ export default function WeekPage() {
         />
       )}
 
-      {/* Child Guru — AI chat bubble */}
-      {!isHomeschoolParent(session) && (
-        <ChildGuruChat
-          childId={childId}
-          childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'Child'}
-          onAction={fetchAssignments}
-        />
-      )}
+      {/* Floating ChildGuruChat removed — BigMicPanel above the shelf is the primary voice control. */}
     </div>
   );
 }

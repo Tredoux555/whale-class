@@ -172,8 +172,28 @@ What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new
   }
 }
 
-function buildSystemPrompt(childContext: string, childName: string, locale?: string): string {
+interface RecentPhotoHint {
+  media_id: string;
+  seconds_ago: number;
+  work_name?: string | null;
+  area?: string | null;
+}
+
+function buildSystemPrompt(
+  childContext: string,
+  childName: string,
+  locale?: string,
+  recentPhoto?: RecentPhotoHint | null
+): string {
   const isZh = locale === 'zh';
+  const photoBlock = recentPhoto
+    ? `\nRECENT PHOTO CONTEXT:
+- The teacher captured a photo of ${childName} ${recentPhoto.seconds_ago}s ago.
+- media_id: ${recentPhoto.media_id}
+${recentPhoto.work_name ? `- AI-drafted work: ${recentPhoto.work_name}${recentPhoto.area ? ` (${recentPhoto.area})` : ''}\n` : ''}- If the teacher is narrating what they just saw ("she was concentrating," "he nailed it today," "frustrated on the pouring work"), this is an observation ABOUT that photo. Call save_observation and include source_media_id: "${recentPhoto.media_id}" so the note links to the photo in the gallery.
+- If the teacher's command is unrelated to the photo (e.g. "update the game plan"), DO NOT pass source_media_id.
+`
+    : '';
   return `You are the teacher's quick assistant for ${childName}. You live on the child's page — the teacher is looking at this child right now.
 ${isZh ? '\nLANGUAGE: Reply in Chinese (中文). Use Montessori work names in Chinese where possible. Keep the same warm, brief tone.\n' : ''}
 PERSONALITY:
@@ -187,7 +207,7 @@ PERSONALITY:
 
 WHAT YOU KNOW ABOUT ${childName.toUpperCase()}:
 ${childContext}
-
+${photoBlock}
 RULES:
 - Never say "I'm an AI" or "As an AI." You're part of the app.
 - If the teacher says something like "she did pouring today" — that's an observation. Save it AND update progress if a specific work is mentioned.
@@ -198,6 +218,77 @@ RULES:
 - For notes like "Amy chose to do pouring work" — save_observation with the note text, and if a curriculum work matches, also call update_progress.
 - Always use the area enum: practical_life, sensorial, mathematics, language, cultural.
 - Keep responses SHORT. The teacher is standing in a classroom with 20 children.`;
+}
+
+// Look up the most recent photo/video captured for this child in the last 90 seconds.
+// Used to let the teacher link voice observations to the photo they just took.
+// Also checks montree_media_children for group photos where this child was tagged.
+async function loadRecentPhotoHint(
+  supabase: ReturnType<typeof getSupabase>,
+  childId: string
+): Promise<RecentPhotoHint | null> {
+  const windowSeconds = 90;
+  const cutoffIso = new Date(Date.now() - windowSeconds * 1000).toISOString();
+  try {
+    // Direct single-child photos
+    const { data: direct } = await supabase
+      .from('montree_media')
+      .select('id, captured_at, work_id')
+      .eq('child_id', childId)
+      .gte('captured_at', cutoffIso)
+      .order('captured_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // Group photos via junction table
+    const { data: groupJoin } = await supabase
+      .from('montree_media_children')
+      .select('media_id, montree_media(id, captured_at, work_id)')
+      .eq('child_id', childId)
+      .limit(5);
+
+    let best: { id: string; captured_at: string; work_id: string | null } | null = direct
+      ? { id: direct.id, captured_at: direct.captured_at, work_id: direct.work_id ?? null }
+      : null;
+
+    if (Array.isArray(groupJoin)) {
+      for (const row of groupJoin as Array<{ media_id: string; montree_media?: { id: string; captured_at: string; work_id: string | null } | null }>) {
+        const m = row.montree_media;
+        if (!m?.captured_at) continue;
+        if (new Date(m.captured_at).getTime() < Date.now() - windowSeconds * 1000) continue;
+        if (!best || new Date(m.captured_at).getTime() > new Date(best.captured_at).getTime()) {
+          best = { id: m.id, captured_at: m.captured_at, work_id: m.work_id ?? null };
+        }
+      }
+    }
+
+    if (!best) return null;
+
+    const secondsAgo = Math.max(1, Math.round((Date.now() - new Date(best.captured_at).getTime()) / 1000));
+    let workName: string | null = null;
+    let areaKey: string | null = null;
+    if (best.work_id) {
+      const { data: work } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, area_id')
+        .eq('id', best.work_id)
+        .maybeSingle();
+      if (work?.name) workName = work.name;
+      if (work?.area_id) {
+        const { data: area } = await supabase
+          .from('montree_classroom_curriculum_areas')
+          .select('area_key')
+          .eq('id', work.area_id)
+          .maybeSingle();
+        if (area?.area_key) areaKey = area.area_key;
+      }
+    }
+
+    return { media_id: best.id, seconds_ago: secondsAgo, work_name: workName, area: areaKey };
+  } catch (err) {
+    console.warn('[ChildGuru] loadRecentPhotoHint failed (non-fatal):', err);
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -268,7 +359,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
 
         const contextText = formatContextForPrompt(childContext);
-        const systemPrompt = buildSystemPrompt(contextText, childContext.name, locale);
+        const recentPhoto = await loadRecentPhotoHint(supabase, childId);
+        const systemPrompt = buildSystemPrompt(contextText, childContext.name, locale, recentPhoto);
 
         // --- Build messages (last 10 turns max to keep tokens low) ---
         const messages: Array<{ role: 'user' | 'assistant'; content: string }> = [];

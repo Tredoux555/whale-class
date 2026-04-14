@@ -189,6 +189,10 @@ export const GURU_TOOLS: Tool[] = [
         student_name: {
           type: "string",
           description: "Required in whole-class mode: the student's name (e.g. 'Joey'). The system resolves this to the correct student ID."
+        },
+        source_media_id: {
+          type: "string",
+          description: "Optional UUID of a photo/video this observation is about. The system will inject a 'recent_photo' hint into the conversation context whenever a photo was captured within the last 90s; when that hint is present and the teacher is narrating what they just saw, set this field to the photo's media_id so the observation links to the photo in the gallery."
         }
       },
       required: ["behavior_description"]
