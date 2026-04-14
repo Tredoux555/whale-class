@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { POST as processPost } from '@/app/api/montree/photo-identification/process/route';
 
 export const maxDuration = 300;
 
@@ -79,9 +80,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build absolute URL for the in-process loopback (Railway needs the host)
+    // In-process invocation of the process route (Railway SSL loopback issue —
+    // see Session 10 photo-audit/resolve + Session 22 game-plan refresh).
+    // Build a synthetic NextRequest per photo that forwards the auth cookies.
+    const cookie = request.headers.get('cookie') || '';
+    const xff = request.headers.get('x-forwarded-for') || '';
+    const ua = request.headers.get('user-agent') || '';
     const origin = request.nextUrl.origin;
-    const cookieHeader = request.headers.get('cookie') || '';
 
     const results: BatchResult[] = [];
 
@@ -92,22 +97,26 @@ export async function POST(request: NextRequest) {
         const idx = cursor++;
         const mediaId = validIds[idx];
         try {
-          const res = await fetch(`${origin}/api/montree/photo-identification/process`, {
+          const url = new URL('/api/montree/photo-identification/process', origin);
+          const synthetic = new NextRequest(url, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              cookie: cookieHeader,
+              cookie,
+              'x-forwarded-for': xff,
+              'user-agent': ua,
             },
             body: JSON.stringify({ media_id: mediaId, force: true, locale }),
           });
-          const json = await res.json().catch(() => ({}));
+          const res = await processPost(synthetic as any);
+          const json: any = await res.json().catch(() => ({}));
           if (!res.ok) {
             results.push({ media_id: mediaId, ok: false, error: json?.error || `HTTP ${res.status}` });
           } else {
             results.push({ media_id: mediaId, ok: true, status: json?.status || json?.outcome || 'processed' });
           }
         } catch (err: any) {
-          results.push({ media_id: mediaId, ok: false, error: err?.message || 'fetch failed' });
+          results.push({ media_id: mediaId, ok: false, error: err?.message || 'in-process call failed' });
         }
       }
     }
