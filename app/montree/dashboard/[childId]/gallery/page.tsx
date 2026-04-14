@@ -1084,7 +1084,49 @@ export default function GalleryPage() {
         <GuruContextBubble pageKey="gallery" role="parent" />
       )}
 
-      {/* Invite Parent link — hidden, parent flow now handled via Weekly Wrap send */}
+      {/* ══════════════════════════════════════════════
+          REPORT ACTION BAR — Preview this week's parent report
+          Restored Apr 14: teacher wants to preview what parents
+          will see before the Weekly Wrap send.
+          ══════════════════════════════════════════════ */}
+      {session && !isHomeschoolParent(session) && (
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-gray-800">📤 {t('reports.parentReport')}</h3>
+              <p className="text-xs text-gray-400">
+                {lastReportDate
+                  ? `${t('reports.lastSent')}: ${new Date(lastReportDate).toLocaleDateString()}`
+                  : (t('reports.noReportsSentYet'))}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {lastReportDate && (
+                <button
+                  onClick={fetchLastReport}
+                  disabled={loadingLastReport}
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 active:scale-95 transition-all disabled:opacity-50 text-xs"
+                >
+                  {loadingLastReport ? '⏳' : '📄'} {t('reports.lastReport')}
+                </button>
+              )}
+              <button
+                onClick={handleOpenReportPreview}
+                disabled={reportLoading}
+                className="flex items-center gap-1 px-3 py-2 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50 text-xs"
+              >
+                {reportLoading ? '⏳' : '👁️'} {t('reports.previewReport')}
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={() => setInviteModalOpen(true)}
+            className="mt-2 w-full text-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            ✉️ {t('reports.inviteParent')}
+          </button>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════
           VIEW CONTROLS + AREA FILTER + SELECTION
