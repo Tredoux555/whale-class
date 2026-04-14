@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
 
   const supabase = getSupabase();
 
+  // Optional: filter to specific work by name
+  const workNameParam = request.nextUrl.searchParams.get('work_name')?.toLowerCase() || null;
+
   // 1. Get all active children
   const { data: rawChildren } = await supabase
     .from('montree_children')
@@ -67,11 +70,18 @@ export async function GET(request: NextRequest) {
   }
 
   // 3. Get all language work IDs + names for this classroom
-  const { data: rawLangWorks } = await supabase
+  let query = supabase
     .from('montree_classroom_curriculum_works')
     .select('id, name, name_chinese')
     .eq('classroom_id', classroomId)
     .eq('area_id', langArea.id);
+
+  // If work_name param is set, filter to that specific work (case-insensitive)
+  if (workNameParam) {
+    query = query.ilike('name', `%${workNameParam}%`);
+  }
+
+  const { data: rawLangWorks } = await query;
 
   const langWorks = (rawLangWorks || []) as WorkRow[];
   const langWorkIds = new Set(langWorks.map(w => w.id));

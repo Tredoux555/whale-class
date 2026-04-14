@@ -14,6 +14,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { useMontreeData } from '@/lib/montree/cache';
 import { useFeatures } from '@/hooks/useFeatures';
 import { DashboardSkeleton } from '@/components/montree/Skeletons';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import dynamic from 'next/dynamic';
 
 // Lazy-load heavy components — only loaded when actually rendered
@@ -44,6 +45,55 @@ interface Child {
   id: string;
   name: string;
   photo_url?: string;
+}
+
+// ─── Avatar Components ───
+function StudentAvatarIcon({ child, isSelected }: { child: Child; isSelected: boolean }) {
+  const [showFallback, setShowFallback] = useState(!child.photo_url);
+
+  if (!showFallback && child.photo_url) {
+    return (
+      <div className={`w-6 h-6 rounded-full ${isSelected ? 'bg-white/20' : 'bg-[#0D3330]/10'} flex items-center justify-center text-xs font-bold overflow-hidden`}>
+        <img
+          src={getProxyUrl(child.photo_url)}
+          className="w-full h-full object-cover"
+          alt=""
+          loading="lazy"
+          onError={() => setShowFallback(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`w-6 h-6 rounded-full ${isSelected ? 'bg-white/20' : 'bg-[#0D3330]/10'} flex items-center justify-center text-xs font-bold overflow-hidden`}>
+      {child.name.charAt(0)}
+    </div>
+  );
+}
+
+function StudentAvatarCard({ child }: { child: Child }) {
+  const [showFallback, setShowFallback] = useState(!child.photo_url);
+
+  if (!showFallback && child.photo_url) {
+    return (
+      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
+        <img
+          src={getProxyUrl(child.photo_url)}
+          className="w-full h-full object-cover"
+          alt=""
+          loading="lazy"
+          onError={() => setShowFallback(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
+      {child.name.charAt(0)}
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -256,13 +306,7 @@ export default function DashboardPage() {
                         : `${HOME_THEME.cardBg} border ${HOME_THEME.border} ${HOME_THEME.headingText} hover:border-[#0D3330]/25`
                     }`}
                   >
-                    <div className={`w-6 h-6 rounded-full ${child.id === selectedChild.id ? 'bg-white/20' : 'bg-[#0D3330]/10'} flex items-center justify-center text-xs font-bold overflow-hidden`}>
-                      {child.photo_url ? (
-                        <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
-                      ) : (
-                        child.name.charAt(0)
-                      )}
-                    </div>
+                    <StudentAvatarIcon child={child} isSelected={child.id === selectedChild.id} />
                     {child.name.split(' ')[0]}
                   </button>
                 ))}
@@ -414,13 +458,7 @@ export default function DashboardPage() {
                         {...(index === 0 ? { 'data-guide': 'first-child' } : {})}
                         className="bg-white rounded-2xl shadow-sm hover:shadow-lg active:scale-95 transition-all flex flex-col items-center justify-center border border-gray-100 min-h-0"
                       >
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md shrink-0">
-                          {child.photo_url ? (
-                            <img src={child.photo_url} className="w-full h-full object-cover" alt="" loading="lazy" />
-                          ) : (
-                            child.name.charAt(0)
-                          )}
-                        </div>
+                        <StudentAvatarCard child={child} />
                         <p className="text-xs font-semibold text-gray-800 truncate w-full text-center mt-1 px-1">
                           {child.name.split(' ')[0]}
                         </p>
