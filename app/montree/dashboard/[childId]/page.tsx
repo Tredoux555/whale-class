@@ -662,10 +662,10 @@ export default function WeekPage() {
       {!isHomeschoolParent(session) && (
         <div className="flex justify-end items-center gap-2">
           <Link
-            href={`/montree/dashboard/${childId}/weekly-review`}
+            href={`/montree/dashboard/${childId}/gallery`}
             className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
           >
-            📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
+            📸 {locale === 'zh' ? '相册' : 'Gallery'}
           </Link>
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
