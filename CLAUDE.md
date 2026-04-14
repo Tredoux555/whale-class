@@ -195,6 +195,77 @@ montree.xyz
 
 ---
 
+## RECENT STATUS (Apr 15, 2026)
+
+### ⚡ Session 24 — Language Semester Report Generator (Apr 15, 2026)
+
+**Two commits pushed to main: `c569b61d`, `810cdc00`.**
+
+**THE TASK:** User uploaded `Amy.pptx` — a finished Language semester progress report template (Pre-Kindergarten, purple clouds, 4-work status table, 3-paragraph parent letter in warm teacher voice). Asked for a one-click system to generate the same report for every child in Whale Class, free-tier only. "a text only - yes build now."
+
+**What shipped (end-to-end pipeline):**
+
+1. **Pre-tokenized template** (`public/templates/language-semester-report.pptx`, 26.4MB)
+   - Amy's original `.pptx` → zip of XML → collapsed target paragraphs to single-run tokens to avoid PowerPoint's run-splitting during runtime string replace
+   - 11 unique tokens, each appearing exactly once in `ppt/slides/slide1.xml`:
+     - Works table: `{{WORK_1_NAME}}..{{WORK_4_NAME}}`, `{{WORK_1_STATUS}}..{{WORK_4_STATUS}}`
+     - Narrative: `{{PARA_OPENING}}`, `{{PARA_CIRCLE}}`, `{{PARA_ENGLISH}}`
+
+2. **API route** — `app/api/montree/reports/language-semester/generate/route.ts` (NEW, ~290 lines)
+   - `POST` endpoint, `maxDuration=300`, max 30 children per request
+   - Auth: `verifySchoolRequest()` + per-child `verifyChildBelongsToSchool()` (returns `{allowed, classroomId}`)
+   - Loads Language progress: resolves Language `area_id` from `montree_classroom_curriculum_areas` → queries `montree_child_work_progress` → dedupes by `work_name` keeping highest status rank `{presented:1, practicing:2, mastered:3}`
+   - Calls **Sonnet** with `tool_use` structured output (`REPORT_TOOL` schema: `para_opening`/`para_circle`/`para_english` strings + `works` array 1-4 items with `name` + `status` enum `['P','Pr','MD']`)
+   - System prompt: "warm, specific, Montessori-literate… plain paragraph prose only" — same voice as Amy's original
+   - `fillTemplate()` — `jszip` loads template → regex-replaces each token in slide1.xml → XML-escapes narrative content (`& < > " '`) → re-zips with DEFLATE level 6
+   - Single child → returns `.pptx` directly with `Content-Disposition` attachment filename
+   - Multi-child → bundles into zip; includes `_errors.txt` on partial failure; `X-Report-Errors` header surfaces error count
+   - Filename sanitization: `name.replace(/[^a-zA-Z0-9_-]/g, '_')` + dedup via `usedNames` Set
+
+3. **UI page** — `app/montree/dashboard/language-semester/page.tsx` (NEW, ~230 lines)
+   - Lists all children in classroom with checkboxes + Select All toggle
+   - POST with `child_ids[]`, reads response as blob, parses `Content-Disposition` for filename, creates anchor download
+   - Progress state, error state, bilingual (EN/ZH)
+
+4. **Menu link** — `components/montree/DashboardHeader.tsx` — ··· menu → 📄 Language Semester Report. Not feature-gated (visible to all schools).
+
+**THE AUDIT CATCH (crown jewel of this session, fixed in `810cdc00`):**
+After shipping `c569b61d`, ran a test fill with tricky characters and rendered via `mnt/.claude/skills/pptx/scripts/thumbnail.py`. Thumbnail showed Amy's **original** hardcoded paragraph ("Dear Amy, you have grown so much this semester…") sitting BETWEEN `{{PARA_OPENING}}` and `{{PARA_CIRCLE}}`. The tokenize step had collapsed some paragraphs to tokens but left paragraph P13 (offsets 22429-22901 in slide1.xml) behind — a literal duplicate. Every generated report would have rendered Sonnet's new opening followed immediately by Amy's original text. Surgical fix: regex-matched the stray `<a:p>` node containing "you have grown so much" and removed it from the template zip. Verified via second thumbnail — clean.
+
+**Diagnostic technique for future pptx template work:**
+- "Dear Amy" wasn't findable via `xml.indexOf()` because it's split across multiple `<a:r>` runs (run-level formatting splits on every style change)
+- "you have grown so much" WAS findable because it was a contiguous text run
+- Paragraph-level inspection (parse all `<a:p>...</a:p>` blocks, extract `<a:t>` text nodes, join, inspect) is the reliable audit — individual `indexOf()` on partial phrases misses split text
+- Always render a test fill via `thumbnail.py` BEFORE shipping any pptx template. Visual verification catches what text diffing can't.
+
+**Key technical patterns:**
+- **Token collapse before replace**: PowerPoint splits `<a:r>` runs on every formatting change. If you insert a placeholder like `{{FOO}}` into text with existing styling, runtime string replace may fail because the token gets split across runs. Fix: pre-tokenize by collapsing the target paragraph to a single `<a:r>` run containing just the token. Done at template-prep time, not runtime.
+- **XML escape before insert**: Sonnet output can contain `& < > " '` which would corrupt the XML. `xmlEscape()` wraps every narrative string.
+- **tool_use over raw JSON**: Same pattern as Session 13+. Sonnet via `tool_use` never produces raw JSON text, so no escape-char corruption even in Chinese. Structured schema enforces field types.
+- **`verifyChildBelongsToSchool` returns object, not boolean**: `{allowed: boolean, classroomId?: string}`. Wrong early: `if (!await verify...)`. Correct: `const access = await verify...; if (!access.allowed)`.
+
+**Minor notes (not blocking, worth knowing):**
+1. **Memory**: 20 children × 26MB = ~520MB peak during zip generation. Railway `start.sh` sets `--max-old-space-size=2048` (2GB heap). Class of 30 would be ~780MB — fine. Concurrent requests could OOM — consider streaming zip if class sizes grow or if multiple teachers use simultaneously.
+2. **Template re-read per request**: `readFile(templatePath)` runs every POST. Could cache in module scope (~26MB permanent RAM, acceptable).
+3. **Serial Sonnet calls**: 20 kids × ~20s = ~6-7min per class run. Safe for rate limits. Could parallelize with `p-limit` concurrency 3.
+4. **No rate limiter** on endpoint. 30-child cap + 300s `maxDuration` contain blast radius.
+5. **Language-area-only**: pipeline only pulls `area_key='language'` progress. Opening/Circle narrative drafted from Language data alone — if teacher wants Math/Sensorial narrative later, needs schema expansion.
+
+**Files changed this session (4 files, ~530 new lines):**
+- `public/templates/language-semester-report.pptx` — NEW tokenized template
+- `app/api/montree/reports/language-semester/generate/route.ts` — NEW generation endpoint
+- `app/montree/dashboard/language-semester/page.tsx` — NEW selector page
+- `components/montree/DashboardHeader.tsx` — ··· menu link added
+
+**Next session priorities:**
+1. **User test on production** — hard-refresh after Railway deploy of `810cdc00`. ··· menu → 📄 Language Semester Report. Try on 1 kid first (downloads .pptx directly). Open in PowerPoint/Keynote, verify: (a) only Sonnet-authored paragraphs render, no Amy leftover text, (b) works table shows that child's real works with correct MD/Pr/P status, (c) layout/fonts/clouds unchanged from Amy's original.
+2. **Test multi-child bundle** — select 3-5 kids, generate, verify zip downloads with one .pptx per child, filenames sanitized.
+3. **Watch Railway memory** if class-wide run is attempted (all 20 kids at once). If OOM, ship the streaming-zip optimization.
+4. **Consider cache**: if this endpoint gets heavy use, move `readFile(templatePath)` to module scope.
+5. **Future**: if reports for other areas are requested (Math, Sensorial, Cultural), clone the template+tokenize pipeline per area. The API route generalizes cleanly — just need the area key parametrized and per-area Sonnet prompts.
+
+---
+
 ## RECENT STATUS (Apr 14, 2026)
 
 ### ⚡ Session 23 — Review-Before-Process Containment Audit (7 rounds) + Child Profile Pending Panel (Apr 14, 2026)
