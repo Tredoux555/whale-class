@@ -160,6 +160,8 @@ export async function GET(request: NextRequest) {
         .eq('classroom_id', classroomId)
         .eq('media_type', 'photo')
         .not('work_id', 'is', null)
+        // Only reflect teacher-approved activity in weekly admin docs.
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', weekStart)
         .lt('captured_at', weekEndStr),
 

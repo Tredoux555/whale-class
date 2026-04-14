@@ -179,6 +179,9 @@ export async function GET(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, work_id, captured_at, thumbnail_path')
         .eq('child_id', childId)
+        // Exclude pending_review photos — not yet teacher-approved, must not
+        // surface to parents. NULL-safe via .or() (Postgres .neq excludes NULL).
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .order('captured_at', { ascending: false })
         .limit(9),
     ]);

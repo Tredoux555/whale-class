@@ -71,7 +71,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
       const params = new URLSearchParams({
         zone: 'pending_review',
         limit: '500',
-        date_from: new Date(Date.now() - 30 * 86400000).toISOString(),
+        date_from: new Date(Date.now() - 365 * 86400000).toISOString(),
         date_to: new Date().toISOString(),
       });
       const res = await montreeApi(`/api/montree/audit/photos?${params.toString()}`);

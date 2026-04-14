@@ -55,6 +55,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .from('montree_media')
       .select('id, storage_path, work_id, captured_at, thumbnail_path')
       .eq('child_id', childId)
+      // Exclude pending_review photos — they live in PendingReviewPanel until
+      // teacher-approved. NULL-safe via .or().
+      .or('identification_status.is.null,identification_status.neq.pending_review')
       .order('captured_at', { ascending: false });
 
     // Build photo URLs
