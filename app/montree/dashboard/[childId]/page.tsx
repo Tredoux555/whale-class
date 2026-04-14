@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG } from '@/lib/montree/types';
@@ -657,9 +658,15 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Minimal action bar — just print labels (teacher only) */}
+      {/* Minimal action bar — Weekly Review + print labels (teacher only) */}
       {!isHomeschoolParent(session) && (
-        <div className="flex justify-end">
+        <div className="flex justify-end items-center gap-2">
+          <Link
+            href={`/montree/dashboard/${childId}/weekly-review`}
+            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+          >
+            📝 {t('weeklyReview.navLabel' as any) || 'Weekly Review'}
+          </Link>
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
       )}
