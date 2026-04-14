@@ -84,6 +84,8 @@ export async function GET(request: NextRequest) {
     .in('child_id', childIds)
     .eq('classroom_id', classroomId)
     .not('work_id', 'is', null)
+    // Only count teacher-approved activity.
+    .or('identification_status.is.null,identification_status.neq.pending_review')
     .order('captured_at', { ascending: false });
 
   const mediaRows = (rawMedia || []) as MediaRow[];
@@ -104,7 +106,8 @@ export async function GET(request: NextRequest) {
       .select('id, captured_at, work_id')
       .in('id', groupMediaIds)
       .eq('classroom_id', classroomId)
-      .not('work_id', 'is', null);
+      .not('work_id', 'is', null)
+      .or('identification_status.is.null,identification_status.neq.pending_review');
 
     for (const m of ((rawGroupMedia || []) as GroupMediaRow[])) {
       groupMediaMap.set(m.id, { captured_at: m.captured_at, work_id: m.work_id });

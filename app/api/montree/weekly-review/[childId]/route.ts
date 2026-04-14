@@ -348,6 +348,8 @@ async function fetchChildWeekData(childId: string, classroomId: string) {
     supabase.from('montree_media')
       .select('id, storage_path, work_id, caption, captured_at')
       .eq('child_id', childId)
+      // Exclude pending_review photos from weekly review generation.
+      .or('identification_status.is.null,identification_status.neq.pending_review')
       .gte('captured_at', mondayStr)
       .lte('captured_at', sundayStr)
       .limit(20),

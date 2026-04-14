@@ -100,7 +100,9 @@ export async function GET(request: NextRequest) {
     .in('child_id', childIds)
     .gte('captured_at', weekStartISO)
     .lte('captured_at', weekEndISO)
-    .not('work_id', 'is', null);
+    .not('work_id', 'is', null)
+    // Only count teacher-approved activity.
+    .or('identification_status.is.null,identification_status.neq.pending_review');
 
   const allMedia = (rawMedia || []) as MediaRow[];
 
@@ -121,7 +123,8 @@ export async function GET(request: NextRequest) {
       .in('id', groupMediaIds)
       .gte('captured_at', weekStartISO)
       .lte('captured_at', weekEndISO)
-      .not('work_id', 'is', null);
+      .not('work_id', 'is', null)
+      .or('identification_status.is.null,identification_status.neq.pending_review');
 
     groupMedia = (rawGroupMedia || []) as GroupMediaRow[];
   }

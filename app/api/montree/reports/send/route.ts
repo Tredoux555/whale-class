@@ -121,7 +121,9 @@ export async function POST(request: NextRequest) {
         const { data: selectedPhotos } = await supabase
           .from('montree_media')
           .select('id, storage_path, work_id, caption, captured_at')
-          .in('id', mediaIds);
+          .in('id', mediaIds)
+          // Defensive: drop pending_review photos even if linked to a report.
+          .or('identification_status.is.null,identification_status.neq.pending_review');
 
         if (selectedPhotos) {
           // Sort by the display_order from report_media

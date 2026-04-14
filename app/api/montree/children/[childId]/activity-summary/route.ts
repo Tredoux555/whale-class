@@ -127,6 +127,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .select('id, work_id, captured_at')
       .eq('child_id', childId)
       .not('work_id', 'is', null)
+      // Activity summary should reflect teacher-confirmed activity only.
+      .or('identification_status.is.null,identification_status.neq.pending_review')
       .gte('captured_at', prevMonday.toISOString())
       .lte('captured_at', prevSunday.toISOString());
 
@@ -148,6 +150,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .select('id, work_id, captured_at')
         .in('id', groupMediaIds)
         .not('work_id', 'is', null)
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', prevMonday.toISOString())
         .lte('captured_at', prevSunday.toISOString());
 

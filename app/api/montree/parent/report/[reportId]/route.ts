@@ -244,6 +244,9 @@ export async function GET(
           .select('id, storage_path, work_id, caption, captured_at')
           .eq('child_id', report.child_id)
           .eq('media_type', 'photo')
+          // Exclude pending_review photos — not yet teacher-approved, must not
+          // surface to parents. NULL-safe via .or().
+          .or('identification_status.is.null,identification_status.neq.pending_review')
           .gte('captured_at', startOfWeek.toISOString())
           .lt('captured_at', endOfWeek.toISOString());
 
@@ -321,7 +324,10 @@ export async function GET(
       const { data: selectedPhotos } = await supabase
         .from('montree_media')
         .select('id, storage_path, work_id, caption, captured_at')
-        .in('id', mediaIds);
+        .in('id', mediaIds)
+        // Defensive: exclude pending_review photos even if somehow linked to a
+        // report (should be impossible via normal UI flow, but parent-facing).
+        .or('identification_status.is.null,identification_status.neq.pending_review');
 
       if (selectedPhotos && selectedPhotos.length > 0) {
         // Sort by display_order from junction table
@@ -339,6 +345,8 @@ export async function GET(
         .select('id, storage_path, work_id, caption, captured_at')
         .eq('child_id', report.child_id)
         .eq('media_type', 'photo')
+        // Exclude pending_review photos — not yet teacher-approved.
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', startOfWeek.toISOString())
         .lt('captured_at', endOfWeek.toISOString());
 
