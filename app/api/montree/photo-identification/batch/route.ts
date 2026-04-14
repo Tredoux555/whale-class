@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+import { checkRateLimit } from '@/lib/rate-limiter';
 import { POST as processPost } from '@/app/api/montree/photo-identification/process/route';
 
 export const maxDuration = 300;
@@ -29,6 +30,17 @@ export async function POST(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    if (!auth.schoolId) {
+      return NextResponse.json({ error: 'No school' }, { status: 403 });
+    }
+
+    const supabase = getSupabase();
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rate = await checkRateLimit(supabase, ip, '/api/montree/photo-identification/batch', 60, 60);
+    if (!rate.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
 
     const body = await request.json().catch(() => ({}));
     const mediaIds: unknown = body.media_ids;
@@ -44,13 +56,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'media_ids must be non-empty strings' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
-
-    // Verify every requested media row belongs to the authenticated school.
-    // School-scoped lookup — prevents cross-tenant batch processing.
+    // Verify every requested media row belongs to the authenticated school
+    // AND is currently in pending_review status. This endpoint is strictly
+    // for the review-before-process workflow — it must not force-rerun
+    // already-confirmed photos (would re-spend Haiku/Sonnet $).
     const { data: ownedRows, error: ownErr } = await supabase
       .from('montree_media')
-      .select('id, classroom_id')
+      .select('id, classroom_id, identification_status')
       .in('id', mediaIds)
       .eq('school_id', auth.schoolId);
 
@@ -59,22 +71,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Lookup failed' }, { status: 500 });
     }
 
-    const ownedIds = new Set((ownedRows || []).map((r: any) => r.id));
-    const validIds = mediaIds.filter(id => ownedIds.has(id));
-    const skipped = mediaIds.filter(id => !ownedIds.has(id));
+    // Strict: only pending_review rows are eligible
+    const eligible = (ownedRows || []).filter((r: any) => r.identification_status === 'pending_review');
+    const eligibleIds = new Set(eligible.map((r: any) => r.id));
+    const validIds = mediaIds.filter(id => eligibleIds.has(id));
+    const skipped = mediaIds.filter(id => !eligibleIds.has(id));
 
     if (validIds.length === 0) {
       return NextResponse.json({
         success: true, processed: 0, succeeded: 0, failed: 0,
-        results: [], skipped_unauthorized: skipped.length,
+        results: [], skipped_ineligible: skipped.length,
       });
     }
 
     // For teachers, also verify the photos are in their classroom.
+    // (classroom_id NULL on a media row is treated as out-of-classroom.)
     if (auth.role === 'teacher' && auth.classroomId) {
-      const wrongClassroom = (ownedRows || [])
-        .filter((r: any) => validIds.includes(r.id) && r.classroom_id && r.classroom_id !== auth.classroomId)
-        .map((r: any) => r.id);
+      const wrongClassroom = eligible.filter(
+        (r: any) => !r.classroom_id || r.classroom_id !== auth.classroomId
+      );
       if (wrongClassroom.length > 0) {
         return NextResponse.json({ error: 'Some photos not in your classroom' }, { status: 403 });
       }
@@ -132,7 +147,7 @@ export async function POST(request: NextRequest) {
       succeeded,
       failed,
       results,
-      skipped_unauthorized: skipped.length,
+      skipped_ineligible: skipped.length,
     });
   } catch (err: any) {
     console.error('[BatchProcess] error:', err);
@@ -147,6 +162,17 @@ export async function DELETE(request: NextRequest) {
   try {
     const auth = await verifySchoolRequest(request);
     if (auth instanceof NextResponse) return auth;
+    if (!auth.schoolId) {
+      return NextResponse.json({ error: 'No school' }, { status: 403 });
+    }
+
+    const supabase = getSupabase();
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    const rate = await checkRateLimit(supabase, ip, '/api/montree/photo-identification/batch', 60, 60);
+    if (!rate.allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
 
     const body = await request.json().catch(() => ({}));
     const mediaIds: unknown = body.media_ids;
@@ -161,14 +187,15 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'media_ids must be non-empty strings' }, { status: 400 });
     }
 
-    const supabase = getSupabase();
-
-    // Pull ownership + storage paths in one query
+    // Pull ownership + storage paths in one query. Restrict to pending_review
+    // — this endpoint exists to cull duds before AI fires. Teachers use the
+    // normal per-photo delete flow for already-processed photos.
     const { data: rows, error: lookupErr } = await supabase
       .from('montree_media')
-      .select('id, storage_path, thumbnail_path, cropped_storage_path, classroom_id')
+      .select('id, storage_path, thumbnail_path, cropped_storage_path, classroom_id, identification_status')
       .in('id', mediaIds)
-      .eq('school_id', auth.schoolId);
+      .eq('school_id', auth.schoolId)
+      .eq('identification_status', 'pending_review');
 
     if (lookupErr) {
       console.error('[BatchDelete] lookup failed:', lookupErr.message);
@@ -177,7 +204,7 @@ export async function DELETE(request: NextRequest) {
 
     const owned = rows || [];
     if (auth.role === 'teacher' && auth.classroomId) {
-      const wrong = owned.filter((r: any) => r.classroom_id && r.classroom_id !== auth.classroomId);
+      const wrong = owned.filter((r: any) => !r.classroom_id || r.classroom_id !== auth.classroomId);
       if (wrong.length > 0) {
         return NextResponse.json({ error: 'Some photos not in your classroom' }, { status: 403 });
       }
