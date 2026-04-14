@@ -16,6 +16,7 @@ import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
+import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
 import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
@@ -661,6 +662,11 @@ export default function WeekPage() {
         <div className="flex justify-end">
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
+      )}
+
+      {/* Pending Review — photos waiting for teacher to approve AI run (feature-gated) */}
+      {!isHomeschoolParent(session) && isEnabled('review_before_process') && (
+        <PendingReviewPanel childId={childId} compact onProcessed={() => fetchAssignments()} />
       )}
 
       {/* Tell Guru onboarding — shown when child has no mental profile (feature-gated) */}
