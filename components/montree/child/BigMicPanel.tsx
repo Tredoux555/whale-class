@@ -33,6 +33,8 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const autoClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onActionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -42,6 +44,8 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
       }
       streamRef.current?.getTracks().forEach(t => t.stop());
       if (timerRef.current) clearInterval(timerRef.current);
+      if (autoClearRef.current) clearTimeout(autoClearRef.current);
+      if (onActionTimerRef.current) clearTimeout(onActionTimerRef.current);
     };
   }, []);
 
@@ -104,13 +108,17 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
 
       setStage('done');
       if (hadAction && onAction) {
-        setTimeout(() => onAction(), 300);
+        if (onActionTimerRef.current) clearTimeout(onActionTimerRef.current);
+        onActionTimerRef.current = setTimeout(() => onAction(), 300);
       }
 
-      // Auto-clear response after 8s so panel returns to idle mic
-      setTimeout(() => {
+      // Auto-clear response after 8s so panel returns to idle mic.
+      // Tracked in a ref so a new recording or unmount cancels it.
+      if (autoClearRef.current) clearTimeout(autoClearRef.current);
+      autoClearRef.current = setTimeout(() => {
         setStage('idle');
         setResponse('');
+        autoClearRef.current = null;
       }, 8000);
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
@@ -121,6 +129,12 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
   }, [childId, locale, onAction]);
 
   const startRecording = useCallback(async () => {
+    // Cancel any pending auto-clear from a previous response so it
+    // doesn't wipe state mid-recording.
+    if (autoClearRef.current) {
+      clearTimeout(autoClearRef.current);
+      autoClearRef.current = null;
+    }
     setError('');
     setResponse('');
     try {
