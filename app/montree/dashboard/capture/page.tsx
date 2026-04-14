@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import CameraCapture from '@/components/montree/media/CameraCapture';
 import { compressImage } from '@/lib/montree/media/compression';
 import { uploadVideo } from '@/lib/montree/media/upload';
@@ -27,6 +28,45 @@ import { useFeatures } from '@/hooks/useFeatures';
 // ============================================
 
 type FlowStep = 'camera' | 'tag-child';
+
+// ============================================
+// AVATAR BUTTON COMPONENT
+// ============================================
+
+function ChildAvatarButton({ child, isSelected }: { child: MontreeChild; isSelected: boolean }) {
+  const [showFallback, setShowFallback] = useState(!child.photo_url);
+
+  if (!showFallback && child.photo_url) {
+    return (
+      <div className={`
+        w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
+        ${isSelected
+          ? 'bg-emerald-500 text-white'
+          : 'bg-white/20 text-white/80'
+        }
+      `}>
+        <img
+          src={getProxyUrl(child.photo_url)}
+          alt={child.name}
+          className="w-full h-full rounded-full object-cover"
+          onError={() => setShowFallback(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`
+      w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
+      ${isSelected
+        ? 'bg-emerald-500 text-white'
+        : 'bg-white/20 text-white/80'
+      }
+    `}>
+      {child.name.charAt(0)}
+    </div>
+  );
+}
 
 // ============================================
 // LOADING FALLBACK
@@ -460,19 +500,7 @@ function CaptureContent() {
                       }
                     `}
                   >
-                    <div className={`
-                      w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-all
-                      ${isSelected
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-white/20 text-white/80'
-                      }
-                    `}>
-                      {child.photo_url ? (
-                        <img src={child.photo_url} alt={child.name} className="w-full h-full rounded-full object-cover" />
-                      ) : (
-                        child.name.charAt(0)
-                      )}
-                    </div>
+                    <ChildAvatarButton child={child} isSelected={isSelected} />
                     <span className={`text-xs font-medium mt-1 leading-tight ${isSelected ? 'text-emerald-300' : 'text-white/70'}`}>
                       {child.name}
                     </span>
