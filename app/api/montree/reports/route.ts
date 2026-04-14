@@ -264,6 +264,7 @@ export async function POST(request: NextRequest) {
         .select('id, storage_path, thumbnail_path, caption, captured_at, work_id')
         .eq('child_id', child_id)
         .neq('parent_visible', false)
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', week_start)
         .lte('captured_at', week_end || new Date().toISOString())
         .limit(10),
