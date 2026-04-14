@@ -195,6 +195,92 @@ montree.xyz
 
 ---
 
+## RECENT STATUS (Apr 14, 2026)
+
+### ⚡ Session 23 — Review-Before-Process Containment Audit (7 rounds) + Child Profile Pending Panel (Apr 14, 2026)
+
+**Two commits pushed to main: `51878418`, `4c15b7f9`.**
+
+**THE TASK:** User requested "audit-fix cycle until two consecutive clean audits". Round 5+ of an audit cycle for the `review_before_process` workflow (feature flag, migration 177) — the workflow where photos land with `identification_status='pending_review'` and AI only fires after teacher batch-approval. Goal: ensure pending_review photos NEVER leak to parents and NEVER inflate teacher aggregations that drive reports/recommendations. (Rounds 1–4 were prior sessions, commits up to `0c2b9bda` — 3-layer defense, feature flag, migration 177, PendingReviewPanel UI, batch process/delete routes.)
+
+**Round 5 — 12 leak vectors fixed across 11 files (commit `51878418`):**
+
+All filters use the canonical NULL-safe pattern (PostgREST's `.neq` excludes NULL rows, so `.or()` with `.is.null` is required):
+```ts
+.or('identification_status.is.null,identification_status.neq.pending_review')
+```
+
+Files patched:
+1. `components/montree/photo-audit/PendingReviewPanel.tsx` — extended `date_from` window from 30 days → 365 days (was silently hiding pending_review photos older than 30 days)
+2. `app/api/montree/parent/dashboard/route.ts` (line 184) — recent photos query, parent-facing leak
+3. `app/api/montree/parent/report/[reportId]/route.ts` (3 queries: lines 249, 330, 349) — saved-content fallback + junction-selected photos + weekly photos fallback
+4. `app/api/montree/reports/send/route.ts` (lines 126, 153) — defensive filters on report dispatch (parents receive emails)
+5. `app/api/montree/albums/route.ts` (lines 52, 79) — direct + group queries (teacher curates albums but parents receive prints)
+6. `app/api/montree/weekly-review/[childId]/route.ts` (line 352) — per-child weekly review aggregation
+7. `app/api/montree/children/[childId]/route.ts` (line 60) — child detail GET (PendingReviewPanel owns pending photos, main view shows confirmed only)
+8. `app/api/montree/children/[childId]/activity-summary/route.ts` (lines 131, 153) — Haiku weekly summary on child week view
+9. `app/api/montree/dashboard/daily-language-6/route.ts` (lines 88, 110) — Daily Language 6 widget
+10. `app/api/montree/dashboard/language-tracker/route.ts` (lines 105, 127) — English Corner tracker
+11. `app/api/montree/weekly-admin-docs/auto-fill/route.ts` (line 164) — Weekly Admin auto-fill aggregation
+
+**Round 6 + Round 7 — TWO CLEAN PASSES (no new leak vectors found):**
+
+All 51 files using `from('montree_media')` were classified by leak risk:
+- **Filtered (parent/teacher-aggregation)**: all 6 parent-facing routes verified, all 7 reports/* routes verified, audit/photos has explicit `pending_review` zone handling
+- **Intentionally unfiltered (must NOT filter)**:
+  - AI-processing routes: `guru/photo-insight/*`, `guru/snap-identify`, `guru/photo-enrich`, `photo-audit/resolve`, `photo-audit/tell-ai`, `photo-identification/process`, `photo-identification/sweep`, `photo-identification/batch`, `enrich-custom-work` — these MUST see pending_review photos to process them
+  - Attendance/event signals: `intelligence/daily-brief`, `events/attendance`, `events/route` — semantically "captured today" includes pending_review
+  - Single-row reads/writes by ID: `media/crop`, `media/route.ts` (writes), `media/upload`, `media/batch-retag`, `media/children` — not aggregation, not leak vectors
+  - Admin diagnostics: `admin/activity`, `super-admin/schools`, `curriculum/duplicates`, `lib/montree/super-admin/guru-executor.ts`
+  - Teacher AI tools: `lib/montree/guru/tool-executor.ts`, `lib/montree/admin/guru-executor.ts`, `app/api/montree/children/[childId]/guru/route.ts` — pending_review photos have NULL `work_id` so they naturally don't bucket into work-name aggregations
+- **Dead code**: `lib/montree/photos.ts:getChildPhotos` is defined but never called
+
+**Defense-layer verification (audited but not modified):**
+- `app/api/montree/media/upload/route.ts` lines 132-140 — correctly checks `isFeatureEnabled(supabase, schoolId, 'review_before_process')` and sets `identification_status: 'pending_review'` when enabled AND no `work_id` (skipped when teacher manually tagged a work)
+- `lib/montree/offline/sync-manager.ts` lines 425-447 — correctly skips fire-and-forget AI dispatch when `result.ai_deferred === true`
+
+**Child week view pending panel (commit `4c15b7f9`):**
+
+User feedback: "I still want to be able to see each child's pictures from their profile." The PendingReviewPanel was previously only visible on:
+- Classroom-wide Photo Audit page (`/montree/dashboard/photo-audit` — Pending Review zone tab)
+- Per-child gallery sub-page (`/montree/dashboard/[childId]/gallery`)
+
+NOT visible on the main child week view (`/montree/dashboard/[childId]` — the page with Game Plan + shelf). User wanted it on the child's main profile page.
+
+**Fix:** Added `<PendingReviewPanel childId={childId} compact onProcessed={() => fetchAssignments()} />` to `app/montree/dashboard/[childId]/page.tsx` (line 669), placed at the top just before the Tell Guru onboarding card. Feature-gated on `review_before_process`, hidden for homeschool parents. The `onProcessed` callback re-runs `fetchAssignments()` so newly-confirmed photos surface in the shelf below without page reload.
+
+The `compact` mode renders nothing when the queue is empty (no UI clutter on the child week view when there's nothing to review).
+
+**The complete review-before-process workflow (now with three entry points):**
+1. Teacher captures photos freely on Capture page → land as `pending_review`, no AI fires
+2. Pending photos visible in 3 places:
+   - Top of any child's week view (NEW — Session 23, commit `4c15b7f9`)
+   - Top of any child's gallery sub-page (Session 22 prior)
+   - Pending Review tab on the classroom-wide Photo Audit page (Session 22 prior)
+3. Teacher selects keepers → "Process Selected" runs Haiku/Sonnet only on those
+4. Teacher selects junk/duplicates → "Delete Selected" (no API cost)
+5. Confirmed photos flow into normal pipeline (haiku_matched, sonnet_drafted, etc.)
+
+**Architectural decisions confirmed by audit:**
+- Three-layer defense (upload route → sync-manager → process route safety bail) is intact and working
+- The `pending_review` status is the **only** signal needed for this workflow — no separate `teacher_confirmed` flag (different from Session 7's correction workflow which uses `teacher_confirmed`)
+- Junction-table queries via `montree_media_children` only ever route through filtered SELECTs in the parent/report/album surfaces, so the inner JOIN against `montree_media` inherits the filter
+
+**Key files changed this session (12 files, ~45 lines):**
+- 11 API routes filtered (Round 5)
+- `components/montree/photo-audit/PendingReviewPanel.tsx` — date window 30d→365d
+- `app/montree/dashboard/[childId]/page.tsx` — PendingReviewPanel import + render
+
+**Next session priorities:**
+1. **User test pending panel on Molly's profile** — hard-refresh `/montree/dashboard/{molly-id}` after Railway deploy. Capture a photo for Molly. Verify amber pending panel appears at top of her week view. Tap Process Selected → verify photo flows into the shelf below.
+2. **Verify pending panel doesn't appear when empty** — confirm `compact` mode renders nothing on children with no pending photos (no UI clutter).
+3. **Test the parent leak fixes** — log in as a parent for a Whale Class child, hit `/montree/parent/dashboard` and `/montree/parent/report/[id]`, verify only confirmed photos appear (no pending_review photos visible).
+4. **Monitor Campaign D** on gmass.co/dashboard — should be done by ~Apr 17. Check open rates, bounces.
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts.
+6. **Photo audit: Jimmy's work** — user identified flat colored discs (red, yellow, blue) graded by size on a mat. Likely Knobless Cylinders viewed from above, but user wasn't sure. Needs in-person verification before fixing the photo audit card.
+
+---
+
 ## RECENT STATUS (Apr 13, 2026)
 
 ### ⚡ Session 22 — Child Guru Production Fixes + English Corner Language Tracker (Apr 13, 2026)
