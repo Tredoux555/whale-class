@@ -667,6 +667,12 @@ export default function WeekPage() {
           >
             📸 {locale === 'zh' ? '相册' : 'Gallery'}
           </Link>
+          <Link
+            href={`/montree/dashboard/${childId}/language-presentation`}
+            className="px-3 py-2 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg text-sm transition-colors"
+          >
+            🎙️ {locale === 'zh' ? '语言演示' : 'Present'}
+          </Link>
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
       )}
