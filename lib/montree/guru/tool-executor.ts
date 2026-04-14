@@ -273,22 +273,42 @@ export async function executeTool(
         input.developmental_note ? `[Dev note: ${input.developmental_note}]` : '',
       ].filter(Boolean).join(' ');
 
-      const { error } = await supabase
+      // Optional link to the photo/video this observation is about.
+      // Validated as a UUID string; silently dropped on malformed input so the
+      // observation itself still saves.
+      let sourceMediaId: string | null = null;
+      const rawMediaId = input.source_media_id;
+      if (typeof rawMediaId === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawMediaId)) {
+        sourceMediaId = rawMediaId;
+      }
+
+      const insertRow: Record<string, unknown> = {
+        child_id: childId,
+        classroom_id: null,    // Explicit null — home observations have no classroom
+        observed_by: null,     // UUID column — null for guru-created observations
+        behavior_description: enhancedDescription.slice(0, 4000), // Extended limit for enhanced data
+        behavior_function: behaviorFunc,
+        activity_during: (input.activity_during as string) || null,
+      };
+      if (sourceMediaId) insertRow.source_media_id = sourceMediaId;
+
+      let { error } = await supabase
         .from('montree_behavioral_observations')
-        .insert({
-          child_id: childId,
-          classroom_id: null,    // Explicit null — home observations have no classroom
-          observed_by: null,     // UUID column — null for guru-created observations
-          behavior_description: enhancedDescription.slice(0, 4000), // Extended limit for enhanced data
-          behavior_function: behaviorFunc,
-          activity_during: (input.activity_during as string) || null,
-        });
+        .insert(insertRow);
+
+      // Graceful fallback: if migration 176 hasn't run yet on this env, retry
+      // without source_media_id so observations still save.
+      if (error && sourceMediaId && /source_media_id/i.test(error.message || '')) {
+        console.warn('[Tool] save_observation: source_media_id column missing, retrying without');
+        delete insertRow.source_media_id;
+        ({ error } = await supabase.from('montree_behavioral_observations').insert(insertRow));
+      }
 
       if (error) {
         console.error('[Tool] save_observation failed:', error.message);
         return { success: false, message: 'Failed to save observation' };
       }
-      return { success: true, message: 'Observation saved' };
+      return { success: true, message: sourceMediaId ? 'Observation saved + linked to photo' : 'Observation saved' };
     }
 
     case 'save_checkin': {
