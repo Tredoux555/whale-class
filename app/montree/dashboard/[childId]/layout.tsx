@@ -59,11 +59,10 @@ export default function ChildLayout({ children }: { children: React.ReactNode })
   };
   const activeTab = getActiveTab();
 
-  // Review tab hidden — Photo Audit is now the single review flow.
-  // Gallery page still works via direct URL if needed later.
+  // Review tab restored Apr 14: teacher wants to see per-child photos
+  // and preview the parent report from the child's profile.
   const tabs: { id: string; label: string; href: string }[] = [
-    // { id: 'week', label: `📋 ${t('nav.week' as any)}`, href: `/montree/dashboard/${childId}` },
-    // { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
+    { id: 'gallery', label: `📸 ${t('nav.gallery' as any) || 'Review'}`, href: `/montree/dashboard/${childId}/gallery` },
   ];
 
   // Don't show loading spinner - render immediately with fallbacks
