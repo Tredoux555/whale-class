@@ -72,14 +72,24 @@ function adaptiveLabelFontSize(
   const internalWidthPt = (cardWidthCm - WHITE_BORDER_CM * 2 - 0.6) * 28.35;
   const internalHeightPt = (labelHeightCm - WHITE_BORDER_CM * 2 - 0.4) * 28.35;
   const lineHeight = 1.2;
+  // Conservative char-width coefficient for bold Comic Sans / Nunito
+  const CHAR_W = 0.62;
+  const MIN_PT = 8;
+
+  // Find longest single (unbreakable) word — this sets the hard width floor
+  const words = label.split(/\s+/).filter(Boolean);
+  const longestWordLen = words.reduce((m, w) => Math.max(m, w.length), 1);
 
   let fontSize = basePt;
-  while (fontSize > 12) {
-    // Approximate character width for bold Comic Sans / Nunito
-    const charWidth = fontSize * 0.58;
+  while (fontSize > MIN_PT) {
+    const charWidth = fontSize * CHAR_W;
     const charsPerLine = Math.max(1, Math.floor(internalWidthPt / charWidth));
-    // Count wrapped lines (split on spaces to avoid mid-word breaks)
-    const words = label.split(/\s+/);
+
+    // Hard constraint: longest single word must fit in one line
+    // (CSS break-word is a safety net, but we still try to shrink so it fits)
+    const longestWordFits = longestWordLen <= charsPerLine;
+
+    // Count wrapped lines (space-split; long words count as their own line)
     let lines = 1;
     let currentLineLen = 0;
     for (const w of words) {
@@ -89,12 +99,16 @@ function adaptiveLabelFontSize(
       } else {
         currentLineLen += (currentLineLen > 0 ? 1 : 0) + w.length;
       }
+      // If a single word is longer than a line, it will wrap mid-word
+      if (w.length > charsPerLine) {
+        lines += Math.ceil(w.length / charsPerLine) - 1;
+      }
     }
     const totalHeightPt = lines * fontSize * lineHeight;
-    if (totalHeightPt <= internalHeightPt) break;
+    if (longestWordFits && totalHeightPt <= internalHeightPt) break;
     fontSize -= 1;
   }
-  return Math.max(12, fontSize);
+  return Math.max(MIN_PT, fontSize);
 }
 
 interface CreateCardHTMLParams {
@@ -296,6 +310,9 @@ export const generateCards = ({
       line-height: 1.2;
       overflow: hidden;
       word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      hyphens: auto;
       max-width: 100%;
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
@@ -675,6 +692,9 @@ export const generateLabelsOnly = ({
       line-height: 1.2;
       overflow: hidden;
       word-wrap: break-word;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      hyphens: auto;
       max-width: 100%;
       border-radius: ${CARD_BORDER_RADIUS}cm;
     }
