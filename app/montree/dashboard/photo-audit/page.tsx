@@ -15,6 +15,8 @@ import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
 import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
 import ThisIsSheet, { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import TellAiSheet from '@/components/montree/photo-audit/TellAiSheet';
+import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
+import { useFeaturesContext } from '@/lib/montree/features';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -60,7 +62,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports' | 'today_all';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports' | 'today_all' | 'pending_review';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -438,6 +440,8 @@ export default function PhotoAuditPage() {
   const [loading, setLoading] = useState(true);
   const [zone, setZone] = useState<Zone>('all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
+  const { isEnabled } = useFeaturesContext();
+  const reviewBeforeProcess = isEnabled('review_before_process');
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
 
@@ -623,6 +627,11 @@ export default function PhotoAuditPage() {
 
   // Fetch photos when zone/date/page changes
   const fetchPhotos = useCallback(async () => {
+    // Pending Review tab manages its own fetching via PendingReviewPanel.
+    if (zone === 'pending_review') {
+      setLoading(false);
+      return;
+    }
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -1723,7 +1732,7 @@ export default function PhotoAuditPage() {
 
   // Filter photos by zone — 'all' shows everything needing review (non-green)
   const filteredPhotos = useMemo(() => {
-    if (zone === 'works_review' || zone === 'parent_reports' || zone === 'weekly_admin') return []; // Non-photo tabs handled separately
+    if (zone === 'works_review' || zone === 'parent_reports' || zone === 'weekly_admin' || zone === 'pending_review') return []; // Non-photo tabs handled separately
     if (zone === 'today_all') return photos; // Show every photo in last 24h incl. confirmed
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
@@ -1747,7 +1756,9 @@ export default function PhotoAuditPage() {
   const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'today_all';
 
   // 5-tab layout: Photo Review | Today (All) | Works Review | Parent Reports | Weekly Admin
+  // (+ Pending Review tab when feature flag is on)
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
+    ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '待处理' : 'Pending Review', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '照片审核' : 'Photo Review', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
     { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
     { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
@@ -1839,6 +1850,13 @@ export default function PhotoAuditPage() {
           </div>
         )}
       </div>
+
+      {/* ─── Pending Review (review-before-process workflow) ─── */}
+      {zone === 'pending_review' && (
+        <div className="p-3 sm:p-4">
+          <PendingReviewPanel />
+        </div>
+      )}
 
       {/* ─── Works Review (Teacher Review from WeeklyWrapTab) ─── */}
       {zone === 'works_review' && classroomIdState && (

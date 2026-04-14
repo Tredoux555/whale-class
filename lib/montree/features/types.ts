@@ -36,6 +36,7 @@ export type FeatureKey =
   | 'paperwork_tracker'
   // Capture page tools
   | 'daily_language_6'
+  | 'review_before_process'
   // Onboarding
   | 'tell_guru_onboarding'
   // Child week view
