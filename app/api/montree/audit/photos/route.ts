@@ -67,9 +67,18 @@ export async function GET(request: NextRequest) {
     } else if (zone === 'green') {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
     } else if (zone === 'untagged') {
-      mediaQuery = mediaQuery.is('work_id', null);
+      // Untagged = no work_id AND not deferred for review (review queue has
+      // its own dedicated tab). NULL identification_status must be allowed
+      // through — Postgres .neq excludes NULL, hence the .or() with .is.null.
+      mediaQuery = mediaQuery
+        .is('work_id', null)
+        .or('identification_status.is.null,identification_status.neq.pending_review');
     } else if (zone !== 'all') {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
+    } else {
+      // 'all' zone — exclude pending_review (they live in their own tab).
+      // Same NULL-safety as 'untagged'.
+      mediaQuery = mediaQuery.or('identification_status.is.null,identification_status.neq.pending_review');
     }
 
     const { data: rawMediaRows, count: totalCount, error: mediaErr } = await mediaQuery;

@@ -36,6 +36,9 @@ export async function GET(request: NextRequest) {
       .select('id, storage_path, thumbnail_path, caption, captured_at, work_id', { count: 'exact' })
       .eq('child_id', childId)
       .neq('parent_visible', false)  // Only parent-visible photos (neq false = true + null for backward compat)
+      // Exclude pending_review photos — not yet teacher-approved, must not be
+      // visible to parents. NULL-safe via .or() (Postgres .neq excludes NULL).
+      .or('identification_status.is.null,identification_status.neq.pending_review')
       .order('captured_at', { ascending: false })
       .range(offset, offset + limit - 1);
 

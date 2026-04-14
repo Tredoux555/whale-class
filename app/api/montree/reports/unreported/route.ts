@@ -42,7 +42,10 @@ export async function GET(request: NextRequest) {
       .eq('child_id', childId).neq('status', 'not_started');
     let photoQuery = supabase.from('montree_media')
       .select('id, storage_path, caption, captured_at, thumbnail_path')
-      .eq('child_id', childId);
+      .eq('child_id', childId)
+      // Exclude pending_review photos — they're not yet teacher-approved and
+      // shouldn't surface in report composers. NULL-safe via .or().
+      .or('identification_status.is.null,identification_status.neq.pending_review');
 
     if (lastReportDate) {
       progressQuery = progressQuery.gt('updated_at', lastReportDate);
