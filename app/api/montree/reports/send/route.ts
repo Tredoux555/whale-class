@@ -147,7 +147,8 @@ export async function POST(request: NextRequest) {
         .from('montree_media')
         .select('id, storage_path, work_id, caption, captured_at')
         .eq('child_id', child_id)
-        .neq('parent_visible', false);
+        .neq('parent_visible', false)
+        .or('identification_status.is.null,identification_status.neq.pending_review');
 
       if (lastReportDate) {
         photoQuery = photoQuery.gt('captured_at', lastReportDate);

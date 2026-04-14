@@ -279,6 +279,7 @@ export async function GET(request: NextRequest) {
         .select('id, storage_path, thumbnail_path, work_id, caption, captured_at')
         .eq('child_id', childId)
         .eq('media_type', 'photo')
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .limit(1000),
       supabase
         .from('montree_media_children')

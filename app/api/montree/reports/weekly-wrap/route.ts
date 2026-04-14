@@ -251,6 +251,7 @@ export async function POST(request: NextRequest) {
                 .select('id, storage_path, work_id, caption, captured_at')
                 .eq('child_id', child.id)
                 .neq('parent_visible', false)
+                .or('identification_status.is.null,identification_status.neq.pending_review')
                 .gte('captured_at', week_start)
                 .lte('captured_at', week_end + 'T23:59:59'),
               supabase

@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
         .select('id, storage_path, caption, captured_at, work_id')
         .eq('child_id', child_id)
         .neq('parent_visible', false)
+        .or('identification_status.is.null,identification_status.neq.pending_review')
         .gte('captured_at', `${weekStart}T00:00:00.000Z`)
         .lte('captured_at', `${weekEnd}T23:59:59.999Z`)
         .limit(MAX_PHOTOS_PER_REPORT),
