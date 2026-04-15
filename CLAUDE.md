@@ -235,10 +235,9 @@ Added `pt-20` to each page's inner container (compensates for the fixed-position
 - ✅ Single header on English Corner, Focus List, and Language Semester Report pages.
 
 **Next session priorities:**
-1. **Run migration 177** (`review_before_process` feature flag) — still outstanding from prior session. Photo Bucket tab is gated on this.
-2. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
-3. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
-4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
+1. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
+2. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+3. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
 
 ---
 
