@@ -4,7 +4,7 @@
 
 import type { MontreeFeature } from './types';
 
-const CACHE_TTL_MS = 30 * 1000; // 30 seconds — short TTL so feature toggles take effect quickly
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes — feature toggles propagate on window focus via invalidateFeatures()
 const STORAGE_KEY_PREFIX = 'montree_features_';
 
 interface CacheEntry {

@@ -91,6 +91,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
         summary: cached.text,
         week_start: cached.week_start,
         cached: true,
+      }, {
+        headers: { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=1800' },
       });
     }
 
