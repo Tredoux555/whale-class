@@ -369,16 +369,6 @@ export default function DashboardHeader() {
                     <span>{t('audit.title')}</span>
                   </Link>
                   <Link
-                    href="/montree/dashboard/weekly-wrap"
-                    onClick={() => setShowMoreMenu(false)}
-                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                      pathname === '/montree/dashboard/weekly-wrap' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-base">📝</span>
-                    <span>{locale === 'zh' ? '周记' : 'Weekly Wrap'}</span>
-                  </Link>
-                  <Link
                     href={childIdFromPath ? `/montree/dashboard/guru?child=${childIdFromPath}` : '/montree/dashboard/guru'}
                     data-tutorial="guru-link"
                     data-guide="nav-guru"
