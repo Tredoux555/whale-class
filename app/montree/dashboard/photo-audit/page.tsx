@@ -5,19 +5,23 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
-import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
-import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
-import WeeklyWrapTab from '@/components/montree/reports/WeeklyWrapTab';
-import WeeklyAdminTab from '@/components/montree/reports/WeeklyAdminTab';
-import ThisIsSheet, { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
-import TellAiSheet from '@/components/montree/photo-audit/TellAiSheet';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
-import VoiceDictate from '@/components/montree/voice/VoiceDictate';
+import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
+
+// Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
+const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), { ssr: false });
+const WeeklyWrapTab = dynamic(() => import('@/components/montree/reports/WeeklyWrapTab'), { ssr: false });
+const WeeklyAdminTab = dynamic(() => import('@/components/montree/reports/WeeklyAdminTab'), { ssr: false });
+const ThisIsSheet = dynamic(() => import('@/components/montree/photo-audit/ThisIsSheet'), { ssr: false });
+const TellAiSheet = dynamic(() => import('@/components/montree/photo-audit/TellAiSheet'), { ssr: false });
+const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), { ssr: false });
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
