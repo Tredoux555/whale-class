@@ -2400,9 +2400,12 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   };
 
   return (
-    <div className={`relative rounded-lg overflow-hidden border-2 ${
-      selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''
-    } ${zoneColors[photo.zone] || 'border-gray-200'}`}>
+    <div
+      className={`relative rounded-lg overflow-hidden border-2 ${
+        selected ? 'ring-2 ring-blue-500 ring-offset-1' : ''
+      } ${zoneColors[photo.zone] || 'border-gray-200'}`}
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 320px' }}
+    >
       {/* Selection checkbox */}
       <button
         onClick={onToggle}
