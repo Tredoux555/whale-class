@@ -56,7 +56,6 @@ Verified: `grep -rn DashboardHeader app/montree/dashboard` now only hits `layout
 
 ## Remaining
 
-- **Migration 177** (`review_before_process` feature flag) still not run on production. Photo Bucket tab is gated on this.
 - **Monitor Campaign D** on gmass.co/dashboard (should be wrapped by now).
 - **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
 
