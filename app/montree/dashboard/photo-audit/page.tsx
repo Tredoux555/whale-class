@@ -902,6 +902,46 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // Mark a photo as a paperwork page. Fires Haiku vision to read the week
+  // number in the top-left corner and bumps tagged children's
+  // paperwork_current_week (no-downgrade, confidence >= 0.7). Fire-and-forget
+  // style UX — the card goes green and the user moves on.
+  const handleMarkAsPaperwork = async (photo: AuditPhoto) => {
+    setProcessingId(photo.id);
+    toast.loading('📋 Reading week number...', { id: `paperwork-${photo.id}` });
+    try {
+      const res = await montreeApi('/api/montree/paperwork/read-week', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media_id: photo.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      toast.dismiss(`paperwork-${photo.id}`);
+      if (!res.ok || !data?.success) {
+        toast.error(data?.error || 'Failed to mark as paperwork');
+        return;
+      }
+      if (data.found && data.week && data.applied) {
+        toast.success(`📋 Week ${data.week} detected — updated ${data.children_updated} ${data.children_updated === 1 ? 'child' : 'children'}`);
+      } else if (data.found && data.week && !data.applied) {
+        const reasonText = data.reason === 'same_week' ? 'already on this week'
+          : data.reason === 'no_downgrade' ? 'children are ahead of this week'
+          : data.reason === 'low_confidence' ? 'confidence too low'
+          : 'no update needed';
+        toast.success(`📋 Week ${data.week} detected — ${reasonText}`);
+      } else if (data.already_processed) {
+        toast.success(`📋 Already processed — week ${data.week}`);
+      } else {
+        toast.success('📋 Marked as paperwork — week number not found on page');
+      }
+    } catch (err: any) {
+      toast.dismiss(`paperwork-${photo.id}`);
+      toast.error(err?.message || 'Failed to mark as paperwork');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   // Find a work by name across the loaded curriculum (case-insensitive, prefers
   // exact match then substring match within the suggested area).
   const findWorkByName = useCallback((rawName: string, preferredArea?: string): { work: any; areaKey: string } | null => {
@@ -1953,6 +1993,7 @@ export default function PhotoAuditPage() {
               onUseAsReference={() => handleTeachAI(photo)}
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
+              onMarkAsPaperwork={() => handleMarkAsPaperwork(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
@@ -2345,7 +2386,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2354,6 +2395,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onUseAsReference: () => void;
   onTagChildren: () => void;
   onDelete: () => void;
+  onMarkAsPaperwork: () => void;
   rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
@@ -2651,6 +2693,14 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
         <div className="flex gap-1 mt-1 justify-end">
+          <button
+            onClick={onMarkAsPaperwork}
+            disabled={processing}
+            className="text-[10px] py-1 px-1.5 rounded bg-amber-50 text-amber-600 font-medium disabled:opacity-50"
+            title="Mark as paperwork page — AI will read the week number"
+          >
+            📋
+          </button>
           <button
             onClick={onDelete}
             disabled={processing}
