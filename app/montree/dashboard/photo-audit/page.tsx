@@ -1828,12 +1828,17 @@ export default function PhotoAuditPage() {
 
   const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'today_all';
 
-  // 2-tab layout: Photo Bucket (pre-AI triage) + Confirm (needs review).
-  // Works Review / Parent Reports / Weekly Admin moved to the ⋯ menu —
-  // they're reporting functions, not photo-auditing functions.
+  // 6-tab layout: Photo Bucket (pre-AI triage, feature-gated) + Confirm (needs review)
+  // + Today (All) + Works Review + Parent Reports + Weekly Admin.
+  // Everything lives in one Photo Audit surface — teachers flow from photo
+  // triage → confirmation → weekly review → parent reports → admin docs.
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
+    { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
+    { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
+    { key: 'parent_reports', label: locale === 'zh' ? '家长报告' : 'Parent Reports', color: 'bg-violet-100 text-violet-800', count: null },
+    { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
   ];
 
   // ─── JSX ───
@@ -1842,7 +1847,7 @@ export default function PhotoAuditPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">{locale === 'zh' ? '每周总结' : 'Weekly Wrap'}</h1>
+          <h1 className="text-lg font-semibold">{locale === 'zh' ? '照片审核' : 'Photo Audit'}</h1>
           {isPhotoZone && (
             <select
               value={dateRange}
