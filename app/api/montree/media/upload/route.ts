@@ -1,10 +1,11 @@
 // /api/montree/media/upload/route.ts
 // Upload photos to Supabase storage
 import { NextRequest, NextResponse } from 'next/server';
-import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
+import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function POST(request: NextRequest) {
   try {
@@ -214,7 +215,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build URL for client use (Guru image upload expects data.url)
-    const url = getPublicUrl('montree-media', storagePath);
+    const url = getProxyUrl(storagePath);
 
     return NextResponse.json({
       success: true,
