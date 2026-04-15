@@ -830,6 +830,7 @@ export default function GalleryPage() {
       <div
         key={photo.id}
         className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+        style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 420px' }}
       >
         {/* Photo */}
         <div className="relative group">
