@@ -191,5 +191,7 @@ export async function GET(request: NextRequest) {
     recommendations,
     total_children: children.length,
     seen_today: seenTodayCount,
+  }, {
+    headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
   });
 }

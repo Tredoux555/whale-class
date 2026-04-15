@@ -234,6 +234,6 @@ export async function GET(request: NextRequest) {
     totalChildren: children.length,
     visitedCount: visited.length,
   }, {
-    headers: { 'Cache-Control': 'no-store' },
+    headers: { 'Cache-Control': 'private, max-age=30, stale-while-revalidate=120' },
   });
 }

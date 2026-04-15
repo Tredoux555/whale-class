@@ -90,10 +90,21 @@ export default function InboxButton({ conversationId, userName, floating }: Inbo
     // Set up polling interval based on panel state
     const pollingInterval = open ? 15000 : 60000; // 15s when open, 60s when closed
     const interval = setInterval(() => {
+      // Skip polling when tab is hidden — saves bandwidth on backgrounded tabs
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       fetchMessages(false); // lightweight check, don't show loading spinner
     }, pollingInterval);
 
-    return () => clearInterval(interval);
+    // Refetch immediately when tab regains focus (catches anything missed while hidden)
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchMessages(false);
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [conversationId, open]);
 
   // Mark as read when opened

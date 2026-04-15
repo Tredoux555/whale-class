@@ -865,28 +865,34 @@ export default function PhotoAuditPage() {
     }
   };
 
-  // Delete photo from audit
+  // Delete photo from audit — optimistic: remove immediately, revert on error
   const handleDeletePhoto = async (photo: AuditPhoto) => {
     if (!confirm(t('audit.deleteConfirm'))) return;
-    setProcessingId(photo.id);
+    const deletedZone = photo.zone || 'amber';
+    // Snapshot for revert
+    const prevPhotos = photos;
+    const prevCounts = counts;
+    const prevSelected = selectedIds;
+    // Optimistic update
+    setPhotos(prev => prev.filter(p => p.id !== photo.id));
+    setCounts(prev => ({
+      ...prev,
+      ...(deletedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
+      ...(deletedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
+      ...(deletedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
+      ...(deletedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
+    }));
+    setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
     try {
       const res = await montreeApi(`/api/montree/media?id=${photo.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('delete failed');
-      const deletedZone = photo.zone || 'amber';
-      setPhotos(prev => prev.filter(p => p.id !== photo.id));
-      setCounts(prev => ({
-        ...prev,
-        ...(deletedZone === 'green' ? { green: Math.max(0, prev.green - 1) } : {}),
-        ...(deletedZone === 'amber' ? { amber: Math.max(0, prev.amber - 1) } : {}),
-        ...(deletedZone === 'red' ? { red: Math.max(0, prev.red - 1) } : {}),
-        ...(deletedZone === 'untagged' ? { untagged: Math.max(0, prev.untagged - 1) } : {}),
-      }));
-      setSelectedIds(prev => { const next = new Set(prev); next.delete(photo.id); return next; });
       toast.success(t('audit.photoDeleted'));
     } catch {
+      // Revert
+      setPhotos(prevPhotos);
+      setCounts(prevCounts);
+      setSelectedIds(prevSelected);
       toast.error(t('audit.deleteFailed'));
-    } finally {
-      setProcessingId(null);
     }
   };
 
@@ -2112,6 +2118,7 @@ export default function PhotoAuditPage() {
             alt=""
             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            decoding="async"
           />
         </div>
       )}
@@ -2143,6 +2150,7 @@ export default function PhotoAuditPage() {
 
             {cropChoicePhoto.url && (
               <img src={cropChoicePhoto.url} alt={cropChoicePhoto.work_name || ''}
+                loading="lazy" decoding="async"
                 className="w-full h-36 object-cover rounded-lg mb-4" />
             )}
 
@@ -2204,7 +2212,7 @@ export default function PhotoAuditPage() {
 
             {/* Thumbnail */}
             {taggingPhoto.url && (
-              <img src={taggingPhoto.url} alt="" className="w-full h-28 object-cover rounded-lg mb-3" />
+              <img src={taggingPhoto.url} alt="" loading="lazy" decoding="async" className="w-full h-28 object-cover rounded-lg mb-3" />
             )}
 
             {/* Children list */}
@@ -2267,6 +2275,7 @@ export default function PhotoAuditPage() {
             {/* Photo preview — show crop if available, else original */}
             {(croppedReferenceUrl || describingPhoto.url) && (
               <img src={croppedReferenceUrl || describingPhoto.url || ''} alt={describingPhoto.work_name || ''}
+                loading="lazy" decoding="async"
                 className="w-full h-40 object-cover rounded-lg mb-3" />
             )}
 
