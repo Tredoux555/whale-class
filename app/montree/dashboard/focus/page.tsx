@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react'; // useRef for mount guard
 import Link from 'next/link';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
@@ -114,7 +114,6 @@ export default function FocusPage() {
   const [loadingBingo, setLoadingBingo] = useState(false);
   const [mutating, setMutating] = useState<string | null>(null);
 
-  const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -123,22 +122,19 @@ export default function FocusPage() {
   }, []);
 
   const loadMaster = useCallback(async () => {
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
     setLoadingMaster(true);
     try {
       const [listRes, focusRes] = await Promise.all([
         montreeApi('/api/montree/dashboard/focus-list'),
         montreeApi('/api/montree/dashboard/daily-focus'),
       ]);
-      if (ctrl.signal.aborted || !mountedRef.current) return;
+      if (!mountedRef.current) return;
       if (listRes.ok) setMaster(await listRes.json());
       if (focusRes.ok) setFocus(await focusRes.json());
     } catch (e) {
-      if (!ctrl.signal.aborted) console.error('[Focus] loadMaster:', e);
+      console.error('[Focus] loadMaster:', e);
     } finally {
-      if (!ctrl.signal.aborted && mountedRef.current) setLoadingMaster(false);
+      if (mountedRef.current) setLoadingMaster(false);
     }
   }, []);
 
