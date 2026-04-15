@@ -31,13 +31,29 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid path' }, { status: 400 });
     }
 
-    // Fetch from Supabase public bucket
-    const supabaseImageUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+    // Optional image transforms: ?w=N (width in px), ?q=N (quality 20-100).
+    // Uses Supabase's render endpoint when params present; falls back to raw
+    // object if render fails (e.g. Supabase plan without transforms).
+    const { searchParams } = new URL(request.url);
+    const w = searchParams.get('w');
+    const q = searchParams.get('q');
+    const wantTransform = !!(w || q);
 
-    const res = await fetch(supabaseImageUrl, {
-      // 30s timeout to prevent hanging
-      signal: AbortSignal.timeout(30000),
-    });
+    const rawUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
+    const renderParams = new URLSearchParams();
+    if (w) renderParams.set('width', w);
+    if (q) renderParams.set('quality', q);
+    renderParams.set('resize', 'contain');
+    const renderUrl = `${SUPABASE_URL}/storage/v1/render/image/public/${BUCKET}/${storagePath}?${renderParams.toString()}`;
+
+    let res = wantTransform
+      ? await fetch(renderUrl, { signal: AbortSignal.timeout(30000) })
+      : await fetch(rawUrl, { signal: AbortSignal.timeout(30000) });
+
+    // Fallback to raw object if render endpoint fails (plan limit, unsupported format, etc.)
+    if (wantTransform && !res.ok) {
+      res = await fetch(rawUrl, { signal: AbortSignal.timeout(30000) });
+    }
 
     if (!res.ok) {
       return NextResponse.json(
@@ -47,17 +63,19 @@ export async function GET(
     }
 
     const contentType = res.headers.get('content-type') || 'image/jpeg';
-    const blob = await res.arrayBuffer();
+    const contentLength = res.headers.get('content-length');
 
-    return new NextResponse(blob, {
+    // Stream response body through instead of buffering whole blob in RAM.
+    const headers: Record<string, string> = {
+      'Content-Type': contentType,
+      ...CACHE_HEADERS,
+      'Access-Control-Allow-Origin': '*',
+    };
+    if (contentLength) headers['Content-Length'] = contentLength;
+
+    return new Response(res.body, {
       status: 200,
-      headers: {
-        'Content-Type': contentType,
-        'Content-Length': blob.byteLength.toString(),
-        ...CACHE_HEADERS,
-        // Allow CORS for image loading
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers,
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {

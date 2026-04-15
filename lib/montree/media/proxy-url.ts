@@ -24,3 +24,38 @@ export function getProxyUrls(paths: string[]): Record<string, string> {
   }
   return urls;
 }
+
+/**
+ * Generate a thumbnail proxy URL with Supabase image transform params.
+ * Proxy route forwards ?w and ?q to Supabase render endpoint and falls
+ * back to the raw object if the render plan isn't available.
+ * Cloudflare caches each (path, w, q) tuple independently at the edge.
+ *
+ * Usage:
+ *   <img
+ *     src={getThumbnailUrl(path, 480)}
+ *     srcSet={`${getThumbnailUrl(path, 240)} 240w, ${getThumbnailUrl(path, 480)} 480w, ${getThumbnailUrl(path, 960)} 960w`}
+ *     sizes="(max-width: 640px) 50vw, 240px"
+ *   />
+ */
+export function getThumbnailUrl(storagePath: string, width: number, quality = 70): string {
+  const base = getProxyUrl(storagePath);
+  const params = new URLSearchParams();
+  params.set('w', String(width));
+  params.set('q', String(quality));
+  return `${base}?${params.toString()}`;
+}
+
+/**
+ * Build a responsive srcSet string for a grid thumbnail across 1x/2x/3x DPR.
+ */
+export function getThumbnailSrcSet(storagePath: string, baseWidth: number, quality = 70): string {
+  const w1 = baseWidth;
+  const w2 = baseWidth * 2;
+  const w3 = baseWidth * 3;
+  return [
+    `${getThumbnailUrl(storagePath, w1, quality)} ${w1}w`,
+    `${getThumbnailUrl(storagePath, w2, quality)} ${w2}w`,
+    `${getThumbnailUrl(storagePath, w3, quality)} ${w3}w`,
+  ].join(', ');
+}
