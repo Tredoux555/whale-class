@@ -21,6 +21,7 @@ import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPa
 import { useFeaturesContext } from '@/lib/montree/features';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 import EventAttendanceModal from '@/components/montree/events/EventAttendanceModal';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 
 interface GalleryItem extends MontreeMedia {
@@ -981,7 +982,12 @@ export default function GalleryPage() {
                 autoFocus
                 placeholder={t('gallery.addDescription')}
               />
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <VoiceDictate
+                  size="sm"
+                  onAppend={(text) => setCaptionDraft((prev) => (prev ? prev + ' ' + text : text))}
+                  onError={(msg) => toast.error(msg)}
+                />
                 <button
                   onClick={() => setEditingCaption(null)}
                   className="flex-1 px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200"
@@ -1019,7 +1025,21 @@ export default function GalleryPage() {
 
           {/* Lesson Notes — observation textarea */}
           <div className="pt-1 border-t border-gray-50">
-            <p className="text-xs font-medium text-gray-500 mb-1">{t('gallery.lessonNotes')}</p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs font-medium text-gray-500">{t('gallery.lessonNotes')}</p>
+              <VoiceDictate
+                size="sm"
+                onAppend={(text) => {
+                  setNotesDraft((prev) => {
+                    const cur = prev[photo.id] || '';
+                    return { ...prev, [photo.id]: cur ? cur + ' ' + text : text };
+                  });
+                  // Fire-and-forget auto-save so the transcript is persisted without another tap.
+                  setTimeout(() => handleSaveNote(photo.id), 50);
+                }}
+                onError={(msg) => toast.error(msg)}
+              />
+            </div>
             <textarea
               value={notesDraft[photo.id] || ''}
               onChange={(e) => setNotesDraft(prev => ({ ...prev, [photo.id]: e.target.value }))}

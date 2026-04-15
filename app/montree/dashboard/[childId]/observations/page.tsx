@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
 import { useI18n } from '@/lib/montree/i18n';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 
 interface Observation {
   id: string;
@@ -240,9 +241,16 @@ export default function ObservationsPage() {
 
           {/* Antecedent */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 block mb-1">
-              {t('observations.antecedentLabel')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700">
+                {t('observations.antecedentLabel')}
+              </label>
+              <VoiceDictate
+                size="sm"
+                onAppend={(text) => setForm(prev => ({ ...prev, antecedent: prev.antecedent ? prev.antecedent + ' ' + text : text }))}
+                onError={(msg) => toast.error(msg)}
+              />
+            </div>
             <input
               type="text"
               value={form.antecedent}
@@ -254,9 +262,16 @@ export default function ObservationsPage() {
 
           {/* Behavior */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 block mb-1">
-              {t('observations.behaviorLabel')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700">
+                {t('observations.behaviorLabel')}
+              </label>
+              <VoiceDictate
+                size="sm"
+                onAppend={(text) => setForm(prev => ({ ...prev, behavior_description: prev.behavior_description ? prev.behavior_description + ' ' + text : text }))}
+                onError={(msg) => toast.error(msg)}
+              />
+            </div>
             <textarea
               value={form.behavior_description}
               onChange={(e) => setForm(prev => ({ ...prev, behavior_description: e.target.value }))}
@@ -268,9 +283,16 @@ export default function ObservationsPage() {
 
           {/* Consequence */}
           <div className="mb-4">
-            <label className="text-sm font-medium text-gray-700 block mb-1">
-              {t('observations.consequenceLabel')}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-sm font-medium text-gray-700">
+                {t('observations.consequenceLabel')}
+              </label>
+              <VoiceDictate
+                size="sm"
+                onAppend={(text) => setForm(prev => ({ ...prev, consequence: prev.consequence ? prev.consequence + ' ' + text : text }))}
+                onError={(msg) => toast.error(msg)}
+              />
+            </div>
             <input
               type="text"
               value={form.consequence}

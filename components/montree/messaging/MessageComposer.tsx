@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 
 interface MessageComposerProps {
   childId: string;
@@ -122,6 +123,15 @@ export function MessageComposer({
         {/* Character count */}
         <div className="absolute bottom-2 right-3 text-xs text-gray-500 font-medium">
           {charCount}/2000
+        </div>
+
+        {/* Voice dictate */}
+        <div className="absolute top-2 right-2">
+          <VoiceDictate
+            size="sm"
+            onAppend={(text) => setMessage((prev) => (prev ? prev + ' ' + text : text).slice(0, 2000))}
+            onError={(err) => toast.error(err)}
+          />
         </div>
       </div>
 

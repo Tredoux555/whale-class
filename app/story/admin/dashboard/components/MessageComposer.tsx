@@ -1,5 +1,7 @@
 'use client';
 
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
+
 interface MessageComposerProps {
   adminMessage: string;
   onMessageChange: (value: string) => void;
@@ -58,14 +60,22 @@ export function MessageComposer({
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
       <h2 className="text-lg font-bold text-gray-800 mb-4">📝 Send Message to Students</h2>
       <div className="space-y-3">
-        <textarea
-          value={adminMessage}
-          onChange={(e) => onMessageChange(e.target.value.slice(0, 50000))}
-          maxLength={50000}
-          placeholder={selectedImage ? 'Add a caption (optional)...' : 'Write a message for your students...'}
-          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-          rows={3}
-        />
+        <div className="relative">
+          <textarea
+            value={adminMessage}
+            onChange={(e) => onMessageChange(e.target.value.slice(0, 50000))}
+            maxLength={50000}
+            placeholder={selectedImage ? 'Add a caption (optional)...' : 'Write a message for your students...'}
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+            rows={3}
+          />
+          <div className="absolute top-2 right-2">
+            <VoiceDictate
+              size="sm"
+              onAppend={(text) => onMessageChange((adminMessage ? adminMessage + ' ' + text : text).slice(0, 50000))}
+            />
+          </div>
+        </div>
         <p className="text-xs text-gray-400 text-right">{adminMessage.length.toLocaleString()} / 50,000</p>
 
         {imagePreview && (

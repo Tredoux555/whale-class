@@ -7,6 +7,7 @@
 
 import React, { useState } from 'react';
 import { montreeApi } from '@/lib/montree/api';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 
 interface Photo {
   id: string;
@@ -163,9 +164,15 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
 
           {!proposal && (
             <>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#444', display: 'block', marginBottom: 6 }}>
-                What is happening in this photo?
-              </label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#444' }}>
+                  What is happening in this photo?
+                </label>
+                <VoiceDictate
+                  size="sm"
+                  onAppend={(text) => setContext((prev) => (prev ? prev + ' ' + text : text))}
+                />
+              </div>
               <textarea
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
