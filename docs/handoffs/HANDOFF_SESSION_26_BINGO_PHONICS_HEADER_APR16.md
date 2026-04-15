@@ -47,17 +47,18 @@ Verified: `grep -rn DashboardHeader app/montree/dashboard` now only hits `layout
 - `language-tracker/route.ts` compiles clean: conditional 404, tolerant `ilike`, classroom scoping preserved, still auth-gated via `verifySchoolRequest()`
 - `work_name=bingo-phonics-review` now searches all classroom curriculum (not just Language area)
 
-## Verification steps for next session
+## Production verification (Apr 16, post-deploy)
 
-1. Hard-refresh `/montree/dashboard/language-tracker?work=bingo-phonics-review` after Railway deploy. Should show children who've done Bingo Phonics Review this week in "Visited" with work pills.
-2. If tab is still empty, verify "Bingo Phonics Review" exists as a row in `montree_classroom_curriculum_works` for classroom `51e7adb6-cd18-4e03-b707-eceb0a1d2e69`:
-   ```sql
-   SELECT id, name, area_id FROM montree_classroom_curriculum_works
-   WHERE classroom_id = '51e7adb6-cd18-4e03-b707-eceb0a1d2e69'
-     AND name ILIKE '%bingo%phonics%';
-   ```
-   If no row, the work needs to be added via the Photo Audit "Add as new work" flow next time a Bingo Phonics photo is captured.
-3. Verify English Corner, Focus List, and Language Semester Report pages show a single header (not stacked).
+- ✅ Ran `SELECT id, name, area_id FROM montree_classroom_curriculum_works WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND name ILIKE '%bingo%phonics%'` → 1 row: `fb96b2a6-de3e-4d07-9972-56e3fba5c5c3` "Bingo Phonics Review" under area `b6ccda99-e1ef-47f5-aab6-5e8bc041082e`
+- ✅ Confirmed that area is the standard Language area (`area_key='language', name='Language'`). Primary bug was the dash-vs-space `ilike` mismatch — the cross-area search in the fix was defense-in-depth and didn't need to kick in.
+- ✅ English Corner → Bingo Phonics tab on production now shows **11 Visited / 9 Not Yet**, Amy and Eric with 1 session Tue, day badges rendering correctly.
+- ✅ Single header on English Corner, Focus List, Language Semester Report pages.
+
+## Remaining
+
+- **Migration 177** (`review_before_process` feature flag) still not run on production. Photo Bucket tab is gated on this.
+- **Monitor Campaign D** on gmass.co/dashboard (should be wrapped by now).
+- **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
 
 ## Still outstanding
 
