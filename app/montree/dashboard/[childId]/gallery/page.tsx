@@ -16,6 +16,7 @@ import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { MontreeMedia } from '@/lib/montree/media/types';
+import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 // Tier 6 perf: code-split modal components (~2.9k lines deferred).
 const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
@@ -862,7 +863,9 @@ export default function GalleryPage() {
               photo.auto_crop ? (
                 <div className={`w-full overflow-hidden ${isExpanded ? 'max-h-[60vh]' : 'aspect-[4/3]'}`}>
                   <img
-                    src={url}
+                    src={photo.storage_path && !isExpanded ? getThumbnailUrl(photo.storage_path, 480) : url}
+                    srcSet={photo.storage_path && !isExpanded ? getThumbnailSrcSet(photo.storage_path, 480) : undefined}
+                    sizes="(max-width: 640px) 100vw, 480px"
                     alt={photo.work_name || photo.caption || 'Photo'}
                     loading="lazy"
                     decoding="async"
@@ -875,7 +878,9 @@ export default function GalleryPage() {
                 </div>
               ) : (
                 <img
-                  src={url}
+                  src={photo.storage_path && !isExpanded ? getThumbnailUrl(photo.storage_path, 480) : url}
+                  srcSet={photo.storage_path && !isExpanded ? getThumbnailSrcSet(photo.storage_path, 480) : undefined}
+                  sizes="(max-width: 640px) 100vw, 480px"
                   alt={photo.work_name || photo.caption || 'Photo'}
                   loading="lazy"
                   decoding="async"
