@@ -4,9 +4,10 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 interface MediaCardProps {
   media: MontreeMedia;
@@ -38,40 +39,12 @@ export default function MediaCard({
   showActions = true,
 }: MediaCardProps) {
   const { t, locale } = useI18n();
-  const [imageUrl, setImageUrl] = useState<string | null>(thumbnailUrl || null);
-  const [loading, setLoading] = useState(!thumbnailUrl);
+  // Proxy URL is deterministic from storage_path (public bucket, Cloudflare-cached).
+  // No network round-trip needed — skip the fetch entirely.
+  const thumbPath = media.thumbnail_path || media.storage_path;
+  const imageUrl = thumbnailUrl || (thumbPath ? getThumbnailUrl(thumbPath, 400) : null);
+  const imageSrcSet = !thumbnailUrl && thumbPath ? getThumbnailSrcSet(thumbPath, 400) : undefined;
   const [error, setError] = useState(false);
-
-  // Fetch signed URL if not provided
-  // Always use storage_path (full quality) - thumbnail_path is lower quality
-  useEffect(() => {
-    if (thumbnailUrl) return;
-
-    const fetchUrl = async () => {
-      try {
-        // Use storage_path for full quality images
-        const path = media.storage_path;
-        const response = await fetch(`/api/montree/media/url?path=${encodeURIComponent(path)}`);
-        if (!response.ok) {
-          setError(true);
-          return;
-        }
-        const data = await response.json();
-
-        if (data.url) {
-          setImageUrl(data.url);
-        } else {
-          setError(true);
-        }
-      } catch {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUrl();
-  }, [media.storage_path, thumbnailUrl]);
 
   // Format date
   const formatDate = (dateStr: string) => {
@@ -103,7 +76,10 @@ export default function MediaCard({
   };
 
   return (
-    <div className="relative aspect-square group">
+    <div
+      className="relative aspect-square group"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}
+    >
       <button
         onClick={handleClick}
         className={`relative inset-0 w-full h-full bg-gray-100 rounded-xl overflow-hidden transition-all ${
@@ -113,19 +89,20 @@ export default function MediaCard({
         }`}
       >
         {/* Image */}
-        {loading ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-          </div>
-        ) : error || !imageUrl ? (
+        {error || !imageUrl ? (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
             <span className="text-3xl">📷</span>
           </div>
         ) : (
           <img
             src={imageUrl}
+            srcSet={imageSrcSet}
+            sizes="(max-width: 640px) 50vw, 400px"
             alt={media.caption || 'Photo'}
             className="absolute inset-0 w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+            onError={() => setError(true)}
           />
         )}
 
