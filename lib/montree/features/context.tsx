@@ -27,14 +27,14 @@ interface FeaturesProviderProps {
 }
 
 export function FeaturesProvider({ schoolId, children }: FeaturesProviderProps) {
-  const [features, setFeatures] = useState<MontreeFeature[]>(() => {
-    // Initialize from cache synchronously to avoid flash
-    if (schoolId) {
-      return getCachedFeaturesSync(schoolId) || [];
-    }
-    return [];
+  const [cachedInit] = useState<MontreeFeature[] | null>(() => {
+    if (schoolId) return getCachedFeaturesSync(schoolId);
+    return null;
   });
-  const [loading, setLoading] = useState(true);
+  const [features, setFeatures] = useState<MontreeFeature[]>(cachedInit || []);
+  // If we hit the sync cache, don't block UI on loading state — serve cached
+  // features immediately and revalidate in the background (SWR pattern).
+  const [loading, setLoading] = useState(!cachedInit);
 
   // Fetch features when schoolId is available
   const loadFeatures = useCallback(async () => {
