@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function POST(request: NextRequest) {
   try {
@@ -95,10 +96,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build the public URL for the cropped version
-    const { data: urlData } = supabase.storage
-      .from('montree-media')
-      .getPublicUrl(croppedPath);
+    // Build the CDN-cached proxy URL for the cropped version
+    const croppedUrl = getProxyUrl(croppedPath);
 
     return NextResponse.json({
       success: true,
@@ -107,7 +106,7 @@ export async function POST(request: NextRequest) {
         width,
         height,
         file_size_bytes: file.size,
-        cropped_url: urlData.publicUrl,
+        cropped_url: croppedUrl,
         cropped_storage_path: croppedPath,
       },
     });

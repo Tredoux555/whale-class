@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
+import { getSupabase } from '@/lib/supabase-client';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // GET /api/montree/audit/photos — Fetch photos with confidence data for audit view
 export async function GET(request: NextRequest) {
@@ -244,7 +245,7 @@ export async function GET(request: NextRequest) {
         zone: photoZone,
         thumbnail_path: m.thumbnail_path || m.storage_path,
         url: (m.thumbnail_path || m.storage_path)
-          ? getPublicUrl('montree-media', m.thumbnail_path || m.storage_path)
+          ? getProxyUrl(m.thumbnail_path || m.storage_path)
           : null,
         auto_crop: m.auto_crop,
         captured_at: m.captured_at || m.created_at,

@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -90,12 +91,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('montree-media')
-      .getPublicUrl(storagePath);
-
-    const photoUrl = urlData.publicUrl;
+    // CDN-cached proxy URL (Cloudflare edge, works in China without VPN)
+    const photoUrl = getProxyUrl(storagePath);
 
     // Race condition fix: setStatus() and uploadPhoto() fire nearly simultaneously.
     // Always try UPDATE first — the status POST creates the record via UPSERT.
