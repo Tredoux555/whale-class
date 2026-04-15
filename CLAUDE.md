@@ -195,6 +195,50 @@ montree.xyz
 
 ---
 
+## RECENT STATUS (Apr 16, 2026)
+
+### ⚡ Session 26 — Bingo Phonics Tolerant Matching + Double-Header Cleanup (Apr 16, 2026)
+
+**One commit pushed to main: `df47ad4f`.**
+
+Two bugs, both surfaced while using the English Corner tracker on production.
+
+**A. Bingo Phonics tab showed 20/20 in "NOT YET" despite real class activity.**
+Root cause in `app/api/montree/dashboard/language-tracker/route.ts`: (1) client sends `?work_name=bingo-phonics-review` (URL-clean dashes) but the server ran the string verbatim through `.ilike('name', '%bingo-phonics-review%')`, which never matches the actual row "Bingo Phonics Review" (spaces). (2) the query was also restricted to `area_id = langArea.id`, so if the work lived under a custom area (Language-PhonicsFast, etc.) it was invisible.
+
+Fix — tokenize on `[-_\s]+`, escape `%_\\`, glue with `%`:
+```ts
+if (workNameParam) {
+  const tokens = workNameParam.split(/[-_\s]+/).filter(Boolean)
+    .map(t => t.replace(/[%_\\]/g, '\\$&'));
+  const pattern = `%${tokens.join('%')}%`;  // "%bingo%phonics%review%"
+  query = query.ilike('name', pattern);
+} else if (langArea) {
+  query = query.eq('area_id', langArea.id);  // Overview tab — Language only
+}
+```
+Also gated the "Language area not found" 404 on `!langArea && !workNameParam` so work_name searches still work in classrooms with no Language area seeded. Matches "Bingo Phonics Review", "Bingo (Phonics) Review", "Bingo-Phonics Review" — whatever the teacher typed when they first added the work via Photo Audit.
+
+**B. Double DashboardHeader on 3 subpages.**
+`app/montree/dashboard/layout.tsx:37` already renders `<DashboardHeader />` globally for every route under `/montree/dashboard/*`. Three pages were also importing and rendering their own, producing a visible double header stack. Fixed by removing the import + JSX from:
+- `app/montree/dashboard/language-tracker/page.tsx`
+- `app/montree/dashboard/focus/page.tsx`
+- `app/montree/dashboard/language-semester/page.tsx`
+
+Added `pt-20` to each page's inner container (compensates for the fixed-position header from the layout). Post-fix grep: only `layout.tsx` renders DashboardHeader (two other matches are comments). Audit-fix cycle ran 2 clean passes.
+
+**Key architectural pattern — never render DashboardHeader in a dashboard subpage.** The layout at `app/montree/dashboard/layout.tsx` owns it for the entire subtree. If a new dashboard subpage needs a sub-header (curriculum/child pages already do this correctly), it should be a sub-header component styled below the global one, not another `<DashboardHeader />`.
+
+**Next session priorities:**
+1. **Verify Bingo Phonics tracker on production** — hard-refresh `/montree/dashboard/language-tracker` and tap the Bingo Phonics tab. Children with Bingo Phonics photos this week should appear in "Visited". If the tab is still empty, check that a row exists: `SELECT id, name FROM montree_classroom_curriculum_works WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND name ILIKE '%bingo%phonics%';`
+2. **Verify single header** on English Corner, Focus List, Language Semester Report pages.
+3. **Run migration 177** (`review_before_process` feature flag) — still outstanding from prior session. Photo Bucket tab is gated on this.
+4. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
+5. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+6. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
+
+---
+
 ## RECENT STATUS (Apr 15, 2026)
 
 ### ⚡ Session 25 — Perf Cycle: Gallery Fetch Elimination + srcset/CDN Proxy Sweep (Apr 15, 2026)
