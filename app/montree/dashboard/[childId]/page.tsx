@@ -5,6 +5,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
@@ -15,23 +16,26 @@ import { montreeApi } from '@/lib/montree/api';
 import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
-import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
-import QuickGuideModal from '@/components/montree/child/QuickGuideModal';
-import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
-import WorkPickerModal from '@/components/montree/child/WorkPickerModal';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
-import WeekViewGuide from '@/components/montree/onboarding/WeekViewGuide';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import ChildWeeklyAdmin from '@/components/montree/child/ChildWeeklyAdmin';
-import PrintButton from '@/components/montree/child/PrintButton';
-import TellGuruCard from '@/components/montree/onboarding/TellGuruCard';
 import type { GamePlan } from '@/components/montree/child/GamePlanCard';
 import WeeklyActivitySummary from '@/components/montree/child/WeeklyActivitySummary';
 import { useFeatures } from '@/hooks/useFeatures';
-import BigMicPanel from '@/components/montree/child/BigMicPanel';
+
+// Tier 4 perf: code-split modal/onboarding/conditional components (~2.6k lines)
+// — only downloaded when user actually opens a modal or triggers onboarding.
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
+const QuickGuideModal = dynamic(() => import('@/components/montree/child/QuickGuideModal'), { ssr: false });
+const FullDetailsModal = dynamic(() => import('@/components/montree/child/FullDetailsModal'), { ssr: false });
+const WorkPickerModal = dynamic(() => import('@/components/montree/child/WorkPickerModal'), { ssr: false });
+const WeekViewGuide = dynamic(() => import('@/components/montree/onboarding/WeekViewGuide'), { ssr: false });
+const ChildWeeklyAdmin = dynamic(() => import('@/components/montree/child/ChildWeeklyAdmin'), { ssr: false });
+const PrintButton = dynamic(() => import('@/components/montree/child/PrintButton'), { ssr: false });
+const TellGuruCard = dynamic(() => import('@/components/montree/onboarding/TellGuruCard'), { ssr: false });
+const BigMicPanel = dynamic(() => import('@/components/montree/child/BigMicPanel'), { ssr: false });
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
