@@ -9,6 +9,8 @@ import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
+import { toast } from 'sonner';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', zh: '日常' },
@@ -596,9 +598,16 @@ function SummaryCard({
 
   return (
     <div>
-      <label className="text-xs text-gray-500 font-medium block mb-1">
-        {locale === 'zh' ? '本周活动' : 'This Week\'s Activities'}
-      </label>
+      <div className="flex items-center justify-between mb-1">
+        <label className="text-xs text-gray-500 font-medium">
+          {locale === 'zh' ? '本周活动' : 'This Week\'s Activities'}
+        </label>
+        <VoiceDictate
+          size="sm"
+          onAppend={(text) => onUpdate(childId, displayField, displayValue ? displayValue + ' ' + text : text)}
+          onError={(msg) => toast.error(msg)}
+        />
+      </div>
       <textarea
         value={displayValue}
         onChange={(e) => onUpdate(childId, displayField, e.target.value)}
@@ -655,9 +664,16 @@ function PlanCard({
       {/* Developmental note + additional notes */}
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-gray-500 font-medium block mb-1">
-            {locale === 'zh' ? '中文备注' : 'Developmental Note'}
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs text-gray-500 font-medium">
+              {locale === 'zh' ? '中文备注' : 'Developmental Note'}
+            </label>
+            <VoiceDictate
+              size="sm"
+              onAppend={(text) => onUpdate(childId, '_chinese', 'chinese_text', chineseNote.chinese_text ? chineseNote.chinese_text + ' ' + text : text)}
+              onError={(msg) => toast.error(msg)}
+            />
+          </div>
           <textarea
             value={chineseNote.chinese_text}
             onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
@@ -667,9 +683,16 @@ function PlanCard({
           />
         </div>
         <div>
-          <label className="text-xs text-gray-500 font-medium block mb-1">
-            {locale === 'zh' ? '备注' : 'Notes'}
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs text-gray-500 font-medium">
+              {locale === 'zh' ? '备注' : 'Notes'}
+            </label>
+            <VoiceDictate
+              size="sm"
+              onAppend={(text) => onUpdate(childId, '_notes', 'english_text', notesEntry.english_text ? notesEntry.english_text + ' ' + text : text)}
+              onError={(msg) => toast.error(msg)}
+            />
+          </div>
           <textarea
             value={notesEntry.english_text}
             onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}

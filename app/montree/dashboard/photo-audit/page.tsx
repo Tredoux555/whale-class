@@ -17,6 +17,7 @@ import ThisIsSheet, { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@
 import TellAiSheet from '@/components/montree/photo-audit/TellAiSheet';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
+import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 
 const AREAS = [
   { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
@@ -253,7 +254,14 @@ function AreaPickerWithSearch({
 
             {/* Brief description */}
             <div>
-              <label className="text-xs font-medium text-[#A1887F] mb-1 block">{t('audit.briefDescription') || 'Brief description (optional)'}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-medium text-[#A1887F]">{t('audit.briefDescription') || 'Brief description (optional)'}</label>
+                <VoiceDictate
+                  size="sm"
+                  onAppend={(text) => setAddWorkDesc((prev) => (prev ? prev + ' ' + text : text).slice(0, 500))}
+                  onError={(msg) => toast.error(msg)}
+                />
+              </div>
               <textarea
                 value={addWorkDesc}
                 onChange={e => setAddWorkDesc(e.target.value)}
@@ -2611,6 +2619,13 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         </div>
         {/* Teacher note — always at the very bottom */}
         <div className="mt-1.5 relative">
+          <div className="absolute -top-0.5 right-1 z-10">
+            <VoiceDictate
+              size="sm"
+              onAppend={(text) => handleNoteChange(noteText ? noteText + ' ' + text : text)}
+              onError={(msg) => toast.error(msg)}
+            />
+          </div>
           <textarea
             value={noteText}
             onChange={e => handleNoteChange(e.target.value)}
