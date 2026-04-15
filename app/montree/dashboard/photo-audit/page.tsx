@@ -13,6 +13,7 @@ import { montreeApi } from '@/lib/montree/api';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
+import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
 const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
@@ -46,6 +47,7 @@ interface AuditPhoto {
   scenario: string | null;
   zone: 'green' | 'amber' | 'red' | 'untagged';
   url: string | null;
+  thumbnail_path?: string | null;
   auto_crop: { x: number; y: number; width: number; height: number } | null;
   captured_at: string;
   caption: string | null;
@@ -2424,7 +2426,9 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       <div className="aspect-square bg-gray-200 cursor-pointer" onClick={onPhotoTap}>
         {photo.url ? (
           <img
-            src={photo.url}
+            src={photo.thumbnail_path ? getThumbnailUrl(photo.thumbnail_path, 240) : photo.url}
+            srcSet={photo.thumbnail_path ? getThumbnailSrcSet(photo.thumbnail_path, 240) : undefined}
+            sizes="(max-width: 640px) 33vw, 240px"
             alt={photo.work_name || 'Photo'}
             className="w-full h-full object-cover"
             loading="lazy"
