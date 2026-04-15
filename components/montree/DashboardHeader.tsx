@@ -554,7 +554,7 @@ export default function DashboardHeader() {
                     } ${student.id === childIdFromPath ? 'font-semibold text-emerald-700' : ''}`}
                   >
                     {student.photo_url ? (
-                      <img src={student.photo_url} alt="" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+                      <img src={student.photo_url} alt="" loading="lazy" decoding="async" className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
                     ) : (
                       <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
                         {student.name.charAt(0).toUpperCase()}

@@ -72,6 +72,8 @@ export async function GET(request: NextRequest) {
       on_track: onTrack,
       total,
       children: enriched,
+    }, {
+      headers: { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=300' },
     });
   } catch (error) {
     console.error('[Paperwork] GET error:', error);

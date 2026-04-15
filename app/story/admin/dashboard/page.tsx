@@ -132,24 +132,42 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (activeTab === 'online') {
-      const interval = setInterval(loadOnlineUsers, 5000);
-      return () => clearInterval(interval);
+      const tick = () => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+        loadOnlineUsers();
+      };
+      const interval = setInterval(tick, 5000);
+      const onVis = () => { if (document.visibilityState === 'visible') loadOnlineUsers(); };
+      document.addEventListener('visibilitychange', onVis);
+      return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVis); };
     }
   }, [activeTab, loadOnlineUsers]);
 
   useEffect(() => {
     if (activeTab === 'logs') {
       loadLoginLogs();
-      const interval = setInterval(loadLoginLogs, 10000);
-      return () => clearInterval(interval);
+      const tick = () => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+        loadLoginLogs();
+      };
+      const interval = setInterval(tick, 10000);
+      const onVis = () => { if (document.visibilityState === 'visible') loadLoginLogs(); };
+      document.addEventListener('visibilitychange', onVis);
+      return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVis); };
     }
   }, [activeTab, loadLoginLogs]);
 
   useEffect(() => {
     if (activeTab === 'messages') {
       loadMessages();
-      const interval = setInterval(() => loadMessages(), 10000);
-      return () => clearInterval(interval);
+      const tick = () => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+        loadMessages();
+      };
+      const interval = setInterval(tick, 10000);
+      const onVis = () => { if (document.visibilityState === 'visible') loadMessages(); };
+      document.addEventListener('visibilitychange', onVis);
+      return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVis); };
     }
   }, [showExpired, activeTab, loadMessages]);
 

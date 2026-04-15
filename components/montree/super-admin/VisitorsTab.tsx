@@ -151,10 +151,20 @@ export default function VisitorsTab({ saToken }: VisitorsTabProps) {
     return () => abortRef.current?.abort();
   }, [fetchVisitors]);
 
-  // Auto-refresh every 60s
+  // Auto-refresh every 60s (skip when tab is hidden)
   useEffect(() => {
-    const interval = setInterval(fetchVisitors, 60_000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+      fetchVisitors();
+    }, 60_000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchVisitors();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [fetchVisitors]);
 
   return (

@@ -122,10 +122,19 @@ export default function ActivityPage() {
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
       fetchActivity();
     }, 30000); // Refresh every 30 seconds
 
-    return () => clearInterval(interval);
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchActivity();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [autoRefresh]);
 
   const checkAuth = () => {
