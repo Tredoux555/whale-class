@@ -196,7 +196,11 @@ export async function GET(request: NextRequest) {
     const weeksBehind = Math.max(0, targetWeek - currentPaperworkWeek);
 
     const langThisWeek = langPhotosThisWeek.get(c.id) || 0;
-    const noLanguage = langThisWeek === 0;
+    // Only penalize "no language this week" if the classroom actually has a
+    // Language area configured with works — otherwise every child would eat
+    // the flat +5 and the badge would mis-fire classroom-wide.
+    const langAreaExists = langWorkIds.size > 0;
+    const noLanguage = langAreaExists && langThisWeek === 0;
     const staleWork = daysSincePhoto >= 14 ? 1 : 0;
 
     const score =

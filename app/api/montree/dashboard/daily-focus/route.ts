@@ -43,7 +43,7 @@ async function loadFocusList(classroomId: string, focusDate: string) {
     .order('selected_at', { ascending: true });
 
   const focus = (rawFocus || []) as FocusRow[];
-  if (focus.length === 0) return { focus: [], children: [] };
+  if (focus.length === 0) return { focus: [], children: [], confirmedCount: 0 };
 
   const childIds = focus.map(f => f.child_id);
   const { data: rawChildren } = await supabase
@@ -69,7 +69,9 @@ async function loadFocusList(classroomId: string, focusDate: string) {
     };
   });
 
-  return { focus, children: enriched };
+  const confirmedCount = enriched.filter(c => c.confirmed).length;
+
+  return { focus, children: enriched, confirmedCount };
 }
 
 // ─── GET ───
@@ -81,9 +83,7 @@ export async function GET(request: NextRequest) {
   }
 
   const focusDate = request.nextUrl.searchParams.get('date') || todayISODate();
-  const { children } = await loadFocusList(auth.classroomId, focusDate);
-
-  const confirmedCount = children.filter(c => c.confirmed).length;
+  const { children, confirmedCount } = await loadFocusList(auth.classroomId, focusDate);
 
   return NextResponse.json({
     focus_date: focusDate,
@@ -147,8 +147,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to add to focus list' }, { status: 500 });
   }
 
-  const { children } = await loadFocusList(auth.classroomId, focusDate);
-  return NextResponse.json({ focus_date: focusDate, children, total: children.length });
+  const { children, confirmedCount } = await loadFocusList(auth.classroomId, focusDate);
+  return NextResponse.json({
+    focus_date: focusDate,
+    children,
+    total: children.length,
+    confirmed_count: confirmedCount,
+  });
 }
 
 // ─── DELETE: remove child ───
@@ -185,8 +190,13 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to remove from focus list' }, { status: 500 });
   }
 
-  const { children } = await loadFocusList(auth.classroomId, focusDate);
-  return NextResponse.json({ focus_date: focusDate, children, total: children.length });
+  const { children, confirmedCount } = await loadFocusList(auth.classroomId, focusDate);
+  return NextResponse.json({
+    focus_date: focusDate,
+    children,
+    total: children.length,
+    confirmed_count: confirmedCount,
+  });
 }
 
 // ─── PATCH: manual confirm ───
@@ -227,6 +237,11 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to confirm' }, { status: 500 });
   }
 
-  const { children } = await loadFocusList(auth.classroomId, focusDate);
-  return NextResponse.json({ focus_date: focusDate, children, total: children.length });
+  const { children, confirmedCount } = await loadFocusList(auth.classroomId, focusDate);
+  return NextResponse.json({
+    focus_date: focusDate,
+    children,
+    total: children.length,
+    confirmed_count: confirmedCount,
+  });
 }

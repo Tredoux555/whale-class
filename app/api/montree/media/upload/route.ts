@@ -222,7 +222,8 @@ export async function POST(request: NextRequest) {
       if (child_ids && Array.isArray(child_ids)) {
         for (const cid of child_ids) if (!taggedChildIds.includes(cid)) taggedChildIds.push(cid);
       }
-      if (taggedChildIds.length > 0 && classroom_id) {
+      const effectiveClassroomId = classroom_id || auth.classroomId || null;
+      if (taggedChildIds.length > 0 && effectiveClassroomId) {
         const focusDate = new Date().toISOString().slice(0, 10);
         const via = child_ids && child_ids.length > 1 ? 'group_photo' : 'photo';
         supabase
@@ -232,7 +233,7 @@ export async function POST(request: NextRequest) {
             confirmed_via: via,
             confirmed_media_id: media.id,
           })
-          .eq('classroom_id', classroom_id)
+          .eq('classroom_id', effectiveClassroomId)
           .eq('focus_date', focusDate)
           .in('child_id', taggedChildIds)
           .is('confirmed_at', null)
