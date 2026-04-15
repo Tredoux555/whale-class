@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ visited: [], notYet: [], weekStart: '', weekEnd: '' });
   }
 
-  // 2. Get language area ID
+  // 2. Get language area ID (only required for the Overview tab — when tracking a
+  // specific work by name the work may live outside Language area)
   const { data: rawLangArea } = await supabase
     .from('montree_classroom_curriculum_areas')
     .select('id')
@@ -65,20 +66,34 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
 
   const langArea = rawLangArea as AreaRow | null;
-  if (!langArea) {
+  if (!langArea && !workNameParam) {
     return NextResponse.json({ error: 'Language area not found' }, { status: 404 });
   }
 
-  // 3. Get all language work IDs + names for this classroom
+  // 3. Get work IDs + names for this classroom.
+  // Default: restrict to Language area (used by the Overview tab).
+  // If work_name param is set (e.g. ?work_name=bingo-phonics-review), search
+  // ALL areas — the tracked work might live under a different area (Language,
+  // Language-PhonicsFast, or a custom area entirely).
   let query = supabase
     .from('montree_classroom_curriculum_works')
     .select('id, name, name_chinese')
-    .eq('classroom_id', classroomId)
-    .eq('area_id', langArea.id);
+    .eq('classroom_id', classroomId);
 
-  // If work_name param is set, filter to that specific work (case-insensitive)
   if (workNameParam) {
-    query = query.ilike('name', `%${workNameParam}%`);
+    // Tolerant matching: split on dash/underscore/whitespace, escape SQL
+    // wildcards, then glue with '%' so "bingo-phonics-review" matches
+    // "Bingo Phonics Review", "Bingo (Phonics) Review", "Bingo-Phonics Review",
+    // etc. This way the URL stays clean and the DB naming is flexible.
+    const tokens = workNameParam
+      .split(/[-_\s]+/)
+      .filter(Boolean)
+      .map(t => t.replace(/[%_\\]/g, '\\$&'));
+    const pattern = `%${tokens.join('%')}%`;
+    query = query.ilike('name', pattern);
+  } else if (langArea) {
+    // Overview tab — just Language area works
+    query = query.eq('area_id', langArea.id);
   }
 
   const { data: rawLangWorks } = await query;

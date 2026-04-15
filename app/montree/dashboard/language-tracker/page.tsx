@@ -8,7 +8,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n/context';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
-import DashboardHeader from '@/components/montree/DashboardHeader';
 import PaperworkPanel from '@/components/montree/PaperworkPanel';
 import Link from 'next/link';
 
@@ -145,7 +144,6 @@ export default function LanguageTrackerPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
       <div className="max-w-2xl mx-auto px-4 pt-20 pb-24">
         {/* Header */}
         <div className="mb-6">

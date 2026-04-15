@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation';
 import { getSession, recoverSession, type MontreeSession } from '@/lib/montree/auth';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { useI18n } from '@/lib/montree/i18n/context';
-import DashboardHeader from '@/components/montree/DashboardHeader';
 
 interface Child {
   id: string;
@@ -139,9 +138,7 @@ export default function LanguageSemesterPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader />
-
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className="max-w-3xl mx-auto px-4 py-6 pt-20">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
             {locale === 'zh' ? '📄 语言学期报告' : '📄 Language Semester Report'}
