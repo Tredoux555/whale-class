@@ -490,8 +490,33 @@ export default function CameraCapture({
   const isCaptured = cameraState === 'captured';
   const previewUrl = captureMode === 'photo' ? capturedPhoto?.dataUrl : capturedVideo?.dataUrl;
 
+  // Shutter button JSX — identical size in portrait and landscape (iOS-native)
+  const shutterButton = (
+    <button
+      onClick={handleMainButton}
+      disabled={cameraState === 'initializing'}
+      className="w-[72px] h-[72px] rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-30 disabled:pointer-events-none bg-transparent border-[3px] border-white"
+    >
+      {isRecording ? (
+        <div className="w-6 h-6 bg-red-500 rounded-[4px]" />
+      ) : captureMode === 'video' ? (
+        <div className="w-[58px] h-[58px] rounded-full bg-red-500" />
+      ) : (
+        <div className="w-[62px] h-[62px] rounded-full bg-white" />
+      )}
+    </button>
+  );
+
+  const albumIcon = (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+      <circle cx="8.5" cy="8.5" r="1.5" />
+      <polyline points="21 15 16 10 5 21" />
+    </svg>
+  );
+
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col">
+    <div className={`fixed inset-0 bg-black z-50 flex ${isLandscape ? 'flex-row' : 'flex-col'}`}>
       {/* Hidden canvas for capture */}
       <canvas ref={canvasRef} className="hidden" />
       {/* Hidden file input for album selection */}
@@ -551,7 +576,7 @@ export default function CameraCapture({
             className="absolute z-30 w-11 h-11 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-full text-white active:scale-90 transition-transform"
             style={{ top: 'max(16px, env(safe-area-inset-top, 16px))', right: 16 }}
           >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isLandscape ? 'rotate-90' : ''}>
               <path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" />
               <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" />
               <circle cx="12" cy="12" r="3" />
@@ -571,32 +596,99 @@ export default function CameraCapture({
         )}
       </div>
 
-      {/* ═══ Controls — bottom bar ═══ */}
+      {/* ═══ Controls — bottom bar (portrait) or right rail (landscape) ═══ */}
       <div
-        className="bg-black"
-        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }}
+        className={`bg-black ${isLandscape ? 'flex flex-col w-[140px]' : ''}`}
+        style={isLandscape
+          ? { paddingRight: 'max(8px, env(safe-area-inset-right, 8px))' }
+          : { paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }
+        }
       >
         {isCaptured ? (
           /* ── Post-capture: Retake / Use Photo ── */
-          <div className={`flex items-center justify-between px-6 ${isLandscape ? 'py-2' : 'py-4'}`}>
-            <button
-              onClick={retake}
-              className="text-white font-medium text-base active:opacity-70 transition-opacity"
-            >
-              {t('camera.retake')}
-            </button>
+          isLandscape ? (
+            <div className="flex flex-col-reverse items-center justify-between flex-1 py-8">
+              <button
+                onClick={retake}
+                className="text-white font-medium text-base active:opacity-70 transition-opacity rotate-90"
+              >
+                {t('camera.retake')}
+              </button>
+              <button
+                onClick={confirmCapture}
+                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity rotate-90"
+              >
+                {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between px-6 py-4">
+              <button
+                onClick={retake}
+                className="text-white font-medium text-base active:opacity-70 transition-opacity"
+              >
+                {t('camera.retake')}
+              </button>
+              <button
+                onClick={confirmCapture}
+                className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity"
+              >
+                {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
+              </button>
+            </div>
+          )
+        ) : isLandscape ? (
+          /* ── Landscape live controls — vertical rail ── */
+          <div className="flex flex-col items-center justify-between flex-1 py-6">
+            {/* Mode toggle — top of rail */}
+            {allowVideo && !isRecording ? (
+              <div className="flex flex-col gap-4 items-center">
+                <button
+                  onClick={() => handleModeChange('photo')}
+                  className={`text-sm font-semibold transition-colors rotate-90 ${
+                    captureMode === 'photo' ? 'text-yellow-400' : 'text-white/50'
+                  }`}
+                >
+                  {t('camera.photo').toUpperCase()}
+                </button>
+                <button
+                  onClick={() => handleModeChange('video')}
+                  className={`text-sm font-semibold transition-colors rotate-90 ${
+                    captureMode === 'video' ? 'text-yellow-400' : 'text-white/50'
+                  }`}
+                >
+                  {t('camera.video').toUpperCase()}
+                </button>
+              </div>
+            ) : <div />}
 
-            <button
-              onClick={confirmCapture}
-              className="text-yellow-400 font-semibold text-base active:opacity-70 transition-opacity"
-            >
-              {t('camera.use')} {captureMode === 'photo' ? t('camera.photo') : t('camera.video')}
-            </button>
+            {/* Shutter — center of rail */}
+            {shutterButton}
+
+            {/* Cancel + Album — bottom of rail */}
+            <div className="flex flex-col items-center gap-3">
+              {!isRecording && captureMode === 'photo' && (
+                <button
+                  onClick={handleNativeAlbumPick}
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors rotate-90"
+                  title={t('camera.album')}
+                >
+                  {albumIcon}
+                </button>
+              )}
+              <button
+                onClick={onCancel}
+                disabled={isRecording}
+                className="text-white text-[15px] font-medium disabled:opacity-30 active:opacity-70 transition-opacity rotate-90"
+              >
+                {t('common.cancel') || 'Cancel'}
+              </button>
+            </div>
           </div>
         ) : (
-          /* ── Live camera controls ── */
+          /* ── Portrait live controls — bottom bar ── */
           <div className="flex flex-col items-center">
-            {/* Mode toggle — above capture button (iOS-style bottom position) */}
+            {/* Mode toggle — above capture button */}
             {allowVideo && !isRecording && (
               <div className="flex gap-6 py-2">
                 <button
@@ -618,9 +710,8 @@ export default function CameraCapture({
               </div>
             )}
 
-            {/* Main row: Cancel / Album — [Capture] */}
-            <div className={`flex items-center w-full px-6 ${isLandscape ? 'py-2' : 'py-3'}`}>
-              {/* Left: Cancel + Album */}
+            {/* Main row: Cancel / Album — [Capture] — spacer */}
+            <div className="flex items-center w-full px-6 py-3">
               <div className="flex items-center gap-3 flex-1">
                 <button
                   onClick={onCancel}
@@ -635,45 +726,13 @@ export default function CameraCapture({
                     className="w-9 h-9 flex items-center justify-center rounded-full text-white/70 active:text-white transition-colors"
                     title={t('camera.album')}
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
+                    {albumIcon}
                   </button>
                 )}
               </div>
 
-              {/* Center: Capture button — THE big button */}
-              <button
-                onClick={handleMainButton}
-                disabled={cameraState === 'initializing'}
-                className={`
-                  ${isLandscape ? 'w-[60px] h-[60px]' : 'w-[72px] h-[72px]'}
-                  rounded-full flex items-center justify-center
-                  transition-transform active:scale-95
-                  disabled:opacity-30 disabled:pointer-events-none
-                  ${isRecording
-                    ? 'bg-transparent border-[3px] border-white'
-                    : captureMode === 'video'
-                      ? 'bg-transparent border-[3px] border-white'
-                      : 'bg-transparent border-[3px] border-white'
-                  }
-                `}
-              >
-                {isRecording ? (
-                  /* Stop: red rounded square */
-                  <div className={`${isLandscape ? 'w-5 h-5' : 'w-6 h-6'} bg-red-500 rounded-[4px]`} />
-                ) : captureMode === 'video' ? (
-                  /* Video ready: red circle */
-                  <div className={`${isLandscape ? 'w-[48px] h-[48px]' : 'w-[58px] h-[58px]'} rounded-full bg-red-500`} />
-                ) : (
-                  /* Photo: white circle inside ring */
-                  <div className={`${isLandscape ? 'w-[50px] h-[50px]' : 'w-[62px] h-[62px]'} rounded-full bg-white`} />
-                )}
-              </button>
+              {shutterButton}
 
-              {/* Right: spacer for balance */}
               <div className="flex-1" />
             </div>
           </div>
