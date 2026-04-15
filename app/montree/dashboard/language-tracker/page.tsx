@@ -317,7 +317,8 @@ export default function LanguageTrackerPage() {
               </button>
             </div>
             </>
-          )}
+            )}
+          </>
         )}
 
         {/* BINGO PHONICS TAB */}
