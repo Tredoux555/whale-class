@@ -450,6 +450,19 @@ export default function PhotoAuditPage() {
   const [dateRange, setDateRange] = useState<DateRange>('7d');
   const { isEnabled } = useFeaturesContext();
   const reviewBeforeProcess = isEnabled('review_before_process');
+
+  // When review-before-process is on, default to the Photo Bucket tab.
+  // Only flips on initial load (when still at the hardcoded 'all' default).
+  const didInitZoneRef = useRef(false);
+  useEffect(() => {
+    if (didInitZoneRef.current) return;
+    if (reviewBeforeProcess && zone === 'all') {
+      setZone('pending_review');
+      didInitZoneRef.current = true;
+    } else if (reviewBeforeProcess !== undefined) {
+      didInitZoneRef.current = true;
+    }
+  }, [reviewBeforeProcess, zone]);
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
 
@@ -1766,8 +1779,8 @@ export default function PhotoAuditPage() {
   // 5-tab layout: Photo Review | Today (All) | Works Review | Parent Reports | Weekly Admin
   // (+ Pending Review tab when feature flag is on)
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
-    ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '待处理' : 'Pending Review', color: 'bg-amber-100 text-amber-800', count: null }] : []),
-    { key: 'all', label: locale === 'zh' ? '照片审核' : 'Photo Review', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
+    ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
+    { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
     { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
     { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
     { key: 'parent_reports', label: locale === 'zh' ? '家长报告' : 'Parent Reports', color: 'bg-violet-100 text-violet-800', count: null },
@@ -1859,9 +1872,19 @@ export default function PhotoAuditPage() {
         )}
       </div>
 
-      {/* ─── Pending Review (review-before-process workflow) ─── */}
+      {/* ─── Photo Bucket (review-before-process workflow) ─── */}
       {zone === 'pending_review' && (
         <div className="p-3 sm:p-4">
+          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <h2 className="text-sm font-semibold text-amber-900 mb-1">
+              {locale === 'zh' ? '选择要保留的照片' : 'Select the photos you want to keep'}
+            </h2>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              {locale === 'zh'
+                ? '照片按拍摄顺序排列,尚未经过 AI 分析。选择您想保留的照片,然后点击"分析并分类"让 AI 为您识别。不需要的照片可以选中后删除。'
+                : 'Photos are listed in the order they were taken — no AI has run on them yet. Select the ones you want to keep, then tap "Process selected" to run the AI. Delete the rest.'}
+            </p>
+          </div>
           <PendingReviewPanel />
         </div>
       )}
