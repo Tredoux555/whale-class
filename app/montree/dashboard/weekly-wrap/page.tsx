@@ -11,9 +11,10 @@ import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import PhotoCropper from '@/components/montree/shared/PhotoCropper';
-import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 
+// Tier 7 perf: modal-gated, code-split.
+const PhotoCropper = dynamic(() => import('@/components/montree/shared/PhotoCropper'), { ssr: false });
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
 const TeacherReportView = dynamic(
   () => import('@/components/montree/reports/TeacherReportView'),
   { ssr: false }

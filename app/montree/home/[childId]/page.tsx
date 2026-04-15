@@ -4,15 +4,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useParams } from 'next/navigation';
 import { getSession, recoverSession, isHomeschoolParent, type MontreeSession } from '@/lib/montree/auth';
 import { BIO } from '@/lib/montree/bioluminescent-theme';
-import PortalChat from '@/components/montree/home/PortalChat';
-import ShelfView from '@/components/montree/home/ShelfView';
 import BottomTabs from '@/components/montree/home/BottomTabs';
 import AmbientParticles from '@/components/montree/home/AmbientParticles';
 import ErrorBoundary from '@/components/montree/ErrorBoundary';
 import { useI18n } from '@/lib/montree/i18n';
+
+// Tier 7 perf: only one tab (portal|shelf) renders at a time. Defer ~1.5k lines.
+const PortalChat = dynamic(() => import('@/components/montree/home/PortalChat'), { ssr: false });
+const ShelfView = dynamic(() => import('@/components/montree/home/ShelfView'), { ssr: false });
 
 interface Child {
   id: string;
