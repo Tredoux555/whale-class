@@ -3,6 +3,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { getSession } from '@/lib/montree/auth';
@@ -19,9 +20,11 @@ import {
   failTask,
 } from '@/lib/montree/background-task-store';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
-import EventPicker from '@/components/montree/media/EventPicker';
 import DailyLanguageSix from '@/components/montree/capture/DailyLanguageSix';
 import { useFeatures } from '@/hooks/useFeatures';
+
+// Tier 5 perf: EventPicker is modal-gated, code-split it.
+const EventPicker = dynamic(() => import('@/components/montree/media/EventPicker'), { ssr: false });
 
 // ============================================
 // TYPES
