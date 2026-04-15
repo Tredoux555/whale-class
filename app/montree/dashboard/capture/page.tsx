@@ -21,6 +21,7 @@ import {
 } from '@/lib/montree/background-task-store';
 import type { MontreeChild, MontreeEvent, CapturedPhoto, CapturedVideo, CapturedMedia } from '@/lib/montree/media/types';
 import DailyLanguageSix from '@/components/montree/capture/DailyLanguageSix';
+import TodaysFocusStrip from '@/components/montree/focus/TodaysFocusStrip';
 import { useFeatures } from '@/hooks/useFeatures';
 
 // Tier 5 perf: EventPicker is modal-gated, code-split it.
@@ -460,6 +461,11 @@ function CaptureContent() {
             🎉 {t('events.selectEvent')}
           </button>
         )}
+      </div>
+
+      {/* Today's Focus strip — morning pre-selected kids, confirmed when photo lands */}
+      <div className="px-3 pt-2 pb-0 relative z-10">
+        <TodaysFocusStrip compact />
       </div>
 
       {/* Daily Language 6 — recommendations for language area observation (feature-gated) */}

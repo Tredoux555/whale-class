@@ -214,6 +214,38 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Auto-confirm today's focus list rows for any child tagged in this photo.
+    // Fire-and-forget — never fail the upload response on this.
+    try {
+      const taggedChildIds: string[] = [];
+      if (child_id) taggedChildIds.push(child_id);
+      if (child_ids && Array.isArray(child_ids)) {
+        for (const cid of child_ids) if (!taggedChildIds.includes(cid)) taggedChildIds.push(cid);
+      }
+      if (taggedChildIds.length > 0 && classroom_id) {
+        const focusDate = new Date().toISOString().slice(0, 10);
+        const via = child_ids && child_ids.length > 1 ? 'group_photo' : 'photo';
+        supabase
+          .from('montree_daily_focus')
+          .update({
+            confirmed_at: new Date().toISOString(),
+            confirmed_via: via,
+            confirmed_media_id: media.id,
+          })
+          .eq('classroom_id', classroom_id)
+          .eq('focus_date', focusDate)
+          .in('child_id', taggedChildIds)
+          .is('confirmed_at', null)
+          .then(({ error: focusError }) => {
+            if (focusError) {
+              console.error('[DailyFocus] Auto-confirm error:', focusError.message);
+            }
+          });
+      }
+    } catch (focusErr) {
+      console.error('[DailyFocus] Auto-confirm exception:', focusErr);
+    }
+
     // Build URL for client use (Guru image upload expects data.url)
     const url = getProxyUrl(storagePath);
 

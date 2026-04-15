@@ -39,6 +39,7 @@ const EvidencePanel = dynamic(() => import('@/components/montree/EvidencePanel')
 const PaperworkPanel = dynamic(() => import('@/components/montree/PaperworkPanel'), { ssr: false });
 const DailyBriefPanel = dynamic(() => import('@/components/montree/DailyBriefPanel'), { ssr: false });
 const BirthdayBanner = dynamic(() => import('@/components/montree/BirthdayBanner'), { ssr: false });
+const TodaysFocusStrip = dynamic(() => import('@/components/montree/focus/TodaysFocusStrip'), { ssr: false });
 
 
 interface Child {
@@ -403,6 +404,11 @@ export default function DashboardPage() {
             </div>
           ) : (
             <>
+              {/* ── Today's Focus strip — hidden until teacher picks children ── */}
+              <div className="mb-2">
+                <TodaysFocusStrip compact />
+              </div>
+
               {/* ── Search Bar ── */}
               <div className="mb-2">
                 <div className="relative">
