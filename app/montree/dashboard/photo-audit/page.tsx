@@ -1828,15 +1828,12 @@ export default function PhotoAuditPage() {
 
   const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'today_all';
 
-  // 5-tab layout: Photo Review | Today (All) | Works Review | Parent Reports | Weekly Admin
-  // (+ Pending Review tab when feature flag is on)
+  // 2-tab layout: Photo Bucket (pre-AI triage) + Confirm (needs review).
+  // Works Review / Parent Reports / Weekly Admin moved to the ⋯ menu —
+  // they're reporting functions, not photo-auditing functions.
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
-    { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
-    { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
-    { key: 'parent_reports', label: locale === 'zh' ? '家长报告' : 'Parent Reports', color: 'bg-violet-100 text-violet-800', count: null },
-    { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
   ];
 
   // ─── JSX ───
