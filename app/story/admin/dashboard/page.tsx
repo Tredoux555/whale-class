@@ -20,10 +20,47 @@ import { MessagesTab } from './components/MessagesTab';
 import { VaultTab } from './components/VaultTab';
 import { FilesTab } from './components/FilesTab';
 import { SystemControlsTab } from './components/SystemControlsTab';
+import { Screensaver } from './components/Screensaver';
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>('online');
   const [isLoading, setIsLoading] = useState(true);
+
+  // Secret screensaver: whenever the tab loses visibility for more than a
+  // moment, arm the lock. When the tab comes back, show the fake Montree
+  // roster. Tapping MaoMao unlocks. Everyone else sees a boring classroom.
+  const [isLocked, setIsLocked] = useState(false);
+  useEffect(() => {
+    let hiddenAt: number | null = null;
+    const GRACE_MS = 800; // ignore instant tab-switch flickers
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now();
+      } else if (document.visibilityState === 'visible') {
+        if (hiddenAt !== null && Date.now() - hiddenAt > GRACE_MS) {
+          setIsLocked(true);
+        }
+        hiddenAt = null;
+      }
+    };
+    const onBlur = () => { hiddenAt = Date.now(); };
+    const onFocus = () => {
+      if (hiddenAt !== null && Date.now() - hiddenAt > GRACE_MS) {
+        setIsLocked(true);
+      }
+      hiddenAt = null;
+    };
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('blur', onBlur);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
 
   const { getSession, verifySession, handleLogout } = useAuthSession();
   const { onlineUsers, onlineCount, totalUsers, loadOnlineUsers } = useOnlineUsers(getSession);
@@ -326,6 +363,8 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {isLocked && <Screensaver onUnlock={() => setIsLocked(false)} />}
     </div>
   );
 }
