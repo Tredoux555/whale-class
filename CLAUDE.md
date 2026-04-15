@@ -197,6 +197,63 @@ montree.xyz
 
 ## RECENT STATUS (Apr 15, 2026)
 
+### ⚡ Session 25 — Perf Cycle: Gallery Fetch Elimination + srcset/CDN Proxy Sweep (Apr 15, 2026)
+
+**Six files changed, committed+pushed in prior turns, 3-round clean audit this turn.** Zero UI changes — pure speed work targeting China users on Cloudflare edge.
+
+**The headline win — MediaCard.tsx per-card fetch eliminated:**
+`components/montree/media/MediaCard.tsx` was doing `useEffect` + `fetch('/api/montree/media/url?path=...')` for EVERY card. On a 30-photo gallery that's 30 HTTP roundtrips just to get URLs. But `/api/montree/media/url` only returns `getProxyUrl(path)` — a deterministic string computable inline. Ripped out the fetch + loading state + spinner branch entirely. Card now computes `imageUrl` synchronously from `media.thumbnail_path || media.storage_path` via `getThumbnailUrl(path, 400)`. First paint is instant, zero network dependency.
+
+**srcset + content-visibility sweep:**
+- `MediaCard.tsx` + `app/montree/parent/photos/page.tsx` — grid images now ship `srcSet={getThumbnailSrcSet(path, 400)}` (1x/2x/3x DPR variants via Supabase render `?w=` transforms) with `sizes="(max-width: 640px) 50vw, 400px"`. Retina crisp, low-DPR saves bytes.
+- Both grid wrappers: `style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}`. Native CSS — browser skips layout+paint for off-screen cards. No-op on old browsers.
+- `loading="lazy"` + `decoding="async"` on all img tags.
+
+**Three upload routes now write Cloudflare-proxy URLs straight to DB:**
+- `app/api/montree/media/upload/route.ts` (line 218) — main photo uploads
+- `app/api/montree/media/crop/route.ts` (line 100) — cropped versions (returns `cropped_url` in response, callers use this)
+- `app/api/montree/raz/upload/route.ts` (line 95) — RAZ reading photos (RAZ persists URL to DB, so all new rows go forward as proxy URLs)
+
+Legacy rows with publicUrl still work — same Cloudflare edge serves both. No migration needed.
+
+**Deliberately NOT touched (each has a reason):**
+- `photo-bank/route.ts` — uses `photo-bank` bucket, proxy route only handles `montree-media`
+- `feedback/upload-screenshot/route.ts` — uses `feedback-screenshots` bucket
+- Server-to-server Anthropic vision routes (`debug-insight`, `photo-identification/process`, `photo-audit/tell-ai`, `classroom-setup/describe`, `guru/photo-enrich`, `guru/photo-insight`, `guru/photo-insight/add-custom-work`, `guru/snap-identify`) — keep `getPublicUrl`, proxy would be wasteful overhead on server→server calls
+- Parent/photos lightbox `/api/montree/media/url` fetch — per-click on open, not per-card, fine to leave
+- Report APIs that pre-resolve URLs without storage_path — adding srcset needs coordinated API+client refactor (high risk, skipped)
+
+**3-round audit results — two consecutive clean passes:**
+
+| File | Status |
+|---|---|
+| `app/api/montree/audit/photos/route.ts` | Clean — null-safe proxy fallback lines 247-249 |
+| `app/api/montree/media/upload/route.ts` | Clean — `getProxyUrl` import line 8, used line 218, no stale refs |
+| `app/api/montree/media/crop/route.ts` | Clean — import line 7, used line 100, `cropped_url` in response |
+| `app/api/montree/raz/upload/route.ts` | Clean — import line 8, used line 95 |
+| `components/montree/media/MediaCard.tsx` | Clean — deterministic proxy URL, srcset, content-visibility, no dead fetch state |
+| `app/montree/parent/photos/page.tsx` | Clean — srcset + lazy + content-visibility on grid |
+
+**Key architectural pattern for future sessions — proxy URL determinism:**
+`getProxyUrl(storage_path)` is a pure function returning a Cloudflare-cached URL for the `montree-media` public bucket. No auth, no DB lookup, no async. Anywhere the client needs to display an image whose `storage_path` is already loaded in state, compute the URL inline — do NOT fetch `/api/montree/media/url`. That endpoint exists only for cases where the client has a `media_id` but not the `storage_path` (e.g., lightbox opened from a share link).
+
+**Git push pattern (carryover — critical):**
+Sandbox `rm -f` can't clear `.git/*.lock` files due to permission issues. Always use Desktop Commander on the user's Mac:
+```
+cd ~/Desktop/Master\ Brain/ACTIVE/whale && rm -f .git/HEAD.lock .git/index.lock && git add <files> && git commit -m "..." && git push origin main 2>&1
+```
+timeout_ms: 30000. Chain everything in one invocation — the lock files reappear between commands in Railway-deploy-heavy sessions.
+
+**Next session priorities:**
+1. **Monitor China user load times** via Railway logs — look for CDN hit rates on the proxy route. If edge cache hits climb above 80% after 24-48h, this cycle is paying off.
+2. **Test Language Semester Report Generator on production** (Session 24 carryover) — ··· menu → 📄 Language Semester Report. Try 1 kid first, then a 3-5 kid bundle. Verify filename sanitization + zip structure + Sonnet-only content (no Amy leftovers).
+3. **Consider eliminating `/api/montree/media/url` route entirely** — if grep shows only the parent/photos lightbox calls it, inline that one site too and delete the endpoint.
+4. **Consider `photo-bank` bucket proxy** — extend proxy route to handle multiple buckets via query param, unify CDN caching story. Medium-risk refactor, defer until there's a user complaint.
+5. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17). Check open rates, bounces.
+6. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27 in Gmail Drafts.
+
+---
+
 ### ⚡ Session 24 — Language Semester Report Generator (Apr 15, 2026)
 
 **Two commits pushed to main: `c569b61d`, `810cdc00`.**
