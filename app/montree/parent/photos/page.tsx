@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
+import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 interface Photo {
   id: string;
@@ -176,12 +177,25 @@ function ParentPhotosContent() {
                   key={photo.id}
                   onClick={() => handlePhotoClick(photo)}
                   className="aspect-square bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+                  style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 200px' }}
                 >
-                  {photo.thumbnail_url ? (
+                  {photo.storage_path ? (
+                    <img
+                      src={getThumbnailUrl(photo.storage_path, 400)}
+                      srcSet={getThumbnailSrcSet(photo.storage_path, 400)}
+                      sizes="(max-width: 640px) 50vw, 400px"
+                      alt={photo.caption || 'Photo'}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : photo.thumbnail_url ? (
                     <img
                       src={photo.thumbnail_url}
                       alt={photo.caption || 'Photo'}
                       className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
