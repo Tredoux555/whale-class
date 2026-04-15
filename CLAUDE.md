@@ -229,13 +229,16 @@ Added `pt-20` to each page's inner container (compensates for the fixed-position
 
 **Key architectural pattern — never render DashboardHeader in a dashboard subpage.** The layout at `app/montree/dashboard/layout.tsx` owns it for the entire subtree. If a new dashboard subpage needs a sub-header (curriculum/child pages already do this correctly), it should be a sub-header component styled below the global one, not another `<DashboardHeader />`.
 
+**Production verification (Apr 16, post-deploy):**
+- ✅ Confirmed "Bingo Phonics Review" exists as a curriculum row: `fb96b2a6-de3e-4d07-9972-56e3fba5c5c3`, under the standard **Language** area (`area_key='language'`, area id `b6ccda99-e1ef-47f5-aab6-5e8bc041082e`). Primary bug was just the dash-vs-space `ilike` mismatch — the tolerant tokenizer alone fixed it. The cross-area search was defense-in-depth and didn't need to kick in for this work, but remains correct behavior for any future custom-area works.
+- ✅ English Corner → Bingo Phonics tab on production: **11 Visited / 9 Not Yet**. Amy and Eric showing 1 session Tue with day badges.
+- ✅ Single header on English Corner, Focus List, and Language Semester Report pages.
+
 **Next session priorities:**
-1. **Verify Bingo Phonics tracker on production** — hard-refresh `/montree/dashboard/language-tracker` and tap the Bingo Phonics tab. Children with Bingo Phonics photos this week should appear in "Visited". If the tab is still empty, check that a row exists: `SELECT id, name FROM montree_classroom_curriculum_works WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND name ILIKE '%bingo%phonics%';`
-2. **Verify single header** on English Corner, Focus List, Language Semester Report pages.
-3. **Run migration 177** (`review_before_process` feature flag) — still outstanding from prior session. Photo Bucket tab is gated on this.
-4. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
-5. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
-6. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
+1. **Run migration 177** (`review_before_process` feature flag) — still outstanding from prior session. Photo Bucket tab is gated on this.
+2. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
+3. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for Apr 27.
 
 ---
 
