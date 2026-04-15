@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import Link from 'next/link';
-import AddWorkModal from '@/components/montree/AddWorkModal';
-import EditWorkModal from '@/components/montree/curriculum/EditWorkModal';
 import TeachingToolsSection from '@/components/montree/curriculum/TeachingToolsSection';
 import CurriculumWorkList from '@/components/montree/curriculum/CurriculumWorkList';
 import { Work, QuickGuideData } from '@/components/montree/curriculum/types';
@@ -15,9 +14,13 @@ import { useI18n } from '@/lib/montree/i18n';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import FullDetailsModal from '@/components/montree/child/FullDetailsModal';
 import { useCurriculumDragDrop } from '@/hooks/useCurriculumDragDrop';
-import DuplicateSheet from '@/components/montree/curriculum/DuplicateSheet';
+
+// Tier 5 perf: code-split modal-gated components (~1.3k lines deferred).
+const AddWorkModal = dynamic(() => import('@/components/montree/AddWorkModal'), { ssr: false });
+const EditWorkModal = dynamic(() => import('@/components/montree/curriculum/EditWorkModal'), { ssr: false });
+const FullDetailsModal = dynamic(() => import('@/components/montree/child/FullDetailsModal'), { ssr: false });
+const DuplicateSheet = dynamic(() => import('@/components/montree/curriculum/DuplicateSheet'), { ssr: false });
 
 
 export default function CurriculumPage() {
