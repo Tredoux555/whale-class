@@ -3,26 +3,29 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
-import DeleteConfirmDialog from '@/components/montree/media/DeleteConfirmDialog';
-import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
-import PhotoCropModal from '@/components/montree/media/PhotoCropModal';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
-import PhotoSelectionModal from '@/components/montree/PhotoSelectionModal';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
-import InviteParentModal from '@/components/montree/InviteParentModal';
-import EventAttendanceModal from '@/components/montree/events/EventAttendanceModal';
-import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import type { MontreeMedia } from '@/lib/montree/media/types';
+
+// Tier 6 perf: code-split modal components (~2.9k lines deferred).
+const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
+const DeleteConfirmDialog = dynamic(() => import('@/components/montree/media/DeleteConfirmDialog'), { ssr: false });
+const PhotoLightbox = dynamic(() => import('@/components/montree/media/PhotoLightbox'), { ssr: false });
+const PhotoCropModal = dynamic(() => import('@/components/montree/media/PhotoCropModal'), { ssr: false });
+const PhotoSelectionModal = dynamic(() => import('@/components/montree/PhotoSelectionModal'), { ssr: false });
+const InviteParentModal = dynamic(() => import('@/components/montree/InviteParentModal'), { ssr: false });
+const EventAttendanceModal = dynamic(() => import('@/components/montree/events/EventAttendanceModal'), { ssr: false });
+const VoiceDictate = dynamic(() => import('@/components/montree/voice/VoiceDictate'), { ssr: false });
 
 interface GalleryItem extends MontreeMedia {
   area?: string;

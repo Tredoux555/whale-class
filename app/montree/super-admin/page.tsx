@@ -3,15 +3,18 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useAdminData } from '@/hooks/useAdminData';
 import { useLeadOperations } from '@/hooks/useLeadOperations';
-import SchoolsTab from '@/components/montree/super-admin/SchoolsTab';
-import LeadsTab from '@/components/montree/super-admin/LeadsTab';
-import FeedbackTab from '@/components/montree/super-admin/FeedbackTab';
-import DmPanel from '@/components/montree/super-admin/DmPanel';
-import VisitorsTab from '@/components/montree/super-admin/VisitorsTab';
-import SuperAdminGuru from '@/components/montree/super-admin/SuperAdminGuru';
+
+// Tier 6 perf: only one tab renders at a time — defer the other ~2.1k lines.
+const SchoolsTab = dynamic(() => import('@/components/montree/super-admin/SchoolsTab'), { ssr: false });
+const LeadsTab = dynamic(() => import('@/components/montree/super-admin/LeadsTab'), { ssr: false });
+const FeedbackTab = dynamic(() => import('@/components/montree/super-admin/FeedbackTab'), { ssr: false });
+const DmPanel = dynamic(() => import('@/components/montree/super-admin/DmPanel'), { ssr: false });
+const VisitorsTab = dynamic(() => import('@/components/montree/super-admin/VisitorsTab'), { ssr: false });
+const SuperAdminGuru = dynamic(() => import('@/components/montree/super-admin/SuperAdminGuru'), { ssr: false });
 
 
 interface DmMessage {
