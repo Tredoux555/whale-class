@@ -548,6 +548,55 @@ export async function retryEntry(id: string): Promise<void> {
 }
 
 // ============================================
+// DRAIN STUCK QUEUE (manual sync for photos stuck in permanent_failure)
+// ============================================
+//
+// Photos captured during the Apr 15-16 Photo Bucket window hit the pending_review
+// CHECK constraint, got 500'd on every retry, and rolled into `permanent_failure`
+// after 5 attempts. `syncQueue()` ignores permanent_failure entries, so they stay
+// stuck on the device forever unless someone manually retries each one.
+//
+// `drainStuckQueue()` resets ALL non-terminal entries (pending, failed,
+// permanent_failure, and any stale 'uploading' left over from a crash) back to
+// 'pending' with attempt_count=0, then triggers a fresh sync. Uploaded entries
+// are left alone. Safe to run repeatedly — idempotent on already-uploaded rows.
+
+export async function drainStuckQueue(): Promise<{
+  reset: number;
+  uploaded: number;
+  failed: number;
+  skipped: boolean;
+  reason?: string;
+  needs_auth?: boolean;
+}> {
+  const entries = await getAllEntries();
+  const stuck = entries.filter(e =>
+    e.status === 'permanent_failure' ||
+    e.status === 'failed' ||
+    e.status === 'uploading' // stale from a crash — re-queue it
+  );
+
+  for (const entry of stuck) {
+    await updateEntryStatus(entry.id, 'pending', {
+      attempt_count: 0,
+      error_message: undefined,
+      last_attempt_at: undefined,
+    });
+  }
+
+  const result = await syncQueue();
+
+  return {
+    reset: stuck.length,
+    uploaded: result.uploaded,
+    failed: result.failed,
+    skipped: result.skipped,
+    reason: result.reason,
+    needs_auth: result.needs_auth,
+  };
+}
+
+// ============================================
 // LISTENERS (for UI updates)
 // ============================================
 

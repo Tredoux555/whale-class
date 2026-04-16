@@ -8,6 +8,7 @@ export {
   enqueuePhoto,
   syncQueue,
   retryEntry,
+  drainStuckQueue,
   isSyncing,
   addSyncListener,
 } from './sync-manager';
