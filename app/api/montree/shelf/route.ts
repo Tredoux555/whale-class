@@ -69,10 +69,10 @@ export async function GET(request: NextRequest) {
       }, {} as Record<string, string>);
     }
 
-    // 3. Fetch guru area reasons from child settings
+    // 3. Fetch guru area reasons + classroom from child settings
     const { data: childData } = await supabase
       .from('montree_children')
-      .select('settings')
+      .select('settings, classroom_id')
       .eq('id', childId)
       .maybeSingle();
 
@@ -83,16 +83,45 @@ export async function GET(request: NextRequest) {
     const settings = (childData.settings as Record<string, unknown>) || {};
     const guruReasons = (settings.guru_area_reasons as Record<string, string>) || {};
 
-    // 4. Build shelf response — merge focus works with progress + chinese names (fuzzy) + reasons
-    const shelf = (focusWorks || []).map(fw => ({
-      area: fw.area,
-      work_name: fw.work_name,
-      chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
-      status: progressMap[fw.work_name] || 'not_started',
-      set_at: fw.set_at,
-      set_by: fw.set_by,
-      guru_reason: guruReasons[fw.area] || null,
-    }));
+    // 3b. Build DB name→chinese map for custom works / works not in static JSON
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
+    if (childData.classroom_id) {
+      try {
+        const { data: currWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese')
+          .eq('classroom_id', childData.classroom_id)
+          .not('name_chinese', 'is', null);
+
+        for (const w of (currWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+          if (w.name_chinese && w.name) {
+            dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+          }
+        }
+      } catch {
+        // Non-fatal — static enrichment will still work
+      }
+    }
+
+    // 4. Build shelf response — merge focus works with progress + chinese names + reasons
+    const shelf = (focusWorks || []).map(fw => {
+      let chineseName: string | null = null;
+      if (fw.work_name) {
+        chineseName = getChineseNameForWork(fw.work_name)
+          || dbChineseMap.get(fw.work_name.toLowerCase().trim())
+          || null;
+      }
+      return {
+        area: fw.area,
+        work_name: fw.work_name,
+        chineseName,
+        status: progressMap[fw.work_name] || 'not_started',
+        set_at: fw.set_at,
+        set_by: fw.set_by,
+        guru_reason: guruReasons[fw.area] || null,
+      };
+    });
 
     // 6. Determine which areas have no focus work
     const occupiedAreas = shelf.map(s => s.area);

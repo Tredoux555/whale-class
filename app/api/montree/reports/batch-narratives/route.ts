@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     const [curriculumRes, visualRes] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh, area_id')
+        .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh, name_chinese, area_id')
         .eq('classroom_id', classroom_id),
       supabase
         .from('montree_visual_memory')
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     const curriculumWorks = (curriculumRes.data || []) as Array<{
       id: string; name: string; parent_description: string | null; why_it_matters: string | null;
-      parent_description_zh: string | null; why_it_matters_zh: string | null; name_zh: string | null; area_id: string | null;
+      parent_description_zh: string | null; why_it_matters_zh: string | null; name_zh: string | null; name_chinese: string | null; area_id: string | null;
     }>;
     const visualMemories = (visualRes.data || []) as Array<{
       work_name: string; parent_description: string | null; why_it_matters: string | null;
@@ -111,8 +111,14 @@ export async function POST(request: NextRequest) {
     // Build description lookup (same logic as send/route.ts)
     const workIdToName = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
+    // DB Chinese-name fallback for custom works not in static JSON
+    // Priority: static JSON (getChineseNameForWork) → DB name_chinese fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
     for (const w of curriculumWorks || []) {
       workIdToName.set(w.id, w.name);
+      if (w.name_chinese && w.name) {
+        dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+      }
       const desc = (locale === 'zh' && w.parent_description_zh) ? w.parent_description_zh : w.parent_description;
       const whyMatters = (locale === 'zh' && w.why_it_matters_zh) ? w.why_it_matters_zh : (w.why_it_matters || '');
       if (desc) {
@@ -333,7 +339,9 @@ export async function POST(request: NextRequest) {
 
             const allWorks = enrichedPhotos.map(p => ({
               name: p.work_name,
-              chineseName: locale === 'zh' ? getChineseNameForWork(p.work_name) : null,
+              chineseName: locale === 'zh'
+                ? (getChineseNameForWork(p.work_name) || dbChineseMap.get(p.work_name.toLowerCase().trim()) || null)
+                : null,
               area: p.area,
               status: p.status,
               parent_description: p.parent_description,

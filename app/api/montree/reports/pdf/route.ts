@@ -52,12 +52,34 @@ export async function GET(request: NextRequest) {
     const startDate = weekStart || new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const endDate = weekEnd || new Date().toISOString().split('T')[0];
 
-    const { data: progress } = await supabase
-      .from('montree_child_progress')
-      .select('work_name, area, status, notes, presented_at, mastered_at')
-      .eq('child_id', childId)
-      .gte('updated_at', startDate)
-      .lte('updated_at', endDate + 'T23:59:59');
+    // Parallel fetch: progress + classroom curriculum (for DB Chinese name fallback)
+    const classroomId = (child.classroom as Record<string, unknown>)?.id as string | undefined;
+    const [progressResult, currResult] = await Promise.all([
+      supabase
+        .from('montree_child_progress')
+        .select('work_name, area, status, notes, presented_at, mastered_at')
+        .eq('child_id', childId)
+        .gte('updated_at', startDate)
+        .lte('updated_at', endDate + 'T23:59:59'),
+      classroomId
+        ? supabase
+            .from('montree_classroom_curriculum_works')
+            .select('name, name_chinese')
+            .eq('classroom_id', classroomId)
+            .not('name_chinese', 'is', null)
+        : Promise.resolve({ data: [] as Array<{ name: string; name_chinese: string | null }> }),
+    ]);
+
+    const progress = progressResult.data;
+
+    // Build DB name→chinese map for custom works (not in static JSON)
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
+    for (const w of ((currResult.data as Array<{ name: string; name_chinese: string | null }> | null) || [])) {
+      if (w.name_chinese && w.name) {
+        dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+      }
+    }
 
     // Get locale and translator for home extensions
     const locale = getLocaleFromRequest(request.url);
@@ -70,7 +92,9 @@ export async function GET(request: NextRequest) {
       .slice(0, 5)
       .map(p => ({
         workName: p.work_name,
-        chineseName: p.work_name ? getChineseNameForWork(p.work_name) || undefined : undefined,
+        chineseName: p.work_name
+          ? (getChineseNameForWork(p.work_name) || dbChineseMap.get(p.work_name.toLowerCase().trim()) || undefined)
+          : undefined,
         workArea: p.area,
         observation: p.notes || (locale === 'zh' ? `正在学习${p.work_name}` : `Working on ${p.work_name}`),
         developmentalNote: p.status === 'mastered' ? (locale === 'zh' ? '已掌握此技能！' : 'Mastered this skill!') : undefined,

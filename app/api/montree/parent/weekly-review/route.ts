@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     const { data: child, error: childError } = await supabase
       .from('montree_children')
       .select(`
-        id, name, photo_url, 
+        id, name, photo_url, classroom_id,
         classroom:montree_classrooms!classroom_id (name)
       `)
       .eq('id', childId)
@@ -214,17 +214,43 @@ export async function GET(request: NextRequest) {
       });
     }
     
+    // Build DB name→chinese map for custom works / works not in static JSON
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
+    if (child.classroom_id) {
+      try {
+        const { data: currWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese')
+          .eq('classroom_id', child.classroom_id)
+          .not('name_chinese', 'is', null);
+
+        for (const w of (currWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+          if (w.name_chinese && w.name) {
+            dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+          }
+        }
+      } catch {
+        // Non-fatal — static enrichment will still work
+      }
+    }
+
     // Parse recommended_works if it's stored as JSONB
-    let recommendedWorks: Array<{ work_name: string; area: string; reason: string; home_activity?: string; chineseName?: string }> = [];
+    let recommendedWorks: Array<{ work_name: string; area: string; reason: string; home_activity?: string; chineseName?: string | null }> = [];
     try {
       const raw = typeof analysis.recommended_works === 'string'
         ? JSON.parse(analysis.recommended_works)
         : (analysis.recommended_works || []);
-      // Enrich with chineseName (fuzzy matching)
-      recommendedWorks = (raw as Array<{ work_name: string; area: string; reason: string; home_activity?: string }>).map(w => ({
-        ...w,
-        chineseName: w.work_name ? getChineseNameForWork(w.work_name) : null,
-      }));
+      // Enrich with chineseName — priority: static JSON → DB fallback
+      recommendedWorks = (raw as Array<{ work_name: string; area: string; reason: string; home_activity?: string }>).map(w => {
+        let chineseName: string | null = null;
+        if (w.work_name) {
+          chineseName = getChineseNameForWork(w.work_name)
+            || dbChineseMap.get(w.work_name.toLowerCase().trim())
+            || null;
+        }
+        return { ...w, chineseName };
+      });
     } catch {
       recommendedWorks = [];
     }

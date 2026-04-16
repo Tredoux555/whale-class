@@ -51,10 +51,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Build a DB name→chinese map for custom works / works not in static JSON
+    // Mirrors the pattern in /api/montree/progress/route.ts so custom works
+    // (e.g., "Tri Box 3", "Puzzle of the Horse" added via Photo Audit) show
+    // their Chinese names on the shelf when locale is zh.
+    const dbChineseMap = new Map<string, string>();
+    try {
+      const { data: childData } = await supabase
+        .from('montree_children')
+        .select('classroom_id')
+        .eq('id', childId)
+        .maybeSingle();
+
+      if (childData?.classroom_id) {
+        const { data: currWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese')
+          .eq('classroom_id', childData.classroom_id)
+          .not('name_chinese', 'is', null);
+
+        for (const w of (currWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+          if (w.name_chinese && w.name) {
+            dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+          }
+        }
+      }
+    } catch {
+      // Non-fatal — static enrichment will still work
+    }
+
     // Convert to area -> work mapping, enriched with Chinese names (single pass)
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
     const focusByArea: Record<string, any> = {};
     const enrichedRaw = (focusWorks || []).map(fw => {
-      const chineseName = fw.work_name ? getChineseNameForWork(fw.work_name) : null;
+      let chineseName: string | null = null;
+      if (fw.work_name) {
+        chineseName = getChineseNameForWork(fw.work_name)
+          || dbChineseMap.get(fw.work_name.toLowerCase().trim())
+          || null;
+      }
       focusByArea[fw.area] = {
         id: fw.work_id,
         name: fw.work_name,

@@ -33,12 +33,20 @@ function getMonday(date: Date): Date {
   return d;
 }
 
-const AREA_DISPLAY: Record<string, string> = {
+const AREA_DISPLAY_EN: Record<string, string> = {
   practical_life: 'Practical Life',
   sensorial: 'Sensorial',
   mathematics: 'Mathematics',
   language: 'Language',
   cultural: 'Cultural',
+};
+
+const AREA_DISPLAY_ZH: Record<string, string> = {
+  practical_life: '日常生活',
+  sensorial: '感官',
+  mathematics: '数学',
+  language: '语言',
+  cultural: '文化',
 };
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -48,6 +56,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const { childId } = await context.params;
     const { classroomId } = auth;
+
+    // Accept locale from query — defaults to 'en'. Cache EN and ZH separately.
+    const url = new URL(request.url);
+    const localeParam = url.searchParams.get('locale');
+    const locale: 'en' | 'zh' = localeParam === 'zh' ? 'zh' : 'en';
+    const AREA_DISPLAY = locale === 'zh' ? AREA_DISPLAY_ZH : AREA_DISPLAY_EN;
 
     const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
     if (!access.allowed) {
@@ -73,7 +87,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const settings = child.settings || {};
-    const cached = settings.activity_summary as { text: string; week_start: string; generated_at: string } | undefined;
+    // Per-locale cache key: 'activity_summary_en' or 'activity_summary_zh'
+    // Legacy key 'activity_summary' is read as EN-only fallback for existing data.
+    const cacheKey = locale === 'zh' ? 'activity_summary_zh' : 'activity_summary_en';
+    const cached = (settings[cacheKey] || (locale === 'en' ? settings.activity_summary : undefined)) as
+      | { text: string; week_start: string; generated_at: string }
+      | undefined;
 
     // Calculate previous week boundaries
     const now = new Date();
@@ -183,14 +202,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // If no photos last week, return a simple message (no AI needed)
     if (totalPhotos === 0) {
-      const noDataText = `No observations recorded last week. This week, try to capture ${child.name}'s work across all areas.`;
-      // Cache it
+      const noDataText = locale === 'zh'
+        ? `上周未记录任何观察。本周尝试捕捉${child.name}在各个领域的工作。`
+        : `No observations recorded last week. This week, try to capture ${child.name}'s work across all areas.`;
+      // Cache it under the locale-specific key
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from('montree_children') as any)
         .update({
           settings: {
             ...settings,
-            activity_summary: { text: noDataText, week_start: prevWeekStart, generated_at: new Date().toISOString() },
+            [cacheKey]: { text: noDataText, week_start: prevWeekStart, generated_at: new Date().toISOString() },
           },
         })
         .eq('id', childId);
@@ -208,15 +229,30 @@ export async function GET(request: NextRequest, context: RouteContext) {
       .join(', ');
 
     const missingStr = missingAreas.length > 0
-      ? missingAreas.map(a => AREA_DISPLAY[a] || a).join(', ')
-      : 'none';
+      ? missingAreas.map(a => AREA_DISPLAY[a] || a).join(locale === 'zh' ? '、' : ', ')
+      : (locale === 'zh' ? '无' : 'none');
 
     // 6. Generate summary with Haiku
     if (!anthropic) {
       return NextResponse.json({ summary: null, reason: 'ai_disabled' });
     }
 
-    const prompt = `You are a Montessori teacher's assistant. Generate ONE sentence (max 30 words) summarizing a child's activity last week and suggesting focus for this week.
+    const prompt = locale === 'zh'
+      ? `你是蒙特梭利老师的助手。生成一句话（最多30个字）总结孩子上周的活动，并建议本周的重点。
+
+孩子姓名：${child.name}
+上周观察：${distStr}（共${totalPhotos}张）
+没有观察的领域：${missingStr}
+
+规则：
+- 使用孩子的名字
+- 提到他们最专注的领域
+- 建议本周关注最被忽视的领域
+- 温暖但简短 — 3秒可读完
+- 不要使用引号
+- 示例："上周Amy重点关注了感官和语言。本周，试着引导她走向日常生活。"
+- 请用简体中文输出。`
+      : `You are a Montessori teacher's assistant. Generate ONE sentence (max 30 words) summarizing a child's activity last week and suggesting focus for this week.
 
 Child name: ${child.name}
 Last week's observations: ${distStr} (${totalPhotos} total)
@@ -233,20 +269,20 @@ Rules:
     try {
       const response = await anthropic.messages.create({
         model: HAIKU_MODEL,
-        max_tokens: 100,
+        max_tokens: 150,
         messages: [{ role: 'user', content: prompt }],
       });
 
       const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
 
       if (text) {
-        // Cache in child settings
+        // Cache in child settings under locale-specific key
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await (supabase.from('montree_children') as any)
           .update({
             settings: {
               ...settings,
-              activity_summary: { text, week_start: prevWeekStart, generated_at: new Date().toISOString() },
+              [cacheKey]: { text, week_start: prevWeekStart, generated_at: new Date().toISOString() },
             },
           })
           .eq('id', childId);
@@ -258,11 +294,15 @@ Rules:
     }
 
     // Fallback — template-based (no AI)
-    const topArea = sorted[0] ? (AREA_DISPLAY[sorted[0][0]] || sorted[0][0]) : 'various areas';
+    const topArea = sorted[0]
+      ? (AREA_DISPLAY[sorted[0][0]] || sorted[0][0])
+      : (locale === 'zh' ? '各个领域' : 'various areas');
     const suggestArea = missingAreas.length > 0
       ? (AREA_DISPLAY[missingAreas[0]] || missingAreas[0])
-      : 'all areas';
-    const fallback = `Last week ${child.name} focused on ${topArea}. This week, try guiding them toward ${suggestArea}.`;
+      : (locale === 'zh' ? '所有领域' : 'all areas');
+    const fallback = locale === 'zh'
+      ? `上周${child.name}专注于${topArea}。本周，试着引导他们走向${suggestArea}。`
+      : `Last week ${child.name} focused on ${topArea}. This week, try guiding them toward ${suggestArea}.`;
 
     return NextResponse.json({ summary: fallback, week_start: prevWeekStart, cached: false });
 
