@@ -67,13 +67,18 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
 
-  // Staleness detection — see CLAUDE.md Session 29.
-  // latestActivityAt = newest photo captured_at (or wrap updated_at) in the week.
-  // earliestNoteUpdatedAt = oldest updated_at across all saved notes for the week.
-  // If activity is newer than the oldest saved note, the Weekly Summary DOCX
-  // (which reads ONLY from saved notes) will miss the new activity.
-  const [latestActivityAt, setLatestActivityAt] = useState<string | null>(null);
-  const [earliestNoteUpdatedAt, setEarliestNoteUpdatedAt] = useState<string | null>(null);
+  // Staleness detection — see CLAUDE.md Session 29/30.
+  // staleChildren = children whose expected work set (what Auto-fill would
+  // produce right now) contains works not present in their saved summary
+  // note. The server computes this via semantic diff, which correctly
+  // handles the Session 29 edge case where a photo's identification flips
+  // pending_review → confirmed AFTER the teacher saved (timestamp-based
+  // heuristics missed this because captured_at predated updated_at).
+  const [staleChildren, setStaleChildren] = useState<Array<{
+    child_id: string;
+    child_name: string;
+    missing_works: string[];
+  }>>([]);
 
   // ─── Init ──────────────────────────────────────────────────
 
@@ -118,22 +123,13 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         setChildren(sorted);
       }
 
-      // Parse notes into state + track oldest saved-note timestamp for staleness check
+      // Parse notes into state. Staleness is a pure server-side semantic diff
+      // now (stale_children array) — client just reads + renders the banner.
       const sNotes: SummaryNotes = {};
       const pNotes: PlanNotes = {};
-      let earliestUpdated: number | null = null;
 
       if (notesData.notes) {
         for (const note of notesData.notes) {
-          // Track oldest updated_at across all notes — if any single note is
-          // older than the latest classroom activity, the DOCX will be stale.
-          if (note.updated_at) {
-            const u = new Date(note.updated_at).getTime();
-            if (!isNaN(u) && (earliestUpdated === null || u < earliestUpdated)) {
-              earliestUpdated = u;
-            }
-          }
-
           if (note.doc_type === 'summary') {
             sNotes[note.child_id] = {
               english_text: note.english_text || '',
@@ -163,10 +159,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
       setSummaryNotes(sNotes);
       setPlanNotes(pNotes);
-      setLatestActivityAt(notesData.latest_activity_at || null);
-      setEarliestNoteUpdatedAt(
-        earliestUpdated !== null ? new Date(earliestUpdated).toISOString() : null
-      );
+      setStaleChildren(notesData.stale_children || []);
       setLoading(false);
 
       // Auto-fill ONLY when no saved notes exist (first visit for this week)
@@ -411,10 +404,9 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
       });
 
       // Hide the stale banner immediately — the on-screen notes now reflect
-      // the latest classroom activity. Bumping earliestNoteUpdatedAt to "now"
-      // makes the banner's `activity <= earliestNote + grace` check pass.
-      // Next save round-trip will persist the real updated_at from the DB.
-      setEarliestNoteUpdatedAt(new Date().toISOString());
+      // what Auto-fill just produced, so there's no diff until the teacher
+      // next touches + saves + the server recomputes on the next GET.
+      setStaleChildren([]);
 
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
       setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
@@ -524,19 +516,15 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         </div>
       </div>
 
-      {/* Stale-notes banner — appears when new classroom activity (photos or
-          Weekly Wrap updates) has landed since the earliest saved note.
-          DOCX generation reads only from saved notes, so stale notes produce
-          stale Weekly Summaries. Tapping "Refresh Auto-fill" reruns the same
-          handleAutoFill the manual button uses. See CLAUDE.md Session 29. */}
+      {/* Stale-notes banner — server-side semantic diff fired at least one
+          child whose expected work set (what Auto-fill would produce now)
+          contains works missing from their saved summary note. DOCX
+          generation reads only from saved notes, so missing works yield a
+          stale Weekly Summary. Tapping "Refresh Auto-fill" reruns the same
+          handleAutoFill the manual button uses. See CLAUDE.md Session 29/30. */}
       {(() => {
         if (loading || autoFilling) return null;
-        if (!latestActivityAt || !earliestNoteUpdatedAt) return null;
-        const activity = new Date(latestActivityAt).getTime();
-        const earliestNote = new Date(earliestNoteUpdatedAt).getTime();
-        if (isNaN(activity) || isNaN(earliestNote)) return null;
-        // 60-second grace window to avoid false positives from save-roundtrip skew
-        if (activity <= earliestNote + 60_000) return null;
+        if (staleChildren.length === 0) return null;
         return (
           <div className="mx-4 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
             <span className="text-amber-800 text-xs flex-1">
