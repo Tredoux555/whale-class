@@ -1434,10 +1434,18 @@ ${curriculumHint}${correctionsContext}${duplicateContext}`;
             })();
 
             // Fire-and-forget: feed brain learning (cross-classroom patterns)
+            // Function signature: append_guru_learning(learning_json TEXT, max_learnings INT DEFAULT 200)
             if (auth.schoolId && auth.userId) {
+              const onboardingLearning = {
+                text: `Onboarding: Sonnet identified "${finalWorkName}" (${finalArea}) with confidence ${input.confidence.toFixed(2)} in classroom ${classroomId}`,
+                category: 'montessori_insights',
+                areas: [finalArea].filter(Boolean),
+                learning_type: 'observation',
+                timestamp: new Date().toISOString(),
+              };
               supabase.rpc('append_guru_learning', {
-                p_category: 'montessori_insights',
-                p_learning: `Onboarding: Sonnet identified "${finalWorkName}" (${finalArea}) with confidence ${input.confidence.toFixed(2)} in classroom ${classroomId}`,
+                learning_json: JSON.stringify(onboardingLearning),
+                max_learnings: 200,
               }).then(({ error: brainErr }) => {
                 if (brainErr) console.error('[Brain] Onboarding learning append failed:', brainErr);
               }).catch((err) => {
