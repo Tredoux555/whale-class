@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { montreeApi } from '@/lib/montree/api';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface WeeklyActivitySummaryProps {
   childId: string;
 }
 
 export default function WeeklyActivitySummary({ childId }: WeeklyActivitySummaryProps) {
+  const { locale } = useI18n();
   const [summary, setSummary] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,7 +17,8 @@ export default function WeeklyActivitySummary({ childId }: WeeklyActivitySummary
     if (!childId) return;
     const controller = new AbortController();
 
-    montreeApi(`/api/montree/children/${childId}/activity-summary`, { signal: controller.signal })
+    // Pass locale so the server caches EN and ZH separately and instructs Haiku accordingly
+    montreeApi(`/api/montree/children/${childId}/activity-summary?locale=${locale}`, { signal: controller.signal })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.summary) setSummary(data.summary);
@@ -24,7 +27,7 @@ export default function WeeklyActivitySummary({ childId }: WeeklyActivitySummary
       .catch(() => setLoading(false));
 
     return () => controller.abort();
-  }, [childId]);
+  }, [childId, locale]);
 
   if (loading || !summary) return null;
 

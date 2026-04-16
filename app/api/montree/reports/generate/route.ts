@@ -124,7 +124,11 @@ function getAreaDisplay(area: string, locale: 'en' | 'zh'): { name: string; emoj
 // REPORT GENERATORS
 // ============================================
 
-function generateTeacherReport(analysis: WeeklyAnalysisResult, locale: 'en' | 'zh'): TeacherReport {
+function generateTeacherReport(
+  analysis: WeeklyAnalysisResult,
+  locale: 'en' | 'zh',
+  dbChineseMap: Map<string, string>
+): TeacherReport {
   const areaBreakdown = Object.entries(analysis.area_distribution).map(([area, pct]) => {
     const expected = analysis.expected_distribution[area];
     let status: 'healthy' | 'low' | 'high' = 'healthy';
@@ -161,7 +165,7 @@ function generateTeacherReport(analysis: WeeklyAnalysisResult, locale: 'en' | 'z
     work_patterns: locale === 'zh'
       ? analysis.repetition_highlights.map(h => ({
           ...h,
-          work: getChineseNameForWork(h.work) || h.work,
+          work: getChineseNameForWork(h.work) || dbChineseMap.get(h.work.toLowerCase().trim()) || h.work,
         }))
       : analysis.repetition_highlights,
   };
@@ -170,7 +174,8 @@ function generateTeacherReport(analysis: WeeklyAnalysisResult, locale: 'en' | 'z
 function generateParentReport(
   analysis: WeeklyAnalysisResult,
   worksByArea: Record<string, string[]>,
-  locale: 'en' | 'zh'
+  locale: 'en' | 'zh',
+  dbChineseMap: Map<string, string>
 ): ParentReport {
   const t = getTranslator(locale);
   const firstName = analysis.child_name.split(' ')[0];
@@ -188,7 +193,7 @@ function generateParentReport(
   if (analysis.repetition_highlights.length > 0) {
     const rawWorkName = analysis.repetition_highlights[0].work;
     const displayWorkName = locale === 'zh'
-      ? (getChineseNameForWork(rawWorkName) || rawWorkName)
+      ? (getChineseNameForWork(rawWorkName) || dbChineseMap.get(rawWorkName.toLowerCase().trim()) || rawWorkName)
       : rawWorkName;
     const worksText = `${displayWorkName} (${analysis.repetition_highlights[0].count}x)`;
     highlights.push(
@@ -249,7 +254,11 @@ function generateParentReport(
   };
 }
 
-function generateAIAnalysisReport(analysis: WeeklyAnalysisResult, locale?: string): AIAnalysisReport {
+function generateAIAnalysisReport(
+  analysis: WeeklyAnalysisResult,
+  locale: string | undefined,
+  dbChineseMap: Map<string, string>
+): AIAnalysisReport {
   const firstName = analysis.child_name.split(' ')[0];
   const isZh = locale === 'zh';
 
@@ -290,7 +299,7 @@ function generateAIAnalysisReport(analysis: WeeklyAnalysisResult, locale?: strin
   // Two week plan (translate work names and areas for Chinese)
   const twoWeekPlan = [
     ...analysis.recommended_works.slice(0, 3).map(r => {
-      const workDisplay = isZh ? (getChineseNameForWork(r.work_name) || r.work_name) : r.work_name;
+      const workDisplay = isZh ? (getChineseNameForWork(r.work_name) || dbChineseMap.get(r.work_name.toLowerCase().trim()) || r.work_name) : r.work_name;
       const areaDisplay = isZh ? getTranslatedAreaName(r.area, 'zh') : r.area;
       return isZh
         ? `展示${workDisplay}（${areaDisplay}）`
@@ -415,13 +424,22 @@ export async function POST(request: NextRequest) {
         .lt('created_at', week_start),
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, area')
+        .select('id, name, area, name_chinese')
         .eq('classroom_id', child.classroom_id),
     ]);
 
     const progress = progressResult.data;
     const historical = historicalResult.data;
     const curriculum = curriculumResult.data;
+
+    // Build DB name→chinese map for custom works (not in static JSON)
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
+    for (const w of (curriculum || []) as Array<{ id: string; name: string; area: string; name_chinese: string | null }>) {
+      if (w.name_chinese && w.name) {
+        dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+      }
+    }
 
     // Run analysis
     const analysis = analyzeWeeklyProgress({
@@ -463,7 +481,7 @@ export async function POST(request: NextRequest) {
     for (const p of progress || []) {
       if (!worksByArea[p.area]) worksByArea[p.area] = [];
       const displayName = locale === 'zh'
-        ? (getChineseNameForWork(p.work_name) || p.work_name)
+        ? (getChineseNameForWork(p.work_name) || dbChineseMap.get(p.work_name.toLowerCase().trim()) || p.work_name)
         : p.work_name;
       if (!worksByArea[p.area].includes(displayName)) {
         worksByArea[p.area].push(displayName);
@@ -474,13 +492,13 @@ export async function POST(request: NextRequest) {
     const reports: Record<string, any> = {};
 
     if (requestedTypes.includes('teacher')) {
-      reports.teacher = generateTeacherReport(analysis, locale);
+      reports.teacher = generateTeacherReport(analysis, locale, dbChineseMap);
     }
     if (requestedTypes.includes('parent')) {
-      reports.parent = generateParentReport(analysis, worksByArea, locale);
+      reports.parent = generateParentReport(analysis, worksByArea, locale, dbChineseMap);
     }
     if (requestedTypes.includes('ai_analysis')) {
-      reports.ai_analysis = generateAIAnalysisReport(analysis, locale);
+      reports.ai_analysis = generateAIAnalysisReport(analysis, locale, dbChineseMap);
     }
 
     return NextResponse.json({

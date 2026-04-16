@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh')
+        .select('id, name, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh, name_chinese')
         .eq('classroom_id', child.classroom_id),
       supabase
         .from('montree_visual_memory')
@@ -205,12 +205,17 @@ export async function POST(request: NextRequest) {
 
     const workIdToName = new Map<string, string>();
     const workIdToNameZh = new Map<string, string>();
+    // DB Chinese-name fallback for custom works not in static JSON
+    // Priority: static JSON (getChineseNameForWork) → DB name_chinese fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string }>();
-    for (const w of curriculumWorks || []) {
+    for (const w of (curriculumWorks || []) as Array<{ id: string; name: string; name_zh: string | null; name_chinese: string | null; parent_description: string | null; why_it_matters: string | null; parent_description_zh: string | null; why_it_matters_zh: string | null }>) {
       // workIdToName MUST stay in English — used as matching key between photos and progress records
       workIdToName.set(w.id, w.name);
       // Separate Chinese name map for display only (keyed by lowercase English name for progress record lookup)
       if (w.name_zh) workIdToNameZh.set(w.name.toLowerCase().trim(), w.name_zh);
+      // Also capture name_chinese as fallback (UI-facing column — some custom works only have this populated)
+      if (w.name_chinese && w.name) dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
       // When locale is zh, prefer DB Chinese columns (from custom work translation or manual entry)
       const desc = (locale === 'zh' && w.parent_description_zh)
         ? w.parent_description_zh
@@ -292,7 +297,7 @@ export async function POST(request: NextRequest) {
       if (!photo?.url) continue;
       progressWorks.push({
         name: w.work_name,
-        chineseName: w.work_name ? (workIdToNameZh.get(workNameLower) || getChineseNameForWork(w.work_name)) : null,
+        chineseName: w.work_name ? (workIdToNameZh.get(workNameLower) || getChineseNameForWork(w.work_name) || dbChineseMap.get(workNameLower) || null) : null,
         area: w.area,
         status: w.status === 'completed' ? 'mastered' : w.status,
         status_label: getStatusLabel(w.status),
@@ -317,7 +322,7 @@ export async function POST(request: NextRequest) {
       const desc = dbDescriptions.get(workName.toLowerCase());
       documentedWorks.push({
         name: workName,
-        chineseName: getChineseNameForWork(workName),
+        chineseName: getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || null,
         area: '', // Area not available from photo alone
         status: 'documented',
         status_label: getStatusLabel('documented'),
@@ -435,7 +440,7 @@ export async function POST(request: NextRequest) {
         if (prevReport) {
           parts.push(`自上次报告以来，${firstName}一直在稳步成长。`);
           if (newlyMastered.length > 0) {
-            parts.push(`${firstName}新掌握了${newlyMastered.length}项工作${newlyMastered.length <= 3 ? '（' + newlyMastered.map(n => getChineseNameForWork(n) || n).join('、') + '）' : ''}——这展现了出色的专注力和毅力。`);
+            parts.push(`${firstName}新掌握了${newlyMastered.length}项工作${newlyMastered.length <= 3 ? '（' + newlyMastered.map(n => getChineseNameForWork(n) || dbChineseMap.get(n.toLowerCase().trim()) || n).join('、') + '）' : ''}——这展现了出色的专注力和毅力。`);
           }
           if (brandNewWorks.length > 0) {
             parts.push(`本周还探索了${brandNewWorks.length}项全新的活动，表现出强烈的好奇心和学习热情。`);
@@ -594,7 +599,10 @@ export async function POST(request: NextRequest) {
 
       const worksHtml = allWorksForEmail.length > 0
         ? allWorksForEmail.map(w => {
-            const cnName = w.name ? getChineseNameForWork(w.name) : null;
+            // Priority: static JSON → DB name_chinese fallback (for custom works)
+            const cnName = w.name
+              ? (getChineseNameForWork(w.name) || dbChineseMap.get(w.name.toLowerCase().trim()) || null)
+              : null;
             const displayName = locale === 'zh' && cnName ? cnName : w.name;
             return `<li>${statusEmoji(w.status)} ${displayName}</li>`;
           }).join('')

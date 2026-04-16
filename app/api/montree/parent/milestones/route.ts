@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Get mastered works with dates (these are milestones)
+    // Pull name_chinese directly from the joined curriculum works row so
+    // custom works (not in static JSON) get proper Chinese names when locale is zh.
     const { data: progress, error } = await supabase
       .from('montree_child_progress')
       .select(`
@@ -40,6 +42,7 @@ export async function GET(request: NextRequest) {
         updated_at,
         work:work_id (
           name,
+          name_chinese,
           area_id
         )
       `)
@@ -61,9 +64,12 @@ export async function GET(request: NextRequest) {
     const milestones = (progress || [])
       .filter(p => p.work)
       .map(p => {
-        const workName = (p.work as Record<string, unknown>).name as string;
-        const areaId = (p.work as Record<string, unknown>).area_id as string;
-        const chineseName = workName ? getChineseNameForWork(workName) : null;
+        const workRow = p.work as Record<string, unknown>;
+        const workName = workRow.name as string;
+        const dbChinese = workRow.name_chinese as string | null;
+        const areaId = workRow.area_id as string;
+        // Priority: DB name_chinese (covers custom works) → static JSON → null
+        const chineseName = dbChinese || (workName ? getChineseNameForWork(workName) : null);
         const displayName = locale === 'zh' && chineseName ? chineseName : workName;
         return {
           id: p.id,

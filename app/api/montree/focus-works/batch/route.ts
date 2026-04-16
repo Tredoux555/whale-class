@@ -78,13 +78,41 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Group focus works by child_id, enriched with Chinese names (fuzzy matching)
+    // 3a. Build a DB name→chinese map for custom works / works not in static JSON
+    // Mirrors focus-works/route.ts and progress/route.ts so custom works
+    // (e.g., "Tri Box 3", "Puzzle of the Horse") show Chinese names on the
+    // classroom-overview print page when locale is zh.
+    const dbChineseMap = new Map<string, string>();
+    try {
+      const { data: currWorks } = await supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, name_chinese')
+        .eq('classroom_id', classroomId)
+        .not('name_chinese', 'is', null);
+
+      for (const w of (currWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+        if (w.name_chinese && w.name) {
+          dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+        }
+      }
+    } catch {
+      // Non-fatal — static enrichment will still work
+    }
+
+    // 3b. Group focus works by child_id, enriched with Chinese names
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
     const focusByChild: Record<string, Record<string, { name: string; chineseName: string | null }>> = {};
     for (const fw of allFocusWorks || []) {
       if (!focusByChild[fw.child_id]) focusByChild[fw.child_id] = {};
+      let chineseName: string | null = null;
+      if (fw.work_name) {
+        chineseName = getChineseNameForWork(fw.work_name)
+          || dbChineseMap.get(fw.work_name.toLowerCase().trim())
+          || null;
+      }
       focusByChild[fw.child_id][fw.area] = {
         name: fw.work_name,
-        chineseName: fw.work_name ? getChineseNameForWork(fw.work_name) : null,
+        chineseName,
       };
     }
 

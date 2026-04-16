@@ -185,6 +185,36 @@ export async function GET(
 
     const classroomId = report.classroom_id || child?.classroom_id;
 
+    // Build DB name→chinese map for custom works / works not in static JSON
+    // Priority cascade used below: static JSON (getChineseNameForWork) → DB (dbChineseMap) → null
+    // Covers both the saved-content path and the fallback progress-based path.
+    const dbChineseMap = new Map<string, string>();
+    if (classroomId) {
+      try {
+        const { data: currWorks } = await supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese')
+          .eq('classroom_id', classroomId)
+          .not('name_chinese', 'is', null);
+
+        for (const w of (currWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+          if (w.name_chinese && w.name) {
+            dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+          }
+        }
+      } catch {
+        // Non-fatal — static enrichment will still work
+      }
+    }
+
+    // Helper: resolve Chinese name with cascade
+    const resolveChineseName = (workName: string | null | undefined): string | null => {
+      if (!workName) return null;
+      return getChineseNameForWork(workName)
+        || dbChineseMap.get(workName.toLowerCase().trim())
+        || null;
+    };
+
     // CHECK IF REPORT HAS SAVED CONTENT (new system - contains works with descriptions + narrative)
     const savedContent = report.content as {
       works?: Array<{ name: string; area: string; status: string; status_label?: string; chineseName?: string | null; parent_description?: string | null; why_it_matters?: string | null; photo_url?: string | null; photo_caption?: string | null }>;
@@ -202,7 +232,7 @@ export async function GET(
       // The content was saved at send time with all descriptions and photos
       let worksCompleted = savedContent.works.map(w => ({
         work_name: w.name,
-        chineseName: w.name ? getChineseNameForWork(w.name) : null,
+        chineseName: resolveChineseName(w.name),
         area: w.area || 'unknown',
         status: w.status,
         completed_at: report.created_at,
@@ -265,7 +295,7 @@ export async function GET(
         works: ae.works.map((w: any) => ({
           ...w,
           work_name: w.name || w.work_name || '',
-          chineseName: w.chineseName || (w.name ? getChineseNameForWork(w.name) : null),
+          chineseName: w.chineseName || resolveChineseName(w.name),
         })),
       })) || null;
 
@@ -406,7 +436,7 @@ export async function GET(
 
       return {
         work_name: p.work_name,
-        chineseName: p.work_name ? getChineseNameForWork(p.work_name) : null,
+        chineseName: resolveChineseName(p.work_name),
         area: p.area || 'unknown',
         status: p.status === 'completed' ? 'mastered' : p.status,
         completed_at: p.updated_at,

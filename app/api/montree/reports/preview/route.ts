@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
     const [{ data: curriculumWorks }, { data: visualMemories }] = await Promise.all([
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name, area, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh')
+        .select('id, name, area, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, name_zh, name_chinese')
         .eq('classroom_id', child.classroom_id),
       supabase
         .from('montree_visual_memory')
@@ -190,6 +190,21 @@ export async function GET(request: NextRequest) {
     const workIdToInfo = new Map<string, { name: string; area: string; description: string; why_it_matters: string }>();
     const workNameToId = new Map<string, string>();
     const dbDescriptions = new Map<string, { description: string; why_it_matters: string; originalName: string }>();
+
+    // DB Chinese-name fallback for custom works not in static JSON
+    // Priority: static JSON (getChineseNameForWork) → DB fallback (dbChineseMap)
+    const dbChineseMap = new Map<string, string>();
+    for (const w of (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null }>) {
+      if (w.name_chinese && w.name) {
+        dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
+      }
+    }
+    const resolveChineseName = (workName: string | null | undefined): string | null => {
+      if (!workName) return null;
+      return getChineseNameForWork(workName)
+        || dbChineseMap.get(workName.toLowerCase().trim())
+        || null;
+    };
 
     // Load authoritative descriptions from static curriculum (guaranteed 100% coverage)
     const staticCurriculum = loadAllCurriculumWorks();
@@ -507,7 +522,7 @@ export async function GET(request: NextRequest) {
       reportItems.push({
         work_id: workId || null,
         work_name: p.work_name,
-        chineseName: p.work_name ? getChineseNameForWork(p.work_name) : null,
+        chineseName: resolveChineseName(p.work_name),
         area: p.area || workInfo?.area || 'practical_life',
         status: p.status === 'completed' ? 'mastered' : p.status,
         photo_url: photo?.url || null,
@@ -541,7 +556,7 @@ export async function GET(request: NextRequest) {
       reportItems.push({
         work_id: photo.work_id,
         work_name: workInfo.name,
-        chineseName: workInfo.name ? getChineseNameForWork(workInfo.name) : null,
+        chineseName: resolveChineseName(workInfo.name),
         area: workInfo.area || 'practical_life',
         status: 'documented',
         photo_url: photo.url,
