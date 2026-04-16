@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
               return { name: workName, name_zh: null, status: 'no_api_key' };
             }
 
+            // Use tool_use for structured output — the API handles JSON
+            // serialization, so Haiku never produces raw JSON. Eliminates
+            // Chinese JSON corruption (unescaped quotes, fullwidth punctuation).
             const resp = await anthropic.messages.create({
               model: HAIKU_MODEL,
               max_tokens: 512,
@@ -80,20 +83,48 @@ export async function POST(request: NextRequest) {
                 Object.entries(MONTESSORI_GLOSSARY_ZH).slice(0, 80).map(([e, c]) => `${e}=${c}`).join(', '),
               messages: [{
                 role: 'user',
-                content: `Translate this Montessori work name to Chinese (Simplified). Return ONLY a JSON object with "name_zh", "parent_description_zh", and "why_it_matters_zh" fields. Keep the name short (2-6 Chinese characters preferred).
+                content: `Translate this Montessori work into Simplified Chinese. Call submit_translation with three Chinese fields. Keep name_zh short (2-6 Chinese characters preferred).
 
 Work name: ${workName}
 ${work.parent_description ? `Description: ${String(work.parent_description).slice(0, 200)}` : ''}
-${work.why_it_matters ? `Why it matters: ${String(work.why_it_matters).slice(0, 200)}` : ''}
-
-Return JSON:`,
+${work.why_it_matters ? `Why it matters: ${String(work.why_it_matters).slice(0, 200)}` : ''}`,
               }],
+              tools: [{
+                name: 'submit_translation',
+                description: 'Submit the three Simplified-Chinese translations.',
+                input_schema: {
+                  type: 'object' as const,
+                  properties: {
+                    name_zh: {
+                      type: 'string',
+                      description: 'Short Chinese name for the Montessori work (2-6 characters preferred).',
+                    },
+                    parent_description_zh: {
+                      type: 'string',
+                      description: 'Chinese translation of parent_description. Empty string if no input description.',
+                    },
+                    why_it_matters_zh: {
+                      type: 'string',
+                      description: 'Chinese translation of why_it_matters. Empty string if no input.',
+                    },
+                  },
+                  required: ['name_zh', 'parent_description_zh', 'why_it_matters_zh'],
+                },
+              }],
+              tool_choice: { type: 'tool' as const, name: 'submit_translation' },
             });
 
-            const text = resp.content[0]?.type === 'text' ? resp.content[0].text : '';
-            const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-            const parsed = JSON.parse(jsonStr);
-            nameZh = parsed.name_zh || null;
+            const toolBlock = resp.content.find(
+              (block): block is { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
+                block.type === 'tool_use' && block.name === 'submit_translation'
+            );
+
+            if (!toolBlock?.input) {
+              return { name: workName, name_zh: null, status: 'no_tool_use' };
+            }
+
+            const parsed = toolBlock.input as { name_zh?: string; parent_description_zh?: string; why_it_matters_zh?: string };
+            nameZh = parsed.name_zh && parsed.name_zh.trim() ? parsed.name_zh.trim() : null;
 
             // Also update descriptions if they were translated and currently missing
             const updateData: Record<string, string> = {};
