@@ -14,6 +14,7 @@ import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPa
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+import { drainStuckQueue } from '@/lib/montree/offline';
 
 // Tier 3 perf: code-split heavy modals/tabs (~4k lines) — only downloaded when actually rendered.
 const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
@@ -527,6 +528,57 @@ export default function PhotoAuditPage() {
   const [haikusRunning, setHaikusRunning] = useState(false);
   const [haikuProgress, setHaikuProgress] = useState({ current: 0, total: 0 });
   const haikuCancelledRef = useRef(false);
+
+  // Manual queue sync state — drains photos stuck in IndexedDB (e.g. Apr 15-16
+  // Photo Bucket window where every upload 500'd on pending_review CHECK
+  // constraint and rolled into permanent_failure after 5 retries).
+  const [syncingQueue, setSyncingQueue] = useState(false);
+
+  async function handleSyncQueue() {
+    if (syncingQueue) return;
+    setSyncingQueue(true);
+    try {
+      const result = await drainStuckQueue();
+      if (result.needs_auth) {
+        toast.error(locale === 'zh' ? '请重新登录' : 'Please log in again');
+        return;
+      }
+      if (result.skipped && result.reason === 'offline') {
+        toast.error(locale === 'zh' ? '离线 — 请检查网络' : 'Offline — check your connection');
+        return;
+      }
+      if (result.reset === 0 && result.uploaded === 0) {
+        toast.success(locale === 'zh' ? '队列为空 — 没有要同步的照片' : 'Queue empty — no photos to sync');
+        return;
+      }
+      if (result.uploaded > 0) {
+        toast.success(
+          locale === 'zh'
+            ? `已上传 ${result.uploaded} 张照片` + (result.failed > 0 ? ` (${result.failed} 失败)` : '')
+            : `Uploaded ${result.uploaded} photo${result.uploaded === 1 ? '' : 's'}` + (result.failed > 0 ? ` (${result.failed} failed)` : '')
+        );
+        // Refresh the audit grid so the freshly-synced photos appear
+        setTimeout(() => fetchPhotos(), 800);
+      } else if (result.failed > 0) {
+        toast.error(
+          locale === 'zh'
+            ? `同步失败 — ${result.failed} 张照片无法上传`
+            : `Sync failed — ${result.failed} photo${result.failed === 1 ? '' : 's'} could not upload`
+        );
+      } else if (result.reset > 0) {
+        toast.success(
+          locale === 'zh'
+            ? `已重置 ${result.reset} 张照片,正在同步...`
+            : `Reset ${result.reset} photo${result.reset === 1 ? '' : 's'}, syncing...`
+        );
+      }
+    } catch (err) {
+      console.error('[PhotoAudit] Sync queue error:', err);
+      toast.error(locale === 'zh' ? '同步错误' : 'Sync error');
+    } finally {
+      setSyncingQueue(false);
+    }
+  }
 
   // Load curriculum for WorkWheelPicker — extracted as callback so onWorkAdded can refresh
   // Cache-bust with timestamp to avoid stale browser cache (works/search has 5min Cache-Control)
@@ -1846,19 +1898,49 @@ export default function PhotoAuditPage() {
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <h1 className="text-lg font-semibold">{locale === 'zh' ? '照片审核' : 'Photo Audit'}</h1>
-          {isPhotoZone && (
-            <select
-              value={dateRange}
-              onChange={e => setDateRange(e.target.value as DateRange)}
-              className="text-sm border rounded px-2 py-1"
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSyncQueue}
+              disabled={syncingQueue}
+              title={locale === 'zh'
+                ? '同步今天的照片(如果本地队列中有未上传的照片,点击此处推送到服务器)'
+                : "Sync today's photos (push any photos stuck in the local queue up to the server)"}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
+                syncingQueue
+                  ? 'bg-amber-50 border-amber-200 text-amber-700 cursor-wait'
+                  : 'bg-white border-gray-300 text-gray-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-700'
+              }`}
             >
-              <option value="7d">{t('audit.last7d')}</option>
-              <option value="30d">{t('audit.last30d')}</option>
-              <option value="all">{t('audit.allTime')}</option>
-            </select>
-          )}
+              <svg
+                className={`w-4 h-4 ${syncingQueue ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.65-3.65L20 7M20 15a9 9 0 01-14.65 3.65L4 17"
+                />
+              </svg>
+              <span>{syncingQueue ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '同步' : 'Sync')}</span>
+            </button>
+            {isPhotoZone && (
+              <select
+                value={dateRange}
+                onChange={e => setDateRange(e.target.value as DateRange)}
+                className="text-sm border rounded px-2 py-1"
+              >
+                <option value="7d">{t('audit.last7d')}</option>
+                <option value="30d">{t('audit.last30d')}</option>
+                <option value="all">{t('audit.allTime')}</option>
+              </select>
+            )}
+          </div>
         </div>
 
         {/* Smart Learning progress bar — only on photo review */}
