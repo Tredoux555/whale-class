@@ -58,12 +58,33 @@ export default function WeeklyAdminDocsPage() {
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
 
+  // Staleness detection — see CLAUDE.md Session 29/30.
+  // staleChildren = children whose expected work set (what Auto-fill would
+  // produce right now) contains works not present in their saved summary
+  // note. The server computes this via semantic diff.
+  const [staleChildren, setStaleChildren] = useState<Array<{
+    child_id: string;
+    child_name: string;
+    missing_works: string[];
+  }>>([]);
+
   // ─── Init ──────────────────────────────────────────────────
 
   const abortRef = useRef<AbortController | null>(null);
   const mountedRef = useRef(true);
   const weekRef = useRef(weekStart);
   weekRef.current = weekStart;
+
+  // Unmount cleanup MUST live in its own empty-deps useEffect. If colocated
+  // with the session useEffect below, the cleanup fires on every deps change
+  // (e.g. when `isEnabled` reference changes after the features refetch on
+  // window focus), setting mountedRef.current=false while the component is
+  // still mounted — which then traps handleAutoFill at "..." forever because
+  // its finally guard `if (mountedRef.current) setAutoFilling(false)` never
+  // runs. See CLAUDE.md Session 31 root-cause note.
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   useEffect(() => {
     const sess = getSession();
@@ -81,7 +102,6 @@ export default function WeeklyAdminDocsPage() {
       return;
     }
     setSession(sess);
-    return () => { mountedRef.current = false; };
   }, [router, featuresLoading, isEnabled]);
 
   // Fetch children + existing notes when session or week changes
@@ -152,6 +172,7 @@ export default function WeeklyAdminDocsPage() {
 
       setSummaryNotes(sNotes);
       setPlanNotes(pNotes);
+      setStaleChildren(notesData.stale_children || []);
       setLoading(false);
 
       // Auto-fill ONLY when no saved notes exist (first visit for this week)
@@ -399,6 +420,11 @@ export default function WeeklyAdminDocsPage() {
         return merged;
       });
 
+      // Hide the stale banner immediately — the on-screen notes now reflect
+      // what Auto-fill just produced, so there's no diff until the teacher
+      // next touches + saves + the server recomputes on the next GET.
+      setStaleChildren([]);
+
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
       setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
     } catch {
@@ -536,6 +562,31 @@ export default function WeeklyAdminDocsPage() {
           {success}
         </div>
       )}
+
+      {/* Stale-notes banner — server-side semantic diff fired at least one
+          child whose expected work set (what Auto-fill would produce now)
+          contains works missing from their saved summary note. DOCX
+          generation reads only from saved notes, so missing works yield a
+          stale Weekly Summary. Tapping "Refresh Auto-fill" reruns the same
+          handleAutoFill the manual button uses. See CLAUDE.md Session 29/30. */}
+      {(() => {
+        if (loading || autoFilling) return null;
+        if (staleChildren.length === 0) return null;
+        return (
+          <div className="mx-4 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
+            <span className="text-amber-800 text-xs flex-1">
+              {t('weeklyAdmin.staleBanner')}
+            </span>
+            <button
+              onClick={handleAutoFill}
+              disabled={autoFilling}
+              className="px-3 py-1 bg-amber-600 text-white text-xs rounded-full disabled:opacity-50 font-medium whitespace-nowrap"
+            >
+              {t('weeklyAdmin.refreshAutoFill')}
+            </button>
+          </div>
+        );
+      })()}
 
       {/* Loading */}
       {loading && (
