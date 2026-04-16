@@ -197,6 +197,71 @@ montree.xyz
 
 ## RECENT STATUS (Apr 16, 2026)
 
+### ⚡ Session 31 — Weekly Admin Docs Standalone Page: mountedRef Cleanup Bug + Session 30 Parity (Apr 16, 2026)
+
+**One commit pushed to main: `1b5f0ec2`.** User reported on the standalone `/montree/dashboard/weekly-admin-docs` page: "when I click on the 'autofill' icon I'm getting loads of error messages" — two screenshots showed (a) 5× console 502s on `/api/montree/media/p...g?v=...` and (b) the page stuck at "Loading..." after clicking Auto-fill. Post-fix, user confirmed "it looked like it worked."
+
+**Two bugs fixed in one commit — both parity issues with the Session 30 `WeeklyAdminTab.tsx` component:**
+
+**Bug 1 — Auto-fill button stuck at "..." forever (the root cause):**
+`mountedRef.current = false` cleanup was colocated with the session useEffect whose deps include `isEnabled` (a `useCallback` memoized on `[features]` inside `useFeatures()`). The `FeaturesProvider` at `lib/montree/features/context.tsx:61-71` refetches on window focus — the features array reference changes → `isEnabled` recomputes with a new reference → the session useEffect re-runs → its cleanup fires → `mountedRef.current` flips to `false` while the component is still mounted. After that, `handleAutoFill`'s finally guard `if (mountedRef.current) setAutoFilling(false);` never runs, and the button is stuck at "..." forever.
+
+Fix: moved the cleanup to a separate empty-deps useEffect so it only fires on true unmount. This exactly mirrors the working pattern at `WeeklyAdminTab.tsx:90-92`:
+```tsx
+useEffect(() => {
+  return () => { mountedRef.current = false; };
+}, []);
+```
+
+**Bug 2 — Missing Session 30 staleness banner (the parity gap):**
+The semantic-diff staleness signal landed in `components/montree/reports/WeeklyAdminTab.tsx` (Session 30, commit `95ed02a5`) but the standalone page at `app/montree/dashboard/weekly-admin-docs/page.tsx` never got the parity port. These two UI surfaces evolved independently — the tab component is used inside Photo Audit, the standalone page is the direct route. My Session 30 post-push audit concluded PASS but missed this parity gap because I only verified the tab component.
+
+Fix: Ported the 3-piece pattern from `WeeklyAdminTab.tsx` into the standalone page:
+1. `staleChildren` state declaration (lines 65-69) matching reference lines 77-81
+2. `setStaleChildren(notesData.stale_children || [])` in fetchData (line 175) matching reference line 162
+3. `setStaleChildren([])` in handleAutoFill after merge (line 426) matching reference line 409
+4. Banner IIFE between success message and loading spinner (lines 566-589) matching reference lines 519-542
+
+**Audit results — 8-dimension PASS, no regressions:**
+1. `mountedRef` flip sites: exactly 1 (line 86, in empty-deps cleanup). No stray flip sites.
+2. staleChildren state shape: `{ child_id, child_name, missing_works[] }` — 1:1 match with reference
+3. fetchData setStaleChildren sync: placed right before `setLoading(false)` matching reference positioning
+4. handleAutoFill setStaleChildren reset: placed AFTER `setPlanNotes(...)` merge and BEFORE `setSuccess(...)` so banner disappears in same render cycle as success toast
+5. Banner IIFE: 6-state coverage verified (loading / autoFilling / empty / fresh / stale / refreshed)
+6. i18n keys: `weeklyAdmin.staleBanner` + `weeklyAdmin.refreshAutoFill` exist in both en.ts (lines 2711-2712) and zh.ts (lines 2712-2713). No new keys needed.
+7. Commit on main: `1b5f0ec2` pushed cleanly atop `95ed02a5`. One-file diff, +52 -1 lines.
+8. TypeScript check: `npx tsc --noEmit` exit code 0. Only error on this file is the pre-existing `next/navigation` module resolution quirk documented in Session 21 as acceptable. No new errors.
+
+**The 502s on `/api/montree/media/p...g?v=...`:** not code-fixed this session. Most likely Railway pod rollover transient during the prior commit `95ed02a5` deploy — advisory only: hard-refresh resolves. The photo proxy at `/api/montree/media/proxy/[...path]` only recognizes `?w=` and `?q=`, ignores `?v=`, so the `?v=` in the URL is cosmetic cache-buster noise from the caller, not the cause of the 502.
+
+**🚨 Critical architectural pattern for future sessions — mountedRef cleanup location:**
+When a component uses `useFeatures()` or any other hook whose returned functions are memoized on changing deps, the unmount cleanup for `mountedRef` MUST live in its own empty-deps useEffect. Colocating it with ANY useEffect that has changing deps will cause `mountedRef.current` to prematurely flip to `false` on window focus (or any other deps-invalidating event), trapping any async operation using `if (mountedRef.current)` finally guards. The canonical pattern is:
+```tsx
+// Unmount cleanup in its own useEffect
+useEffect(() => {
+  return () => { mountedRef.current = false; };
+}, []);
+```
+
+**Session 30 parity note (lesson learned):**
+When a reusable component pattern (like the staleness banner) is developed for one UI surface, always grep for ALL surfaces that share the same data-fetching pattern before declaring the session complete. The standalone page and the tab component share ~90% of their code but are deliberately separate files for different routing needs. Session 30's post-push audit should have caught the parity gap; this session closes it. Going forward, any fix to either `WeeklyAdminTab.tsx` or `app/montree/dashboard/weekly-admin-docs/page.tsx` should explicitly check the other file for drift.
+
+**Files changed (1 file, +52 -1 lines):**
+- `app/montree/dashboard/weekly-admin-docs/page.tsx` — separate mountedRef cleanup useEffect + staleChildren state + fetchData sync + handleAutoFill reset + banner IIFE
+
+**Next session priorities (updated):**
+1. **User confirmed the fix worked on production** — monitor over the next 24-48h for any regression reports on either UI surface.
+2. **Verify Lucky's Primary Phonics Reader case** — navigate to standalone page, confirm amber banner appears for week of 2026-04-13, tap Refresh Auto-fill, verify Primary Phonics now under Language for Lucky, save, generate Word doc, verify the work appears.
+3. **Verify Master Campaign page on production** (Session 27 carryover) — navigate to `/montree/super-admin/marketing/master-campaign`, confirm stats load, try the download button.
+4. **Phase 5 per-school enrichment** (Session 27 carryover) — 389 Apr 16 expansion rows, highest ROI is the ~195 rows with no email where a site scrape might yield a contact.
+5. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17).
+6. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+7. **Session 25 carryover** — confirm China CDN hit rate climbs above 80% after 24-48h via Railway logs.
+8. **Photo Audit `.like()` 50-item cap** (carryover) — pagination or pre-computed normalized name index.
+9. **Intermittent `Could not resolve photo URL for media_id=...`** in visual learning — needs a dedicated repro session.
+
+---
+
 ### ⚡ Session 29 — Weekly Admin Docs Freshness Banner (the Lucky audit fix) + Post-Push Audit (Apr 16, 2026)
 
 **One commit pushed to main: `c2f59e2c`.** Closes CLAUDE.md Session 28's priority #1 — "Lucky / Primary Phonics Reader / Weekly Summary missing." The pipeline traced cleanly end-to-end; root cause was UI-only. Full post-push audit run — all clean, no regressions found.
