@@ -35,6 +35,9 @@ export async function autoTranslateToChinese(input: TranslateInput): Promise<voi
       nameZh = MONTESSORI_GLOSSARY_ZH[base] || null;
     }
 
+    // Use tool_use for structured output — the API handles JSON serialization,
+    // so Haiku never produces raw JSON. This eliminates Chinese JSON corruption
+    // (unescaped quotes, fullwidth punctuation, literal newlines in strings).
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
       max_tokens: 1024,
@@ -42,7 +45,7 @@ export async function autoTranslateToChinese(input: TranslateInput): Promise<voi
       messages: [
         {
           role: 'user',
-          content: `Translate the following Montessori work name and descriptions into Chinese (Simplified). Return ONLY valid JSON with exactly three fields: "name_zh", "parent_description_zh", and "why_it_matters_zh". Do not include any other text.
+          content: `Translate the following Montessori work name and descriptions into Simplified Chinese. Call the submit_translation tool with the three translated fields. Every field must be in Simplified Chinese.
 
 Work name (English): ${input.workName}
 ${nameZh ? `Known Chinese name: ${nameZh} (use this exactly for name_zh)` : ''}
@@ -51,22 +54,49 @@ parent_description (English):
 ${input.parentDescription || '(none)'}
 
 why_it_matters (English):
-${input.whyItMatters || '(none)'}
-
-Return JSON:`,
+${input.whyItMatters || '(none)'}`,
         },
       ],
+      tools: [{
+        name: 'submit_translation',
+        description: 'Submit the three Simplified-Chinese translations.',
+        input_schema: {
+          type: 'object' as const,
+          properties: {
+            name_zh: {
+              type: 'string',
+              description: 'Short Chinese name for the Montessori work (2-6 characters preferred). Empty string if the work name itself should not be translated.',
+            },
+            parent_description_zh: {
+              type: 'string',
+              description: 'Chinese translation of parent_description. Empty string if the input was (none).',
+            },
+            why_it_matters_zh: {
+              type: 'string',
+              description: 'Chinese translation of why_it_matters. Empty string if the input was (none).',
+            },
+          },
+          required: ['name_zh', 'parent_description_zh', 'why_it_matters_zh'],
+        },
+      }],
+      tool_choice: { type: 'tool' as const, name: 'submit_translation' },
     });
 
-    // Parse the response
-    const text = response.content[0]?.type === 'text' ? response.content[0].text : '';
-    // Extract JSON — handle cases where Haiku wraps in markdown code blocks
-    const jsonStr = text.replace(/^```json?\s*/i, '').replace(/```\s*$/i, '').trim();
-    const parsed = JSON.parse(jsonStr);
+    // Extract the structured data from the tool_use response block
+    const toolBlock = response.content.find(
+      (block): block is { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } =>
+        block.type === 'tool_use' && block.name === 'submit_translation'
+    );
 
-    const finalNameZh = nameZh || parsed.name_zh || null;
-    const parentDescZh = parsed.parent_description_zh || null;
-    const whyItMattersZh = parsed.why_it_matters_zh || null;
+    if (!toolBlock?.input) {
+      console.warn(`[AutoTranslate] No tool_use block for "${input.workName}"`);
+      return;
+    }
+
+    const parsed = toolBlock.input as { name_zh?: string; parent_description_zh?: string; why_it_matters_zh?: string };
+    const finalNameZh = nameZh || (parsed.name_zh && parsed.name_zh.trim() ? parsed.name_zh.trim() : null);
+    const parentDescZh = parsed.parent_description_zh && parsed.parent_description_zh.trim() ? parsed.parent_description_zh.trim() : null;
+    const whyItMattersZh = parsed.why_it_matters_zh && parsed.why_it_matters_zh.trim() ? parsed.why_it_matters_zh.trim() : null;
 
     if (!finalNameZh && !parentDescZh && !whyItMattersZh) {
       console.warn(`[AutoTranslate] Empty translation for "${input.workName}"`);
