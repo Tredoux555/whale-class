@@ -2708,6 +2708,8 @@ export const en = {
   'weeklyAdmin.autoFill': 'Auto-fill',
   'weeklyAdmin.autoFilled': 'Auto-filled from data',
   'weeklyAdmin.autoFillFailed': 'Failed to auto-fill',
+  'weeklyAdmin.staleBanner': 'New photos or reports since last save — Weekly Summary may be out of date.',
+  'weeklyAdmin.refreshAutoFill': 'Refresh Auto-fill',
 
   // Shelf Autopilot
   'shelfAutopilot.title': 'Shelf Autopilot',

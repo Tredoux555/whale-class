@@ -2709,6 +2709,8 @@ export const zh = {
   'weeklyAdmin.autoFill': '自动填充',
   'weeklyAdmin.autoFilled': '已从数据自动填充',
   'weeklyAdmin.autoFillFailed': '自动填充失败',
+  'weeklyAdmin.staleBanner': '自上次保存以来有新照片或报告 — 每周总结可能已过期。',
+  'weeklyAdmin.refreshAutoFill': '刷新自动填充',
 
   // Shelf Autopilot
   'shelfAutopilot.title': '书架自动导航',

@@ -67,6 +67,14 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const [summaryNotes, setSummaryNotes] = useState<SummaryNotes>({});
   const [planNotes, setPlanNotes] = useState<PlanNotes>({});
 
+  // Staleness detection — see CLAUDE.md Session 29.
+  // latestActivityAt = newest photo captured_at (or wrap updated_at) in the week.
+  // earliestNoteUpdatedAt = oldest updated_at across all saved notes for the week.
+  // If activity is newer than the oldest saved note, the Weekly Summary DOCX
+  // (which reads ONLY from saved notes) will miss the new activity.
+  const [latestActivityAt, setLatestActivityAt] = useState<string | null>(null);
+  const [earliestNoteUpdatedAt, setEarliestNoteUpdatedAt] = useState<string | null>(null);
+
   // ─── Init ──────────────────────────────────────────────────
 
   const abortRef = useRef<AbortController | null>(null);
@@ -110,12 +118,22 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         setChildren(sorted);
       }
 
-      // Parse notes into state
+      // Parse notes into state + track oldest saved-note timestamp for staleness check
       const sNotes: SummaryNotes = {};
       const pNotes: PlanNotes = {};
+      let earliestUpdated: number | null = null;
 
       if (notesData.notes) {
         for (const note of notesData.notes) {
+          // Track oldest updated_at across all notes — if any single note is
+          // older than the latest classroom activity, the DOCX will be stale.
+          if (note.updated_at) {
+            const u = new Date(note.updated_at).getTime();
+            if (!isNaN(u) && (earliestUpdated === null || u < earliestUpdated)) {
+              earliestUpdated = u;
+            }
+          }
+
           if (note.doc_type === 'summary') {
             sNotes[note.child_id] = {
               english_text: note.english_text || '',
@@ -145,6 +163,10 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
       setSummaryNotes(sNotes);
       setPlanNotes(pNotes);
+      setLatestActivityAt(notesData.latest_activity_at || null);
+      setEarliestNoteUpdatedAt(
+        earliestUpdated !== null ? new Date(earliestUpdated).toISOString() : null
+      );
       setLoading(false);
 
       // Auto-fill ONLY when no saved notes exist (first visit for this week)
@@ -388,6 +410,12 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
         return merged;
       });
 
+      // Hide the stale banner immediately — the on-screen notes now reflect
+      // the latest classroom activity. Bumping earliestNoteUpdatedAt to "now"
+      // makes the banner's `activity <= earliestNote + grace` check pass.
+      // Next save round-trip will persist the real updated_at from the DB.
+      setEarliestNoteUpdatedAt(new Date().toISOString());
+
       setSuccess(`${t('weeklyAdmin.autoFilled')} (${filledCount})`);
       setTimeout(() => { if (mountedRef.current) setSuccess(''); }, 3000);
     } catch {
@@ -495,6 +523,35 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
           </button>
         </div>
       </div>
+
+      {/* Stale-notes banner — appears when new classroom activity (photos or
+          Weekly Wrap updates) has landed since the earliest saved note.
+          DOCX generation reads only from saved notes, so stale notes produce
+          stale Weekly Summaries. Tapping "Refresh Auto-fill" reruns the same
+          handleAutoFill the manual button uses. See CLAUDE.md Session 29. */}
+      {(() => {
+        if (loading || autoFilling) return null;
+        if (!latestActivityAt || !earliestNoteUpdatedAt) return null;
+        const activity = new Date(latestActivityAt).getTime();
+        const earliestNote = new Date(earliestNoteUpdatedAt).getTime();
+        if (isNaN(activity) || isNaN(earliestNote)) return null;
+        // 60-second grace window to avoid false positives from save-roundtrip skew
+        if (activity <= earliestNote + 60_000) return null;
+        return (
+          <div className="mx-4 mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-3">
+            <span className="text-amber-800 text-xs flex-1">
+              {t('weeklyAdmin.staleBanner')}
+            </span>
+            <button
+              onClick={handleAutoFill}
+              disabled={autoFilling}
+              className="px-3 py-1 bg-amber-600 text-white text-xs rounded-full disabled:opacity-50 font-medium whitespace-nowrap"
+            >
+              {t('weeklyAdmin.refreshAutoFill')}
+            </button>
+          </div>
+        );
+      })()}
 
       {/* Messages */}
       {error && (

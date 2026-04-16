@@ -197,6 +197,70 @@ montree.xyz
 
 ## RECENT STATUS (Apr 16, 2026)
 
+### ⚡ Session 29 — Weekly Admin Docs Freshness Banner (the Lucky audit fix) (Apr 16, 2026)
+
+**One commit pushed to main.** Closes CLAUDE.md Session 28's priority #1 — "Lucky / Primary Phonics Reader / Weekly Summary missing." The pipeline traced cleanly end-to-end; root cause was UI-only.
+
+**The Lucky audit — root cause:**
+User flagged that Lucky did Primary Phonics Reader with other children Apr 16, the photo was confirmed in Photo Audit, but it didn't appear in the Weekly Admin Docs Weekly Summary for the week of Apr 13. Traced through every stage:
+
+1. ✅ Capture → `montree_media` row written with `work_id`, `teacher_confirmed=true`, `captured_at` in window
+2. ✅ `/api/montree/weekly-admin-docs/auto-fill/route.ts` filter query pulls the photo correctly (Session 28 NULL-safe `pending_review` filter + week window math + Language area resolution all working)
+3. ✅ Area resolution: `area_key='language'` → renders under Language in `planAreasZh`/`summaryEnglish`
+4. ✅ DOCX generation in `/api/montree/weekly-admin-docs/generate/route.ts` renders from saved `montree_weekly_admin_notes` rows
+5. ❌ **The gap was step 5**: `fetchData` in `WeeklyAdminTab.tsx` (line 94) only calls `handleAutoFill(data.children)` when `sNotes.length === 0 && pNotes.length === 0`. Once the teacher saved notes earlier in the week (Mon-Tue for existing photos), those saved rows become the new source of truth. Primary Phonics came in Thursday — auto-fill never re-ran because notes already existed, and DOCX generation reads ONLY from saved notes (NOT live auto-fill). The generated Word doc was silently stale.
+
+"Saved notes are sacred" is correct behavior — teachers hand-edit English/Chinese text and we must not steamroll their work. But there was no signal anywhere in the UI that the saved snapshot had drifted from the actual classroom activity. Teacher couldn't know to tap "Auto-fill" again.
+
+**The fix — freshness banner with manual refresh:**
+
+**A. Notes GET route returns `latest_activity_at`** (`app/api/montree/weekly-admin-docs/notes/route.ts`):
+Extended the GET handler to run three parallel queries instead of one: existing notes + newest confirmed photo in the week + newest Weekly Wrap updated_at for the week. Reduces the max timestamp across both signal sources to `latest_activity_at`, returned alongside `notes` in the JSON. The photo query mirrors the auto-fill route's filter exactly (same `.gte(weekStart)` / `.lt(weekEnd)` / NULL-safe `pending_review` exclusion / `.not('work_id', 'is', null)`) so the freshness signal aligns with what auto-fill would actually pull — no false positives from stale-state divergence between the two routes.
+
+**B. Tab computes `earliestNoteUpdatedAt`** (`components/montree/reports/WeeklyAdminTab.tsx`):
+Added two state hooks (`latestActivityAt`, `earliestNoteUpdatedAt`). `fetchData` scans every returned note row for its `updated_at` and tracks the MIN. The oldest saved note is the canary — if even one saved note is older than the newest classroom activity, the on-screen notes (and the DOCX generated from them) are stale. `handleAutoFill` bumps `earliestNoteUpdatedAt` to `now` so the banner hides instantly after a refresh (the persistent clear lands when the next save round-trips the real `updated_at`).
+
+**C. Banner render** — amber strip between tab header and messages block, gated by an IIFE that returns null in 4 of 6 possible states (loading, auto-filling, no notes yet, fresh, stale, refreshed). Shows only when `activity > earliestNote + 60_000` (60-second grace window avoids save-roundtrip timestamp skew false positives). Copy: "New photos or reports since last save — Weekly Summary may be out of date." Button: "Refresh Auto-fill" → calls existing `handleAutoFill` (no new refresh path, no new bugs — we reuse the battle-tested auto-fill flow).
+
+**D. i18n parity** — `weeklyAdmin.staleBanner` and `weeklyAdmin.refreshAutoFill` added to both `lib/montree/i18n/en.ts` and `lib/montree/i18n/zh.ts`. Chinese: "自上次保存以来有新照片或报告 — 每周总结可能已过期。" / "刷新自动填充".
+
+**Design principles honored:**
+- **Saved-notes-are-sacred contract preserved** — banner informs only; teacher chooses when to refresh
+- **No new refresh path** — reuses existing `handleAutoFill`, no regression surface
+- **Filter parity** — banner's activity query exactly mirrors auto-fill's photo query, so banner fires iff auto-fill would actually pull different data
+- **60-second grace** — save POST + refetch GET roundtrip takes 1-3s in practice; 60s grace is comfortable without masking real staleness
+- **Four-state render trace** — loading/auto-filling hide it (no flicker), no-notes-yet hides it (first-visit teachers get auto-fill automatically, don't need a banner), fresh hides it, refresh clears it immediately
+
+**Audit results — all clean:**
+- `npx tsc --noEmit`: zero new errors on the 4 changed files. Pre-existing errors on notes/route.ts are the same Supabase `never` type inference and `next/server` module resolution quirks CLAUDE.md Session 21 documents as acceptable. Pre-existing i18n duplicate-key errors (TS1117) are at line 528/575/1263/1834/2754/3002+ — all unrelated to my additions at lines 2711-2712.
+- i18n parity: both keys present in both files (verified via Grep).
+- Banner IIFE traced through all six states mentally — correct render for each.
+- Banner JSX placed BEFORE the existing `{error && ...}` / `{success && ...}` message blocks — no layout conflict. Uses same `mx-4 mt-3 px-3 py-2` amber styling pattern as the error/success banners for visual consistency.
+
+**What to watch after deploy:**
+- User taps into Weekly Admin Docs → Summary tab for week of 2026-04-13 → amber banner should appear (notes saved earlier in the week, Primary Phonics photo confirmed Thursday)
+- User taps "Refresh Auto-fill" → banner disappears, UI shows Primary Phonics under Language for Lucky
+- User taps Save → banner stays hidden (next GET round-trip, new `updated_at` ≥ `latest_activity_at`, freshness check passes)
+- User generates Word doc → Primary Phonics appears in Lucky's row under Language
+
+**Files changed (4 files, ~90 lines):**
+- `app/api/montree/weekly-admin-docs/notes/route.ts` — +42 lines (parallel queries + activity reduction + JSON response field)
+- `components/montree/reports/WeeklyAdminTab.tsx` — +32 lines (state hooks, fetchData computation, banner IIFE, handleAutoFill reset)
+- `lib/montree/i18n/en.ts` — +2 lines
+- `lib/montree/i18n/zh.ts` — +2 lines
+
+**Next session priorities (updated):**
+1. **User: verify the Lucky fix on production** — hard-refresh Weekly Admin Docs → Summary tab for week of 2026-04-13 (or whichever week contains Apr 16). Expect amber banner. Tap "Refresh Auto-fill". Verify Primary Phonics Reader now appears under Language for Lucky. Save. Generate Word doc. Verify Primary Phonics is in the DOCX.
+2. **User: verify Master Campaign page on production** (Session 27 carryover) — navigate to `/montree/super-admin/marketing/master-campaign`, confirm stats load, try the download button.
+3. **Phase 5 per-school enrichment** (Session 27 carryover) — 389 Apr 16 expansion rows, highest ROI is the ~195 rows with no email where a site scrape might yield a contact.
+4. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17).
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+6. **Session 25 carryover** — confirm China CDN hit rate climbs above 80% after 24-48h via Railway logs.
+7. **Photo Audit `.like()` 50-item cap** (carryover) — pagination or pre-computed normalized name index.
+8. **Intermittent `Could not resolve photo URL for media_id=...`** in visual learning — needs a dedicated repro session.
+
+---
+
 ### ⚡ Session 28 — Stale Corrections Cleanup + AutoTranslate tool_use Refactor (Apr 16, 2026)
 
 **One commit pushed to main: `24eb850f`.** Two targeted Railway log-cleanup fixes following Session 27's Photo Bucket rollout.

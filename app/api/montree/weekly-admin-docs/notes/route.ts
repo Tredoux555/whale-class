@@ -57,19 +57,74 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
-  const { data: notes, error } = await supabase
-    .from('montree_weekly_admin_notes')
-    .select('*')
-    .eq('classroom_id', classroomId)
-    .eq('week_start', weekStart)
-    .order('created_at', { ascending: true });
+  // Compute week boundary for activity-freshness check
+  const weekEndDate = new Date(parsed.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const weekEndStr = weekEndDate.toISOString().slice(0, 10);
 
-  if (error) {
-    console.error('weekly-admin-docs/notes GET error:', error.message);
+  // Fetch notes + latest classroom activity in parallel so the client can detect
+  // stale saved notes (e.g. teacher Auto-filled earlier, then new photos landed —
+  // the saved Weekly Summary would be out of date and the generated DOCX would
+  // miss today's work). See CLAUDE.md Session 29.
+  const [notesRes, latestPhotoRes, latestWrapRes] = await Promise.all([
+    supabase
+      .from('montree_weekly_admin_notes')
+      .select('*')
+      .eq('classroom_id', classroomId)
+      .eq('week_start', weekStart)
+      .order('created_at', { ascending: true }),
+    // Most recent teacher-confirmed photo in the week (these are what auto-fill
+    // pulls from). Respects the same pending_review filter as auto-fill.
+    supabase
+      .from('montree_media')
+      .select('captured_at')
+      .eq('classroom_id', classroomId)
+      .eq('media_type', 'photo')
+      .not('work_id', 'is', null)
+      .or('identification_status.is.null,identification_status.neq.pending_review')
+      .gte('captured_at', weekStart)
+      .lt('captured_at', weekEndStr)
+      .order('captured_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    // Most recent Weekly Wrap generated/updated for the week (auto-fill's
+    // highest-priority source).
+    supabase
+      .from('montree_weekly_reports')
+      .select('updated_at, generated_at')
+      .eq('classroom_id', classroomId)
+      .eq('week_start', weekStart)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  if (notesRes.error) {
+    console.error('weekly-admin-docs/notes GET error:', notesRes.error.message);
     return NextResponse.json({ error: 'Failed to fetch notes' }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, notes: notes || [] });
+  // Reduce the latest activity timestamp across both sources
+  const activityTimes: number[] = [];
+  if (latestPhotoRes.data?.captured_at) {
+    const t = new Date(latestPhotoRes.data.captured_at).getTime();
+    if (!isNaN(t)) activityTimes.push(t);
+  }
+  if (latestWrapRes.data) {
+    const wt = latestWrapRes.data.updated_at || latestWrapRes.data.generated_at;
+    if (wt) {
+      const t = new Date(wt).getTime();
+      if (!isNaN(t)) activityTimes.push(t);
+    }
+  }
+  const latestActivityAt = activityTimes.length > 0
+    ? new Date(Math.max(...activityTimes)).toISOString()
+    : null;
+
+  return NextResponse.json({
+    success: true,
+    notes: notesRes.data || [],
+    latest_activity_at: latestActivityAt,
+  });
 }
 
 // ─── POST: Batch upsert notes ────────────────────────────────
