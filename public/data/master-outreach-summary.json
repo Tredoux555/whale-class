@@ -1,0 +1,249 @@
+{
+  "generated_at": "2026-04-16 08:28 UTC",
+  "totals": {
+    "global_schools": 785,
+    "china_schools": 350,
+    "combined": 1135
+  },
+  "global": {
+    "total": 785,
+    "with_email": 590,
+    "deliverable": 507,
+    "dead_domain": 77,
+    "no_mail_server": 3,
+    "invalid_format": 0,
+    "placeholder": 1,
+    "dns_error": 2,
+    "no_email": 195,
+    "batches": [
+      {
+        "batch": "Expansion_MainClaude_Apr16",
+        "count": 285
+      },
+      {
+        "batch": "Europe",
+        "count": 86
+      },
+      {
+        "batch": "Expansion_WebClaude_Apr16",
+        "count": 81
+      },
+      {
+        "batch": "South Asia",
+        "count": 80
+      },
+      {
+        "batch": "Americas",
+        "count": 71
+      },
+      {
+        "batch": "Asia",
+        "count": 60
+      },
+      {
+        "batch": "Middle East",
+        "count": 56
+      },
+      {
+        "batch": "Africa",
+        "count": 38
+      },
+      {
+        "batch": "Oceania",
+        "count": 28
+      }
+    ],
+    "top_countries": [
+      {
+        "country": "India",
+        "count": 92
+      },
+      {
+        "country": "USA",
+        "count": 38
+      },
+      {
+        "country": "UAE",
+        "count": 28
+      },
+      {
+        "country": "South Africa",
+        "count": 25
+      },
+      {
+        "country": "Thailand",
+        "count": 19
+      },
+      {
+        "country": "China",
+        "count": 18
+      },
+      {
+        "country": "Kenya",
+        "count": 18
+      },
+      {
+        "country": "Australia",
+        "count": 18
+      },
+      {
+        "country": "Germany",
+        "count": 15
+      },
+      {
+        "country": "Canada",
+        "count": 15
+      },
+      {
+        "country": "T\u00fcrkiye",
+        "count": 14
+      },
+      {
+        "country": "UK",
+        "count": 12
+      },
+      {
+        "country": "Switzerland",
+        "count": 11
+      },
+      {
+        "country": "Saudi Arabia",
+        "count": 11
+      },
+      {
+        "country": "New Zealand",
+        "count": 11
+      },
+      {
+        "country": "Japan",
+        "count": 10
+      },
+      {
+        "country": "Mexico",
+        "count": 10
+      },
+      {
+        "country": "Poland",
+        "count": 10
+      },
+      {
+        "country": "Netherlands",
+        "count": 9
+      },
+      {
+        "country": "Spain",
+        "count": 9
+      }
+    ]
+  },
+  "china": {
+    "total": 350,
+    "with_phone": 213,
+    "with_email": 18,
+    "deliverable": 17,
+    "top_cities": [
+      {
+        "city": "Shanghai",
+        "count": 52
+      },
+      {
+        "city": "Beijing",
+        "count": 37
+      },
+      {
+        "city": "Shenzhen",
+        "count": 28
+      },
+      {
+        "city": "Guangzhou",
+        "count": 17
+      },
+      {
+        "city": "Hangzhou",
+        "count": 15
+      },
+      {
+        "city": "Chengdu",
+        "count": 14
+      },
+      {
+        "city": "Wuhan",
+        "count": 14
+      },
+      {
+        "city": "Xiamen",
+        "count": 13
+      },
+      {
+        "city": "Chongqing",
+        "count": 12
+      },
+      {
+        "city": "Suzhou",
+        "count": 12
+      },
+      {
+        "city": "Qingdao",
+        "count": 11
+      },
+      {
+        "city": "Zhengzhou",
+        "count": 11
+      },
+      {
+        "city": "Nanjing",
+        "count": 10
+      },
+      {
+        "city": "Changsha",
+        "count": 9
+      },
+      {
+        "city": "Shenyang",
+        "count": 9
+      },
+      {
+        "city": "Kunming",
+        "count": 8
+      },
+      {
+        "city": "Xi'an",
+        "count": 7
+      },
+      {
+        "city": "Tianjin",
+        "count": 6
+      },
+      {
+        "city": "Foshan",
+        "count": 6
+      },
+      {
+        "city": "Dalian",
+        "count": 6
+      }
+    ]
+  },
+  "campaigns": {
+    "campaign_d_correction": {
+      "status": "in_progress",
+      "campaign_id": "51331921",
+      "subject": "Re: Montessori Teacher & Builder",
+      "throttle": "50/day",
+      "expected_end": "2026-04-17",
+      "note": "Correction for blank Campaign C. Threads as replies."
+    },
+    "campaign_a_montree_pitch": {
+      "status": "scheduled",
+      "campaign_id": "draft",
+      "subject": "Montree",
+      "scheduled_for": "2026-04-27 09:00 +08:00",
+      "note": "Follow-up pitch. Draws from Deliverable_Global (507 rows)."
+    },
+    "campaign_c_job_application": {
+      "status": "dead",
+      "campaign_id": "50686495",
+      "note": "Sent blank due to DOM automation failure. Killed. Do not reuse."
+    }
+  }
+}

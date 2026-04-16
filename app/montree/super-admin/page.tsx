@@ -383,6 +383,12 @@ export default function SuperAdminPage() {
               🎯 Job Tracker
             </Link>
             <Link
+              href="/montree/super-admin/marketing/master-campaign"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-500 text-sm shadow-lg"
+            >
+              🎯 Master Campaign
+            </Link>
+            <Link
               href="/montree/super-admin/marketing"
               className="px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 text-sm"
             >
