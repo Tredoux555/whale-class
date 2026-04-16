@@ -197,9 +197,9 @@ montree.xyz
 
 ## RECENT STATUS (Apr 16, 2026)
 
-### ⚡ Session 29 — Weekly Admin Docs Freshness Banner (the Lucky audit fix) (Apr 16, 2026)
+### ⚡ Session 29 — Weekly Admin Docs Freshness Banner (the Lucky audit fix) + Post-Push Audit (Apr 16, 2026)
 
-**One commit pushed to main.** Closes CLAUDE.md Session 28's priority #1 — "Lucky / Primary Phonics Reader / Weekly Summary missing." The pipeline traced cleanly end-to-end; root cause was UI-only.
+**One commit pushed to main: `c2f59e2c`.** Closes CLAUDE.md Session 28's priority #1 — "Lucky / Primary Phonics Reader / Weekly Summary missing." The pipeline traced cleanly end-to-end; root cause was UI-only. Full post-push audit run — all clean, no regressions found.
 
 **The Lucky audit — root cause:**
 User flagged that Lucky did Primary Phonics Reader with other children Apr 16, the photo was confirmed in Photo Audit, but it didn't appear in the Weekly Admin Docs Weekly Summary for the week of Apr 13. Traced through every stage:
@@ -231,11 +231,17 @@ Added two state hooks (`latestActivityAt`, `earliestNoteUpdatedAt`). `fetchData`
 - **60-second grace** — save POST + refetch GET roundtrip takes 1-3s in practice; 60s grace is comfortable without masking real staleness
 - **Four-state render trace** — loading/auto-filling hide it (no flicker), no-notes-yet hides it (first-visit teachers get auto-fill automatically, don't need a banner), fresh hides it, refresh clears it immediately
 
-**Audit results — all clean:**
+**Audit results — all clean (verified post-push on commit `c2f59e2c`):**
 - `npx tsc --noEmit`: zero new errors on the 4 changed files. Pre-existing errors on notes/route.ts are the same Supabase `never` type inference and `next/server` module resolution quirks CLAUDE.md Session 21 documents as acceptable. Pre-existing i18n duplicate-key errors (TS1117) are at line 528/575/1263/1834/2754/3002+ — all unrelated to my additions at lines 2711-2712.
-- i18n parity: both keys present in both files (verified via Grep).
-- Banner IIFE traced through all six states mentally — correct render for each.
+- i18n parity: both keys present in both files (verified via Grep — en.ts lines 2711-2712, zh.ts lines 2712-2713).
+- Banner IIFE traced through all six states — correct render for each: (1) loading=true → null, (2) autoFilling=true → null, (3) no notes yet (earliestNoteUpdatedAt=null) → null, (4) fresh within 60s grace → null, (5) stale (Lucky's case) → render, (6) just refreshed (bumped to now, activity can't exceed now+60s) → null.
 - Banner JSX placed BEFORE the existing `{error && ...}` / `{success && ...}` message blocks — no layout conflict. Uses same `mx-4 mt-3 px-3 py-2` amber styling pattern as the error/success banners for visual consistency.
+- Race conditions clean: week-switch via ◀/▶ sets `loading=true` synchronously at the top of `fetchData`, and the banner guards on `loading`, so no stale-week render during transition. `handleAutoFill` captures `requestedWeek = weekStart` at call time (line 345) and guards against `weekRef.current !== requestedWeek` after both `await` boundaries (lines 356, 364) — no cross-week state pollution.
+- GET route null/NaN handling: activity reduce guards both `captured_at` and `updated_at||generated_at` paths with `isNaN()` checks; `Math.max(...activityTimes)` never runs on empty array because of the preceding `length > 0` check. Returns `null` for `latest_activity_at` when no photos and no wrap exist.
+- `handleAutoFill` comment at lines 413-416 was rewritten this session to accurately describe the "bump earliestNoteUpdatedAt to now" pattern — the prior comment said "stays as-is" which contradicted the line right below it.
+
+**Minor non-blocking robustness note (for future consideration, not a bug):**
+The wrap query `.order('updated_at', { ascending: false }).limit(1)` on `montree_weekly_reports` could put a row with `updated_at=NULL` ahead of one with a non-null stale `updated_at` depending on PostgREST nulls ordering. Theoretical only — per our schema, both columns are populated for wraps written by the current generate path, and the code falls back to `generated_at` when `updated_at` is null, so either ordering produces a valid timestamp. If we ever see staleness detection misfire in production, the fix is a query coalescing `GREATEST(updated_at, generated_at)` server-side.
 
 **What to watch after deploy:**
 - User taps into Weekly Admin Docs → Summary tab for week of 2026-04-13 → amber banner should appear (notes saved earlier in the week, Primary Phonics photo confirmed Thursday)
