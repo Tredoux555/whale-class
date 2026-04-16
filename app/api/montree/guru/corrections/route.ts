@@ -1045,7 +1045,12 @@ async function feedBrainLearning({
     timestamp: new Date().toISOString(),
   };
 
-  const payload = { p_learning: newLearning };
+  // Function signature: append_guru_learning(learning_json TEXT, max_learnings INT DEFAULT 200)
+  // See migrations/133_guru_tiers.sql. The function JSONB-parses learning_json internally.
+  const payload = {
+    learning_json: JSON.stringify(newLearning),
+    max_learnings: 200,
+  };
 
   try {
     const { error: brainError } = await supabase.rpc('append_guru_learning', payload);
