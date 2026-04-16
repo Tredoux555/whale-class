@@ -343,7 +343,7 @@ export default function WorkDetailPage() {
             <h2 className="font-semibold text-gray-900 text-lg mb-3">{t('work.videos')}</h2>
             <div className="space-y-3">
               {videos.map((v, i) => (
-                <video key={i} controls className="w-full rounded-lg" src={getMediaUrl(v.storage_path)}>
+                <video key={i} controls playsInline preload="metadata" className="w-full rounded-lg" src={getMediaUrl(v.storage_path)}>
                   {t('work.video_not_supported')}
                 </video>
               ))}

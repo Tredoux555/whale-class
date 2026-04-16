@@ -87,7 +87,7 @@ export function MessagesTab({
 
               {msg.message_type === 'video' && msg.media_url && (
                 <div className="mt-2">
-                  <video src={msg.media_url} controls className="max-w-xs rounded-lg" />
+                  <video src={msg.media_url} controls playsInline preload="metadata" className="max-w-xs rounded-lg" />
                   <button
                     onClick={() => onSaveToVault(msg.id, msg.media_url!, msg.media_filename)}
                     disabled={savingToVault === msg.id || savedToVault.has(msg.id)}

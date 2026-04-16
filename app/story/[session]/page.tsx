@@ -643,7 +643,20 @@ export default function StoryViewer() {
                         <img src={msg.mediaUrl} alt="Shared" className="max-w-full h-auto rounded-lg max-h-48" />
                       )}
                       {msg.type === 'video' && msg.mediaUrl && (
-                        <video src={msg.mediaUrl} controls className="max-w-full h-auto rounded-lg max-h-48" />
+                        <video
+                          src={msg.mediaUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          className="max-w-full h-auto rounded-lg max-h-48"
+                          onError={(e) => {
+                            const v = e.currentTarget;
+                            if (!v.dataset.retried) {
+                              v.dataset.retried = '1';
+                              v.load();
+                            }
+                          }}
+                        />
                       )}
                       {msg.type === 'audio' && msg.mediaUrl && (
                         <audio src={msg.mediaUrl} controls className="w-full" />
@@ -794,7 +807,16 @@ export default function StoryViewer() {
                             <video
                               src={item.url}
                               controls
-                              className="w-full h-48 object-cover"
+                              playsInline
+                              preload="metadata"
+                              className="w-full h-48 object-contain bg-black"
+                              onError={(e) => {
+                                const v = e.currentTarget;
+                                if (!v.dataset.retried) {
+                                  v.dataset.retried = '1';
+                                  v.load();
+                                }
+                              }}
                             />
                             <div className="p-2 text-sm text-gray-500">
                               <span className="font-medium">{item.author}</span>

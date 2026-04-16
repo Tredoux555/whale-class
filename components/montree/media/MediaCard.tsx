@@ -41,9 +41,12 @@ export default function MediaCard({
   const { t, locale } = useI18n();
   // Proxy URL is deterministic from storage_path (public bucket, Cloudflare-cached).
   // No network round-trip needed — skip the fetch entirely.
+  // VIDEO GUARD: Don't run videos through image transform (?w=&q=) — Supabase render
+  // endpoint rejects videos, causing a wasted round-trip before the raw fallback.
+  const isVideo = media.media_type === 'video';
   const thumbPath = media.thumbnail_path || media.storage_path;
-  const imageUrl = thumbnailUrl || (thumbPath ? getThumbnailUrl(thumbPath, 400) : null);
-  const imageSrcSet = !thumbnailUrl && thumbPath ? getThumbnailSrcSet(thumbPath, 400) : undefined;
+  const imageUrl = thumbnailUrl || (thumbPath && !isVideo ? getThumbnailUrl(thumbPath, 400) : null);
+  const imageSrcSet = !thumbnailUrl && thumbPath && !isVideo ? getThumbnailSrcSet(thumbPath, 400) : undefined;
   const [error, setError] = useState(false);
 
   // Format date

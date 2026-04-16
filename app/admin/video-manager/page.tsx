@@ -343,9 +343,11 @@ export default function VideoManagerPage() {
                 {/* Video Preview */}
                 {uploadFile && (
                   <div className="rounded-lg overflow-hidden bg-black">
-                    <video 
-                      src={URL.createObjectURL(uploadFile)} 
-                      controls 
+                    <video
+                      src={URL.createObjectURL(uploadFile)}
+                      controls
+                      playsInline
+                      preload="metadata"
                       className="w-full max-h-48"
                     />
                   </div>
@@ -425,9 +427,11 @@ export default function VideoManagerPage() {
 
                 {/* Video Preview */}
                 <div className="rounded-lg overflow-hidden bg-black">
-                  <video 
-                    src={editingVideo.videoUrl} 
-                    controls 
+                  <video
+                    src={editingVideo.videoUrl}
+                    controls
+                    playsInline
+                    preload="metadata"
                     className="w-full max-h-48"
                   />
                 </div>
@@ -483,9 +487,10 @@ export default function VideoManagerPage() {
                 >
                   {/* Video Preview */}
                   <div className="aspect-video bg-black relative">
-                    <video 
-                      src={video.videoUrl} 
-                      className="w-full h-full object-cover"
+                    <video
+                      src={video.videoUrl}
+                      className="w-full h-full object-contain bg-black"
+                      playsInline
                       preload="metadata"
                     />
                     {isProblem && (
