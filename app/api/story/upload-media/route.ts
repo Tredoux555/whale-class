@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Allow large uploads on slow mobile networks (videos up to 300MB)
 export const maxDuration = 300;
@@ -139,8 +140,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Upload failed: ${msg}` }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage.from('story-uploads').getPublicUrl(storagePath);
-    const mediaUrl = urlData.publicUrl;
+    // Write a Cloudflare-proxied URL instead of Supabase's raw public URL.
+    // This routes playback through our /api/montree/media/proxy edge-cached route
+    // (HTTP Range support, China CDN, 7-day edge cache).
+    const mediaUrl = getProxyUrl(storagePath, 'story-uploads');
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 24);

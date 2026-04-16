@@ -5,6 +5,7 @@ import {
   getCurrentWeekStart,
   verifyStoryAdminToken,
 } from '@/lib/story/story-admin-auth';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 // Allow large uploads (video up to 300MB — mobile 4G can take a few min)
 export const maxDuration = 300;
@@ -294,11 +295,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Failed to upload ${mediaType}: ${msg}` }, { status: 500 });
     }
 
-    const { data: urlData } = supabase.storage
-      .from('story-uploads')
-      .getPublicUrl(filePath);
-
-    const mediaUrl = urlData.publicUrl;
+    // Write a Cloudflare-proxied URL instead of Supabase's raw public URL.
+    // Routes playback through our edge-cached proxy (HTTP Range, China CDN).
+    const mediaUrl = getProxyUrl(filePath, 'story-uploads');
     const encryptedCaption = caption.trim() ? encryptMessage(caption.trim()) : null;
 
     // Core fields only — session linking columns not present in production
