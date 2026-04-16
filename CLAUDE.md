@@ -189,13 +189,112 @@ montree.xyz
 - **Campaign D (correction)**: Should be sending (started Apr 10). Check gmass.co/dashboard for delivery stats. Verify the 50/day throttle is actually working (unlike Campaign C where it wasn't). At 50/day, done by ~Apr 17. Subject: "Re: Montessori Teacher & Builder", sends as replies threading with the original blank email.
 - **Campaign A (Montree pitch)**: Scheduled for Apr 27. Open Drafts → "Montree" to verify schedule is intact. Do NOT send early — let Campaign D's correction reach everyone first, then Campaign C's (now Campaign D's) impressions settle.
 - **Bounce cleanup**: 54+ bounce notifications from `mailer-daemon@googlemail.com` still in inbox. Search `from:mailer-daemon after:2026/4/10` → select all → archive. Gmail API tools available in Cowork are read-only + draft creation — no archive/delete/modify capability.
-- **Master spreadsheet**: `whale/Montree_Master_Outreach.xlsx` has 770 schools total (420 global + 350 China). The China list (350 schools, 213 with phone numbers, 18 with emails) is a future expansion opportunity once the global campaign results are in.
+- **Master spreadsheet**: `whale/Montree_Master_Outreach.xlsx` has 1,135 schools total (785 global + 350 China, post-Apr 16 dedup). The Global tab has Email_Status/Web_Status/Last_Verified columns from the Apr 16 MX-verification pass — 507 schools are deliverable (MX-verified, GMass-ready) and pre-filtered into the `Deliverable_Global` tab. The China list (350 schools, 213 with phone numbers, 18 with emails) is a future expansion opportunity once the global campaign results are in.
 - **🚨 NEVER automate GMass via Chrome DOM manipulation.** All GMass settings and compose body must be set by the user manually through GMass's own UI. See Session 12 post-mortem for details.
 - Repo-side "outreach" code in `app/montree/super-admin/marketing/outreach-campaign/page.tsx` and `app/api/montree/super-admin/npo-outreach/route.ts` is UNRELATED to GMass and should not be touched for this task.
 
 ---
 
 ## RECENT STATUS (Apr 16, 2026)
+
+### ⚡ Session 28 — Stale Corrections Cleanup + AutoTranslate tool_use Refactor (Apr 16, 2026)
+
+**One commit pushed to main: `24eb850f`.** Two targeted Railway log-cleanup fixes following Session 27's Photo Bucket rollout.
+
+**A. Stale corrections cleanup (SQL, user-run):**
+Railway logs were spamming `[CorrectionsMap] Stale correction ignored — work "X" not in classroom` on every photo identification pass. Root cause: early-session junk corrections in `montree_guru_corrections` pointed at work names that either (a) never existed in `montree_classroom_curriculum_works` or (b) were fabricated Haiku guesses from before the tokenize-tolerant `ilike` pass landed in Session 26. User ran a three-step SQL pack in Supabase SQL Editor:
+- Step 1 — redirected 3 rows where `corrected_to_work_name` was a valid case-insensitive match for "Bingo Phonics Review" (e.g., "bingo phonics review", "Bingo-Phonics Review") to the canonical casing.
+- Step 2 — deleted 8 rows where either `original_work_name` or `corrected_to_work_name` referenced junk values not present in the classroom curriculum (no fuzzy salvage possible — these were AI hallucinations from pre-tolerant-match days).
+- Step 3 — verify query returned 0 rows confirming clean slate.
+
+Stale correction noise should now disappear from Railway logs. If new stale entries appear over time, they would be from legitimate teacher Fix actions that then have their target work renamed/deleted — acceptable signal, not noise.
+
+**B. AutoTranslate `tool_use` refactor — `24eb850f`:**
+`lib/montree/auto-translate.ts` and `app/api/montree/curriculum/batch-translate/route.ts` both used a raw-JSON prompt pattern: ask Haiku for `{"name_zh":"...","parent_description_zh":"...","why_it_matters_zh":"..."}` as text, strip markdown fences, `JSON.parse()`. This failed on Chinese content with unescaped quotes, fullwidth punctuation, and literal newlines inside strings — notably "Friendship Bracelet Loom Weaving" was producing repeated `[AutoTranslate] Failed for "Friendship Bracelet Loom Weaving": Unexpected token in JSON` errors in Railway.
+
+Same Session 13 fix as teacher reports: replaced raw-JSON ask with `tool_use` structured output. Haiku now calls a `submit_translation` tool with three typed string fields (`name_zh`, `parent_description_zh`, `why_it_matters_zh`). The API handles JSON serialization internally — the model never produces raw JSON text, so escape-char corruption is impossible regardless of the language.
+
+Pattern exactly matches canonical `lib/montree/reports/teacher-report-generator.ts` lines 530-660 — same `tool_choice: { type: 'tool' as const, name: '...' }`, same `response.content.find((block): block is { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> } => block.type === 'tool_use' && block.name === '...')` type guard extraction.
+
+DB write path preserved: both columns written (`name_zh` + `name_chinese`) per Session 14 dual-column rule. Glossary pre-check at top of `autoTranslateToChinese` still runs first (free, no API call). Batch route still processes in batches of 5 with 500ms inter-batch delay.
+
+**Audit — CLEAN, no fixes needed:**
+- All 5 callers of `autoTranslateToChinese` verified fire-and-forget safe (return value ignored, wrapped in `.catch()`):
+  - `lib/montree/photo-identification/enrich-custom-work.ts:91` + `:188`
+  - `app/api/montree/classroom-setup/route.ts:256`
+  - `app/api/montree/principal/setup-stream/route.ts:333`
+  - `app/api/montree/principal/setup/route.ts:144`
+- `batch-translate/route.ts` has zero runtime callers — admin-only endpoint, only CLAUDE.md references.
+- `npx tsc --noEmit` returned 4 errors, all pre-existing (verified via `git show 1c1938c3:` on both files — same `.update(updateData)` Supabase `never` type inference and `next/server` module resolution quirks that CLAUDE.md Session 21 already documents as acceptable).
+- Commit diff via `git show 24eb850f -- <path>` on both files confirms clean swap: removed `response.content[0]?.type === 'text' ? response.content[0].text : ''` → `JSON.parse(jsonStr)` path, added `response.content.find(block => block.type === 'tool_use')` extraction. No collateral regressions.
+
+**What to watch in Railway logs:**
+- `[AutoTranslate] Failed for "Friendship Bracelet Loom Weaving"` — should stop.
+- New rare failure mode: `[AutoTranslate] No tool_use block for "..."` — would indicate Haiku chose not to call the tool despite `tool_choice` forcing it. Expected to be near-zero with `tool_choice: { type: 'tool', name: 'submit_translation' }`.
+- `[CorrectionsMap] Stale correction ignored` — should stop for the 11 cleaned rows. Legitimate future stale entries (from teacher Fix → work rename/delete) are acceptable signal.
+
+**Next session priorities (in order):**
+1. **Lucky / Primary Phonics Reader / Weekly Summary missing — USER-QUEUED audit.** User flagged via screenshot that Lucky did Primary Phonics today with other children but the work isn't appearing in today's Weekly Admin Docs Weekly Summary for Tredoux House. Trace the pipeline: Capture → Photo Audit confirm → `montree_media.work_id` + `teacher_confirmed=true` → Weekly Wrap generation window query → `/api/montree/weekly-admin-docs/auto-fill` area resolution → Word doc render. Candidate root causes to check in order: (a) is today's date within the current Mon-Sun window the Weekly Summary is reading? (b) is the Primary Phonics Reader photo `teacher_confirmed=true`? (c) does `auto-fill/route.ts` resolve the work's `area_id` to the canonical `language` key for Tredoux House's classroom? (d) was the Weekly Summary regenerated AFTER the photo was confirmed (stale cache is suspect #1 — user may need to tap "Auto-fill" again)?
+2. **User: verify Master Campaign page on production** (Session 27 carryover) — navigate to `/montree/super-admin/marketing/master-campaign`, confirm stats load, try the download button.
+3. **Phase 5 per-school enrichment** (Session 27 carryover) — 389 Apr 16 expansion rows, highest ROI is the ~195 rows with no email where a site scrape might yield a contact.
+4. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17).
+5. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+6. **Session 25 carryover** — confirm China CDN hit rate climbs above 80% after 24-48h via Railway logs.
+7. **Photo Audit `.like()` 50-item cap** (carryover) — pagination or pre-computed normalized name index.
+8. **Intermittent `Could not resolve photo URL for media_id=...`** in visual learning — needs a dedicated repro session.
+
+---
+
+### ⚡ Session 27 — Master Campaign Super-Admin Page + Deliverability Audit + Dedup (Apr 16, 2026)
+
+**One commit pushed to main: `b1345bc9`.** Integrated the MX-verified outreach master list into the Montree super-admin panel as a live, auth-gated dashboard. Net-new: 2 API routes + 1 page + 2 edits + 1 pre-baked JSON + a dedup pass that dropped Global from 786 → 785 and Deliverable_Global from 508 → 507.
+
+**A. Deliverability audit (pre-session, Apr 16 Phases 1–4):**
+- Global Outreach expanded to 786 schools (up from 420 pre-session via a WebClaude research sweep — batch tags `Expansion_MainClaude_Apr16` = 285 and `Expansion_WebClaude_Apr16` = 81)
+- 4-phase verification pipeline: format validation → MX lookup (dnspython, 8.8.8.8/1.1.1.1/8.8.4.4, 4s timeout, 30-worker ThreadPoolExecutor) → HTTP HEAD→GET reachability (5s timeout, SSL-unverified) → audit column writeback with colour-coded PatternFills
+- Three new columns on Global + China tabs: `Email_Status` (deliverable / dead_domain / no_mail_server / invalid_format / placeholder / dns_error), `Web_Status` (reachable / unverified — sandbox egress filtering made `dead` unreliable, so web is informational only), `Last_Verified`
+- Colour fills: green=deliverable, red=dead_domain/no_mail_server/invalid_format, amber=dns_error/placeholder, grey=unverified
+- Pre-filtered `Deliverable_Global` tab created — 507 rows of MX-verified, GMass-ready schools (post-dedup)
+
+**B. Super-admin integration — 5 files:**
+
+1. `app/api/montree/super-admin/master-outreach/summary/route.ts` (NEW, ~30 lines) — GET, `verifySuperAdminAuth()`, reads `public/data/master-outreach-summary.json`, returns parsed JSON with `Cache-Control: no-store`.
+2. `app/api/montree/super-admin/master-outreach/download/route.ts` (NEW, ~35 lines) — GET, same auth gate, streams `Montree_Master_Outreach.xlsx` from `process.cwd()` with `Content-Disposition: attachment; filename="..._${date}.xlsx"`. Converts Node Buffer to ArrayBuffer slice for `NextResponse` body.
+3. `app/montree/super-admin/marketing/master-campaign/page.tsx` (NEW, ~280 lines) — Login gate reusing `sa_pwd` sessionStorage pattern (same as `api-usage/page.tsx`). Emerald hero card with totals + big download button. 4-card deliverability grid (Deliverable 507 / Dead 77 / No mail server 3 / No email 195). 3 CampaignCards (D in_progress / A scheduled Apr 27 / C dead). Side-by-side batches + top-countries tables. China city pills. xlsx tab legend footer.
+4. `app/montree/super-admin/marketing/page.tsx` (EDITED) — Added `Master Campaign` card as the FIRST featured tool in the INTELLIGENCE section.
+5. `app/montree/super-admin/page.tsx` (EDITED) — Added a direct emerald `🎯 Master Campaign` button next to the Marketing Hub button on the super-admin root.
+
+**C. Pre-baked summary JSON — architectural decision:**
+`package.json` has no xlsx/exceljs/sheetjs — parsing xlsx at runtime in Next.js would require adding a dependency. Instead, the Python pipeline writes a pre-baked JSON to `public/data/master-outreach-summary.json` containing every stat the dashboard needs: totals, deliverability breakdown, batches, top countries, top China cities, campaign metadata. The summary route just reads and returns it. Ship-time cost = one JSON file (4.5KB). Runtime cost = one `readFile` per dashboard load. Zero npm deps added.
+
+**D. Dedup pass — 1 real duplicate resolved:**
+- `info@msb.edu.cn` appeared on Rows 20 and 23 of Global Outreach. Both the same institution — "MSB Beijing" (Row 20, richer record with Notes + AgeRange 2-12) and "International Montessori School of Beijing" (Row 23, the formal name, AgeRange 2-6 only). Merged the formal name into Row 20's Notes field, deleted Row 23.
+- `info@montessoriacademy.cn` flagged as a dup in the prior session's handoff was stale — only one hit. No action needed.
+- China tab scanned: zero email duplicates.
+- Result: Global 786 → 785; Deliverable_Global 508 → 507; Combined 1,136 → 1,135. All three surfaces (summary JSON + Marketing Hub card description + Master Campaign page hero) updated to reflect new counts.
+
+**E. Apr 16 Summary tab audit block appended** to document the dedup pass in the workbook itself (Rows 60–67). The audit trail lives with the data.
+
+**Production verification:** `/montree/super-admin/marketing/master-campaign` on production returns 403 (correct — auth-gated). Full browser verification pending Railway deploy of `b1345bc9` (typically 2-3 min post-push). Page was audited locally: sheet counts, headers, colour fills, cross-check of deliverable count vs Deliverable_Global tab all match.
+
+**🚨 Critical architectural notes for future sessions:**
+- **Never parse xlsx at runtime in Next.js** — the project has no xlsx library. Pre-bake stats into `public/data/*.json` during the Python pipeline. The download route streams the raw xlsx binary; everything else reads the pre-baked JSON.
+- **`sa_pwd` sessionStorage + `x-super-admin-password` header** is the canonical super-admin client auth pattern. Use `verifySuperAdminAuth()` on the server. See `app/montree/super-admin/api-usage/page.tsx` for the reference implementation.
+- **Master Campaign is the single source of truth for outreach numbers** going forward. The `outreach-campaign` page and other marketing hub tools are legacy/unrelated. If you need to know the list state, check the Master Campaign page or the pre-baked JSON.
+- **Column naming gotcha**: China tab cells with no email serialize as Python `None` via openpyxl rather than `''` (empty string). Visually identical in Excel, but strict equality checks and CSV exports will diverge. If you touch the China writeback pipeline, normalize empty cells to `''` on write.
+
+**Pending work (scoped for future sessions, NOT this session's scope):**
+- **Phase 5 — per-school enrichment**: WebFetch each of ~389 net-new rows (366 Apr 16 expansion + 23 Transparent Classroom users) to verify/refresh contact details from live school websites. Highest-ROI subset is the ~195 schools with no email on file where a site scrape might yield a new contact. Estimated time: ~3 hours at 30s/fetch. Batch as a dedicated task.
+- **Production browser verification** of `/montree/super-admin/marketing/master-campaign` once Railway deploys. User action required — can't be automated (auth-gated).
+
+**Next session priorities:**
+1. **User: verify Master Campaign page renders correctly** — log into super-admin, navigate to `/montree/super-admin/marketing/master-campaign`, confirm stats load, try download button, verify the xlsx downloads cleanly.
+2. **Phase 5 enrichment batch** — if desired, kick off the 389-row WebFetch enrichment on the Apr 16 expansion rows (see scope above).
+3. **Monitor Campaign D** on gmass.co/dashboard — should be done now. Pull open/bounce rates.
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+5. **Session 25 carryover** — monitor China user load times via Railway logs, confirm CDN hit rate climbs above 80% after 24-48h post-deploy.
+
+---
 
 ### ⚡ Session 26 — Bingo Phonics Tolerant Matching + Double-Header Cleanup (Apr 16, 2026)
 
