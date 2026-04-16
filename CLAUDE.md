@@ -197,6 +197,98 @@ montree.xyz
 
 ## RECENT STATUS (Apr 16, 2026)
 
+### ⚡ Session 32 — Video Streaming Overhaul: Range Support, Multi-Bucket Proxy, Mobile Playback (Apr 16, 2026)
+
+**One commit pushed to main: `4dabaea9`.** User reported "the videos are not streaming properly and are buggy at times." Deep audit across 21 files containing `<video>` elements + all upload/proxy routes found 5 root causes. All fixed in a single commit across 9 files.
+
+**Root causes identified and fixed:**
+
+**A. No HTTP Range support on proxy route (THE headline fix):**
+`app/api/montree/media/proxy/[...path]/route.ts` was returning `200 OK` for every request with no `Accept-Ranges`, `Content-Range`, or Range header forwarding. This meant: (a) video seeking was broken — browser couldn't request byte ranges, so clicking the progress bar caused a full re-download from the start, (b) resume after connection drop was impossible, (c) iOS Safari specifically requires Range support for proper streaming and would fail silently on long videos.
+
+Additionally, `AbortSignal.timeout(30000)` was applied to the `fetch()` call — but `AbortSignal.timeout` kills the entire fetch including the body stream, not just the initial response. Any video taking >30 seconds to download (basically every video on a Chinese mobile network) was being cut off mid-stream.
+
+**Fix:** Complete rewrite of the proxy route:
+- Forwards `Range` header from browser to Supabase upstream
+- Returns `206 Partial Content` with `Content-Range` when upstream returns 206
+- Always emits `Accept-Ranges: bytes` header
+- Timeout applies only to initial response headers (via `setTimeout` + `AbortController`), NOT the body stream — long downloads complete normally
+- Added `HEAD` handler for pre-flight range probes
+- Added `maxDuration = 300` for Railway serverless
+- Passes through `ETag` and `Last-Modified` for conditional requests
+
+**B. Multi-bucket proxy support (NEW):**
+Proxy was hardcoded to `montree-media` bucket. Story videos live in `story-uploads`. Added `?bucket=` query param with server-side allowlist (`montree-media`, `story-uploads`, `photo-bank`). Default remains `montree-media` for backward compat.
+
+**C. Story videos bypassing Cloudflare CDN:**
+Both `app/api/story/upload-media/route.ts` (line 142) and `app/api/story/admin/send/route.ts` (line 297) were writing raw Supabase `publicUrl` to the DB instead of a Cloudflare-proxied URL. All new Story uploads now write `/api/montree/media/proxy/{path}?bucket=story-uploads` — edge-cached at Cloudflare's Asia-Pacific POPs. Existing rows with old URLs still work but won't benefit from edge caching until re-uploaded.
+
+**D. MediaCard running videos through image transform:**
+`components/montree/media/MediaCard.tsx` had no `media_type` guard — every video tile went through `getThumbnailUrl(path, 400)` which appends `?w=400&q=70`, hitting Supabase's render endpoint. Render rejects video MIME types and returns an error, then the proxy falls back to raw — two wasted round-trips per video tile. Fixed: `isVideo = media.media_type === 'video'` guard skips transform path entirely for videos.
+
+**E. Missing iOS playback attributes on `<video>` elements:**
+6 `<video>` elements across 4 files were missing `playsInline` (iOS forces fullscreen without it), `preload="metadata"` (loads duration/dimensions without downloading the whole file), and `onError` retry. Fixed in:
+- `app/story/[session]/page.tsx` — both inline messages video (line 646) and Classroom Videos grid (line 794)
+- `app/admin/video-manager/page.tsx` — upload preview, edit preview, and grid tile (3 locations)
+- `app/story/admin/dashboard/components/MessagesTab.tsx` — admin message view
+- `app/montree/library/[workId]/page.tsx` — library work detail videos
+Also changed `object-cover` to `object-contain bg-black` on the Classroom Videos grid so portrait videos aren't cropped.
+
+**F. proxy-url.ts helpers extended:**
+- Added `getVideoProxyUrl(storagePath, bucket?)` — plain proxy URL with NO image transform params
+- All helpers now accept optional `bucket` param for multi-bucket support
+- Added `ProxyBucket` type export
+- JSDoc comments clarify "IMAGES ONLY" on `getThumbnailUrl`/`getThumbnailSrcSet`
+
+**Audit scope — 21 files with `<video>` elements inspected:**
+- Fixed (6 files): story/[session], video-manager, MessagesTab, library/[workId], MediaCard, proxy route
+- Already correct (3 files): CameraCapture.tsx (has playsInline+muted), snap/page.tsx (live camera), raz/page.tsx (live camera)
+- Not applicable (12 files): camera/capture components (live streams), flashcard-maker (local blob), activity videos (Whale Class admin), etc.
+
+**TypeScript check:** `npx tsc --noEmit` — zero new errors. All errors on edited files are pre-existing Supabase `never` type inference quirks documented in Session 21 as acceptable.
+
+**What to watch after deploy:**
+- Video seeking should now work on all browsers — tap the progress bar mid-video and it should jump, not restart
+- iOS Safari: videos should play inline (not force fullscreen) and seeking should work
+- Story page videos (China users): should load faster via Cloudflare edge cache (new uploads only — old URLs still hit Supabase directly)
+- Railway logs: `[PROXY] Media proxy error:` should be rare. `504 Upstream timeout` only on initial response timeout (30s), never on body stream
+- MediaCard grid: video tiles should no longer cause 400s from the Supabase render endpoint
+
+**Files changed (9 files, +227 -57 lines):**
+- `app/api/montree/media/proxy/[...path]/route.ts` — complete rewrite (Range, HEAD, multi-bucket, stream-safe timeout)
+- `lib/montree/media/proxy-url.ts` — `getVideoProxyUrl()`, `ProxyBucket` type, bucket param on all helpers
+- `app/api/story/upload-media/route.ts` — proxy URL instead of Supabase publicUrl
+- `app/api/story/admin/send/route.ts` — proxy URL instead of Supabase publicUrl
+- `components/montree/media/MediaCard.tsx` — `isVideo` guard on transform path
+- `app/story/[session]/page.tsx` — `playsInline preload="metadata" onError` on 2 video elements
+- `app/admin/video-manager/page.tsx` — `playsInline preload="metadata"` on 3 video elements
+- `app/story/admin/dashboard/components/MessagesTab.tsx` — `playsInline preload="metadata"`
+- `app/montree/library/[workId]/page.tsx` — `playsInline preload="metadata"`
+
+**🚨 Architectural notes for future sessions:**
+- **Proxy route now handles multiple buckets** — use `?bucket=story-uploads` or `?bucket=photo-bank`. Default is `montree-media`. Allowlist is in the route file. To add a new bucket, add it to the `ALLOWED_BUCKETS` set AND update the `ProxyBucket` type in `proxy-url.ts`.
+- **Never apply `AbortSignal.timeout()` to a `fetch()` whose body stream you need** — it kills the stream, not just the headers. Use `setTimeout` + `AbortController` for header-only timeout, then let the body stream flow freely.
+- **`getVideoProxyUrl()` vs `getThumbnailUrl()`** — use `getVideoProxyUrl` for any non-image media. `getThumbnailUrl` appends `?w=&q=` which triggers Supabase's image render endpoint — this rejects videos and wastes a round-trip.
+- **Old Story DB rows still have raw Supabase URLs** — they play fine but bypass Cloudflare. A future migration could UPDATE `story_message_history SET media_url = replace(media_url, 'https://dmfncjjtsoxrnvcdnvjq.supabase.co/storage/v1/object/public/story-uploads/', '/api/montree/media/proxy/')` + append `?bucket=story-uploads` to retroactively enable edge caching.
+
+**Not fixed this session (lower priority, documented for future):**
+1. **4 upload routes missing Session 18/19 hardening** — `whale/activity-videos/upload`, `whale/montessori-works/upload-video`, `montree/media/upload`, `story/admin/vault/upload` still have 30s default timeouts on large uploads. These are Whale Class admin routes with low traffic.
+2. **`URL.revokeObjectURL()` leak in video-manager** — `URL.createObjectURL(uploadFile)` at line 347 is never revoked. Minor memory leak on repeated uploads.
+3. **Unsafe `response.json()` on HTML error bodies** — `story/upload-media` lines 173-182 call `.json()` on responses that might be HTML 502s from Railway. The `uploadWithRetry()` pattern handles this at the network level but the final error path doesn't.
+
+**Next session priorities (updated):**
+1. **Test video streaming on production** — hard-refresh Story page after Railway deploys `4dabaea9`. Play a video, seek to the middle, verify it jumps instantly instead of restarting. Test on iOS Safari if available.
+2. **Verify Master Campaign page on production** (Session 27 carryover) — navigate to `/montree/super-admin/marketing/master-campaign`, confirm stats load, try the download button.
+3. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17).
+4. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+5. **Phase 5 per-school enrichment** (Session 27 carryover) — 389 Apr 16 expansion rows.
+6. **Session 25 carryover** — confirm China CDN hit rate climbs above 80% after 24-48h via Railway logs.
+7. **Photo Audit `.like()` 50-item cap** (carryover) — pagination or pre-computed normalized name index.
+8. **Intermittent `Could not resolve photo URL for media_id=...`** in visual learning — needs a dedicated repro session.
+9. **Consider retroactive Story URL migration** — UPDATE old `story_message_history` rows to use proxy URLs for edge caching.
+
+---
+
 ### ⚡ Session 31 — Weekly Admin Docs Standalone Page: mountedRef Cleanup Bug + Session 30 Parity (Apr 16, 2026)
 
 **One commit pushed to main: `1b5f0ec2`.** User reported on the standalone `/montree/dashboard/weekly-admin-docs` page: "when I click on the 'autofill' icon I'm getting loads of error messages" — two screenshots showed (a) 5× console 502s on `/api/montree/media/p...g?v=...` and (b) the page stuck at "Loading..." after clicking Auto-fill. Post-fix, user confirmed "it looked like it worked."
