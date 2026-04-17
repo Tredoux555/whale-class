@@ -95,6 +95,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Cache-bust param forces browser to fetch the new image after a re-take
     // (Supabase CDN caches by URL — without this, the old face shows until cache expires)
     // Note: this ?v= param persists in the DB. Strip it if you ever need to compare storage paths.
+    //
+    // ⚠️ This stores a FULL Supabase URL. Dozens of <img src={photo_url}> consumers
+    // (students, labels, raz, admin pages, parent portal) depend on that.
+    // Call sites that go through Cloudflare edge — `getProxyUrl(child.photo_url)` on
+    // dashboard/capture/language-semester — rely on `normalizeToStoragePath()` in
+    // `lib/montree/media/proxy-url.ts` to strip this prefix at render time.
     const photoUrlWithBust = `${photoUrl}?v=${Date.now()}`;
 
     // Save URL to montree_children.photo_url
