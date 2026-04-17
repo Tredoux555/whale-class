@@ -1,6 +1,7 @@
 // app/admin/qr-generator/page.tsx
 // QR code generator for newsletters, song deep-links, and ad-hoc admin use.
-// Uses api.qrserver.com (free, CORS-enabled) for PNG rendering, JSZip for bulk bundles.
+// Uses the `qrcode` npm package for local PNG generation (no external API, no CSP issues).
+// JSZip is used for bulk bundles.
 
 'use client';
 
@@ -8,6 +9,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import JSZip from 'jszip';
+import QRCode from 'qrcode';
 
 type Mode = 'single' | 'song' | 'bulk';
 
@@ -16,16 +18,22 @@ interface BulkRow {
   url: string;
 }
 
-const QR_API = 'https://api.qrserver.com/v1/create-qr-code/';
-
-function buildQrSrc(data: string, size: number): string {
-  const params = new URLSearchParams({
-    size: `${size}x${size}`,
-    data,
-    margin: '2',
-    ecc: 'M',
+// Generate a PNG data URL locally — no network call.
+async function generateQrDataUrl(data: string, size: number): Promise<string> {
+  return await QRCode.toDataURL(data, {
+    width: size,
+    margin: 2,
+    errorCorrectionLevel: 'M',
+    color: { dark: '#000000', light: '#ffffff' },
   });
-  return `${QR_API}?${params.toString()}`;
+}
+
+// Generate a PNG blob locally — no network call.
+async function generateQrBlob(data: string, size: number): Promise<Blob> {
+  const dataUrl = await generateQrDataUrl(data, size);
+  // data URL → blob
+  const res = await fetch(dataUrl);
+  return await res.blob();
 }
 
 function slugify(raw: string): string {
@@ -35,12 +43,6 @@ function slugify(raw: string): string {
     .replace(/['"]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
-}
-
-async function fetchQrPng(data: string, size: number): Promise<Blob> {
-  const res = await fetch(buildQrSrc(data, size));
-  if (!res.ok) throw new Error(`QR API returned ${res.status}`);
-  return await res.blob();
 }
 
 function downloadBlob(blob: Blob, filename: string) {
@@ -94,6 +96,9 @@ export default function QrGeneratorPage() {
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
 
+  // Preview — computed async so we hold the data URL in state
+  const [previewSrc, setPreviewSrc] = useState<string>('');
+
   useEffect(() => {
     // Auth gate — reuse the same check as the admin hub
     (async () => {
@@ -125,15 +130,32 @@ export default function QrGeneratorPage() {
     return '';
   }, [mode, singleUrl, songUrl]);
 
-  const previewSrc = useMemo(() => {
-    if (!activeUrl) return '';
-    return buildQrSrc(activeUrl, size);
+  // Regenerate preview whenever URL or size changes
+  useEffect(() => {
+    let cancelled = false;
+    if (!activeUrl) {
+      setPreviewSrc('');
+      return;
+    }
+    generateQrDataUrl(activeUrl, size)
+      .then(dataUrl => {
+        if (!cancelled) setPreviewSrc(dataUrl);
+      })
+      .catch(err => {
+        if (!cancelled) {
+          console.error('QR preview failed:', err);
+          setPreviewSrc('');
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeUrl, size]);
 
   async function handleSingleDownload() {
     if (!activeUrl) return;
     try {
-      const blob = await fetchQrPng(activeUrl, size);
+      const blob = await generateQrBlob(activeUrl, size);
       let filename: string;
       if (mode === 'song') {
         filename = `qr-song-${songSlug || 'untitled'}.png`;
@@ -173,7 +195,7 @@ export default function QrGeneratorPage() {
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         try {
-          const blob = await fetchQrPng(row.url, size);
+          const blob = await generateQrBlob(row.url, size);
           const arr = await blob.arrayBuffer();
 
           // Make a safe, unique filename
@@ -462,13 +484,9 @@ Five Senses, https://teacherpotato.xyz/whale-class#song-five-senses`}
 
         {/* Footer hint */}
         <div className="text-xs text-slate-500 pt-4 border-t border-slate-700/60">
-          QR PNGs are rendered by{' '}
-          <a href="https://goqr.me/api/" target="_blank" rel="noreferrer" className="underline hover:text-slate-300">
-            api.qrserver.com
-          </a>{' '}
-          (free public API). If you ever need to work offline or host this in-house, install the{' '}
-          <code className="bg-slate-900 px-1 rounded">qrcode</code> npm package and swap{' '}
-          <code className="bg-slate-900 px-1 rounded">buildQrSrc()</code> / <code className="bg-slate-900 px-1 rounded">fetchQrPng()</code> for local generation.
+          QR PNGs are generated locally in your browser via the{' '}
+          <code className="bg-slate-900 px-1 rounded">qrcode</code> npm package — no external services,
+          no rate limits, works offline.
         </div>
       </div>
     </div>
