@@ -51,7 +51,7 @@ const GAME_PLAN_TOOL = {
         items: { type: 'string' },
         minItems: 3,
         maxItems: 5,
-        description: 'NEW works (not from previous week). Use exact curriculum work names. Spread across areas.',
+        description: 'NEW works from the AVAILABLE WORKS list. Copy names EXACTLY as written — do not rename or paraphrase.',
       },
       direction: {
         type: 'string',
@@ -121,6 +121,29 @@ async function replanChild(childId, childName) {
 
   const progressSummary = await buildProgressSummary(childId);
 
+  // Load curriculum work names to constrain Haiku to real names
+  const { data: curriculumWorks } = await supabase
+    .from('montree_classroom_curriculum_works')
+    .select('id, name, name_chinese, name_zh, area_id')
+    .eq('classroom_id', WHALE_CLASSROOM);
+  const { data: curriculumAreas } = await supabase
+    .from('montree_classroom_curriculum_areas')
+    .select('id, area_key')
+    .eq('classroom_id', WHALE_CLASSROOM);
+  const areaIdToKey = new Map((curriculumAreas || []).map((a) => [a.id, a.area_key]));
+
+  const worksByArea = {};
+  for (const w of (curriculumWorks || [])) {
+    const areaKey = areaIdToKey.get(w.area_id);
+    if (!areaKey) continue;
+    if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
+    worksByArea[areaKey].push(w.name);
+  }
+
+  const availableWorksList = Object.entries(worksByArea)
+    .map(([area, works]) => `[${area}] ${works.join(', ')}`)
+    .join('\n');
+
   const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 
 CHILD: ${childName}
@@ -131,12 +154,16 @@ ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-HARD RULES — this is "next week's plan", not "last week's plan":
-1. DO NOT pick any work from PREVIOUS WORKS. Those were last week. The child either advanced on them (move on) or didn't engage (try something else).
-2. Pick 3-5 NEW works that build on mastered/practiced areas. Natural progression only — if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-3. If a child genuinely still needs repetition on one previous work, you may include AT MOST ONE previous work, but the other 2-4 slots must be new.
-4. The nudge should describe FORWARD movement: "Ready for X", "Move her into Y", "Bridge to Z" — never "continue with" or "keep working on" a previous work.
-5. Spread the new works across different curriculum areas when possible — don't pile all 5 into one area.
+AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT names as written:
+${availableWorksList}
+
+RULES:
+1. DO NOT pick any work from PREVIOUS WORKS.
+2. Pick 3-5 NEW works from the AVAILABLE WORKS list above. Copy the name EXACTLY as written — do not paraphrase, shorten, or rename.
+3. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
+4. AT MOST ONE previous work may repeat if genuinely needed — the other slots must be new.
+5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
+6. Spread across different curriculum areas — don't pile all into one area.
 
 What's the teacher's next move?`;
 
@@ -170,16 +197,7 @@ What's the teacher's next move?`;
   // Wipe old shelf
   await supabase.from('montree_child_focus_works').delete().eq('child_id', childId);
 
-  // Resolve work names → areas via classroom curriculum
-  const { data: curriculumWorks } = await supabase
-    .from('montree_classroom_curriculum_works')
-    .select('id, name, name_chinese, name_zh, area_id')
-    .eq('classroom_id', WHALE_CLASSROOM);
-  const { data: curriculumAreas } = await supabase
-    .from('montree_classroom_curriculum_areas')
-    .select('id, area_key')
-    .eq('classroom_id', WHALE_CLASSROOM);
-  const areaIdToKey = new Map((curriculumAreas || []).map((a) => [a.id, a.area_key]));
+  // Curriculum already loaded above for prompt constraint — reuse here
 
   // Tokenize-tolerant fuzzy match — same algorithm as replan-child.ts
   function fuzzyFindWork(planWorkName) {
