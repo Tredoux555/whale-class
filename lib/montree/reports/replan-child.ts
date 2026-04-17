@@ -36,7 +36,7 @@ const GAME_PLAN_TOOL = {
         type: 'array' as const,
         items: { type: 'string' as const },
         description:
-          '3-5 specific works to present next. Use EXACT names from the classroom curriculum.',
+          '3-5 works from the AVAILABLE WORKS list. Copy names EXACTLY as written — do not rename or paraphrase.',
       },
       direction: {
         type: 'string' as const,
@@ -158,6 +158,36 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
         ?.works ||
       [];
 
+    // ── Stage 2.5: Load curriculum work names to constrain Haiku ──────
+    // Feed the actual work list into the prompt so Haiku picks from real
+    // names instead of paraphrasing. Eliminates the fuzzy-match problem.
+    const [promptAreasRes, promptWorksRes] = await Promise.all([
+      supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id, area_key')
+        .eq('classroom_id', classroomId),
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, area_id')
+        .eq('classroom_id', classroomId),
+    ]);
+
+    const promptAreas = (promptAreasRes.data || []) as Array<{ id: string; area_key: string }>;
+    const promptAreaIdToKey: Record<string, string> = {};
+    for (const a of promptAreas) promptAreaIdToKey[a.id] = a.area_key;
+
+    const worksByArea: Record<string, string[]> = {};
+    for (const w of (promptWorksRes.data || []) as Array<{ name: string; area_id: string }>) {
+      const areaKey = promptAreaIdToKey[w.area_id];
+      if (!areaKey) continue;
+      if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
+      worksByArea[areaKey].push(w.name);
+    }
+
+    const availableWorksList = Object.entries(worksByArea)
+      .map(([area, works]) => `[${area}] ${works.join(', ')}`)
+      .join('\n');
+
     const isZh = locale === 'zh';
     const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 ${
@@ -173,12 +203,16 @@ ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-HARD RULES — this is "next week's plan", not "last week's plan":
-1. DO NOT pick any work from PREVIOUS WORKS. Those were last week. The child either advanced on them (move on) or didn't engage (try something else).
-2. Pick 3-5 NEW works that build on mastered/practiced areas. Natural progression only — if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-3. If a child genuinely still needs repetition on one previous work, you may include AT MOST ONE previous work, but the other 2-4 slots must be new.
-4. The nudge should describe FORWARD movement: "Ready for X", "Move her into Y", "Bridge to Z" — never "continue with" or "keep working on" a previous work.
-5. Spread the new works across different curriculum areas when possible — don't pile all 5 into one area.
+AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT names as written:
+${availableWorksList}
+
+RULES:
+1. DO NOT pick any work from PREVIOUS WORKS.
+2. Pick 3-5 NEW works from the AVAILABLE WORKS list above. Copy the name EXACTLY as written — do not paraphrase, shorten, or rename.
+3. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
+4. AT MOST ONE previous work may repeat if genuinely needed — the other slots must be new.
+5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
+6. Spread across different curriculum areas — don't pile all into one area.
 
 What's the teacher's next move?`;
 
