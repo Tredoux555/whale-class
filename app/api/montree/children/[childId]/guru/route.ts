@@ -225,8 +225,10 @@ RULES:
 // Also checks montree_media_children for group photos where this child was tagged.
 async function loadRecentPhotoHint(
   supabase: ReturnType<typeof getSupabase>,
-  childId: string
+  childId: string,
+  locale?: string,
 ): Promise<RecentPhotoHint | null> {
+  const isZh = locale === 'zh';
   const windowSeconds = 90;
   const cutoffIso = new Date(Date.now() - windowSeconds * 1000).toISOString();
   try {
@@ -270,10 +272,10 @@ async function loadRecentPhotoHint(
     if (best.work_id) {
       const { data: work } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, area_id')
+        .select('name, name_chinese, area_id')
         .eq('id', best.work_id)
-        .maybeSingle();
-      if (work?.name) workName = work.name;
+        .maybeSingle() as { data: { name: string; name_chinese: string | null; area_id: string | null } | null };
+      if (work?.name) workName = (isZh && work.name_chinese) ? work.name_chinese : work.name;
       if (work?.area_id) {
         const { data: area } = await supabase
           .from('montree_classroom_curriculum_areas')
@@ -359,7 +361,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
 
         const contextText = formatContextForPrompt(childContext);
-        const recentPhoto = await loadRecentPhotoHint(supabase, childId);
+        const recentPhoto = await loadRecentPhotoHint(supabase, childId, locale);
         const systemPrompt = buildSystemPrompt(contextText, childContext.name, locale, recentPhoto);
 
         // --- Build messages (last 10 turns max to keep tokens low) ---

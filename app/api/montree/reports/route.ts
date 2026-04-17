@@ -20,30 +20,36 @@ async function enrichReportContent(
   // Get curriculum works with descriptions from database
   const { data: curriculumWorks } = await supabase
     .from('montree_classroom_curriculum_works')
-    .select('name, parent_description, why_it_matters')
+    .select('name, name_chinese, parent_description, why_it_matters')
     .eq('classroom_id', classroomId);
 
   // Build lookup map
-  const descriptions = new Map<string, { description: string; why_it_matters: string }>();
-  for (const work of curriculumWorks || []) {
-    if (work.name && work.parent_description) {
+  const descriptions = new Map<string, { description: string; why_it_matters: string; name_chinese: string | null }>();
+  for (const work of (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; parent_description: string | null; why_it_matters: string | null }>) {
+    if (work.name && (work.parent_description || work.name_chinese)) {
       descriptions.set(work.name.toLowerCase(), {
-        description: work.parent_description,
+        description: work.parent_description || '',
         why_it_matters: work.why_it_matters || '',
+        name_chinese: work.name_chinese || null,
       });
     }
   }
 
   const enrichedWorks = (content.works as Array<Record<string, unknown>>).map((work) => {
-    // If work already has a description, keep it
-    if (work.parent_description) return work;
-
-    // Otherwise, look up description from database
-    const workNameLower = (work.name || '').toLowerCase();
+    const workNameLower = ((work.name as string) || '').toLowerCase();
     const desc = descriptions.get(workNameLower);
 
+    // Backfill name_chinese if missing on legacy rows
+    const patched: Record<string, unknown> = { ...work };
+    if (!patched.name_chinese && desc?.name_chinese) {
+      patched.name_chinese = desc.name_chinese;
+    }
+
+    // If work already has a description, keep it — just return with patched name_chinese
+    if (work.parent_description) return patched;
+
     return {
-      ...work,
+      ...patched,
       parent_description: desc?.description || null,
       why_it_matters: desc?.why_it_matters || null,
     };
@@ -90,22 +96,23 @@ export async function GET(request: NextRequest) {
 
     // Enrich all reports — batch curriculum fetch by unique classroom IDs (avoid N+1)
     const uniqueClassroomIds = [...new Set((data || []).map((r: { classroom_id: string | null }) => r.classroom_id).filter(Boolean))] as string[];
-    const descriptionsByClassroom = new Map<string, Map<string, { description: string; why_it_matters: string }>>();
+    const descriptionsByClassroom = new Map<string, Map<string, { description: string; why_it_matters: string; name_chinese: string | null }>>();
 
     if (uniqueClassroomIds.length > 0) {
       const { data: allCurriculumWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('classroom_id, name, parent_description, why_it_matters')
+        .select('classroom_id, name, name_chinese, parent_description, why_it_matters')
         .in('classroom_id', uniqueClassroomIds);
 
-      for (const work of allCurriculumWorks || []) {
-        if (!work.name || !work.parent_description) continue;
+      for (const work of (allCurriculumWorks || []) as Array<{ classroom_id: string; name: string; name_chinese: string | null; parent_description: string | null; why_it_matters: string | null }>) {
+        if (!work.name || (!work.parent_description && !work.name_chinese)) continue;
         if (!descriptionsByClassroom.has(work.classroom_id)) {
           descriptionsByClassroom.set(work.classroom_id, new Map());
         }
         descriptionsByClassroom.get(work.classroom_id)!.set(work.name.toLowerCase(), {
-          description: work.parent_description,
+          description: work.parent_description || '',
           why_it_matters: work.why_it_matters || '',
+          name_chinese: work.name_chinese || null,
         });
       }
     }
@@ -116,9 +123,14 @@ export async function GET(request: NextRequest) {
       const descriptions = descriptionsByClassroom.get(report.classroom_id);
       if (!descriptions) return report;
       const enrichedWorks = (content.works as Array<Record<string, unknown>>).map((work) => {
-        if (work.parent_description) return work;
         const desc = descriptions.get(((work.name as string) || '').toLowerCase());
-        return { ...work, parent_description: desc?.description || null, why_it_matters: desc?.why_it_matters || null };
+        const patched: Record<string, unknown> = { ...work };
+        // Backfill name_chinese for legacy report rows so Chinese locale renders the right name
+        if (!patched.name_chinese && desc?.name_chinese) {
+          patched.name_chinese = desc.name_chinese;
+        }
+        if (work.parent_description) return patched;
+        return { ...patched, parent_description: desc?.description || null, why_it_matters: desc?.why_it_matters || null };
       });
       return { ...report, content: { ...content, works: enrichedWorks } };
     });
