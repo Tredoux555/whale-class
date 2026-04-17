@@ -119,7 +119,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const filledAreas = new Set<string>();
     const now = new Date().toISOString();
 
-    for (const workName of works) {
+    for (let workName of works) {
+      // Strip area prefix if Haiku wrote "Practical Life: Pouring Water"
+      if (workName.includes(':')) {
+        workName = workName.split(':').pop()!.trim();
+      }
       const key = workName.toLowerCase();
       let area = workToArea[key];
       let canonicalName = lookupToCanonical[key] || workName;

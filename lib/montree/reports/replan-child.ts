@@ -361,7 +361,11 @@ What's the teacher's next move?`;
     const filledAreas = new Set<string>();
     const now = new Date().toISOString();
 
-    for (const workName of planWorks) {
+    for (let workName of planWorks) {
+      // Strip area prefix if Haiku wrote "Practical Life: Pouring Water"
+      if (workName.includes(':')) {
+        workName = workName.split(':').pop()!.trim();
+      }
       const key = workName.toLowerCase();
       let area = workToArea[key];
       let canonicalName = lookupToCanonical[key] || workName;
