@@ -76,7 +76,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const workToArea: Record<string, string> = {};
     const lookupToCanonical: Record<string, string> = {}; // any name (EN/ZH) -> canonical English name
-    for (const w of (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
+    const allCurrWorks = (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>;
+    for (const w of allCurrWorks) {
       const areaKey = areaIdToKey[w.area_id];
       if (!areaKey) continue;
       const enKey = w.name.toLowerCase();
@@ -89,6 +90,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // Tokenize-tolerant fuzzy match — same algorithm as replan-child.ts.
+    // Handles Haiku-generated names like "Golden Bead Addition" matching
+    // "Golden Beads — Static Addition" via token prefix overlap.
+    function fuzzyFindWork(planWorkName: string): { canonicalName: string; areaKey: string } | null {
+      const planTokens = planWorkName.toLowerCase().split(/[-_\s—()\u3000]+/).filter(t => t.length > 1);
+      if (planTokens.length < 2) return null;
+      let best: { name: string; areaKey: string; score: number } | null = null;
+      for (const w of allCurrWorks) {
+        const areaKey = areaIdToKey[w.area_id];
+        if (!areaKey) continue;
+        const currTokens = w.name.toLowerCase().split(/[-_\s—()\u3000]+/).filter(t => t.length > 1);
+        if (currTokens.length === 0) continue;
+        let hits = 0;
+        for (const pt of planTokens) {
+          if (currTokens.some(ct => ct.startsWith(pt) || pt.startsWith(ct))) hits++;
+        }
+        const score = hits / Math.max(planTokens.length, currTokens.length);
+        if (score >= 0.6 && hits >= 2 && (!best || score > best.score)) {
+          best = { name: w.name, areaKey, score };
+        }
+      }
+      return best ? { canonicalName: best.name, areaKey: best.areaKey } : null;
+    }
+
     // Fill empty slots — first match per area wins
     const filled: Array<{ work_name: string; area: string }> = [];
     const filledAreas = new Set<string>();
@@ -96,13 +121,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     for (const workName of works) {
       const key = workName.toLowerCase();
-      const area = workToArea[key];
-      if (!area) continue; // work not in curriculum
+      let area = workToArea[key];
+      let canonicalName = lookupToCanonical[key] || workName;
+
+      // Fuzzy fallback when exact match fails
+      if (!area) {
+        const fuzzy = fuzzyFindWork(workName);
+        if (fuzzy) {
+          area = fuzzy.areaKey;
+          canonicalName = fuzzy.canonicalName;
+          console.log(`[FillShelf] Fuzzy match: "${workName}" → "${canonicalName}" (area=${area})`);
+        }
+      }
+
+      if (!area) continue; // work not in curriculum even with fuzzy
       if (occupiedAreas.has(area)) continue; // area already has a focus work
       if (filledAreas.has(area)) continue; // already filling this area from another plan work
-
-      // Always store canonical English name in DB — UI renders locale-aware via name_chinese.
-      const canonicalName = lookupToCanonical[key] || workName;
 
       // Set as focus work
       await supabase

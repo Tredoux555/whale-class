@@ -263,11 +263,12 @@ What's the teacher's next move?`;
 
     const workToArea: Record<string, string> = {};
     const lookupToCanonical: Record<string, string> = {};
-    for (const w of (worksRes.data || []) as Array<{
+    const allCurriculumWorks = (worksRes.data || []) as Array<{
       name: string;
       name_chinese: string | null;
       area_id: string;
-    }>) {
+    }>;
+    for (const w of allCurriculumWorks) {
       const areaKey = areaIdToKey[w.area_id];
       if (!areaKey) continue;
       const enKey = w.name.toLowerCase();
@@ -280,17 +281,74 @@ What's the teacher's next move?`;
       }
     }
 
+    // ── Tokenize-tolerant fuzzy matcher (Session 26 pattern) ─────────
+    // Haiku generates fuzzy work names like "Bingo Phonics Review Cards"
+    // when curriculum has "Bingo Phonics Review". Exact match drops these.
+    // Tokenize both strings, check prefix overlap. Threshold: 60% match
+    // with at least 2 token hits to prevent false positives on short names.
+    function fuzzyFindWork(
+      planWorkName: string,
+    ): { canonicalName: string; areaKey: string } | null {
+      const planTokens = planWorkName
+        .toLowerCase()
+        .split(/[-_\s—()\u3000]+/)
+        .filter((t) => t.length > 1);
+      if (planTokens.length < 2) return null; // single-token → exact only
+
+      let best: { name: string; areaKey: string; score: number } | null = null;
+
+      for (const w of allCurriculumWorks) {
+        const areaKey = areaIdToKey[w.area_id];
+        if (!areaKey) continue;
+        const currTokens = w.name
+          .toLowerCase()
+          .split(/[-_\s—()\u3000]+/)
+          .filter((t) => t.length > 1);
+        if (currTokens.length === 0) continue;
+
+        // Count plan tokens that prefix-match a curriculum token
+        let hits = 0;
+        for (const pt of planTokens) {
+          if (currTokens.some((ct) => ct.startsWith(pt) || pt.startsWith(ct))) {
+            hits++;
+          }
+        }
+
+        const score = hits / Math.max(planTokens.length, currTokens.length);
+        if (score >= 0.6 && hits >= 2 && (!best || score > best.score)) {
+          best = { name: w.name, areaKey, score };
+        }
+      }
+
+      return best ? { canonicalName: best.name, areaKey: best.areaKey } : null;
+    }
+
     const filled: Array<{ work_name: string; area: string }> = [];
     const filledAreas = new Set<string>();
     const now = new Date().toISOString();
 
     for (const workName of planWorks) {
       const key = workName.toLowerCase();
-      const area = workToArea[key];
-      if (!area) continue; // not in curriculum — skip silently
-      if (filledAreas.has(area)) continue; // first match per area wins
+      let area = workToArea[key];
+      let canonicalName = lookupToCanonical[key] || workName;
 
-      const canonicalName = lookupToCanonical[key] || workName;
+      // Fuzzy fallback when exact match fails
+      if (!area) {
+        const fuzzy = fuzzyFindWork(workName);
+        if (fuzzy) {
+          area = fuzzy.areaKey;
+          canonicalName = fuzzy.canonicalName;
+          console.log(
+            `[Replan] Fuzzy match: "${workName}" → "${canonicalName}" (area=${area}) for ${childName}`,
+          );
+        }
+      }
+
+      if (!area) {
+        console.log(`[Replan] ${childName}: skipped "${workName}" — no curriculum match`);
+        continue;
+      }
+      if (filledAreas.has(area)) continue; // first match per area wins
 
       await supabase.from('montree_child_focus_works').upsert(
         {
