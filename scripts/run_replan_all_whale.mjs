@@ -275,6 +275,55 @@ What's the teacher's next move?`;
     filled++;
   }
 
+  // ── Deterministic gap-fill for missing areas ──────────────────────
+  const CORE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+  const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
+
+  if (missingAreas.length > 0) {
+    const prevWorkNames = new Set(
+      (existingPlan.works || []).map((w) => w.toLowerCase()),
+    );
+
+    for (const missingArea of missingAreas) {
+      const candidates = (curriculumWorks || []).filter((w) => {
+        const ak = areaIdToKey.get(w.area_id);
+        return ak === missingArea && !prevWorkNames.has(w.name.toLowerCase());
+      });
+
+      if (candidates.length === 0) continue;
+
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+      await supabase.from('montree_child_focus_works').upsert(
+        {
+          child_id: childId,
+          area: missingArea,
+          work_id: pick.id,
+          work_name: pick.name,
+          set_by: 'weekly_wrap',
+          set_at: new Date().toISOString(),
+        },
+        { onConflict: 'child_id,area' }
+      );
+
+      await supabase.from('montree_child_work_progress').upsert(
+        {
+          child_id: childId,
+          work_id: pick.id,
+          work_name: pick.name,
+          area_key: missingArea,
+          status: 'presented',
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'child_id,work_id' }
+      );
+
+      filled++;
+      filledAreas.add(missingArea);
+      console.log(`  ↳ Gap-fill ${missingArea}: "${pick.name}" (Haiku skipped this area)`);
+    }
+  }
+
   return { nudge: updatedPlan.nudge, works: planWorks, filled };
 }
 

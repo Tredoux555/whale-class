@@ -169,6 +169,48 @@ export async function POST(request: NextRequest, context: RouteContext) {
       filledAreas.add(area);
     }
 
+    // ── Deterministic gap-fill for missing core areas ────────────────
+    const CORE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const allFilled = new Set([...occupiedAreas, ...filledAreas]);
+    const missingAreas = CORE_AREAS.filter((a) => !allFilled.has(a));
+
+    if (missingAreas.length > 0) {
+      for (const missingArea of missingAreas) {
+        const candidates = allCurrWorks.filter((w) => {
+          const ak = areaIdToKey[w.area_id];
+          return ak === missingArea;
+        });
+        if (candidates.length === 0) continue;
+
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+        await supabase
+          .from('montree_child_focus_works')
+          .upsert({
+            child_id: childId,
+            area: missingArea,
+            work_name: pick.name,
+            set_at: now,
+            set_by: 'game_plan',
+            updated_at: now,
+          }, { onConflict: 'child_id,area' });
+
+        await supabase
+          .from('montree_child_work_progress')
+          .upsert({
+            child_id: childId,
+            work_name: pick.name,
+            area: missingArea,
+            status: 'presented',
+            updated_at: now,
+          }, { onConflict: 'child_id,work_name' });
+
+        filled.push({ work_name: pick.name, area: missingArea });
+        filledAreas.add(missingArea);
+        console.log(`[FillShelf] Gap-filled ${missingArea} with "${pick.name}" for child ${childId}`);
+      }
+    }
+
     console.log(`[FillShelf] Filled ${filled.length} slots for child ${childId}: ${filled.map(f => `${f.area}=${f.work_name}`).join(', ')}`);
 
     return NextResponse.json({
