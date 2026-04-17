@@ -223,7 +223,11 @@ What's the teacher's next move?`;
 
   const filledAreas = new Set();
   let filled = 0;
-  for (const workName of planWorks) {
+  for (let workName of planWorks) {
+    // Strip area prefix if Haiku wrote "Practical Life: Pouring Water"
+    if (workName.includes(':')) {
+      workName = workName.split(':').pop().trim();
+    }
     // Pass 1: exact case-insensitive match
     let match = (curriculumWorks || []).find(
       (w) =>
