@@ -136,5 +136,5 @@ export function getThumbnailSrcSet(
  *   />
  */
 export function getVideoProxyUrl(storagePath: string, bucket?: ProxyBucket): string {
-  return buildBase(storagePath, bucket);
+  return buildBase(normalizeToStoragePath(storagePath), bucket);
 }

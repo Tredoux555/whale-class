@@ -151,12 +151,19 @@ export default function QrGeneratorPage() {
   // Load videos from the admin video-manager the first time the Song tab is opened.
   useEffect(() => {
     if (mode !== 'song' || videos.length > 0 || videosLoading) return;
-    let cancelled = false;
+    const controller = new AbortController();
     setVideosLoading(true);
     setVideosError(null);
+
+    // 15-second timeout — Supabase Storage download can be slow on cold start
+    const timer = setTimeout(() => controller.abort(), 15_000);
+
     (async () => {
       try {
-        const res = await fetch('/api/admin/video-manager', { credentials: 'include' });
+        const res = await fetch('/api/admin/video-manager', {
+          credentials: 'include',
+          signal: controller.signal,
+        });
         if (res.status === 401) {
           // Auth gate elsewhere handles the redirect; just stop here.
           return;
@@ -165,7 +172,7 @@ export default function QrGeneratorPage() {
           throw new Error(`HTTP ${res.status}`);
         }
         const data = await res.json();
-        if (cancelled) return;
+        if (controller.signal.aborted) return;
         if (data?.success && Array.isArray(data.videos)) {
           // Sort newest first
           const sorted = [...data.videos].sort((a: VideoRow, b: VideoRow) => {
@@ -178,13 +185,20 @@ export default function QrGeneratorPage() {
           setVideosError('Video list was empty.');
         }
       } catch (err) {
-        if (!cancelled) setVideosError((err as Error).message);
+        if (!controller.signal.aborted) {
+          const msg = (err as Error).name === 'AbortError'
+            ? 'Timed out loading videos. Try refreshing.'
+            : (err as Error).message;
+          setVideosError(msg);
+        }
       } finally {
-        if (!cancelled) setVideosLoading(false);
+        clearTimeout(timer);
+        if (!controller.signal.aborted) setVideosLoading(false);
       }
     })();
     return () => {
-      cancelled = true;
+      controller.abort();
+      clearTimeout(timer);
     };
   }, [mode, videos.length, videosLoading]);
 
