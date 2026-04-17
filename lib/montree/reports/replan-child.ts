@@ -1,0 +1,327 @@
+// lib/montree/reports/replan-child.ts
+// Per-child replan helper used at the end of Weekly Wrap.
+// "Wrap up this week" → for each child whose reports just generated cleanly,
+// (a) refresh their game plan (Haiku/Sonnet via tier resolver) using their
+// latest progress, then (b) wipe the current focus shelf and (c) fill it with
+// the works from the new plan.
+//
+// Splices into app/api/montree/reports/weekly-wrap/route.ts processChild().
+// Failure here MUST NOT fail the report — caller wraps in try/catch.
+//
+// Tier-aware: receives `model` from resolveReportModel() — never hardcodes a
+// model string. Whale Class on Haiku tier today; Sonnet schools route through
+// the same path with the same tool_use schema.
+//
+// Same DB write pattern as the canonical interactive flows so we don't drift:
+//   - Game plan: lib/montree/guru/settings-helper.ts updateChildSettings({ game_plan })
+//   - Shelf fill: app/api/montree/children/[childId]/fill-shelf/route.ts
+//   - Plan refresh: app/api/montree/children/[childId]/game-plan/refresh/route.ts
+
+import type Anthropic from '@anthropic-ai/sdk';
+import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+
+const GAME_PLAN_TOOL = {
+  name: 'create_game_plan' as const,
+  description:
+    'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      nudge: {
+        type: 'string' as const,
+        description:
+          'One warm sentence telling the teacher what to focus on next. Max 25 words. Acknowledges progress if any.',
+      },
+      works: {
+        type: 'array' as const,
+        items: { type: 'string' as const },
+        description:
+          '3-5 specific works to present next. Use EXACT names from the classroom curriculum.',
+      },
+      direction: {
+        type: 'string' as const,
+        description:
+          'The area progression in arrow format. E.g. "Practical Life → Sensorial → Language"',
+      },
+    },
+    required: ['nudge', 'works', 'direction'],
+  },
+};
+
+export interface ReplanInput {
+  childId: string;
+  childName: string;
+  classroomId: string;
+  locale: 'en' | 'zh';
+  /** Anthropic SDK client (must be initialized — caller checks). */
+  anthropic: Anthropic;
+  /** Anthropic model string from resolveReportModel(). NEVER hardcoded. */
+  model: string;
+  /** Service-role Supabase client. Reused from the caller's request scope. */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any;
+}
+
+export interface ReplanResult {
+  replanned: boolean;
+  works: string[];
+  /** Brief error string if replan didn't complete. Shape: 'stage: msg'. */
+  error?: string;
+}
+
+/**
+ * Refresh the child's game plan + clear/refill the focus shelf in-process.
+ * Returns { replanned: false, error } on any failure — never throws.
+ */
+export async function replanChildInProcess(input: ReplanInput): Promise<ReplanResult> {
+  const { childId, childName, classroomId, locale, anthropic, model, supabase } = input;
+
+  try {
+    // ── Stage 1: Load child + profile + progress + recent notes ────────
+    const [childRes, profileRes, progressRes, notesRes] = await Promise.all([
+      supabase
+        .from('montree_children')
+        .select('name, date_of_birth, settings')
+        .eq('id', childId)
+        .maybeSingle(),
+      supabase
+        .from('montree_child_mental_profiles')
+        .select('family_notes, special_considerations, successful_strategies, challenging_triggers')
+        .eq('child_id', childId)
+        .maybeSingle(),
+      supabase
+        .from('montree_child_work_progress')
+        .select('work_name, area, status')
+        .eq('child_id', childId),
+      supabase
+        .from('montree_teacher_notes')
+        .select('content, created_at')
+        .eq('child_id', childId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+    ]);
+
+    const child = childRes.data as
+      | { name: string; date_of_birth: string | null; settings: Record<string, unknown> | null }
+      | null;
+    if (!child) {
+      return { replanned: false, works: [], error: 'load: child not found' };
+    }
+
+    const existingPlan = (child.settings?.game_plan as Record<string, unknown>) || {};
+    const profile = profileRes.data as {
+      family_notes?: string | null;
+      special_considerations?: string | null;
+    } | null;
+    const progress = (progressRes.data || []) as Array<{
+      work_name: string;
+      area: string;
+      status: string;
+    }>;
+    const notes = (notesRes.data || []) as Array<{ content: string; created_at: string }>;
+
+    // ── Stage 2: Build progress summary for the prompt ─────────────────
+    const progressByArea: Record<
+      string,
+      { mastered: string[]; practicing: string[]; presented: string[] }
+    > = {};
+    for (const p of progress) {
+      if (!progressByArea[p.area]) {
+        progressByArea[p.area] = { mastered: [], practicing: [], presented: [] };
+      }
+      const bucket =
+        p.status === 'mastered' ? 'mastered' : p.status === 'practicing' ? 'practicing' : 'presented';
+      progressByArea[p.area][bucket].push(p.work_name);
+    }
+
+    const progressSummary = Object.entries(progressByArea)
+      .map(([area, data]) => {
+        const parts: string[] = [];
+        if (data.mastered.length) parts.push(`mastered: ${data.mastered.join(', ')}`);
+        if (data.practicing.length) parts.push(`practicing: ${data.practicing.join(', ')}`);
+        if (data.presented.length) parts.push(`presented: ${data.presented.join(', ')}`);
+        return `${area}: ${parts.join(' | ')}`;
+      })
+      .join('\n');
+
+    const recentNotes = notes
+      .map((n) => `[${new Date(n.created_at).toLocaleDateString()}] ${n.content}`)
+      .join('\n');
+
+    const previousNudge =
+      (existingPlan as Record<string, unknown>).nudge ||
+      (existingPlan as Record<string, unknown>).headline ||
+      '';
+    const previousWorks =
+      (existingPlan as Record<string, unknown>).works ||
+      ((existingPlan as Record<string, unknown>).phases as Array<Record<string, unknown>> | undefined)?.[0]
+        ?.works ||
+      [];
+
+    const isZh = locale === 'zh';
+    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+${
+  isZh
+    ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n'
+    : ''
+}
+CHILD: ${childName}
+PREVIOUS NUDGE: "${previousNudge}"
+PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
+
+${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
+${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
+${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
+
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+
+    // ── Stage 3: Generate the new game plan via tool_use ───────────────
+    const response = await anthropic.messages.create({
+      model,
+      max_tokens: 500,
+      tools: [GAME_PLAN_TOOL],
+      tool_choice: { type: 'tool', name: 'create_game_plan' },
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const toolBlock = response.content.find((b) => b.type === 'tool_use');
+    if (!toolBlock || toolBlock.type !== 'tool_use') {
+      return { replanned: false, works: [], error: 'plan: no tool_use block' };
+    }
+
+    const newPlan = toolBlock.input as { nudge?: string; works?: string[]; direction?: string };
+    const planWorks = (newPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
+
+    const updatedPlan = {
+      ...newPlan,
+      generated_at: (existingPlan.generated_at as string | undefined) || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      child_name: childName,
+      source: 'weekly_wrap',
+    };
+
+    await updateChildSettings(childId, { game_plan: updatedPlan });
+
+    // ── Stage 4: Wipe the current focus shelf ──────────────────────────
+    // Weekly Wrap is "advance to next week" — it intentionally clears the
+    // shelf so the new plan's works can populate empty slots. Single-area
+    // overrides the teacher made this week are ephemeral by design.
+    const { error: deleteErr } = await supabase
+      .from('montree_child_focus_works')
+      .delete()
+      .eq('child_id', childId);
+    if (deleteErr) {
+      console.error(`[Replan] Shelf clear failed for ${childName}:`, deleteErr.message);
+      return {
+        replanned: false,
+        works: planWorks,
+        error: `shelf-clear: ${deleteErr.message}`,
+      };
+    }
+
+    if (planWorks.length === 0) {
+      // Plan with no works is rare but not fatal — game plan still saved.
+      console.log(`[Replan] ${childName}: plan saved but no works to fill`);
+      return { replanned: true, works: [] };
+    }
+
+    // ── Stage 5: Fill the shelf from the new plan's works ──────────────
+    // Resolve plan work names to areas via classroom curriculum. Mirrors the
+    // canonical fill-shelf route's logic: case-insensitive lookup against
+    // BOTH English `name` and `name_chinese` (so zh-locale plans still hit),
+    // store canonical English in DB. Empty area slots only — but we just
+    // cleared, so every area is empty.
+    const [areasRes, worksRes] = await Promise.all([
+      supabase
+        .from('montree_classroom_curriculum_areas')
+        .select('id, area_key')
+        .eq('classroom_id', classroomId),
+      supabase
+        .from('montree_classroom_curriculum_works')
+        .select('name, name_chinese, area_id')
+        .eq('classroom_id', classroomId),
+    ]);
+
+    const areas = (areasRes.data || []) as Array<{ id: string; area_key: string }>;
+    if (areas.length === 0) {
+      return {
+        replanned: true,
+        works: planWorks,
+        error: 'shelf-fill: no curriculum areas',
+      };
+    }
+
+    const areaIdToKey: Record<string, string> = {};
+    for (const a of areas) areaIdToKey[a.id] = a.area_key;
+
+    const workToArea: Record<string, string> = {};
+    const lookupToCanonical: Record<string, string> = {};
+    for (const w of (worksRes.data || []) as Array<{
+      name: string;
+      name_chinese: string | null;
+      area_id: string;
+    }>) {
+      const areaKey = areaIdToKey[w.area_id];
+      if (!areaKey) continue;
+      const enKey = w.name.toLowerCase();
+      workToArea[enKey] = areaKey;
+      lookupToCanonical[enKey] = w.name;
+      if (w.name_chinese) {
+        const zhKey = w.name_chinese.toLowerCase();
+        workToArea[zhKey] = areaKey;
+        lookupToCanonical[zhKey] = w.name;
+      }
+    }
+
+    const filled: Array<{ work_name: string; area: string }> = [];
+    const filledAreas = new Set<string>();
+    const now = new Date().toISOString();
+
+    for (const workName of planWorks) {
+      const key = workName.toLowerCase();
+      const area = workToArea[key];
+      if (!area) continue; // not in curriculum — skip silently
+      if (filledAreas.has(area)) continue; // first match per area wins
+
+      const canonicalName = lookupToCanonical[key] || workName;
+
+      await supabase.from('montree_child_focus_works').upsert(
+        {
+          child_id: childId,
+          area,
+          work_name: canonicalName,
+          set_at: now,
+          set_by: 'weekly_wrap',
+          updated_at: now,
+        },
+        { onConflict: 'child_id,area' },
+      );
+
+      await supabase.from('montree_child_work_progress').upsert(
+        {
+          child_id: childId,
+          work_name: canonicalName,
+          area,
+          status: 'presented',
+          updated_at: now,
+        },
+        { onConflict: 'child_id,work_name' },
+      );
+
+      filled.push({ work_name: canonicalName, area });
+      filledAreas.add(area);
+    }
+
+    console.log(
+      `[Replan] ${childName}: shelf advanced — ${filled.length}/${planWorks.length} works placed (${filled
+        .map((f) => `${f.area}=${f.work_name}`)
+        .join(', ')})`,
+    );
+
+    return { replanned: true, works: planWorks };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'unknown';
+    console.error(`[Replan] Unhandled error for ${childName}:`, err);
+    return { replanned: false, works: [], error: `unhandled: ${msg}` };
+  }
+}

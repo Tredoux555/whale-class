@@ -18,6 +18,8 @@ import { analyzeWeeklyProgress } from '@/lib/montree/ai';
 import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/narrative-generator';
 import { generateTeacherReport, TeacherReportInput } from '@/lib/montree/reports/teacher-report-generator';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
+import { replanChildInProcess } from '@/lib/montree/reports/replan-child';
+import { anthropic } from '@/lib/ai/anthropic';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
@@ -527,6 +529,34 @@ export async function POST(request: NextRequest) {
               };
             }
 
+            // ─── Stage 6: Wrap up the week — refresh game plan + advance focus shelf ───
+            // Tier-aware (uses aiTier.model). Failure here MUST NOT fail the report —
+            // the upserts above already succeeded. Replan failure is logged + surfaced
+            // via NDJSON so the UI can show what didn't roll over.
+            let replanResult: { replanned: boolean; works: string[]; error?: string } = {
+              replanned: false,
+              works: [],
+            };
+            if (anthropic && aiTier.model) {
+              try {
+                replanResult = await replanChildInProcess({
+                  childId: child.id,
+                  childName: child.name,
+                  classroomId: classroom_id,
+                  locale,
+                  anthropic,
+                  model: aiTier.model,
+                  supabase,
+                });
+              } catch (replanErr) {
+                const msg = replanErr instanceof Error ? replanErr.message : 'unknown';
+                console.error(`[WeeklyWrap] Replan threw for ${child.name}:`, replanErr);
+                replanResult = { replanned: false, works: [], error: `wrap: ${msg}` };
+              }
+            } else {
+              replanResult = { replanned: false, works: [], error: 'wrap: anthropic/model unavailable' };
+            }
+
             return {
               child_id: child.id,
               child_name: child.name,
@@ -536,6 +566,9 @@ export async function POST(request: NextRequest) {
               parent_narrative: parentNarrative,
               flags_count: flagsCount,
               tokens_used: totalTokens.input > 0 ? totalTokens : undefined,
+              replanned: replanResult.replanned,
+              replan_works: replanResult.works,
+              replan_error: replanResult.error,
             };
           } catch (err) {
             console.error(`Weekly wrap error for ${child.name}:`, err);
@@ -616,6 +649,20 @@ export async function POST(request: NextRequest) {
                   skipped: r.skipped || false,
                   error: r.success ? undefined : (r as any).error,
                 }) + '\n'));
+
+                // Surface the per-child replan outcome (game plan + shelf advance).
+                // Only emitted when the report itself succeeded — replan only ran in
+                // that branch. Replan can succeed=true even when the report's success=true,
+                // but if replan errored we still send the event with replanned=false + error.
+                if (r.success) {
+                  controller.enqueue(encoder.encode(JSON.stringify({
+                    type: 'replan_done',
+                    child_name: (r as any).child_name,
+                    replanned: (r as any).replanned || false,
+                    works: (r as any).replan_works || [],
+                    error: (r as any).replan_error,
+                  }) + '\n'));
+                }
               }
             }
 

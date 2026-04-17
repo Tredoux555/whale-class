@@ -102,7 +102,11 @@ export default function WeeklyAdminDocsPage() {
       return;
     }
     setSession(sess);
-  }, [router, featuresLoading, isEnabled]);
+    // isEnabled intentionally omitted — its reference changes on FeaturesProvider window-focus
+    // refetch (deps [features]), which would re-fire this effect mid-session and bounce the
+    // teacher back to the dashboard. featuresLoading + the inline isEnabled call cover the gate.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router, featuresLoading]);
 
   // Fetch children + existing notes when session or week changes
   const fetchData = useCallback(async () => {
@@ -194,7 +198,12 @@ export default function WeeklyAdminDocsPage() {
     if (featuresLoading || !isEnabled('weekly_admin_docs')) return;
     fetchData();
     return () => { abortRef.current?.abort(); };
-  }, [fetchData, featuresLoading, isEnabled]);
+    // isEnabled intentionally omitted — its reference changes on FeaturesProvider window-focus
+    // refetch (deps [features]), which previously re-fired this effect and triggered fetchData
+    // every time the user returned to the tab — causing the "Loading..." flicker every ~30s.
+    // featuresLoading + the inline isEnabled call still gate against false-positive runs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchData, featuresLoading]);
 
   // ─── Save Notes (reusable — silent=true skips UI feedback) ─
 
