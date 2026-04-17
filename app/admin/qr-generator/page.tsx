@@ -18,6 +18,22 @@ interface BulkRow {
   url: string;
 }
 
+interface VideoRow {
+  id: string;
+  title: string;
+  category: string;
+  videoUrl: string;
+  uploadedAt: string;
+  week?: string;
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'song-of-week': '🎵 Song of the Week',
+  'phonics': '🔤 Phonics',
+  'weekly-phonics-sound': '🔠 Weekly Phonics Sound',
+  'stories': '📖 Story',
+};
+
 // Generate a PNG data URL locally — no network call.
 async function generateQrDataUrl(data: string, size: number): Promise<string> {
   return await QRCode.toDataURL(data, {
@@ -90,6 +106,13 @@ export default function QrGeneratorPage() {
   const [songSlug, setSongSlug] = useState<string>('');
   const [songSlugTouched, setSongSlugTouched] = useState<boolean>(false);
 
+  // Video picker — pulls from /api/admin/video-manager
+  const [videos, setVideos] = useState<VideoRow[]>([]);
+  const [videosLoading, setVideosLoading] = useState<boolean>(false);
+  const [videosError, setVideosError] = useState<string | null>(null);
+  const [videoSearch, setVideoSearch] = useState<string>('');
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+
   // Bulk
   const [bulkText, setBulkText] = useState<string>('');
   const [bulkBusy, setBulkBusy] = useState<boolean>(false);
@@ -117,6 +140,64 @@ export default function QrGeneratorPage() {
       setSongSlug(slugify(songTitle));
     }
   }, [songTitle, songSlugTouched]);
+
+  // Load videos from the admin video-manager the first time the Song tab is opened.
+  useEffect(() => {
+    if (mode !== 'song' || videos.length > 0 || videosLoading) return;
+    let cancelled = false;
+    setVideosLoading(true);
+    setVideosError(null);
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/video-manager', { credentials: 'include' });
+        if (res.status === 401) {
+          // Auth gate elsewhere handles the redirect; just stop here.
+          return;
+        }
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        if (cancelled) return;
+        if (data?.success && Array.isArray(data.videos)) {
+          // Sort newest first
+          const sorted = [...data.videos].sort((a: VideoRow, b: VideoRow) => {
+            const da = new Date(a.uploadedAt || 0).getTime();
+            const db = new Date(b.uploadedAt || 0).getTime();
+            return db - da;
+          });
+          setVideos(sorted);
+        } else {
+          setVideosError('Video list was empty.');
+        }
+      } catch (err) {
+        if (!cancelled) setVideosError((err as Error).message);
+      } finally {
+        if (!cancelled) setVideosLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, videos.length, videosLoading]);
+
+  // Filter videos by search text
+  const filteredVideos = useMemo(() => {
+    const q = videoSearch.trim().toLowerCase();
+    if (!q) return videos;
+    return videos.filter(v => {
+      const hay = `${v.title} ${v.category} ${v.week || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [videos, videoSearch]);
+
+  function handlePickVideo(v: VideoRow) {
+    setSelectedVideoId(v.id);
+    setSongTitle(v.title);
+    // Force slug to auto-regenerate from the new title
+    setSongSlugTouched(false);
+    setSongSlug(slugify(v.title));
+  }
 
   const songUrl = useMemo(() => {
     const base = songBase.replace(/\/+$/, '');
@@ -357,12 +438,81 @@ export default function QrGeneratorPage() {
                 </div>
               </div>
 
+              {/* Video picker — pulls from /api/admin/video-manager */}
               <div>
-                <label className="block text-xs text-slate-400 mb-1">Song title</label>
+                <label className="block text-xs text-slate-400 mb-1">
+                  Pick a video{' '}
+                  <span className="text-slate-600">(auto-fills title + slug)</span>
+                </label>
+                {videosError ? (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-md px-3 py-2 text-xs text-red-300">
+                    Couldn&apos;t load videos: {videosError}. You can still type the title manually below.
+                  </div>
+                ) : videosLoading ? (
+                  <div className="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-xs text-slate-400">
+                    Loading videos…
+                  </div>
+                ) : videos.length === 0 ? (
+                  <div className="bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-xs text-slate-400">
+                    No videos found in the database yet. Type the title manually below.
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={videoSearch}
+                      onChange={e => setVideoSearch(e.target.value)}
+                      placeholder={`Search ${videos.length} videos by title, category, or week…`}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 mb-2"
+                    />
+                    <div className="max-h-56 overflow-y-auto bg-slate-900 border border-slate-700 rounded-md divide-y divide-slate-800">
+                      {filteredVideos.length === 0 ? (
+                        <div className="px-3 py-2 text-xs text-slate-500">No matches.</div>
+                      ) : (
+                        filteredVideos.map(v => {
+                          const isSelected = v.id === selectedVideoId;
+                          return (
+                            <button
+                              key={v.id}
+                              type="button"
+                              onClick={() => handlePickVideo(v)}
+                              className={`w-full text-left px-3 py-2 text-sm transition ${
+                                isSelected
+                                  ? 'bg-violet-500/20 text-white'
+                                  : 'text-slate-200 hover:bg-slate-800'
+                              }`}
+                            >
+                              <div className="font-medium truncate">{v.title}</div>
+                              <div className="text-xs text-slate-400 flex flex-wrap gap-2 mt-0.5">
+                                <span>
+                                  {CATEGORY_LABELS[v.category] || v.category}
+                                </span>
+                                {v.week && (
+                                  <span className="text-slate-500">· Week {v.week}</span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">
+                  Song title{' '}
+                  <span className="text-slate-600">(or type manually)</span>
+                </label>
                 <input
                   type="text"
                   value={songTitle}
-                  onChange={e => setSongTitle(e.target.value)}
+                  onChange={e => {
+                    setSongTitle(e.target.value);
+                    // Typing overrides picker selection
+                    setSelectedVideoId(null);
+                  }}
                   placeholder="Animal Habitats"
                   className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-violet-500"
                 />
