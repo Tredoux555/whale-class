@@ -14,7 +14,32 @@ const DEFAULT_BUCKET: ProxyBucket = 'montree-media';
 function buildBase(storagePath: string, bucket?: ProxyBucket): string {
   const base = `/api/montree/media/proxy/${storagePath}`;
   if (!bucket || bucket === DEFAULT_BUCKET) return base;
-  return `${base}?bucket=${encodeURIComponent(bucket)}`;
+  const sep = base.includes('?') ? '&' : '?';
+  return `${base}${sep}bucket=${encodeURIComponent(bucket)}`;
+}
+
+/**
+ * Defensive: legacy DB rows (notably `montree_children.photo_url` written
+ * by `/api/montree/children/[childId]/photo` before Session 33) may contain
+ * a FULL Supabase public URL like
+ *   https://<proj>.supabase.co/storage/v1/object/public/montree-media/<path>?v=...
+ * If that's blindly passed into getProxyUrl(), the result is
+ *   /api/montree/media/proxy/https://<proj>.supabase.co/...
+ * — which the proxy route can't resolve and Cloudflare 502s.
+ *
+ * Strip any /storage/v1/(object|render/image)/public/<bucket>/ prefix and
+ * return only the storage path tail (with query string preserved, so the
+ * cache-bust ?v=... still does its job).
+ */
+function normalizeToStoragePath(input: string): string {
+  if (!input) return input;
+  // /storage/v1/object/public/<bucket>/<path>?v=...
+  const objMatch = input.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/);
+  if (objMatch) return objMatch[1];
+  // /storage/v1/render/image/public/<bucket>/<path>?w=...
+  const renderMatch = input.match(/\/storage\/v1\/render\/image\/public\/[^/]+\/(.+)$/);
+  if (renderMatch) return renderMatch[1];
+  return input;
 }
 
 /**
@@ -22,9 +47,13 @@ function buildBase(storagePath: string, bucket?: ProxyBucket): string {
  * e.g. "schools/abc/photos/123.jpg" → "/api/montree/media/proxy/schools/abc/photos/123.jpg"
  *
  * For non-default buckets (story-uploads, photo-bank), pass the bucket name.
+ *
+ * Tolerant of legacy DB rows that store full Supabase public URLs — those are
+ * normalized back to a storage path before the proxy prefix is applied.
  */
 export function getProxyUrl(storagePath: string, bucket?: ProxyBucket): string {
-  return buildBase(storagePath, bucket);
+  if (!storagePath) return '';
+  return buildBase(normalizeToStoragePath(storagePath), bucket);
 }
 
 /**
