@@ -45,7 +45,8 @@ const TOOLS: Tool[] = [
   { id: 'material-generator', title: 'Material Generator', href: '/admin/material-generator', icon: '🖨️', color: 'bg-pink-500', description: 'Pink/Blue/Green' },
   { id: 'flashcard-maker', title: 'Song Flashcards', href: '/admin/flashcard-maker', icon: '🎵', color: 'bg-violet-500', description: 'YouTube to PDF' },
   { id: 'vocabulary-flashcards', title: 'Vocab Flashcards', href: '/admin/vocabulary-flashcards', icon: '📇', color: 'bg-teal-500', description: 'Weekly vocab' },
-  
+  { id: 'qr-generator', title: 'QR Generator', href: '/admin/qr-generator', icon: '📱', color: 'bg-violet-500', description: 'Newsletter & song QR' },
+
   // Management
   { id: 'video-manager', title: 'Video Manager', href: '/admin/video-manager', icon: '🎬', color: 'bg-orange-500', description: 'Homepage videos' },
   { id: 'media-library', title: 'Media Library', href: '/admin/media-library', icon: '📁', color: 'bg-slate-500', description: 'Uploaded files' },
