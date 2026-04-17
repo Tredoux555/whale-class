@@ -3,7 +3,7 @@
 // Takes weekly analysis + photo data + curriculum descriptions
 // Returns a personalized narrative summary for parents
 
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 
 // ── Types ──
@@ -33,6 +33,14 @@ export interface NarrativeInput {
 
   // Previous report narrative for continuity (optional)
   previousNarrative?: string | null;
+
+  /**
+   * Optional Anthropic model override (e.g. HAIKU_MODEL / AI_MODEL).
+   * Resolved per-request from the school's AI tier flag — see
+   * `lib/montree/reports/resolve-model.ts`. Defaults to HAIKU_MODEL when
+   * unspecified (cheap tier wins by default).
+   */
+  model?: string;
 }
 
 export interface NarrativeOutput {
@@ -216,13 +224,14 @@ export async function generateWeeklyNarrative(
 
   try {
     const prompt = buildNarrativePrompt(input);
+    const resolvedModel = input.model || HAIKU_MODEL;
 
     const systemMessage = input.locale === 'zh'
       ? '你是一位温暖的蒙台梭利幼儿园老师，正在给家长写每周更新。你必须完全用中文（普通话）书写。不要使用任何英文。'
       : 'You are a warm Montessori teacher writing a weekly update for parents.';
 
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: resolvedModel,
       max_tokens: 800,
       system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
@@ -237,7 +246,7 @@ export async function generateWeeklyNarrative(
     return {
       success: true,
       narrative: narrative || generateTemplateFallback(input),
-      model: AI_MODEL,
+      model: resolvedModel,
       generatedAt: new Date().toISOString(),
       tokensUsed: {
         input: response.usage?.input_tokens || 0,

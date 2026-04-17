@@ -3,7 +3,7 @@
 // Produces per-child weekly analysis at the level of a 30-year AMI consultant
 // This is the internal report — detailed, developmental, forward-looking
 
-import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 
@@ -39,6 +39,15 @@ export interface TeacherReportInput {
     key_insight: string;
     recommendations: Array<{ area: string; work: string }>;
   } | null;
+
+  /**
+   * Optional Anthropic model override (e.g. HAIKU_MODEL / AI_MODEL).
+   * Resolved per-request from the school's AI tier flag — see
+   * `lib/montree/reports/resolve-model.ts`. Defaults to HAIKU_MODEL if
+   * unspecified (cheap tier wins by default; callers must explicitly pass
+   * AI_MODEL to unlock Sonnet).
+   */
+  model?: string;
 }
 
 export interface TeacherReportOutput {
@@ -524,16 +533,18 @@ export async function generateTeacherReport(
   try {
     const prompt = buildTeacherReportPrompt(input);
     const lang = input.locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+    const resolvedModel = input.model || HAIKU_MODEL;
 
     const systemMessage = input.locale === 'zh'
       ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all responses in Chinese (Mandarin). Use Chinese for all descriptive text fields.'
       : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
 
     // Use tool_use for structured output — the API handles JSON serialization,
-    // so Haiku never has to produce raw JSON. This completely eliminates the
+    // so the model never has to produce raw JSON. This completely eliminates the
     // Chinese JSON corruption issue (unescaped quotes, fullwidth punctuation, etc.)
+    // and is model-agnostic — works identically on Haiku and Sonnet.
     const response = await anthropic.messages.create({
-      model: AI_MODEL,
+      model: resolvedModel,
       max_tokens: 8192,
       system: systemMessage,
       messages: [{ role: 'user', content: prompt }],
@@ -664,7 +675,7 @@ export async function generateTeacherReport(
     return {
       success: true,
       report,
-      model: AI_MODEL,
+      model: resolvedModel,
       generatedAt: new Date().toISOString(),
       tokensUsed: {
         input: response.usage?.input_tokens || 0,

@@ -17,14 +17,17 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { analyzeWeeklyProgress } from '@/lib/montree/ai';
 import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/narrative-generator';
 import { generateTeacherReport, TeacherReportInput } from '@/lib/montree/reports/teacher-report-generator';
+import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
-export const maxDuration = 300; // 5 minutes — Sonnet reports for 19 children take time
+export const maxDuration = 300; // 5 minutes — full classroom run
 
-const MAX_CONCURRENT = 3; // Sonnet — lower concurrency to respect rate limits
+// Concurrency tuned for Haiku (default tier). Sonnet runs through the same path
+// but Haiku has more rate-limit headroom, so 5 in flight is comfortable.
+const MAX_CONCURRENT = 5;
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,6 +74,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Classroom not found or access denied' }, { status: 403 });
     }
     const classroom = classroomRaw as { id: string; name: string; school_id: string };
+
+    // Resolve this school's AI tier (free / haiku / sonnet) — fail-closed to free on error
+    const aiTier = await resolveReportModel(supabase, classroom.school_id);
+    if (aiTier.tier === 'free') {
+      return NextResponse.json({
+        error: 'AI report generation requires an AI tier (haiku or sonnet). Contact support to enable.',
+        tier: 'free',
+      }, { status: 402 });
+    }
+    console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);
 
     // Get children
     let childQuery = supabase
@@ -373,6 +386,7 @@ export async function POST(request: NextRequest) {
                 locale,
                 analysis,
                 photos: enrichedPhotos,
+                model: aiTier.model ?? undefined,
               });
 
               if (teacherResult.tokensUsed) {
@@ -428,6 +442,7 @@ export async function POST(request: NextRequest) {
                   why_it_matters: p.why_it_matters,
                   caption: p.caption,
                 })),
+                model: aiTier.model ?? undefined,
               });
 
               parentNarrative = narrativeResult.narrative;
