@@ -64,16 +64,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
       areaIdToKey[a.id] = a.area_key;
     }
 
-    // Resolve work names to areas via case-insensitive match
+    // Resolve work names to areas via case-insensitive match.
+    // Accept BOTH English (`name`) and Chinese (`name_chinese`) names so Chinese-locale game
+    // plans that produce Chinese work names still resolve to the correct area. Always store
+    // the canonical English name in focus_works/progress so downstream locale-aware renderers
+    // can map to Chinese via name_chinese lookup.
     const { data: curriculumWorks } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('name, area_id')
+      .select('name, name_chinese, area_id')
       .eq('classroom_id', child.classroom_id);
 
     const workToArea: Record<string, string> = {};
-    for (const w of (curriculumWorks || []) as Array<{ name: string; area_id: string }>) {
+    const lookupToCanonical: Record<string, string> = {}; // any name (EN/ZH) -> canonical English name
+    for (const w of (curriculumWorks || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
       const areaKey = areaIdToKey[w.area_id];
-      if (areaKey) workToArea[w.name.toLowerCase()] = areaKey;
+      if (!areaKey) continue;
+      const enKey = w.name.toLowerCase();
+      workToArea[enKey] = areaKey;
+      lookupToCanonical[enKey] = w.name;
+      if (w.name_chinese) {
+        const zhKey = w.name_chinese.toLowerCase();
+        workToArea[zhKey] = areaKey;
+        lookupToCanonical[zhKey] = w.name;
+      }
     }
 
     // Fill empty slots — first match per area wins
@@ -82,10 +95,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const now = new Date().toISOString();
 
     for (const workName of works) {
-      const area = workToArea[workName.toLowerCase()];
+      const key = workName.toLowerCase();
+      const area = workToArea[key];
       if (!area) continue; // work not in curriculum
       if (occupiedAreas.has(area)) continue; // area already has a focus work
       if (filledAreas.has(area)) continue; // already filling this area from another plan work
+
+      // Always store canonical English name in DB — UI renders locale-aware via name_chinese.
+      const canonicalName = lookupToCanonical[key] || workName;
 
       // Set as focus work
       await supabase
@@ -93,7 +110,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .upsert({
           child_id: childId,
           area,
-          work_name: workName,
+          work_name: canonicalName,
           set_at: now,
           set_by: 'game_plan',
           updated_at: now,
@@ -104,13 +121,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .from('montree_child_work_progress')
         .upsert({
           child_id: childId,
-          work_name: workName,
+          work_name: canonicalName,
           area,
           status: 'presented',
           updated_at: now,
         }, { onConflict: 'child_id,work_name' });
 
-      filled.push({ work_name: workName, area });
+      filled.push({ work_name: canonicalName, area });
       filledAreas.add(area);
     }
 

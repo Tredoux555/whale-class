@@ -9,6 +9,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 
 export const maxDuration = 120; // 120s — profile extraction + game plan generation
 
@@ -105,7 +106,9 @@ export async function POST(
 
     const { childId } = await context.params;
     const body = await request.json();
-    const { transcript, classroom_id } = body;
+    const { transcript, classroom_id, locale: bodyLocale } = body;
+    const rawLocale = bodyLocale || getLocaleFromRequest(request.url);
+    const locale: 'en' | 'zh' = rawLocale === 'zh' ? 'zh' : 'en';
 
     if (!childId || !transcript) {
       return NextResponse.json(
@@ -290,6 +293,7 @@ Create a warm summary that confirms back to the teacher what you understood.`,
         extracted,
         cid,
         ageNote,
+        locale,
       );
       if (gamePlan) {
         await updateChildSettings(childId, { game_plan: gamePlan });
@@ -438,6 +442,7 @@ async function generateGamePlan(
   extractedProfile: Record<string, unknown>,
   classroomId: string | undefined,
   ageNote: string,
+  locale: 'en' | 'zh' = 'en',
 ): Promise<Record<string, unknown> | null> {
   if (!anthropic) return null;
 
@@ -457,13 +462,14 @@ async function generateGamePlan(
         for (const area of typedAreas) {
           const { data: works } = await supabase
             .from('montree_classroom_curriculum_works')
-            .select('name')
+            .select('name, name_chinese')
             .eq('classroom_id', classroomId)
             .eq('area_id', area.id)
             .order('sequence', { ascending: true })
             .limit(15);
           if (works && works.length > 0) {
-            worksByArea[area.area_key] = (works as Array<{ name: string }>).map(w => w.name);
+            worksByArea[area.area_key] = (works as Array<{ name: string; name_chinese: string | null }>)
+              .map(w => (locale === 'zh' && w.name_chinese) ? w.name_chinese : w.name);
           }
         }
         availableWorks = Object.entries(worksByArea)
@@ -478,6 +484,10 @@ async function generateGamePlan(
   const expLevel = extractedProfile.experience_level || 'new';
   const profileSummary = extractedProfile.summary || '';
 
+  const languageNote = locale === 'zh'
+    ? '\n\nIMPORTANT: Write the nudge AND direction IN CHINESE (简体中文). Use the Chinese work names from CLASSROOM WORKS exactly as provided.'
+    : '';
+
   const prompt = `A teacher just described a child. Give them a compass heading — not a lesson plan.
 
 CHILD: ${childName} | ${ageNote} | Experience: ${expLevel}
@@ -485,7 +495,7 @@ TEACHER SAID: "${transcript}"
 ${extractedProfile.family_notes ? `FAMILY: ${extractedProfile.family_notes}` : ''}
 ${availableWorks ? `CLASSROOM WORKS (use EXACT names):\n${availableWorks}` : ''}
 
-Write ONE warm sentence a tired teacher reads in 2 seconds and knows where to start. Then pick 3-5 works to present first. Keep it human.`;
+Write ONE warm sentence a tired teacher reads in 2 seconds and knows where to start. Then pick 3-5 works to present first. Keep it human.${languageNote}`;
 
   console.log(`[Onboard] Generating game plan for ${childName} (Haiku)...`);
 

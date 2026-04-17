@@ -132,15 +132,20 @@ export async function POST(request: NextRequest) {
 
     // Build set of work names that have photos (photo-centric reports)
     // Photos can be matched via work_id (from curriculum) or caption (from Week view capture)
+    // Also build a classroom-scoped English→Chinese map for locale-aware rendering below.
     const workNamesWithPhotos = new Set<string>();
+    const workNameToChinese = new Map<string, string>(); // English (lowercased) → Chinese
     if (child.classroom_id) {
       const { data: curriculumWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('id, name')
+        .select('id, name, name_chinese')
         .eq('classroom_id', child.classroom_id);
       const workIdToName = new Map<string, string>();
-      for (const w of curriculumWorks || []) {
+      for (const w of (curriculumWorks || []) as Array<{ id: string; name: string; name_chinese: string | null }>) {
         workIdToName.set(w.id, w.name);
+        if (w.name && w.name_chinese) {
+          workNameToChinese.set(w.name.toLowerCase(), w.name_chinese);
+        }
       }
       for (const m of mediaItems || []) {
         const workName = m.work_id ? workIdToName.get(m.work_id) : m.caption;
@@ -160,13 +165,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Build areas explored
-    const areasExplored = Object.entries(worksByArea).map(([area, works]) => ({
-      area_name: getTranslatedAreaName(area, locale),
-      area_key: area,
-      works: works.slice(0, 4),
-      work_count: works.length,
-    }));
+    // Build areas explored — prefer Chinese names when locale is zh
+    const areasExplored = Object.entries(worksByArea).map(([area, works]) => {
+      const localizedWorks = locale === 'zh'
+        ? works.map(w => workNameToChinese.get((w || '').toLowerCase()) || w)
+        : works;
+      return {
+        area_name: getTranslatedAreaName(area, locale),
+        area_key: area,
+        works: localizedWorks.slice(0, 4),
+        work_count: works.length,
+      };
+    });
 
     // Build focus works summary (current shelf)
     const focusSummary = (focusWorks || []).slice(0, 5).map(fw => ({

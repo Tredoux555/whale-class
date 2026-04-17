@@ -848,6 +848,17 @@ export default function PhotoAuditPage() {
 
   // Single confirm
   const handleConfirm = async (photo: AuditPhoto) => {
+    // Guard: corrections route requires both child_id and original identification.
+    // Photos in the "Today (All)" tab can include untagged/unidentified rows that
+    // would 400 with `child_id is required` or `Missing original identification`.
+    if (!photo.child_id) {
+      toast.error(locale === 'zh' ? '请先为此照片标记孩子' : 'Tag a child before confirming');
+      return;
+    }
+    if (!photo.work_id && !photo.work_name) {
+      toast.error(locale === 'zh' ? '请先为此照片标记作品' : 'Tag a work before confirming');
+      return;
+    }
     setProcessingId(photo.id);
     try {
       const res = await fetch('/api/montree/guru/corrections', {
@@ -1278,7 +1289,10 @@ export default function PhotoAuditPage() {
 
     for (let i = 0; i < ids.length; i++) {
       const photo = photos.find(p => p.id === ids[i]);
-      if (!photo || !photo.work_id) { failed.push(ids[i]); continue; }
+      // Skip photos missing child_id, work_id, or work_name — corrections route
+      // requires all three and would 400. These surface in "Today (All)" tab when
+      // a photo is untagged or its AI identification hasn't landed yet.
+      if (!photo || !photo.child_id || (!photo.work_id && !photo.work_name)) { failed.push(ids[i]); continue; }
       try {
         const res = await fetch('/api/montree/guru/corrections', {
           method: 'POST',
@@ -1838,8 +1852,14 @@ export default function PhotoAuditPage() {
   };
 
   const selectAllVisible = () => {
-    const visible = filteredPhotos.map(p => p.id);
-    // Toggle: if all are selected, deselect; otherwise select all
+    // Only select photos that can actually be confirmed — must have child_id AND
+    // either work_id or work_name. Untagged/unidentified photos in "Today (All)"
+    // would 400 on the corrections route and get stuck as "failed" in batch confirm.
+    const visible = filteredPhotos
+      .filter(p => p.child_id && (p.work_id || p.work_name))
+      .map(p => p.id);
+    if (visible.length === 0) return;
+    // Toggle: if all confirmable are selected, deselect; otherwise select all confirmable
     const allSelected = visible.every(id => selectedIds.has(id));
     setSelectedIds(allSelected ? new Set() : new Set(visible));
   };
