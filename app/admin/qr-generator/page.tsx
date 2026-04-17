@@ -44,12 +44,17 @@ async function generateQrDataUrl(data: string, size: number): Promise<string> {
   });
 }
 
-// Generate a PNG blob locally — no network call.
+// Generate a PNG blob locally — no network call, no fetch (avoids CSP connect-src block on data: URIs).
 async function generateQrBlob(data: string, size: number): Promise<Blob> {
   const dataUrl = await generateQrDataUrl(data, size);
-  // data URL → blob
-  const res = await fetch(dataUrl);
-  return await res.blob();
+  // Decode base64 data URL directly — never touches the network.
+  const [header, base64] = dataUrl.split(',');
+  const mimeMatch = header.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+  const bytes = atob(base64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mime });
 }
 
 function slugify(raw: string): string {
