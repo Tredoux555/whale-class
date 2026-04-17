@@ -105,8 +105,13 @@ export default function QrGeneratorPage() {
   // Single URL
   const [singleUrl, setSingleUrl] = useState<string>('');
 
-  // Song deep-link builder
-  const [songBase, setSongBase] = useState<string>('https://montree.xyz/whale-class');
+  // Song deep-link builder — derive base URL from current domain so QR codes always point to the right host
+  const [songBase, setSongBase] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/whale-class`;
+    }
+    return 'https://montree.xyz/whale-class'; // SSR fallback only
+  });
   const [songTitle, setSongTitle] = useState<string>('');
   const [songSlug, setSongSlug] = useState<string>('');
   const [songSlugTouched, setSongSlugTouched] = useState<boolean>(false);
