@@ -6,6 +6,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
 
 interface Song {
   id: string;
@@ -67,7 +68,14 @@ export default function WhaleClassPage() {
       })
       .then(data => {
         if (data.success && Array.isArray(data.videos)) {
-          setSongs(data.videos);
+          // Convert raw Supabase URLs to Cloudflare-cached proxy URLs.
+          // Proxy route supports HTTP Range requests (seekable playback on iOS Safari)
+          // and Cloudflare edge caching (fast globally, especially China).
+          const proxied = data.videos.map((v: Song) => ({
+            ...v,
+            videoUrl: getVideoProxyUrl(v.videoUrl),
+          }));
+          setSongs(proxied);
         } else {
           setError('Could not load songs right now.');
         }

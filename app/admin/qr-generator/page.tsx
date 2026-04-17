@@ -105,11 +105,10 @@ export default function QrGeneratorPage() {
   // Single URL
   const [singleUrl, setSingleUrl] = useState<string>('');
 
-  // Song deep-link builder — derive base URL from current domain after mount to avoid SSR hydration mismatch
+  // Song deep-link builder — ALWAYS use montree.xyz (the production domain).
+  // Do NOT derive from window.location.origin — admins often access via teacherpotato.xyz
+  // (the legacy domain) which returns 405 on API calls. QR codes must always point to montree.xyz.
   const [songBase, setSongBase] = useState<string>('https://montree.xyz/whale-class');
-  useEffect(() => {
-    setSongBase(`${window.location.origin}/whale-class`);
-  }, []);
   const [songTitle, setSongTitle] = useState<string>('');
   const [songSlug, setSongSlug] = useState<string>('');
   const [songSlugTouched, setSongSlugTouched] = useState<boolean>(false);
