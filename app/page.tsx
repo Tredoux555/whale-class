@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
-import { getProxyVideoUrl } from "@/lib/video-utils";
+import { getVideoProxyUrl } from "@/lib/montree/media/proxy-url";
 import { setupMediaSessionForVideo } from "@/lib/video-playback-utils";
 
 interface Video {
@@ -169,7 +169,7 @@ export default function Home() {
       const urlFilename = urlParts[urlParts.length - 1];
       const cleanTitle = video.title.replace(/[^a-z0-9\s-]/gi, '_').replace(/\s+/g, '_');
       const filename = urlFilename.includes('.') ? urlFilename : `${cleanTitle}.mp4`;
-      const downloadUrl = getProxyVideoUrl(video.videoUrl);
+      const downloadUrl = getVideoProxyUrl(video.videoUrl);
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = filename;
@@ -179,7 +179,7 @@ export default function Home() {
       setTimeout(() => document.body.removeChild(link), 100);
     } catch (error) {
       console.error('Download error:', error);
-      window.open(getProxyVideoUrl(video.videoUrl), '_blank');
+      window.open(getVideoProxyUrl(video.videoUrl), '_blank');
     }
   };
 
@@ -266,7 +266,7 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-blue-500 to-indigo-600 relative">
                   <video
                     ref={(el) => { if (el) videoRefs.current[video.id] = el; }}
-                    data-src={getProxyVideoUrl(video.videoUrl)}
+                    data-src={getVideoProxyUrl(video.videoUrl)}
                     controls
                     playsInline
                     className="w-full h-full object-cover"
