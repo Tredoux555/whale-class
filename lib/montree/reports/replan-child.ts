@@ -159,7 +159,7 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
       [];
 
     const isZh = locale === 'zh';
-    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+    const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 ${
   isZh
     ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n'
@@ -167,13 +167,20 @@ ${
 }
 CHILD: ${childName}
 PREVIOUS NUDGE: "${previousNudge}"
-PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
+PREVIOUS WORKS (last week's shelf — DO NOT REPEAT): ${JSON.stringify(previousWorks)}
 
 ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+HARD RULES — this is "next week's plan", not "last week's plan":
+1. DO NOT pick any work from PREVIOUS WORKS. Those were last week. The child either advanced on them (move on) or didn't engage (try something else).
+2. Pick 3-5 NEW works that build on mastered/practiced areas. Natural progression only — if they mastered the pink tower, move to the brown stair, not back to the pink tower.
+3. If a child genuinely still needs repetition on one previous work, you may include AT MOST ONE previous work, but the other 2-4 slots must be new.
+4. The nudge should describe FORWARD movement: "Ready for X", "Move her into Y", "Bridge to Z" — never "continue with" or "keep working on" a previous work.
+5. Spread the new works across different curriculum areas when possible — don't pile all 5 into one area.
+
+What's the teacher's next move?`;
 
     // ── Stage 3: Generate the new game plan via tool_use ───────────────
     const response = await anthropic.messages.create({
