@@ -51,7 +51,7 @@ const GAME_PLAN_TOOL = {
         items: { type: 'string' },
         minItems: 3,
         maxItems: 5,
-        description: 'NEW works from the AVAILABLE WORKS list. Copy names EXACTLY as written — do not rename or paraphrase.',
+        description: 'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy names EXACTLY from the AVAILABLE WORKS list.',
       },
       direction: {
         type: 'string',
@@ -158,12 +158,11 @@ AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT n
 ${availableWorksList}
 
 RULES:
-1. DO NOT pick any work from PREVIOUS WORKS.
-2. Pick 3-5 NEW works from the AVAILABLE WORKS list above. Copy the name EXACTLY as written — do not paraphrase, shorten, or rename.
-3. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-4. AT MOST ONE previous work may repeat if genuinely needed — the other slots must be new.
+1. Pick EXACTLY 5 works — ONE from EACH area (practical_life, sensorial, mathematics, language, cultural). Every area must be covered.
+2. DO NOT pick any work from PREVIOUS WORKS.
+3. Copy each name EXACTLY as written in the AVAILABLE WORKS list — do not paraphrase, shorten, or rename.
+4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
 5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
-6. Spread across different curriculum areas — don't pile all into one area.
 
 What's the teacher's next move?`;
 
