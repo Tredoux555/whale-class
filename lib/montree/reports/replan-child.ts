@@ -414,8 +414,64 @@ What's the teacher's next move?`;
       filledAreas.add(area);
     }
 
+    // ── Stage 6: Deterministic gap-fill for missing areas ────────────
+    // Haiku sometimes picks 2 works from the same area despite being told
+    // "one per area". When that happens, one core area is left empty.
+    // Fill each gap with the first available curriculum work from that
+    // area that wasn't in the previous week's plan (no AI, deterministic).
+    const CORE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
+
+    if (missingAreas.length > 0) {
+      const prevWorkNames = new Set(
+        (previousWorks || []).map((w: string) => w.toLowerCase()),
+      );
+
+      for (const missingArea of missingAreas) {
+        // Find all curriculum works in this area
+        const candidates = allCurriculumWorks.filter((w) => {
+          const ak = areaIdToKey[w.area_id];
+          return ak === missingArea && !prevWorkNames.has(w.name.toLowerCase());
+        });
+
+        if (candidates.length === 0) continue;
+
+        // Pick a random candidate (avoid always recommending the first one)
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+
+        await supabase.from('montree_child_focus_works').upsert(
+          {
+            child_id: childId,
+            area: missingArea,
+            work_name: pick.name,
+            set_at: now,
+            set_by: 'weekly_wrap',
+            updated_at: now,
+          },
+          { onConflict: 'child_id,area' },
+        );
+
+        await supabase.from('montree_child_work_progress').upsert(
+          {
+            child_id: childId,
+            work_name: pick.name,
+            area: missingArea,
+            status: 'presented',
+            updated_at: now,
+          },
+          { onConflict: 'child_id,work_name' },
+        );
+
+        filled.push({ work_name: pick.name, area: missingArea });
+        filledAreas.add(missingArea);
+        console.log(
+          `[Replan] ${childName}: gap-filled ${missingArea} with "${pick.name}" (Haiku skipped this area)`,
+        );
+      }
+    }
+
     console.log(
-      `[Replan] ${childName}: shelf advanced — ${filled.length}/${planWorks.length} works placed (${filled
+      `[Replan] ${childName}: shelf advanced — ${filled.length}/${CORE_AREAS.length} areas filled (${filled
         .map((f) => `${f.area}=${f.work_name}`)
         .join(', ')})`,
     );
