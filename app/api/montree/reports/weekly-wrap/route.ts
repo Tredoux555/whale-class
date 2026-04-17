@@ -369,6 +369,7 @@ export async function POST(request: NextRequest) {
 
             let totalTokens = { input: 0, output: 0 };
             const now = new Date().toISOString();
+            const upsertFailures: string[] = [];
 
             // ─── Generate Teacher Report ───
             let teacherReportContent: Record<string, unknown> | null = null;
@@ -418,6 +419,7 @@ export async function POST(request: NextRequest) {
               }, { onConflict: 'child_id,week_start,report_type' });
               if (teacherUpsertErr) {
                 console.error(`Teacher report upsert failed for ${child.name}:`, teacherUpsertErr.message);
+                upsertFailures.push(`teacher: ${teacherUpsertErr.message}`);
               }
             }
 
@@ -505,11 +507,25 @@ export async function POST(request: NextRequest) {
               }, { onConflict: 'child_id,week_start,report_type' });
               if (parentUpsertErr) {
                 console.error(`Parent report upsert failed for ${child.name}:`, parentUpsertErr.message);
+                upsertFailures.push(`parent: ${parentUpsertErr.message}`);
               }
             }
 
             const keyInsight = (teacherReportContent as any)?.key_insight || '';
             const flagsCount = (analysis.red_flags.length + analysis.yellow_flags.length);
+
+            // If any upsert silently failed, surface it as a real failure so the stream event
+            // can show the actual DB error instead of masking it with success=true.
+            if (upsertFailures.length > 0) {
+              return {
+                child_id: child.id,
+                child_name: child.name,
+                success: false,
+                photo_count: enrichedPhotos.length,
+                error: `DB upsert failed — ${upsertFailures.join('; ')}`,
+                tokens_used: totalTokens.input > 0 ? totalTokens : undefined,
+              };
+            }
 
             return {
               child_id: child.id,
@@ -533,12 +549,19 @@ export async function POST(request: NextRequest) {
           }
     } // end processChild
 
-    // Helper: build final summary from results
+    // Helper: build final summary from results — tier-aware cost calculation.
+    // Pricing per million tokens (input, output):
+    //   haiku  → claude-haiku-4-5    $0.80 in / $4.00 out
+    //   sonnet → claude-sonnet-4-6   $3.00 in / $15.00 out
     function buildSummary(results: Array<{ success: boolean; skipped?: boolean; tokens_used?: { input: number; output: number } }>) {
       const totalInputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.input || 0), 0);
       const totalOutputTokens = results.reduce((sum, r) => sum + (r.tokens_used?.output || 0), 0);
-      // Sonnet pricing: $3/MTok input, $15/MTok output
-      const estimatedCost = (totalInputTokens * 3 + totalOutputTokens * 15) / 1_000_000;
+      const PRICING: Record<string, [number, number]> = {
+        haiku: [0.8, 4],
+        sonnet: [3, 15],
+      };
+      const [inPrice, outPrice] = PRICING[aiTier.tier] ?? PRICING.sonnet;
+      const estimatedCost = (totalInputTokens * inPrice + totalOutputTokens * outPrice) / 1_000_000;
       return {
         success: true,
         generated: results.filter(r => r.success && !r.skipped).length,
@@ -546,6 +569,8 @@ export async function POST(request: NextRequest) {
         failed: results.filter(r => !r.success).length,
         total: results.length,
         cost_usd: Math.round(estimatedCost * 1000) / 1000,
+        ai_tier: aiTier.tier,
+        ai_model: aiTier.model,
         week_number: weekNumber,
         report_year: reportYear,
       };
@@ -589,6 +614,7 @@ export async function POST(request: NextRequest) {
                   child_name: (r as any).child_name,
                   success: r.success,
                   skipped: r.skipped || false,
+                  error: r.success ? undefined : (r as any).error,
                 }) + '\n'));
               }
             }
