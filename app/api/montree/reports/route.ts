@@ -152,11 +152,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabase();
     const body = await request.json();
-    const { child_id, week_start, week_end, report_type = 'weekly' } = body;
+    const { child_id, week_start, week_end, report_type = 'weekly', locale: bodyLocale } = body;
 
     if (!child_id || !week_start) {
       return NextResponse.json({ error: 'child_id and week_start required' }, { status: 400 });
     }
+
+    // Locale resolution (body override > URL query > default 'en') — matches /reports/batch pattern
+    const validLocales = ['en', 'zh'] as const;
+    const rawLocale = bodyLocale || getLocaleFromRequest(request.url);
+    const locale: 'en' | 'zh' = (validLocales as readonly string[]).includes(rawLocale) ? rawLocale : 'en';
 
     const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
     if (!access.allowed) {
