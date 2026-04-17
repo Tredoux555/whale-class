@@ -195,6 +195,100 @@ montree.xyz
 
 ---
 
+## RECENT STATUS (Apr 17, 2026)
+
+### ⚡ Session 33 — Weekly Wrap Diagnosis + Silent Upsert Hardening + Tier Resolver Audit (Apr 17, 2026)
+
+**One commit pushed to main: `10379314`.** User's trigger quote from prior session: *"damn it - nothing has changed on weekly wrap. Lets sort out this information flow and make sure all the information is flowing correctly. Lets clean this up now"*. Then "run all the sidelined stuff now" — a sweep across the deferred work list from the three-tier resolver project (migration 181, `lib/montree/reports/resolve-model.ts`).
+
+**A. Weekly Wrap diagnosis — RESOLVED, system is healthy:**
+
+Queried live production Supabase directly (Node + `@supabase/supabase-js` after `apt-get install psql` was blocked by sandbox sudo restrictions) and confirmed end-to-end health:
+
+1. **Migration 181 successfully applied** — `montree_school_features` row exists for Whale school `c6280fae-567c-45ed-ad4d-934eae79aabc` with `feature_key='ai_tier_haiku'`, `enabled=true`, `enabled_by='migration_181'`, `enabled_at='2026-04-17T05:17:16.397978+00:00'`. Sonnet flag explicitly set to `enabled=false` for precedence clarity.
+2. **All 20 active Whale Class children have both teacher + parent reports for week 2026-04-12** — fresh, dated 2026-04-17 05:24-05:26 UTC (40 reports generated in 3 minutes across `MAX_CONCURRENT=5` Haiku batches).
+3. **Teacher report content has the new Haiku-format keys**: `flags`, `key_insight`, `area_analyses`, `concentration`, `recommendations`, `teacher_guidance`, `sensitive_periods`, `developmental_snapshot`, `normalization_narrative`. Parent report content: `child`, `works`, `photos`, `narrative`, `generated_at`, `report_locale`. `updated_at > generated_at` on multiple rows confirms post-generation edits saved successfully.
+
+The user's "nothing has changed" complaint was a phantom — by the time we audited, the system had already self-corrected. Likely the bug was a cached UI state pre-migration-181 that resolved on a hard refresh after Railway picked up the new feature flag rows. No code fix was needed for the diagnosis itself.
+
+**B. Silent upsert failure hardening — `10379314`:**
+
+Even though the system is currently healthy, the `processChild` closure in `app/api/montree/reports/weekly-wrap/route.ts` had a silent-failure pattern that masked DB schema drift. Both the teacher upsert (line ~422) and parent upsert (line ~509) had error handling like:
+```ts
+if (teacherUpsertErr) {
+  console.error(`Teacher report upsert failed for ${child.name}:`, teacherUpsertErr.message);
+  // ...continued to return success: true
+}
+```
+Result: any future migration miss (e.g., a missing `report_year` NOT NULL column, schema drift, RLS lockdown) would log to Railway and tell the client `success: true` with the report "generated" — exactly the failure mode the user thought they were hitting. Five edits to close the gap:
+
+1. **`upsertFailures: string[]` tracker** added at top of `processChild` next to `now`
+2. **Teacher upsert error pushes** `teacher: ${msg}` into the array
+3. **Parent upsert error pushes** `parent: ${msg}` into the array
+4. **Fail-surface guard** before the success return — if the array has any entries, return `{success: false, error: 'DB upsert failed — teacher: ...; parent: ...'}` instead
+5. **NDJSON `child_done` event** now includes `error: r.success ? undefined : (r as any).error` so the client UI shows the actual DB error string instead of a generic "failed" toast
+
+**C. Tier-aware cost calculation — same commit:**
+
+`buildSummary` was hardcoding Sonnet pricing (`$3/MTok in, $15/MTok out`) regardless of which tier actually ran. Whale on Haiku ($0.80/MTok in, $4/MTok out) was being **over-reported by ~3.75x** in cost telemetry. Fixed via closure on `aiTier.tier` (no signature change to the helper):
+```ts
+const PRICING: Record<string, [number, number]> = {
+  haiku: [0.8, 4],
+  sonnet: [3, 15],
+};
+const [inPrice, outPrice] = PRICING[aiTier.tier] ?? PRICING.sonnet;
+const estimatedCost = (totalInputTokens * inPrice + totalOutputTokens * outPrice) / 1_000_000;
+```
+Summary response also now includes `ai_tier` + `ai_model` fields for downstream telemetry / billing audit.
+
+**D. Phase 2 tier resolver audit — completed (DOCUMENTATION ONLY, no fixes):**
+
+Delegated systematic audit across all 53 files referencing `AI_MODEL`/`HAIKU_MODEL`. Findings:
+
+🚨 **CRITICAL GAPS — these routes use hardcoded `AI_MODEL` (Sonnet) and currently bill Sonnet pricing to Haiku-tier schools:**
+1. `app/api/montree/reports/language-semester/generate/route.ts` — Sonnet semester PPTX with 3 narrative paragraphs (line 130)
+2. `app/api/montree/reports/language-presentation/[childId]/route.ts` — Sonnet captions + chapter narratives (line 18)
+3. `app/api/montree/reports/batch-narratives/route.ts` — calls `generateWeeklyNarrative()` without tier check
+4. `app/api/montree/weekly-review/[childId]/route.ts` — per-child Sonnet teacher/parent report (line 11)
+5. `app/api/montree/reports/generate/route.ts` — legacy report generation (verify if still active)
+6. `app/api/montree/children/[childId]/weekly-admin/route.ts` — Sonnet weekly admin guidance (line 9)
+
+⚠️ **SOFTER GAP — uses hardcoded `HAIKU_MODEL` (would charge Haiku to Sonnet-tier schools, but Sonnet schools shouldn't downgrade):**
+- `app/api/montree/children/[childId]/activity-summary/route.ts` — one-line weekly summary, ~$0.001/call
+
+✅ **OUT-OF-SCOPE (correctly hardcoded, do NOT touch):**
+- All Guru chat routes (`guru/route.ts`, `guru/suggestions`, `admin/guru/chat`, `children/[childId]/guru`) — interactive teacher/parent assists, not parent-facing reports
+- All photo identification routes (`photo-insight`, `photo-enrich`, `snap-identify`, `photo-audit/tell-ai`) — interactive teacher tools
+- Classroom setup, daily plan, teaching instructions, work guides — interactive teacher tools
+- `weekly-admin-docs/generate` + `auto-fill` + `notes` — these template-render saved notes, no AI calls in the route itself
+
+**Why these gaps weren't fixed in this session:** Whale Class is on Haiku tier today and is the only school in production. The over-billing only matters when more schools onboard at the Haiku tier and start hitting these alternative report surfaces. Documenting them as a known issue for the next session that wires up Phase 3 (UI hiding by tier).
+
+**🚨 HARD RULE for future tier work:** Every new parent-facing report or teacher-facing AI prose route MUST call `resolveReportModel(supabase, schoolId)` at the top, return HTTP 402 on `tier === 'free'`, and pass `aiTier.model` (NOT a hardcoded `AI_MODEL`/`HAIKU_MODEL`) into every Anthropic call. The canonical pattern lives in `app/api/montree/reports/weekly-wrap/route.ts` lines 78-86.
+
+**Files changed (1 file, +29 -3 lines):**
+- `app/api/montree/reports/weekly-wrap/route.ts` — upsertFailures tracker, error surfacing through return value + NDJSON, tier-aware cost calc
+
+**Pending work (deferred, not blocking):**
+- **Phase 3** — hide UI surfaces by tier (`useFeatures().isEnabled('ai_tier_haiku' || 'ai_tier_sonnet')`)
+- **Phase 4** — super-admin tier toggle UI (currently set via Supabase SQL Editor)
+- **Phase 5** — self-service tier picker (BLOCKED on tier name + pricing decisions)
+- **Phase 6** — Stripe billing
+- **6 critical routes still hardcoded to Sonnet** (see section D above) — gate them all when first new school onboards
+- **Tier name + pricing decisions** — user proposed "Montree Enterprise"; assistant proposed "Bloom"; pricing $4-$8/student/month per migration 181 description
+
+**Next session priorities (updated):**
+1. **Confirm hardening deployed** — after Railway picks up `10379314`, trigger a Weekly Wrap regen to verify the new NDJSON `error` field flows through to the client UI on any failure (non-blocking — current behavior unchanged on success path).
+2. **Decide tier names + pricing** before any UI work — blocks Phase 5.
+3. **Gate the 6 critical routes** if/when a second Haiku-tier school onboards (Whale alone is fine on the current "everything routes to Sonnet" status quo because Whale's daily volume on those alternative surfaces is negligible).
+4. **Phase 3 UI hiding** — add `isEnabled('ai_tier_haiku') || isEnabled('ai_tier_sonnet')` gates around the Generate/Send buttons on Weekly Wrap and Language Semester pages. Free-tier schools shouldn't see them at all.
+5. **Master Campaign verification** (Session 27 carryover) — still pending user verification on production.
+6. **Phase 5 per-school enrichment** (Session 27 carryover) — 389 Apr 16 expansion rows.
+7. **Monitor Campaign D** on gmass.co/dashboard — should be done by now (~Apr 17).
+8. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00 in Gmail Drafts.
+
+---
+
 ## RECENT STATUS (Apr 16, 2026)
 
 ### ⚡ Session 32 — Video Streaming Overhaul: Range Support, Multi-Bucket Proxy, Mobile Playback (Apr 16, 2026)
