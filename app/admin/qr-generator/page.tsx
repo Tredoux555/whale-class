@@ -101,7 +101,7 @@ export default function QrGeneratorPage() {
   const [singleUrl, setSingleUrl] = useState<string>('');
 
   // Song deep-link builder
-  const [songBase, setSongBase] = useState<string>('https://teacherpotato.xyz/whale-class');
+  const [songBase, setSongBase] = useState<string>('https://montree.xyz/whale-class');
   const [songTitle, setSongTitle] = useState<string>('');
   const [songSlug, setSongSlug] = useState<string>('');
   const [songSlugTouched, setSongSlugTouched] = useState<boolean>(false);
@@ -123,10 +123,10 @@ export default function QrGeneratorPage() {
   const [previewSrc, setPreviewSrc] = useState<string>('');
 
   useEffect(() => {
-    // Auth gate — reuse the same check as the admin hub
+    // Auth gate — check the same endpoint the video picker uses
     (async () => {
       try {
-        const response = await fetch('/api/videos');
+        const response = await fetch('/api/admin/video-manager');
         if (response.status === 401) router.push('/admin/login');
       } catch {
         router.push('/admin/login');
@@ -578,8 +578,8 @@ export default function QrGeneratorPage() {
             <div className="text-sm text-slate-300">
               Paste one entry per line. Formats accepted:
               <ul className="list-disc list-inside mt-2 text-xs text-slate-400 space-y-0.5">
-                <li><code className="bg-slate-900 px-1 rounded">Animal Habitats, https://teacherpotato.xyz/whale-class#song-animal-habitats</code></li>
-                <li><code className="bg-slate-900 px-1 rounded">Circle of Life | https://teacherpotato.xyz/whale-class#song-circle-of-life</code></li>
+                <li><code className="bg-slate-900 px-1 rounded">Animal Habitats, https://montree.xyz/whale-class#song-animal-habitats</code></li>
+                <li><code className="bg-slate-900 px-1 rounded">Circle of Life | https://montree.xyz/whale-class#song-circle-of-life</code></li>
                 <li><code className="bg-slate-900 px-1 rounded">https://montree.xyz/story</code> <span className="text-slate-600">(URL only — label taken from URL)</span></li>
               </ul>
             </div>
@@ -587,9 +587,9 @@ export default function QrGeneratorPage() {
             <textarea
               value={bulkText}
               onChange={e => setBulkText(e.target.value)}
-              placeholder={`Animal Habitats, https://teacherpotato.xyz/whale-class#song-animal-habitats
-Circle of Life, https://teacherpotato.xyz/whale-class#song-circle-of-life
-Five Senses, https://teacherpotato.xyz/whale-class#song-five-senses`}
+              placeholder={`Animal Habitats, https://montree.xyz/whale-class#song-animal-habitats
+Circle of Life, https://montree.xyz/whale-class#song-circle-of-life
+Five Senses, https://montree.xyz/whale-class#song-five-senses`}
               rows={10}
               className="w-full bg-slate-900 border border-slate-700 rounded-md px-3 py-2 text-sm text-white font-mono placeholder-slate-600 focus:outline-none focus:border-violet-500"
             />
