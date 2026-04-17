@@ -70,7 +70,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'works_review' | 'parent_reports' | 'today_all' | 'pending_review';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'pending_review';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -455,6 +455,10 @@ export default function PhotoAuditPage() {
   const [loading, setLoading] = useState(true);
   const [zone, setZone] = useState<Zone>('all');
   const [dateRange, setDateRange] = useState<DateRange>('7d');
+  // "Today" filter chip on the Confirm tab — when on, shows every photo in the
+  // last 24h including teacher-confirmed (the end-of-day sanity-check view).
+  // Replaces the old standalone 'today_all' tab (Session 33 IA cleanup).
+  const [todayFilter, setTodayFilter] = useState(false);
   const { isEnabled } = useFeaturesContext();
   const reviewBeforeProcess = isEnabled('review_before_process');
 
@@ -463,6 +467,22 @@ export default function PhotoAuditPage() {
   const didInitZoneRef = useRef(false);
   useEffect(() => {
     if (didInitZoneRef.current) return;
+    // Backward-compat: if a deep link / old bookmark lands on one of the
+    // pre-Session-33 zone values ('works_review', 'parent_reports', 'today_all'),
+    // remap to the new unified zone. Accept 'any' cast since Zone type no longer
+    // includes these values but they may still arrive from URL/localStorage.
+    const zoneAny = zone as unknown as string;
+    if (zoneAny === 'works_review' || zoneAny === 'parent_reports') {
+      setZone('weekly_wrap');
+      didInitZoneRef.current = true;
+      return;
+    }
+    if (zoneAny === 'today_all') {
+      setZone('all');
+      setTodayFilter(true);
+      didInitZoneRef.current = true;
+      return;
+    }
     if (reviewBeforeProcess && zone === 'all') {
       setZone('pending_review');
       didInitZoneRef.current = true;
@@ -716,17 +736,17 @@ export default function PhotoAuditPage() {
     abortRef.current = controller;
     setLoading(true);
 
-    // "Today (All)" overrides the zone + date filter to show every photo from
-    // the last 24h regardless of teacher_confirmed status — the end-of-day
-    // sanity-check view for catching wrong auto-confirms.
-    const isTodayAll = zone === 'today_all';
+    // "Today" filter chip on the Confirm tab — overrides the date range to show
+    // every photo from the last 24h regardless of teacher_confirmed status
+    // (end-of-day sanity-check view for catching wrong auto-confirms).
+    const isTodayAll = todayFilter && zone === 'all';
     const dateFrom = isTodayAll
       ? new Date(Date.now() - 86400000).toISOString()
       : dateRange === '24h' ? new Date(Date.now() - 86400000).toISOString()
       : dateRange === '7d' ? new Date(Date.now() - 7 * 86400000).toISOString()
       : dateRange === '30d' ? new Date(Date.now() - 30 * 86400000).toISOString()
       : '2020-01-01T00:00:00Z';
-    const effectiveZone = isTodayAll ? 'all' : zone;
+    const effectiveZone = zone;
     const includeConfirmedParam = isTodayAll ? '&include_confirmed=1' : '';
     const limitParam = isTodayAll ? 500 : 200;
 
@@ -798,7 +818,7 @@ export default function PhotoAuditPage() {
       if (!controller.signal.aborted) setLoading(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zone, dateRange]);
+  }, [zone, dateRange, todayFilter]);
 
   useEffect(() => { fetchPhotos(); }, [fetchPhotos]);
   useEffect(() => { return () => { abortRef.current?.abort(); }; }, []);
@@ -1875,15 +1895,17 @@ export default function PhotoAuditPage() {
     }));
   }, [pickerArea, curriculum]);
 
-  // Filter photos by zone — 'all' shows everything needing review (non-green)
+  // Filter photos by zone — 'all' shows everything needing review (non-green).
+  // Today filter chip on the Confirm tab shows every photo in last 24h
+  // regardless of teacher_confirmed (include_confirmed=1 at fetch time).
   const filteredPhotos = useMemo(() => {
-    if (zone === 'works_review' || zone === 'parent_reports' || zone === 'weekly_admin' || zone === 'pending_review') return []; // Non-photo tabs handled separately
-    if (zone === 'today_all') return photos; // Show every photo in last 24h incl. confirmed
+    if (zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'pending_review') return []; // Non-photo tabs handled separately
+    if (zone === 'all' && todayFilter) return photos; // Today — every photo in last 24h incl. confirmed
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
     const nonGreen = photos.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
     return nonGreen.filter(p => p.zone === zone);
-  }, [photos, zone]);
+  }, [photos, zone, todayFilter]);
 
   // Paginate
   const PAGE_SIZE = 24;
@@ -1898,18 +1920,17 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'today_all';
+  const isPhotoZone = zone === 'all' || zone === 'green';
 
-  // 6-tab layout: Photo Bucket (pre-AI triage, feature-gated) + Confirm (needs review)
-  // + Today (All) + Works Review + Parent Reports + Weekly Admin.
-  // Everything lives in one Photo Audit surface — teachers flow from photo
-  // triage → confirmation → weekly review → parent reports → admin docs.
+  // 4-tab layout (Session 33 IA cleanup): Photo Bucket (pre-AI triage, feature-gated)
+  // + Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
+  // sub-views — the unified source of both teacher review and parent reports) +
+  // Weekly Admin (standalone DOCX generator). Old standalone tabs Today (All),
+  // Works Review, and Parent Reports were folded into these four.
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
-    { key: 'today_all', label: locale === 'zh' ? '今日全部' : 'Today (All)', color: 'bg-emerald-100 text-emerald-800', count: null },
-    { key: 'works_review', label: locale === 'zh' ? '教学回顾' : 'Works Review', color: 'bg-blue-100 text-blue-800', count: null },
-    { key: 'parent_reports', label: locale === 'zh' ? '家长报告' : 'Parent Reports', color: 'bg-violet-100 text-violet-800', count: null },
+    { key: 'weekly_wrap', label: locale === 'zh' ? '周总结' : 'Weekly Wrap', color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
   ];
 
@@ -1949,7 +1970,23 @@ export default function PhotoAuditPage() {
               </svg>
               <span>{syncingQueue ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '同步' : 'Sync')}</span>
             </button>
-            {isPhotoZone && (
+            {zone === 'all' && (
+              <button
+                type="button"
+                onClick={() => setTodayFilter(v => !v)}
+                title={locale === 'zh'
+                  ? '只显示过去 24 小时内的所有照片(包括已确认的)'
+                  : 'Show every photo captured in the last 24h, including teacher-confirmed ones'}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
+                  todayFilter
+                    ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                    : 'bg-white border-gray-300 text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
+                }`}
+              >
+                {locale === 'zh' ? '今日' : 'Today'}
+              </button>
+            )}
+            {isPhotoZone && !todayFilter && (
               <select
                 value={dateRange}
                 onChange={e => setDateRange(e.target.value as DateRange)}
@@ -2045,19 +2082,10 @@ export default function PhotoAuditPage() {
         </div>
       )}
 
-      {/* ─── Works Review (Teacher Review from WeeklyWrapTab) ─── */}
-      {zone === 'works_review' && classroomIdState && (
+      {/* ─── Weekly Wrap (unified — Teacher + Parent sub-views toggled inside the tab) ─── */}
+      {zone === 'weekly_wrap' && classroomIdState && (
         <WeeklyWrapTab
           classroomId={classroomIdState}
-          view="teacher"
-        />
-      )}
-
-      {/* ─── Parent Reports (from WeeklyWrapTab) ─── */}
-      {zone === 'parent_reports' && classroomIdState && (
-        <WeeklyWrapTab
-          classroomId={classroomIdState}
-          view="parents"
         />
       )}
 
