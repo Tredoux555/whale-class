@@ -40,7 +40,10 @@ export type FeatureKey =
   // Onboarding
   | 'tell_guru_onboarding'
   // Child week view
-  | 'weekly_activity_summary';
+  | 'weekly_activity_summary'
+  // Weekly report AI tier (free = no AI, haiku = cheap, sonnet = premium)
+  | 'ai_tier_haiku'
+  | 'ai_tier_sonnet';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
