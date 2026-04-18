@@ -335,7 +335,7 @@ export default function DashboardHeader() {
               </button>
 
               {showMoreMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-[60] min-w-[200px] py-1">
+                <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-y-auto z-[60] min-w-[200px] py-1 max-h-[calc(100vh-80px)]">
                   <Link
                     href="/montree/dashboard/notes"
                     data-guide="nav-notes"
