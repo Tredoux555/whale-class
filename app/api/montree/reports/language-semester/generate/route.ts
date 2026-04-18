@@ -8,8 +8,9 @@
 //   {{PARA_OPENING}}, {{PARA_CIRCLE}}, {{PARA_ENGLISH}}
 //   {{WORK_1_NAME}}..{{WORK_4_NAME}}, {{WORK_1_STATUS}}..{{WORK_4_STATUS}}
 //
-// Sonnet writes the three narrative paragraphs + picks up to 4 spotlight works with
-// P/Pr/MD status codes. All XML edits are plain string replaces on ppt/slides/slide1.xml
+// Sonnet writes the three narrative paragraphs (word-limited to fit on the slide).
+// Works table is filled from real child progress data (top 4 by status rank).
+// All XML edits are plain string replaces on ppt/slides/slide1.xml
 // (the template was pre-tokenized so every token sits in a single <a:r> run).
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -103,7 +104,7 @@ Total across all three paragraphs must not exceed 170 words. Brevity is essentia
 
 Use the child's actual works as ground truth — do not invent works or skills not listed.
 
-Output three narrative paragraphs and up to 4 spotlight works via the write_language_semester_report tool.`;
+Output three narrative paragraphs via the write_language_semester_report tool.`;
 
   const userMessage = `Child: ${childName}
 
