@@ -3480,7 +3480,7 @@ export const zh = {
   'aiBudget.warningHigh': '本月AI使用量较高',
   'aiBudget.loading': '正在加载AI预算...',
   // Photo Audit
-  'audit.title': '照片审核',
+  'audit.title': '收尾整理',
   'audit.needsReview': '待审核',
   'weeklyWrap.title': '周报总结',
   'audit.all': '全部',

@@ -3479,7 +3479,7 @@ export const en = {
   'aiBudget.warningHigh': 'AI usage is high this month',
   'aiBudget.loading': 'Loading AI budget...',
   // Photo Audit
-  'audit.title': 'Photo Audit',
+  'audit.title': 'Wrap Up',
   'audit.needsReview': 'Needs Review',
   'weeklyWrap.title': 'Weekly Wrap',
   'audit.all': 'All',
