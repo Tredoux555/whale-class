@@ -61,6 +61,8 @@ interface ReportResult {
   flags_count: number;
   parent_narrative: string | null;
   parent_photos: Photo[];
+  // Canonical focus works from montree_child_focus_works — single source of truth
+  focus_works: Array<{ area: string; work_name: string; work_name_zh: string | null; status: string }>;
   parent_works: ParentWork[];
   photo_count: number;
   report_id: string | null;
@@ -339,13 +341,27 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     const shelf: Array<{ area: string; work: string; work_zh?: string | null; status: string }> = AREAS.map(area => ({
       area, work: '', work_zh: null, status: 'not_started',
     }));
-    for (const rec of r.recommendations) {
-      const canonical = toCanonicalArea(rec.area);
-      const slot = shelf.find(s => s.area === canonical && !s.work);
-      if (slot) {
-        slot.work = rec.work;
-        slot.work_zh = rec.work_zh || null;
-        slot.status = 'presented';
+
+    // Primary source: montree_child_focus_works (the single source of truth)
+    if (r.focus_works && r.focus_works.length > 0) {
+      for (const fw of r.focus_works) {
+        const slot = shelf.find(s => s.area === fw.area && !s.work);
+        if (slot) {
+          slot.work = fw.work_name;
+          slot.work_zh = fw.work_name_zh || null;
+          slot.status = fw.status || 'presented';
+        }
+      }
+    } else {
+      // Fallback: old reports before this fix — use recommendations from teacher report
+      for (const rec of r.recommendations) {
+        const canonical = toCanonicalArea(rec.area);
+        const slot = shelf.find(s => s.area === canonical && !s.work);
+        if (slot) {
+          slot.work = rec.work;
+          slot.work_zh = rec.work_zh || null;
+          slot.status = 'presented';
+        }
       }
     }
     return shelf;
@@ -404,17 +420,31 @@ export default function WeeklyWrapTab({ classroomId, view: externalView }: Weekl
     }
   };
 
-  const handleShelfPickerSelect = (work: { id: string; name: string; name_chinese?: string; status?: string; sequence?: number }, _status: string) => {
+  const handleShelfPickerSelect = async (work: { id: string; name: string; name_chinese?: string; status?: string; sequence?: number }, _status: string) => {
     const childId = wheelPickerChildId;
     const idx = wheelPickerShelfIdx;
     if (!childId || idx < 0) return;
     const report = reports.find(r => r.child_id === childId);
     if (!report) return;
     const shelf = shelfWorks[childId] || getShelfForChild(report);
+    const oldShelf = [...shelf];
     const updated = [...shelf];
+    const area = updated[idx].area;
     updated[idx] = { ...updated[idx], work: work.name, work_zh: work.name_chinese || null, status: 'presented' };
     setShelfWorks(prev => ({ ...prev, [childId]: updated }));
     setWheelPickerOpen(false);
+
+    // Persist to montree_child_focus_works (single source of truth) + progress
+    try {
+      await montreeApi('/api/montree/progress/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ child_id: childId, work_name: work.name, area, status: 'presented', is_focus: true }),
+      });
+    } catch (err) {
+      console.error('Failed to save shelf work:', err);
+      setShelfWorks(prev => ({ ...prev, [childId]: oldShelf }));
+    }
   };
 
   const handleRefreshPickerWorks = async () => {

@@ -219,6 +219,37 @@ export async function GET(request: NextRequest) {
     const children = (childrenRaw || []) as Array<{ id: string; name: string }>;
     const childMap = new Map(children.map(c => [c.id, c.name]));
 
+    // ── Load actual focus works from the single source of truth ──
+    // montree_child_focus_works is the canonical shelf — written by replan,
+    // fill-shelf button, and teacher wheel picker. All views must read from here.
+    const { data: focusWorksRaw } = await supabase
+      .from('montree_child_focus_works')
+      .select('child_id, area, work_name, set_by, updated_at')
+      .in('child_id', childIds);
+
+    // Also load progress status for each focus work
+    const { data: progressRaw } = await supabase
+      .from('montree_child_work_progress')
+      .select('child_id, work_name, status')
+      .in('child_id', childIds);
+
+    const progressMap = new Map<string, string>();
+    for (const p of (progressRaw || []) as Array<{ child_id: string; work_name: string; status: string }>) {
+      progressMap.set(`${p.child_id}::${p.work_name.toLowerCase()}`, p.status);
+    }
+
+    const focusWorksByChild = new Map<string, Array<{ area: string; work_name: string; work_name_zh: string | null; status: string }>>();
+    for (const fw of (focusWorksRaw || []) as Array<{ child_id: string; area: string; work_name: string }>) {
+      if (!focusWorksByChild.has(fw.child_id)) focusWorksByChild.set(fw.child_id, []);
+      const status = progressMap.get(`${fw.child_id}::${fw.work_name.toLowerCase()}`) || 'presented';
+      focusWorksByChild.get(fw.child_id)!.push({
+        area: fw.area,
+        work_name: fw.work_name,
+        work_name_zh: getChineseWorkName(fw.work_name),
+        status,
+      });
+    }
+
     // Group by child
     const byChild = new Map<string, {
       teacher_report: Record<string, unknown> | null;
@@ -342,6 +373,8 @@ export async function GET(request: NextRequest) {
         area_analyses: areaAnalyses,
         flags: teacherFlags,
         flags_count: flagsCount,
+        // Canonical focus works from montree_child_focus_works — single source of truth
+        focus_works: focusWorksByChild.get(childId) || [],
         // Parent data
         parent_narrative: parentNarrative,
         parent_photos: parentPhotos,
