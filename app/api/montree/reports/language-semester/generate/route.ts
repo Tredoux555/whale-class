@@ -66,17 +66,17 @@ const REPORT_TOOL = {
       para_opening: {
         type: 'string',
         description:
-          'Opening paragraph addressed to the parents. Start with "Dear [Child Name],". 3-5 sentences. Warm, specific, Montessori-literate. Celebrates growth this semester. No bullet points, no line breaks inside the paragraph. End with a sentence including the child\'s name like "...we are so proud of you [Name].".',
+          'Opening paragraph addressed to the parents. Start with "Dear [Child Name],". STRICT LIMIT: 2-3 sentences, MAX 50 words. Warm, celebrates growth. End with the child\'s name. No line breaks inside.',
       },
       para_circle: {
         type: 'string',
         description:
-          'Paragraph describing the child\'s participation and growth during circle time / group time this semester. 3-5 sentences. Reference listening, turn-taking, songs, stories, and engagement with the community. No bullet points. Single paragraph.',
+          'Circle time paragraph. STRICT LIMIT: 2-3 sentences, MAX 50 words. Reference listening, turn-taking, songs, community. No line breaks inside.',
       },
       para_english: {
         type: 'string',
         description:
-          'Paragraph about the child\'s progress in the English / Language section of the classroom. 4-6 sentences. Reference their journey through Language works — listening games, sandpaper letters, movable alphabet, reading, writing — based on the actual works provided. Process-focused. Single paragraph, no bullet points.',
+          'Language progress paragraph referencing specific works the child has done. STRICT LIMIT: 3-4 sentences, MAX 70 words. Process-focused, based on the actual works provided. No line breaks inside.',
       },
       works: {
         type: 'array',
@@ -113,9 +113,15 @@ async function generateReport(childName: string, progress: ProgressRow[]): Promi
 
   const systemPrompt = `You are a Montessori-trained lead teacher writing the official end-of-semester Language report for a child.
 
-Voice: warm, specific, Montessori-literate. Written to the child's parents. No jargon without explanation. No hype. No emojis. No bullet points or markdown — plain paragraph prose only.
+Voice: warm, specific, Montessori-literate. Written to the child's parents. Plain paragraph prose — no bullets, no markdown, no emojis, no line breaks within paragraphs.
 
-You will receive the child's name and a list of Language works with their current status (P=Presented, Pr=Practicing, MD=Mastered). Use this as ground truth — do not invent works or skills the child has not touched.
+CRITICAL SPACE CONSTRAINT: This text must fit on a single PowerPoint slide. Each paragraph MUST be short:
+- para_opening: MAX 50 words (2-3 sentences)
+- para_circle: MAX 50 words (2-3 sentences)
+- para_english: MAX 70 words (3-4 sentences)
+Total across all three paragraphs must not exceed 170 words. Brevity is essential — every word must earn its place.
+
+Use the child's actual works as ground truth — do not invent works or skills not listed.
 
 Output three narrative paragraphs and up to 4 spotlight works via the write_language_semester_report tool.`;
 
@@ -128,7 +134,7 @@ Please write the semester report.`;
 
   const response = await anthropic.messages.create({
     model: AI_MODEL,
-    max_tokens: 2048,
+    max_tokens: 800,
     system: systemPrompt,
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
