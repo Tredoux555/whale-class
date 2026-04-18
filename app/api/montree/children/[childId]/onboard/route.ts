@@ -389,16 +389,15 @@ async function seedCurriculumPositions(
       upserts.push({
         child_id: childId,
         work_name: works[i].name,
-        work_id: works[i].id,
-        classroom_id: classroomId,
         area: area.key,
         status,
+        updated_at: new Date().toISOString(),
       });
     }
 
     if (upserts.length > 0) {
       const { error } = await supabase
-        .from('montree_child_work_progress')
+        .from('montree_child_progress')
         .upsert(upserts as unknown as Record<string, unknown>[], { onConflict: 'child_id,work_name' });
 
       if (error) {

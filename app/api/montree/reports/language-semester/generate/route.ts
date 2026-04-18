@@ -205,20 +205,18 @@ async function loadLanguageProgress(
   const langNames = new Set<string>(((langWorks || []) as Array<{ name: string }>).map((w) => w.name.toLowerCase()));
 
   const { data: progressRows } = await supabase
-    .from('montree_child_work_progress')
-    .select('work_name, area, status, work_id')
+    .from('montree_child_progress')
+    .select('work_name, area, status')
     .eq('child_id', childId);
 
   const rows = (progressRows || []) as Array<{
     work_name: string;
     area: string | null;
     status: string;
-    work_id: string | null;
   }>;
 
   const filtered = rows.filter(
     (r) =>
-      (r.work_id && langWorkIds.has(r.work_id)) ||
       (r.area && r.area.toLowerCase() === 'language') ||
       langNames.has((r.work_name || '').toLowerCase())
   );

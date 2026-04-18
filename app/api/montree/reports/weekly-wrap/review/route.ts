@@ -229,7 +229,7 @@ export async function GET(request: NextRequest) {
 
     // Also load progress status for each focus work
     const { data: progressRaw } = await supabase
-      .from('montree_child_work_progress')
+      .from('montree_child_progress')
       .select('child_id, work_name, status')
       .in('child_id', childIds);
 
