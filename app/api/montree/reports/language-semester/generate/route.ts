@@ -8,7 +8,7 @@
 //   {{PARA_OPENING}}, {{PARA_CIRCLE}}, {{PARA_ENGLISH}}
 //   {{WORK_1_NAME}}..{{WORK_4_NAME}}, {{WORK_1_STATUS}}..{{WORK_4_STATUS}}
 //
-// Sonnet writes the three narrative paragraphs (word-limited to fit on the slide).
+// Sonnet writes the three narrative sections (validated + retried if quality fails).
 // Works table is filled from real child progress data (top 4 by status rank).
 // All XML edits are plain string replaces on ppt/slides/slide1.xml
 // (the template was pre-tokenized so every token sits in a single <a:r> run).
@@ -54,80 +54,206 @@ function xmlEscape(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
-/** Convert \n in Sonnet output to PPTX line breaks AFTER xmlEscape. */
+/** Convert newlines in Sonnet output to PPTX line breaks AFTER xmlEscape.
+ *  Handles both actual newline chars AND literal \n two-char sequences
+ *  (Sonnet tool_use sometimes outputs literal backslash-n). */
 function textWithBreaks(raw: string): string {
   const escaped = xmlEscape(raw);
-  return escaped.replace(/\n/g, '</a:t></a:r><a:br/><a:r><a:rPr lang="en-US" dirty="0"/><a:t>');
+  const BR = '</a:t></a:r><a:br/><a:r><a:rPr lang="en-US" dirty="0"/><a:t>';
+  return escaped
+    .replace(/\\n/g, BR)   // literal backslash-n (2 chars) — Sonnet tool_use quirk
+    .replace(/\n/g, BR);   // actual newline char
 }
 
-// --- Sonnet --------------------------------------------------------------
+function countWords(s: string): number {
+  return s.replace(/\\n/g, ' ').split(/\s+/).filter(Boolean).length;
+}
+
+/** Strip literal \n sequences for clean plaintext. */
+function cleanText(s: string): string {
+  return s.replace(/\\n/g, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+// --- Sonnet ---------------------------------------------------------------
 
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
-    'Write the three narrative sections for this child\'s official semester report letter. Written TO the child (second person: "you", "your"). The works table is filled separately — you only write the prose.',
+    'Write the three narrative sections for this child\'s official semester report letter. Written directly TO the child in second person ("you", "your"). The works table is filled separately — you only write the prose.',
   input_schema: {
     type: 'object' as const,
     properties: {
       para_opening: {
         type: 'string',
         description:
-          'Warm greeting and congratulations, written TO the child. Start with "Dear [Child Name]," then 1-2 short sentences celebrating their semester. STRICT LIMIT: MAX 20 words after the greeting. Example: "Dear Amy, what a wonderful semester you have had! You should be very proud of yourself." No line breaks.',
+          'Warm greeting and congratulations written TO the child. Start with "Dear [Child Name]," followed by 2 sentences of praise. Around 25-35 words total. Warm, proud, celebratory. Example tone: "Dear Amy, what a wonderful semester of learning you have had. You have grown in so many ways and you should feel very proud of all your hard work."',
       },
       para_circle: {
         type: 'string',
         description:
-          'Three highlighted achievements, each on its own line separated by \\n. Each point is 1 sentence (12-18 words). First point about circle time / community. Second point about a specific language work. Third point about growth or a favourite moment. Use "you" and "your" throughout — speak TO the child. Format: "Point one sentence.\\nPoint two sentence.\\nPoint three sentence." STRICT LIMIT: MAX 55 words total across all three points.',
+          'The heart of the letter. Three distinct accomplishments, each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 1-2 sentences (15-25 words). Written TO the child using "you" and "your". Point 1: something about circle time, community, or social growth. Point 2: a SPECIFIC language work from their progress list — name it exactly. Point 3: another specific achievement or a favourite moment. Around 55-70 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
       },
       para_english: {
         type: 'string',
         description:
-          'Short warm closing, written TO the child. 1-2 sentences looking forward to next semester. Encouraging, personal. STRICT LIMIT: MAX 20 words. Example: "We are so excited to see what you will discover next. Keep shining!" No line breaks.',
+          'Warm closing written TO the child. 2 sentences looking forward — what exciting things await next semester. Personal and encouraging. Around 20-30 words. End with the child\'s name or a warm sign-off.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
   },
 };
 
+function buildSystemPrompt(childName: string, workNames: string[]): string {
+  const workList = workNames.length > 0
+    ? `The ONLY works you may reference by name are:\n${workNames.map(w => `  • ${w}`).join('\n')}\nDo NOT invent, paraphrase, or abbreviate any work name. If you mention a work, copy its name EXACTLY from this list.`
+    : 'This child has no recorded Language works yet — speak warmly about their early engagement, curiosity, and the beginnings of their language journey.';
+
+  return `You are a Montessori lead teacher writing the official end-of-semester Language progress report as a personal letter TO ${childName}. The parents will read it aloud to their child, so every word is addressed directly to the child in second person.
+
+VOICE: Warm, proud, specific. Like a beloved teacher looking a child in the eye with genuine pride. Simple, beautiful language — a parent reads this to a 4-year-old. No jargon. No filler.
+
+STRUCTURE:
+1. para_opening — "Dear ${childName}," followed by 2 warm sentences. Celebrate this semester.
+2. para_circle — Three distinct highlights, each separated by backslash-n. Each is 1-2 sentences about something specific this child did. At least one must name a specific work from their list.
+3. para_english — Warm closing. Look ahead to next semester. End personally.
+
+SPACE CONSTRAINT: This prints on a PowerPoint slide with limited space. Target 110-130 words total across all three sections. Not fewer than 100, not more than 135.
+
+${workList}
+
+QUALITY RULES:
+- ALWAYS "you" and "your" — NEVER "he/she/they" or the child's name as subject after the greeting
+- Each para_circle point MUST be a complete, distinct thought — not a run-on
+- Separate para_circle points with backslash then n (two characters). No other line breaks anywhere.
+- No bullets, no markdown, no emojis, no asterisks
+- Write like a craftsperson — every sentence should be beautiful enough to frame
+
+Output via the write_language_semester_report tool.`;
+}
+
+// --- validation -----------------------------------------------------------
+
+interface ValidationResult {
+  valid: boolean;
+  issues: string[];
+}
+
+function validateReport(
+  report: SonnetReport,
+  childName: string,
+  allowedWorks: string[],
+): ValidationResult {
+  const issues: string[] = [];
+
+  // 1. Word count check
+  const totalWords =
+    countWords(report.para_opening) +
+    countWords(report.para_circle) +
+    countWords(report.para_english);
+  if (totalWords < 80) issues.push(`Too short: ${totalWords} words (min 80)`);
+  if (totalWords > 160) issues.push(`Too long: ${totalWords} words (max 160)`);
+
+  // 2. Must start with "Dear"
+  if (!report.para_opening.trim().startsWith('Dear')) {
+    issues.push('para_opening must start with "Dear [Name],"');
+  }
+
+  // 3. Voice check — should not talk ABOUT the child in 3rd person
+  const thirdPerson = new RegExp(
+    `\\b${childName}\\s+(is|was|has|had|loves|loved|enjoys|enjoyed|shows|showed|brings|brought|demonstrates|demonstrated)\\b`,
+    'i'
+  );
+  const allText = `${report.para_opening} ${report.para_circle} ${report.para_english}`;
+  if (thirdPerson.test(allText)) {
+    issues.push('Uses third person about the child — must be "you" throughout');
+  }
+
+  // 4. Check for formatting artifacts
+  if (/\\n/g.test(report.para_opening) || /\n/.test(report.para_opening)) {
+    issues.push('para_opening must not contain line breaks');
+  }
+  if (/\\n/g.test(report.para_english) || /\n/.test(report.para_english)) {
+    issues.push('para_english must not contain line breaks');
+  }
+
+  // 5. Hallucination check — any quoted work names must be in allowed list
+  if (allowedWorks.length > 0) {
+    const lowerAllowed = new Set(allowedWorks.map(w => w.toLowerCase()));
+    // Check for Montessori-sounding capitalized phrases that aren't in the list
+    const capitalPhrases = allText.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/g) || [];
+    for (const phrase of capitalPhrases) {
+      // Skip common phrases that aren't work names
+      if (/^(Dear|Keep|We|You|Next|This|Your|Circle|Language|English)/.test(phrase)) continue;
+      if (!lowerAllowed.has(phrase.toLowerCase())) {
+        // Check fuzzy — is it a substring of any allowed work?
+        const isFuzzyMatch = allowedWorks.some(w =>
+          w.toLowerCase().includes(phrase.toLowerCase()) ||
+          phrase.toLowerCase().includes(w.toLowerCase())
+        );
+        if (!isFuzzyMatch) {
+          issues.push(`Possible hallucinated work: "${phrase}" — not in progress list`);
+        }
+      }
+    }
+  }
+
+  return { valid: issues.length === 0, issues };
+}
+
+// --- generate with validation + retry -------------------------------------
+
 async function generateReport(childName: string, progress: ProgressRow[]): Promise<SonnetReport> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
   }
 
+  const workNames = progress.map(p => p.work_name);
   const workSummary = progress
     .map((p) => `- ${p.work_name} [${statusCode(p.status)}]`)
     .join('\n');
 
-  const systemPrompt = `You are a Montessori lead teacher writing the official end-of-semester Language report as a letter TO a child. The parents will read it, but every word is addressed to the child in second person ("you", "your").
-
-VOICE: Warm, proud, personal. Like a teacher kneeling down to look a child in the eye and tell them how wonderful they are. Simple vocabulary — a 5-year-old's parent reads this aloud to them.
-
-STRUCTURE (three sections):
-1. para_opening — "Dear [Name]," + 1-2 sentences of congratulations. MAX 20 words after greeting.
-2. para_circle — Three highlighted points separated by \\n. Each is ONE sentence (12-18 words). Speak to specific things the child did. Reference their actual works. Use "you" throughout.
-3. para_english — Warm closing. 1-2 sentences looking ahead. MAX 20 words.
-
-CRITICAL SPACE RULE: Total across ALL sections must not exceed 95 words. This text prints on a small area of a PowerPoint slide. Every word must earn its place. Be concise and beautiful.
-
-RULES:
-- Address the child: "you learned", "your favourite", NOT "Austin learned", "his favourite"
-- Reference ONLY works from the list provided — never invent
-- No bullets, no markdown, no emojis
-- para_circle points separated by \\n (the system converts these to slide line breaks)
-- No \\n in para_opening or para_english
-
-Output via the write_language_semester_report tool.`;
+  const systemPrompt = buildSystemPrompt(childName, workNames);
 
   const userMessage = `Child: ${childName}
 
 Language work progress this semester:
-${workSummary || '(no recorded Language work yet — speak to early engagement and beginnings)'}
+${workSummary || '(no recorded Language work yet)'}
 
-Please write the semester report.`;
+Write the semester report letter to ${childName}.`;
+
+  // Attempt 1
+  let report = await callSonnet(systemPrompt, userMessage);
+  const v1 = validateReport(report, childName, workNames);
+
+  if (!v1.valid) {
+    console.warn(`[LanguageSemester] Validation failed for ${childName} (attempt 1):`, v1.issues);
+
+    // Attempt 2 — retry with explicit correction instructions
+    const retryUser = `${userMessage}
+
+IMPORTANT CORRECTIONS from your previous attempt:
+${v1.issues.map(i => `- ${i}`).join('\n')}
+
+Please fix these issues and try again.`;
+
+    report = await callSonnet(systemPrompt, retryUser);
+    const v2 = validateReport(report, childName, workNames);
+    if (!v2.valid) {
+      console.warn(`[LanguageSemester] Validation still has issues for ${childName} (attempt 2):`, v2.issues);
+      // Use it anyway but clean up what we can
+      report = cleanupReport(report, childName);
+    }
+  }
+
+  return report;
+}
+
+async function callSonnet(systemPrompt: string, userMessage: string): Promise<SonnetReport> {
+  if (!anthropic) throw new Error('AI not configured');
 
   const response = await anthropic.messages.create({
     model: AI_MODEL,
-    max_tokens: 500,
+    max_tokens: 600,
     system: systemPrompt,
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
@@ -139,6 +265,24 @@ Please write the semester report.`;
     throw new Error('Sonnet did not return tool_use output');
   }
   return block.input as SonnetReport;
+}
+
+/** Last-resort cleanup for reports that still have issues after retry. */
+function cleanupReport(report: SonnetReport, childName: string): SonnetReport {
+  // Strip any accidental line breaks from opening/closing
+  let opening = cleanText(report.para_opening);
+  let closing = cleanText(report.para_english);
+
+  // Ensure opening starts with Dear
+  if (!opening.startsWith('Dear')) {
+    opening = `Dear ${childName}, ${opening}`;
+  }
+
+  return {
+    para_opening: opening,
+    para_circle: report.para_circle, // keep breaks in circle
+    para_english: closing,
+  };
 }
 
 // --- template fill ---------------------------------------------------------
@@ -155,23 +299,26 @@ async function fillTemplate(
 
   let xml = await slideFile.async('string');
 
-  // Narrative paragraphs — PARA_CIRCLE uses textWithBreaks to convert \n to PPTX line breaks
+  // Narrative paragraphs — PARA_CIRCLE uses textWithBreaks for the 3-point structure
   xml = xml
     .replace('{{PARA_OPENING}}', xmlEscape(report.para_opening))
     .replace('{{PARA_CIRCLE}}', textWithBreaks(report.para_circle))
     .replace('{{PARA_ENGLISH}}', xmlEscape(report.para_english));
 
   // Works table — fill from REAL progress data (top 4 by status rank).
-  // Always 4 slots filled: if child has fewer than 4 works, pad with blanks.
+  // If fewer than 4 works, pad remaining slots with em-dash so no box is blank.
   const top4 = progress.slice(0, 4);
   for (let i = 0; i < 4; i++) {
     const w = top4[i];
     const nameTok = `{{WORK_${i + 1}_NAME}}`;
     const statusTok = `{{WORK_${i + 1}_STATUS}}`;
     if (w) {
-      xml = xml.replace(nameTok, xmlEscape(w.work_name)).replace(statusTok, xmlEscape(statusCode(w.status)));
+      xml = xml
+        .replace(nameTok, xmlEscape(w.work_name))
+        .replace(statusTok, xmlEscape(statusCode(w.status)));
     } else {
-      xml = xml.replace(nameTok, '').replace(statusTok, '');
+      // No work for this slot — use dash so boxes aren't blank
+      xml = xml.replace(nameTok, '\u2014').replace(statusTok, '\u2014');
     }
   }
 
