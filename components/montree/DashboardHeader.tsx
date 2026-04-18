@@ -473,16 +473,8 @@ export default function DashboardHeader() {
 
                   {isEnabled('paperwork_tracker') && (
                     <Link
-                      href="/montree/dashboard#paperwork"
-                      onClick={() => {
-                        setShowMoreMenu(false);
-                        // If already on dashboard, scroll to the section
-                        if (pathname === '/montree/dashboard') {
-                          setTimeout(() => {
-                            document.getElementById('paperwork-tracker')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }, 100);
-                        }
-                      }}
+                      href="/montree/dashboard/paperwork"
+                      onClick={() => setShowMoreMenu(false)}
                       className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-gray-700 hover:bg-gray-50`}
                     >
                       <span className="text-base">📋</span>
