@@ -86,17 +86,17 @@ const REPORT_TOOL = {
       para_opening: {
         type: 'string',
         description:
-          'Warm greeting and opening written TO the child. Start with "Dear [Child Name]," followed by 3-4 sentences of warm praise and reflection on the semester. Around 50-65 words total. Set the tone: proud, celebratory, personal. Mention how they have grown, what kind of learner they have become, and how the classroom has been brighter because of them.',
+          'Warm greeting written TO the child. Start with "Dear [Child Name]," followed by 2-3 sentences of warm praise. Around 35-45 words total. Proud, celebratory, personal.',
       },
       para_circle: {
         type: 'string',
         description:
-          'The heart of the letter — three distinct accomplishments. Each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 3-4 sentences (35-50 words each). Written TO the child using "you" and "your". Point 1: circle time, community, social growth — describe a specific moment or pattern. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved, how they approached it, and why it matters. Point 3: another achievement, character strength, or favourite classroom moment described vividly. Around 120-145 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
+          'The heart of the letter — three distinct accomplishments. Each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 2-3 sentences (25-35 words each). Written TO the child using "you" and "your". Point 1: circle time, community, or social growth. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved. Point 3: another achievement or character strength. Around 80-100 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
       },
       para_english: {
         type: 'string',
         description:
-          'Warm closing written TO the child. 3-4 sentences. Personal, encouraging, and forward-looking. Around 50-65 words. The closing sentiment depends on whether this child is graduating — specified in the user message. Make it feel like a warm farewell or a warm promise to continue.',
+          'Warm closing written TO the child. 2-3 sentences. Personal and encouraging. Around 30-40 words. The closing sentiment depends on whether this child is graduating — specified in the user message.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
@@ -117,11 +117,11 @@ function buildSystemPrompt(childName: string, workNames: string[], isGraduating:
 VOICE: Warm, proud, specific. Like a beloved teacher looking a child in the eye with genuine pride. Simple, beautiful language — a parent reads this to a 4-year-old. No jargon. No filler.
 
 STRUCTURE:
-1. para_opening — "Dear ${childName}," followed by 3-4 warm sentences about the semester. ~50-65 words.
-2. para_circle — Three rich highlights, each separated by backslash then n (two characters: \\n). Each point is 3-4 sentences about something specific this child did. At least one must name a specific work. ~120-145 words total.
-3. para_english — Warm closing, 3-4 sentences. ${closingGuidance} ~50-65 words.
+1. para_opening — "Dear ${childName}," followed by 2-3 warm sentences. ~35-45 words.
+2. para_circle — Three highlights, each separated by backslash then n (two characters: \\n). Each point is 2-3 sentences. At least one must name a specific work. ~80-100 words total.
+3. para_english — Warm closing, 2-3 sentences. ${closingGuidance} ~30-40 words.
 
-CRITICAL SPACE CONSTRAINT: This prints on a PowerPoint slide and the text MUST fill the entire available white space — no gaps. Target exactly 240-260 words total across all three sections. Count carefully. Not fewer than 230, not more than 270. This is non-negotiable.
+SPACE CONSTRAINT: This prints on a PowerPoint slide. The text area above the decorative clouds fits approximately 150-175 words. Target 155-170 words total across all three sections. Not fewer than 145, not more than 180.
 
 ${workList}
 
@@ -150,13 +150,13 @@ function validateReport(
 ): ValidationResult {
   const issues: string[] = [];
 
-  // 1. Word count check — must fill the PPTX slide (240-260 words)
+  // 1. Word count check — visible area above clouds fits ~155-170 words
   const totalWords =
     countWords(report.para_opening) +
     countWords(report.para_circle) +
     countWords(report.para_english);
-  if (totalWords < 220) issues.push(`Too short: ${totalWords} words (min 220)`);
-  if (totalWords > 280) issues.push(`Too long: ${totalWords} words (max 280)`);
+  if (totalWords < 135) issues.push(`Too short: ${totalWords} words (min 135)`);
+  if (totalWords > 190) issues.push(`Too long: ${totalWords} words (max 190)`);
 
   // 2. Must start with "Dear"
   if (!report.para_opening.trim().startsWith('Dear')) {
@@ -230,7 +230,7 @@ ${workSummary || '(no recorded Language work yet)'}
 
 ${closingHint}
 
-Write the semester report letter to ${childName}. CRITICAL: target exactly 240-260 words total. The text must fill the entire slide — no empty space.`;
+Write the semester report letter to ${childName}. Target 155-170 words total — the visible area above the decorative clouds fits this many words.`;
 
   // Attempt 1
   let report = await callSonnet(systemPrompt, userMessage);
@@ -264,7 +264,7 @@ async function callSonnet(systemPrompt: string, userMessage: string): Promise<So
 
   const response = await anthropic.messages.create({
     model: AI_MODEL,
-    max_tokens: 1200,
+    max_tokens: 800,
     system: systemPrompt,
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
