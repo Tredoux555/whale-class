@@ -76,6 +76,13 @@ function cleanText(s: string): string {
 
 // --- Sonnet ---------------------------------------------------------------
 
+// Whale Class children graduating to K class this semester.
+// Update this list each semester. Names must match montree_children.name exactly.
+const GRADUATING_TO_K: Set<string> = new Set([
+  'Amy', 'Austin', 'Eric', 'Gengerlyn', 'Hayden', 'Henry',
+  'Joey', 'Kayla', 'Kevin', 'Rachel', 'Stella',
+]);
+
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
@@ -86,38 +93,42 @@ const REPORT_TOOL = {
       para_opening: {
         type: 'string',
         description:
-          'Warm greeting and congratulations written TO the child. Start with "Dear [Child Name]," followed by 2 sentences of praise. Around 25-35 words total. Warm, proud, celebratory. Example tone: "Dear Amy, what a wonderful semester of learning you have had. You have grown in so many ways and you should feel very proud of all your hard work."',
+          'Warm greeting and congratulations written TO the child. Start with "Dear [Child Name]," followed by 2-3 sentences of warm praise. Around 30-40 words total. Proud, celebratory, personal. Example tone: "Dear Amy, what a wonderful semester of learning you have had. You have grown in so many ways and you should feel very proud of all your hard work this year."',
       },
       para_circle: {
         type: 'string',
         description:
-          'The heart of the letter. Three distinct accomplishments, each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 1-2 sentences (15-25 words). Written TO the child using "you" and "your". Point 1: something about circle time, community, or social growth. Point 2: a SPECIFIC language work from their progress list — name it exactly. Point 3: another specific achievement or a favourite moment. Around 55-70 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
+          'The heart of the letter. Three distinct accomplishments, each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 2-3 sentences (20-30 words each). Written TO the child using "you" and "your". Point 1: something about circle time, community, social growth, or classroom participation. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved with it. Point 3: another specific achievement, a favourite moment, or a character strength you have noticed. Around 70-85 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
       },
       para_english: {
         type: 'string',
         description:
-          'Warm closing written TO the child. 2 sentences looking forward — what exciting things await next semester. Personal and encouraging. Around 20-30 words. End with the child\'s name or a warm sign-off.',
+          'Warm closing written TO the child. 2-3 sentences. Personal and encouraging. Around 25-35 words. The closing sentiment depends on whether this child is graduating — this will be specified in the user message.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
   },
 };
 
-function buildSystemPrompt(childName: string, workNames: string[]): string {
+function buildSystemPrompt(childName: string, workNames: string[], isGraduating: boolean): string {
   const workList = workNames.length > 0
-    ? `The ONLY works you may reference by name are:\n${workNames.map(w => `  • ${w}`).join('\n')}\nDo NOT invent, paraphrase, or abbreviate any work name. If you mention a work, copy its name EXACTLY from this list.`
+    ? `The ONLY works you may reference by name are:\n${workNames.map(w => `  • ${w}`).join('\n')}\nDo NOT invent, paraphrase, or abbreviate any work name. If you mention a work, copy its name EXACTLY from this list. In the closing paragraph, do NOT mention any works or future curriculum — keep the closing about the child personally.`
     : 'This child has no recorded Language works yet — speak warmly about their early engagement, curiosity, and the beginnings of their language journey.';
+
+  const closingGuidance = isGraduating
+    ? `This child is GRADUATING to Kindergarten next semester. The closing (para_english) should warmly wish them good luck in K class — celebrate how ready they are for this next big adventure. Do NOT mention coming back next semester.`
+    : `This child is RETURNING next semester. The closing (para_english) should express excitement about seeing them again — how much more you look forward to exploring together. Do NOT mention graduation or K class.`;
 
   return `You are a Montessori lead teacher writing the official end-of-semester Language progress report as a personal letter TO ${childName}. The parents will read it aloud to their child, so every word is addressed directly to the child in second person.
 
 VOICE: Warm, proud, specific. Like a beloved teacher looking a child in the eye with genuine pride. Simple, beautiful language — a parent reads this to a 4-year-old. No jargon. No filler.
 
 STRUCTURE:
-1. para_opening — "Dear ${childName}," followed by 2 warm sentences. Celebrate this semester.
-2. para_circle — Three distinct highlights, each separated by backslash-n. Each is 1-2 sentences about something specific this child did. At least one must name a specific work from their list.
-3. para_english — Warm closing. Look ahead to next semester. End personally.
+1. para_opening — "Dear ${childName}," followed by 2-3 warm sentences. Celebrate this semester of growth.
+2. para_circle — Three distinct highlights, each separated by backslash then n (two characters: \\n). Each point is 2-3 rich sentences about something specific this child did. At least one must name a specific work from their list and describe what they achieved with it.
+3. para_english — Warm closing. ${closingGuidance}
 
-SPACE CONSTRAINT: This prints on a PowerPoint slide with limited space. Target 110-130 words total across all three sections. Not fewer than 100, not more than 135.
+SPACE CONSTRAINT: This prints on a PowerPoint slide. The text MUST fill the available white space. Target 135-155 words total across all three sections. Not fewer than 125, not more than 165. Aim for the middle of this range.
 
 ${workList}
 
@@ -126,6 +137,7 @@ QUALITY RULES:
 - Each para_circle point MUST be a complete, distinct thought — not a run-on
 - Separate para_circle points with backslash then n (two characters). No other line breaks anywhere.
 - No bullets, no markdown, no emojis, no asterisks
+- Do NOT reference any works or curriculum topics in para_english — the closing is about the child, not about works
 - Write like a craftsperson — every sentence should be beautiful enough to frame
 
 Output via the write_language_semester_report tool.`;
@@ -150,8 +162,8 @@ function validateReport(
     countWords(report.para_opening) +
     countWords(report.para_circle) +
     countWords(report.para_english);
-  if (totalWords < 80) issues.push(`Too short: ${totalWords} words (min 80)`);
-  if (totalWords > 160) issues.push(`Too long: ${totalWords} words (max 160)`);
+  if (totalWords < 110) issues.push(`Too short: ${totalWords} words (min 110)`);
+  if (totalWords > 180) issues.push(`Too long: ${totalWords} words (max 180)`);
 
   // 2. Must start with "Dear"
   if (!report.para_opening.trim().startsWith('Dear')) {
@@ -202,7 +214,7 @@ function validateReport(
 
 // --- generate with validation + retry -------------------------------------
 
-async function generateReport(childName: string, progress: ProgressRow[]): Promise<SonnetReport> {
+async function generateReport(childName: string, progress: ProgressRow[], isGraduating: boolean): Promise<SonnetReport> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
   }
@@ -212,14 +224,20 @@ async function generateReport(childName: string, progress: ProgressRow[]): Promi
     .map((p) => `- ${p.work_name} [${statusCode(p.status)}]`)
     .join('\n');
 
-  const systemPrompt = buildSystemPrompt(childName, workNames);
+  const systemPrompt = buildSystemPrompt(childName, workNames, isGraduating);
+
+  const closingHint = isGraduating
+    ? 'This child is graduating to K class — the closing should wish them good luck on their exciting new journey.'
+    : 'This child is returning next semester — the closing should express how much you look forward to seeing them again.';
 
   const userMessage = `Child: ${childName}
 
 Language work progress this semester:
 ${workSummary || '(no recorded Language work yet)'}
 
-Write the semester report letter to ${childName}.`;
+${closingHint}
+
+Write the semester report letter to ${childName}. Remember: target 135-155 words total. Fill the space.`;
 
   // Attempt 1
   let report = await callSonnet(systemPrompt, userMessage);
@@ -449,7 +467,8 @@ export async function POST(request: NextRequest) {
   for (const child of children) {
     try {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id);
-      const report = await generateReport(child.name, progress);
+      const isGraduating = GRADUATING_TO_K.has(child.name);
+      const report = await generateReport(child.name, progress, isGraduating);
       const filled = await fillTemplate(templateBuf, report, progress);
       results.push({ child_id: child.id, name: child.name, buf: filled });
     } catch (err) {
