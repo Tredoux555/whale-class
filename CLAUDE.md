@@ -195,7 +195,91 @@ montree.xyz
 
 ---
 
-## RECENT STATUS (Apr 17, 2026)
+## RECENT STATUS (Apr 18, 2026)
+
+### ⚡ Session 36 — Replan Shelf 100% Fill: Curriculum-Constrained Prompt + Deterministic Gap-Fill (Apr 18, 2026)
+
+**Two commits pushed to main: `23e117a8`, `f5c49d0c`.** User's trigger: "same as last week" — Weekly Admin Docs showing stale plans because shelves were empty or partially filled. Root cause was a 3-layer failure chain in the Haiku game plan → shelf fill pipeline.
+
+**A. Root cause diagnosis — why shelves were empty:**
+
+1. **Haiku was inventing work names** — despite being told "pick from the curriculum," Haiku paraphrased names like "Golden Beads (Quantity)" instead of copying "Introduction to Golden Beads" exactly. The prompt didn't include the actual curriculum list, so Haiku guessed from its training data.
+2. **Haiku added area prefixes** — wrote "Practical Life: Pouring Water" instead of "Pouring Water." The colon in the name caused exact-match failure.
+3. **Haiku doubled up on areas** — picked 2 mathematics works and 0 practical_life, violating the one-per-area intent. Haiku misclassifies works (thinks Metal Insets is sensorial when it's actually language in this curriculum).
+
+**B. Fix 1 — Curriculum-constrained prompt (`23e117a8`):**
+
+Loaded all curriculum work names from `montree_classroom_curriculum_works` grouped by area and injected into the Haiku prompt:
+```
+AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT names as written:
+[practical_life] Spooning, Pouring Water, Cutting, ...
+[sensorial] Color Box 1 (Primary Colors), Cylinder Block 1, ...
+[mathematics] Golden Bead Addition, Number Rods, ...
+[language] Sandpaper Letters, Moveable Alphabet, ...
+[cultural] Parts of a Plant, Animal Habitats, ...
+```
+
+Tool schema updated: `minItems: 5, maxItems: 5` with description "Exactly 5 works — one from EACH area". Prompt rules explicitly state "ONE from EACH area" and "Copy names EXACTLY."
+
+Also added colon prefix stripping to all 3 fill paths — if Haiku writes "Practical Life: Pouring Water", strip everything before the colon before matching.
+
+Applied to: `lib/montree/reports/replan-child.ts` (Stage 2.5 curriculum load + prompt + fill loop), `scripts/run_replan_all_whale.mjs` (same), `app/api/montree/children/[childId]/fill-shelf/route.ts` (colon strip only).
+
+**C. Fix 2 — Deterministic gap-fill (`f5c49d0c`):**
+
+Even with the curriculum list in the prompt, Haiku still doubles up on areas ~30% of the time because it misclassifies which area a work belongs to. No amount of prompting fixes this — Haiku genuinely doesn't know the curriculum's area assignments.
+
+After the AI fill loop, a new Stage 6 checks which of the 5 core areas (`practical_life, sensorial, mathematics, language, cultural`) are still empty. For each gap, it picks a random curriculum work from that area (excluding previous week's works). No AI, deterministic, guaranteed 100% fill.
+
+Applied to all 3 fill paths: `replan-child.ts`, `run_replan_all_whale.mjs`, `fill-shelf/route.ts`.
+
+**D. Manual replan execution — 100/100 shelf fill achieved:**
+
+Ran `scripts/run_replan_all_whale.mjs` twice (run 5 main + retry for Kevin/Segina who timed out on Anthropic API). Gap-fill fired for ~5 children:
+- Amy: gap-filled practical_life with "Cutting"
+- Lucky: gap-filled language with "CVC Word-Picture Matching"
+- MaoMao: gap-filled practical_life with "Walking Around Someone's Work"
+- Yo-yo: gap-filled cultural with "Cycle of the Chicken"
+- Kevin: manual fix for practical_life with "Spooning" (retry script upsert silently failed)
+
+Final state: **20/20 children × 5/5 areas = 100/100 shelf slots filled.** Verified programmatically.
+
+**E. User questions answered:**
+
+- **Sonnet upgrade path**: `replan-child.ts` gets its model from `resolveReportModel()` — tier-aware. Same prompt, tool schema, and fill pipeline regardless of model. Sonnet follows the one-per-area rule more reliably (fewer gap-fills), with richer nudges.
+- **Shelf uniformity**: All shelf views (child page, Weekly Wrap "Next Week's Focus", Weekly Admin Docs plan column) read from the single `montree_child_focus_works` table. Already uniform.
+- **Mastered propagation**: Teacher marking "mastered" on any shelf view writes to `montree_child_work_progress`. The next replan reads this progress to determine forward progression. That's the child's "brain."
+
+**F. Pricing tier model discussed (no implementation):**
+- Free: no AI
+- $2/student/month: Haiku tier (~$0.30-0.50 AI cost)
+- $5/student/month: mixed Haiku+Sonnet
+- $8/student/month: full Sonnet (~$0.80-1.50 AI cost)
+- User noted Transparent Classroom runs at ~$2/kid/month. Strategy: start with lower tiers, potentially remove them later to push schools to higher tiers.
+
+**Files changed (3 files, 2 commits):**
+- `lib/montree/reports/replan-child.ts` — Stage 2.5 curriculum load, curriculum-constrained prompt, colon prefix stripping, Stage 6 gap-fill (+75 lines)
+- `scripts/run_replan_all_whale.mjs` — Same curriculum load, prompt, colon strip, gap-fill (+45 lines)
+- `app/api/montree/children/[childId]/fill-shelf/route.ts` — Colon prefix stripping + gap-fill (+35 lines)
+
+**🚨 Architectural notes for future sessions:**
+- **Gap-fill is the safety net** — even perfect prompting can't guarantee Haiku assigns works to the correct area in every curriculum. The deterministic gap-fill ensures 100% fill regardless. If Sonnet also misclassifies occasionally, the gap-fill catches it.
+- **`special_events` is excluded** — the classroom has 6 area_keys including `special_events` (2 works). Gap-fill only targets the 5 core areas.
+- **Kevin has persistent Anthropic API timeouts** — timed out on 3 consecutive replan runs. The retry script works but its inline upsert occasionally fails silently. If Kevin shows gaps after future replans, manual fix via Supabase or a dedicated retry is needed.
+- **The `CORE_AREAS` constant** is defined in both `replan-child.ts` and `run_replan_all_whale.mjs`. If a 6th core area is ever added, update both files.
+
+**Next session priorities (updated):**
+1. **Verify Weekly Admin Docs on production** — hard-refresh, click Auto-fill for week of Apr 13 or Apr 20. All 20 children should show 5 works in 5 areas. No "Tap to select" placeholders.
+2. **Verify the deployed replan fires on next automated Weekly Wrap** — Fri Apr 25, confirm every child gets fresh `settings.game_plan.updated_at` + `montree_child_focus_works.set_at` dated Apr 25 with `set_by='weekly_wrap'` and 5/5 fill.
+3. **Session 35 carryover: Verify QR flow on production** — QR generator → Song tab → pick video → download QR → scan → whale-class page highlights correct song.
+4. **Session 33 hardening verification** — pull Railway logs for `Teacher report upsert failed` / `Parent report upsert failed`.
+5. **Tier names + pricing decisions** — still blocking Phase 5.
+6. **6 critical Sonnet-hardcoded routes** (Session 33 carryover) — gate when 2nd school onboards.
+7. **Phase 3 UI hiding by tier** (Session 33 carryover).
+8. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+9. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00.
+
+---
 
 ### ⚡ Session 35 — QR Generator End-to-End Fix: CSP Download + Whale Class Page + Auth Gate + Hydration (Apr 17, 2026)
 
