@@ -344,7 +344,12 @@ async function loadLanguageProgress(
   childId: string,
   classroomId: string
 ): Promise<ProgressRow[]> {
-  // Resolve Language area id for classroom
+  // SOURCE: confirmed photos (montree_media) — NOT montree_child_progress.
+  // montree_child_progress includes works seeded by the replan pipeline
+  // (planned focus works the child hasn't touched yet). Parents need to see
+  // ONLY works with actual photo evidence — "look, here's the picture."
+
+  // Step 1: Resolve Language area + work IDs for this classroom
   const { data: langArea } = await supabase
     .from('montree_classroom_curriculum_areas')
     .select('id')
@@ -360,51 +365,84 @@ async function loadLanguageProgress(
     .eq('classroom_id', classroomId)
     .eq('area_id', (langArea as { id: string }).id);
 
-  const langWorkIds = new Set<string>(((langWorks || []) as Array<{ id: string }>).map((w) => w.id));
-  const langNames = new Set<string>(((langWorks || []) as Array<{ name: string }>).map((w) => w.name.toLowerCase()));
+  if (!langWorks || langWorks.length === 0) return [];
 
-  const { data: progressRows } = await supabase
-    .from('montree_child_progress')
-    .select('work_name, area, status')
+  const workIdToName = new Map<string, string>();
+  for (const w of langWorks as Array<{ id: string; name: string }>) {
+    workIdToName.set(w.id, w.name);
+  }
+  const langWorkIds = Array.from(workIdToName.keys());
+
+  // Step 2: Get confirmed photos for this child with Language work_ids.
+  // Includes both direct photos (child_id on montree_media) and group
+  // photos (via montree_media_children junction table).
+  const { data: directPhotos } = await supabase
+    .from('montree_media')
+    .select('work_id, captured_at')
+    .eq('child_id', childId)
+    .in('work_id', langWorkIds)
+    .or('identification_status.is.null,identification_status.neq.pending_review')
+    .not('work_id', 'is', null);
+
+  const { data: groupLinks } = await supabase
+    .from('montree_media_children')
+    .select('media_id')
     .eq('child_id', childId);
 
-  const rows = (progressRows || []) as Array<{
-    work_name: string;
-    area: string | null;
-    status: string;
-  }>;
-
-  const filtered = rows.filter(
-    (r) =>
-      (r.area && r.area.toLowerCase() === 'language') ||
-      langNames.has((r.work_name || '').toLowerCase())
-  );
-
-  // Dedupe by work_name, keep highest status
-  const rank: Record<string, number> = { presented: 1, practicing: 2, mastered: 3 };
-  const byName = new Map<string, ProgressRow>();
-  for (const r of filtered) {
-    const key = (r.work_name || '').trim();
-    if (!key) continue;
-    const prev = byName.get(key);
-    if (!prev || (rank[r.status.toLowerCase()] || 0) > (rank[prev.status.toLowerCase()] || 0)) {
-      byName.set(key, { work_name: key, status: r.status });
-    }
+  let groupPhotos: Array<{ work_id: string; captured_at: string }> = [];
+  if (groupLinks && groupLinks.length > 0) {
+    const mediaIds = (groupLinks as Array<{ media_id: string }>).map(l => l.media_id);
+    const { data: gPhotos } = await supabase
+      .from('montree_media')
+      .select('work_id, captured_at')
+      .in('id', mediaIds)
+      .in('work_id', langWorkIds)
+      .or('identification_status.is.null,identification_status.neq.pending_review')
+      .not('work_id', 'is', null);
+    groupPhotos = (gPhotos || []) as Array<{ work_id: string; captured_at: string }>;
   }
-  // Pick top 4 with a diverse status mix — not all the same status.
-  // Strategy: group by status, then interleave mastered → practicing → presented
-  // so the table shows a realistic progression snapshot.
+
+  // Step 3: Count photos per work → derive status from photo count
+  const allPhotos = [
+    ...((directPhotos || []) as Array<{ work_id: string; captured_at: string }>),
+    ...groupPhotos,
+  ];
+
+  const workPhotoCounts = new Map<string, number>();
+  for (const p of allPhotos) {
+    if (!p.work_id) continue;
+    workPhotoCounts.set(p.work_id, (workPhotoCounts.get(p.work_id) || 0) + 1);
+  }
+
+  // Convert to ProgressRow with photo-count-based status:
+  //   1 photo = P (Presented), 2-3 = Pr (Practicing), 4+ = MD (Mastered)
+  const byName = new Map<string, ProgressRow>();
+  for (const [workId, count] of workPhotoCounts) {
+    const workName = workIdToName.get(workId);
+    if (!workName) continue;
+    let status: string;
+    if (count >= 4) status = 'mastered';
+    else if (count >= 2) status = 'practicing';
+    else status = 'presented';
+    byName.set(workName, { work_name: workName, status });
+  }
+
+  // Step 4: Pick top 4 with diverse status mix
   const all = Array.from(byName.values());
-  const mastered = all.filter(w => w.status.toLowerCase() === 'mastered');
-  const practicing = all.filter(w => w.status.toLowerCase() === 'practicing');
-  const presented = all.filter(w => w.status.toLowerCase() === 'presented');
+  // Sort by status rank descending, then alphabetically for stability
+  const rank: Record<string, number> = { presented: 1, practicing: 2, mastered: 3 };
+  all.sort((a, b) => (rank[b.status] || 0) - (rank[a.status] || 0) || a.work_name.localeCompare(b.work_name));
+
+  const mastered = all.filter(w => w.status === 'mastered');
+  const practicing = all.filter(w => w.status === 'practicing');
+  const presented = all.filter(w => w.status === 'presented');
 
   const result: ProgressRow[] = [];
   // Take up to 2 mastered, then fill with practicing, then presented
   for (const w of mastered) { if (result.length < 2) result.push(w); }
   for (const w of practicing) { if (result.length < 4) result.push(w); }
   for (const w of presented) { if (result.length < 4) result.push(w); }
-  // If still under 4 (e.g., only mastered available), fill remaining from mastered
+  // If still under 4, fill remaining from mastered
   for (const w of mastered) { if (result.length < 4 && !result.includes(w)) result.push(w); }
 
   return result;
