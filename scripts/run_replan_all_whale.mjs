@@ -64,15 +64,15 @@ const GAME_PLAN_TOOL = {
 
 async function buildProgressSummary(childId) {
   const { data: progress } = await supabase
-    .from('montree_child_work_progress')
-    .select('work_name, area_key, status, photos_count, updated_at')
+    .from('montree_child_progress')
+    .select('work_name, area, status, updated_at')
     .eq('child_id', childId);
 
   if (!progress || progress.length === 0) return '';
 
   const byArea = {};
   for (const row of progress) {
-    const area = row.area_key || 'other';
+    const area = row.area || 'other';
     if (!byArea[area]) byArea[area] = { mastered: [], practicing: [], presented: [] };
     const bucket = byArea[area][row.status];
     if (bucket) bucket.push(row.work_name);
@@ -262,16 +262,15 @@ What's the teacher's next move?`;
       { onConflict: 'child_id,area' }
     );
 
-    await supabase.from('montree_child_work_progress').upsert(
+    await supabase.from('montree_child_progress').upsert(
       {
         child_id: childId,
-        work_id: match.id,
         work_name: match.name,
-        area_key: areaKey,
+        area: areaKey,
         status: 'presented',
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'child_id,work_id' }
+      { onConflict: 'child_id,work_name' }
     );
     filled++;
   }
@@ -308,16 +307,15 @@ What's the teacher's next move?`;
         { onConflict: 'child_id,area' }
       );
 
-      await supabase.from('montree_child_work_progress').upsert(
+      await supabase.from('montree_child_progress').upsert(
         {
           child_id: childId,
-          work_id: pick.id,
           work_name: pick.name,
-          area_key: missingArea,
+          area: missingArea,
           status: 'presented',
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'child_id,work_id' }
+        { onConflict: 'child_id,work_name' }
       );
 
       filled++;

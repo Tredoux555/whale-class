@@ -90,7 +90,7 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
         .eq('child_id', childId)
         .maybeSingle(),
       supabase
-        .from('montree_child_work_progress')
+        .from('montree_child_progress')
         .select('work_name, area, status')
         .eq('child_id', childId),
       supabase
@@ -400,7 +400,7 @@ What's the teacher's next move?`;
         { onConflict: 'child_id,area' },
       );
 
-      await supabase.from('montree_child_work_progress').upsert(
+      await supabase.from('montree_child_progress').upsert(
         {
           child_id: childId,
           work_name: canonicalName,
@@ -453,7 +453,7 @@ What's the teacher's next move?`;
           { onConflict: 'child_id,area' },
         );
 
-        await supabase.from('montree_child_work_progress').upsert(
+        await supabase.from('montree_child_progress').upsert(
           {
             child_id: childId,
             work_name: pick.name,
