@@ -1,17 +1,22 @@
 // app/api/montree/reports/language-semester/generate/route.ts
 //
-// Fills the official Language semester report PPTX template for one or more children
-// and returns a zip bundle (or a single .pptx if only one child is requested).
+// Fills the official Language semester report PPTX template for one or more
+// children and returns a zip bundle (or a single .pptx for one child).
 //
-// Template: public/templates/language-semester-report.pptx
-// Tokens:
-//   {{PARA_OPENING}}, {{PARA_CIRCLE}}, {{PARA_ENGLISH}}
-//   {{WORK_1_NAME}}..{{WORK_4_NAME}}, {{WORK_1_STATUS}}..{{WORK_4_STATUS}}
+// ARCHITECTURE (Session 38 rewrite — "different angle"):
+//   The template has TWO text areas:
+//     1. Narrative shape (id=12): {{PARA_OPENING}} + {{PARA_CIRCLE}}
+//        — ends at y=8.1in, ABOVE the decorative clouds
+//     2. Closing shape (id=99): {{PARA_ENGLISH}}
+//        — positioned ON the clouds with white italic text, z-order on top
 //
-// Sonnet writes the three narrative sections (validated + retried if quality fails).
-// Works table is filled from real child progress data (top 4 by status rank).
-// All XML edits are plain string replaces on ppt/slides/slide1.xml
-// (the template was pre-tokenized so every token sits in a single <a:r> run).
+//   Sonnet generates freely. Post-processing enforces fit:
+//     - Body text (opening + circle) hard-trimmed to ≤125 words
+//     - Closing hard-trimmed to ≤35 words
+//     - Any work name reference not in the allowed list is scrubbed
+//     - No reliance on Sonnet hitting exact word count targets
+//
+// Works table: {{WORK_1_NAME}}..{{WORK_4_NAME}}, {{WORK_1_STATUS}}..{{WORK_4_STATUS}}
 
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
@@ -23,7 +28,14 @@ import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // Large classroom = many Sonnet calls + zip repacks
+export const maxDuration = 300;
+
+// --- constants -------------------------------------------------------------
+
+/** Max words for body text (opening + circle) — fits 12 lines at 14pt/26.6pt */
+const MAX_BODY_WORDS = 125;
+/** Max words for closing — fits the cloud overlay text box */
+const MAX_CLOSING_WORDS = 35;
 
 // --- types -----------------------------------------------------------------
 
@@ -54,49 +66,52 @@ function xmlEscape(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
-/** Convert newlines in Sonnet output to PPTX line breaks AFTER xmlEscape.
- *  Handles both actual newline chars AND literal \n two-char sequences
- *  (Sonnet tool_use sometimes outputs literal backslash-n). */
+/** Convert newlines to PPTX line breaks. Handles both real \n and literal \\n
+ *  from Sonnet tool_use. MUST run xmlEscape first on each segment. */
 function textWithBreaks(raw: string): string {
   const escaped = xmlEscape(raw);
-  const BR = '</a:t></a:r><a:br/><a:r><a:rPr lang="en-US" dirty="0"/><a:t>';
+  // Match formatting from narrative shape: Calibri 14pt, black
+  const BR =
+    '</a:t></a:r><a:br/><a:r>' +
+    '<a:rPr kumimoji="1" lang="en-US" altLang="zh-CN" sz="1400" dirty="0">' +
+    '<a:solidFill><a:schemeClr val="tx1"/></a:solidFill></a:rPr><a:t>';
   return escaped
-    .replace(/\\n/g, BR)   // literal backslash-n (2 chars) — Sonnet tool_use quirk
-    .replace(/\n/g, BR);   // actual newline char
+    .replace(/\\n/g, BR)   // literal backslash-n
+    .replace(/\n/g, BR);   // actual newline
 }
 
 function countWords(s: string): number {
-  return s.replace(/\\n/g, ' ').split(/\s+/).filter(Boolean).length;
+  return s.replace(/\\n/g, ' ').replace(/\n/g, ' ').split(/\s+/).filter(Boolean).length;
 }
 
-/** Strip literal \n sequences for clean plaintext. */
+/** Clean all line break variants to plain space. */
 function cleanText(s: string): string {
   return s.replace(/\\n/g, ' ').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-// --- Sonnet ---------------------------------------------------------------
+// --- Sonnet ----------------------------------------------------------------
 
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
-    'Write the three narrative sections for this child\'s official semester report letter. Written directly TO the child in second person ("you", "your"). The works table is filled separately — you only write the prose. IMPORTANT: the total across all three sections MUST be 240-260 words.',
+    'Write the three narrative sections for a child\'s semester report. Written TO the child in second person ("you", "your").',
   input_schema: {
     type: 'object' as const,
     properties: {
       para_opening: {
         type: 'string',
         description:
-          'Warm greeting written TO the child. Start with "Dear [Child Name]," followed by 2-3 sentences of warm praise. Around 35-45 words total. Proud, celebratory, personal.',
+          'Greeting: "Dear [Name]," + 2-3 warm sentences of pride. ~30-40 words.',
       },
       para_circle: {
         type: 'string',
         description:
-          'The heart of the letter — three distinct accomplishments. Each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 2-3 sentences (25-35 words each). Written TO the child using "you" and "your". Point 1: circle time, community, or social growth. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved. Point 3: another achievement or character strength. Around 80-100 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
+          'Three accomplishments, each on its own line separated by \\n. Point 1: circle time / social growth. Point 2: a SPECIFIC work from the progress list — name it EXACTLY. Point 3: character strength or another achievement. Each point 2-3 sentences. ~75-90 words total. Use ONLY works from the provided list.',
       },
       para_english: {
         type: 'string',
         description:
-          'Warm closing written TO the child. 2-3 sentences. Personal and encouraging. Around 30-40 words. The closing sentiment depends on whether this child is graduating — specified in the user message.',
+          'Warm closing: 2 sentences, personal and encouraging. ~25-30 words. No work names.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
@@ -105,107 +120,147 @@ const REPORT_TOOL = {
 
 function buildSystemPrompt(childName: string, workNames: string[], isGraduating: boolean): string {
   const workList = workNames.length > 0
-    ? `The ONLY works you may reference by name are:\n${workNames.map(w => `  • ${w}`).join('\n')}\nDo NOT invent, paraphrase, or abbreviate any work name. If you mention a work, copy its name EXACTLY from this list. In the closing paragraph, do NOT mention any works or future curriculum — keep the closing about the child personally.`
-    : 'This child has no recorded Language works yet — speak warmly about their early engagement, curiosity, and the beginnings of their language journey.';
+    ? `ALLOWED work names (copy EXACTLY — do NOT invent or paraphrase):\n${workNames.map(w => `  • ${w}`).join('\n')}`
+    : 'No recorded Language works — speak about their curiosity and early engagement.';
 
   const closingGuidance = isGraduating
-    ? `This child is GRADUATING to Kindergarten next semester. The closing (para_english) should warmly wish them good luck in K class — celebrate how ready they are for this next big adventure. Do NOT mention coming back next semester.`
-    : `This child is RETURNING next semester. The closing (para_english) should express excitement about seeing them again — how much more you look forward to exploring together. Do NOT mention graduation or K class.`;
+    ? 'This child is GRADUATING to K class. The closing should wish them good luck on their big adventure.'
+    : 'This child is RETURNING next semester. The closing should express excitement about seeing them again.';
 
-  return `You are a Montessori lead teacher writing the official end-of-semester Language progress report as a personal letter TO ${childName}. The parents will read it aloud to their child, so every word is addressed directly to the child in second person.
+  return `You are a Montessori teacher writing an end-of-semester Language report as a personal letter TO ${childName}. Parents read this to their child.
 
-VOICE: Warm, proud, specific. Like a beloved teacher looking a child in the eye with genuine pride. Simple, beautiful language — a parent reads this to a 4-year-old. No jargon. No filler.
-
-STRUCTURE:
-1. para_opening — "Dear ${childName}," followed by 2-3 warm sentences. ~35-45 words.
-2. para_circle — Three highlights, each separated by backslash then n (two characters: \\n). Each point is 2-3 sentences. At least one must name a specific work. ~80-100 words total.
-3. para_english — Warm closing, 2-3 sentences. ${closingGuidance} ~30-40 words.
-
-SPACE CONSTRAINT: This prints on a PowerPoint slide. The text area above the decorative clouds fits approximately 150-175 words. Target 155-170 words total across all three sections. Not fewer than 145, not more than 180.
+VOICE: Warm, proud, simple. A beloved teacher looking a child in the eye. No jargon.
 
 ${workList}
 
-QUALITY RULES:
-- ALWAYS "you" and "your" — NEVER "he/she/they" or the child's name as subject after the greeting
-- Each para_circle point MUST be a complete, distinct thought — not a run-on
-- Separate para_circle points with backslash then n (two characters). No other line breaks anywhere.
-- No bullets, no markdown, no emojis, no asterisks
-- Do NOT reference any works or curriculum topics in para_english — the closing is about the child, not about works
-- Write like a craftsperson — every sentence should be beautiful enough to frame
+${closingGuidance}
 
-Output via the write_language_semester_report tool.`;
+RULES:
+- Always "you" and "your" — never third person
+- Separate para_circle points with \\n (two characters)
+- No line breaks in para_opening or para_english
+- No bullets, markdown, emojis, or asterisks
+- Do NOT name any works in para_english
+- Write beautifully — every sentence worth framing`;
 }
 
-// --- validation -----------------------------------------------------------
+async function callSonnet(systemPrompt: string, userMessage: string): Promise<SonnetReport> {
+  if (!anthropic) throw new Error('AI not configured');
 
-interface ValidationResult {
-  valid: boolean;
-  issues: string[];
+  const response = await anthropic.messages.create({
+    model: AI_MODEL,
+    max_tokens: 600,
+    system: systemPrompt,
+    tools: [REPORT_TOOL],
+    tool_choice: { type: 'tool', name: 'write_language_semester_report' },
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  const block = response.content.find((b) => b.type === 'tool_use');
+  if (!block || block.type !== 'tool_use') {
+    throw new Error('Sonnet did not return tool_use output');
+  }
+  return block.input as SonnetReport;
 }
 
-function validateReport(
-  report: SonnetReport,
-  childName: string,
-  allowedWorks: string[],
-): ValidationResult {
-  const issues: string[] = [];
+// --- POST-PROCESSING (the "different angle") --------------------------------
 
-  // 1. Word count check — visible area above clouds fits ~155-170 words
-  const totalWords =
-    countWords(report.para_opening) +
-    countWords(report.para_circle) +
-    countWords(report.para_english);
-  if (totalWords < 135) issues.push(`Too short: ${totalWords} words (min 135)`);
-  if (totalWords > 190) issues.push(`Too long: ${totalWords} words (max 190)`);
+/** Trim text to at most maxWords by removing sentences from the end. */
+function trimToWords(text: string, maxWords: number): string {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= maxWords) return text;
+  // Walk backwards to find the last sentence boundary within limit
+  const joined = words.slice(0, maxWords).join(' ');
+  const lastPeriod = Math.max(joined.lastIndexOf('. '), joined.lastIndexOf('! '), joined.lastIndexOf('? '));
+  if (lastPeriod > joined.length * 0.5) {
+    return joined.slice(0, lastPeriod + 1);
+  }
+  // No good sentence boundary — just add ellipsis-free period
+  const trimmed = joined.replace(/[,;:\s]+$/, '');
+  return trimmed.endsWith('.') ? trimmed : trimmed + '.';
+}
 
-  // 2. Must start with "Dear"
-  if (!report.para_opening.trim().startsWith('Dear')) {
-    issues.push('para_opening must start with "Dear [Name],"');
+/** Remove any capitalized multi-word phrases that aren't in the allowed work list.
+ *  Replaces them with a generic reference so the sentence stays readable. */
+function scrubHallucinatedWorks(text: string, allowedWorks: string[]): string {
+  if (allowedWorks.length === 0) return text;
+  const lowerAllowed = new Set(allowedWorks.map(w => w.toLowerCase()));
+
+  return text.replace(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/g, (phrase) => {
+    // Skip common English phrases that aren't work names
+    if (/^(Dear|Keep|We|You|Next|This|That|Your|Circle|Time|Language|English|Pre|Kindergarten|Good|Big|Well|How|What|Thank|Every)/.test(phrase)) {
+      return phrase;
+    }
+    // If it's in the allowed list (case-insensitive), keep it
+    if (lowerAllowed.has(phrase.toLowerCase())) return phrase;
+    // Fuzzy: check if it's a substring of an allowed work or vice versa
+    for (const w of allowedWorks) {
+      if (w.toLowerCase().includes(phrase.toLowerCase()) ||
+          phrase.toLowerCase().includes(w.toLowerCase())) {
+        return w; // Replace with the EXACT allowed name
+      }
+    }
+    // Not a real work — replace with generic phrase
+    return 'your work';
+  });
+}
+
+/** Full post-processing pipeline. Enforces fit regardless of what Sonnet produced. */
+function postProcess(report: SonnetReport, childName: string, allowedWorks: string[]): SonnetReport {
+  // 1. Clean line breaks from opening and closing
+  let opening = cleanText(report.para_opening);
+  let closing = cleanText(report.para_english);
+
+  // 2. Ensure opening starts with "Dear"
+  if (!opening.startsWith('Dear')) {
+    opening = `Dear ${childName}, ${opening}`;
   }
 
-  // 3. Voice check — should not talk ABOUT the child in 3rd person
-  const thirdPerson = new RegExp(
-    `\\b${childName}\\s+(is|was|has|had|loves|loved|enjoys|enjoyed|shows|showed|brings|brought|demonstrates|demonstrated)\\b`,
-    'i'
-  );
-  const allText = `${report.para_opening} ${report.para_circle} ${report.para_english}`;
-  if (thirdPerson.test(allText)) {
-    issues.push('Uses third person about the child — must be "you" throughout');
-  }
+  // 3. Scrub hallucinated work names from all sections
+  opening = scrubHallucinatedWorks(opening, allowedWorks);
+  // For para_circle, process each point separately (preserve \\n separators)
+  let circle = report.para_circle;
+  const circlePoints = circle.split(/\\n|\n/).map(p => p.trim()).filter(Boolean);
+  const scrubbedPoints = circlePoints.map(p => scrubHallucinatedWorks(p, allowedWorks));
+  circle = scrubbedPoints.join('\\n');
+  closing = scrubHallucinatedWorks(closing, allowedWorks);
 
-  // 4. Check for formatting artifacts
-  if (/\\n/g.test(report.para_opening) || /\n/.test(report.para_opening)) {
-    issues.push('para_opening must not contain line breaks');
-  }
-  if (/\\n/g.test(report.para_english) || /\n/.test(report.para_english)) {
-    issues.push('para_english must not contain line breaks');
-  }
+  // 4. Trim body (opening + circle) to fit the 12-line visible area
+  const openingWords = countWords(opening);
+  const circleWords = countWords(circle);
+  const bodyWords = openingWords + circleWords;
 
-  // 5. Hallucination check — any quoted work names must be in allowed list
-  if (allowedWorks.length > 0) {
-    const lowerAllowed = new Set(allowedWorks.map(w => w.toLowerCase()));
-    // Check for Montessori-sounding capitalized phrases that aren't in the list
-    const capitalPhrases = allText.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/g) || [];
-    for (const phrase of capitalPhrases) {
-      // Skip common phrases that aren't work names
-      if (/^(Dear|Keep|We|You|Next|This|Your|Circle|Language|English)/.test(phrase)) continue;
-      if (!lowerAllowed.has(phrase.toLowerCase())) {
-        // Check fuzzy — is it a substring of any allowed work?
-        const isFuzzyMatch = allowedWorks.some(w =>
-          w.toLowerCase().includes(phrase.toLowerCase()) ||
-          phrase.toLowerCase().includes(w.toLowerCase())
-        );
-        if (!isFuzzyMatch) {
-          issues.push(`Possible hallucinated work: "${phrase}" — not in progress list`);
-        }
+  if (bodyWords > MAX_BODY_WORDS) {
+    // Trim sentences from the LAST point of para_circle first
+    const overBy = bodyWords - MAX_BODY_WORDS;
+    if (scrubbedPoints.length >= 2) {
+      const lastPoint = scrubbedPoints[scrubbedPoints.length - 1];
+      const lastWords = countWords(lastPoint);
+      const targetLastWords = Math.max(10, lastWords - overBy);
+      scrubbedPoints[scrubbedPoints.length - 1] = trimToWords(lastPoint, targetLastWords);
+      circle = scrubbedPoints.join('\\n');
+
+      // If still over, trim the second-to-last point too
+      const bodyNow = countWords(opening) + countWords(circle);
+      if (bodyNow > MAX_BODY_WORDS && scrubbedPoints.length >= 3) {
+        const over2 = bodyNow - MAX_BODY_WORDS;
+        const midPoint = scrubbedPoints[scrubbedPoints.length - 2];
+        const midWords = countWords(midPoint);
+        scrubbedPoints[scrubbedPoints.length - 2] = trimToWords(midPoint, Math.max(10, midWords - over2));
+        circle = scrubbedPoints.join('\\n');
       }
     }
   }
 
-  return { valid: issues.length === 0, issues };
+  // 5. Trim closing to fit the cloud overlay box
+  closing = trimToWords(closing, MAX_CLOSING_WORDS);
+
+  console.log(`[LanguageSemester] Post-process: body=${countWords(opening) + countWords(circle)}w, closing=${countWords(closing)}w`);
+
+  return { para_opening: opening, para_circle: circle, para_english: closing };
 }
 
-// --- generate with validation + retry -------------------------------------
+// --- generate (simple: call Sonnet once, post-process) ---------------------
 
 async function generateReport(childName: string, progress: ProgressRow[], isGraduating: boolean): Promise<SonnetReport> {
   if (!AI_ENABLED || !anthropic) {
@@ -220,80 +275,21 @@ async function generateReport(childName: string, progress: ProgressRow[], isGrad
   const systemPrompt = buildSystemPrompt(childName, workNames, isGraduating);
 
   const closingHint = isGraduating
-    ? 'This child is graduating to K class — the closing should wish them good luck on their exciting new journey.'
-    : 'This child is returning next semester — the closing should express how much you look forward to seeing them again.';
+    ? 'Graduating to K class — wish good luck.'
+    : 'Returning next semester — express excitement about next year.';
 
   const userMessage = `Child: ${childName}
 
-Language work progress this semester:
-${workSummary || '(no recorded Language work yet)'}
+Language progress:
+${workSummary || '(no recorded works)'}
 
 ${closingHint}
 
-Write the semester report letter to ${childName}. Target 155-170 words total — the visible area above the decorative clouds fits this many words.`;
+Write the report letter.`;
 
-  // Attempt 1
-  let report = await callSonnet(systemPrompt, userMessage);
-  const v1 = validateReport(report, childName, workNames);
-
-  if (!v1.valid) {
-    console.warn(`[LanguageSemester] Validation failed for ${childName} (attempt 1):`, v1.issues);
-
-    // Attempt 2 — retry with explicit correction instructions
-    const retryUser = `${userMessage}
-
-IMPORTANT CORRECTIONS from your previous attempt:
-${v1.issues.map(i => `- ${i}`).join('\n')}
-
-Please fix these issues and try again.`;
-
-    report = await callSonnet(systemPrompt, retryUser);
-    const v2 = validateReport(report, childName, workNames);
-    if (!v2.valid) {
-      console.warn(`[LanguageSemester] Validation still has issues for ${childName} (attempt 2):`, v2.issues);
-      // Use it anyway but clean up what we can
-      report = cleanupReport(report, childName);
-    }
-  }
-
-  return report;
-}
-
-async function callSonnet(systemPrompt: string, userMessage: string): Promise<SonnetReport> {
-  if (!anthropic) throw new Error('AI not configured');
-
-  const response = await anthropic.messages.create({
-    model: AI_MODEL,
-    max_tokens: 800,
-    system: systemPrompt,
-    tools: [REPORT_TOOL],
-    tool_choice: { type: 'tool', name: 'write_language_semester_report' },
-    messages: [{ role: 'user', content: userMessage }],
-  });
-
-  const block = response.content.find((b) => b.type === 'tool_use');
-  if (!block || block.type !== 'tool_use') {
-    throw new Error('Sonnet did not return tool_use output');
-  }
-  return block.input as SonnetReport;
-}
-
-/** Last-resort cleanup for reports that still have issues after retry. */
-function cleanupReport(report: SonnetReport, childName: string): SonnetReport {
-  // Strip any accidental line breaks from opening/closing
-  let opening = cleanText(report.para_opening);
-  let closing = cleanText(report.para_english);
-
-  // Ensure opening starts with Dear
-  if (!opening.startsWith('Dear')) {
-    opening = `Dear ${childName}, ${opening}`;
-  }
-
-  return {
-    para_opening: opening,
-    para_circle: report.para_circle, // keep breaks in circle
-    para_english: closing,
-  };
+  const raw = await callSonnet(systemPrompt, userMessage);
+  // Post-processing enforces all constraints — no retry needed
+  return postProcess(raw, childName, workNames);
 }
 
 // --- template fill ---------------------------------------------------------
