@@ -197,6 +197,92 @@ montree.xyz
 
 ## RECENT STATUS (Apr 18, 2026)
 
+### ⚡ Session 37 — Single Source of Truth: Child Page ↔ Weekly Wrap Shelf Unification (Apr 18, 2026)
+
+**Four commits pushed to main: `39f79c83`, `a925c747`, `5b2132c7`, `5f80b405`.** Plus two earlier commits from the first half of this session: `5f06c8cf` (classroom_id backfill), `e1f7bbf3` (classroom_id in progress/update). User's trigger: "there should be one source of truth" — Eric's child page shelf showed old works (Rock Painting, Blue Tri Box 6) while Weekly Wrap correctly showed new works (Geometric Solids, Addition Snake Game). The two views were reading from different data sources.
+
+**A. Root cause — a 3-layer failure chain:**
+
+1. **Weekly Wrap shelf didn't read from `montree_child_focus_works`** — The `review/route.ts` was constructing shelf data from `recommendations` in the Weekly Wrap report content (stale AI-generated suggestions), not from the canonical shelf table. Fixed: added direct query to `montree_child_focus_works` + progress status lookup, returned as `focus_works` array.
+
+2. **`montree_child_work_progress` table DOES NOT EXIST** — Six files across the codebase referenced this nonexistent table. The actual table is `montree_child_progress`. Supabase silently returns `{ data: null }` for queries against nonexistent tables, so all progress reads/writes were silently failing. This meant:
+   - Replan pipeline wrote focus works correctly but progress upserts went nowhere
+   - Child page's `is_focus` flag logic found no matching progress rows, fell back to old works with higher status
+   - Game plan refresh, child guru, focus list, language semester, and onboard curriculum seeding all had empty progress data
+
+3. **Wrong column names in upserts** — `work_id` (doesn't exist on `montree_child_progress`), `area_key` (should be `area`), `classroom_id` (doesn't exist on progress table), `onConflict: 'child_id,work_id'` (should be `child_id,work_name`).
+
+**B. Fix 1 — Single source of truth for Weekly Wrap shelf (`39f79c83`):**
+
+`app/api/montree/reports/weekly-wrap/review/route.ts`: Added query to `montree_child_focus_works` for all children, returns `focus_works` array per child. `components/montree/reports/WeeklyWrapTab.tsx`: `getShelfForChild()` rewritten to use `focus_works` as primary source, `recommendations` as fallback only.
+
+**C. Fix 2 — Table name fix across 6 files (`a925c747`):**
+
+All references to `montree_child_work_progress` → `montree_child_progress`:
+- `app/api/montree/reports/weekly-wrap/review/route.ts` (progress status lookup)
+- `app/api/montree/reports/language-semester/generate/route.ts` (also removed nonexistent `work_id` column from select + filter)
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` (progress context)
+- `app/api/montree/dashboard/focus-list/route.ts` (latest progress timestamp)
+- `app/api/montree/children/[childId]/onboard/route.ts` (curriculum seeding — also removed `work_id` and `classroom_id` from upsert)
+- `app/api/montree/children/[childId]/guru/route.ts` (child guru progress context)
+
+**D. Fix 3 — Replan pipeline columns (`5b2132c7`):**
+
+`lib/montree/reports/replan-child.ts`, `app/api/montree/children/[childId]/fill-shelf/route.ts`, `scripts/run_replan_all_whale.mjs`: Fixed table name + removed invalid columns from progress upserts.
+
+**E. Fix 4 — Audit catch (`5f80b405`):**
+
+Post-fix audit found `work_id` in the script's `montree_child_focus_works` upserts (that table also has no `work_id` column). Removed.
+
+**F. Supporting fixes (earlier in session):**
+
+- `classroom_id` was NULL on all `montree_child_focus_works` rows — backfilled via SQL UPDATE + added to upserts in `progress/update/route.ts` (`e1f7bbf3`), `replan-child.ts`, `fill-shelf/route.ts`, `run_replan_all_whale.mjs` (`5f06c8cf`).
+
+**G. Manual replan execution — 20/20 × 5/5 verified:**
+
+Re-ran `scripts/run_replan_all_whale.mjs` after all fixes. All 20 children got 5/5 focus works in `montree_child_focus_works` AND matching progress rows in `montree_child_progress` with `status: 'presented'`. Verified programmatically that Eric's child page logic resolves all 5 focus works with `★ FOCUS` flag, matching his Weekly Wrap shelf exactly.
+
+**H. Audit results — PASS after fix:**
+
+- 0 references to `montree_child_work_progress` in any code file (*.ts, *.tsx, *.mjs, *.js)
+- 9/9 key files use correct table `montree_child_progress`
+- All upserts use valid columns only (no `work_id`, no `area_key`, no `classroom_id` on progress)
+- All `montree_child_focus_works` upserts include `classroom_id`
+
+**🚨 CRITICAL ARCHITECTURAL NOTES FOR FUTURE SESSIONS:**
+
+- **`montree_child_progress`** is the ONLY progress table. There is NO `montree_child_work_progress`. If you see that name anywhere in code, it's a bug.
+- **`montree_child_progress` columns**: `child_id, work_name, area, status, updated_at, presented_at, mastered_at, notes, ...` — NO `work_id`, NO `area_key`, NO `classroom_id`. Unique constraint: `(child_id, work_name)`.
+- **`montree_child_focus_works`** is the canonical shelf — one work per area per child, keyed on `(child_id, area)`. Has `classroom_id`, `work_name`, `area`, `set_by`, `set_at`. NO `work_id`.
+- **Single source of truth**: ALL shelf views (child page, Weekly Wrap "Next Week's Focus", Weekly Admin Docs plan) MUST read from `montree_child_focus_works`. The child page resolves which work to show per area by matching focus works against progress rows via the `is_focus` flag.
+- **Supabase silently returns null for nonexistent tables** — always verify table names against the actual schema. A query returning `{ data: null, error: null }` might mean the table doesn't exist, not that there's no data.
+
+**Files changed (10 files, 6 commits):**
+- `app/api/montree/reports/weekly-wrap/review/route.ts` — focus_works query + table name fix
+- `components/montree/reports/WeeklyWrapTab.tsx` — getShelfForChild reads focus_works
+- `app/api/montree/reports/language-semester/generate/route.ts` — table name + remove work_id
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — table name fix
+- `app/api/montree/dashboard/focus-list/route.ts` — table name fix
+- `app/api/montree/children/[childId]/onboard/route.ts` — table name + remove work_id/classroom_id
+- `app/api/montree/children/[childId]/guru/route.ts` — table name fix
+- `app/api/montree/progress/update/route.ts` — add classroom_id to focus_works upsert
+- `lib/montree/reports/replan-child.ts` — table name + classroom_id
+- `scripts/run_replan_all_whale.mjs` — table name + columns + remove work_id from focus upserts
+- `app/api/montree/children/[childId]/fill-shelf/route.ts` — table name + classroom_id
+
+**Next session priorities (updated):**
+1. **Verify on production** — hard-refresh Eric's child page after Railway deploys. His shelf should now show: Threading Beads, Geometric Solids, Addition Snake Game, Green Series (Phonograms), Food Chain — matching his Weekly Wrap shelf exactly.
+2. **Verify Weekly Admin Docs** — Auto-fill for current week should show the same 5 works per child.
+3. **Session 35 carryover: Verify QR flow on production** — QR generator → Song tab → pick video → download QR → scan → whale-class page highlights correct song.
+4. **Session 33 hardening verification** — pull Railway logs for `Teacher report upsert failed` / `Parent report upsert failed`.
+5. **Tier names + pricing decisions** — still blocking Phase 5.
+6. **6 critical Sonnet-hardcoded routes** (Session 33 carryover) — gate when 2nd school onboards.
+7. **Phase 3 UI hiding by tier** (Session 33 carryover).
+8. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+9. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00.
+
+---
+
 ### ⚡ Session 36 — Replan Shelf 100% Fill: Curriculum-Constrained Prompt + Deterministic Gap-Fill (Apr 18, 2026)
 
 **Two commits pushed to main: `23e117a8`, `f5c49d0c`.** User's trigger: "same as last week" — Weekly Admin Docs showing stale plans because shelves were empty or partially filled. Root cause was a 3-layer failure chain in the Haiku game plan → shelf fill pipeline.
