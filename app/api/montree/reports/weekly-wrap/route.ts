@@ -19,6 +19,7 @@ import { generateWeeklyNarrative, NarrativeInput } from '@/lib/montree/reports/n
 import { generateTeacherReport, TeacherReportInput } from '@/lib/montree/reports/teacher-report-generator';
 import { resolveReportModel } from '@/lib/montree/reports/resolve-model';
 import { replanChildInProcess } from '@/lib/montree/reports/replan-child';
+import { generateAndSaveEnglishSchedule } from '@/app/api/montree/dashboard/english-schedule/route';
 import { anthropic } from '@/lib/ai/anthropic';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
@@ -671,6 +672,11 @@ export async function POST(request: NextRequest) {
             controller.enqueue(encoder.encode(JSON.stringify({
               type: 'complete', ...summary, results,
             }) + '\n'));
+
+            // Fire-and-forget: generate next week's English schedule
+            generateAndSaveEnglishSchedule(classroom_id, school_id)
+              .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
+
             controller.close();
           } catch (err) {
             console.error('Weekly wrap stream error:', err);
@@ -702,6 +708,10 @@ export async function POST(request: NextRequest) {
       const batchResults = await Promise.all(batch.map(processChild));
       results.push(...batchResults);
     }
+
+    // Fire-and-forget: generate next week's English schedule
+    generateAndSaveEnglishSchedule(classroom_id, school_id)
+      .catch(err => console.error('[WeeklyWrap] English schedule generation failed:', err));
 
     return NextResponse.json({ ...buildSummary(results), results });
   } catch (error) {
