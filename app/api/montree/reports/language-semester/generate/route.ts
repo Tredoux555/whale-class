@@ -79,24 +79,24 @@ function cleanText(s: string): string {
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
-    'Write the three narrative sections for this child\'s official semester report letter. Written directly TO the child in second person ("you", "your"). The works table is filled separately — you only write the prose.',
+    'Write the three narrative sections for this child\'s official semester report letter. Written directly TO the child in second person ("you", "your"). The works table is filled separately — you only write the prose. IMPORTANT: the total across all three sections MUST be 240-260 words.',
   input_schema: {
     type: 'object' as const,
     properties: {
       para_opening: {
         type: 'string',
         description:
-          'Warm greeting and congratulations written TO the child. Start with "Dear [Child Name]," followed by 2-3 sentences of warm praise. Around 30-40 words total. Proud, celebratory, personal. Example tone: "Dear Amy, what a wonderful semester of learning you have had. You have grown in so many ways and you should feel very proud of all your hard work this year."',
+          'Warm greeting and opening written TO the child. Start with "Dear [Child Name]," followed by 3-4 sentences of warm praise and reflection on the semester. Around 50-65 words total. Set the tone: proud, celebratory, personal. Mention how they have grown, what kind of learner they have become, and how the classroom has been brighter because of them.',
       },
       para_circle: {
         type: 'string',
         description:
-          'The heart of the letter. Three distinct accomplishments, each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 2-3 sentences (20-30 words each). Written TO the child using "you" and "your". Point 1: something about circle time, community, social growth, or classroom participation. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved with it. Point 3: another specific achievement, a favourite moment, or a character strength you have noticed. Around 70-85 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
+          'The heart of the letter — three distinct accomplishments. Each on its OWN LINE separated by the two characters backslash-n. Each accomplishment is 3-4 sentences (35-50 words each). Written TO the child using "you" and "your". Point 1: circle time, community, social growth — describe a specific moment or pattern. Point 2: a SPECIFIC language work from their progress list — name it exactly and describe what the child achieved, how they approached it, and why it matters. Point 3: another achievement, character strength, or favourite classroom moment described vividly. Around 120-145 words total across all three points. IMPORTANT: use ONLY works from the provided progress list — do not invent or paraphrase work names.',
       },
       para_english: {
         type: 'string',
         description:
-          'Warm closing written TO the child. 2-3 sentences. Personal and encouraging. Around 25-35 words. The closing sentiment depends on whether this child is graduating — this will be specified in the user message.',
+          'Warm closing written TO the child. 3-4 sentences. Personal, encouraging, and forward-looking. Around 50-65 words. The closing sentiment depends on whether this child is graduating — specified in the user message. Make it feel like a warm farewell or a warm promise to continue.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
@@ -117,11 +117,11 @@ function buildSystemPrompt(childName: string, workNames: string[], isGraduating:
 VOICE: Warm, proud, specific. Like a beloved teacher looking a child in the eye with genuine pride. Simple, beautiful language — a parent reads this to a 4-year-old. No jargon. No filler.
 
 STRUCTURE:
-1. para_opening — "Dear ${childName}," followed by 2-3 warm sentences. Celebrate this semester of growth.
-2. para_circle — Three distinct highlights, each separated by backslash then n (two characters: \\n). Each point is 2-3 rich sentences about something specific this child did. At least one must name a specific work from their list and describe what they achieved with it.
-3. para_english — Warm closing. ${closingGuidance}
+1. para_opening — "Dear ${childName}," followed by 3-4 warm sentences about the semester. ~50-65 words.
+2. para_circle — Three rich highlights, each separated by backslash then n (two characters: \\n). Each point is 3-4 sentences about something specific this child did. At least one must name a specific work. ~120-145 words total.
+3. para_english — Warm closing, 3-4 sentences. ${closingGuidance} ~50-65 words.
 
-SPACE CONSTRAINT: This prints on a PowerPoint slide. The text MUST fill the available white space. Target 135-155 words total across all three sections. Not fewer than 125, not more than 165. Aim for the middle of this range.
+CRITICAL SPACE CONSTRAINT: This prints on a PowerPoint slide and the text MUST fill the entire available white space — no gaps. Target exactly 240-260 words total across all three sections. Count carefully. Not fewer than 230, not more than 270. This is non-negotiable.
 
 ${workList}
 
@@ -150,13 +150,13 @@ function validateReport(
 ): ValidationResult {
   const issues: string[] = [];
 
-  // 1. Word count check
+  // 1. Word count check — must fill the PPTX slide (240-260 words)
   const totalWords =
     countWords(report.para_opening) +
     countWords(report.para_circle) +
     countWords(report.para_english);
-  if (totalWords < 110) issues.push(`Too short: ${totalWords} words (min 110)`);
-  if (totalWords > 180) issues.push(`Too long: ${totalWords} words (max 180)`);
+  if (totalWords < 220) issues.push(`Too short: ${totalWords} words (min 220)`);
+  if (totalWords > 280) issues.push(`Too long: ${totalWords} words (max 280)`);
 
   // 2. Must start with "Dear"
   if (!report.para_opening.trim().startsWith('Dear')) {
@@ -230,7 +230,7 @@ ${workSummary || '(no recorded Language work yet)'}
 
 ${closingHint}
 
-Write the semester report letter to ${childName}. Remember: target 135-155 words total. Fill the space.`;
+Write the semester report letter to ${childName}. CRITICAL: target exactly 240-260 words total. The text must fill the entire slide — no empty space.`;
 
   // Attempt 1
   let report = await callSonnet(systemPrompt, userMessage);
@@ -264,7 +264,7 @@ async function callSonnet(systemPrompt: string, userMessage: string): Promise<So
 
   const response = await anthropic.messages.create({
     model: AI_MODEL,
-    max_tokens: 600,
+    max_tokens: 1200,
     system: systemPrompt,
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
@@ -395,11 +395,23 @@ async function loadLanguageProgress(
       byName.set(key, { work_name: key, status: r.status });
     }
   }
-  return Array.from(byName.values()).sort((a, b) => {
-    const ar = rank[a.status.toLowerCase()] || 0;
-    const br = rank[b.status.toLowerCase()] || 0;
-    return br - ar;
-  });
+  // Pick top 4 with a diverse status mix — not all the same status.
+  // Strategy: group by status, then interleave mastered → practicing → presented
+  // so the table shows a realistic progression snapshot.
+  const all = Array.from(byName.values());
+  const mastered = all.filter(w => w.status.toLowerCase() === 'mastered');
+  const practicing = all.filter(w => w.status.toLowerCase() === 'practicing');
+  const presented = all.filter(w => w.status.toLowerCase() === 'presented');
+
+  const result: ProgressRow[] = [];
+  // Take up to 2 mastered, then fill with practicing, then presented
+  for (const w of mastered) { if (result.length < 2) result.push(w); }
+  for (const w of practicing) { if (result.length < 4) result.push(w); }
+  for (const w of presented) { if (result.length < 4) result.push(w); }
+  // If still under 4 (e.g., only mastered available), fill remaining from mastered
+  for (const w of mastered) { if (result.length < 4 && !result.includes(w)) result.push(w); }
+
+  return result;
 }
 
 // --- route ---------------------------------------------------------------
