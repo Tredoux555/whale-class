@@ -157,7 +157,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       // Also ensure progress row exists
       await supabase
-        .from('montree_child_work_progress')
+        .from('montree_child_progress')
         .upsert({
           child_id: childId,
           work_name: canonicalName,
@@ -198,7 +198,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           }, { onConflict: 'child_id,area' });
 
         await supabase
-          .from('montree_child_work_progress')
+          .from('montree_child_progress')
           .upsert({
             child_id: childId,
             work_name: pick.name,
