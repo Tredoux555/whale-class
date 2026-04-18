@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
 
   // 7. Latest progress update per child
   const { data: rawProgress } = await supabase
-    .from('montree_child_work_progress')
+    .from('montree_child_progress')
     .select('child_id, updated_at')
     .in('child_id', childIds)
     .order('updated_at', { ascending: false });

@@ -63,7 +63,7 @@ export async function POST(
     const [childResult, profileResult, progressResult, notesResult] = await Promise.all([
       supabase.from('montree_children').select('name, date_of_birth, settings').eq('id', childId).maybeSingle(),
       supabase.from('montree_child_mental_profiles').select('*').eq('child_id', childId).maybeSingle(),
-      supabase.from('montree_child_work_progress').select('work_name, area, status').eq('child_id', childId),
+      supabase.from('montree_child_progress').select('work_name, area, status').eq('child_id', childId),
       supabase.from('montree_teacher_notes').select('content, created_at').eq('child_id', childId).order('created_at', { ascending: false }).limit(5),
     ]);
 
