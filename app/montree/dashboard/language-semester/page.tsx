@@ -1,6 +1,6 @@
 // app/montree/dashboard/language-semester/page.tsx
-// "Language Semester Report" — select children, Sonnet writes the official school
-// PPTX report for each one, downloads as a zip bundle (or single file for one child).
+// "Language Semester Report" — select children, mark graduating vs returning,
+// Sonnet writes the official school PPTX report for each one.
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -15,6 +15,12 @@ interface Child {
   photo_url: string | null;
 }
 
+// Default graduating names — pre-checked on page load, teacher can toggle before generating.
+const DEFAULT_GRADUATING = new Set([
+  'Amy', 'Austin', 'Eric', 'Gengerlyn', 'Hayden', 'Henry',
+  'Joey', 'Kayla', 'Kevin', 'Lucky', 'Rachel', 'Stella',
+]);
+
 export default function LanguageSemesterPage() {
   const router = useRouter();
   const { locale } = useI18n();
@@ -22,6 +28,8 @@ export default function LanguageSemesterPage() {
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Track which children are marked as graduating — keyed by child ID
+  const [graduating, setGraduating] = useState<Set<string>>(new Set());
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +55,14 @@ export default function LanguageSemesterPage() {
       });
       if (!res.ok) throw new Error('Failed to load children');
       const data = await res.json();
-      setChildren(data.children || []);
+      const kids: Child[] = data.children || [];
+      setChildren(kids);
+      // Pre-fill graduating set from defaults (match by name)
+      const gradIds = new Set<string>();
+      for (const c of kids) {
+        if (DEFAULT_GRADUATING.has(c.name)) gradIds.add(c.id);
+      }
+      setGraduating(gradIds);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -74,6 +89,14 @@ export default function LanguageSemesterPage() {
     setSelected(next);
   };
 
+  const toggleGraduating = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Don't toggle the checkbox
+    const next = new Set(graduating);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setGraduating(next);
+  };
+
   const handleGenerate = async () => {
     if (selected.size === 0) return;
     setGenerating(true);
@@ -88,7 +111,10 @@ export default function LanguageSemesterPage() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ child_ids: Array.from(selected) }),
+        body: JSON.stringify({
+          child_ids: Array.from(selected),
+          graduating_ids: Array.from(graduating),
+        }),
       });
       if (!res.ok) {
         let msg = `Generation failed (${res.status})`;
@@ -134,6 +160,9 @@ export default function LanguageSemesterPage() {
     }
   };
 
+  const gradCount = children.filter(c => graduating.has(c.id)).length;
+  const retCount = children.length - gradCount;
+
   if (!session) return null;
 
   return (
@@ -154,7 +183,8 @@ export default function LanguageSemesterPage() {
           <div className="text-center py-16 text-gray-400">Loading...</div>
         ) : (
           <>
-            <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 mb-3">
+            {/* Summary bar */}
+            <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 mb-1">
               <span className="text-sm text-gray-700">
                 {selected.size > 0
                   ? locale === 'zh'
@@ -178,9 +208,25 @@ export default function LanguageSemesterPage() {
               </button>
             </div>
 
+            {/* Graduating / Returning legend */}
+            <div className="flex items-center gap-4 px-4 py-2 mb-3 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" />
+                {locale === 'zh' ? `升K班 (${gradCount})` : `Graduating to K (${gradCount})`}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-400" />
+                {locale === 'zh' ? `留校 (${retCount})` : `Returning (${retCount})`}
+              </span>
+              <span className="text-gray-400 ml-auto">
+                {locale === 'zh' ? '点击标签切换' : 'tap badge to toggle'}
+              </span>
+            </div>
+
             <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 mb-4">
               {children.map((c) => {
                 const checked = selected.has(c.id);
+                const isGrad = graduating.has(c.id);
                 return (
                   <button
                     key={c.id}
@@ -189,8 +235,9 @@ export default function LanguageSemesterPage() {
                       checked ? 'bg-emerald-50' : 'hover:bg-gray-50'
                     }`}
                   >
+                    {/* Checkbox */}
                     <div
-                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                      className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                         checked ? 'bg-emerald-600 border-emerald-600' : 'border-gray-300'
                       }`}
                     >
@@ -200,6 +247,7 @@ export default function LanguageSemesterPage() {
                         </svg>
                       )}
                     </div>
+                    {/* Avatar */}
                     {c.photo_url ? (
                       <img
                         src={getProxyUrl(c.photo_url)}
@@ -211,7 +259,21 @@ export default function LanguageSemesterPage() {
                         {c.name.charAt(0).toUpperCase()}
                       </div>
                     )}
-                    <span className="text-sm font-medium text-gray-900">{c.name}</span>
+                    {/* Name */}
+                    <span className="text-sm font-medium text-gray-900 flex-1">{c.name}</span>
+                    {/* Graduating / Returning badge — tappable */}
+                    <span
+                      onClick={(e) => toggleGraduating(c.id, e)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors flex-shrink-0 ${
+                        isGrad
+                          ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                          : 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+                      }`}
+                    >
+                      {isGrad
+                        ? locale === 'zh' ? '升K班' : 'K class'
+                        : locale === 'zh' ? '留校' : 'Returning'}
+                    </span>
                   </button>
                 );
               })}

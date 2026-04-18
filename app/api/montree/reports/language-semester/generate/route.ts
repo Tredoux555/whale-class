@@ -76,13 +76,6 @@ function cleanText(s: string): string {
 
 // --- Sonnet ---------------------------------------------------------------
 
-// Whale Class children graduating to K class this semester.
-// Update this list each semester. Names must match montree_children.name exactly.
-const GRADUATING_TO_K: Set<string> = new Set([
-  'Amy', 'Austin', 'Eric', 'Gengerlyn', 'Hayden', 'Henry',
-  'Joey', 'Kayla', 'Kevin', 'Rachel', 'Stella',
-]);
-
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
@@ -415,7 +408,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { child_ids?: unknown };
+  let body: { child_ids?: unknown; graduating_ids?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -429,6 +422,13 @@ export async function POST(request: NextRequest) {
   if (childIds.length > 30) {
     return NextResponse.json({ error: 'Too many children (max 30 per batch)' }, { status: 400 });
   }
+
+  // graduating_ids from the UI toggles — child IDs marked as graduating to K class
+  const graduatingIds = new Set<string>(
+    Array.isArray(body.graduating_ids)
+      ? (body.graduating_ids as unknown[]).filter((x): x is string => typeof x === 'string')
+      : []
+  );
 
   const supabase = getSupabase();
 
@@ -467,7 +467,7 @@ export async function POST(request: NextRequest) {
   for (const child of children) {
     try {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id);
-      const isGraduating = GRADUATING_TO_K.has(child.name);
+      const isGraduating = graduatingIds.has(child.id);
       const report = await generateReport(child.name, progress, isGraduating);
       const filled = await fillTemplate(templateBuf, report, progress);
       results.push({ child_id: child.id, name: child.name, buf: filled });
