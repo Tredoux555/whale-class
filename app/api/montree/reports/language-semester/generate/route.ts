@@ -54,29 +54,35 @@ function xmlEscape(s: string): string {
     .replace(/'/g, '&apos;');
 }
 
+/** Convert \n in Sonnet output to PPTX line breaks AFTER xmlEscape. */
+function textWithBreaks(raw: string): string {
+  const escaped = xmlEscape(raw);
+  return escaped.replace(/\n/g, '</a:t></a:r><a:br/><a:r><a:rPr lang="en-US" dirty="0"/><a:t>');
+}
+
 // --- Sonnet --------------------------------------------------------------
 
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
-    'Write the three narrative paragraphs for this child\'s official semester report. The works table is filled separately from real data — you only write the prose.',
+    'Write the three narrative sections for this child\'s official semester report letter. Written TO the child (second person: "you", "your"). The works table is filled separately — you only write the prose.',
   input_schema: {
     type: 'object' as const,
     properties: {
       para_opening: {
         type: 'string',
         description:
-          'Opening paragraph addressed to the parents. Start with "Dear [Child Name],". STRICT LIMIT: 2-3 sentences, MAX 50 words. Warm, celebrates growth. End with the child\'s name. No line breaks inside.',
+          'Warm greeting and congratulations, written TO the child. Start with "Dear [Child Name]," then 1-2 short sentences celebrating their semester. STRICT LIMIT: MAX 20 words after the greeting. Example: "Dear Amy, what a wonderful semester you have had! You should be very proud of yourself." No line breaks.',
       },
       para_circle: {
         type: 'string',
         description:
-          'Circle time paragraph. STRICT LIMIT: 2-3 sentences, MAX 50 words. Reference listening, turn-taking, songs, community. No line breaks inside.',
+          'Three highlighted achievements, each on its own line separated by \\n. Each point is 1 sentence (12-18 words). First point about circle time / community. Second point about a specific language work. Third point about growth or a favourite moment. Use "you" and "your" throughout — speak TO the child. Format: "Point one sentence.\\nPoint two sentence.\\nPoint three sentence." STRICT LIMIT: MAX 55 words total across all three points.',
       },
       para_english: {
         type: 'string',
         description:
-          'Language progress paragraph referencing specific works the child has done. STRICT LIMIT: 3-4 sentences, MAX 70 words. Process-focused, based on the actual works provided. No line breaks inside.',
+          'Short warm closing, written TO the child. 1-2 sentences looking forward to next semester. Encouraging, personal. STRICT LIMIT: MAX 20 words. Example: "We are so excited to see what you will discover next. Keep shining!" No line breaks.',
       },
     },
     required: ['para_opening', 'para_circle', 'para_english'],
@@ -92,19 +98,25 @@ async function generateReport(childName: string, progress: ProgressRow[]): Promi
     .map((p) => `- ${p.work_name} [${statusCode(p.status)}]`)
     .join('\n');
 
-  const systemPrompt = `You are a Montessori-trained lead teacher writing the official end-of-semester Language report for a child.
+  const systemPrompt = `You are a Montessori lead teacher writing the official end-of-semester Language report as a letter TO a child. The parents will read it, but every word is addressed to the child in second person ("you", "your").
 
-Voice: warm, specific, Montessori-literate. Written to the child's parents. Plain paragraph prose — no bullets, no markdown, no emojis, no line breaks within paragraphs.
+VOICE: Warm, proud, personal. Like a teacher kneeling down to look a child in the eye and tell them how wonderful they are. Simple vocabulary — a 5-year-old's parent reads this aloud to them.
 
-CRITICAL SPACE CONSTRAINT: This text must fit on a single PowerPoint slide. Each paragraph MUST be short:
-- para_opening: MAX 50 words (2-3 sentences)
-- para_circle: MAX 50 words (2-3 sentences)
-- para_english: MAX 70 words (3-4 sentences)
-Total across all three paragraphs must not exceed 170 words. Brevity is essential — every word must earn its place.
+STRUCTURE (three sections):
+1. para_opening — "Dear [Name]," + 1-2 sentences of congratulations. MAX 20 words after greeting.
+2. para_circle — Three highlighted points separated by \\n. Each is ONE sentence (12-18 words). Speak to specific things the child did. Reference their actual works. Use "you" throughout.
+3. para_english — Warm closing. 1-2 sentences looking ahead. MAX 20 words.
 
-Use the child's actual works as ground truth — do not invent works or skills not listed.
+CRITICAL SPACE RULE: Total across ALL sections must not exceed 95 words. This text prints on a small area of a PowerPoint slide. Every word must earn its place. Be concise and beautiful.
 
-Output three narrative paragraphs via the write_language_semester_report tool.`;
+RULES:
+- Address the child: "you learned", "your favourite", NOT "Austin learned", "his favourite"
+- Reference ONLY works from the list provided — never invent
+- No bullets, no markdown, no emojis
+- para_circle points separated by \\n (the system converts these to slide line breaks)
+- No \\n in para_opening or para_english
+
+Output via the write_language_semester_report tool.`;
 
   const userMessage = `Child: ${childName}
 
@@ -115,7 +127,7 @@ Please write the semester report.`;
 
   const response = await anthropic.messages.create({
     model: AI_MODEL,
-    max_tokens: 800,
+    max_tokens: 500,
     system: systemPrompt,
     tools: [REPORT_TOOL],
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
@@ -143,10 +155,10 @@ async function fillTemplate(
 
   let xml = await slideFile.async('string');
 
-  // Narrative paragraphs
+  // Narrative paragraphs — PARA_CIRCLE uses textWithBreaks to convert \n to PPTX line breaks
   xml = xml
     .replace('{{PARA_OPENING}}', xmlEscape(report.para_opening))
-    .replace('{{PARA_CIRCLE}}', xmlEscape(report.para_circle))
+    .replace('{{PARA_CIRCLE}}', textWithBreaks(report.para_circle))
     .replace('{{PARA_ENGLISH}}', xmlEscape(report.para_english));
 
   // Works table — fill from REAL progress data (top 4 by status rank).
