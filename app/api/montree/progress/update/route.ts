@@ -269,6 +269,7 @@ export async function POST(request: NextRequest) {
           .from('montree_child_focus_works')
           .upsert({
             child_id,
+            classroom_id: child.classroom_id,
             area: area,
             work_name: workNameToSave,
             set_at: now,
