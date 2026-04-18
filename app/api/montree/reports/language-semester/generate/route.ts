@@ -33,7 +33,6 @@ interface SonnetReport {
   para_opening: string;
   para_circle: string;
   para_english: string;
-  works: Array<{ name: string; status: 'P' | 'Pr' | 'MD' }>;
 }
 
 // --- helpers ---------------------------------------------------------------
@@ -59,7 +58,7 @@ function xmlEscape(s: string): string {
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
-    'Write the three narrative paragraphs and select up to 4 spotlight Language works for this child\'s official semester report.',
+    'Write the three narrative paragraphs for this child\'s official semester report. The works table is filled separately from real data — you only write the prose.',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -78,27 +77,8 @@ const REPORT_TOOL = {
         description:
           'Language progress paragraph referencing specific works the child has done. STRICT LIMIT: 3-4 sentences, MAX 70 words. Process-focused, based on the actual works provided. No line breaks inside.',
       },
-      works: {
-        type: 'array',
-        description:
-          'Up to 4 spotlight Language works that best represent this child\'s semester. Order from most advanced/representative first. Each has a display name (plain English, no internal codes) and a status code: MD (Mastered), Pr (Practicing), or P (Presented).',
-        minItems: 1,
-        maxItems: 4,
-        items: {
-          type: 'object' as const,
-          properties: {
-            name: { type: 'string', description: 'Work name, e.g. "Sandpaper Letters" or "Moveable Alphabet".' },
-            status: {
-              type: 'string',
-              enum: ['P', 'Pr', 'MD'],
-              description: 'P = Presented, Pr = Practicing, MD = Mastered.',
-            },
-          },
-          required: ['name', 'status'],
-        },
-      },
     },
-    required: ['para_opening', 'para_circle', 'para_english', 'works'],
+    required: ['para_opening', 'para_circle', 'para_english'],
   },
 };
 
@@ -150,7 +130,11 @@ Please write the semester report.`;
 
 // --- template fill ---------------------------------------------------------
 
-async function fillTemplate(templateBuf: Buffer, report: SonnetReport): Promise<Buffer> {
+async function fillTemplate(
+  templateBuf: Buffer,
+  report: SonnetReport,
+  progress: ProgressRow[],
+): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuf);
   const slidePath = 'ppt/slides/slide1.xml';
   const slideFile = zip.file(slidePath);
@@ -164,13 +148,15 @@ async function fillTemplate(templateBuf: Buffer, report: SonnetReport): Promise<
     .replace('{{PARA_CIRCLE}}', xmlEscape(report.para_circle))
     .replace('{{PARA_ENGLISH}}', xmlEscape(report.para_english));
 
-  // Works table — fill up to 4 slots, blank out the rest
+  // Works table — fill from REAL progress data (top 4 by status rank).
+  // Always 4 slots filled: if child has fewer than 4 works, pad with blanks.
+  const top4 = progress.slice(0, 4);
   for (let i = 0; i < 4; i++) {
-    const w = report.works[i];
+    const w = top4[i];
     const nameTok = `{{WORK_${i + 1}_NAME}}`;
     const statusTok = `{{WORK_${i + 1}_STATUS}}`;
     if (w) {
-      xml = xml.replace(nameTok, xmlEscape(w.name)).replace(statusTok, xmlEscape(w.status));
+      xml = xml.replace(nameTok, xmlEscape(w.work_name)).replace(statusTok, xmlEscape(statusCode(w.status)));
     } else {
       xml = xml.replace(nameTok, '').replace(statusTok, '');
     }
@@ -304,7 +290,7 @@ export async function POST(request: NextRequest) {
     try {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id);
       const report = await generateReport(child.name, progress);
-      const filled = await fillTemplate(templateBuf, report);
+      const filled = await fillTemplate(templateBuf, report, progress);
       results.push({ child_id: child.id, name: child.name, buf: filled });
     } catch (err) {
       console.error(`[LanguageSemester] Failed for ${child.name}:`, err);
