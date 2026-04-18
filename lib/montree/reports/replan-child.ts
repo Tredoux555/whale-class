@@ -390,6 +390,7 @@ What's the teacher's next move?`;
       await supabase.from('montree_child_focus_works').upsert(
         {
           child_id: childId,
+          classroom_id: classroomId,
           area,
           work_name: canonicalName,
           set_at: now,
@@ -442,6 +443,7 @@ What's the teacher's next move?`;
         await supabase.from('montree_child_focus_works').upsert(
           {
             child_id: childId,
+            classroom_id: classroomId,
             area: missingArea,
             work_name: pick.name,
             set_at: now,

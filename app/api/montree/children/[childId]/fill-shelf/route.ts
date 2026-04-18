@@ -147,6 +147,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .from('montree_child_focus_works')
         .upsert({
           child_id: childId,
+          classroom_id: child.classroom_id,
           area,
           work_name: canonicalName,
           set_at: now,
@@ -188,6 +189,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .from('montree_child_focus_works')
           .upsert({
             child_id: childId,
+            classroom_id: child.classroom_id,
             area: missingArea,
             work_name: pick.name,
             set_at: now,
