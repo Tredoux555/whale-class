@@ -227,32 +227,32 @@ export default function ClassroomOverviewPage() {
         }
       `}</style>
 
-      {/* Screen-only toolbar */}
-      <div className="no-print bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-3 sticky top-0 z-50">
+      {/* Screen-only toolbar — sits below DashboardHeader */}
+      <div className="no-print bg-white border-b border-gray-200 px-4 py-2 sticky top-[57px] z-40">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.back()}
-            className="px-3 py-1.5 bg-white/20 rounded-lg hover:bg-white/30 text-sm font-medium"
+            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium"
           >
             ← {t('common.back')}
           </button>
-          <h1 className="font-bold text-lg">{t('print.classOverview')}</h1>
+          <h1 className="font-bold text-base text-gray-800">{t('print.classOverview')}</h1>
           <button
             onClick={() => window.print()}
-            className="px-4 py-1.5 bg-white text-emerald-700 rounded-lg font-bold text-sm hover:bg-emerald-50"
+            className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg font-bold text-sm hover:bg-emerald-700"
           >
             🖨️ {t('print.printPage')}
           </button>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 mt-2 bg-white/15 rounded-lg p-0.5">
+        <div className="flex gap-1 mt-2 bg-gray-100 rounded-lg p-0.5">
           <button
             onClick={() => setTab('shelf')}
             className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
               tab === 'shelf'
                 ? 'bg-white text-emerald-700 shadow-sm'
-                : 'text-white/80 hover:text-white hover:bg-white/10'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
             📋 {locale === 'zh' ? '书架总览' : 'Shelf Overview'}
@@ -262,7 +262,7 @@ export default function ClassroomOverviewPage() {
             className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-colors ${
               tab === 'english'
                 ? 'bg-white text-emerald-700 shadow-sm'
-                : 'text-white/80 hover:text-white hover:bg-white/10'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
             🇬🇧 {locale === 'zh' ? '英语日程' : 'English Schedule'}
