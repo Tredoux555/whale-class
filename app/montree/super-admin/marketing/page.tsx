@@ -6,9 +6,10 @@ const SECTIONS = [
   {
     title: '⚡ INTELLIGENCE',
     tools: [
-      { name: 'Master Campaign', desc: '1,135 schools · 507 MX-verified · Campaign D live, Campaign A scheduled Apr 27', href: '/montree/super-admin/marketing/master-campaign', icon: '🎯', featured: true },
+      { name: 'Outreach Hub', desc: 'Live CRM — multiplier partners + school outreach pipeline, bounce tracking, daily sends', href: '/montree/super-admin/marketing/outreach-hub', icon: '🎯', featured: true },
+      { name: 'Master Campaign', desc: '1,135 schools · 507 MX-verified · Campaign D live, Campaign A scheduled Apr 27', href: '/montree/super-admin/marketing/master-campaign', icon: '📊', featured: true },
       { name: 'The Nerve Center', desc: 'Marketing brain — algorithms, hooks, viral playbook, content calendar', href: '/montree/super-admin/marketing/nerve-center', icon: '🧠', featured: true },
-      { name: 'Outreach Campaign', desc: 'Global sales — 9 personalized emails, 50 schools ranked, 4-week game plan', href: '/montree/super-admin/marketing/outreach-campaign', icon: '🎯', featured: true },
+      { name: 'Outreach Campaign (Legacy)', desc: 'Old static outreach — replaced by Outreach Hub', href: '/montree/super-admin/marketing/outreach-campaign', icon: '📝' },
       { name: 'Sales Playbook', desc: 'School intel, outreach schedule, the letter', href: '/montree/super-admin/marketing/sales-playbook', icon: '🎯', featured: true },
     ],
   },
