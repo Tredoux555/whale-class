@@ -16,7 +16,7 @@ import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
 import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { MontreeMedia } from '@/lib/montree/media/types';
-import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
 
 // Tier 6 perf: code-split modal components (~2.9k lines deferred).
 const WorkWheelPicker = dynamic(() => import('@/components/montree/WorkWheelPicker'), { ssr: false });
@@ -194,20 +194,24 @@ export default function GalleryPage() {
   // Event attendance
   const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
-  // Image URL cache
-  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const batchUrlLoadedRef = useRef(false);
+  // Crop URL overrides — only populated when a photo is cropped in this session.
+  // Default URLs are computed inline via getProxyUrl(storage_path) (Session 25 pattern).
+  const [cropUrlOverrides, setCropUrlOverrides] = useState<Record<string, string>>({});
   const prevChildIdRef = useRef(childId);
 
-  // Reset URL cache when childId changes
+  // Reset overrides when childId changes
   useEffect(() => {
     if (prevChildIdRef.current !== childId) {
       prevChildIdRef.current = childId;
-      batchUrlLoadedRef.current = false;
-      setImageUrls({});
+      setCropUrlOverrides({});
       curriculumLoadedRef.current = false;
     }
   }, [childId]);
+
+  // Helper: get the display URL for a photo (crop override → proxy URL)
+  const getPhotoUrl = useCallback((photo: GalleryItem) => {
+    return cropUrlOverrides[photo.id] || getProxyUrl(photo.storage_path);
+  }, [cropUrlOverrides]);
 
   // Fetch photos
   const fetchPhotosControllerRef = useRef<AbortController | null>(null);
@@ -218,7 +222,6 @@ export default function GalleryPage() {
     const controller = new AbortController();
     fetchPhotosControllerRef.current = controller;
     setLoading(true);
-    batchUrlLoadedRef.current = false;
     fetch(`/api/montree/media?child_id=${childId}&limit=50`, { signal: controller.signal })
       .then(r => {
         if (!r.ok) throw new Error('Failed to fetch');
@@ -298,44 +301,7 @@ export default function GalleryPage() {
     });
   }, [tagPhotoParam, loadCurriculum]);
 
-  // Batch-load all image URLs
-  useEffect(() => {
-    if (photos.length === 0 || batchUrlLoadedRef.current) return;
-    batchUrlLoadedRef.current = true;
-
-    const paths = photos.map(p => p.storage_path).filter(Boolean);
-    if (paths.length === 0) return;
-
-    const controller = new AbortController();
-    fetch('/api/montree/media/urls', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ paths }),
-      signal: controller.signal,
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(`Batch URL request failed: ${r.status}`);
-        return r.json();
-      })
-      .then(data => {
-        if (data.urls) {
-          const urlMap: Record<string, string> = {};
-          for (const photo of photos) {
-            if (data.urls[photo.storage_path]) {
-              urlMap[photo.id] = data.urls[photo.storage_path];
-            }
-          }
-          setImageUrls(urlMap);
-        }
-      })
-      .catch(err => {
-        if (err?.name !== 'AbortError') {
-          console.error('Failed to batch-load image URLs:', err);
-          batchUrlLoadedRef.current = false;
-        }
-      });
-    return () => controller.abort();
-  }, [photos]);
+  // Batch URL fetch eliminated — URLs computed inline via getProxyUrl (Health Check #5)
 
   // Photos grouped by area for the grid view
   const photosByArea = useMemo(() => {
@@ -574,8 +540,8 @@ export default function GalleryPage() {
       const res = await fetch(`/api/montree/media?id=${photoToDelete.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPhotos(prev => prev.filter(p => p.id !== photoToDelete.id));
-      // Clean up image URL cache for deleted photo
-      setImageUrls(prev => { const next = { ...prev }; delete next[photoToDelete.id]; return next; });
+      // Clean up crop URL override for deleted photo
+      setCropUrlOverrides(prev => { const next = { ...prev }; delete next[photoToDelete.id]; return next; });
       // Remove from report preview if open (prevent stale reference)
       setReportItems(prev => prev.filter(i => i.photo_id !== photoToDelete.id));
       // Reset lightbox index to prevent out-of-bounds
@@ -596,8 +562,8 @@ export default function GalleryPage() {
       const res = await fetch(`/api/montree/media?ids=${Array.from(selectedIds).join(',')}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete');
       setPhotos(prev => prev.filter(p => !selectedIds.has(p.id)));
-      // Clean up image URL cache for deleted photos
-      setImageUrls(prev => { const next = { ...prev }; selectedIds.forEach(id => delete next[id]); return next; });
+      // Clean up crop URL overrides for deleted photos
+      setCropUrlOverrides(prev => { const next = { ...prev }; selectedIds.forEach(id => delete next[id]); return next; });
       // Remove from report preview if open (prevent stale reference)
       setReportItems(prev => prev.filter(i => !i.photo_id || !selectedIds.has(i.photo_id)));
       // Reset lightbox index to prevent out-of-bounds
@@ -631,15 +597,15 @@ export default function GalleryPage() {
       if (!res.ok) throw new Error('Failed to save cropped image');
       const data = await res.json();
 
-      // Update the cached image URL with the new cropped URL (original preserved)
+      // Update the crop URL override so the gallery shows the cropped version
       if (data.media?.cropped_url) {
-        setImageUrls(prev => ({
+        setCropUrlOverrides(prev => ({
           ...prev,
           [cropPhoto.id]: data.media.cropped_url,
         }));
       } else {
-        // Fallback: clear cache so it reloads
-        setImageUrls(prev => {
+        // Fallback: clear override so it falls back to getProxyUrl
+        setCropUrlOverrides(prev => {
           const next = { ...prev };
           delete next[cropPhoto.id];
           return next;
@@ -824,7 +790,7 @@ export default function GalleryPage() {
   const renderPhotoCard = (photo: GalleryItem) => {
     const isExpanded = expandedPhoto === photo.id;
     const isEditingThis = editingCaption === photo.id;
-    const url = imageUrls[photo.id];
+    const url = getPhotoUrl(photo);
 
     return (
       <div
@@ -904,7 +870,7 @@ export default function GalleryPage() {
               <button
                 onClick={async (e) => {
                   e.stopPropagation();
-                  const photoUrl = imageUrls[photo.id] || photo.url;
+                  const photoUrl = getPhotoUrl(photo);
                   if (!photoUrl) return;
                   try {
                     const res = await fetch(photoUrl);
@@ -928,7 +894,7 @@ export default function GalleryPage() {
                 💾
               </button>
               <button
-                onClick={() => setCropPhoto({ id: photo.id, url: imageUrls[photo.id] || photo.url })}
+                onClick={() => setCropPhoto({ id: photo.id, url: getPhotoUrl(photo) })}
                 className="w-8 h-8 bg-black/40 hover:bg-blue-500 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
                 aria-label={t('gallery.cropPhoto')}
               >
@@ -1455,10 +1421,10 @@ export default function GalleryPage() {
           <PhotoLightbox
             isOpen={lightboxOpen && filteredPhotos.length > 0}
             onClose={() => setLightboxOpen(false)}
-            src={currentPhoto ? (imageUrls[currentPhoto.id] || '') : ''}
+            src={currentPhoto ? getPhotoUrl(currentPhoto) : ''}
             alt={currentPhoto?.work_name || currentPhoto?.caption || 'Photo'}
             photos={filteredPhotos.map(p => ({
-              url: imageUrls[p.id] || '',
+              url: getPhotoUrl(p),
               caption: p.caption,
               date: p.captured_at,
             }))}
