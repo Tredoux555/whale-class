@@ -7,6 +7,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { getVideoProxyUrl } from '@/lib/montree/media/proxy-url';
+import { slugify } from '@/lib/slugify';
 
 interface Song {
   id: string;
@@ -35,14 +36,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   'recipes': 'bg-orange-100 text-orange-700',
 };
 
-function slugify(raw: string): string {
-  return raw
-    .toLowerCase()
-    .trim()
-    .replace(/['"]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+// slugify() moved to lib/slugify.ts (Health Check #9 — prevent drift)
 
 export default function WhaleClassPage() {
   const [songs, setSongs] = useState<Song[]>([]);
