@@ -121,14 +121,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Standard query for non-child-specific requests (simple query, no FK join)
+    // Always scope to the authenticated school (Health Check #14 — multi-tenancy)
     let query = supabase
       .from('montree_media')
       .select('id, storage_path, thumbnail_path, media_type, caption, captured_at, child_id, work_id, parent_visible, school_id, classroom_id, created_at, updated_at, auto_crop, tags', { count: 'exact' })
+      .eq('school_id', schoolId || auth.schoolId)
       .order('captured_at', { ascending: false });
-
-    if (schoolId) {
-      query = query.eq('school_id', schoolId);
-    }
 
     if (classroomId) {
       query = query.eq('classroom_id', classroomId);
