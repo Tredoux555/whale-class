@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         .from('montree_teachers')
         .select('id, password_set_at')
         .eq('id', teacher_id)
-        .single();
+        .maybeSingle();
 
       if (lookupError || !teacher) {
         return NextResponse.json({ error: 'Teacher not found' }, { status: 404 });

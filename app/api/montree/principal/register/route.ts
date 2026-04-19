@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       .from('montree_school_admins')
       .select('id')
       .eq('email', email.trim().toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existingAdmin) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 400 });
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       .from('montree_schools')
       .select('id')
       .eq('slug', slug)
-      .single();
+      .maybeSingle();
 
     if (existingSchool) {
       return NextResponse.json({ error: 'A school with this name already exists' }, { status: 400 });
