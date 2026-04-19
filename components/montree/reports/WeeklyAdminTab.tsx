@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 
 const AREAS = [
@@ -54,6 +55,7 @@ function shiftWeek(weekStart: string, weeks: number): string {
 
 export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   const { t, locale } = useI18n();
+  const { isEnabled, loading: featuresLoading } = useFeatures();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -443,6 +445,12 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
   };
 
   // ─── Render ────────────────────────────────────────────────
+
+  // Health Check #17 — standalone page checks this flag but the embedded tab didn't.
+  // A school with the feature disabled could still see the tab inside Photo Audit.
+  if (!featuresLoading && !isEnabled('weekly_admin_docs')) {
+    return null;
+  }
 
   return (
     <div className="pb-20">
