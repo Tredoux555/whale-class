@@ -2,10 +2,11 @@
 // Simple read-only photo viewer modal
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 interface PhotoDetailViewProps {
   media: MontreeMedia | null;
@@ -27,34 +28,11 @@ export default function PhotoDetailView({
   onMediaUpdated,
 }: PhotoDetailViewProps) {
   const { locale } = useI18n();
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Load image URL
-  useEffect(() => {
-    if (!media || !isOpen) return;
-
-    setLoading(true);
-    const fetchUrl = async () => {
-      try {
-        const response = await fetch(
-          `/api/montree/media/url?path=${encodeURIComponent(media.storage_path)}`
-        );
-        const data = await response.json();
-        if (data.url) {
-          setImageUrl(data.url);
-        }
-      } catch (err) {
-        console.error('Failed to fetch image URL:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUrl();
-  }, [media, isOpen]);
 
   if (!isOpen || !media) return null;
+
+  // Session 25 pattern — deterministic Cloudflare-cached proxy URL, zero network roundtrip
+  const imageUrl = getProxyUrl(media.storage_path);
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
@@ -89,11 +67,7 @@ export default function PhotoDetailView({
 
         {/* Image - auto aspect ratio to avoid black bars */}
         <div className="bg-gray-900 max-h-[50vh] flex items-center justify-center">
-          {loading ? (
-            <div className="w-full h-48 flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-gray-300 border-t-emerald-500 rounded-full animate-spin" />
-            </div>
-          ) : imageUrl ? (
+          {imageUrl ? (
             <img
               src={imageUrl}
               alt={media.caption || 'Photo'}

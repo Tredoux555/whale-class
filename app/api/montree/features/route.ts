@@ -102,10 +102,12 @@ export async function POST(request: NextRequest) {
   try {
     // Try super-admin auth first (for super-admin panel feature toggles)
     const superAdminCheck = await verifySuperAdminAuth(request.headers);
+    let teacherSession: { school_id?: string; classroom_id?: string; role?: string } | null = null;
     if (!superAdminCheck.valid) {
       // Fall back to regular school auth
       const auth = await verifySchoolRequest(request);
       if (auth instanceof NextResponse) return auth;
+      teacherSession = auth as any;
     }
 
     const supabase = getSupabase();
@@ -124,6 +126,31 @@ export async function POST(request: NextRequest) {
         { success: false, error: 'school_id or classroom_id required' },
         { status: 400 }
       );
+    }
+
+    // Multi-tenancy guard: non-super-admin callers may only toggle features for THEIR OWN school/classroom
+    // Body-passed school_id/classroom_id must match the authenticated session, otherwise reject.
+    if (!superAdminCheck.valid && teacherSession) {
+      // Resolve the target school_id (either directly or via the classroom)
+      let targetSchoolId = school_id as string | undefined;
+      if (!targetSchoolId && classroom_id) {
+        const { data: classroomRow } = await supabase
+          .from('montree_classrooms')
+          .select('school_id')
+          .eq('id', classroom_id)
+          .maybeSingle();
+        targetSchoolId = (classroomRow as any)?.school_id;
+      }
+
+      if (!targetSchoolId || targetSchoolId !== teacherSession.school_id) {
+        return NextResponse.json(
+          { success: false, error: 'Not authorized to toggle features for this school' },
+          { status: 403 }
+        );
+      }
+
+      // For classroom-level toggles, also verify the classroom belongs to the teacher's school
+      // (above lookup already enforces this, since we resolved targetSchoolId from the classroom row)
     }
 
     // Toggle at classroom level
