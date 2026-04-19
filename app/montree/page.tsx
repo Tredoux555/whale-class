@@ -1,12 +1,97 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // /montree/page.tsx — Montree landing page
 // "A teacher takes a photo. Montree does the rest."
 
+function DemoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [name, setName] = useState('');
+  const [school, setSchool] = useState('');
+  const [email, setEmail] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!open) return null;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.includes('@')) { setError('Please enter a valid email'); return; }
+    setSending(true); setError('');
+    try {
+      const res = await fetch('/api/montree/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, school, email }),
+      });
+      if (res.ok) { setSent(true); }
+      else { setError('Something went wrong. Please try again.'); }
+    } catch { setError('Connection error. Please try again.'); }
+    setSending(false);
+  }
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: 'white', borderRadius: 20, padding: '2.5rem', maxWidth: 420, width: '100%', position: 'relative', boxShadow: '0 24px 64px rgba(0,0,0,0.15)' }}
+      >
+        <button onClick={onClose} style={{ position: 'absolute', top: 16, right: 20, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#a8a29e' }}>×</button>
+
+        {sent ? (
+          <div className="text-center py-4">
+            <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.5rem', color: '#064e3b', marginBottom: 8 }}>
+              We&apos;ll be in touch
+            </h3>
+            <p style={{ color: '#78716c', fontSize: '0.95rem', lineHeight: 1.6 }}>
+              Thank you for your interest in Montree. I&apos;ll reach out within 24 hours to arrange a demonstration.
+            </p>
+            <p style={{ color: '#a8a29e', fontSize: '0.8rem', marginTop: 16 }}>— Tredoux</p>
+          </div>
+        ) : (
+          <>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.4rem', color: '#064e3b', marginBottom: 4 }}>
+              Request a Demo
+            </h3>
+            <p style={{ color: '#78716c', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.5 }}>
+              15 minutes. I&apos;ll show you what one photo can do for your classroom.
+            </p>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input
+                type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)}
+                style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.1)', fontSize: 14, outline: 'none', fontFamily: "'Inter', sans-serif" }}
+              />
+              <input
+                type="text" placeholder="School name" value={school} onChange={(e) => setSchool(e.target.value)}
+                style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.1)', fontSize: 14, outline: 'none', fontFamily: "'Inter', sans-serif" }}
+              />
+              <input
+                type="email" placeholder="Email address *" required value={email} onChange={(e) => setEmail(e.target.value)}
+                style={{ padding: '12px 14px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.1)', fontSize: 14, outline: 'none', fontFamily: "'Inter', sans-serif" }}
+              />
+              {error && <p style={{ color: '#ef4444', fontSize: '0.8rem', margin: 0 }}>{error}</p>}
+              <button
+                type="submit" disabled={sending}
+                style={{ padding: '14px 0', borderRadius: 12, background: '#064e3b', color: 'white', fontSize: 14, fontWeight: 600, border: 'none', cursor: sending ? 'wait' : 'pointer', opacity: sending ? 0.7 : 1, letterSpacing: '0.3px', fontFamily: "'Inter', sans-serif", marginTop: 4 }}
+              >
+                {sending ? 'Sending...' : 'Request a Demo'}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MontreeLanding() {
   const revealRefs = useRef<HTMLElement[]>([]);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -40,6 +125,8 @@ export default function MontreeLanding() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
       `}</style>
 
+      <DemoModal open={demoOpen} onClose={() => setDemoOpen(false)} />
+
       <div className="min-h-screen" style={{ fontFamily: "'Inter', sans-serif", background: '#fefdfb', color: '#44403c' }}>
         {/* ========== NAV ========== */}
         <nav
@@ -62,13 +149,13 @@ export default function MontreeLanding() {
               <a href="/montree/login-select" className="text-sm font-medium no-underline hidden sm:inline" style={{ color: '#78716c' }}>
                 Log in
               </a>
-              <a
-                href="mailto:tredoux555@gmail.com?subject=Montree Demo Request"
-                className="text-sm font-semibold no-underline px-4 py-2 rounded-lg transition-all hover:-translate-y-0.5"
-                style={{ background: '#064e3b', color: 'white', letterSpacing: '0.3px' }}
+              <button
+                onClick={() => setDemoOpen(true)}
+                className="text-sm font-semibold px-4 py-2 rounded-lg transition-all hover:-translate-y-0.5"
+                style={{ background: '#064e3b', color: 'white', letterSpacing: '0.3px', border: 'none', cursor: 'pointer' }}
               >
                 Request a Demo
-              </a>
+              </button>
             </div>
           </div>
         </nav>
@@ -165,7 +252,7 @@ export default function MontreeLanding() {
                   { t: 'Take a photo', d: 'The AI sees the work, identifies it, records the observation. Teacher stays with the child.' },
                   { t: 'Progress tracks itself', d: 'Photo count drives status. 1 photo = Presented. Multiple = Practicing. Teacher confirms mastery.' },
                   { t: 'Reports write themselves', d: 'Every parent gets a genuine, personal letter. With photos. With developmental context. Automatically.' },
-                  { t: 'AI plans the next step', d: 'The Smart Shelf: 5 works, 5 areas, personalized per child. Based on mastery, readiness, and sensitive periods.' },
+                  { t: 'AI plans the next step', d: "The Smart Shelf: 5 works, 5 areas, personalized per child. Based on mastery, readiness, and sensitive periods." },
                 ].map((item, i) => (
                   <div key={i} className="mb-5 last:mb-0">
                     <div className="text-sm font-semibold mb-1" style={{ color: '#44403c' }}>{item.t}</div>
@@ -322,13 +409,13 @@ export default function MontreeLanding() {
             <p style={{ color: '#78716c', fontSize: '1.05rem', marginBottom: '2rem', lineHeight: 1.7 }}>
               15 minutes. No installation. No training required. We&apos;ll show you what happens when a teacher is free to just teach.
             </p>
-            <a
-              href="mailto:tredoux555@gmail.com?subject=Montree Demo Request"
-              className="inline-block px-8 py-4 rounded-xl text-base font-semibold no-underline transition-all hover:-translate-y-0.5"
-              style={{ background: '#064e3b', color: 'white', letterSpacing: '0.3px', boxShadow: '0 8px 24px rgba(6,78,59,0.15)' }}
+            <button
+              onClick={() => setDemoOpen(true)}
+              className="inline-block px-8 py-4 rounded-xl text-base font-semibold transition-all hover:-translate-y-0.5"
+              style={{ background: '#064e3b', color: 'white', letterSpacing: '0.3px', boxShadow: '0 8px 24px rgba(6,78,59,0.15)', border: 'none', cursor: 'pointer' }}
             >
               Request a Demo
-            </a>
+            </button>
             <p className="text-xs mt-4" style={{ color: '#a8a29e' }}>
               Built by a teacher. Used every day. Ready for your school.
             </p>
