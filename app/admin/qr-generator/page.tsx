@@ -8,6 +8,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { slugify } from '@/lib/slugify';
 import JSZip from 'jszip';
 import QRCode from 'qrcode';
 
@@ -57,14 +58,7 @@ async function generateQrBlob(data: string, size: number): Promise<Blob> {
   return new Blob([arr], { type: mime });
 }
 
-function slugify(raw: string): string {
-  return raw
-    .toLowerCase()
-    .trim()
-    .replace(/['"]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
+// slugify() moved to lib/slugify.ts (Health Check #9 — prevent drift)
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
