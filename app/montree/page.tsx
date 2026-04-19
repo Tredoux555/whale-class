@@ -56,6 +56,9 @@ export default function MontreeLanding() {
               Mon<span style={{ color: '#10b981' }}>tree</span>
             </a>
             <div className="flex items-center gap-4">
+              <a href="/montree/library" className="text-sm font-medium no-underline hidden sm:inline" style={{ color: '#78716c' }}>
+                Library
+              </a>
               <a href="/montree/login-select" className="text-sm font-medium no-underline hidden sm:inline" style={{ color: '#78716c' }}>
                 Log in
               </a>
