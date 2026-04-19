@@ -13,106 +13,43 @@ Local path: `/Users/tredouxwillemse/Desktop/Master Brain/ACTIVE/whale` (note spa
 
 ---
 
-## 📧 GMASS OUTREACH CAMPAIGN — "Montree" (cold email to schools)
+## 📮 CAMPAIGN MANAGER — Outreach Protocol (replaces GMass as of Apr 19, 2026)
 
-**TL;DR:** Outreach is run via **GMass** (Gmail mail-merge extension), driven off the user's spreadsheet **`Montree_Global_Outreach.xlsx`** (also lives as a Google Sheet that GMass syncs Status/DateSent back to). NOT sent from the whale codebase. The super-admin "outreach-campaign" page in the repo is a template builder only — `Mark as Sent` writes to localStorage, never DB. Ignore it.
+**🚨 THIS IS A STANDING INSTRUCTION FOR EVERY SESSION. READ THIS FIRST. 🚨**
 
-**The list:** 420 schools across 7 batches — Asia 61, Europe 86, Middle East 56, South Asia 80, Africa 38, Americas 71, Oceania 28. Columns: SchoolName, Email, Country, Region, Website, ContactPerson, Accreditation, AgeRange, DateSent, Status, FollowUp1Sent, FollowUp2Sent, Notes, Batch. As of Apr 7, 2026 only 8 marked Sent in the xlsx (53 blank, 359 Pending) — but GMass campaign report shows 201+ opens already from the Mar 28 send, so the spreadsheet is out of sync with reality. Always re-pull from GMass dashboard / Google Sheet, don't trust the local xlsx.
+Claude is Tredoux's outreach campaign manager. GMass is retired. The workflow is:
+- **Claude drafts** personalized emails as Gmail drafts (up to 50/day)
+- **Tredoux reviews** each draft in Gmail and hits Send
+- **Claude monitors** Gmail for replies and drafts responses
+- **Tredoux handles** appointment setting personally — everything else is Claude's job
 
-**Why "it stopped at 50":** Free Gmail (`tredoux555@gmail.com`, gmail.com not Workspace) is hard-capped by Gmail at ~500/day, and GMass self-throttles to ~50/day on free Gmail accounts to protect deliverability. The campaign isn't broken — it's pacing. To "send the rest" the user needs to either (a) resume/extend the campaign in GMass over multiple days, or (b) upgrade to Google Workspace for the higher cap. The "paid Google account" the user mentions is likely paid GMass, not paid Workspace — verify before assuming higher caps.
+### The Daily Routine
 
-**GMass campaign details — CORRECTED Apr 7 from dashboard:**
-There are **4 separate "Montree" campaigns** all sent on 2026-03-28, NOT one. Totals across all four = **64 schools sent** (not 50). The big one had a 34.7% bounce rate which is the single biggest deliverability risk for the next send.
+When the user says anything like "what's happening with the campaign", "campaign update", "outreach status", or starts a new session:
 
-| Campaign ID | Recipients | Opens | Bounces | Replies |
-|---|---|---|---|---|
-| 50490844 | 9 | 6 (66.7%) | 1 | 0 |
-| 50489320 | **49** | 16 (32.7%) | **17 (34.7%)** | 1 |
-| 50489098 | 3 | 1 | 1 | 0 |
-| 50488830 | 3 | 2 | 0 | 0 |
+1. **Check Gmail for replies** — `search_threads` for replies to outreach emails (search: `from:* to:tredoux555@gmail.com subject:Montree OR subject:"Montessori Teacher"` recent threads)
+2. **Report status** — How many sent, how many in queue, any new replies, any bounces
+3. **Draft replies** to any new responses (professional, warm, push toward a demo call). Put draft replies in Gmail for Tredoux to review and send.
+4. **Draft the next batch** — Pick up to 50 contacts from the DB queue (`status='new'`, `email_status != 'bounced'`, `email_status != 'invalid'`), personalize the sacred email for each, create Gmail drafts via `create_draft`
+5. **Update the DB** — Mark drafted contacts as `status='drafted'`, log to `montree_outreach_log`
 
-- Spreadsheet name in GMass: `Montree Global Outreach → Outreach List` (lives in user's Google Drive — Drive MCP can't see Sheets, only Docs/folders, so locate via Chrome on `drive.google.com`)
-- Reports come from `notify@gmass.co` to `tredoux555@gmail.com`
-- Subject line: `Montree` (follow-ups become `Re: Montree`)
-- Two automatic follow-ups already configured: F1 ~5 days after original ("I wanted to make sure my previous email…"), F2 ~5 days after F1 ("I understand how busy things can get…")
-- Each campaign was a separate batch/chunk — not a "single resumable campaign." To send the rest, **build a NEW GMass campaign**, do NOT try to "resume" 50489320.
+### How to Draft Outreach Emails
 
-**🚨 CAMPAIGN ORDER REVERSED Apr 10, 2026 — JOB APPLICATION FIRST, MONTREE PITCH SECOND 🚨**
+Use `mcp__f0875e82-fdd3-4aed-b646-de80b534357f__create_draft` with `isHtml: false` (plain text only — HTML drafts via API show raw tags in Gmail compose).
 
-Strategic reversal Apr 10: **Job application email sends FIRST (starting Fri Apr 10), Montree pitch POSTPONED to ~Apr 27 as follow-up.** Rationale: personal "hire me" email is warmer/shorter, gets principals curious, then Montree pitch lands 2 weeks later for non-responders as the product follow-up. Resume deliberately NOT attached — no asymmetric risk from naming current school. Interested principals will ask for details privately.
+**Personalization**: Each email MUST be customized for the recipient. Use the contact's `org_name`, `country`, `contact_person`, and any `notes` to tailor the opening line. The sacred email body stays the same but the greeting and any contextual hook should be specific.
 
-**Campaign C — JOB APPLICATION — ☠️ DEAD, SENT BLANK (Apr 10, 2026):**
-- Campaign ID: `50686495` / Schedule ID: `51331920`
-- Draft ID: `r614453887712204887` (Gmail message ID `19d761413fb0a98d`) — **TRASHED by user**
-- **WHAT HAPPENED**: Session 12 attempted to automate GMass via Chrome DOM manipulation. Body was set via `createElement`/`appendChild` which rendered visually but DID NOT update Gmail's internal draft state. GMass read the empty internal state and sent **335 blank emails** to the entire 345-school list at once (no throttle — DOM-set speed settings also didn't persist). ~74 bounced/blocked (54 "Address not found" + 10 "Message blocked" + 10 blocks), so ~261 schools received an empty email with subject "Montessori Teacher & Builder" and no body.
-- **Campaign is DEAD**: User trashed the draft → GMass detected draft in trash → stopped all further sends. GMass notification confirmed: "Successful sends: 0, Emails remaining: 0" (referring to the remaining queue, not the original blast).
-- **Auto follow-ups on this campaign**: Should be dead since the draft is trashed. Verify on gmass.co/dashboard that Campaign 50686495 shows no pending follow-ups. If follow-ups are still queued, manually cancel them — they would reference an empty email.
-- **🚨 CRITICAL LESSON**: DOM manipulation of Gmail compose windows does NOT update Gmail's internal state. `createElement`/`appendChild`, `innerHTML`, `execCommand('insertHTML')` — NONE of these work. GMass reads Gmail's internal state, not the visible DOM. Body, subject via `execCommand`, and speed/throttle settings set via DOM all fail silently. **NEVER attempt Chrome automation of GMass settings or compose body again.** All GMass interaction must be done manually by the user through GMass's own UI.
+**Subject line**: `Montree` for schools. For multiplier partners, customize based on the relationship type.
 
-**Campaign D — CORRECTION EMAIL (NEW, created Apr 10, 2026):**
-- Draft ID: `r3953882681879956838` (Gmail message ID `19d772d888d0a151`)
-- To: `345-recipients-big-42c28b38@gmass.co` (same list)
-- Subject: `Re: Montessori Teacher & Builder`
-- Body: plain text apology + full job application email (~100 words total, `{SchoolName}` merge tag)
-- Created via Gmail API `gmail_create_draft` with `isHtml: false` (plain text — HTML drafts via API show raw tags in Gmail compose)
-- Test email sent to self: **VERIFIED GOOD** — body intact, formatting clean, montree.xyz rendered as clickable link
-- Send as: **Replies** (threads with the original empty email each recipient received)
-- Speed: 50 emails/day, Pause 5–10s between sends, Skip weekends OFF, Skip holidays ON
-- Tracking: Opens ON, Clicks OFF
-- Auto Follow-up: **OFF** (one-shot correction, no follow-ups)
-- **Status**: User configuring GMass settings and firing manually as of end of Session 12. At 50/day, takes ~7 days to reach all ~345 recipients (done by ~Apr 17).
+**Always send a test to self first** when drafting a new template variant. Verify formatting before creating the batch.
 
-**THE CORRECTION EMAIL BODY** (plain text, verified via test email Apr 10):
-```
-My apologies — it looks like my previous email was sent blank. Here's what I meant to say:
+### The Sacred Emails (DO NOT rewrite without user approval)
 
-Dear {SchoolName},
-
-My name is Tredoux. I'm an AMS-certified Montessori teacher for ages 3–6, and I also built Montree — the first AI-powered classroom management system designed specifically for Montessori schools.
-
-I'm looking for my next classroom. If you need a qualified teacher who can also bring your school into the future of Montessori education, I'd love to talk.
-
-Kind regards,
-Tredoux
-montree.xyz
-```
-
-**Campaign A — MONTREE PITCH (POSTPONED from Apr 13 → ~Apr 27):**
-- Draft ID: `r5432987450225472818` (Gmail message ID `19d6ca30b7406fee`)
-- To: `345-recipients-big-42c28b38@gmass.co` (same list)
-- Subject: `Montree`
-- Body: shortened sacred email #1 (~155 words, `{SchoolName}` merge tag)
-- **ACTION REQUIRED**: Open this draft in Gmail, click GMass settings gear, change schedule from 04/13/2026 → **04/27/2026 09:00am +08:00**
-- All other settings unchanged (50/day, Skip weekends ON, Opens ON, Clicks OFF, F1+F2 prefilled)
-
-**User checklist (UPDATED after Session 12 disaster):**
-1. ~~Open Gmail → fire Campaign C~~ — **DONE but sent blank.** Campaign C is dead.
-2. **Fire Campaign D (correction)** — user configuring GMass settings manually as of end of Session 12
-3. Monitor Campaign D on gmass.co/dashboard — verify 50/day throttle is actually working, check bounces
-4. Verify Campaign 50686495 (dead Campaign C) has NO pending follow-ups on gmass.co/dashboard
-5. Open Drafts → "Montree" → GMass settings → verify still scheduled for Apr 27
-6. Clean up bounce notifications: Gmail search `from:mailer-daemon after:2026/4/10` → select all → archive
-
-**Apr 7, 2026 — Cleaned list ready, mass send scheduled for next week / weekend (Apr 11-14):**
-- Ran MX-record scrub on all 412 unsent rows from `Montree_Global_Outreach.xlsx`
-- Result: 346 deliverable, 66 dropped (16% drop rate — vs 34.7% actual bounce on Mar 28 batch)
-- Saved as `whale/docs/outreach/Montree_Outreach_Cleaned.xlsx` (Deliverable / Bounced or Invalid / Summary tabs)
-- Step-by-step send playbook saved as `whale/docs/outreach/SEND_PLAYBOOK.md` — read this BEFORE the actual send next week
-- **Gmail-ready HTML letters** (inline styles, paste-into-compose ready):
-  - `whale/docs/outreach/Letter_Montree_Pitch.html` — Campaign A body, `{SchoolName}` merge tag
-  - `whale/docs/outreach/Letter_Teacher_Application.html` — Campaign B body, attach resume PDF
-  - `whale/docs/outreach/HOW_TO_INJECT.md` — step-by-step automation playbook for next session
-- **Resume updated Apr 7**: `whale/assets/personal/Tredoux_Resume_Tight.html` — DOB removed, headshot placeholder added (swap instructions in HTML comment). Next session: convert to `Tredoux_Resume_Draft3.pdf` via Chrome print-to-PDF or `mcp__Desktop_Commander__write_pdf`, attach to Campaign B.
-- **DONE Apr 10 — Campaign order reversed.** Job application (Campaign C) sends FIRST starting Apr 10. Montree pitch (Campaign A) postponed to Apr 27 as follow-up for non-responders. See campaign details above.
-- **☠️ Apr 10 — Campaign C sent 335 BLANK EMAILS.** Chrome DOM automation of Gmail compose failed silently. Body set via DOM didn't persist to Gmail's internal state. GMass read empty body and blasted all 335 at once (throttle settings also didn't persist). ~74 bounced/blocked, ~261 received empty email. Campaign killed when user trashed draft.
-- **Apr 10 — Campaign D (correction) created.** Plain text draft via Gmail API, subject "Re: Montessori Teacher & Builder", sends as replies to thread with the original blank. Test email verified good. User configuring GMass settings (50/day, no follow-ups) and firing manually.
-- **TODO for next session:** Monitor Campaign D delivery on gmass.co/dashboard. Verify 50/day throttle is working. Check open rates, bounces. Verify dead Campaign C (50686495) has no pending follow-ups. Verify Campaign A ("Montree") draft still scheduled for Apr 27. Clean up 54+ bounce notifications from inbox (`from:mailer-daemon after:2026/4/10` → archive).
-
-**THE SACRED EMAIL** (cold email body, exact wording — DO NOT rewrite without user approval. Tightened Apr 7, 2026 — removed "looking for a change in environment" block, ~330→~155 words):
+**PRIMARY — Montree Pitch (~155 words):**
 ```
 Subject: Montree
 
-Dear [School Name],
+Dear [School Name / Contact Person],
 
 I'd like to introduce something I've built that I believe represents the next step in the Montessori classroom.
 
@@ -135,11 +72,11 @@ Tredoux
 montree.xyz
 ```
 
-**THE JOB APPLICATION SACRED EMAIL** (rewritten Apr 10, 2026. Short, warm, no resume. Sends FIRST, before the Montree pitch. Saved as `whale/docs/outreach/Letter_Job_Application.html`):
+**SECONDARY — Job Application (~70 words):**
 ```
 Subject: Montessori Teacher & Builder
 
-Dear {SchoolName},
+Dear [School Name],
 
 My name is Tredoux. I'm an AMS-certified Montessori teacher for ages 3–6, and I also built Montree — the first AI-powered classroom management system designed specifically for Montessori schools.
 
@@ -150,52 +87,115 @@ Tredoux
 montree.xyz
 ```
 
-**THE OLD SECOND SACRED EMAIL — "Teacher, builder, or both"** (finalized Apr 7, SUPERSEDED by the shorter version above on Apr 10. Kept for reference only — do NOT use):
-<details><summary>Click to expand old version</summary>
-
-```
-Subject: Teacher, builder, or both
-
-Dear [School Name],
-
-My name is Tredoux. I'm a qualified Montessori teacher who built a school management system — and I believe it's the next step in the evolution of how Montessori classrooms are run.
-
-I'm also looking for the next step in my own professional evolution. I'm grateful to my current school for letting me learn the beauty of Montessori, but I've reached the limit of what I can do here, and I'm ready for a new classroom to perfect my craft.
-
-So if you need a qualified and experienced Montessori teacher for young learners, let's talk.
-
-If you want a beautifully simple and effective new way to manage your classrooms and school, let me know.
-
-And if you want both — if you want to take your school's next step in its own evolution and bring in an experienced young learners teacher at the same time — then I would highly recommend myself. I can custom-build a classroom and school management system that simplifies and streamlines anything and everything you can think of.
-
-Kind regards,
-Tredoux
-montree.xyz
-```
-</details>
-
-**Follow-up 1** (subject becomes `Re: Montree`):
+**Follow-up 1** (5 days after initial, subject becomes `Re: Montree`):
 > I wanted to make sure my previous email found its way to you. I'd welcome the chance to show you what Montree can do for your school.
->
 > Kind regards, Tredoux / montree.xyz
 
-**Follow-up 2:**
+**Follow-up 2** (10 days after initial):
 > I understand how busy things can get running a school. If Montree isn't the right fit for you, no problem at all. But if you're curious, I'm happy to arrange a quick demonstration at a time that works for you. Either way, I wish you and your school all the best.
->
 > Kind regards, Tredoux / montree.xyz
 
-**To resume / monitor next session:**
-- **Campaign C (job application)**: **DEAD.** Sent 335 blank emails on Apr 10. Draft trashed, campaign killed. Campaign ID 50686495. **Check gmass.co/dashboard that no follow-ups are pending** — if they are, cancel them immediately (they'd follow up on an empty email).
-- **Campaign D (correction)**: Should be sending (started Apr 10). Check gmass.co/dashboard for delivery stats. Verify the 50/day throttle is actually working (unlike Campaign C where it wasn't). At 50/day, done by ~Apr 17. Subject: "Re: Montessori Teacher & Builder", sends as replies threading with the original blank email.
-- **Campaign A (Montree pitch)**: Scheduled for Apr 27. Open Drafts → "Montree" to verify schedule is intact. Do NOT send early — let Campaign D's correction reach everyone first, then Campaign C's (now Campaign D's) impressions settle.
-- **Bounce cleanup**: 54+ bounce notifications from `mailer-daemon@googlemail.com` still in inbox. Search `from:mailer-daemon after:2026/4/10` → select all → archive. Gmail API tools available in Cowork are read-only + draft creation — no archive/delete/modify capability.
-- **Master spreadsheet**: `whale/Montree_Master_Outreach.xlsx` has 1,135 schools total (785 global + 350 China, post-Apr 16 dedup). The Global tab has Email_Status/Web_Status/Last_Verified columns from the Apr 16 MX-verification pass — 507 schools are deliverable (MX-verified, GMass-ready) and pre-filtered into the `Deliverable_Global` tab. The China list (350 schools, 213 with phone numbers, 18 with emails) is a future expansion opportunity once the global campaign results are in.
-- **🚨 NEVER automate GMass via Chrome DOM manipulation.** All GMass settings and compose body must be set by the user manually through GMass's own UI. See Session 12 post-mortem for details.
-- Repo-side "outreach" code in `app/montree/super-admin/marketing/outreach-campaign/page.tsx` and `app/api/montree/super-admin/npo-outreach/route.ts` is UNRELATED to GMass and should not be touched for this task.
+### Database & Tracking
+
+- **Source of truth**: `montree_outreach_contacts` table in Supabase (536+ contacts seeded Apr 19)
+- **Status flow**: `new` → `drafted` (Gmail draft created) → `sent` (user sent from Gmail) → `replied` / `bounced` / `follow_up` → `converted` / `dead`
+- **Activity log**: `montree_outreach_log` table — every action logged with timestamp
+- **Campaign Manager UI**: `/montree/super-admin/marketing/campaign-manager` — live dashboard
+- **API**: `/api/montree/super-admin/campaign-manager` — GET stats, PATCH status updates
+- **Master spreadsheet**: `whale/Montree_Master_Outreach.xlsx` — 1,135 schools (785 global + 350 China). 507 MX-verified and deliverable.
+
+### Gmail Tools Available
+
+- `create_draft` — create drafts (plain text, `isHtml: false`)
+- `search_threads` — find reply threads
+- `get_thread` — read full thread content
+- `list_drafts` — check existing drafts
+
+### GMass Legacy (RETIRED)
+
+GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 12 disaster). Campaign D was the correction. Campaign A (Montree pitch) was scheduled for Apr 27 but is now superseded by the Campaign Manager workflow. All future outreach goes through Claude + Gmail drafts. GMass is no longer used.
+
+**🚨 NEVER automate email sending.** Claude creates drafts only. Tredoux reviews and sends every email manually. This prevents another blank-email disaster.
 
 ---
 
 ## RECENT STATUS (Apr 18, 2026)
+
+### ⚡ Session 38 — Language Semester Report: PPTX Template Z-Order Fix + Photo-Evidence Works + Post-Processing (Apr 18, 2026)
+
+**Two commits pushed to main: `2048acae`, `93a3b8ba`.** User's trigger: Language Semester Report PPTX closing paragraph was invisible (7+ sessions of failed word-count prompt tweaking), and works table showed planned works the child never actually did.
+
+**A. Root cause #1 — Closing paragraph invisible behind cloud shapes (`2048acae`):**
+
+The PPTX template had decorative cloud group shapes at z-index 7 rendering ON TOP of the narrative text shape at z-index 5. The `{{PARA_ENGLISH}}` closing token was at the bottom of the narrative shape, extending into the cloud zone — text was there but hidden. **This was the real bug behind 7+ sessions of failed attempts to fix "text too long/short" via prompt engineering.** The text length was never the problem; the z-ordering was.
+
+**Fix — architectural template restructure:**
+- Narrative shape (id=12) shrunk: `cy` changed from 5102225 to 4262755 EMU (bottom at 8.10in, safely above clouds at 8.83in)
+- `{{PARA_ENGLISH}}` removed from narrative shape entirely
+- NEW closing text box (id=99, name="ClosingText") added as LAST element in `<p:spTree>` — z-order last = renders on top of everything including clouds
+- Position: `y=8184120` EMU (on the clouds), white italic 13pt Calibri text, centered
+- Template rebuilt via Python script modifying the XML inside the pptx zip
+
+**B. Post-processing approach — "a different angle" (`2048acae`):**
+
+User demanded a different approach after 7+ failed prompt-engineering attempts at word counts. Solution: let Sonnet generate freely, then deterministically enforce constraints.
+
+- `postProcess(report, childName, allowedWorks)` — runs after every Sonnet call:
+  1. Cleans line breaks from opening/closing
+  2. Ensures opening starts with "Dear {childName}"
+  3. `scrubHallucinatedWorks()` — regex-matches capitalized multi-word phrases, replaces non-allowed work names with fuzzy-matched allowed name or "your work"
+  4. `trimToWords(text, MAX_BODY_WORDS=125)` — trims body at sentence boundaries
+  5. `trimToWords(closing, MAX_CLOSING_WORDS=35)` — trims closing to fit cloud overlay box
+- Removed: validation+retry loop, `cleanupReport()`, complex word-count-constrained REPORT_TOOL description
+- `max_tokens` reduced 800→600, prompt simplified to voice/rules only (no word count targets)
+- `textWithBreaks()` updated with full `<a:rPr>` formatting properties matching narrative shape
+
+**C. Root cause #2 — Works table showing planned works, not evidence (`93a3b8ba`):**
+
+User flagged Eric's report showing "Green Series (Phonograms)" — a work seeded by the replan pipeline as a future plan, not something Eric ever did. User's exact words: "If the parent asks whats this i want to be able to say - look - this is what im talking about - see this picture of him doing the work."
+
+**Fix — complete rewrite of `loadLanguageProgress()`:**
+- **Old source**: `montree_child_progress` — includes replan-seeded focus works (future plans, status='presented' from pipeline seeding, NOT from actual activity)
+- **New source**: `montree_media` — confirmed photos with Language work_ids only
+- Includes group photos via `montree_media_children` junction table
+- Excludes `pending_review` photos (NULL-safe pattern)
+- Status derived from photo count: 1 photo = Presented (P), 2-3 = Practicing (Pr), 4+ = Mastered (MD)
+- Same top-4 diverse-status-mix selection logic preserved
+
+**D. PPTX template technical details (for future sessions):**
+
+- Shapes in `<p:spTree>` render in document order (later = higher z-order)
+- Shape positions use EMU (914400 EMU = 1 inch)
+- `<a:rPr>` formatting properties REQUIRED for visible text runs — missing properties = invisible text
+- PPTX line breaks: `</a:t></a:r><a:br/><a:r><a:rPr.../><a:t>` pattern (NOT `\n`)
+- `schemeClr val="bg1"` = white text, `schemeClr val="tx1"` = black text
+- Cloud shapes are at y≈8.83in — any text below y=8.10in gets hidden
+
+**🚨 CRITICAL ARCHITECTURAL NOTES FOR FUTURE SESSIONS:**
+
+- **`montree_child_progress` contains PLANNED works** from the replan pipeline, not just evidence-backed activity. NEVER use this table as a source of "what the child actually did" — use `montree_media` with `teacher_confirmed` + `work_id` for photo-evidenced work.
+- **Photo-count status derivation**: 1 photo = presented, 2-3 = practicing, 4+ = mastered. This is the canonical status for parent-facing reports.
+- **Post-processing over prompt engineering**: When Sonnet needs to hit exact formatting constraints (word counts, allowed vocabulary), generate freely then enforce deterministically. Don't fight the model with prompt constraints — they fail ~30% of the time regardless of phrasing.
+- **PPTX z-order**: If text is invisible in a generated PPTX, check whether decorative shapes are rendering on top. Add new text shapes as the LAST element in `<p:spTree>` to ensure they render above everything.
+- **`scrubHallucinatedWorks()`**: Regex matches Title Case multi-word phrases and cross-references against allowed work list. Fuzzy matches get replaced with the exact allowed name; no matches get replaced with "your work." Apply to all narrative sections.
+
+**Files changed (2 files, 2 commits):**
+- `public/templates/language-semester-report.pptx` — template restructured (narrative shape shrunk, closing text box added as last element)
+- `app/api/montree/reports/language-semester/generate/route.ts` — postProcess() pipeline, loadLanguageProgress() rewritten to source from montree_media
+
+**Next session priorities (updated):**
+1. **Verify Language Semester Report on production** — generate Eric's report after Railway deploys `93a3b8ba`. Works table should show ONLY photo-evidenced works (no Green Series Phonograms). Closing paragraph should be visible on the purple clouds, not hidden.
+2. **Test multi-child bundle** — select 3-5 kids, generate, verify zip downloads with correct per-child works.
+3. **Verify Weekly Admin Docs on production** — hard-refresh, click Auto-fill for current week. All 20 children should show 5 works in 5 areas.
+4. **Session 35 carryover: Verify QR flow on production** — QR generator → Song tab → pick video → download QR → scan → whale-class page highlights correct song.
+5. **Session 33 hardening verification** — pull Railway logs for `Teacher report upsert failed` / `Parent report upsert failed`.
+6. **Tier names + pricing decisions** — still blocking Phase 5.
+7. **6 critical Sonnet-hardcoded routes** (Session 33 carryover) — gate when 2nd school onboards.
+8. **Phase 3 UI hiding by tier** (Session 33 carryover).
+9. **Monitor Campaign D** on gmass.co/dashboard — should be done by now.
+10. **Verify Campaign A** ("Montree" pitch) draft still scheduled for 2026-04-27 09:00 +08:00.
+
+---
 
 ### ⚡ Session 37 — Single Source of Truth: Child Page ↔ Weekly Wrap Shelf Unification (Apr 18, 2026)
 
