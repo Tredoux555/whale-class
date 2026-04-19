@@ -3,8 +3,8 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 
 export async function GET(req: NextRequest) {
-  const authError = await verifySuperAdminAuth(req);
-  if (authError) return authError;
+  const { valid } = await verifySuperAdminAuth(req.headers);
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const supabase = getSupabase();
 
@@ -40,8 +40,8 @@ export async function GET(req: NextRequest) {
 
 // Mark a demo request as contacted/done
 export async function PATCH(req: NextRequest) {
-  const authError = await verifySuperAdminAuth(req);
-  if (authError) return authError;
+  const { valid } = await verifySuperAdminAuth(req.headers);
+  if (!valid) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id, status, notes } = await req.json();
   if (!id || !status) {
