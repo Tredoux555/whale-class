@@ -19,10 +19,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate proxy URL (instant, no Supabase call needed)
-    return NextResponse.json({
-      success: true,
-      url: getProxyUrl(path)
-    });
+    return NextResponse.json(
+      { success: true, url: getProxyUrl(path) },
+      { headers: { 'Cache-Control': 'public, max-age=3600, immutable' } }
+    );
 
   } catch (error) {
     console.error('Media URL API error:', error);
