@@ -165,6 +165,211 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 20, 2026)
+
+### ⚡ Session 45 — Chinese Localization Execution + AI Toggle on Schools Dashboard (Apr 20, 2026)
+
+**Three commits pushed to main: `8b868b51`, `d183fba6`.** Executed Phase 1 of the Chinese localization handoff (centralizing area labels), regenerated all 20 Whale Class game plans in Chinese, and built the AI on/off toggle on the super-admin schools dashboard.
+
+**A. Chinese Localization — Phase 1 Partial + Game Plan Regen (`8b868b51`):**
+
+Replaced remaining hardcoded `AREA_LABELS` in 3 files with centralized `getAreaLabel()` / `AREA_LABELS_EN` from `lib/montree/i18n/area-labels.ts` (created Session 44's handoff plan):
+- `components/montree/progress/AreaHistoryModal.tsx` — replaced hardcoded `AREAS` constant with `AREA_STYLES` + `getAreaLabel()`
+- `components/montree/voice-observation/ExtractionCard.tsx` — added Chinese event type labels
+- `lib/montree/guru/conversational-prompt.ts` — replaced 2 hardcoded `AREA_LABELS` with `AREA_LABELS_EN`
+
+Also set migration 142 defaults to `$0/hard_limit` (AI completely off for new schools by default).
+
+**Batch game plan regen:** Ran `scripts/run_replan_all_whale_zh.mjs` — all 20 children got fresh Chinese nudges, works, and directions. 19/20 succeeded first try. Yo-yo required one manual retry (Haiku occasionally ignores Chinese locale instructions despite explicit "重要: 请完全使用中文回答" in the prompt).
+
+**B. Super-Admin AI Toggle on Schools Dashboard (`d183fba6`):**
+
+User requested: "I want an on/off switch right here on the schools dashboard. with a little window showing how much they have used."
+
+**3 files changed:**
+
+1. **`app/api/montree/super-admin/schools/route.ts`**:
+   - GET: Added parallel query to `montree_api_usage` for actual spend per school this month (`SUM(cost_usd)` + count). Returns `api_spent_this_month`, `api_calls_this_month`, `monthly_ai_budget_usd`, `ai_budget_action` per school.
+   - PATCH: Now accepts `monthly_ai_budget_usd` (0-10000) and `ai_budget_action` (warn/soft_limit/hard_limit) with validation. Calls `clearBudgetCache(schoolId)` after budget changes.
+
+2. **`components/montree/super-admin/types.ts`**: Added `monthly_ai_budget_usd`, `ai_budget_action`, `api_spent_this_month`, `api_calls_this_month` to School interface.
+
+3. **`components/montree/super-admin/SchoolsTab.tsx`**:
+   - Replaced "Est. Cost/mo" column (which showed estimated costs from guru interactions) with "AI" column
+   - Green toggle switch (on) / grey toggle switch (off) per school
+   - Toggle ON = `$9999 budget + warn action` (AI enabled with generous cap)
+   - Toggle OFF = `$0 budget + hard_limit action` (AI completely blocked)
+   - Below the toggle: actual spend this month (color-coded: green <$1, amber $1-5, red >$5) + call count
+   - Optimistic UI update with rollback on failure via `aiOverrides` state map
+   - Sort by actual API spend (replaced estimated cost sort)
+
+**How the toggle works end-to-end:**
+- `montree_schools.monthly_ai_budget_usd = 0` + `ai_budget_action = 'hard_limit'` = AI OFF. `checkAiBudget()` in `lib/montree/api-usage.ts` returns `blocked: true` when percentage >= 100% (which is always true when budget = $0 and any spend exists, or enforced by the RPC).
+- Toggle ON sets budget to $9999 + action to `warn` — effectively unlimited with warnings at 60/80/100%.
+- The actual spend shown comes from `montree_api_usage` table (logged by `logApiUsage()` wired in Session 45's prior commit `b1fe7a78`), NOT from the old estimated guru interaction costs.
+
+**🚨 Architectural notes:**
+- **`montree_api_usage` is the source of truth for AI spend.** The old `estimated_monthly_cost` from `montree_guru_interactions` model-based estimates is still returned but no longer displayed in the UI. The new `api_spent_this_month` uses actual metered costs from `logApiUsage()`.
+- **Default for new schools is $0/hard_limit = AI off.** Super-admin must explicitly toggle AI on for each school.
+- **`clearBudgetCache(schoolId)`** must be called after any budget change to invalidate the 30s in-memory cache in `lib/montree/api-usage.ts`.
+
+**Next session priorities:**
+1. **Execute Phase 2 — Fix Game Plan render paths** per `CHINESE_LOCALIZATION_HANDOFF.md`: `FocusWorksSection.tsx` direction/nudge/chips should resolve Chinese work names against classroom curriculum (not raw Haiku strings), direction arrow should use `getAreaLabel()`.
+2. **Execute Phase 3 — Child Guru + Photo Audit area rendering**.
+3. **Execute Phase 4 — Sweep remaining tiers** (Daily Brief, Focus List, Paperwork Tracker, toasts, onboarding).
+4. **Campaign: Draft next batch of 50** from remaining `status='new'` contacts (222 in queue).
+5. **Campaign: Monitor replies** — FAMM Argentina, I Cube, Ace, Meraki, Montessori CH still outstanding.
+6. **Campaign: Follow up on Montessori Norge** after May 6.
+7. **Campaign: Reclassify multiplier contacts** (Session 43 carryover).
+8. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md`.
+9. **Verify AI toggle on production** — log into super-admin, toggle AI on/off for Whale Class, verify spend shows.
+
+---
+
+### ⚡ Session 44 — Chinese Localization Deep Audit (Handoff to Opus 4.6) (Apr 20, 2026)
+
+**No code commits.** Pure audit + handoff documentation. User flagged a screenshot of Eric's child page Game Plan card in Chinese locale showing English content — English direction arrow (`Practical Life → Sensorial → Mathematics → Language → Cultural`), English work chips in the Game Plan nudge, English nudge text. Asked for a comprehensive comb-through of the entire app to find every instance of English-while-locale-is-zh.
+
+**Why Session 14 didn't catch this:** Session 14 solved the `name_chinese` vs `name_zh` DB dual-column bug for curriculum work names. That fix correctly makes the shelf view (which reads `focusWork.chineseName`) render Chinese. But the Game Plan card renders a **separate** data path: `gamePlan.nudge`, `gamePlan.works[]` (string array, not work objects), `gamePlan.direction` — all generated by Haiku at plan creation time. Session 14 never looked at AI generation prompts or render paths for generated content. This is a categorically different leak.
+
+**Three orthogonal root causes Session 14 missed:**
+
+1. **AI prompts don't thread locale to Haiku.** `app/api/montree/children/[childId]/game-plan/refresh/route.ts` has an `isZh` toggle at line 122 ("IMPORTANT: Write the nudge and direction in Chinese") but does NOT load the Chinese curriculum constraint list — Haiku picks from `AVAILABLE WORKS IN THIS CLASSROOM` which is built from English `w.name` only (line 187-189 in `lib/montree/reports/replan-child.ts`). Result: even when Haiku obeys "write in Chinese", it still outputs English work names because the constraint list is English. Also, the tool schema `description` at line 35 hardcodes the English example `'Practical Life → Sensorial → Language'` which biases the direction output.
+
+2. **5+ hardcoded `AREA_LABELS` constants scattered across the codebase.** `WeeklyWrapTab.tsx` lines 74-80 has the canonical pattern (`AREA_LABELS_ZH` + `AREA_LABELS_EN` + `getAreaLabel(area)` with locale switch) but every other file that renders area names has its own copy — most of them English-only. Game Plan direction arrow, child guru, photo audit, daily brief, focus list, paperwork tracker all duplicate or omit the locale switch.
+
+3. **Render paths render Haiku output verbatim with no locale layer.** `components/montree/child/FocusWorksSection.tsx` lines 262-264 renders `{planNudge}` and `{planDirection}` as raw strings from `gamePlan.settings.game_plan`. No translation, no locale check, no post-processing. Work chips at lines 272-279 iterate `gamePlan.works[]` (a string array of English work names) and render `{work}` — no lookup against the classroom curriculum to resolve the Chinese name. Contrast with the shelf view at line 358 which correctly does `locale === 'zh' && focusWork.chineseName ? focusWork.chineseName : cleanWorkName(focusWork.work_name)`.
+
+**7 tiers of leak vectors identified (~35 instances across ~16 files):**
+
+- **Tier 1 — Game Plan card (the user's screenshot bug)**: `FocusWorksSection.tsx` direction/nudge/chips render paths; both Game Plan generators (`replan-child.ts` + `game-plan/refresh/route.ts`) prompt + tool schema + constraint list.
+- **Tier 2 — Child Guru**: `app/api/montree/children/[childId]/guru/route.ts` system prompt hardcodes English area names in instructions; tool results render English area names back to teacher.
+- **Tier 3 — Photo Audit**: `ThisIsSheet.tsx` partially Chinese (work name + chineseName correct per Session 14) but area badges, "Similar to" label, Sonnet draft area mentions all English.
+- **Tier 4 — Daily Brief + Focus List + Paperwork Tracker**: Dashboard intelligence panels all hardcode English area labels in their `AREA_LABELS` constants.
+- **Tier 5 — Weekly Admin Docs standalone page**: Session 31 fixed the tab version but the standalone page drifted again (area-grouped summary section).
+- **Tier 6 — Onboarding & Setup**: "Tell Guru" card, Classroom Builder, Principal Setup all English-only UI. Lower priority since these are one-time flows.
+- **Tier 7 — Bubble/Toast messages**: "Added to shelf", "Work marked as mastered" toasts throughout — scattered English strings in components.
+
+**Canonical pattern to centralize (from `WeeklyWrapTab.tsx` lines 74-80):**
+
+```ts
+const AREA_LABELS_ZH: Record<string, string> = {
+  practical_life: '日常', sensorial: '感官', mathematics: '数学',
+  language: '语言', cultural: '文化',
+};
+const AREA_LABELS_EN: Record<string, string> = {
+  practical_life: 'Practical Life', sensorial: 'Sensorial', mathematics: 'Mathematics',
+  language: 'Language', cultural: 'Cultural',
+};
+const getAreaLabel = (area: string) => locale === 'zh' ? AREA_LABELS_ZH[area] : AREA_LABELS_EN[area];
+```
+
+This needs to be extracted into `lib/montree/i18n/area-labels.ts` and imported everywhere.
+
+**4-phase execution order (dependencies matter):**
+
+1. **Phase 1 — Centralize AREA_LABELS**: create `lib/montree/i18n/area-labels.ts` exporting `getAreaLabel(area, locale)`, migrate all 5+ copies. Unlocks Phase 2.
+2. **Phase 2 — Fix Game Plan generation + render (the screenshot bug)**: both generators load Chinese curriculum list, prompt Haiku in Chinese with Chinese examples, tool schema description localized, `FocusWorksSection.tsx` resolves work chips against classroom curriculum (not raw Haiku strings), direction arrow uses `getAreaLabel`. Then run `scripts/run_replan_all_whale_zh.mjs` to regen all 20 existing Whale Class game plans with Chinese output.
+3. **Phase 3 — Fix Child Guru + Photo Audit area rendering**: thread locale through system prompts, use `getAreaLabel` everywhere.
+4. **Phase 4 — Sweep remaining tiers**: Daily Brief, Focus List, Paperwork Tracker, Weekly Admin Docs standalone, toasts, onboarding.
+
+**Files to create:**
+- `lib/montree/i18n/area-labels.ts` — canonical `getAreaLabel` + `AREA_LABELS_ZH` + `AREA_LABELS_EN` exports
+- `scripts/run_replan_all_whale_zh.mjs` — batch regen script for existing stored English game plans, mirrors `run_replan_all_whale.mjs` but sets `locale='zh'` in the prompt and uses the Chinese curriculum list
+
+**What NOT to touch:**
+- DB columns (`name_chinese` + `name_zh` dual-column pattern is Session 14 gospel — keep writing both)
+- `montree_child_focus_works` / `montree_child_progress` table structure
+- Any of the ~384 Chinese translations already populated in the DB
+- `WeeklyWrapTab.tsx` lines 74-80 canonical pattern (it's the reference — extract but don't break it)
+- The Haiku tier-hardcoding (Session 33 gap — orthogonal, out of scope for localization pass)
+
+**Handoff doc written:** `CHINESE_LOCALIZATION_HANDOFF.md` in repo root (287 lines) — full findings, dependency graph, file-by-file instructions, reference patterns, verification checklist. Opus 4.6 can pick up the doc and execute the 4-phase plan without re-auditing.
+
+**Next session priorities:**
+1. **Execute Phase 1 — Centralize AREA_LABELS** per `CHINESE_LOCALIZATION_HANDOFF.md`. Create `lib/montree/i18n/area-labels.ts`, migrate 5+ hardcoded copies.
+2. **Execute Phase 2 — Game Plan fix (the screenshot bug)**: thread locale through both generators, fix render paths in `FocusWorksSection.tsx`, run batch regen script for 20 existing Whale Class game plans.
+3. **Execute Phase 3 — Child Guru + Photo Audit**.
+4. **Execute Phase 4 — Sweep remaining tiers**.
+5. **Verification**: generate a Chinese Game Plan for Eric, screenshot, confirm no English leaks in nudge / works / direction.
+6. **Campaign: Draft next batch of 50** from remaining `status='new'` contacts (222 in queue after Session 43).
+7. **Campaign: Monitor replies** — FAMM Argentina, I Cube, Ace, Meraki, Montessori CH still outstanding.
+8. **Campaign: Follow up on Montessori Norge** after May 6.
+9. **Campaign: Reclassify multiplier contacts** (Session 43 carryover — AMI/USA, OMB Brazil, AMI Canada, Montessori México, ABEM Brazil, Montessori Perú → `multiplier_association`).
+10. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md` — still queued.
+
+---
+
+### ⚡ Session 43 — Campaign Batch of 50 + Health Check Handoff Audit (Apr 20, 2026)
+
+**No code commits.** Pure campaign operations + health check handoff verification.
+
+**A. Health Check Handoff Verified:**
+
+Session 42's overnight sweep completed 8 items across 7 commits. This session verified the handoff doc (`HEALTH_CHECK_HANDOFF.md`) is accurate and complete. Two sections:
+- **Section A (9 items)** — Need full CLAUDE.md context: #3 (@ts-nocheck), #10 (.like() → indexed lookup), #11 (logApiUsage wiring), #12 (3 missing DB indexes), #13 (N+1 in principal setup), #15 (split 2378-line photo-insight), #16 (unify WeeklyAdminTab parity), #18 (drop name_chinese column), #19 (DELETE race condition advisory lock)
+- **Section B (3 sweeps)** — Mechanical, any model can do: replace `: any`/`as any` (~157 instances), remove `@ts-nocheck` (~15 files), structured logging in photo-insight (74 console.logs)
+
+**B. Campaign Manager — Batch of 50 Gmail Drafts Created:**
+
+Queried `montree_outreach_contacts` for 50 contacts with `status='new'`, drafted personalized emails for each, updated DB.
+
+**Breakdown:**
+- **43 individual schools** — sacred Montree pitch (~155 words), personalized with contact person name when available, org name as fallback
+- **7 partnership/multiplier emails** — custom partnership template with revenue-share angle:
+  - Montessori for Kenya (`multiplier_association`, Kenya)
+  - AMI/USA (Dr. KaLinda Bass-Barlow, national AMI affiliate with school directory)
+  - OMB Brazil (national Montessori organization, school directory)
+  - AMI Canada (Brianne Kelsey, national AMI affiliate, MQA program)
+  - Montessori México (AMI-affiliated society, national org)
+  - ABEM Brazil (Prof. Talita, 50-year teacher training org, explicit "MULTIPLIER opportunity" in notes)
+  - Montessori Perú (Susana Chavez, national school network)
+
+**Geographic spread:** India (14), Canada (6), Mexico (4), Colombia (4), Brazil (4), USA (4), New Zealand (2), Australia (2), Kenya (1), Peru (1), Costa Rica (1), Poland (1)
+
+**DB state after this session:**
+
+| Status | Count |
+|--------|-------|
+| new | 222 |
+| drafted | 77 |
+| sent | 199 |
+| bounced | 29 |
+| follow_up | 5 |
+| dead | 4 |
+| **Total** | **536** |
+
+**C. Bounce Check — No New Bounces:**
+
+Scanned Gmail for `from:mailer-daemon newer_than:3d`. All bounces were from the Session 41 fabricated-email disaster (already reconciled). No new bounces from legitimate outreach.
+
+**D. Reply Check — No New Actionable Replies:**
+
+Scanned Gmail for `subject:Montree OR subject:"Montessori Teacher" newer_than:7d -from:me`. No new replies since Session 42. Active threads unchanged:
+- FAMM Argentina — still awaiting response (hot multiplier lead)
+- 5 contacts in `follow_up` status: Montessori CH, I Cube Montessori, FAMM Mexico, Meraki Montessori, Ace Montessori
+- Montessori Norge — auto-reply expired May 5, NOW OVERDUE for follow-up (it's Apr 20, auto-reply was until May 5 — wait until May 6 to follow up)
+
+**E. Observations for Future Sessions:**
+
+1. **AMI/USA was listed as `individual_school` in DB but is clearly a multiplier** — the `contact_type` field should be updated to `multiplier_association` for accurate pipeline tracking. Same for OMB Brazil, AMI Canada, Montessori México, ABEM Brazil, Montessori Perú — all listed as `individual_school` but got partnership emails. Consider a DB cleanup pass to reclassify these.
+2. **77 drafts now sitting in Gmail** — user should review and send. At 50/day Gmail limit, this is ~1.5 days of sending.
+3. **222 contacts remaining** with `status='new'` — ~4-5 more batches to clear the queue.
+
+**Next session priorities:**
+1. **Campaign: Draft next batch of 50** from the 222 remaining `status='new'` contacts
+2. **Campaign: Monitor replies** — check FAMM Argentina, I Cube, Ace, Meraki, Montessori CH
+3. **Campaign: Follow up on Montessori Norge** after May 6
+4. **Campaign: Reclassify multiplier contacts** in DB (AMI/USA, OMB, AMI Canada, Montessori México, ABEM, Montessori Perú → `multiplier_association`)
+5. **Health Check Section B sweeps** — the 3 mechanical sweeps from HEALTH_CHECK_HANDOFF.md can be delegated to any model
+6. **Health Check Section A items** — need full CLAUDE.md context, start with #11 (logApiUsage wiring — module + DB table exist, just needs connection at 3 call sites in photo-insight)
+7. **Verify Language Semester Report on production** (Session 38 carryover)
+8. **Test multi-child bundle** — select 3-5 kids, generate, verify zip downloads
+9. **Verify Weekly Admin Docs on production** (Session 37 carryover)
+10. **Tier names + pricing decisions** — still blocking Phase 5
+
+---
+
 ## RECENT STATUS (Apr 19, 2026)
 
 ### ⚡ Session 42 — Overnight Health Check Sweep (Apr 19, 2026, IN PROGRESS)
