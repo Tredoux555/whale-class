@@ -8,6 +8,7 @@ import { KnowledgeResult, formatKnowledgeForPrompt } from './knowledge-retriever
 import { getConcernById } from './concern-mappings';
 import { getRelevantPsychologyKnowledge, CATEGORY_PSYCHOLOGISTS } from './knowledge/psychology-foundations';
 import { formatSensitivePeriodsForPrompt } from './knowledge/sensitive-periods';
+import { AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { classifyQuestion, hasLanguageKeywords } from './question-classifier';
 import { formatLanguageProgressionForPrompt } from './knowledge/ami-language-progression';
 import { getESLAwarenessForPrompt } from './knowledge/esl-chinese-learners';
@@ -238,13 +239,8 @@ If you have previous messages, build on them naturally:
 - Notice patterns across conversations
 - If previous advice didn't work, try a different approach`;
 
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
+// Use centralized area labels
+const AREA_LABELS = AREA_LABELS_EN;
 
 const INTAKE_MODE = `MODE: INTAKE
 This is a new family. Your goal:
@@ -612,13 +608,8 @@ const STYLE_LABELS: Record<string, string> = {
   balanced: 'Balanced — professional but approachable (default)',
 };
 
-const AREA_LABELS_FULL: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
+// Use centralized area labels
+const AREA_LABELS_FULL = AREA_LABELS_EN;
 
 /**
  * Build a school-specific personality section for the system prompt.

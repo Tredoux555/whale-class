@@ -4,14 +4,15 @@
 
 import { useState, useEffect } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
-// Area display config (mirrors progress page) — name is fallback only
-const AREAS: Record<string, { name: string; emoji: string; gradient: string; bg: string; text: string }> = {
-  practical_life: { name: 'Practical Life', emoji: '🧹', gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
-  sensorial: { name: 'Sensorial', emoji: '👁', gradient: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700' },
-  mathematics: { name: 'Mathematics', emoji: '🔢', gradient: 'from-indigo-500 to-indigo-600', bg: 'bg-indigo-50', text: 'text-indigo-700' },
-  language: { name: 'Language', emoji: '📚', gradient: 'from-rose-500 to-rose-600', bg: 'bg-rose-50', text: 'text-rose-700' },
-  cultural: { name: 'Cultural', emoji: '🌍', gradient: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
+// Area display config — name resolved at render time via getAreaLabel()
+const AREA_STYLES: Record<string, { emoji: string; gradient: string; bg: string; text: string }> = {
+  practical_life: { emoji: '🧹', gradient: 'from-emerald-500 to-emerald-600', bg: 'bg-emerald-50', text: 'text-emerald-700' },
+  sensorial: { emoji: '👁', gradient: 'from-amber-500 to-amber-600', bg: 'bg-amber-50', text: 'text-amber-700' },
+  mathematics: { emoji: '🔢', gradient: 'from-indigo-500 to-indigo-600', bg: 'bg-indigo-50', text: 'text-indigo-700' },
+  language: { emoji: '📚', gradient: 'from-rose-500 to-rose-600', bg: 'bg-rose-50', text: 'text-rose-700' },
+  cultural: { emoji: '🌍', gradient: 'from-violet-500 to-violet-600', bg: 'bg-violet-50', text: 'text-violet-700' },
 };
 
 // Status styling config — labels come from i18n at render time
@@ -74,8 +75,8 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
   const [entries, setEntries] = useState<{ label: string; works: WorkEntry[] }[]>([]);
   const { t, locale } = useI18n();
 
-  const config = AREAS[area] || AREAS.practical_life;
-  const areaDisplayName = t(`area.${area}` as any) || config.name;
+  const config = AREA_STYLES[area] || AREA_STYLES.practical_life;
+  const areaDisplayName = getAreaLabel(area, locale);
 
   const statusLabel = (s: string) => {
     if (s === 'mastered' || s === 'completed') return t('progress.mastered' as any);

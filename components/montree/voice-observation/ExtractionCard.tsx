@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 interface Extraction {
   id: string;
@@ -30,12 +31,12 @@ interface Props {
   onAction: (id: string, action: string, extra?: any) => void;
 }
 
-const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  mastery: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastery' },
-  presentation: { bg: 'bg-blue-100', text: 'text-blue-700', label: '📋 Presentation' },
-  practice: { bg: 'bg-amber-100', text: 'text-amber-700', label: '🔄 Practice' },
-  behavioral: { bg: 'bg-purple-100', text: 'text-purple-700', label: '👁 Behavioral' },
-  other: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Other' },
+const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; label: string; labelZh: string }> = {
+  mastery: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastery', labelZh: '⭐ 掌握' },
+  presentation: { bg: 'bg-blue-100', text: 'text-blue-700', label: '📋 Presentation', labelZh: '📋 展示' },
+  practice: { bg: 'bg-amber-100', text: 'text-amber-700', label: '🔄 Practice', labelZh: '🔄 练习' },
+  behavioral: { bg: 'bg-purple-100', text: 'text-purple-700', label: '👁 Behavioral', labelZh: '👁 行为' },
+  other: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Other', labelZh: '其他' },
 };
 
 const AREA_COLORS: Record<string, string> = {
@@ -49,7 +50,7 @@ const AREA_COLORS: Record<string, string> = {
 const STATUS_OPTIONS = ['presented', 'practicing', 'mastered'];
 
 export default function ExtractionCard({ extraction, childName, onAction }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [editing, setEditing] = useState(false);
   const [editStatus, setEditStatus] = useState(extraction.proposed_status || '');
   const [editNotes, setEditNotes] = useState(extraction.teacher_final_notes || '');
@@ -88,7 +89,7 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
             <span
               className="w-5 h-5 rounded-full inline-block flex-shrink-0"
               style={{ backgroundColor: AREA_COLORS[ext.area] || '#999' }}
-              title={ext.area}
+              title={getAreaLabel(ext.area, locale)}
             />
           )}
           <span className="font-semibold text-gray-900">
@@ -107,7 +108,7 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
             </span>
           )}
           <span className={`text-xs px-2 py-0.5 rounded-full ${eventStyle.bg} ${eventStyle.text}`}>
-            {eventStyle.label}
+            {locale === 'zh' ? eventStyle.labelZh : eventStyle.label}
           </span>
         </div>
       </div>
