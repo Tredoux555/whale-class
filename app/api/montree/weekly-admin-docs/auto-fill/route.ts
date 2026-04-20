@@ -7,15 +7,12 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
 import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
+import { AREA_KEYS, AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 
-const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'] as const;
-const AREA_LABELS: Record<string, { en: string; zh: string }> = {
-  practical_life: { en: 'Practical Life', zh: '日常生活' },
-  sensorial: { en: 'Sensorial', zh: '感官' },
-  mathematics: { en: 'Mathematics', zh: '数学' },
-  language: { en: 'Language', zh: '语言' },
-  cultural: { en: 'Cultural', zh: '文化' },
-};
+const AREAS = AREA_KEYS;
+const AREA_LABELS: Record<string, { en: string; zh: string }> = Object.fromEntries(
+  AREA_KEYS.map(k => [k, { en: AREA_LABELS_EN[k], zh: AREA_LABELS_ZH[k] }])
+);
 
 interface FocusWorkRow {
   child_id: string;

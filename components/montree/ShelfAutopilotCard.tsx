@@ -8,6 +8,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { toast } from 'sonner';
 
 // ---- Types ----
@@ -46,13 +47,7 @@ interface ChildResult {
 
 type CardState = 'idle' | 'generating' | 'results' | 'applying';
 
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Science & Culture',
-};
+// Area labels from centralized module — uses locale from useI18n()
 
 const AREA_COLORS: Record<string, string> = {
   practical_life: '#10B981', // emerald
@@ -71,7 +66,7 @@ const CONFIDENCE_STYLES: Record<string, { bg: string; text: string; label: strin
 // ---- Component ----
 
 export default function ShelfAutopilotCard({ classroomId, children }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [state, setState] = useState<CardState>('idle');
   const [results, setResults] = useState<ChildResult[]>([]);
@@ -409,7 +404,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
                                 style={{ backgroundColor: areaColor }}
                               />
                               <span className="text-xs font-medium text-gray-500">
-                                {AREA_LABELS[proposal.area] || proposal.area}
+                                {getAreaLabel(proposal.area, locale)}
                               </span>
                             </div>
                             <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${confidence.bg} ${confidence.text}`}>
@@ -456,7 +451,7 @@ export default function ShelfAutopilotCard({ classroomId, children }: Props) {
                     {/* Stable areas */}
                     {child.areas_stable.length > 0 && (
                       <p className="text-xs text-gray-400 px-1">
-                        ✓ {t('shelfAutopilot.stableAreas')}: {child.areas_stable.map(a => AREA_LABELS[a] || a).join(', ')}
+                        ✓ {t('shelfAutopilot.stableAreas')}: {child.areas_stable.map(a => getAreaLabel(a, locale)).join(', ')}
                       </p>
                     )}
                   </div>

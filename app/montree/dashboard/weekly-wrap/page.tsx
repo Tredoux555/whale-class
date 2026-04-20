@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/montree/i18n';
+import { AREA_LABELS_ZH, AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
@@ -99,21 +100,7 @@ const AREA_COLORS: Record<string, { emoji: string; bg: string; text: string }> =
   cultural: { emoji: '🌍', bg: 'bg-green-50', text: 'text-green-700' },
 };
 
-const AREA_LABELS_ZH: Record<string, string> = {
-  practical_life: '日常生活',
-  sensorial: '感官',
-  mathematics: '数学',
-  language: '语言',
-  cultural: '文化',
-};
-
-const AREA_LABELS_EN: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
+// AREA_LABELS_ZH and AREA_LABELS_EN imported from @/lib/montree/i18n/area-labels
 
 export default function WeeklyWrapPage() {
   const router = useRouter();

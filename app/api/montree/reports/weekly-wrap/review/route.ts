@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { MONTESSORI_GLOSSARY_ZH } from '@/lib/montree/classifier/montessori-glossary-zh';
+import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 
 export const maxDuration = 60;
 
@@ -284,14 +285,7 @@ export async function GET(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const asArray = <T>(val: unknown): T[] => Array.isArray(val) ? val as T[] : [];
 
-    const AREA_LABELS_EN: Record<string, string> = {
-      practical_life: 'Practical Life', sensorial: 'Sensorial',
-      mathematics: 'Mathematics', language: 'Language', cultural: 'Cultural',
-    };
-    const AREA_LABELS_ZH: Record<string, string> = {
-      practical_life: '日常生活', sensorial: '感官',
-      mathematics: '数学', language: '语言', cultural: '文化',
-    };
+    // AREA_LABELS_EN and AREA_LABELS_ZH imported from @/lib/montree/i18n/area-labels
 
     // Build results with full data for both tabs
     const results = Array.from(byChild.entries()).map(([childId, data]) => {

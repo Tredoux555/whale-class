@@ -7,6 +7,8 @@
 
 import React, { useState } from 'react';
 import { montreeApi } from '@/lib/montree/api';
+import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
 import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 
 interface Photo {
@@ -30,15 +32,8 @@ interface Props {
   onSaved: (photoId: string) => void;
 }
 
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
-
 export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
+  const { locale } = useI18n();
   const [context, setContext] = useState('');
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -236,8 +231,8 @@ export default function TellAiSheet({ photo, onClose, onSaved }: Props) {
                     boxSizing: 'border-box',
                   }}
                 >
-                  {Object.entries(AREA_LABELS).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
+                  {AREA_KEYS.map(k => (
+                    <option key={k} value={k}>{getAreaLabel(k, locale)}</option>
                   ))}
                 </select>
               </div>

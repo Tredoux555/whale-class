@@ -3,6 +3,7 @@
 // Handles: curriculum validation, enum checks, first-mastery/first-presentation protection
 
 import { getSupabase } from '@/lib/supabase-client';
+import { AREA_LABELS_EN as AREA_LABELS } from '@/lib/montree/i18n/area-labels';
 import { updateChildSettings } from './settings-helper';
 import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 
@@ -17,13 +18,7 @@ try {
   console.warn('[Tool Executor] Could not load curriculum for validation');
 }
 
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
+// AREA_LABELS imported from lib/montree/i18n/area-labels.ts
 
 export interface ToolResult {
   success: boolean;

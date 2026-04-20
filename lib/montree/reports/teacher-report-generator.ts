@@ -6,6 +6,7 @@
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+import { getAreaLabel as getCentralAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 // ── Types ──
 
@@ -95,18 +96,10 @@ export interface TeacherReportContent {
   teacher_guidance: string;
 }
 
-// ── Area Labels ──
-
-const AREA_LABELS: Record<string, { en: string; zh: string }> = {
-  practical_life: { en: 'Practical Life', zh: '日常生活' },
-  sensorial: { en: 'Sensorial', zh: '感官' },
-  mathematics: { en: 'Mathematics', zh: '数学' },
-  language: { en: 'Language', zh: '语言' },
-  cultural: { en: 'Cultural Studies', zh: '文化' },
-};
+// ── Area Labels (centralized) ──
 
 function getAreaLabel(area: string, locale: 'en' | 'zh'): string {
-  return AREA_LABELS[area]?.[locale] || area;
+  return getCentralAreaLabel(area, locale);
 }
 
 // ── Prompt Builder ──

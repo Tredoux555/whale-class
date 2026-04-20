@@ -8,6 +8,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
+import { AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { getActiveSensitivePeriods } from '@/lib/montree/guru/knowledge/sensitive-periods';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -43,13 +44,7 @@ try {
   console.warn('[Snap Identify] Could not load curriculum');
 }
 
-const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Cultural',
-};
+const AREA_LABELS = AREA_LABELS_EN;
 
 const VALID_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 const VALID_STATUSES = ['presented', 'practicing', 'mastered'];
