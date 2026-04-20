@@ -4,6 +4,7 @@
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { getSupabase } from '@/lib/supabase-client';
 import { MONTESSORI_GLOSSARY_ZH } from '@/lib/montree/classifier/montessori-glossary-zh';
+import { logApiUsage } from '@/lib/montree/api-usage';
 
 interface TranslateInput {
   classroomId: string;
@@ -81,6 +82,18 @@ ${input.whyItMatters || '(none)'}`,
       }],
       tool_choice: { type: 'tool' as const, name: 'submit_translation' },
     });
+
+    // Log API usage (fire-and-forget, no schoolId available in library function)
+    if (response.usage) {
+      logApiUsage({
+        schoolId: input.classroomId.substring(0, 8), // Use classroom ID prefix as fallback
+        classroomId: input.classroomId,
+        endpoint: '/lib/montree/auto-translate',
+        model: HAIKU_MODEL,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      }).catch(err => console.error('[AutoTranslate] Failed to log usage:', err));
+    }
 
     // Extract the structured data from the tool_use response block
     const toolBlock = response.content.find(

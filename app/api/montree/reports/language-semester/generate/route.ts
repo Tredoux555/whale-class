@@ -26,6 +26,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getSupabase } from '@/lib/supabase-client';
 import { anthropic, AI_MODEL, AI_ENABLED } from '@/lib/ai/anthropic';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -144,7 +145,7 @@ RULES:
 - Write beautifully — every sentence worth framing`;
 }
 
-async function callSonnet(systemPrompt: string, userMessage: string): Promise<SonnetReport> {
+async function callSonnet(systemPrompt: string, userMessage: string, schoolId?: string): Promise<SonnetReport> {
   if (!anthropic) throw new Error('AI not configured');
 
   const response = await anthropic.messages.create({
@@ -155,6 +156,17 @@ async function callSonnet(systemPrompt: string, userMessage: string): Promise<So
     tool_choice: { type: 'tool', name: 'write_language_semester_report' },
     messages: [{ role: 'user', content: userMessage }],
   });
+
+  // Log token usage (fire-and-forget)
+  if (schoolId && response.usage) {
+    logApiUsage({
+      schoolId,
+      endpoint: '/api/montree/reports/language-semester/generate',
+      model: AI_MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
+  }
 
   const block = response.content.find((b) => b.type === 'tool_use');
   if (!block || block.type !== 'tool_use') {
@@ -262,7 +274,7 @@ function postProcess(report: SonnetReport, childName: string, allowedWorks: stri
 
 // --- generate (simple: call Sonnet once, post-process) ---------------------
 
-async function generateReport(childName: string, progress: ProgressRow[], isGraduating: boolean): Promise<SonnetReport> {
+async function generateReport(childName: string, progress: ProgressRow[], isGraduating: boolean, schoolId?: string): Promise<SonnetReport> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
   }
@@ -287,7 +299,7 @@ ${closingHint}
 
 Write the report letter.`;
 
-  const raw = await callSonnet(systemPrompt, userMessage);
+  const raw = await callSonnet(systemPrompt, userMessage, schoolId);
   // Post-processing enforces all constraints — no retry needed
   return postProcess(raw, childName, workNames);
 }
@@ -477,6 +489,15 @@ export async function POST(request: NextRequest) {
   );
 
   const supabase = getSupabase();
+
+  // Check AI budget before generating reports
+  const budgetStatus = await checkAiBudget(auth.schoolId);
+  if (budgetStatus.blocked) {
+    return NextResponse.json(
+      { error: `AI budget exceeded (${budgetStatus.percentage}% of $${budgetStatus.budget})` },
+      { status: 429 }
+    );
+  }
 
   // Load all children, verify ownership
   const { data: childRows } = await supabase

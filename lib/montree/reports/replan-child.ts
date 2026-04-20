@@ -19,6 +19,7 @@
 
 import type Anthropic from '@anthropic-ai/sdk';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+import { logApiUsage } from '@/lib/montree/api-usage';
 
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
@@ -229,6 +230,17 @@ What's the teacher's next move?`;
       tool_choice: { type: 'tool', name: 'create_game_plan' },
       messages: [{ role: 'user', content: prompt }],
     });
+
+    // Log API usage (fire-and-forget, no schoolId available in library function)
+    if (response.usage) {
+      logApiUsage({
+        classroomId,
+        endpoint: '/lib/montree/reports/replan-child',
+        model,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      }).catch(err => console.error('[ReplanChild] Failed to log usage:', err));
+    }
 
     const toolBlock = response.content.find((b) => b.type === 'tool_use');
     if (!toolBlock || toolBlock.type !== 'tool_use') {
