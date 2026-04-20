@@ -2113,7 +2113,7 @@ export default function PhotoAuditPage() {
 
       {/* Photo grid */}
       {isPhotoZone && !loading && filteredPhotos.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3">
           {pagedPhotos.map(photo => (
             <AuditPhotoCard
               key={photo.id}
@@ -2603,9 +2603,9 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
       <div className="aspect-square bg-gray-200 cursor-pointer" onClick={onPhotoTap}>
         {photo.url ? (
           <img
-            src={photo.thumbnail_path ? getThumbnailUrl(photo.thumbnail_path, 240) : photo.url}
-            srcSet={photo.thumbnail_path ? getThumbnailSrcSet(photo.thumbnail_path, 240) : undefined}
-            sizes="(max-width: 640px) 33vw, 240px"
+            src={photo.thumbnail_path ? getThumbnailUrl(photo.thumbnail_path, 480) : photo.url}
+            srcSet={photo.thumbnail_path ? getThumbnailSrcSet(photo.thumbnail_path, 480) : undefined}
+            sizes="(max-width: 640px) 100vw, 50vw"
             alt={photo.work_name || 'Photo'}
             className="w-full h-full object-cover"
             loading="lazy"
