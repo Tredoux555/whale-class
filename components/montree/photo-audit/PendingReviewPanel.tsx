@@ -234,7 +234,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
             </div>
           )}
 
-          <div className="p-3 grid gap-2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))' }}>
+          <div className="p-3 grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}>
             {photos.map(p => {
               const isSel = selected.has(p.id);
               return (
