@@ -263,7 +263,7 @@ export default function PricingPage() {
               <CompareRow feature="Guru advisor" seed="&mdash;" guide="Haiku" bloom="Sonnet" />
               <CompareRow feature="Intelligence panels" seed="&mdash;" guide="Yes" bloom="Yes" />
               <CompareRow feature="Self-learning system" seed="&mdash;" guide="Yes" bloom="Yes" />
-              <CompareRow feature="Advanced recognition" seed="&mdash;" guide="&mdash;" bloom="Sonnet Pass 3" last />
+              <CompareRow feature="Advanced recognition" seed="&mdash;" guide="&mdash;" bloom="Sonnet layer" last />
             </tbody>
           </table>
         </div>
