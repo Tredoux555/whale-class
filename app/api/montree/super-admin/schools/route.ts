@@ -5,6 +5,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { logAudit, getClientIP, getUserAgent } from '@/lib/montree/audit-logger';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { clearBudgetCache } from '@/lib/montree/api-usage';
 
 // Cost model constants (per interaction, approximate)
 const COST_PER_INTERACTION: Record<string, number> = {
@@ -86,6 +87,22 @@ export async function GET(request: NextRequest) {
     const childToSchool: Record<string, string> = {};
     (allChildren || []).forEach(c => { childToSchool[c.id] = c.school_id; });
 
+    // 3b. Fetch actual API usage from montree_api_usage (this month)
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    const { data: apiUsageRaw } = await supabase
+      .from('montree_api_usage')
+      .select('school_id, cost_usd')
+      .gte('created_at', monthStart.toISOString());
+
+    const apiSpentMap: Record<string, number> = {};
+    const apiCallsMap: Record<string, number> = {};
+    (apiUsageRaw || []).forEach((row: { school_id: string; cost_usd: number }) => {
+      apiSpentMap[row.school_id] = (apiSpentMap[row.school_id] || 0) + Number(row.cost_usd);
+      apiCallsMap[row.school_id] = (apiCallsMap[row.school_id] || 0) + 1;
+    });
+
     // Single query for all interactions — filter in-memory for cost (30-day window)
     const { data: allInteractionsRaw } = await supabase
       .from('montree_guru_interactions')
@@ -152,6 +169,10 @@ export async function GET(request: NextRequest) {
         last_active_at: lastActiveAt,
         estimated_monthly_cost: Math.round((costMap[school.id] || 0) * 100) / 100,
         interaction_count_30d: interactionCountMap[school.id] || 0,
+        monthly_ai_budget_usd: school.monthly_ai_budget_usd ?? 0,
+        ai_budget_action: school.ai_budget_action ?? 'hard_limit',
+        api_spent_this_month: Math.round((apiSpentMap[school.id] || 0) * 10000) / 10000,
+        api_calls_this_month: apiCallsMap[school.id] || 0,
         login_codes: loginCodeMap[school.id] || [],
       };
     });
@@ -176,7 +197,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { schoolId, subscription_tier, subscription_status } = body;
+    const { schoolId, subscription_tier, subscription_status, monthly_ai_budget_usd, ai_budget_action } = body;
 
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
@@ -197,6 +218,22 @@ export async function PATCH(request: NextRequest) {
     if (subscription_tier) updateData.subscription_tier = subscription_tier;
     if (subscription_status) updateData.subscription_status = subscription_status;
 
+    // AI budget fields
+    if (monthly_ai_budget_usd !== undefined) {
+      const budget = Number(monthly_ai_budget_usd);
+      if (isNaN(budget) || budget < 0 || budget > 10000) {
+        return NextResponse.json({ error: 'Budget must be between $0 and $10,000' }, { status: 400 });
+      }
+      updateData.monthly_ai_budget_usd = budget;
+    }
+
+    if (ai_budget_action !== undefined) {
+      if (!['warn', 'soft_limit', 'hard_limit'].includes(ai_budget_action)) {
+        return NextResponse.json({ error: 'Action must be warn, soft_limit, or hard_limit' }, { status: 400 });
+      }
+      updateData.ai_budget_action = ai_budget_action;
+    }
+
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
     }
@@ -215,6 +252,11 @@ export async function PATCH(request: NextRequest) {
 
     if (!data) {
       return NextResponse.json({ error: 'School not found' }, { status: 404 });
+    }
+
+    // Clear budget cache if budget fields changed
+    if (monthly_ai_budget_usd !== undefined || ai_budget_action !== undefined) {
+      clearBudgetCache(schoolId);
     }
 
     return NextResponse.json({ school: data });

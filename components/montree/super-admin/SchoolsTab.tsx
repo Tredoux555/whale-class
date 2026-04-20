@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { School } from './types';
@@ -82,6 +82,46 @@ export default function SchoolsTab({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState('');
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
+  const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
+  const [aiOverrides, setAiOverrides] = useState<Record<string, { budget: number; action: string }>>({});
+
+  // AI on/off toggle handler
+  const handleAiToggle = useCallback(async (school: School) => {
+    if (!sessionToken) return;
+    const override = aiOverrides[school.id];
+    const curBudget = override ? override.budget : (school.monthly_ai_budget_usd ?? 0);
+    const curAction = override ? override.action : (school.ai_budget_action ?? 'hard_limit');
+    const isCurrentlyOn = curBudget > 0 && curAction !== 'hard_limit';
+    const newBudget = isCurrentlyOn ? 0 : 9999;
+    const newAction = isCurrentlyOn ? 'hard_limit' : 'warn';
+
+    // Optimistic update
+    setAiOverrides(prev => ({ ...prev, [school.id]: { budget: newBudget, action: newAction } }));
+    setTogglingAi(prev => new Set([...prev, school.id]));
+    try {
+      const res = await fetch('/api/montree/super-admin/schools', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-super-admin-token': sessionToken,
+        },
+        body: JSON.stringify({
+          schoolId: school.id,
+          monthly_ai_budget_usd: newBudget,
+          ai_budget_action: newAction,
+        }),
+      });
+      if (!res.ok) {
+        // Revert on failure
+        setAiOverrides(prev => { const next = { ...prev }; delete next[school.id]; return next; });
+        throw new Error('Failed');
+      }
+    } catch (err) {
+      console.error('AI toggle failed:', err);
+    } finally {
+      setTogglingAi(prev => { const next = new Set(prev); next.delete(school.id); return next; });
+    }
+  }, [sessionToken, aiOverrides]);
 
   // Filter + sort
   const filteredSchools = useMemo(() => {
@@ -113,7 +153,7 @@ export default function SchoolsTab({
           cmp = (a.last_active_at || '').localeCompare(b.last_active_at || '');
           break;
         case 'cost':
-          cmp = (a.estimated_monthly_cost || 0) - (b.estimated_monthly_cost || 0);
+          cmp = (a.api_spent_this_month || 0) - (b.api_spent_this_month || 0);
           break;
         case 'created':
           cmp = a.created_at.localeCompare(b.created_at);
@@ -372,8 +412,8 @@ export default function SchoolsTab({
                   <th className="text-left p-3 text-slate-400 font-medium text-sm cursor-pointer select-none" onClick={() => handleSort('last_active')}>
                     Last Active {sortIcon('last_active')}
                   </th>
-                  <th className="text-right p-3 text-slate-400 font-medium text-sm cursor-pointer select-none" onClick={() => handleSort('cost')}>
-                    Est. Cost/mo {sortIcon('cost')}
+                  <th className="text-center p-3 text-slate-400 font-medium text-sm cursor-pointer select-none" onClick={() => handleSort('cost')}>
+                    AI {sortIcon('cost')}
                   </th>
                   <th className="text-right p-3 text-slate-400 font-medium text-sm">Actions</th>
                 </tr>
@@ -457,15 +497,35 @@ export default function SchoolsTab({
                           <span className={`text-xs ${activity.color}`}>{activity.label}</span>
                         </div>
                       </td>
-                      <td className="p-3 text-right">
-                        <span className={`text-xs font-mono ${(school.estimated_monthly_cost || 0) > 0 ? 'text-amber-400' : 'text-slate-500'}`}>
-                          ${(school.estimated_monthly_cost || 0).toFixed(2)}
-                        </span>
-                        {(school.interaction_count_30d || 0) > 0 && (
-                          <span className="text-slate-500 text-xs ml-1">
-                            ({school.interaction_count_30d} calls)
-                          </span>
-                        )}
+                      <td className="p-3">
+                        {(() => {
+                          const ov = aiOverrides[school.id];
+                          const budgetVal = ov ? ov.budget : (school.monthly_ai_budget_usd ?? 0);
+                          const actionVal = ov ? ov.action : (school.ai_budget_action ?? 'hard_limit');
+                          const aiOn = budgetVal > 0 && actionVal !== 'hard_limit';
+                          const spent = school.api_spent_this_month || 0;
+                          const calls = school.api_calls_this_month || 0;
+                          const toggling = togglingAi.has(school.id);
+                          return (
+                            <div className="flex flex-col items-center gap-1">
+                              <button
+                                onClick={() => handleAiToggle(school)}
+                                disabled={toggling}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${toggling ? 'opacity-50' : ''} ${aiOn ? 'bg-emerald-500' : 'bg-slate-600'}`}
+                              >
+                                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${aiOn ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
+                              </button>
+                              {spent > 0 && (
+                                <span className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : 'text-slate-400'}`}>
+                                  ${spent < 0.01 ? spent.toFixed(4) : spent.toFixed(2)}
+                                </span>
+                              )}
+                              {calls > 0 && (
+                                <span className="text-slate-600 text-[10px]">{calls} calls</span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1">

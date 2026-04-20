@@ -17,6 +17,10 @@ export interface School {
   last_active_at?: string | null;
   estimated_monthly_cost?: number;
   interaction_count_30d?: number;
+  monthly_ai_budget_usd?: number;
+  ai_budget_action?: string;
+  api_spent_this_month?: number;
+  api_calls_this_month?: number;
   signup_country?: string | null;
   signup_country_code?: string | null;
   signup_city?: string | null;
