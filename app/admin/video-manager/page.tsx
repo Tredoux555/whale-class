@@ -106,10 +106,42 @@ export default function VideoManagerPage() {
     setEditCategory(video.category);
   }
 
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // XHR upload with progress + retry — more reliable than fetch for large files
+  function xhrUpload(url: string, file: File, attempt: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('PUT', url, true);
+      xhr.setRequestHeader('Content-Type', file.type || 'video/mp4');
+      // 10 minute timeout for large files on slow connections
+      xhr.timeout = 600_000;
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          setUploadProgress(Math.round((e.loaded / e.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed (HTTP ${xhr.status}): ${xhr.responseText?.slice(0, 200) || 'unknown'}`));
+        }
+      };
+
+      xhr.onerror = () => reject(new Error(`Network error on attempt ${attempt}`));
+      xhr.ontimeout = () => reject(new Error(`Upload timed out on attempt ${attempt}`));
+      xhr.send(file);
+    });
+  }
+
   async function uploadVideo() {
     if (!uploadFile || !uploadTitle) return;
 
     setUploading(true);
+    setUploadProgress(0);
     try {
       // Step 1: Get signed upload URL from server (small JSON request — no large file)
       const res = await fetch('/api/admin/video-manager', {
@@ -131,18 +163,30 @@ export default function VideoManagerPage() {
         return;
       }
 
-      // Step 2: Upload file directly to Supabase (browser → Supabase, bypasses server)
-      const uploadRes = await fetch(data.signedUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': uploadFile.type || 'video/mp4',
-        },
-        body: uploadFile
-      });
+      // Step 2: Upload file directly to Supabase with retry (browser → Supabase, bypasses server)
+      const MAX_RETRIES = 3;
+      let lastError: Error | null = null;
 
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text().catch(() => 'Upload failed');
-        alert('Failed to upload file: ' + errText);
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          setUploadProgress(0);
+          await xhrUpload(data.signedUrl, uploadFile, attempt);
+          lastError = null;
+          break; // success
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          console.warn(`[VideoUpload] Attempt ${attempt}/${MAX_RETRIES} failed:`, lastError.message);
+          if (attempt < MAX_RETRIES) {
+            // Wait before retry: 2s, 4s
+            const delay = attempt * 2000;
+            setUploadProgress(-1); // signal "retrying"
+            await new Promise(r => setTimeout(r, delay));
+          }
+        }
+      }
+
+      if (lastError) {
+        alert('Failed to upload video after ' + MAX_RETRIES + ' attempts: ' + lastError.message);
         setUploading(false);
         return;
       }
@@ -158,6 +202,7 @@ export default function VideoManagerPage() {
       alert('Failed to upload video: ' + (err instanceof Error ? err.message : 'unknown'));
     }
     setUploading(false);
+    setUploadProgress(0);
   }
 
   // Parse week number from string like "Week 16" or "16"
@@ -340,8 +385,23 @@ export default function VideoManagerPage() {
                   </div>
                 </div>
 
+                {/* Upload progress bar */}
+                {uploading && uploadProgress > 0 && (
+                  <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-green-500 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+                {uploading && uploadProgress === -1 && (
+                  <div className="text-amber-400 text-sm text-center animate-pulse">
+                    Connection dropped — retrying automatically...
+                  </div>
+                )}
+
                 {/* Video Preview */}
-                {uploadFile && (
+                {uploadFile && !uploading && (
                   <div className="rounded-lg overflow-hidden bg-black">
                     <video
                       src={URL.createObjectURL(uploadFile)}
@@ -371,7 +431,13 @@ export default function VideoManagerPage() {
                   disabled={!uploadFile || !uploadTitle || uploading}
                   className="flex-1 px-4 py-2 bg-green-600 rounded-lg hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {uploading ? '⏳ Uploading...' : '📤 Upload'}
+                  {uploading
+                    ? uploadProgress === -1
+                      ? '🔄 Retrying...'
+                      : uploadProgress > 0
+                        ? `⏳ ${uploadProgress}%`
+                        : '⏳ Preparing...'
+                    : '📤 Upload'}
                 </button>
               </div>
             </div>
@@ -492,6 +558,15 @@ export default function VideoManagerPage() {
                       className="w-full h-full object-contain bg-black"
                       playsInline
                       preload="metadata"
+                      onError={(e) => {
+                        // Retry once on QUIC/SSL errors — reload with cache-bust
+                        const vid = e.currentTarget;
+                        if (!vid.dataset.retried) {
+                          vid.dataset.retried = '1';
+                          const sep = vid.src.includes('?') ? '&' : '?';
+                          vid.src = vid.src + sep + '_r=' + Date.now();
+                        }
+                      }}
                     />
                     {isProblem && (
                       <div className="absolute top-2 right-2 px-2 py-1 bg-red-600 text-white text-xs rounded">
