@@ -26,9 +26,9 @@ CREATE INDEX IF NOT EXISTS idx_api_usage_endpoint
 
 -- 2. Budget columns on schools
 ALTER TABLE montree_schools
-  ADD COLUMN IF NOT EXISTS monthly_ai_budget_usd NUMERIC(10,2) DEFAULT 50.00;
+  ADD COLUMN IF NOT EXISTS monthly_ai_budget_usd NUMERIC(10,2) DEFAULT 0;
 ALTER TABLE montree_schools
-  ADD COLUMN IF NOT EXISTS ai_budget_action TEXT DEFAULT 'warn';
+  ADD COLUMN IF NOT EXISTS ai_budget_action TEXT DEFAULT 'hard_limit';
   -- 'warn' = show banner only
   -- 'soft_limit' = warn + nudge to manual
   -- 'hard_limit' = block AI calls when budget exceeded
