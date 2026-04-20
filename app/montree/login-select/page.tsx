@@ -187,6 +187,14 @@ function UnifiedLoginContent() {
           >
             {t('auth.noCode')}
           </a>
+          <div>
+            <a
+              href="/pricing"
+              className="text-white/30 hover:text-white/50 text-xs inline-block transition-colors"
+            >
+              View pricing &amp; tiers →
+            </a>
+          </div>
         </div>
       </div>
 
