@@ -170,6 +170,7 @@ export async function middleware(req: NextRequest) {
     '/admin/login', // Admin login page
     '/teacher',     // Simple teacher login (Jasmine, Ivan, John, etc.)
     '/whale-class', // Parent-facing song page — QR codes link here, no login required
+    '/pricing',     // Public pricing page — no login required
   ];
   
   // Check if pathname matches exactly or starts with a public path
