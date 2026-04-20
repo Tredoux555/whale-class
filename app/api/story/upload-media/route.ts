@@ -39,26 +39,39 @@ async function uploadWithRetry(
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
 const VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/x-m4v', 'video/3gpp', 'video/3gpp2'];
 const AUDIO_TYPES = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a', 'audio/x-m4a', 'audio/mp4', 'audio/flac', 'audio/webm'];
+const DOCUMENT_TYPES = [
+  'application/pdf', 'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'text/plain', 'text/csv',
+];
 
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // 500MB — bucket raised to 1GB
 const MAX_AUDIO_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
 
-function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'audio' | null {
+function getFileType(mimeType: string, filename: string): 'image' | 'video' | 'audio' | 'document' | null {
   if (IMAGE_TYPES.includes(mimeType)) return 'image';
   if (VIDEO_TYPES.includes(mimeType)) return 'video';
   if (AUDIO_TYPES.includes(mimeType)) return 'audio';
+  if (DOCUMENT_TYPES.includes(mimeType)) return 'document';
 
   // Some mobile browsers send application/octet-stream — fall through to extension check
   const ext = filename.split('.').pop()?.toLowerCase();
   const imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif'];
   const videoExts = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', '3gp', '3g2'];
   const audioExts = ['mp3', 'wav', 'ogg', 'aac', 'm4a', 'flac', 'weba'];
-  
+  const docExts = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'];
+
   if (ext && imageExts.includes(ext)) return 'image';
   if (ext && videoExts.includes(ext)) return 'video';
   if (ext && audioExts.includes(ext)) return 'audio';
-  
+  if (ext && docExts.includes(ext)) return 'document';
+
   return null;
 }
 
@@ -84,7 +97,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Unsupported file type: ${file.name} (${file.type || 'unknown'})` }, { status: 400 });
     }
 
-    const maxSizes = { image: MAX_IMAGE_SIZE, video: MAX_VIDEO_SIZE, audio: MAX_AUDIO_SIZE };
+    const maxSizes = { image: MAX_IMAGE_SIZE, video: MAX_VIDEO_SIZE, audio: MAX_AUDIO_SIZE, document: MAX_DOCUMENT_SIZE };
     if (file.size > maxSizes[fileType]) {
       return NextResponse.json({ error: `File too large. Max: ${maxSizes[fileType] / (1024 * 1024)}MB` }, { status: 400 });
     }
@@ -108,7 +121,8 @@ export async function POST(req: NextRequest) {
     }
     const buffer = new Uint8Array(arrayBuffer);
 
-    const effectiveContentType = file.type || `${fileType === 'video' ? 'video/mp4' : fileType === 'audio' ? 'audio/mpeg' : 'image/jpeg'}`;
+    const fallbackMimes: Record<string, string> = { image: 'image/jpeg', video: 'video/mp4', audio: 'audio/mpeg', document: 'application/octet-stream' };
+    const effectiveContentType = file.type || fallbackMimes[fileType] || 'application/octet-stream';
     const { error: uploadError } = await uploadWithRetry(
       supabase, 'story-uploads', storagePath, buffer,
       { contentType: effectiveContentType, upsert: false },
@@ -160,6 +174,21 @@ export async function POST(req: NextRequest) {
     };
 
     let { error: insertError } = await supabase.from('story_message_history').insert(mediaRecord);
+
+    // CHECK constraint fallback: if 'document' isn't in the allowed enum yet,
+    // store as 'image' — readers detect documents by filename extension.
+    if (
+      insertError &&
+      fileType === 'document' &&
+      (insertError.code === '23514' || insertError.message?.includes('check constraint'))
+    ) {
+      console.warn('[Upload Media] message_type=document not allowed by CHECK constraint — falling back to image');
+      const { error: fbError } = await supabase.from('story_message_history').insert({
+        ...mediaRecord,
+        message_type: 'image',
+      });
+      insertError = fbError;
+    }
 
     if (insertError) {
       console.error('[Upload Media] DB insert error:', insertError);
