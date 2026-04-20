@@ -91,13 +91,9 @@ export interface FocusWork {
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
-export const AREA_LABELS: Record<string, string> = {
-  practical_life: 'Practical Life',
-  sensorial: 'Sensorial',
-  mathematics: 'Mathematics',
-  language: 'Language',
-  cultural: 'Science & Culture',
-};
+// Re-export for backward compat — canonical source is @/lib/montree/i18n/area-labels
+import { AREA_LABELS_EN as _CENTRAL_EN } from '@/lib/montree/i18n/area-labels';
+export const AREA_LABELS: Record<string, string> = _CENTRAL_EN;
 
 // Legacy scoring weights (3-factor)
 const SCORE_SEQUENCE_PROXIMITY = 40;

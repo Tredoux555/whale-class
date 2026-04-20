@@ -41,7 +41,7 @@ const GAME_PLAN_TOOL = {
       direction: {
         type: 'string' as const,
         description:
-          'The area progression in arrow format. E.g. "Practical Life → Sensorial → Language"',
+          'The area progression in arrow format, using area names matching the locale.',
       },
     },
     required: ['nudge', 'works', 'direction'],
@@ -168,7 +168,7 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
         .eq('classroom_id', classroomId),
       supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, area_id')
+        .select('name, name_chinese, area_id')
         .eq('classroom_id', classroomId),
     ]);
 
@@ -176,23 +176,29 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
     const promptAreaIdToKey: Record<string, string> = {};
     for (const a of promptAreas) promptAreaIdToKey[a.id] = a.area_key;
 
+    const isZh = locale === 'zh';
+
     const worksByArea: Record<string, string[]> = {};
-    for (const w of (promptWorksRes.data || []) as Array<{ name: string; area_id: string }>) {
+    for (const w of (promptWorksRes.data || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
       const areaKey = promptAreaIdToKey[w.area_id];
       if (!areaKey) continue;
       if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
-      worksByArea[areaKey].push(w.name);
+      // When locale is zh, feed Chinese names to Haiku so it outputs Chinese
+      worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
     }
 
     const availableWorksList = Object.entries(worksByArea)
       .map(([area, works]) => `[${area}] ${works.join(', ')}`)
       .join('\n');
 
-    const isZh = locale === 'zh';
     const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 ${
   isZh
-    ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n'
+    ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
+- Write the nudge in Chinese.
+- Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
+- Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
+- Direction example: "日常 → 感官 → 语言"\n`
     : ''
 }
 CHILD: ${childName}
@@ -211,7 +217,7 @@ RULES:
 2. DO NOT pick any work from PREVIOUS WORKS.
 3. Copy each name EXACTLY as written in the AVAILABLE WORKS list — do not paraphrase, shorten, or rename.
 4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
+5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".${isZh ? '\n6. Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化), NOT English.' : ''}
 
 What's the teacher's next move?`;
 

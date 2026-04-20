@@ -14,6 +14,7 @@ import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
 
 export const maxDuration = 60;
 
@@ -114,6 +115,43 @@ async function refreshGamePlanInProcess(
     const previousNudge = existingPlan?.nudge || existingPlan?.headline || '';
     const previousWorks = existingPlan?.works || [];
 
+    // ── Load curriculum constraint list (mirrors game-plan/refresh/route.ts) ──
+    const { data: accessData } = await supabase
+      .from('montree_children')
+      .select('classroom_id')
+      .eq('id', childId)
+      .maybeSingle();
+    const classroomId = (accessData as { classroom_id?: string } | null)?.classroom_id;
+
+    let availableWorksList = '';
+    if (classroomId) {
+      const [areasRes, worksRes] = await Promise.all([
+        supabase
+          .from('montree_classroom_curriculum_areas')
+          .select('id, area_key')
+          .eq('classroom_id', classroomId),
+        supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese, area_id')
+          .eq('classroom_id', classroomId),
+      ]);
+
+      const promptAreaIdToKey: Record<string, string> = {};
+      for (const a of (areasRes.data || []) as Array<{ id: string; area_key: string }>) {
+        promptAreaIdToKey[a.id] = a.area_key;
+      }
+      const worksByArea: Record<string, string[]> = {};
+      for (const w of (worksRes.data || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
+        const areaKey = promptAreaIdToKey[w.area_id];
+        if (!areaKey) continue;
+        if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
+        worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
+      }
+      availableWorksList = Object.entries(worksByArea)
+        .map(([area, works]) => `[${getAreaLabel(area, isZh ? 'zh' : 'en')}] ${works.join(isZh ? '、' : ', ')}`)
+        .join('\n');
+    }
+
     const GAME_PLAN_TOOL = {
       name: 'create_game_plan' as const,
       description: 'Create a brief, warm game plan nudge for a tired teacher.',
@@ -122,14 +160,18 @@ async function refreshGamePlanInProcess(
         properties: {
           nudge: { type: 'string' as const, description: 'One warm sentence. Max 25 words.' },
           works: { type: 'array' as const, items: { type: 'string' as const }, description: '3-5 specific works.' },
-          direction: { type: 'string' as const, description: 'Area progression in arrow format.' },
+          direction: { type: 'string' as const, description: 'Area progression in arrow format, using locale-appropriate area names.' },
         },
         required: ['nudge', 'works', 'direction'] as string[],
       },
     };
 
     const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
-${isZh ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n' : ''}
+${isZh ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
+- Write the nudge in Chinese.
+- Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
+- Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
+- Direction example: "日常 → 感官 → 语言"\n` : ''}
 CHILD: ${child.name}
 PREVIOUS NUDGE: "${previousNudge}"
 PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
@@ -137,8 +179,8 @@ PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
 ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
-
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT names:\n${availableWorksList}\n` : ''}
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.${isZh ? ' Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化).' : ''}`;
 
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,
@@ -216,7 +258,7 @@ RULES:
 - If the teacher says "what has she been doing?" — use get_child_recent_activity.
 - If the teacher asks to "update the game plan" or "refresh the plan" or "new game plan" — use refresh_game_plan.
 - For notes like "Amy chose to do pouring work" — save_observation with the note text, and if a curriculum work matches, also call update_progress.
-- Always use the area enum: practical_life, sensorial, mathematics, language, cultural.
+- Always use the area enum: practical_life, sensorial, mathematics, language, cultural.${isZh ? '\n- When mentioning area names to the teacher, use Chinese: 日常, 感官, 数学, 语言, 文化.' : ''}
 - Keep responses SHORT. The teacher is standing in a classroom with 20 children.`;
 }
 

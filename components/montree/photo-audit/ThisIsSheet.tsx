@@ -22,14 +22,15 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useClassroomWorks, ClassroomWork } from '@/lib/montree/hooks/useClassroomWorks';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
 
-const AREAS: Array<{ key: string; label: string; color: string }> = [
-  { key: 'practical_life', label: 'Practical Life', color: '#10b981' },
-  { key: 'sensorial', label: 'Sensorial', color: '#f59e0b' },
-  { key: 'mathematics', label: 'Mathematics', color: '#6366f1' },
-  { key: 'language', label: 'Language', color: '#ec4899' },
-  { key: 'cultural', label: 'Cultural', color: '#8b5cf6' },
-];
+const AREA_COLORS: Record<string, string> = {
+  practical_life: '#10b981',
+  sensorial: '#f59e0b',
+  mathematics: '#6366f1',
+  language: '#ec4899',
+  cultural: '#8b5cf6',
+};
 
 export type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
@@ -122,7 +123,7 @@ export default function ThisIsSheet({
   // Pre-seed the "new work area" from Sonnet's suggested_area if available
   useEffect(() => {
     const suggested = photo?.sonnet_draft?.suggested_area;
-    if (suggested && AREAS.some(a => a.key === suggested)) {
+    if (suggested && (AREA_KEYS as readonly string[]).includes(suggested)) {
       setNewWorkArea(suggested);
     }
   }, [photo]);
@@ -552,7 +553,7 @@ export default function ThisIsSheet({
                       </div>
                       <div style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>
                         Area:{' '}
-                        {AREAS.find(a => a.key === newWorkArea)?.label || newWorkArea}
+                        {getAreaLabel(newWorkArea, locale)}
                       </div>
                     </div>
                   </button>
@@ -608,25 +609,26 @@ export default function ThisIsSheet({
                   marginBottom: 18,
                 }}
               >
-                {AREAS.map(a => {
-                  const active = newWorkArea === a.key;
+                {AREA_KEYS.map(key => {
+                  const active = newWorkArea === key;
+                  const color = AREA_COLORS[key] || '#888';
                   return (
                     <button
-                      key={a.key}
-                      onClick={() => setNewWorkArea(a.key)}
+                      key={key}
+                      onClick={() => setNewWorkArea(key)}
                       disabled={submitting}
                       style={{
                         padding: '8px 14px',
                         borderRadius: 999,
-                        border: active ? `2px solid ${a.color}` : '1.5px solid #ddd',
-                        background: active ? a.color + '22' : '#fff',
-                        color: active ? a.color : '#555',
+                        border: active ? `2px solid ${color}` : '1.5px solid #ddd',
+                        background: active ? color + '22' : '#fff',
+                        color: active ? color : '#555',
                         fontWeight: active ? 700 : 500,
                         fontSize: 13,
                         cursor: 'pointer',
                       }}
                     >
-                      {a.label}
+                      {getAreaLabel(key, locale)}
                     </button>
                   );
                 })}

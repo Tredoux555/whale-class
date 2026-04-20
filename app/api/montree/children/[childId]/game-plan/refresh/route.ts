@@ -32,7 +32,7 @@ const GAME_PLAN_TOOL = {
       },
       direction: {
         type: 'string' as const,
-        description: 'The area progression in arrow format. E.g. "Practical Life → Sensorial → Language"',
+        description: 'The area progression in arrow format, using area names matching the locale.',
       },
     },
     required: ['nudge', 'works', 'direction'],
@@ -119,8 +119,43 @@ export async function POST(
     } catch { /* no body or no locale */ }
     const isZh = locale === 'zh';
 
+    // ── Load curriculum constraint list (mirrors replan-child.ts Stage 2.5) ──
+    const classroomId = access.classroomId;
+    let availableWorksList = '';
+    if (classroomId) {
+      const [areasRes, worksRes] = await Promise.all([
+        supabase
+          .from('montree_classroom_curriculum_areas')
+          .select('id, area_key')
+          .eq('classroom_id', classroomId),
+        supabase
+          .from('montree_classroom_curriculum_works')
+          .select('name, name_chinese, area_id')
+          .eq('classroom_id', classroomId),
+      ]);
+
+      const promptAreaIdToKey: Record<string, string> = {};
+      for (const a of (areasRes.data || []) as Array<{ id: string; area_key: string }>) {
+        promptAreaIdToKey[a.id] = a.area_key;
+      }
+      const worksByArea: Record<string, string[]> = {};
+      for (const w of (worksRes.data || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
+        const areaKey = promptAreaIdToKey[w.area_id];
+        if (!areaKey) continue;
+        if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
+        worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
+      }
+      availableWorksList = Object.entries(worksByArea)
+        .map(([area, works]) => `[${area}] ${works.join(', ')}`)
+        .join('\n');
+    }
+
     const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
-${isZh ? '\nIMPORTANT: Write the nudge and direction in Chinese (中文). Use Chinese Montessori work names where possible.\n' : ''}
+${isZh ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
+- Write the nudge in Chinese.
+- Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
+- Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
+- Direction example: "日常 → 感官 → 语言"\n` : ''}
 CHILD: ${child.name}
 PREVIOUS NUDGE: "${previousNudge}"
 PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
@@ -128,8 +163,8 @@ PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
 ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
-
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT names:\n${availableWorksList}\n` : ''}
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.${isZh ? ' Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化).' : ''}`;
 
     console.log(`[GamePlan] Refreshing plan for ${child.name} (Haiku)`);
 

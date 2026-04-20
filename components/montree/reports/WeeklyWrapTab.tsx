@@ -7,6 +7,7 @@ import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
+import { AREA_LABELS_ZH, AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import WorkWheelPicker from '@/components/montree/WorkWheelPicker';
 import InviteParentModal from '@/components/montree/InviteParentModal';
 
@@ -71,14 +72,7 @@ interface ReportResult {
 
 // ─── Constants ────────────────────────────────────────────────
 
-const AREA_LABELS_ZH: Record<string, string> = {
-  practical_life: '日常', sensorial: '感官', mathematics: '数学',
-  language: '语言', cultural: '文化',
-};
-const AREA_LABELS_EN: Record<string, string> = {
-  practical_life: 'Practical Life', sensorial: 'Sensorial', mathematics: 'Mathematics',
-  language: 'Language', cultural: 'Cultural',
-};
+// AREA_LABELS_ZH and AREA_LABELS_EN imported from @/lib/montree/i18n/area-labels
 const AREA_COLORS: Record<string, { bg: string; text: string }> = {
   practical_life: { bg: 'bg-orange-50', text: 'text-orange-700' },
   sensorial: { bg: 'bg-pink-50', text: 'text-pink-700' },

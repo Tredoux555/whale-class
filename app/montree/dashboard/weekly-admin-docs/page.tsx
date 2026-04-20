@@ -11,14 +11,13 @@ import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 import VoiceDictate from '@/components/montree/voice/VoiceDictate';
 import { toast } from 'sonner';
+import { AREA_KEYS, getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
-const AREAS = [
-  { key: 'practical_life', label: 'Practical Life', zh: '日常' },
-  { key: 'sensorial', label: 'Sensorial', zh: '感官' },
-  { key: 'mathematics', label: 'Mathematics', zh: '数学' },
-  { key: 'language', label: 'Language', zh: '语言' },
-  { key: 'cultural', label: 'Cultural', zh: '文化' },
-] as const;
+const AREAS = AREA_KEYS.map(key => ({
+  key,
+  label: getAreaLabel(key, 'en'),
+  zh: getAreaLabel(key, 'zh'),
+}));
 
 interface Child {
   id: string;
