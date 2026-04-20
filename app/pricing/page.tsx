@@ -30,11 +30,11 @@ export default function PricingPage() {
         <p style={{
           fontSize: 'clamp(16px, 2.5vw, 20px)',
           color: '#6b7280',
-          maxWidth: 520,
+          maxWidth: 560,
           margin: '0 auto 48px',
           lineHeight: 1.5,
         }}>
-          Every tier includes the full Montessori classroom platform.<br />
+          Every tier includes the full Montessori classroom platform.
           Pick how much intelligence you want behind it.
         </p>
       </header>
@@ -46,7 +46,7 @@ export default function PricingPage() {
         gap: 24,
         maxWidth: 960,
         margin: '0 auto',
-        padding: '0 24px 80px',
+        padding: '0 24px 48px',
       }}>
         {/* SEED */}
         <div style={{
@@ -64,10 +64,10 @@ export default function PricingPage() {
             <span style={{ fontSize: 48, fontWeight: 800, color: '#111827', letterSpacing: '-2px' }}>$0</span>
           </div>
           <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24 }}>
-            Free forever
+            Free forever &middot; No AI
           </div>
           <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.6, marginBottom: 28, flex: 1 }}>
-            Your digital classroom. Everything you do on paper — but organised, searchable, and always with you.
+            Your digital classroom. Everything you do on paper &mdash; but organised, searchable, and always with you.
           </p>
           <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 24 }}>
             <Feature text="Photo capture & manual tagging" />
@@ -88,7 +88,6 @@ export default function PricingPage() {
             fontSize: 15,
             textDecoration: 'none',
             marginTop: 28,
-            transition: 'all 0.2s',
           }}>
             Get started free
           </a>
@@ -129,18 +128,21 @@ export default function PricingPage() {
             <span style={{ fontSize: 16, color: '#6b7280', marginLeft: 4 }}>/student/month</span>
           </div>
           <div style={{ fontSize: 14, color: '#9ca3af', marginBottom: 24 }}>
-            AI-assisted classroom
+            Powered by Claude Haiku
           </div>
           <p style={{ fontSize: 15, color: '#4b5563', lineHeight: 1.6, marginBottom: 28, flex: 1 }}>
-            The system starts working for you. Take a photo — AI identifies the material, tracks progress, and fills your paperwork automatically.
+            The full AI classroom. Take a photo &mdash; AI identifies the material, tracks progress, writes reports, and fills your paperwork. Everything runs on Claude Haiku: fast, accurate, affordable.
           </p>
           <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: 24 }}>
-            <Feature text="Everything in Seed" bold />
-            <Feature text="AI identifies materials from photos" />
-            <Feature text="Weekly game plans per child" />
+            <Feature text="Everything in Seed, plus:" bold />
+            <Feature text="Instant photo identification (Haiku)" />
+            <Feature text="Weekly parent reports (Haiku)" />
+            <Feature text="Parent portal with family login" />
+            <Feature text="Weekly game plans per child (Haiku)" />
             <Feature text="Auto-filled weekly admin docs" />
-            <Feature text="One-tap shelf management" />
+            <Feature text="AI Montessori advisor (Haiku)" />
             <Feature text="Classroom intelligence panels" />
+            <Feature text="Self-learning system" />
           </div>
           <a href="/montree/login" style={{
             display: 'block',
@@ -153,7 +155,6 @@ export default function PricingPage() {
             fontSize: 15,
             textDecoration: 'none',
             marginTop: 28,
-            transition: 'all 0.2s',
           }}>
             Start with Guide
           </a>
@@ -177,18 +178,20 @@ export default function PricingPage() {
             <span style={{ fontSize: 16, color: '#a7f3d0', marginLeft: 4 }}>/student/month</span>
           </div>
           <div style={{ fontSize: 14, color: '#6ee7b7', marginBottom: 24 }}>
-            Complete intelligence
+            Powered by Claude Sonnet
           </div>
           <p style={{ fontSize: 15, color: '#d1fae5', lineHeight: 1.6, marginBottom: 28, flex: 1 }}>
-            The system thinks with you and talks to parents. Personalised reports, a parent portal, and an AI Montessori advisor that knows every child.
+            Same features. Smarter brain. Sonnet writes richer parent reports, catches harder photo identifications, and gives deeper Montessori guidance. The system also learns faster with an advanced recognition layer.
           </p>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 24 }}>
-            <Feature text="Everything in Guide" bold light />
-            <Feature text="Personalised weekly parent reports" light />
-            <Feature text="Parent portal with login" light />
-            <Feature text="AI Montessori advisor per child" light />
-            <Feature text="Smart learning that improves daily" light />
+            <Feature text="Everything in Guide, upgraded:" bold light />
+            <Feature text="Photo identification (Haiku + Sonnet)" light />
+            <Feature text="Parent reports (Sonnet — richer, more personal)" light />
+            <Feature text="Game plans & admin docs (Sonnet)" light />
+            <Feature text="AI Montessori advisor (Sonnet — deeper)" light />
+            <Feature text="Advanced recognition layer (Pass 3)" light />
             <Feature text="Semester progress reports (PPTX)" light />
+            <Feature text="Curriculum enrichment (Sonnet)" light />
           </div>
           <a href="/montree/login" style={{
             display: 'block',
@@ -201,10 +204,104 @@ export default function PricingPage() {
             fontSize: 15,
             textDecoration: 'none',
             marginTop: 28,
-            transition: 'all 0.2s',
           }}>
             Start with Bloom
           </a>
+        </div>
+      </div>
+
+      {/* What's the difference section */}
+      <div style={{
+        maxWidth: 720,
+        margin: '0 auto',
+        padding: '0 24px 48px',
+      }}>
+        <h2 style={{
+          fontSize: 24,
+          fontWeight: 700,
+          color: '#111827',
+          textAlign: 'center',
+          marginBottom: 8,
+        }}>
+          What&apos;s the difference?
+        </h2>
+        <p style={{
+          fontSize: 15,
+          color: '#6b7280',
+          textAlign: 'center',
+          marginBottom: 32,
+          lineHeight: 1.6,
+        }}>
+          Guide and Bloom have the same features. The difference is the AI model behind them.
+        </p>
+
+        <div style={{
+          background: '#ffffff',
+          borderRadius: 16,
+          border: '1px solid #e5e7eb',
+          overflow: 'hidden',
+        }}>
+          <table style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: 14,
+          }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                <th style={{ padding: '16px 20px', textAlign: 'left', color: '#6b7280', fontWeight: 600, fontSize: 13 }}>Feature</th>
+                <th style={{ padding: '16px 16px', textAlign: 'center', color: '#6b7280', fontWeight: 600, fontSize: 13 }}>Seed</th>
+                <th style={{ padding: '16px 16px', textAlign: 'center', color: '#059669', fontWeight: 600, fontSize: 13 }}>Guide</th>
+                <th style={{ padding: '16px 16px', textAlign: 'center', color: '#065f46', fontWeight: 600, fontSize: 13 }}>Bloom</th>
+              </tr>
+            </thead>
+            <tbody>
+              <CompareRow feature="Photo identification" seed="Manual" guide="Haiku" bloom="Haiku + Sonnet" />
+              <CompareRow feature="Parent reports" seed="&mdash;" guide="Haiku" bloom="Sonnet" />
+              <CompareRow feature="Parent portal" seed="&mdash;" guide="Yes" bloom="Yes" />
+              <CompareRow feature="Game plans" seed="&mdash;" guide="Haiku" bloom="Sonnet" />
+              <CompareRow feature="Weekly admin docs" seed="Manual" guide="Haiku auto-fill" bloom="Sonnet auto-fill" />
+              <CompareRow feature="Guru advisor" seed="&mdash;" guide="Haiku" bloom="Sonnet" />
+              <CompareRow feature="Intelligence panels" seed="&mdash;" guide="Yes" bloom="Yes" />
+              <CompareRow feature="Self-learning system" seed="&mdash;" guide="Yes" bloom="Yes" />
+              <CompareRow feature="Advanced recognition" seed="&mdash;" guide="&mdash;" bloom="Sonnet Pass 3" last />
+            </tbody>
+          </table>
+        </div>
+
+        <p style={{
+          fontSize: 13,
+          color: '#9ca3af',
+          textAlign: 'center',
+          marginTop: 16,
+          lineHeight: 1.5,
+        }}>
+          Montree uses Anthropic&apos;s Claude AI models. Haiku is fast and efficient. Sonnet is more capable and nuanced.{' '}
+          <a href="https://www.anthropic.com/claude" target="_blank" rel="noopener noreferrer" style={{ color: '#059669', textDecoration: 'underline' }}>
+            Learn more about Claude
+          </a>
+        </p>
+      </div>
+
+      {/* Trial banner */}
+      <div style={{
+        maxWidth: 720,
+        margin: '0 auto',
+        padding: '0 24px 48px',
+      }}>
+        <div style={{
+          background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)',
+          borderRadius: 16,
+          padding: '32px 28px',
+          textAlign: 'center',
+          border: '1px solid #a7f3d0',
+        }}>
+          <div style={{ fontSize: 20, fontWeight: 700, color: '#065f46', marginBottom: 12 }}>
+            Try before you choose
+          </div>
+          <p style={{ fontSize: 15, color: '#374151', lineHeight: 1.6, maxWidth: 480, margin: '0 auto' }}>
+            Every new school starts with one week of Bloom, then one week of Guide, then one week of Seed.
+            Experience the full range &mdash; then pick the tier that fits.
+          </p>
         </div>
       </div>
 
@@ -216,7 +313,7 @@ export default function PricingPage() {
         margin: '0 auto',
       }}>
         <p style={{ fontSize: 15, color: '#9ca3af', lineHeight: 1.6 }}>
-          All plans include unlimited classrooms and children. No setup fees. No contracts.<br />
+          All plans include unlimited classrooms. No setup fees. No contracts.<br />
           Start free and upgrade when you&apos;re ready.
         </p>
       </div>
@@ -253,5 +350,29 @@ function Feature({ text, bold, light }: { text: string; bold?: boolean; light?: 
         {text}
       </span>
     </div>
+  );
+}
+
+function CompareRow({ feature, seed, guide, bloom, last }: {
+  feature: string;
+  seed: string;
+  guide: string;
+  bloom: string;
+  last?: boolean;
+}) {
+  const cellStyle = {
+    padding: '12px 16px',
+    textAlign: 'center' as const,
+    borderBottom: last ? 'none' : '1px solid #f3f4f6',
+    fontSize: 14,
+    color: '#374151',
+  };
+  return (
+    <tr>
+      <td style={{ ...cellStyle, textAlign: 'left' as const, paddingLeft: 20, fontWeight: 500 }}>{feature}</td>
+      <td style={cellStyle} dangerouslySetInnerHTML={{ __html: seed }} />
+      <td style={{ ...cellStyle, color: '#059669', fontWeight: 500 }} dangerouslySetInnerHTML={{ __html: guide }} />
+      <td style={{ ...cellStyle, color: '#065f46', fontWeight: 600 }} dangerouslySetInnerHTML={{ __html: bloom }} />
+    </tr>
   );
 }
