@@ -3,6 +3,15 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import Link from "next/link";
 import { getVideoProxyUrl } from "@/lib/montree/media/proxy-url";
+
+// On montree.xyz (behind Cloudflare), proxy through CDN for edge caching.
+// On teacherpotato.xyz (direct Railway), use raw Supabase URLs — proxy 502s without Cloudflare.
+function resolveVideoUrl(rawUrl: string): string {
+  if (typeof window !== 'undefined' && window.location.hostname.includes('montree.xyz')) {
+    return getVideoProxyUrl(rawUrl);
+  }
+  return rawUrl;
+}
 import { setupMediaSessionForVideo } from "@/lib/video-playback-utils";
 
 interface Video {
@@ -169,7 +178,7 @@ export default function Home() {
       const urlFilename = urlParts[urlParts.length - 1];
       const cleanTitle = video.title.replace(/[^a-z0-9\s-]/gi, '_').replace(/\s+/g, '_');
       const filename = urlFilename.includes('.') ? urlFilename : `${cleanTitle}.mp4`;
-      const downloadUrl = getVideoProxyUrl(video.videoUrl);
+      const downloadUrl = resolveVideoUrl(video.videoUrl);
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = filename;
@@ -179,7 +188,7 @@ export default function Home() {
       setTimeout(() => document.body.removeChild(link), 100);
     } catch (error) {
       console.error('Download error:', error);
-      window.open(getVideoProxyUrl(video.videoUrl), '_blank');
+      window.open(resolveVideoUrl(video.videoUrl), '_blank');
     }
   };
 
@@ -266,7 +275,7 @@ export default function Home() {
                 <div className="aspect-video bg-gradient-to-br from-blue-500 to-indigo-600 relative">
                   <video
                     ref={(el) => { if (el) videoRefs.current[video.id] = el; }}
-                    data-src={getVideoProxyUrl(video.videoUrl)}
+                    data-src={resolveVideoUrl(video.videoUrl)}
                     controls
                     playsInline
                     className="w-full h-full object-cover"
