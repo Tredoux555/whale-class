@@ -59,6 +59,9 @@ When the user says anything like "what's happening with the campaign", "campaign
 
 Use `mcp__f0875e82-fdd3-4aed-b646-de80b534357f__create_draft` with `isHtml: false` (plain text only — HTML drafts via API show raw tags in Gmail compose).
 
+**🚨 PRE-SEND DUPLICATE CHECK (MANDATORY — Session 46 rule):**
+Before creating ANY draft, search `to:DOMAIN in:sent` via `search_threads` for EVERY recipient. The DB `status` field is NOT reliable for dedup — GMass Campaigns C/D sent to ~335 schools not tracked in the DB, and context-loss sessions have created drafts for already-contacted schools. Session 46 found 20 of 52 drafts were duplicates. A duplicate cold email signals "mass spam" and kills the lead.
+
 **Personalization**: Each email MUST be customized for the recipient. Use the contact's `org_name`, `country`, `contact_person`, and any `notes` to tailor the opening line. The sacred email body stays the same but the greeting and any contextual hook should be specific.
 
 **Subject line**: `Montree` for schools. For multiplier partners, customize based on the relationship type (e.g., `Montree — Partnership for [Country] Montessori Schools`).
@@ -162,6 +165,76 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 **⏸ AUTO-REPLY:**
 - **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6.
+
+---
+
+## RECENT STATUS (Apr 21, 2026)
+
+### ⚡ Session 46 — Pricing Economics Discussion + Campaign Duplicate Audit + Email Triage (Apr 20-21, 2026)
+
+**No code commits.** Pure business strategy + campaign operations + personal email triage.
+
+**A. Pricing Economics Analysis:**
+
+User raised concern: "If I'm able to burn through $25 in 10 days with one class...that's problematic." Analysis revealed the $25 includes heavy one-time development costs (batch game plan regen, curriculum translation, photo re-processing, test runs) that won't recur for normal schools.
+
+**Realistic steady-state costs per class of 20:**
+- Weekly Wrap: ~$0.40/week (Haiku teacher+parent reports)
+- Smart Capture: ~$0.15-0.30/week (5-10 photos/day × $0.006)
+- Game plan refresh: ~$0.02/week (Haiku)
+- Child Guru chats: ~$0.08-0.15/week
+- **Total: ~$3-5/month steady-state**, not $75
+
+**Proposed tier pricing (not yet implemented):**
+- Trial schools: $5 budget, hard_limit
+- Paid Haiku tier ($2/kid/month): $15 budget, soft_limit
+- Paid Sonnet tier ($5-8/kid/month): $50 budget, warn
+
+No code changes needed yet — binary toggle works fine for one school. Tiered budgets become important when second school onboards.
+
+**B. Anthropic API Credits:**
+
+User received "[action needed] Your Claude API access is turned off" email (out of credits). User confirmed they already topped up.
+
+**C. Campaign Duplicate Audit — 20 of 52 drafts were duplicates:**
+
+User had 52 Montree outreach drafts in Gmail. Cross-referenced all recipient addresses against sent mail. Found 20 duplicates that would have double-sent to schools already contacted via GMass Campaigns C/D or earlier Claude-drafted batches:
+
+**Duplicates found (trash these):**
+secretary@ctms.org.za, info@coastmontessori.co.nz, info@aranuimontessori.co.nz, secretaria@mischool.com.br, recepcao@montessoricampinas.com.br, info@thedahliaschoolsf.org, escnormalmariamont15@educacionbogota.edu.co, info@ami-canada.com, info@montessori-casa.com (sent TWICE already), info@montessoridelbosque.com, info@lvms.ca, info@premiermontessori.ca, info@lionsgatemontessori.org, preprimary_coordinator_nfc@theardeeschool.com, montessori@amiusa.org, principal@tarainternationalschool.com, info@diyamontessori.in, principalicse@khareducationsociety.com, info@tma.edu.in, info.garhoud@theredwoodnursery.com
+
+**User decision: Trash ALL 52 drafts.** Claude will re-draft the ~20 clean ones in next session from the DB, avoiding any overlap with sent history. This is safer than manually picking through 52 drafts.
+
+**D. GMass Campaign A (Montree pitch) Still Scheduled Apr 27:**
+
+🚨 **User must cancel Campaign A on gmass.co/dashboard BEFORE Apr 27.** GMass is fully retired — all outreach now goes through Claude drafts. Campaign A would double-send to ~345 schools, many of which have already received the Montree pitch via Claude drafts.
+
+**E. New bounces from Session 43 batch (6 permanent failures):**
+- info@childrensdiscoveryhouse.com, info@brainychildmontessori.com, info@montessoriflatiron.com, info@sproutsmontessori.in, info@montessori.edu.pl, info@montessoricountry.org
+- Need to mark as `status='bounced'` in `montree_outreach_contacts`
+
+**F. Personal Email — SARS Tax Appointment (Jana van der Linde):**
+
+Jana (jana@vsli.co.za) confirmed she can arrange a SARS video appointment. Asked about time difference. User replied: available any day after 11:00 SA time (17:00 China time), attaching requested photos. Awaiting appointment confirmation.
+
+**G. Delivery delays (Gmail retrying, not failed yet):**
+- Casa Del Mar Montessori (info@casadelmar-montessori.com)
+- International Montessori Myanmar (admin@immschool.com)
+- Montessori Lyceum Amsterdam (info@montessori-lyceum.nl)
+- Asociación Montessori de Chile (info@montessorichile.cl)
+
+**🚨 KEY RULE ADDITION — Pre-send duplicate check:**
+Before creating ANY outreach draft, ALWAYS search `to:DOMAIN in:sent` first. The Session 41 fabrication disaster + this session's 20 duplicates prove that the DB `status` field alone is not reliable (GMass sends aren't tracked in the DB, and context-loss sessions can create drafts for already-contacted schools).
+
+**Next session priorities:**
+1. **Campaign: Trash all 52 existing drafts** (user authorized). Re-draft the ~20 clean addresses from the DB, with pre-send duplicate check against sent mail for each.
+2. **Campaign: Cancel GMass Campaign A** on gmass.co/dashboard before Apr 27.
+3. **Campaign: Mark 6 new bounces** in `montree_outreach_contacts`.
+4. **Campaign: Monitor replies** — FAMM Argentina, I Cube, Ace, Meraki, Montessori CH still outstanding.
+5. **Campaign: Follow up on Montessori Norge** after May 6.
+6. **Execute Phase 2-4 of Chinese localization** per `CHINESE_LOCALIZATION_HANDOFF.md`.
+7. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md`.
+8. **Verify AI toggle on production** — log into super-admin, toggle AI on/off for Whale Class, verify spend shows.
 
 ---
 
