@@ -62,14 +62,16 @@ export default function WhaleClassPage() {
       })
       .then(data => {
         if (data.success && Array.isArray(data.videos)) {
-          // Convert raw Supabase URLs to Cloudflare-cached proxy URLs.
-          // Proxy route supports HTTP Range requests (seekable playback on iOS Safari)
-          // and Cloudflare edge caching (fast globally, especially China).
-          const proxied = data.videos.map((v: Song) => ({
+          // On montree.xyz (behind Cloudflare): proxy through our CDN route for
+          // edge caching + Range support. On teacherpotato.xyz (direct Railway):
+          // use raw Supabase public URLs — the proxy 502s without Cloudflare.
+          const isMontree = typeof window !== 'undefined' &&
+            window.location.hostname.includes('montree.xyz');
+          const mapped = data.videos.map((v: Song) => ({
             ...v,
-            videoUrl: getVideoProxyUrl(v.videoUrl),
+            videoUrl: isMontree ? getVideoProxyUrl(v.videoUrl) : v.videoUrl,
           }));
-          setSongs(proxied);
+          setSongs(mapped);
         } else {
           setError('Could not load songs right now.');
         }
