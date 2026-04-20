@@ -15,6 +15,7 @@ import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 export const maxDuration = 60;
 
@@ -65,6 +66,7 @@ async function refreshGamePlanInProcess(
   supabase: ReturnType<typeof getSupabase>,
   childId: string,
   locale?: string,
+  schoolId?: string,
 ): Promise<ToolResult> {
   try {
     if (!anthropic) return { success: false, message: 'AI not configured' };
@@ -189,6 +191,17 @@ What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new
       tool_choice: { type: 'tool', name: 'create_game_plan' },
       messages: [{ role: 'user', content: prompt }],
     });
+
+    // Log API usage
+    if (schoolId && response.usage) {
+      logApiUsage({
+        schoolId,
+        endpoint: '/api/montree/children/[childId]/guru/refresh-game-plan',
+        model: HAIKU_MODEL,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+      });
+    }
 
     const toolBlock = response.content.find(b => b.type === 'tool_use');
     if (!toolBlock || toolBlock.type !== 'tool_use') {
@@ -392,6 +405,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           return;
         }
 
+        // --- Check budget ---
+        const budgetStatus = await checkAiBudget(auth.schoolId);
+        if (budgetStatus.blocked) {
+          controller.enqueue(sseEvent('error', { message: `AI budget exceeded (${budgetStatus.percentage}% of ${budgetStatus.budget})` }));
+          controller.close();
+          return;
+        }
+
         // --- Build context ---
         controller.enqueue(sseEvent('status', { phase: 'thinking' }));
 
@@ -437,6 +458,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
             messages: currentMessages,
           });
 
+          // Log API usage
+          if (response.usage) {
+            logApiUsage({
+              schoolId: auth.schoolId,
+              classroomId: childContext.classroom_id,
+              endpoint: '/api/montree/children/[childId]/guru',
+              model: HAIKU_MODEL,
+              inputTokens: response.usage.input_tokens,
+              outputTokens: response.usage.output_tokens,
+            });
+          }
+
           // Process content blocks
           let hasToolUse = false;
           const toolResults: Array<{ type: 'tool_result'; tool_use_id: string; content: string }> = [];
@@ -453,7 +486,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               try {
                 // Custom handler for refresh_game_plan — in-process (no internal fetch)
                 if (block.name === 'refresh_game_plan') {
-                  result = await refreshGamePlanInProcess(supabase, childId, locale);
+                  result = await refreshGamePlanInProcess(supabase, childId, locale, auth.schoolId);
                 } else {
                   result = await executeTool(
                     block.name,

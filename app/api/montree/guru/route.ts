@@ -13,7 +13,7 @@ import { retrieveKnowledge, KnowledgeResult } from '@/lib/montree/guru/knowledge
 import { buildGuruPrompt, parseGuruResponse, ParsedGuruResponse } from '@/lib/montree/guru/prompt-builder';
 import { buildConversationalPrompt, buildClassroomModePrompt, buildCelebrationContext, TOOL_ENABLED_MODES, type ProactiveContext, type GuruMode } from '@/lib/montree/guru/conversational-prompt';
 import { GURU_TOOLS, getToolsForMode } from '@/lib/montree/guru/tool-definitions';
-// import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 import { executeTool, ToolResult } from '@/lib/montree/guru/tool-executor';
 import { learnFromConversation, getRelevantPatterns } from '@/lib/montree/guru/pattern-learner';
 import { classifyQuestion, type QuestionCategory } from '@/lib/montree/guru/question-classifier';
@@ -417,6 +417,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check AI budget
+    const budgetStatus = await checkAiBudget(auth.schoolId);
+    if (budgetStatus.blocked) {
+      return NextResponse.json(
+        { success: false, error: `AI budget exceeded (${budgetStatus.percentage}% of ${budgetStatus.budget})` },
+        { status: 429 }
+      );
+    }
+
     // 1. Build child context (or classroom context for whole-class mode)
     let childContext: ChildContext | null = null;
     let classroomContext: ClassroomContext | null = null;
@@ -713,6 +722,19 @@ export async function POST(request: NextRequest) {
           API_TIMEOUT_MS,
           'Guru initial call'
         );
+
+        // Log API usage
+        if (toolResponse.usage) {
+          logApiUsage({
+            schoolId: auth.schoolId,
+            classroomId: classroom_id || childContext?.classroom_id,
+            childId: !isWholeClassMode ? child_id : undefined,
+            endpoint: '/api/montree/guru',
+            model: guruModel,
+            inputTokens: toolResponse.usage.input_tokens,
+            outputTokens: toolResponse.usage.output_tokens,
+          });
+        }
 
         // Multi-turn tool loop
         while (toolResponse.stop_reason === 'tool_use' && rounds < MAX_TOOL_ROUNDS && (Date.now() - requestStart) < TOTAL_REQUEST_TIMEOUT_MS) {

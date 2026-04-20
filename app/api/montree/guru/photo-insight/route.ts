@@ -15,7 +15,7 @@ import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
-// import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage'; // DEFERRED: API usage metering not yet deployed
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 // ================================================================
 // IN-MEMORY RATE LIMITER FALLBACK

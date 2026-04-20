@@ -31,9 +31,11 @@ interface CharPricing {
 type ModelPricing = TokenPricing | AudioPricing | CharPricing;
 
 const MODEL_PRICING: Record<string, ModelPricing> = {
-  // Anthropic
+  // Anthropic — Sonnet family
+  'claude-sonnet-4-6': { type: 'token', inputPer1M: 3.00, outputPer1M: 15.00 },
   'claude-sonnet-4-20250514': { type: 'token', inputPer1M: 3.00, outputPer1M: 15.00 },
   'claude-sonnet-4': { type: 'token', inputPer1M: 3.00, outputPer1M: 15.00 },
+  // Anthropic — Haiku family
   'claude-haiku-4-5-20251001': { type: 'token', inputPer1M: 0.80, outputPer1M: 4.00 },
   'claude-haiku-4.5': { type: 'token', inputPer1M: 0.80, outputPer1M: 4.00 },
   // OpenAI

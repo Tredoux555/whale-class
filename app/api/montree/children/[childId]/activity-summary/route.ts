@@ -9,6 +9,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 export const dynamic = 'force-dynamic';
 
@@ -73,6 +74,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const supabase = getSupabase();
+
+    // Check budget
+    const budgetStatus = await checkAiBudget(auth.schoolId);
+    if (budgetStatus.blocked) {
+      return NextResponse.json(
+        { error: `AI budget exceeded (${budgetStatus.percentage}% of ${budgetStatus.budget})` },
+        { status: 429 }
+      );
+    }
 
     // Check for cached summary in child settings
     const { data: rawChild } = await supabase
@@ -272,6 +282,18 @@ Rules:
         max_tokens: 150,
         messages: [{ role: 'user', content: prompt }],
       });
+
+      // Log API usage
+      if (response.usage) {
+        logApiUsage({
+          schoolId: auth.schoolId,
+          classroomId: classroomId,
+          endpoint: '/api/montree/children/[childId]/activity-summary',
+          model: HAIKU_MODEL,
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+        });
+      }
 
       const text = response.content[0]?.type === 'text' ? response.content[0].text.trim() : '';
 

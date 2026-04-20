@@ -25,6 +25,7 @@ import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 export const maxDuration = 300; // 5 minutes — full classroom run
 
@@ -87,6 +88,15 @@ export async function POST(request: NextRequest) {
       }, { status: 402 });
     }
     console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);
+
+    // Budget enforcement — block if hard_limit exceeded
+    const budget = await checkAiBudget(classroom.school_id);
+    if (budget.blocked) {
+      return NextResponse.json({
+        error: `AI budget exceeded ($${budget.spent.toFixed(2)} / $${budget.budget.toFixed(2)}). Contact your administrator.`,
+        budget,
+      }, { status: 429 });
+    }
 
     // Get children
     let childQuery = supabase
@@ -396,6 +406,15 @@ export async function POST(request: NextRequest) {
               if (teacherResult.tokensUsed) {
                 totalTokens.input += teacherResult.tokensUsed.input;
                 totalTokens.output += teacherResult.tokensUsed.output;
+                logApiUsage({
+                  schoolId: classroom.school_id,
+                  classroomId: classroom_id,
+                  teacherId: auth.userId,
+                  endpoint: 'weekly-wrap/teacher-report',
+                  model: teacherResult.model || aiTier.model || 'unknown',
+                  inputTokens: teacherResult.tokensUsed.input,
+                  outputTokens: teacherResult.tokensUsed.output,
+                });
               }
 
               teacherReportContent = {
@@ -454,6 +473,15 @@ export async function POST(request: NextRequest) {
               if (narrativeResult.tokensUsed) {
                 totalTokens.input += narrativeResult.tokensUsed.input;
                 totalTokens.output += narrativeResult.tokensUsed.output;
+                logApiUsage({
+                  schoolId: classroom.school_id,
+                  classroomId: classroom_id,
+                  teacherId: auth.userId,
+                  endpoint: 'weekly-wrap/parent-narrative',
+                  model: narrativeResult.model || aiTier.model || 'unknown',
+                  inputTokens: narrativeResult.tokensUsed.input,
+                  outputTokens: narrativeResult.tokensUsed.output,
+                });
               }
 
               // Build parent report content
