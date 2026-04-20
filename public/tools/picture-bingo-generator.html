@@ -407,6 +407,14 @@
     print-color-adjust: exact;
   }
 
+  .calling-cards-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .calling-cards-grid.cols-3 .card-word {
+    font-size: 36px;
+  }
+
   .calling-card {
     display: flex;
     flex-direction: column;
@@ -598,6 +606,7 @@
         <label>Calling Card Size</label>
         <select id="callingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
+          <option value="3x3">3×3 Medium (duplex)</option>
           <option value="2x2">2×2 Large (circle time)</option>
         </select>
       </div>
@@ -659,6 +668,7 @@
         <label>Calling Card Size</label>
         <select id="customCallingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
+          <option value="3x3">3×3 Medium (duplex)</option>
           <option value="2x2">2×2 Large (circle time)</option>
         </select>
       </div>
@@ -734,6 +744,7 @@
         <label>Calling Card Size</label>
         <select id="bankCallingCardSize">
           <option value="4x4">4×4 Small (duplex)</option>
+          <option value="3x3">3×3 Medium (duplex)</option>
           <option value="2x2">2×2 Large (circle time)</option>
         </select>
       </div>
@@ -1021,7 +1032,7 @@ function generateBoards(wordPool, title, gridSize, boardCount, borderColor, bord
 // Each card: background = borderColor, padding = borderW, border-radius = radius
 // Inner white area: background white, border-radius = radius
 // Grid: gap 0 — adjacent rounded corners create diamond indent cutting guides
-function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius, imgFn) {
+function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius, imgFn, gridCols) {
   const output = document.getElementById('output');
   output.innerHTML = '';
 
@@ -1034,8 +1045,8 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
   label.textContent = `Calling Cards — duplex print, cut along indent guides (${wordPool.length} cards)`;
   output.appendChild(label);
 
-  const cardsPerPage = 16; // 4x4 grid
-  const cols = 4;
+  const cols = gridCols || 4;
+  const cardsPerPage = cols * cols;
   const pages = Math.ceil(wordPool.length / cardsPerPage);
 
   // Per-card styles (like 3-Part Card Generator) — double borderW to match board padding
@@ -1065,7 +1076,7 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     `;
 
     const frontGrid = document.createElement('div');
-    frontGrid.className = 'calling-cards-grid';
+    frontGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : '');
 
     for (const item of pageItems) {
       const card = document.createElement('div');
@@ -1093,7 +1104,7 @@ function generateCallingCardsCore(wordPool, title, borderColor, borderW, radius,
     `;
 
     const backGrid = document.createElement('div');
-    backGrid.className = 'calling-cards-grid';
+    backGrid.className = 'calling-cards-grid' + (cols === 3 ? ' cols-3' : '');
 
     // Mirror each row horizontally for proper duplex alignment
     const rows = Math.ceil(pageItems.length / cols);
@@ -1143,7 +1154,8 @@ function generateCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn);
   } else {
-    generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn);
+    const gridCols = cardSize === '3x3' ? 3 : 4;
+    generateCallingCardsCore(getWordPool(), getTitle(), borderColor, borderW, radius, imgFn, gridCols);
   }
 }
 
@@ -1174,7 +1186,8 @@ function generateCustomCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn);
   } else {
-    generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn);
+    const gridCols = cardSize === '3x3' ? 3 : 4;
+    generateCallingCardsCore(customItems, 'Custom', borderColor, borderW, radius, imgFn, gridCols);
   }
 }
 
@@ -1360,7 +1373,8 @@ function generateBankCallingCards() {
   if (cardSize === '2x2') {
     generateCircleTimeCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn);
   } else {
-    generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn);
+    const gridCols = cardSize === '3x3' ? 3 : 4;
+    generateCallingCardsCore(bankItems, 'Picture Bank', borderColor, borderW, radius, imgFn, gridCols);
   }
 }
 
