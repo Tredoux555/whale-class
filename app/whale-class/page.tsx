@@ -164,6 +164,7 @@ export default function WhaleClassPage() {
                 controls
                 playsInline
                 preload="metadata"
+                crossOrigin="anonymous"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -206,6 +207,7 @@ export default function WhaleClassPage() {
                         controls
                         playsInline
                         preload="metadata"
+                        crossOrigin="anonymous"
                         className="w-full h-full object-contain"
                       />
                     </div>

@@ -700,7 +700,7 @@ export default function StoryViewer() {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*,audio/*"
+                accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={handleFileUpload}
                 disabled={isUploadingMedia}
                 className="block w-full text-sm text-gray-500
