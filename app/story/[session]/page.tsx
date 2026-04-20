@@ -12,7 +12,7 @@ interface Story {
 
 interface MediaItem {
   id: number;
-  type: 'image' | 'video' | 'audio';
+  type: 'image' | 'video' | 'audio' | 'document';
   url: string;
   filename: string | null;
   author: string;
@@ -712,7 +712,7 @@ export default function StoryViewer() {
                   disabled:opacity-50"
               />
               <p className="mt-1 text-xs text-gray-400">
-                Supports: Images, Videos, and Audio (expires in 24 hours)
+                Supports: Images, Videos, Audio, and Documents (expires in 24 hours)
               </p>
               {isUploadingMedia && (
                 <div className="mt-2 flex items-center gap-2">
@@ -730,6 +730,7 @@ export default function StoryViewer() {
               const images = mediaItems.filter(m => m.type === 'image');
               const videos = mediaItems.filter(m => m.type === 'video');
               const songs = mediaItems.filter(m => m.type === 'audio');
+              const documents = mediaItems.filter(m => m.type === 'document');
 
               return (
                 <>
@@ -824,6 +825,41 @@ export default function StoryViewer() {
                               <span>{new Date(item.created_at).toLocaleDateString()}</span>
                             </div>
                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Uploaded Documents Section */}
+                  {documents.length > 0 && (
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-3 text-gray-700 flex items-center gap-2">
+                        <span>📎</span> Shared Documents
+                      </h3>
+                      <div className="space-y-2">
+                        {documents.map((item) => (
+                          <a
+                            key={item.id}
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 hover:border-blue-300 transition-colors"
+                          >
+                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-2xl flex-shrink-0">
+                              {getFileIcon('', item.filename || '')}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-gray-800 truncate">
+                                {item.filename || 'Document'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Shared by {item.author} • {new Date(item.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-blue-600 text-sm font-medium flex-shrink-0">
+                              Open ↗
+                            </div>
+                          </a>
                         ))}
                       </div>
                     </div>

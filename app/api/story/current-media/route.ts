@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       .from('story_message_history')
       .select('id, message_type, message_content, media_url, media_filename, author, created_at, expires_at')
       .eq('week_start_date', weekStartDate)
-      .in('message_type', ['image', 'video', 'audio'])
+      .in('message_type', ['image', 'video', 'audio', 'document'])
       .eq('is_expired', false)
       .order('created_at', { ascending: false });
 
