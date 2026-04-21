@@ -728,7 +728,6 @@ export async function POST(request: NextRequest) {
           logApiUsage({
             schoolId: auth.schoolId,
             classroomId: classroom_id || childContext?.classroom_id,
-            childId: !isWholeClassMode ? child_id : undefined,
             endpoint: '/api/montree/guru',
             model: guruModel,
             inputTokens: toolResponse.usage.input_tokens,
@@ -1152,6 +1151,18 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Log API usage to montree_api_usage table
+      if (response.usage) {
+        logApiUsage({
+          schoolId: auth.schoolId,
+          classroomId: classroom_id || childContext?.classroom_id,
+          endpoint: '/api/montree/guru',
+          model: guruModel,
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+        });
+      }
+
       // Log cost estimate (Haiku: $0.80/$4.00 per 1M, Sonnet: $3/$15 per 1M)
       const { input_tokens = 0, output_tokens = 0 } = response.usage || {};
       if (forceToolUse) {
@@ -1195,6 +1206,18 @@ export async function POST(request: NextRequest) {
       API_TIMEOUT_MS,
       'Guru structured call'
     );
+
+    // Log API usage
+    if (message.usage) {
+      logApiUsage({
+        schoolId: auth.schoolId,
+        classroomId: classroom_id || childContext?.classroom_id,
+        endpoint: '/api/montree/guru/structured',
+        model: AI_MODEL,
+        inputTokens: message.usage.input_tokens,
+        outputTokens: message.usage.output_tokens,
+      });
+    }
 
     // Extract response text
     const responseText = message.content
