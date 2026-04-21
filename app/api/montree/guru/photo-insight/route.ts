@@ -1572,7 +1572,16 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
         }
       }
       console.log(`[PhotoInsight] Pass 1 DESCRIBE: "${visualDescription.slice(0, 120)}..."`);
-      // logApiUsage deferred — metering system not yet deployed
+      if (describeMsg.usage) {
+        logApiUsage({
+          schoolId: auth.schoolId,
+          classroomId: classroomId || undefined,
+          endpoint: '/api/montree/guru/photo-insight/pass1',
+          model: HAIKU_MODEL,
+          inputTokens: describeMsg.usage.input_tokens,
+          outputTokens: describeMsg.usage.output_tokens,
+        });
+      }
     } catch (describeErr: unknown) {
       clearTimeout(describeTimeout);
       routeAbort.signal.removeEventListener('abort', onRouteAbortDescribe);
@@ -1652,7 +1661,16 @@ Match this description to the correct Montessori work. Use the visual identifica
         console.log(`[PhotoInsight] Pass 2 V2 MATCH: "${finalWorkName}" (score=${matchScore}), Haiku said="${input.work_name}"`)
         haikuAccepted = true;
         console.log(`[PhotoInsight] Pass 2 MATCH: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
-        // logApiUsage deferred — metering system not yet deployed
+        if (matchMsg.usage) {
+          logApiUsage({
+            schoolId: auth.schoolId,
+            classroomId: classroomId || undefined,
+            endpoint: '/api/montree/guru/photo-insight/pass2',
+            model: HAIKU_MODEL,
+            inputTokens: matchMsg.usage.input_tokens,
+            outputTokens: matchMsg.usage.output_tokens,
+          });
+        }
       } else {
         console.log('[PhotoInsight] Pass 2 returned no tool_use');
       }
@@ -1858,7 +1876,16 @@ Match this description to the correct Montessori work. Use the visual identifica
           modelUsed = AI_MODEL;
           haikuAccepted = false;
           console.log(`[PhotoInsight] Sonnet fallback: "${finalWorkName}" (confidence: ${input.confidence.toFixed(2)}, match: ${matchScore.toFixed(2)})`);
-          // logApiUsage deferred — metering system not yet deployed
+          if (message.usage) {
+            logApiUsage({
+              schoolId: auth.schoolId,
+              classroomId: classroomId || undefined,
+              endpoint: '/api/montree/guru/photo-insight/sonnet-fallback',
+              model: AI_MODEL,
+              inputTokens: message.usage.input_tokens,
+              outputTokens: message.usage.output_tokens,
+            });
+          }
         }
       } catch (sonnetErr) {
         clearTimeout(timeoutHandle);
