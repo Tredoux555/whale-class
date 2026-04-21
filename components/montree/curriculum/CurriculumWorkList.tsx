@@ -268,7 +268,7 @@ function ExpandedWorkDetails({
 
         <div className="flex-1 min-w-0">
           {/* QUICK GUIDE */}
-          {work.quick_guide && (
+          {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide) && (
             <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-3 rounded-xl border border-amber-200">
               <div className="flex items-center justify-between mb-1">
                 <p className="font-bold text-amber-800 text-sm flex items-center gap-1">
@@ -284,7 +284,7 @@ function ExpandedWorkDetails({
                 </a>
               </div>
               <div className="text-xs text-amber-900 space-y-0.5">
-                {work.quick_guide.split('\n').map((line, i) => (
+                {(locale === 'zh' ? work.quick_guide_zh : work.quick_guide)?.split('\n').map((line, i) => (
                   <p key={i} className="leading-relaxed">{line}</p>
                 ))}
               </div>
@@ -333,33 +333,33 @@ function ExpandedWorkDetails({
 
       {/* Details Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-        {work.direct_aims?.length > 0 && (
+        {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.length > 0 && (
           <div>
             <p className="font-semibold text-gray-700 mb-1">🎯 {t('curriculum.directAims')}</p>
             <ul className="text-gray-600 space-y-0.5">
-              {work.direct_aims.map((aim: string, i: number) => (
+              {(locale === 'zh' ? work.direct_aims_zh : work.direct_aims)?.map((aim: string, i: number) => (
                 <li key={i} className="text-xs">• {aim}</li>
               ))}
             </ul>
           </div>
         )}
 
-        {work.indirect_aims?.length > 0 && (
+        {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.length > 0 && (
           <div>
             <p className="font-semibold text-gray-700 mb-1">🌱 {t('curriculum.indirectAims')}</p>
             <ul className="text-gray-600 space-y-0.5">
-              {work.indirect_aims.map((aim: string, i: number) => (
+              {(locale === 'zh' ? work.indirect_aims_zh : work.indirect_aims)?.map((aim: string, i: number) => (
                 <li key={i} className="text-xs">• {aim}</li>
               ))}
             </ul>
           </div>
         )}
 
-        {work.materials?.length > 0 && (
+        {(locale === 'zh' ? work.materials_zh : work.materials)?.length > 0 && (
           <div>
             <p className="font-semibold text-gray-700 mb-1">🧰 {t('curriculum.materials')}</p>
             <ul className="text-gray-600 space-y-0.5">
-              {work.materials.map((item: string, i: number) => (
+              {(locale === 'zh' ? work.materials_zh : work.materials)?.map((item: string, i: number) => (
                 <li key={i} className="text-xs">• {item}</li>
               ))}
             </ul>
@@ -392,9 +392,9 @@ function ExpandedWorkDetails({
             {t('curriculum.age')}: {work.age_range}
           </span>
         )}
-        {work.control_of_error && (
+        {(locale === 'zh' ? work.control_of_error_zh : work.control_of_error) && (
           <span className="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-full">
-            {t('curriculum.control')}: {work.control_of_error}
+            {t('curriculum.control')}: {locale === 'zh' ? work.control_of_error_zh : work.control_of_error}
           </span>
         )}
       </div>
