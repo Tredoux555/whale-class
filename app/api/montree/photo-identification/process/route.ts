@@ -13,19 +13,16 @@
 //
 //   1. Run two-pass Haiku identification (lib/montree/photo-identification/two-pass)
 //
-//   2. If Pass 2 succeeded AND confidence ≥ 0.75 AND hasVisualMemoryForMatch
+//   2. If Pass 2 succeeded AND confidence ≥ 0.85 AND hasVisualMemoryForMatch
 //      AND we can resolve the work to a row in montree_classroom_curriculum_works
 //      → write `work_id`, `identification_status='haiku_matched'`, confidence
 //      → fire `increment_visual_memory_used` RPC for the matched memory
 //
-//   3. Otherwise → check the per-classroom daily Sonnet cap, then run the
-//      Sonnet rich draft generator and store the result in `sonnet_draft` JSONB
-//      → status = 'sonnet_drafted'
+//   3. Otherwise (Gate A failed) → write the Haiku Pass 2 result to `haiku_drafted`
+//      status. Teacher can optionally call the sonnet-review endpoint to enrich
+//      the draft with Sonnet analysis via "Ask Sonnet" button in Photo Audit.
 //
-//   4. If Sonnet cap hit → leave status as 'pending', set attempted_at
-//      (will be picked up tomorrow)
-//
-//   5. On any unhandled error → status = 'failed' so the audit UI can surface it
+//   4. On any unhandled error → status = 'failed' so the audit UI can surface it
 //
 // This route writes ONLY to montree_media. It does NOT update progress, P/P/M,
 // or visual memory contents — those happen in Photo Audit when the teacher
@@ -39,9 +36,6 @@ import {
   runTwoPassIdentification,
 } from '@/lib/montree/photo-identification/two-pass';
 import {
-  generateSonnetDraft,
-} from '@/lib/montree/photo-identification/sonnet-draft';
-import {
   loadIdentificationContext,
 } from '@/lib/montree/photo-identification/context-loader';
 
@@ -50,25 +44,15 @@ import {
 // Raised 0.75 → 0.85 on Apr 9 2026 after Sandpaper Letters was auto-tagged as
 // Metal Insets in Whale Class audit. At 0.75 Gate A fires on visually similar
 // language/sensorial works (tray + single focal object). 0.85 is the safer
-// floor — everything below falls through to Sonnet and renders as an auditable
-// AI DRAFT card with "Similar to X" breadcrumbs. Watch Railway [PhotoIdentification]
-// GateA logs and tune from real trusted/fallback distribution.
+// floor — everything below falls through to haiku_drafted status and renders as
+// an auditable Haiku DRAFT card with "Ask Sonnet" button. Watch Railway
+// [PhotoIdentification] GateA logs and tune from real trusted/fallback distribution.
 const HAIKU_TRUST_CONFIDENCE = 0.85;
-const SONNET_DAILY_CAP_PER_CLASSROOM = parseInt(
-  process.env.SONNET_DAILY_CAP_PER_CLASSROOM || '100',
-  10,
-);
 
 // Photo bucket — confirmed against app/api/montree/media/upload/route.ts (line 155)
 const MEDIA_BUCKET = 'montree-media';
 
 // ----- Helpers -----
-
-function todayStartIso(): string {
-  const d = new Date();
-  d.setUTCHours(0, 0, 0, 0);
-  return d.toISOString();
-}
 
 /**
  * Look up a classroom curriculum work row by name (case-insensitive).
@@ -141,6 +125,7 @@ export async function POST(request: NextRequest) {
   if (
     !body.force &&
     (media.identification_status === 'haiku_matched' ||
+      media.identification_status === 'haiku_drafted' ||
       media.identification_status === 'sonnet_drafted' ||
       media.identification_status === 'confirmed' ||
       media.identification_status === 'skipped')
@@ -153,18 +138,6 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Review-before-process gate: when status is 'pending_review' the teacher
-  // hasn't approved this photo for AI processing yet. Bail unless force=true
-  // (the batch-process endpoint always forces). This catches stray
-  // fire-and-forget calls from older clients that don't honor ai_deferred.
-  if (!body.force && media.identification_status === 'pending_review') {
-    return NextResponse.json({
-      success: true,
-      skipped: true,
-      reason: 'pending teacher review',
-      status: 'pending_review',
-    });
-  }
   // When forced, clear stale draft so the new pipeline writes a fresh one
   if (body.force) {
     await supabase
@@ -213,7 +186,7 @@ export async function POST(request: NextRequest) {
     context,
   });
 
-  console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch}`);
+  console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved}`);
 
   // ----- Routing decision -----
 
@@ -238,6 +211,8 @@ export async function POST(request: NextRequest) {
     haikuConf: ident?.confidence ?? null,
     haikuWork: ident?.workName ?? null,
     hasVM: twoPassResult.hasVisualMemoryForMatch,
+    pass2bFired: twoPassResult.pass2bFired,
+    pass2bImproved: twoPassResult.pass2bImproved,
     vmSetSize: context.visualMemoryWorkNames.size,
     vmInjected: context.visualMemoryInjectedCount,
     threshold: HAIKU_TRUST_CONFIDENCE,
@@ -285,155 +260,62 @@ export async function POST(request: NextRequest) {
     console.log(`[PhotoIdentification] Haiku trusted but work "${ident.workName}" not in classroom curriculum — falling through to Sonnet`);
   }
 
-  // ----- Step 2: Sonnet draft fallback -----
+  // ----- Step 2: Store Haiku draft for teacher review -----
+  // Gate A failed — store the Haiku Pass 2 result as a draft for teacher
+  // to optionally enrich via "Ask Sonnet" button in Photo Audit.
+  // This replaces automatic Sonnet generation, making it teacher-triggered.
 
-  // Daily cap check
-  if (media.classroom_id) {
-    const { count: draftedToday } = await supabase
+  if (twoPassResult.success && ident) {
+    // Store the Haiku Pass 2 result as haiku_drafted.
+    // Also persist the Pass 1 visual description in sonnet_draft JSONB
+    // (as a partial draft) so the teacher-triggered Sonnet endpoint can
+    // read it back without re-running Pass 1.
+    const haikuDraftData: Record<string, unknown> = {
+      identification_status: 'haiku_drafted',
+      identification_confidence: ident.confidence,
+      sonnet_draft: {
+        _source: 'haiku_pass2',
+        visual_description: twoPassResult.visualDescription,
+        proposed_name: ident.workName,
+        haiku_work_name: ident.haikuWorkName,
+        confidence: ident.confidence,
+        area: ident.area,
+      },
+    };
+    const { error: haikuDraftErr } = await supabase
       .from('montree_media')
-      .select('id', { count: 'exact', head: true })
-      .eq('classroom_id', media.classroom_id)
-      .eq('identification_status', 'sonnet_drafted')
-      .gte('identification_attempted_at', todayStartIso());
-
-    if ((draftedToday || 0) >= SONNET_DAILY_CAP_PER_CLASSROOM) {
-      console.log(`[PhotoIdentification] Sonnet daily cap hit for classroom ${media.classroom_id} (${draftedToday}/${SONNET_DAILY_CAP_PER_CLASSROOM})`);
-      // Leave status as 'pending' so tomorrow's sweep picks it back up
-      return NextResponse.json({
-        success: true,
-        outcome: 'sonnet_cap_reached',
-        media_id: mediaId,
-        cap: SONNET_DAILY_CAP_PER_CLASSROOM,
-        used: draftedToday,
-      });
-    }
-  }
-
-  const sonnetResult = await generateSonnetDraft({
-    photoUrl,
-    childName,
-    childAge,
-    curriculum,
-    pass1Description: twoPassResult.visualDescription,
-    haikuGuess: ident ? { workName: ident.workName, confidence: ident.confidence } : null,
-    context,
-    locale,
-  });
-
-  if (!sonnetResult.success || !sonnetResult.draft) {
-    console.error('[PhotoIdentification] Sonnet draft failed:', sonnetResult.errors);
-    await supabase
-      .from('montree_media')
-      .update({ identification_status: 'failed' })
+      .update(haikuDraftData)
       .eq('id', mediaId);
-    return NextResponse.json({
-      success: false,
-      outcome: 'failed',
-      media_id: mediaId,
-      errors: sonnetResult.errors,
-    }, { status: 500 });
-  }
 
-  // ----- Gate B: auto-confirm high-similarity Sonnet match -----
-  // When Sonnet explicitly reports closest_existing_match.similarity ≥ 0.9
-  // AND that named work resolves to a real classroom curriculum row, the
-  // photo effectively IS that work — there is nothing left for the
-  // teacher to decide. Silently attach, mark teacher_confirmed, and
-  // bypass the Photo Audit queue entirely. This closes the "why did a
-  // 95% match still land in the queue" gap.
-  const draft = sonnetResult.draft as any;
-  const gateBMatch = draft?.closest_existing_match;
-  const gateBSim = typeof gateBMatch?.similarity === 'number' ? gateBMatch.similarity : 0;
-  const closestName = typeof gateBMatch?.work_name === 'string' ? gateBMatch.work_name.trim() : '';
-  const proposedName = typeof draft?.proposed_name === 'string' ? draft.proposed_name.trim() : '';
-  const draftConf = typeof draft?.confidence === 'number' ? draft.confidence : 0;
-
-  // Gate B fires on EITHER:
-  //   (a) closest_existing_match similarity ≥ 0.8, OR
-  //   (b) proposed_name matches a real curriculum row AND draft.confidence ≥ 0.8
-  // (b) catches the case where Haiku's closest_existing_match is stale garbage
-  // but Sonnet correctly renamed the photo to an actual curriculum work.
-  const gateBCandidates: Array<{ name: string; score: number; reason: string }> = [];
-  if (closestName && gateBSim >= 0.8) gateBCandidates.push({ name: closestName, score: gateBSim, reason: 'closest_match' });
-  if (proposedName && draftConf >= 0.8 && proposedName.toLowerCase() !== closestName.toLowerCase()) {
-    gateBCandidates.push({ name: proposedName, score: draftConf, reason: 'proposed_name' });
-  }
-
-  for (const cand of gateBCandidates) {
-    if (!media.classroom_id) break;
-    try {
-      const { data: gateBWork } = await supabase
-        .from('montree_classroom_curriculum_works')
-        .select('id, name, area_id, montree_classroom_curriculum_areas!inner(area_key)')
-        .eq('classroom_id', media.classroom_id)
-        .eq('is_active', true)
-        .ilike('name', cand.name.replace(/[%_\\]/g, '\\$&'))
-        .limit(1)
-        .maybeSingle();
-
-      if (gateBWork?.id) {
-        const areasRel = (gateBWork as any).montree_classroom_curriculum_areas;
-        const gateBAreaKey = Array.isArray(areasRel)
-          ? areasRel[0]?.area_key
-          : areasRel?.area_key || null;
-
-        const { error: gateBErr } = await supabase
-          .from('montree_media')
-          .update({
-            work_id: gateBWork.id,
-            identification_status: 'haiku_matched',
-            identification_confidence: Math.max(draft.confidence || 0, cand.score),
-            sonnet_draft: sonnetResult.draft,
-            teacher_confirmed: true,
-          })
-          .eq('id', mediaId);
-
-        if (!gateBErr) {
-          console.log(
-            `[PhotoIdentification] GateB auto-confirm via ${cand.reason}: "${cand.name}" ${Math.round(cand.score * 100)}% — bypassing Photo Audit`
-          );
-          return NextResponse.json({
-            success: true,
-            outcome: 'gate_b_auto_confirmed',
-            via: cand.reason,
-            media_id: mediaId,
-            work_id: gateBWork.id,
-            work_name: gateBWork.name,
-            area_key: gateBAreaKey,
-            similarity: cand.score,
-          });
-        }
-        console.error('[PhotoIdentification] GateB update failed — trying next candidate:', gateBErr);
-        continue;
-      } else {
-        console.log(
-          `[PhotoIdentification] GateB ${cand.reason} skipped — "${cand.name}" not in classroom curriculum`
-        );
-        continue;
-      }
-    } catch (gateBEx) {
-      console.error('[PhotoIdentification] GateB exception — falling through:', gateBEx);
+    if (haikuDraftErr) {
+      console.error('[PhotoIdentification] Failed to write haiku_drafted:', haikuDraftErr);
+      return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
     }
+
+    return NextResponse.json({
+      success: true,
+      outcome: 'haiku_drafted',
+      media_id: mediaId,
+      work_name: ident.workName,
+      confidence: ident.confidence,
+      visual_description: twoPassResult.visualDescription,
+    });
   }
 
-  const { error: draftWriteErr } = await supabase
+  // If Pass 2 failed entirely, mark as failed
+  const { error: failedWriteErr } = await supabase
     .from('montree_media')
-    .update({
-      identification_status: 'sonnet_drafted',
-      identification_confidence: sonnetResult.draft.confidence,
-      sonnet_draft: sonnetResult.draft,
-    })
+    .update({ identification_status: 'failed' })
     .eq('id', mediaId);
 
-  if (draftWriteErr) {
-    console.error('[PhotoIdentification] Failed to write sonnet_draft:', draftWriteErr);
-    return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+  if (failedWriteErr) {
+    console.error('[PhotoIdentification] Failed to write failed status:', failedWriteErr);
   }
 
   return NextResponse.json({
-    success: true,
-    outcome: 'sonnet_drafted',
+    success: false,
+    outcome: 'identification_failed',
     media_id: mediaId,
-    draft: sonnetResult.draft,
-  });
+    errors: ['Pass 2 identification failed'],
+  }, { status: 500 });
 }

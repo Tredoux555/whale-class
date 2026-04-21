@@ -220,12 +220,87 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - `components/montree/media/PhotoEditModal.tsx` — locale-aware area names
 
 **Next session priorities:**
-1. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
-2. **Health Check Section B** — 3 mechanical sweeps.
-3. **Campaign: Draft next batch** from remaining 88 `status='new'` contacts.
+1. **Bounce recovery research** — Research correct emails for 77 bounced contacts, re-draft viable ones.
+2. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+3. **Health Check Section B** — 3 mechanical sweeps.
 4. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
 5. **Campaign: Follow up on Montessori Norge** after May 6.
 6. **Verify bilingual game plans + area names on production** — switch locales, confirm everything renders in Chinese.
+
+---
+
+### ⚡ Session 52 — Wave 1 Montree Pitch (143 drafts) + Follow-Up Schedule + Bounce Triage (Apr 21, 2026)
+
+**No code commits.** Pure campaign operations — Wave 1 Montree pitch drafting + automated follow-up scheduling + bounce marking.
+
+**A. Wave 1 Montree Pitch Campaign — 143 Gmail Drafts Created:**
+
+These ~216 contacts had `status='sent'` with `batch_tag` in (Africa, Americas, Asia, Europe, Middle East, Oceania, South Asia) — GMass Campaign D recipients who only got the job application email ("Montessori Teacher & Builder"), NOT the Montree product pitch. This session sent them the sacred Montree pitch (~155 words) as a NEW email (subject: "Montree").
+
+Pre-send duplicate check (`subject:Montree to:DOMAIN in:sent`) was run for every single contact before drafting. 73 were skipped as duplicates (already received the Montree pitch via earlier Claude draft batches).
+
+| Batch | Contacts Checked | Duplicates Skipped | Drafts Created |
+|-------|-----------------|-------------------|----------------|
+| 1 (offset 0) | 50 | 14 | 36 |
+| 2 (offset 50) | 50 | 33 | 17 |
+| 3 (offset 100) | 50 | 13 | 37 |
+| 4 (offset 150) | 50 | 6 | 44 |
+| 5 (offset 200) | 16 | 7 | 9 |
+| **TOTAL** | **216** | **73** | **143** |
+
+**B. Follow-Up Campaign Schedule — 6 Scheduled Tasks Created:**
+
+Automated follow-up tasks created via Cowork scheduled tasks. Each fires once at 9:00 AM, creates Gmail drafts with mandatory duplicate/reply checking, and Tredoux sends manually.
+
+| Date | Task | Wave | Contacts | Follow-up # |
+|------|------|------|----------|------------|
+| Apr 25 | wave2-followup1 | Wave 2 (multiplier_apr19) | ~32 | 1 |
+| Apr 26 | wave3-followup1 | Wave 3 (Expansion batches) | ~95 | 1 |
+| Apr 27 | wave1-montree-followup1 | Wave 1 (Campaign D schools) | ~143 | 1 |
+| Apr 30 | wave2-followup2 | Wave 2 | remaining | 2 (final) |
+| May 1 | wave3-followup2 | Wave 3 | remaining | 2 (final) |
+| May 2 | wave1-montree-followup2 | Wave 1 | remaining | 2 (final) |
+
+Follow-up 1 text: "I wanted to make sure my previous email found its way to you..."
+Follow-up 2 text: "I understand how busy things can get running a school..."
+After Follow-up 2, non-responders marked as 'dead'.
+
+**C. Bounce Triage — 21 New Bounces Marked:**
+
+Scanned Gmail for `from:mailer-daemon newer_than:1d`. Found 21 permanent failures from today's sends. All marked `status='bounced'` in `montree_outreach_contacts` via Supabase REST API.
+
+**D. Reply Check — No New Actionable Replies:**
+
+Scanned Gmail. All existing threads (FAMM Argentina, Cambridge, Jakarta, Cathy Wilson) unchanged from Session 50. No new inbound replies.
+
+**E. Chinese Localization Fix (commit `5301d0c3`, pushed in prior session continuation):**
+
+Fixed curriculum detail view (`CurriculumWorkList.tsx`) — when user taps a work in Chinese locale, the expanded detail now shows Chinese descriptions (`parent_description_zh`, `why_it_matters_zh`) instead of English.
+
+**DB state after this session:**
+
+| Status | Count |
+|--------|-------|
+| new | 2 |
+| drafted | 167 |
+| sent | 276 |
+| bounced | 77 |
+| follow_up | 7 |
+| replied | 2 |
+| dead | 5 |
+| **Total** | **536** |
+
+**Campaign status summary:**
+- **Initial outreach complete** — all 536 contacts have been contacted (only 2 remain as 'new')
+- **167 drafts in Gmail** — Tredoux to review and send (143 Wave 1 Montree pitch + 24 from earlier batches)
+- **Follow-up schedule automated** — 6 scheduled tasks will fire Apr 25 → May 2
+- **77 bounces** — candidates for bounce recovery research (find correct emails, re-draft)
+
+**Next session priorities:**
+1. **Bounce recovery research** — Research correct emails for 77 bounced contacts, re-draft viable ones.
+2. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+3. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
+4. **Campaign: Follow up on Montessori Norge** after May 6.
 
 ---
 
@@ -3597,6 +3672,222 @@ New dashboard intelligence panel. Tracks which weekly paperwork packet (weeks 1-
 
 **Circle Time Cards Merged — ✅ PUSHED (commit `b68a7c4c`):**
 Separate Circle Time tab removed. Now "Calling Card Size" dropdown (4×4 duplex / 2×2 circle time) in all 3 Picture Bingo modes.
+
+---
+
+## 📸 PHOTO IDENTIFICATION PIPELINE — Teacher-Triggered Sonnet Enrichment (Apr 22, 2026)
+
+### Architecture Overview
+
+The photo identification system is a **two-stage teacher-controlled workflow**:
+1. **Background Stage** — Fire-and-forget after photo capture: Haiku two-pass identification (visual description + curriculum matching)
+2. **Teacher Stage** — Optional: "Ask Sonnet" button for richer analysis when Haiku confidence is low
+
+**Key insight:** Sonnet enrichment is **NOT automatic**. Teachers decide when to invoke it. This gives them full control over AI costs and prevents wasted Sonnet runs on photos they can already interpret.
+
+### Status Flow
+
+```
+Photo captured → Background process fires
+    ↓
+Pass 1 (Haiku): Visual description
+    ↓
+Pass 2 (Haiku): Curriculum matching
+    ↓
+Gate A: Does Haiku Pass 2 succeed AND confidence ≥0.85 AND has visual memory?
+    ├─ YES  → identification_status='haiku_matched' (auto-confirmed, leaves queue)
+    └─ NO   → identification_status='haiku_drafted' (appears in Photo Audit as cyan card)
+    
+From Photo Audit, teacher can:
+    ├─ Click "🏷️ This is..." → ThisIsSheet modal (confirm/change work)
+    └─ Click "🧠 Ask Sonnet" → Sonnet enrichment → identification_status='sonnet_drafted'
+```
+
+### API Routes
+
+#### 1. **`POST /api/montree/photo-identification/process`** (background, fire-and-forget)
+
+Called automatically when photo is uploaded (via capture page with `keepalive: true`).
+
+**Input:**
+- `media_id`: UUID of `montree_media` row
+- `locale` (optional): 'en' or 'zh'
+- `force` (optional): true to re-run even if already processed
+
+**Output:**
+- `success: true/false`
+- `outcome`: 'haiku_matched' | 'haiku_drafted' | 'identification_failed'
+- `confidence`: Haiku Pass 2 confidence (0.0-1.0)
+- `visual_description`: Haiku Pass 1 result (rich narrative)
+
+**Logic:**
+1. Query `montree_media` row with `school_id` validation
+2. Skip if already processed (idempotency guard on `identification_status`)
+3. Load child context (name, age, progress summary)
+4. Load classroom curriculum + visual memory context
+5. Run **Pass 1** — Haiku describes what's seen: `generateHaikuDescription(photoUrl, childName, childAge, notes)`
+6. Run **Pass 2** — Haiku matches to curriculum: `runHaikuMatch(visualDescription, curriculum, visualMemory)`
+7. **Gate A evaluation**:
+   - Threshold: `HAIKU_TRUST_CONFIDENCE = 0.85` (raised from 0.75 in Session 7 Phase 2)
+   - Conditions: `success && confidence >= 0.85 && hasVisualMemoryForMatch && resolveClassroomWorkId() succeeds`
+   - If TRUE → write `work_id`, `identification_status='haiku_matched'`, fire `increment_visual_memory_used` RPC (fire-and-forget)
+   - If FALSE → call `generateSonnetDraft()` to create a rich proposal (NEW FLOW — Session 22 removed automatic Sonnet)
+8. Store result: `haiku_drafted` status + empty `sonnet_draft` (will be populated only if teacher clicks "Ask Sonnet")
+
+**Telemetry (Railway logs):**
+```
+[PhotoIdentification] media=UUID pass1="..." pass2.success=true confidence=0.82 hasVM=true
+[PhotoIdentification] GateA { mediaId, haikuSuccess, haikuConf, haikuWork, hasVM, threshold, outcome }
+  // outcome: 'trusted' (auto-matched) | 'sonnet_fallback' (draft created, awaiting teacher)
+```
+
+#### 2. **`POST /api/montree/photo-identification/sonnet-review`** (NEW — teacher-triggered, Session 22)
+
+Called when teacher clicks "🧠 Ask Sonnet" button in Photo Audit.
+
+**Input:**
+- `media_id`: UUID of `montree_media` row
+- `photoUrl` (optional): URL to re-fetch photo. Uses media.storage_path if not provided.
+
+**Output:**
+- `success: true/false`
+- `media_id`: UUID
+- `draft`: `SonnetDraft` JSONB object (see schema below)
+
+**Logic:**
+1. Query `montree_media` row + verify `school_id` match
+2. Query child context (name, age, progress)
+3. Load classroom curriculum + visual memory + identification context
+4. Call `generateSonnetDraft()` with:
+   - Photo URL
+   - Child name + age
+   - Full curriculum works list
+   - Haiku Pass 1 visual description (cached from `montree_media.sonnet_draft` if exists, else Haiku fresh)
+   - Haiku's confidence + guess (for context only — Sonnet forms independent assessment)
+   - Locale support (EN/ZH)
+5. Sonnet calls `draft_work_writeup` tool with structured output (3-part schema)
+6. Validate + sanitize result via `validateDraft()`
+7. **UPDATE montree_media** with:
+   - `sonnet_draft: draft` (JSONB)
+   - `identification_status: 'sonnet_drafted'` (status progression)
+   - `identified_at: now()` (timestamp)
+8. Return draft to UI
+
+**Cost:** ~$0.02-0.03 per call (Sonnet). Spreadsheet formula: 70 input tokens + ~120 output tokens at Sonnet pricing.
+
+**No daily cap** — Teacher controls invocation frequency entirely.
+
+### `SonnetDraft` JSONB Schema
+
+```typescript
+{
+  visual_description: string;        // 3-5 objective sentences, no work names yet
+  proposed_name: string;             // 2-5 words, exact curriculum name if matches, else new
+  suggested_area: string;            // one of: practical_life, sensorial, mathematics, language, cultural
+  parent_description: string;        // 2-3 warm sentences for parents (no jargon)
+  why_it_matters: string;            // 2-3 sentences on developmental purpose
+  key_materials: string[];           // 3-8 concrete items visible in photo
+  closest_existing_match: {
+    work_name: string;               // exact name from curriculum
+    work_key: string | null;         // work_key if matched, null if custom proposal
+    similarity: number;              // 0.0-1.0 confidence
+  } | null;
+  confidence: number;                // 0.0-1.0 Sonnet's overall confidence
+  drafted_at: string;                // ISO timestamp
+}
+```
+
+### Photo Audit UI Integration
+
+**File:** `app/montree/dashboard/photo-audit/page.tsx`
+
+**Card rendering (haiku_drafted):**
+- Cyan background (`bg-cyan-50`, border `border-cyan-300`)
+- Header: "AI DRAFT · {confidence}%"
+- Work name badge (proposed_name from Sonnet)
+- "Similar to X (Y%)" line (closest_existing_match)
+- Two buttons:
+  - Primary: "🏷️ This is..." → ThisIsSheet modal (confirm/change work)
+  - Secondary: "🧠 Ask Sonnet" → POST sonnet-review → refetch photos
+
+**"Ask Sonnet" button callback:**
+```typescript
+onClick={() => {
+  toast.promise(
+    (async () => {
+      const response = await fetch('/api/montree/photo-identification/sonnet-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ media_id: photo.id }),
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Sonnet enrichment failed');
+      const result = await response.json();
+      if (!result.success) throw new Error(result.errors?.join(', ') || 'Unknown error');
+      // Refetch photos to pick up the new sonnet_draft and updated identification_status
+      fetchPhotos();
+      return result;
+    })(),
+    {
+      loading: 'Asking Sonnet for deeper analysis...',
+      success: 'Sonnet analysis ready',
+      error: (err) => err.message,
+    }
+  );
+}}
+```
+
+**After Sonnet enrichment:**
+- Photo list refetches via `fetchPhotos()`
+- Photo card now renders in `sonnet_drafted` state (violet background)
+- Shows richer information: visual_description, parent_description, why_it_matters, key_materials
+- Teacher can now click "This is..." to accept the Sonnet proposal or modify it
+
+### Haiku Pass 2 Confidence Thresholds
+
+| Confidence | Outcome | Teacher Action |
+|-----------|---------|----------------|
+| ≥0.90 | Auto-matched (cyan card still shown for verification) | Verify only |
+| 0.75-0.89 | Haiku drafted (cyan card) | "This is..." or "Ask Sonnet" |
+| 0.50-0.74 | Haiku drafted (cyan, lower confidence badge) | Recommend "Ask Sonnet" |
+| <0.50 | Failed (red card) | Re-capture or manual tag |
+
+Gate A threshold 0.85: Photos with 0.75-0.84 confidence will appear as cyan drafts, encouraging teacher to review or ask Sonnet.
+
+### Cost Model
+
+| Source | Cost per Photo | Trigger |
+|--------|----------------|---------|
+| Haiku Pass 1+2 | $0.006 | Every capture (automatic) |
+| Sonnet enrichment | $0.02-0.03 | Teacher clicks "Ask Sonnet" (optional) |
+| **Worst case** | $0.03-0.04 | Capture + Sonnet for every photo |
+| **Best case** | $0.006 | Haiku only (no Sonnet invoked) |
+
+With visual memory populated (Loop 1), Gate A pass rate climbs, reducing the need for Sonnet. System gets **cheaper AND smarter** over time.
+
+### Testing Checklist
+
+After Railway deploy of this architecture:
+
+- [ ] Capture a photo → background process writes `haiku_drafted` with cyan card in Photo Audit
+- [ ] Verify `identification_status='haiku_drafted'` in DB for that photo
+- [ ] Click "🧠 Ask Sonnet" button → toast shows "Asking Sonnet..."
+- [ ] After ~15-30s, toast shows "Sonnet analysis ready"
+- [ ] Photo list refreshes automatically
+- [ ] Same photo now renders with `identification_status='sonnet_drafted'` (violet background)
+- [ ] Sonnet draft shows: visual_description, proposed_name, parent_description, why_it_matters, key_materials, closest_existing_match
+- [ ] Click "🏷️ This is..." on sonnet_drafted card → ThisIsSheet modal opens with Sonnet proposal pre-filled
+- [ ] Verify no database errors in Railway logs (`[SonnetReview] Failed...` lines should be absent)
+- [ ] Verify log shows: `[SonnetReview] Sonnet enrichment complete: proposed="..." confidence=X.XX`
+
+### Key Files
+
+- `app/api/montree/photo-identification/process/route.ts` — background identification (writes `haiku_drafted`)
+- `app/api/montree/photo-identification/sonnet-review/route.ts` — teacher-triggered Sonnet enrichment (writes `sonnet_drafted`)
+- `lib/montree/photo-identification/sonnet-draft.ts` — `generateSonnetDraft()` function + Sonnet tool definition
+- `lib/montree/photo-identification/two-pass.ts` — `runTwoPassIdentification()` (Haiku Pass 1+2)
+- `app/montree/dashboard/photo-audit/page.tsx` — UI rendering + "Ask Sonnet" callback
+- `components/montree/photo-audit/PhotoAuditCard.tsx` — card rendering logic for `haiku_drafted` vs `sonnet_drafted`
 
 ---
 

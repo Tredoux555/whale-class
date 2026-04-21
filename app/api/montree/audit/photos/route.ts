@@ -61,11 +61,7 @@ export async function GET(request: NextRequest) {
     if (!includeConfirmed) {
       mediaQuery = mediaQuery.neq('teacher_confirmed', true);
     }
-    if (zone === 'pending_review') {
-      // Photos that landed with the review-before-process gate enabled — AI
-      // identification was deliberately deferred until the teacher approves.
-      mediaQuery = mediaQuery.eq('identification_status', 'pending_review');
-    } else if (zone === 'green') {
+    if (zone === 'green') {
       mediaQuery = mediaQuery.not('work_id', 'is', null);
     } else if (zone === 'untagged') {
       // Untagged = no work_id AND not deferred for review (review queue has
@@ -264,11 +260,11 @@ export async function GET(request: NextRequest) {
       ? photos
       : photos.filter(p => p.zone === zone);
 
-    // Sonnet drafts surface first within the result set so teachers see them at top of Needs Review
+    // AI drafts surface first: sonnet_drafted > haiku_drafted > everything else
     filtered.sort((a, b) => {
-      const aDraft = a.identification_status === 'sonnet_drafted' ? 1 : 0;
-      const bDraft = b.identification_status === 'sonnet_drafted' ? 1 : 0;
-      if (aDraft !== bDraft) return bDraft - aDraft;
+      const rank = (s: string | null) => s === 'sonnet_drafted' ? 2 : s === 'haiku_drafted' ? 1 : 0;
+      const diff = rank(b.identification_status) - rank(a.identification_status);
+      if (diff !== 0) return diff;
       return 0; // preserve captured_at DESC from query
     });
 

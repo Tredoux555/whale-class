@@ -13,7 +13,6 @@ import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge'
 import { updateEntryAfterCorrection } from '@/lib/montree/photo-insight-store';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
 import PhotoQueueBanner from '@/components/montree/media/PhotoQueueBanner';
-import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { getProxyUrl, getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
@@ -109,7 +108,6 @@ export default function GalleryPage() {
   const session = getSession();
   const tagPhotoParam = searchParams.get('tagPhoto');
   const { isEnabled } = useFeaturesContext();
-  const reviewBeforeProcess = isEnabled('review_before_process');
 
   // Core state
   const [photos, setPhotos] = useState<GalleryItem[]>([]);
@@ -1077,11 +1075,6 @@ export default function GalleryPage() {
 
       {/* Offline Photo Queue Status */}
       <PhotoQueueBanner childId={childId} />
-
-      {/* Review-before-process: photos waiting for teacher to approve AI run */}
-      {reviewBeforeProcess && (
-        <PendingReviewPanel childId={childId} compact onProcessed={() => fetchPhotos()} />
-      )}
 
       {/* Contextual Tip Bubble */}
       {session && isHomeschoolParent(session) && (
