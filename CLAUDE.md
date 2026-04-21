@@ -174,7 +174,111 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
-## RECENT STATUS (Apr 21, 2026)
+## RECENT STATUS (Apr 22, 2026)
+
+### ⚡ Session 53 — Photo Bucket Removal + Pass 2b Pipeline + Teacher-Triggered Sonnet + Discussion Tab Fix (Apr 22, 2026)
+
+**Three commits pushed to main: `acf1ba5e`, `800506da`, `5e9cf75b`.**
+
+**A. Photo Bucket (`review_before_process`) Removed — commit `acf1ba5e`:**
+
+The `review_before_process` feature flag workflow (photos land as `pending_review`, teacher batch-approves before AI fires) was removed entirely. User decided the workflow added friction without value — teachers prefer the direct AI-draft-then-review flow.
+
+**Files changed:**
+- `app/api/montree/media/upload/route.ts` — Removed `review_before_process` feature flag check. All photos now go straight to AI identification pipeline on upload.
+- `lib/montree/offline/sync-manager.ts` — Removed `!result.ai_deferred` condition that skipped AI dispatch for deferred photos.
+- `app/montree/dashboard/[childId]/page.tsx` — Removed `PendingReviewPanel` import and render.
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — Removed `PendingReviewPanel` import and render.
+- `lib/montree/features/types.ts` — Removed `'review_before_process'` from FeatureKey union type.
+
+**B. Pass 2b — Third Haiku Pass Re-Examining the Image (commit `acf1ba5e`):**
+
+Added a new identification pass between Pass 2 (text-only curriculum matching) and the old automatic Sonnet fallback. Pass 2b sends the PHOTO back to Haiku along with the top visual memory candidates from Pass 2, asking Haiku to visually compare what it sees against the described works.
+
+**Why:** Pass 2 is text-only — Haiku matches its own visual description against curriculum names. This misses cases where the description is accurate but the name mapping fails. Pass 2b lets Haiku look at the photo again with specific candidates in mind, dramatically improving match accuracy for ambiguous cases.
+
+**Implementation in `lib/montree/photo-identification/two-pass.ts`:**
+- `buildPass2bCandidates(matchResult, visualMemoryEntries)` — Extracts top 3-5 candidates from Pass 2 results that have visual memory descriptions
+- `runPass2b(photoUrl, pass1Description, candidates)` — Haiku vision call with structured candidate blocks (LOOKS LIKE / KEY MATERIALS / DISTINGUISH FROM)
+- Returns `{ workName, confidence, reasoning }` or null if no confident match
+- Budget-aware: only runs if enough time remains in the route timeout
+
+**Pipeline flow is now:**
+```
+Pass 1 (Haiku + image) → visual description
+Pass 2 (Haiku + text) → curriculum matching
+Gate A check → if passes, auto-confirm as haiku_matched
+Pass 2b (Haiku + image + candidates) → visual re-examination with top candidates
+    ↓
+If Pass 2b confident → haiku_matched (auto-confirm)
+If not → haiku_drafted (appears in Photo Audit for teacher review)
+```
+
+**C. Teacher-Triggered Sonnet — Replacing Automatic Sonnet (commit `acf1ba5e`):**
+
+Sonnet no longer runs automatically in the background pipeline. Instead, teachers click an "Ask Sonnet" button in Photo Audit when they want deeper analysis on a specific photo.
+
+**New endpoint:** `POST /api/montree/photo-identification/sonnet-review`
+- Auth: `verifySchoolRequest()` + school_id validation against media row
+- Loads child context, curriculum, visual memory, Haiku's cached description
+- Calls `generateSonnetDraft()` with full context
+- Updates `montree_media` with `sonnet_draft` JSONB + `identification_status='sonnet_drafted'`
+- Returns the draft to the UI for immediate display
+
+**New identification status:** `haiku_drafted` — photos where Haiku identified but didn't meet Gate A threshold. These appear in Photo Audit with cyan cards and an "Ask Sonnet" button. Previously these went straight to automatic Sonnet (expensive). Now the teacher decides.
+
+**Cost impact:** Significant savings. Haiku-only pipeline costs ~$0.006/photo. Sonnet adds ~$0.02-0.03 but only when teacher explicitly requests it. Previously every non-Gate-A photo triggered automatic Sonnet (~$0.02/photo regardless).
+
+**UI changes in `app/montree/dashboard/photo-audit/page.tsx`:**
+- `haiku_drafted` cards render with cyan background + "Ask Sonnet" button
+- "Ask Sonnet" POSTs to sonnet-review endpoint, shows toast progress, refetches photos on completion
+- After Sonnet enrichment, card upgrades to `sonnet_drafted` (violet) with richer information
+
+**D. Discussion Tab Fix — commit `800506da`:**
+
+**Bug:** Photos flagged for discussion (💬 button) weren't showing up in the Discussion tab.
+
+**Root cause:** `fetchPhotos` sent `zone='discussion'` directly to the audit/photos API. The API has no `'discussion'` case — it falls into `else if (zone !== 'all')` which adds `.not('work_id', 'is', null)`, excluding untagged photos. Additionally, `teacher_confirmed` photos were excluded by default (no `include_confirmed=1`). Discussion-flagged photos could be in ANY state (untagged, confirmed, drafted) so both filters killed them.
+
+**Fix in `app/montree/dashboard/photo-audit/page.tsx` (lines 742-756):**
+- When `zone === 'discussion'`, send `effectiveZone='all'` with `include_confirmed=1` and 90-day date window
+- Client-side filter `photos.filter(p => p.discussion_flag)` already correct — handles the rest
+- No API changes needed — the fix is entirely in how the client constructs the fetch URL
+
+**E. Mandatory Post-Task Audit Instruction — commit `5e9cf75b`:**
+
+User requested a permanent standing instruction in CLAUDE.md requiring Claude to audit all work after every task. Added the "MANDATORY POST-TASK AUDIT" section after the 3x3x3x3x3 Development System. Rules: audit → fix → re-audit until clean → only then report completion.
+
+**Files changed (summary across all 3 commits):**
+- `lib/montree/photo-identification/two-pass.ts` — Pass 2b added
+- `app/api/montree/photo-identification/process/route.ts` — Sonnet removed, haiku_drafted write, Pass 2b integration
+- `app/api/montree/photo-identification/sonnet-review/route.ts` — NEW, teacher-triggered Sonnet
+- `app/api/montree/audit/photos/route.ts` — Sort order for draft types
+- `app/api/montree/media/upload/route.ts` — review_before_process removed
+- `lib/montree/offline/sync-manager.ts` — ai_deferred condition removed
+- `app/montree/dashboard/[childId]/page.tsx` — PendingReviewPanel removed
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — PendingReviewPanel removed
+- `lib/montree/features/types.ts` — review_before_process removed
+- `app/montree/dashboard/photo-audit/page.tsx` — Discussion tab fix + Ask Sonnet UI
+- `CLAUDE.md` — Mandatory audit instruction + Photo Identification Pipeline docs updated
+
+**🚨 Architectural notes for future sessions:**
+- **`haiku_drafted` is the new default non-Gate-A status.** Photos that Haiku can't confidently auto-match land here instead of triggering automatic Sonnet.
+- **Pass 2b runs BEFORE the haiku_drafted write** — it's a last chance for Haiku to match using visual re-examination. If Pass 2b succeeds with high confidence, the photo auto-confirms as `haiku_matched`.
+- **Sonnet is now ONLY teacher-triggered** via the "Ask Sonnet" button in Photo Audit. No automatic Sonnet calls in the background pipeline.
+- **Discussion tab filtering is CLIENT-SIDE only.** The API has no concept of `zone=discussion`. The client sends `zone=all` + `include_confirmed=1` and filters by `discussion_flag` in JavaScript.
+- **`review_before_process` is fully removed.** Don't re-add it. The feature key is gone from the FeatureKey type.
+
+**Next session priorities:**
+1. **Bounce recovery research** — Research correct emails for 77 bounced contacts, re-draft viable ones.
+2. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+3. **Health Check Section B** — 3 mechanical sweeps.
+4. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
+5. **Campaign: Follow up on Montessori Norge** after May 6.
+6. **Verify Pass 2b + Ask Sonnet on production** — capture a photo, verify it lands as `haiku_drafted`, click "Ask Sonnet", verify Sonnet enrichment works.
+7. **Verify Discussion tab on production** — flag a photo for discussion, switch to Discussion tab, confirm it appears.
+
+---
 
 ### ⚡ Session 51 — Chinese Localization Phase 3-4 Complete (Apr 21, 2026)
 
