@@ -361,7 +361,7 @@ export default function WorkWheelPicker({
                       className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wide"
                       style={{ color: w.area_color, backgroundColor: (w.area_color || '#888') + '22' }}
                     >
-                      {w.area_name}
+                      {locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name}
                     </span>
                   )}
                 </button>

@@ -7,14 +7,14 @@ import { loadAllCurriculumWorks } from '@/lib/montree/curriculum-loader';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { enrichCustomWorkInBackground } from '@/lib/montree/guru/work-enrichment';
 
-// Default area definitions (English only)
+// Default area definitions (bilingual — name_chinese used when seeding new classrooms)
 const DEFAULT_AREAS = [
-  { area_key: 'practical_life', name: 'Practical Life', icon: '🧹', color: '#10B981', sequence: 1 },
-  { area_key: 'sensorial', name: 'Sensorial', icon: '👁️', color: '#F59E0B', sequence: 2 },
-  { area_key: 'mathematics', name: 'Mathematics', icon: '🔢', color: '#3B82F6', sequence: 3 },
-  { area_key: 'language', name: 'Language', icon: '📚', color: '#EC4899', sequence: 4 },
-  { area_key: 'cultural', name: 'Cultural', icon: '🌍', color: '#8B5CF6', sequence: 5 },
-  { area_key: 'special_events', name: 'Special Events', icon: '🎉', color: '#E11D48', sequence: 6 },
+  { area_key: 'practical_life', name: 'Practical Life', name_chinese: '日常', icon: '🧹', color: '#10B981', sequence: 1 },
+  { area_key: 'sensorial', name: 'Sensorial', name_chinese: '感官', icon: '👁️', color: '#F59E0B', sequence: 2 },
+  { area_key: 'mathematics', name: 'Mathematics', name_chinese: '数学', icon: '🔢', color: '#3B82F6', sequence: 3 },
+  { area_key: 'language', name: 'Language', name_chinese: '语言', icon: '📚', color: '#EC4899', sequence: 4 },
+  { area_key: 'cultural', name: 'Cultural', name_chinese: '文化', icon: '🌍', color: '#8B5CF6', sequence: 5 },
+  { area_key: 'special_events', name: 'Special Events', name_chinese: '特别活动', icon: '🎉', color: '#E11D48', sequence: 6 },
 ];
 
 // GET - Fetch curriculum for classroom

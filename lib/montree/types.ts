@@ -116,6 +116,7 @@ export interface AreaProgressBar {
 
 export const AREA_CONFIG: Record<string, {
   name: string;
+  nameZh: string;
   icon: string;
   color: string;
   gradient: string;
@@ -124,12 +125,12 @@ export const AREA_CONFIG: Record<string, {
   border: string;
   prefix: string;
 }> = {
-  practical_life: { name: 'Practical Life', icon: 'P', color: '#ec4899', gradient: 'from-pink-500 to-rose-500', bg: 'bg-pink-50', text: 'text-pink-700', border: '#FBCFE8', prefix: 'P' },
-  sensorial: { name: 'Sensorial', icon: 'S', color: '#8b5cf6', gradient: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', text: 'text-violet-700', border: '#DDD6FE', prefix: 'S' },
-  mathematics: { name: 'Math', icon: 'M', color: '#3b82f6', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700', border: '#BFDBFE', prefix: 'M' },
-  language: { name: 'Language', icon: 'L', color: '#22c55e', gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700', border: '#A7F3D0', prefix: 'L' },
-  cultural: { name: 'Cultural', icon: 'C', color: '#f97316', gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', text: 'text-orange-700', border: '#FDE68A', prefix: 'C' },
-  special_events: { name: 'Special Events', icon: '🎉', color: '#e11d48', gradient: 'from-rose-500 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700', border: '#FECDD3', prefix: 'E' },
+  practical_life: { name: 'Practical Life', nameZh: '日常', icon: 'P', color: '#ec4899', gradient: 'from-pink-500 to-rose-500', bg: 'bg-pink-50', text: 'text-pink-700', border: '#FBCFE8', prefix: 'P' },
+  sensorial: { name: 'Sensorial', nameZh: '感官', icon: 'S', color: '#8b5cf6', gradient: 'from-violet-500 to-purple-500', bg: 'bg-violet-50', text: 'text-violet-700', border: '#DDD6FE', prefix: 'S' },
+  mathematics: { name: 'Math', nameZh: '数学', icon: 'M', color: '#3b82f6', gradient: 'from-blue-500 to-indigo-500', bg: 'bg-blue-50', text: 'text-blue-700', border: '#BFDBFE', prefix: 'M' },
+  language: { name: 'Language', nameZh: '语言', icon: 'L', color: '#22c55e', gradient: 'from-green-500 to-emerald-500', bg: 'bg-green-50', text: 'text-green-700', border: '#A7F3D0', prefix: 'L' },
+  cultural: { name: 'Cultural', nameZh: '文化', icon: 'C', color: '#f97316', gradient: 'from-orange-500 to-amber-500', bg: 'bg-orange-50', text: 'text-orange-700', border: '#FDE68A', prefix: 'C' },
+  special_events: { name: 'Special Events', nameZh: '特别活动', icon: '🎉', color: '#e11d48', gradient: 'from-rose-500 to-pink-500', bg: 'bg-rose-50', text: 'text-rose-700', border: '#FECDD3', prefix: 'E' },
 };
 
 export const AREA_ORDER = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural', 'special_events'] as const;

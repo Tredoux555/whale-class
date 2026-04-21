@@ -17,6 +17,7 @@ export interface ClassroomWork {
   name_chinese?: string;
   area_key: string;
   area_name: string;
+  area_name_zh?: string;
   area_color: string;
   sequence?: number;
   status?: string;
@@ -62,6 +63,8 @@ export function useClassroomWorks(
           const areaKey: string = w.area?.area_key || 'other';
           const areaName: string =
             w.area?.name || AREA_CONFIG[areaKey]?.name || areaKey;
+          const areaNameZh: string | undefined =
+            w.area?.name_chinese || AREA_CONFIG[areaKey]?.nameZh;
           const areaColor: string =
             w.area?.color || AREA_CONFIG[areaKey]?.color || '#888';
           return {
@@ -70,6 +73,7 @@ export function useClassroomWorks(
             name_chinese: w.name_chinese,
             area_key: areaKey,
             area_name: areaName,
+            area_name_zh: areaNameZh,
             area_color: areaColor,
             sequence: w.sequence,
             status: w.status,

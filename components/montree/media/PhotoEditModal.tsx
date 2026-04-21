@@ -23,6 +23,7 @@ interface AvailableWork {
   chinese_name?: string;
   area: string;
   area_name: string;
+  area_name_zh?: string;
   area_color: string;
   sequence: number;
 }
@@ -145,19 +146,20 @@ export default function PhotoEditModal({
       ? availableWorks.filter(w =>
           w.name.toLowerCase().includes(query) ||
           (w.chinese_name && w.chinese_name.includes(query)) ||
-          w.area_name.toLowerCase().includes(query)
+          w.area_name.toLowerCase().includes(query) ||
+          (w.area_name_zh && w.area_name_zh.includes(query))
         )
       : availableWorks;
 
-    // Group by area
+    // Group by area — use locale-aware name for display keys
     const grouped: Record<string, AvailableWork[]> = {};
     for (const w of works) {
-      const key = w.area_name || t('photoEdit.other');
+      const key = (locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name) || t('photoEdit.other');
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(w);
     }
     return grouped;
-  }, [availableWorks, workSearch]);
+  }, [availableWorks, workSearch, locale]);
 
   const handleAddTag = () => {
     if (tagInput.trim() && !formData.tags.includes(tagInput.trim())) {
@@ -362,7 +364,7 @@ export default function PhotoEditModal({
                     <p className="font-semibold text-emerald-900 text-sm">
                       {locale === 'zh' && selectedWork.chinese_name ? selectedWork.chinese_name : selectedWork.name}
                     </p>
-                    <p className="text-emerald-700 text-xs">{selectedWork.area_name}</p>
+                    <p className="text-emerald-700 text-xs">{locale === 'zh' && selectedWork.area_name_zh ? selectedWork.area_name_zh : selectedWork.area_name}</p>
                   </div>
                 </div>
                 <button
