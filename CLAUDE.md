@@ -144,16 +144,20 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 **🚨 NEVER automate email sending.** Claude creates drafts only. Tredoux reviews and sends every email manually. This prevents another blank-email disaster.
 
-### Active Reply Threads (as of Apr 19, 2026)
+### Active Reply Threads (as of Apr 21, 2026)
 
 **🔥 HOT — Multiplier Partners:**
-- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead.
+- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied Apr 18 with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead.
+- **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — NEW (Session 47). Skeptical reply: "I cannot understand how a simple photo can replace a teacher's observation." Draft reply created explaining Montree handles admin weight, not the observation itself. AWAITING TREDOUX SEND + RESPONSE.
+- **Cambridge Montessori Global (info@jalsaventures.com)** — NEW (Session 47). Replied "Let us know more about it please!" Draft reply created with full Montree overview + demo call request. AWAITING TREDOUX SEND + RESPONSE.
 
 **🔥 HOT — School Leads (asked for resume/CV):**
+- **The Ardee School, India (Sunpritt Dang, phone 9718902010)** — Gave phone number. Tredoux already contacted on WhatsApp (Session 47).
 - **I Cube Montessori, India (reachus@icubemontessori.com)** — "Warm Greetings... send your detailed resume." Tredoux sent resume + Montree pitch.
 - **Ace Montessori, India (acemontessorijngr@gmail.com)** — Gave phone number +91 9663373111. Direct contact.
 - **Meraki Montessori, India (management@merakimontessori.in)** — Asked for resume. Tredoux sent.
 - **Cape Town Montessori, SA (natalie@ctms.org.za, Natalie Sahli, Head of School)** — Asked for CV + working permit. Tredoux replied with resume, mentioned SA citizenship.
+- **Village Montessori, SC (info@villagemontessori.com)** — RESURRECTED (Session 47). Previously said "not interested" but came back and asked for resume. Tredoux sent.
 
 **⚠️ PIVOTED — Declined teaching, Tredoux pivoted to Montree pitch (awaiting reply):**
 - **Wā Ora NZ (joanne@waora.school.nz)** — Polite decline on teaching. Tredoux pivoted: "how about a Smart Classroom Operating System?"
@@ -161,7 +165,7 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - **Prerana Montessori, India (preranamontessori2002@gmail.com)** — No vacancy. Tredoux pivoted to Montree.
 
 **❌ DEAD:**
-- **Village Montessori, SC (info@villagemontessori.com)** — "Not interested. Please take us off your list." Marked `dead` in DB (Session 41).
+- (none currently — Village Montessori resurrected)
 
 **⏸ AUTO-REPLY:**
 - **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6.
@@ -169,6 +173,197 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 ---
 
 ## RECENT STATUS (Apr 21, 2026)
+
+### ⚡ Session 48 — Unified Photo Tagger + ThisIsSheet UX + Discussion Flag (Apr 21, 2026)
+
+**Three commits pushed to main: `17434ea5`, `33d7e219`.**
+
+**A. Unified Photo Tagger — Feature-Flagged Single Button (`17434ea5`):**
+
+User approved the plan from Session 47's continuation. Replaced the confusing Accept/Fix two-button split on AI Draft photo cards with a single "🏷️ This is..." button that opens ThisIsSheet for all card types (untagged, AI draft, confirmed). Feature-flagged behind `unified_photo_tagger` for safe rollback.
+
+**Changes to `app/montree/dashboard/photo-audit/page.tsx`:**
+- All three card types (untagged, sonnet_drafted, confirmed) now show a single "🏷️ This is..." button when `isEnabled('unified_photo_tagger')` is true
+- Old Accept/Fix buttons remain as fallback when flag is off
+- ThisIsSheet opens for every card type — existing works auto-populate search, new custom works easy to add
+
+**Changes to `lib/montree/features/types.ts`:**
+- Added `'unified_photo_tagger'` to FeatureKey union type
+
+**Migration 176 — run by user in Supabase SQL Editor:**
+```sql
+INSERT INTO montree_feature_definitions (feature_key, label, description, default_enabled)
+VALUES ('unified_photo_tagger', 'Unified Photo Tagger', 'Single This Is button on all photo audit cards', false)
+ON CONFLICT (feature_key) DO NOTHING;
+
+INSERT INTO montree_school_features (school_id, feature_key, enabled, enabled_by)
+VALUES ('c6280fae-567c-45ed-ad4d-934eae79aabc', 'unified_photo_tagger', true, 'migration_176')
+ON CONFLICT (school_id, feature_key) DO UPDATE SET enabled = true;
+```
+
+**B. ThisIsSheet UX Improvements (same commit):**
+
+User reported difficulty adding new custom works — the "+ New" option was hidden below search results. Three fixes:
+
+1. **Prominent "＋ New" button beside search bar** — always visible, never scrolled out of view. Purple outline, right next to the search input. Pre-fills with the current search query or Sonnet's proposed name.
+2. **Better addMode screen** — purple header banner "➕ Add a new work to your classroom curriculum", clear "What is the work called?" label, autoFocus on input, helpful placeholder examples.
+3. **Inline "change area" link** — area label + "change area" link directly on the quick-create button instead of a separate link below. Cleaner, more discoverable.
+
+**Also added:** Token-overlap fuzzy duplicate detection in ThisIsSheet — when creating a new custom work, checks for near-matches against existing curriculum (e.g. "Baric Tablet" vs "Baric Tablets") and warns the teacher before creating a duplicate.
+
+**C. Discussion Flag — 💬 Button + Discussion Tab (`33d7e219`):**
+
+User requested: "I want to be able to tag the photo into a new group called discussion" — for photos that need team discussion before resolution.
+
+**3 files changed:**
+
+1. **`app/montree/dashboard/photo-audit/page.tsx`:**
+   - `discussion_flag?: boolean` added to AuditPhoto interface
+   - `'discussion'` added to Zone type
+   - `handleToggleDiscussion` handler — PATCHes `discussion_flag` on `montree_media`, optimistic UI update
+   - 💬 button in AuditPhotoCard utility row (next to 📋 and 🗑️) — blue when flagged, subtle when not
+   - Discussion tab in ZONE_TABS with live count badge
+   - `filteredPhotos` excludes discussion-flagged photos from all non-discussion tabs (keeps the confirm queue clean)
+   - `isPhotoZone` updated to include `'discussion'`
+
+2. **`app/api/montree/audit/photos/route.ts`:**
+   - `discussion_flag` added to SELECT query
+   - `discussion_flag: m.discussion_flag === true` added to response assembly
+
+3. **`app/api/montree/media/route.ts`:**
+   - PATCH handler now accepts `discussion_flag` in request body
+   - `if (typeof discussion_flag === 'boolean') updateData.discussion_flag = discussion_flag;`
+
+**SQL migration needed (user to run in Supabase):**
+```sql
+ALTER TABLE montree_media ADD COLUMN IF NOT EXISTS discussion_flag BOOLEAN DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_montree_media_discussion_flag 
+  ON montree_media (school_id, discussion_flag) WHERE discussion_flag = true;
+```
+
+**How it works end-to-end:**
+1. Teacher sees a photo that needs team discussion → taps 💬 in the utility row
+2. Photo moves out of the Needs Review queue into the Discussion tab
+3. After team discussion, teacher can either: tap 💬 again to unflag (returns to review queue), OR tap "🏷️ This is..." to resolve it directly from the Discussion tab
+4. Discussion-flagged photos never clutter the confirm queue
+
+**🚨 Architectural notes:**
+- `discussion_flag` is client-side filtered only — the audit photos API returns all photos including discussion-flagged ones, and the client filters them into the correct tab. This means the Discussion tab only shows photos within the current date range. If a long-lived discussion photo falls outside the date range, it won't appear. Acceptable for now — teachers discuss photos within days, not weeks.
+- The 💬 button is in the utility row (bottom of card), NOT in the three-dot menu. User clarified "the little three dot expandable menu" referred to the utility buttons row (📋 🗑️), not a literal three-dot dropdown.
+
+**Files changed (5 files, 3 commits):**
+- `app/montree/dashboard/photo-audit/page.tsx` — unified tagger button + ThisIsSheet UX + discussion flag handler + tab + filtering + 💬 button
+- `lib/montree/features/types.ts` — `unified_photo_tagger` feature key
+- `components/montree/photo-audit/ThisIsSheet.tsx` — prominent "＋ New" button, better addMode, inline area link, fuzzy duplicate detection
+- `app/api/montree/audit/photos/route.ts` — `discussion_flag` in SELECT + response
+- `app/api/montree/media/route.ts` — PATCH accepts `discussion_flag`
+
+**Next session priorities:**
+1. **User: Run Discussion flag SQL migration** in Supabase SQL Editor (ALTER TABLE + CREATE INDEX above).
+2. **Campaign: Tredoux to trash duplicate drafts** — 6 duplicates + 1 bland Cambridge draft. Then send.
+3. **🚨 Campaign: Cancel GMass Campaign A** on gmass.co/dashboard before Apr 27 — STILL OUTSTANDING (5 days left).
+4. **Campaign: Send reply drafts** — Cambridge Montessori Global (good version with tiers) + Cathy Wilson NZ.
+5. **Campaign: Seed 17 expansion contacts into DB**.
+6. **Campaign: Draft next batch** from remaining `status='new'` contacts (203 in queue).
+7. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global, Cathy Wilson NZ, Ardee School (WhatsApp).
+8. **Campaign: Follow up on Montessori Norge** after May 6.
+9. **Execute Phase 2-4 of Chinese localization** per `CHINESE_LOCALIZATION_HANDOFF.md`.
+10. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md`.
+
+---
+
+### ⚡ Session 47 — Landing Page Compact + Video Upload XHR Fix + Campaign Triage (Apr 21, 2026)
+
+**Two commits pushed to main: `679612f7`, `9a78bd0a`.**
+
+**A. Landing Page Compact (`679612f7`):**
+
+User requested: "compact the montree home page... punchy and sharp... make sure this pricing page is in there somewhere."
+
+Changes to `app/montree/page.tsx`:
+- Compacted from 7 to 6 sections — removed repetitive content, tightened copy
+- Added "Pricing" nav link in hero navigation bar
+- Added Pricing Teaser section linking to `/montree/pricing`
+- Login select page (`app/montree/login-select/page.tsx`): added "View pricing & tiers →" link below help text
+
+**B. Video Manager XHR Upload Fix (`9a78bd0a`):**
+
+User reported 86MB video upload failing on teacherpotato.xyz with ERR_QUIC_PROTOCOL_ERROR and ERR_SSL_BAD_RECORD_MAC_ALERT. User explicitly rejected "just use montree.xyz" — teacherpotato.xyz must work independently since all parents have access to it.
+
+**Root cause:** `app/admin/video-manager/page.tsx` line 135-141 used bare `fetch()` PUT to Supabase signed URL with zero resilience. Chrome defaults to QUIC/HTTP3 protocol which is flaky on Chinese networks — large uploads drop mid-transfer.
+
+**Fix — XHR upload with retry + progress bar:**
+- Replaced `fetch()` PUT with `XMLHttpRequest` (more resilient, supports upload progress, doesn't default to QUIC)
+- 3x retry with exponential backoff (2s, 4s delays between attempts)
+- 10-minute timeout per attempt (`xhr.timeout = 600_000`)
+- Upload progress bar: green bar with percentage, amber "Connection dropped — retrying automatically..." on retry
+- `uploadProgress` state + progress bar UI in the upload modal
+- Video grid tiles: added `onError` retry with cache-bust for QUIC playback errors on existing videos
+
+**Key insight:** `STORAGE_BUCKET = 'videos'` in `lib/supabase-client.ts` — the Video Manager uses a bucket called `videos`, NOT `whale-media`. User may have lifted limits on the wrong bucket in Supabase dashboard.
+
+**🚨 teacherpotato.xyz is a SEPARATE SITE** that must remain fully functional — parents access it, it's independent from montree.xyz as far as anyone is concerned.
+
+**C. Campaign Triage — 2 New Hot Replies:**
+
+1. **Cambridge Montessori Global (info@jalsaventures.com)** — Replied "Let us know more about it please!" Draft reply created with full Montree overview + demo call request.
+2. **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — Skeptical: "I cannot understand how a simple photo can replace a teacher's observation." Draft reply created explaining Montree handles admin weight, not the observation itself. Thoughtful, non-defensive response.
+3. **The Ardee School, India (Sunpritt Dang, 9718902010)** — Gave phone number. Tredoux already contacted on WhatsApp.
+4. **Village Montessori, SC** — Previously marked `dead` (Session 41, "not interested"), came back and asked for resume. Tredoux sent. Resurrected.
+
+**D. 13 New Bounces Identified, 6 Marked in DB:**
+
+Scanned Gmail for `from:mailer-daemon newer_than:3d`. Found 13 permanent failures. 6 were in `montree_outreach_contacts` and marked `status='bounced'`: info@childrensdiscoveryhouse.com, admissions@wsmsnyc.org, info@ima.org.pl, admin@dovemontessori.com, info@montessoricountryschool.org, info@montessoriatflatiron.com. 7 were NOT in the DB (from GMass campaigns): info@brainychildmontessori.com, info@montessoriflatiron.com, info@sproutsmontessori.in, info@montessori.edu.pl, info@montessoricountry.org, contacto@colegiociudadela.cl, info@miedzynarodowa-montessori.pl.
+
+**E. Delivery Delays (Gmail retrying):**
+- Casa Del Mar Montessori (info@casadelmar-montessori.com)
+- International Montessori Myanmar (admin@immschool.com)
+- Montessori Lyceum Amsterdam (info@montessori-lyceum.nl)
+- Asociación Montessori de Chile (info@montessorichile.cl)
+- Associação Montessori do Brasil (contato@montessoribrasil.com.br)
+- Montessori Landesverband Bayern (info@montessori-bayern.de)
+- Escuela Montessori, Bogota (escnormalmariamont15@educacionbogota.edu.co)
+
+**F. User Deleted All 52 Old Drafts** — clean slate per Session 46 instructions. Fresh drafts being created this session with pre-send duplicate check.
+
+**G. Session 47 Continuation — 31 Fresh Outreach Drafts + Reply Draft Recovery:**
+
+Created 31 new outreach Gmail drafts from `status='new'` contacts with pre-send duplicate check (`to:DOMAIN in:sent`) for each. All use the sacred Montree pitch, personalized with contact names. 14 of 31 contacts were in `montree_outreach_contacts` and marked `status='drafted'`. The other 17 are from the master spreadsheet expansion and not yet seeded into the DB.
+
+**Cambridge Montessori Global reply draft recovered:** Context compaction mid-session lost the original high-quality draft. The replacement was bland. User rejected it. Recovered the original from the session transcript — full tier breakdown (Seed free / Guide $4/student/mo / Bloom $8/student/mo), 60-day free Bloom trial, 20% revenue share for life, CC to manish.g@cambridgemontessoriglobal.org. Two drafts now in Gmail for Cambridge — user must trash the bland one (dated ~22:52, starts "I'm glad the email caught your attention") and keep the good one (dated ~23:23, with tiers).
+
+**⚠️ Duplicate drafts from context compaction:** 6 contacts have two drafts each in Gmail. User must trash the older copy of each: kquiroz@beverlymontessori.org, admin@vms.lt, cfriedline@springmont.com, chimes_montessori@gmail.com, bhazarika@headsup.org, parachichimps.edu@gmail.com.
+
+**DB state after this session:**
+
+| Status | Count |
+|--------|-------|
+| new | 203 |
+| drafted | 91 |
+| sent | 199 |
+| bounced | 34 |
+| follow_up | 5 |
+| dead | 4 |
+| **Total** | **536** |
+
+**Files changed (3 files, 2 commits):**
+- `app/montree/page.tsx` — landing page compact + pricing teaser section
+- `app/montree/login-select/page.tsx` — pricing link
+- `app/admin/video-manager/page.tsx` — XHR upload with progress bar + 3x retry + video playback error recovery
+
+**Next session priorities:**
+1. **Campaign: Tredoux to trash duplicate drafts** — 6 duplicates + 1 bland Cambridge draft (see section G above). Then send.
+2. **🚨 Campaign: Cancel GMass Campaign A** on gmass.co/dashboard before Apr 27 — STILL OUTSTANDING (5 days left).
+3. **Campaign: Send reply drafts** — Cambridge Montessori Global (good version with tiers) + Cathy Wilson NZ. These are hot leads.
+4. **Campaign: Seed 17 expansion contacts into DB** — 17 of the 31 drafted schools are from the master spreadsheet but not in `montree_outreach_contacts`. Need to INSERT them so tracking works.
+5. **Campaign: Draft next batch** from remaining `status='new'` contacts (203 in queue).
+6. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global, Cathy Wilson NZ, Ardee School (WhatsApp).
+7. **Campaign: Follow up on Montessori Norge** after May 6.
+8. **Execute Phase 2-4 of Chinese localization** per `CHINESE_LOCALIZATION_HANDOFF.md`.
+9. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md`.
+10. **Verify AI toggle on production** — log into super-admin, toggle AI on/off for Whale Class, verify spend shows.
+
+---
 
 ### ⚡ Session 46 — Pricing Economics Discussion + Campaign Duplicate Audit + Email Triage (Apr 20-21, 2026)
 
