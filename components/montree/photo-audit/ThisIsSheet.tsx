@@ -567,7 +567,7 @@ export default function ThisIsSheet({
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        {w.area_name}
+                        {locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name}
                       </div>
                     </button>
                   ))}
@@ -608,7 +608,7 @@ export default function ThisIsSheet({
                             : fuzzyNearMatch.name}
                         </div>
                         <div style={{ fontSize: 10, color: '#92400e', marginTop: 2 }}>
-                          {fuzzyNearMatch.area_name} — tap to use this instead
+                          {locale === 'zh' && fuzzyNearMatch.area_name_zh ? fuzzyNearMatch.area_name_zh : fuzzyNearMatch.area_name} — {locale === 'zh' ? '点击使用' : 'tap to use this instead'}
                         </div>
                       </div>
                     </button>

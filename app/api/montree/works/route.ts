@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
         description: w.description,
         area: area?.area_key || 'unknown',
         area_name: area?.name || 'Unknown',
+        area_name_zh: area?.name_chinese || undefined,
         area_color: area?.color || '#666',
         sequence: w.sequence,
       };
