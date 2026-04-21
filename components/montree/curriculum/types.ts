@@ -8,16 +8,21 @@ export interface Work {
   age_range?: string;
   is_active: boolean;
   direct_aims?: string[];
+  direct_aims_zh?: string[];
   indirect_aims?: string[];
+  indirect_aims_zh?: string[];
   materials?: string[];
+  materials_zh?: string[];
   prerequisites?: string[];
   control_of_error?: string;
+  control_of_error_zh?: string;
   parent_description?: string;
   parent_description_zh?: string;
   why_it_matters?: string;
   why_it_matters_zh?: string;
   teacher_notes?: string;
   quick_guide?: string;
+  quick_guide_zh?: string;
   presentation_steps?: any[];
   sequence?: number;
   photo_url?: string;
@@ -56,6 +61,15 @@ export interface QuickGuideData {
   parent_description?: string;
   control_of_error?: string;
   why_it_matters?: string;
+  // Chinese versions
+  quick_guide_zh?: string;
+  materials_zh?: string[];
+  presentation_steps_zh?: Array<{step: number; title: string; description: string; tip: string}>;
+  direct_aims_zh?: string[];
+  indirect_aims_zh?: string[];
+  parent_description_zh?: string;
+  control_of_error_zh?: string;
+  why_it_matters_zh?: string;
 }
 
 export interface EditFormData {

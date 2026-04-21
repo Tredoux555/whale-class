@@ -19,7 +19,7 @@ export default function FullDetailsModal({
   guideData,
   loading,
 }: FullDetailsModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   if (!isOpen) {
     return null;
   }
@@ -54,10 +54,10 @@ export default function FullDetailsModal({
             ) : guideData ? (
               <>
                 {/* Quick Guide Section */}
-                {guideData.quick_guide && (
+                {(locale === 'zh' ? guideData.quick_guide_zh : guideData.quick_guide) && (
                   <div className="bg-yellow-900/40 border border-yellow-600/50 rounded-2xl p-4">
                     <h3 className="text-lg font-semibold text-yellow-300 mb-3">{t('details.quickGuide')}</h3>
-                    <p className="text-gray-100 text-sm leading-relaxed">{guideData.quick_guide}</p>
+                    <p className="text-gray-100 text-sm leading-relaxed">{locale === 'zh' ? guideData.quick_guide_zh : guideData.quick_guide}</p>
                   </div>
                 )}
 
@@ -97,11 +97,11 @@ export default function FullDetailsModal({
                 </div>
 
                 {/* Direct Aims Section */}
-                {guideData.direct_aims && guideData.direct_aims.length > 0 && (
+                {(locale === 'zh' ? guideData.direct_aims_zh : guideData.direct_aims)?.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-emerald-400 mb-3">{t('details.directAims')}</h3>
                     <ul className="space-y-2">
-                      {guideData.direct_aims.map((aim, index) => (
+                      {(locale === 'zh' ? guideData.direct_aims_zh : guideData.direct_aims)?.map((aim, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <span className="text-emerald-400 mt-1">•</span>
                           <span className="text-gray-100 text-sm">{aim}</span>
@@ -112,11 +112,11 @@ export default function FullDetailsModal({
                 )}
 
                 {/* Materials Section */}
-                {guideData.materials && guideData.materials.length > 0 && (
+                {(locale === 'zh' ? guideData.materials_zh : guideData.materials)?.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-emerald-400 mb-3">{t('details.materials')}</h3>
                     <ul className="space-y-2">
-                      {guideData.materials.map((material, index) => (
+                      {(locale === 'zh' ? guideData.materials_zh : guideData.materials)?.map((material, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <span className="text-emerald-400 mt-1">•</span>
                           <span className="text-gray-100 text-sm">{material}</span>
@@ -127,18 +127,18 @@ export default function FullDetailsModal({
                 )}
 
                 {/* Control of Error Section */}
-                {guideData.control_of_error && (
+                {(locale === 'zh' ? guideData.control_of_error_zh : guideData.control_of_error) && (
                   <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
                     <h3 className="text-lg font-semibold text-emerald-400 mb-2">{t('details.controlOfError')}</h3>
-                    <p className="text-gray-100 text-sm leading-relaxed">{guideData.control_of_error}</p>
+                    <p className="text-gray-100 text-sm leading-relaxed">{locale === 'zh' ? guideData.control_of_error_zh : guideData.control_of_error}</p>
                   </div>
                 )}
 
                 {/* Why It Matters Section */}
-                {guideData.why_it_matters && (
+                {(locale === 'zh' ? guideData.why_it_matters_zh : guideData.why_it_matters) && (
                   <div className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
                     <h3 className="text-lg font-semibold text-emerald-400 mb-2">{t('details.whyItMatters')}</h3>
-                    <p className="text-gray-100 text-sm leading-relaxed">{guideData.why_it_matters}</p>
+                    <p className="text-gray-100 text-sm leading-relaxed">{locale === 'zh' ? guideData.why_it_matters_zh : guideData.why_it_matters}</p>
                   </div>
                 )}
               </>

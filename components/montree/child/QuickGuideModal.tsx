@@ -20,7 +20,7 @@ export default function QuickGuideModal({
   loading,
   onOpenFullDetails,
 }: QuickGuideModalProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   if (!isOpen) return null;
 
@@ -52,24 +52,24 @@ export default function QuickGuideModal({
               <div className="animate-bounce text-3xl mb-2">📖</div>
               <p className="text-gray-500">{t('common.loadingGuide')}</p>
             </div>
-          ) : guideData?.quick_guide ? (
+          ) : (locale === 'zh' ? guideData?.quick_guide_zh : guideData?.quick_guide) ? (
             <div className="space-y-4">
               {/* Quick Guide Content */}
               <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-4 rounded-xl border border-amber-200">
                 <p className="font-bold text-amber-800 mb-2">⚡ {t('modal.tenSecondGuide')}</p>
                 <div className="text-sm text-amber-900 space-y-2">
-                  {guideData.quick_guide.split('\n').map((line: string, i: number) => (
+                  {(locale === 'zh' ? guideData.quick_guide_zh : guideData.quick_guide)?.split('\n').map((line: string, i: number) => (
                     <p key={i} className="leading-relaxed">{line}</p>
                   ))}
                 </div>
               </div>
 
               {/* Materials if available */}
-              {guideData.materials?.length > 0 && (
+              {(locale === 'zh' ? guideData.materials_zh : guideData.materials)?.length > 0 && (
                 <div className="bg-gray-50 p-3 rounded-xl">
                   <p className="font-semibold text-gray-700 text-sm mb-1">🧰 {t('common.materials')}</p>
                   <ul className="text-sm text-gray-600">
-                    {guideData.materials.map((m: string, i: number) => (
+                    {(locale === 'zh' ? guideData.materials_zh : guideData.materials)?.map((m: string, i: number) => (
                       <li key={i}>• {m}</li>
                     ))}
                   </ul>

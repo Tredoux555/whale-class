@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montree – One Photo. The Rest is Automatic.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --emerald: #10b981;
+      --emerald-deep: #059669;
+      --emerald-dark: #047857;
+      --forest: #064e3b;
+      --cream: #fefdfb;
+      --warm-gray: #78716c;
+      --stone: #44403c;
+      --light: #faf9f7;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      color: var(--stone);
+      background: var(--cream);
+      line-height: 1.7;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ==================== NAV ==================== */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 1.2rem 2rem;
+      background: rgba(254,253,251,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      transition: all 0.3s;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--forest);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--emerald); }
+    .nav-cta {
+      padding: 0.6rem 1.4rem;
+      background: var(--forest);
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: all 0.3s;
+    }
+    .nav-cta:hover { background: var(--emerald-dark); transform: translateY(-1px); }
+
+    /* ==================== HERO ==================== */
+    .hero {
+      margin-top: 60px;
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, rgba(16,185,129,0.3));
+    }
+    .hero-inner {
+      max-width: 800px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--emerald-deep);
+      letter-spacing: 0.5px;
+      margin-bottom: 2rem;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--forest);
+      margin-bottom: 1.5rem;
+      letter-spacing: -1.5px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--emerald);
+    }
+    .hero-sub {
+      font-size: 1.25rem;
+      color: var(--warm-gray);
+      max-width: 580px;
+      margin: 0 auto 3rem;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* ==================== THE MOMENT — the core differentiator ==================== */
+    .the-moment {
+      padding: 6rem 2rem;
+      background: var(--forest);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    .the-moment::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      right: -200px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .moment-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+    }
+    .moment-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .moment-inner h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 400;
+      line-height: 1.35;
+      margin-bottom: 3rem;
+      color: rgba(255,255,255,0.95);
+      letter-spacing: -0.5px;
+    }
+    .moment-inner h2 strong {
+      color: #6ee7b7;
+      font-weight: 700;
+    }
+
+    /* The flow visualization */
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin: 3rem 0;
+    }
+    .flow-step {
+      flex: 1;
+      padding: 2rem 1.5rem;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 20%;
+      height: 60%;
+      width: 1px;
+      background: rgba(255,255,255,0.1);
+    }
+    .flow-number {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #6ee7b7;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+    }
+    .flow-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 0.6rem;
+      color: white;
+    }
+    .flow-desc {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.6;
+    }
+    .flow-time {
+      display: inline-block;
+      margin-top: 1rem;
+      padding: 0.25rem 0.7rem;
+      background: rgba(110,231,183,0.1);
+      border: 1px solid rgba(110,231,183,0.2);
+      border-radius: 100px;
+      font-size: 0.72rem;
+      color: #6ee7b7;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 768px) {
+      .flow { flex-direction: column; gap: 1rem; }
+      .flow-step::after { display: none; }
+      .flow-step { padding: 1.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    }
+
+    /* ==================== WHAT THEY DO vs WHAT WE DO ==================== */
+    .contrast {
+      padding: 6rem 2rem;
+      background: var(--light);
+    }
+    .contrast-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .contrast-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--warm-gray);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .contrast h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--forest);
+      margin-bottom: 3rem;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+    }
+
+    .vs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .vs-col {
+      padding: 2.5rem;
+    }
+    .vs-col.them {
+      background: #f5f0eb;
+    }
+    .vs-col.us {
+      background: white;
+      border-left: 3px solid var(--emerald);
+    }
+    .vs-header {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .vs-col.them .vs-header { color: #a8a29e; }
+    .vs-col.us .vs-header { color: var(--emerald); }
+
+    .vs-item {
+      margin-bottom: 1.8rem;
+    }
+    .vs-item:last-child { margin-bottom: 0; }
+    .vs-item-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+      color: var(--stone);
+    }
+    .vs-col.them .vs-item-title { color: #a8a29e; }
+    .vs-item-desc {
+      font-size: 0.85rem;
+      color: var(--warm-gray);
+      line-height: 1.6;
+    }
+    .vs-col.them .vs-item-desc { color: #c4b5a5; }
+
+    @media (max-width: 640px) {
+      .vs-grid { grid-template-columns: 1fr; }
+      .vs-col.us { border-left: none; border-top: 3px solid var(--emerald); }
+    }
+
+    /* ==================== THE FIVE THINGS ONLY MONTREE DOES ==================== */
+    .only-us {
+      padding: 6rem 2rem;
+      background: var(--cream);
+    }
+    .only-us-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .only-us-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--warm-gray);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .only-us h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--forest);
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+    .only-us > .only-us-inner > p {
+      color: var(--warm-gray);
+      font-size: 1.05rem;
+      margin-bottom: 3rem;
+      max-width: 600px;
+    }
+
+    .capability {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 1.5rem;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      align-items: start;
+    }
+    .capability:last-child { border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .cap-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--emerald);
+      font-weight: 700;
+      line-height: 1;
+      padding-top: 0.2rem;
+    }
+    .cap-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--forest);
+      margin-bottom: 0.4rem;
+    }
+    .cap-desc {
+      font-size: 0.92rem;
+      color: var(--warm-gray);
+      line-height: 1.7;
+    }
+
+    /* ==================== THE TEACHER WHO BUILT IT ==================== */
+    .origin {
+      padding: 6rem 2rem;
+      background: var(--forest);
+      color: white;
+    }
+    .origin-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .origin-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .origin h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.5rem);
+      font-weight: 400;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 2rem;
+    }
+    .origin h2 strong { color: #6ee7b7; font-weight: 700; }
+    .origin p {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+    }
+    .origin-stat {
+      display: inline-flex;
+      gap: 3rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .origin-stat div {
+      text-align: center;
+    }
+    .origin-stat strong {
+      display: block;
+      font-size: 1.8rem;
+      color: #6ee7b7;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+    .origin-stat span {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ==================== THE BRAIN — the moat ==================== */
+    .brain {
+      padding: 6rem 2rem;
+      background: var(--light);
+    }
+    .brain-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .brain-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--warm-gray);
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+    .brain h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--forest);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+    .brain > .brain-inner > p {
+      font-size: 1.05rem;
+      color: var(--warm-gray);
+      margin-bottom: 3rem;
+      max-width: 650px;
+      line-height: 1.7;
+    }
+    .brain-visual {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem;
+      border: 1px solid rgba(0,0,0,0.06);
+      position: relative;
+      overflow: hidden;
+    }
+    .brain-visual::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--emerald), var(--emerald-deep), var(--forest));
+    }
+    .brain-loop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      padding: 1rem 0;
+    }
+    .loop-node {
+      padding: 0.9rem 1.4rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      min-width: 140px;
+    }
+    .loop-node.action { background: rgba(16,185,129,0.08); color: var(--emerald-deep); border: 1px solid rgba(16,185,129,0.15); }
+    .loop-node.learn { background: var(--forest); color: #6ee7b7; }
+    .loop-node.improve { background: rgba(16,185,129,0.15); color: var(--forest); border: 1px solid rgba(16,185,129,0.25); }
+    .loop-arrow {
+      font-size: 1.2rem;
+      color: var(--emerald);
+      font-weight: 300;
+    }
+    .brain-caption {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: var(--warm-gray);
+      font-style: italic;
+    }
+
+    /* ==================== CTA ==================== */
+    .cta {
+      padding: 6rem 2rem;
+      text-align: center;
+      background: var(--cream);
+    }
+    .cta-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .cta h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--forest);
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.5px;
+    }
+    .cta p {
+      color: var(--warm-gray);
+      font-size: 1.05rem;
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+    .cta-btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: var(--forest);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .cta-btn:hover {
+      background: var(--emerald-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(6,78,59,0.2);
+    }
+    .cta-note {
+      margin-top: 1.2rem;
+      font-size: 0.8rem;
+      color: #a8a29e;
+    }
+
+    /* ==================== FOOTER ==================== */
+    footer {
+      padding: 3rem 2rem;
+      text-align: center;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    footer p {
+      font-size: 0.85rem;
+      color: #a8a29e;
+    }
+    footer a { color: var(--emerald); text-decoration: none; }
+
+    /* ==================== ANIMATIONS ==================== */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">Mon<span>tree</span></a>
+      <a href="mailto:tredoux555@gmail.com" class="nav-cta">Request a Demo</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">Built by a Montessori teacher, for Montessori teachers</div>
+      <h1>A teacher takes a photo.<br><em>Montree does the rest.</em></h1>
+      <p class="hero-sub">The first classroom management system that actually understands Montessori. No data entry. No spreadsheets. No templates. Just one photo — and everything a teacher, parent, and principal needs appears automatically.</p>
+    </div>
+  </section>
+
+  <!-- THE MOMENT -->
+  <section class="the-moment">
+    <div class="moment-inner">
+      <div class="moment-label">What happens when you take one photo</div>
+      <h2>A child is working on the Pink Tower. You take a picture. Before you've moved to the next child, <strong>Montree has already identified the work, recorded the observation, updated the child's progress, determined what she should work on next, and started writing her parent report.</strong></h2>
+
+      <div class="flow reveal">
+        <div class="flow-step">
+          <div class="flow-number">01 — Capture</div>
+          <div class="flow-title">You snap a photo</div>
+          <div class="flow-desc">A child is concentrating on Montessori materials. You capture the moment.</div>
+          <div class="flow-time">1 second</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">02 — Recognize</div>
+          <div class="flow-title">AI identifies the work</div>
+          <div class="flow-desc">"Pink Tower — Sensorial." The system knows what it's seeing. It learns your classroom.</div>
+          <div class="flow-time">Instant</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">03 — Track</div>
+          <div class="flow-title">Progress updates itself</div>
+          <div class="flow-desc">Presented → Practicing → Mastered. Curriculum mapping. Sensitive periods. All automatic.</div>
+          <div class="flow-time">Automatic</div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-number">04 — Report</div>
+          <div class="flow-title">Parents receive real insight</div>
+          <div class="flow-desc">Not a template. A genuine, personal account of what their child learned and why it matters.</div>
+          <div class="flow-time">End of week</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT THEY DO vs WHAT WE DO -->
+  <section class="contrast">
+    <div class="contrast-inner">
+      <div class="contrast-label">The difference</div>
+      <h2>Every other system asks the teacher to describe what happened. Montree already knows.</h2>
+
+      <div class="vs-grid reveal">
+        <div class="vs-col them">
+          <div class="vs-header">Traditional Systems</div>
+          <div class="vs-item">
+            <div class="vs-item-title">Type observations manually</div>
+            <div class="vs-item-desc">Teacher stops, opens laptop, types what they saw. Loses the moment.</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">Check boxes on a spreadsheet</div>
+            <div class="vs-item-desc">Presented? Practicing? Mastered? Click, click, click. For every child. Every work.</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">Write reports from memory</div>
+            <div class="vs-item-desc">Friday evening. 20 children. What did Amy do on Tuesday? What was Eric working on?</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">Guess what comes next</div>
+            <div class="vs-item-desc">Teacher intuition is beautiful. But alone, it doesn't scale to 20 children across 5 areas.</div>
+          </div>
+        </div>
+        <div class="vs-col us">
+          <div class="vs-header">Montree</div>
+          <div class="vs-item">
+            <div class="vs-item-title">Take a photo</div>
+            <div class="vs-item-desc">The AI sees the work, identifies it, records the observation. Teacher stays with the child.</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">Progress tracks itself</div>
+            <div class="vs-item-desc">Photo count drives status. 1 photo = Presented. Multiple = Practicing. Teacher confirms mastery.</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">Reports write themselves</div>
+            <div class="vs-item-desc">Every parent gets a genuine, personal letter. With photos. With developmental context. Automatically.</div>
+          </div>
+          <div class="vs-item">
+            <div class="vs-item-title">AI plans the next step</div>
+            <div class="vs-item-desc">The Smart Shelf: 5 works, 5 areas, personalized per child. Based on mastery, readiness, and sensitive periods.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIVE THINGS ONLY MONTREE DOES -->
+  <section class="only-us">
+    <div class="only-us-inner">
+      <div class="only-us-label">What makes us different</div>
+      <h2>Five things no other system can do</h2>
+      <p>These aren't features. They're fundamental capabilities that require a completely different architecture.</p>
+
+      <div class="capability reveal">
+        <div class="cap-number">01</div>
+        <div>
+          <div class="cap-title">Visual Work Recognition</div>
+          <div class="cap-desc">The camera sees a child with Montessori materials and identifies the specific work — "Sandpaper Letters," "Golden Beads," "Pouring Water." No barcodes. No QR codes. No manual selection from a dropdown. The AI sees what the teacher sees.</div>
+        </div>
+      </div>
+
+      <div class="capability reveal">
+        <div class="cap-number">02</div>
+        <div>
+          <div class="cap-title">A Brain That Gets Smarter Every Day</div>
+          <div class="cap-desc">Every teacher correction teaches the system. "That's not Cutting — that's Sewing." Now it knows. The more your teachers use it, the more accurate it becomes. Your classroom builds its own visual memory. No other system learns from its mistakes.</div>
+        </div>
+      </div>
+
+      <div class="capability reveal">
+        <div class="cap-number">03</div>
+        <div>
+          <div class="cap-title">Parent Reports That Are Actually Personal</div>
+          <div class="cap-desc">Not "Your child had a great week!" Not a template with a name swapped in. A genuine letter explaining what your child worked on, what they're developing, what comes next, and why it matters — written from the photos the teacher took that week.</div>
+        </div>
+      </div>
+
+      <div class="capability reveal">
+        <div class="cap-number">04</div>
+        <div>
+          <div class="cap-title">The Smart Shelf</div>
+          <div class="cap-desc">For every child, every week: five works across five curriculum areas, chosen by AI based on what they've mastered, what they're ready for, and which sensitive periods are active. The teacher opens the app and sees exactly what to present next. Like GPS for Montessori progression.</div>
+        </div>
+      </div>
+
+      <div class="capability reveal">
+        <div class="cap-number">05</div>
+        <div>
+          <div class="cap-title">A Montessori Expert on Demand</div>
+          <div class="cap-desc">A parent asks: "Why is my child doing the same work every day?" Instead of a 20-minute email, Montree answers instantly — with developmental context, sensitive period awareness, and specific reference to their child's activity. Teachers get the same expert guidance, voice-first, right on the child's page.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE TEACHER WHO BUILT IT -->
+  <section class="origin">
+    <div class="origin-inner">
+      <div class="origin-label">Origin</div>
+      <h2>This wasn't built in a tech lab. It was built <strong>in a classroom</strong>, by a teacher who got tired of choosing between paperwork and children.</h2>
+      <p>Montree is used every day in a real Montessori classroom with 20 children. Every feature exists because a working teacher needed it. Every bug was found because a working teacher hit it. This isn't theoretical — it's battle-tested.</p>
+      <div class="origin-stat">
+        <div><strong>20</strong><span>Children daily</span></div>
+        <div><strong>5</strong><span>Curriculum areas</span></div>
+        <div><strong>384</strong><span>Works recognized</span></div>
+        <div><strong>0</strong><span>Hours of paperwork</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE BRAIN -->
+  <section class="brain">
+    <div class="brain-inner">
+      <div class="brain-label">The invisible advantage</div>
+      <h2>A system that gets smarter in silence</h2>
+      <p>Most software stays the same. Montree improves every day, invisibly, from every interaction in every classroom. The more your teachers use it, the more valuable it becomes. That's not a feature — it's a compounding advantage.</p>
+
+      <div class="brain-visual reveal">
+        <div class="brain-loop">
+          <div class="loop-node action">Teacher takes photo</div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-node learn">AI identifies work</div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-node action">Teacher confirms or corrects</div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-node improve">AI learns the correction</div>
+          <div class="loop-arrow">→</div>
+          <div class="loop-node learn">Next photo is more accurate</div>
+        </div>
+        <div class="brain-caption">Every correction makes the system permanently smarter. Your school's AI brain is unique to your classroom.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="cta-inner">
+      <h2>See what one photo can do</h2>
+      <p>15 minutes. No installation. No training required. We'll show you what happens when a teacher is free to just teach.</p>
+      <a href="mailto:tredoux555@gmail.com?subject=Montree Demo Request" class="cta-btn">Request a Demo</a>
+      <div class="cta-note">Built by a teacher. Used every day. Ready for your school.</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p><a href="https://montree.xyz">montree.xyz</a></p>
+    <p style="margin-top: 0.5rem;">The future of Montessori classroom management</p>
+  </footer>
+
+  <script>
+    // Reveal on scroll
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>
