@@ -59,8 +59,8 @@ When the user says anything like "what's happening with the campaign", "campaign
 
 Use `mcp__f0875e82-fdd3-4aed-b646-de80b534357f__create_draft` with `isHtml: false` (plain text only — HTML drafts via API show raw tags in Gmail compose).
 
-**🚨 PRE-SEND DUPLICATE CHECK (MANDATORY — Session 46 rule):**
-Before creating ANY draft, search `to:DOMAIN in:sent` via `search_threads` for EVERY recipient. The DB `status` field is NOT reliable for dedup — GMass Campaigns C/D sent to ~335 schools not tracked in the DB, and context-loss sessions have created drafts for already-contacted schools. Session 46 found 20 of 52 drafts were duplicates. A duplicate cold email signals "mass spam" and kills the lead.
+**🚨 PRE-SEND DUPLICATE CHECK (MANDATORY — Session 46 rule, extended Session 50):**
+Before creating ANY draft — **cold outreach OR reply** — search `to:DOMAIN in:sent` via `search_threads` for EVERY recipient. The DB `status` field is NOT reliable for dedup — GMass Campaigns C/D sent to ~335 schools not tracked in the DB, and context-loss sessions have created drafts for already-contacted schools. Session 46 found 20 of 52 drafts were duplicates. **Session 50 proved this also applies to REPLY drafts**: Jakarta Montessori had already been emailed 4 times + 2 reply drafts sent earlier in the same session, but context compaction lost visibility, and a 5th duplicate was nearly created. A duplicate cold email signals "mass spam" and kills the lead. A duplicate reply signals incompetence.
 
 **Personalization**: Each email MUST be customized for the recipient. Use the contact's `org_name`, `country`, `contact_person`, and any `notes` to tailor the opening line. The sacred email body stays the same but the greeting and any contextual hook should be specific.
 
@@ -144,12 +144,11 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 **🚨 NEVER automate email sending.** Claude creates drafts only. Tredoux reviews and sends every email manually. This prevents another blank-email disaster.
 
-### Active Reply Threads (as of Apr 21, 2026)
+### Active Reply Threads (as of Apr 21, 2026 — updated Session 50)
 
 **🔥 HOT — Multiplier Partners:**
 - **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied Apr 18 with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead.
-- **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — NEW (Session 47). Skeptical reply: "I cannot understand how a simple photo can replace a teacher's observation." Draft reply created explaining Montree handles admin weight, not the observation itself. AWAITING TREDOUX SEND + RESPONSE.
-- **Cambridge Montessori Global (info@jalsaventures.com)** — NEW (Session 47). Replied "Let us know more about it please!" Draft reply created with full Montree overview + demo call request. AWAITING TREDOUX SEND + RESPONSE.
+- **Cambridge Montessori Global (info@jalsaventures.com)** — Replied "Let us know more about it please!" Draft reply created with full Montree overview + tier breakdown + demo call request. AWAITING TREDOUX SEND + RESPONSE.
 
 **🔥 HOT — School Leads (asked for resume/CV):**
 - **The Ardee School, India (Sunpritt Dang, phone 9718902010)** — Gave phone number. Tredoux already contacted on WhatsApp (Session 47).
@@ -164,8 +163,11 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 - **Remuera NZ (info@remueramontessori.co.nz)** — Fully staffed. Tredoux pivoted to Montree.
 - **Prerana Montessori, India (preranamontessori2002@gmail.com)** — No vacancy. Tredoux pivoted to Montree.
 
+**💡 COMPETITIVE INTEL:**
+- **Jakarta Montessori School (info@jakartamontessori.com)** — Replied Session 50: already using **Montessori Compass** (competitor). Useful data point — Montessori Compass is active in SE Asia market. No further follow-up needed.
+
 **❌ DEAD:**
-- (none currently — Village Montessori resurrected)
+- **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — Session 50: Replied that the Board discussed but "it is not something we wish to explore." Marked dead.
 
 **⏸ AUTO-REPLY:**
 - **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6.
@@ -173,6 +175,198 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 ---
 
 ## RECENT STATUS (Apr 21, 2026)
+
+### ⚡ Session 51 — Chinese Localization Phase 3-4 Complete (Apr 21, 2026)
+
+**One commit pushed to main: `18600fcf`.**
+
+**The Task:** Complete Chinese localization Phases 3-4 from `CHINESE_LOCALIZATION_HANDOFF.md` — locale-aware area names across all remaining UI components.
+
+**Root Cause Found:** `montree_classroom_curriculum_areas.name_chinese` was NULL for all 6 Whale Class areas despite the column existing. This caused all area name lookups to fall back to English. Additionally, `AREA_CONFIG` in `lib/montree/types.ts` had no Chinese names as a fallback.
+
+**Audit Results — Most Files Already Fixed:** A comprehensive audit of all 15+ files in the handoff doc found that Sessions 45+49 had already fixed 12 of them. Only 2 critical infrastructure gaps remained, plus downstream consumer fixes.
+
+**Changes (7 files):**
+
+1. **`lib/montree/types.ts`** — Added `nameZh: string` to AREA_CONFIG interface + Chinese values for all 6 areas (practical_life='日常', sensorial='感官', mathematics='数学', language='语言', cultural='文化', special_events='特别活动'). This is the universal fallback when DB returns null.
+
+2. **`lib/montree/hooks/useClassroomWorks.ts`** — Added `area_name_zh?: string` to `ClassroomWork` interface. Population: `w.area?.name_chinese || AREA_CONFIG[areaKey]?.nameZh`. All consumers of this hook now have Chinese area names available.
+
+3. **`app/api/montree/curriculum/route.ts`** — Added `name_chinese` to `DEFAULT_AREAS` array. New classrooms seeded via this endpoint now get Chinese area names from day one.
+
+4. **`app/api/montree/works/route.ts`** — Added `area_name_zh: area?.name_chinese || undefined` to the response map. PhotoEditModal's data source now includes Chinese area names.
+
+5. **`components/montree/photo-audit/ThisIsSheet.tsx`** — Search results area badge (line 570) + fuzzy near-match area display (line 611) now locale-aware: `{locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name}`.
+
+6. **`components/montree/WorkWheelPicker.tsx`** — Global search results area badge (line 364) now locale-aware.
+
+7. **`components/montree/media/PhotoEditModal.tsx`** — Added `area_name_zh?: string` to AvailableWork interface. Area grouping keys, filter display, and selected work area display all locale-aware. Chinese area name search support added.
+
+**DB backfill executed:** Updated all 6 rows in `montree_classroom_curriculum_areas` for Whale Class classroom (`51e7adb6-cd18-4e03-b707-eceb0a1d2e69`) — set `name_chinese` values that were all NULL.
+
+**Chinese Localization Status — ALL 4 PHASES COMPLETE:**
+- Phase 1 (centralize AREA_LABELS) — Session 45 ✅
+- Phase 2 (bilingual game plans) — Session 49 ✅
+- Phase 3 (Child Guru + Photo Audit area rendering) — Session 51 ✅
+- Phase 4 (sweep remaining tiers) — Session 51 ✅ (audit found most already done)
+
+**Files changed (7 files, 1 commit, +29 -21 lines):**
+- `lib/montree/types.ts` — `nameZh` on AREA_CONFIG
+- `lib/montree/hooks/useClassroomWorks.ts` — `area_name_zh` on ClassroomWork
+- `app/api/montree/curriculum/route.ts` — `name_chinese` on DEFAULT_AREAS
+- `app/api/montree/works/route.ts` — `area_name_zh` in response
+- `components/montree/photo-audit/ThisIsSheet.tsx` — locale-aware area badges
+- `components/montree/WorkWheelPicker.tsx` — locale-aware area badge
+- `components/montree/media/PhotoEditModal.tsx` — locale-aware area names
+
+**Next session priorities:**
+1. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+2. **Health Check Section B** — 3 mechanical sweeps.
+3. **Campaign: Draft next batch** from remaining 88 `status='new'` contacts.
+4. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
+5. **Campaign: Follow up on Montessori Norge** after May 6.
+6. **Verify bilingual game plans + area names on production** — switch locales, confirm everything renders in Chinese.
+
+---
+
+### ⚡ Session 50 — Campaign Batch of 50 + Bounce Triage + Jakarta Competitive Intel + CLAUDE.md Update (Apr 21, 2026)
+
+**No code commits.** Pure campaign operations + brain update.
+
+**A. Campaign — 50 Gmail Drafts Created (daily target hit):**
+
+Created 50 personalized outreach Gmail drafts from `montree_outreach_contacts` with `status='new'`. All verified clean via post-hoc `to:DOMAIN in:sent` search. All use the sacred Montree pitch, personalized with contact person names and org names. All 50 contacts marked `status='drafted'` in DB.
+
+**B. Bounce Triage — 19 Bounces Marked:**
+
+Scanned Gmail for `from:mailer-daemon newer_than:1d`. Found 19 permanent failures from today's sends. All marked `status='bounced'` in `montree_outreach_contacts`: 9 from this session's batch + 10 from earlier user sends.
+
+**C. Reply Triage:**
+
+1. **Jakarta Montessori School (info@jakartamontessori.com)** — Replied: already using **Montessori Compass** (competitor). Competitive intel noted. No further follow-up.
+2. **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — Board discussed, declined: "not something we wish to explore." Marked `status='dead'`.
+
+**D. Jakarta Duplicate Reply Disaster (caught by user):**
+
+Context compaction mid-session lost visibility on reply drafts already sent earlier. Created a duplicate competitive-response draft for Jakarta Montessori without checking sent history first. User caught it — Jakarta had already received 4 emails + 2 reply drafts. Draft trashed.
+
+**🚨 NEW RULE (extends Session 46):** The pre-send duplicate check (`to:DOMAIN in:sent`) must apply to **reply drafts too**, not just cold outreach. This is especially critical after context compaction where earlier session actions are invisible. Updated in Campaign Manager section above.
+
+**E. Confirmed Done (from prior session priorities):**
+- ✅ Discussion flag SQL migration — `discussion_flag` column confirmed on `montree_media`
+- ✅ GMass Campaign A cancelled — user confirmed
+- ✅ Duplicate drafts trashed — user confirmed (prior session)
+
+**DB state after this session:**
+
+| Status | Count |
+|--------|-------|
+| new | 88 |
+| drafted | 120 |
+| sent | 257 |
+| bounced | 58 |
+| replied | 2 |
+| follow_up | 6 |
+| dead | 5 |
+| **Total** | **536** |
+
+**Next session priorities:**
+1. **Execute Phase 3 of Chinese localization** per `CHINESE_LOCALIZATION_HANDOFF.md` — Child Guru + Photo Audit area rendering.
+2. **Execute Phase 4 of Chinese localization** — Sweep remaining tiers: Daily Brief, Focus List, Paperwork Tracker, toasts, onboarding.
+3. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — start with #11 (logApiUsage wiring, 5 files).
+4. **Health Check Section B** — 3 mechanical sweeps (`: any`/`as any`, `@ts-nocheck`, structured logging).
+5. **Campaign: Draft next batch** from remaining 88 `status='new'` contacts (~2 more days).
+6. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
+7. **Campaign: Follow up on Montessori Norge** after May 6.
+8. **Verify bilingual game plans on production** — switch locales, confirm instant language switch.
+
+---
+
+### ⚡ Session 49 — Bilingual Game Plan JSONB + Multilingual Architecture Doc (Apr 21, 2026)
+
+**Two commits pushed to main: `ffd586e5`, `83ecf7a7`.**
+
+**The Problem:** Session 45 regenerated all 20 Whale Class game plans in Chinese via `run_replan_all_whale_zh.mjs`. But the render path in `FocusWorksSection.tsx` displayed game plan content verbatim — no locale layer. Result: when viewing the site in English, nudge/works/direction all showed in Chinese. No way to switch.
+
+**The Solution — Bilingual JSONB Storage Pattern:**
+
+All AI-generated game plan fields now stored as locale-keyed JSON objects instead of plain strings:
+```json
+{
+  "nudge": { "en": "Ready for the brown stair", "zh": "准备好棕色楼梯了" },
+  "works": { "en": ["Pink Tower", "Brown Stair"], "zh": ["粉红塔", "棕色楼梯"] },
+  "direction": { "en": "Sensorial → Mathematics", "zh": "感官 → 数学" }
+}
+```
+
+**New TypeScript types + resolver functions** (exported from `GamePlanCard.tsx`):
+- `LocalizedString = string | Record<string, string>` — single value
+- `LocalizedStringArray = string[] | Record<string, string[]>` — array value
+- `resolveLocalized(val, locale)` — picks by locale, falls back to `en`, then first available
+- `resolveLocalizedArray(val, locale)` — same for arrays
+- All three handle legacy plain strings seamlessly (backward compat, no migration needed)
+
+**Generation Pipeline — English canonical, Chinese derived:**
+1. **Nudge**: Haiku generates both `nudge_en` and `nudge_zh` in a single `tool_use` call (two separate fields in tool schema). This is the only field where AI translates.
+2. **Works**: Haiku picks from English curriculum names (the `name` column). Chinese work names looked up from `name_chinese` column via `enToZhWorkName` map. No AI translation needed.
+3. **Direction**: Haiku writes English area names. Chinese derived by string-replacing English area names with Chinese equivalents from `AREA_LABELS_ZH`.
+
+**Render Path (`FocusWorksSection.tsx`):**
+- `resolveLocalized(gamePlan?.nudge, locale)` and `resolveLocalizedArray(gamePlan?.works, locale)` — locale from `useI18n()`
+- Switching language instantly resolves the other language — no API call, no regeneration
+- `handleFillShelf` always sends English canonical names (`planWorksEn`) for DB matching
+
+**A. Commit `ffd586e5` — Bilingual game plan: locale-aware JSONB storage + render resolvers (5 files):**
+
+1. **`components/montree/child/GamePlanCard.tsx`** — Added `LocalizedString`, `LocalizedStringArray` types + `resolveLocalized()`, `resolveLocalizedArray()` functions. Updated `GamePlan` interface fields to use bilingual types.
+
+2. **`components/montree/child/FocusWorksSection.tsx`** — Imports resolvers from GamePlanCard. `planNudge`, `planWorks`, `planDirection` now use `resolveLocalized`/`resolveLocalizedArray` with locale. Added `planWorksEn` (always English) for fill-shelf DB matching. Removed old `workNameZhMap`, `resolveWorkName`, `localizedDirection` workarounds.
+
+3. **`lib/montree/reports/replan-child.ts`** — Weekly Wrap replan pipeline now generates bilingual JSONB. Imports `AREA_LABELS_EN`/`AREA_LABELS_ZH`. Tool schema: `nudge` → `nudge_en` + `nudge_zh`. Builds `enToZhWorkName` lookup from curriculum DB. Post-processing constructs `{ en, zh }` objects for nudge/works/direction. Gap-fill section updated to extract flat English array from potentially bilingual `previousWorks`.
+
+4. **`app/api/montree/children/[childId]/game-plan/refresh/route.ts`** — Interactive refresh endpoint. Same bilingual pattern as replan-child.ts. Previous nudge/works extraction handles both legacy string and new bilingual object format.
+
+5. **`scripts/run_replan_all_whale.mjs`** — Manual batch replan script. Inline `AREA_LABELS_EN`/`AREA_LABELS_ZH` (can't import TS). Same tool schema, prompt, and post-processing updates. Added `timeout: 120000` to Anthropic client. Added skip-if-already-bilingual check in main loop.
+
+**B. Commit `83ecf7a7` — Architecture doc + script fixes (2 files):**
+
+1. **`docs/MULTILINGUAL_ARCHITECTURE.md`** (NEW, 138 lines) — Documents the bilingual JSONB pattern, resolver functions, generation pipeline, render path, fill-shelf behavior, and how to add a third language. Covers content tiers (static UI strings, AI-generated per-child, curriculum data), performance (~300 bytes extra per language), and gradual migration path.
+
+2. **`scripts/run_replan_all_whale.mjs`** — Fixed TypeScript error in gap-fill section (extracted `previousWorks` to flat English array before `.map()` call). Added Anthropic SDK timeout.
+
+**Batch Regen — 20/20 Whale Class Children Bilingual:**
+
+Ran `scripts/run_replan_all_whale.mjs`. All 20 children now have bilingual `{ en, zh }` game plans. Script skips children already bilingual. Verified programmatically: every child's `settings.game_plan.nudge` is an object with both `en` and `zh` keys.
+
+**🚨 Architectural notes for future sessions:**
+- **`resolveLocalized()` and `resolveLocalizedArray()` are the canonical resolvers** — exported from `GamePlanCard.tsx`. When more components need them, extract to `lib/montree/i18n/localized-types.ts`.
+- **Haiku always generates English works** — Chinese derived post-generation from `name_chinese` DB column. This ensures DB matching reliability (the `name` column is always English).
+- **Fill-shelf always uses `planWorksEn`** — never send locale-resolved names to the server for shelf operations.
+- **Backward compat**: `resolveLocalized()` returns plain strings as-is. Old plans with `nudge: "some text"` continue to work. Plans naturally upgrade to bilingual on next refresh/replan.
+- **Adding a third language**: See `docs/MULTILINGUAL_ARCHITECTURE.md` — 5 steps: area labels, curriculum DB column, AI tool schema field, i18n keys file, no render changes needed.
+
+**Files changed (7 files, 2 commits, +404 -122 lines):**
+- `components/montree/child/GamePlanCard.tsx` — bilingual types + resolver functions
+- `components/montree/child/FocusWorksSection.tsx` — locale-aware render path
+- `lib/montree/reports/replan-child.ts` — bilingual generation pipeline
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — bilingual interactive refresh
+- `scripts/run_replan_all_whale.mjs` — bilingual batch replan + timeout + skip logic
+- `docs/MULTILINGUAL_ARCHITECTURE.md` — NEW architecture doc
+
+**Next session priorities:**
+1. **Verify bilingual game plans on production** — switch between English and Chinese locale on a child page, confirm nudge/works/direction switch language instantly.
+2. **User: Run Discussion flag SQL migration** in Supabase SQL Editor (Session 48 ALTER TABLE + CREATE INDEX).
+3. **Campaign: Tredoux to trash duplicate drafts** — 6 duplicates + 1 bland Cambridge draft. Then send.
+4. **🚨 Campaign: Cancel GMass Campaign A** on gmass.co/dashboard before Apr 27 — STILL OUTSTANDING (5 days left).
+5. **Campaign: Send reply drafts** — Cambridge Montessori Global (good version with tiers) + Cathy Wilson NZ.
+6. **Campaign: Seed 17 expansion contacts into DB**.
+7. **Campaign: Draft next batch** from remaining `status='new'` contacts (203 in queue).
+8. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global, Cathy Wilson NZ, Ardee School (WhatsApp).
+9. **Campaign: Follow up on Montessori Norge** after May 6.
+10. **Execute Phase 2-4 of Chinese localization** per `CHINESE_LOCALIZATION_HANDOFF.md`.
+11. **Health Check Section A + B** from `HEALTH_CHECK_HANDOFF.md`.
+
+---
 
 ### ⚡ Session 48 — Unified Photo Tagger + ThisIsSheet UX + Discussion Flag (Apr 21, 2026)
 
