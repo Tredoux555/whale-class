@@ -17,7 +17,6 @@ import { mergeWorksWithCurriculum } from '@/lib/montree/work-matching';
 import { WeekViewSkeleton } from '@/components/montree/Skeletons';
 import { AreaConfig, QuickGuideData, MergedWork } from '@/components/montree/curriculum/types';
 import FocusWorksSection from '@/components/montree/child/FocusWorksSection';
-import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import WorkSearchBar from '@/components/montree/shared/WorkSearchBar';
 import { useWorkOperations } from '@/hooks/useWorkOperations';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -679,11 +678,6 @@ export default function WeekPage() {
           </Link>
           <PrintButton childId={childId} schoolId={session?.school?.id} />
         </div>
-      )}
-
-      {/* Pending Review — photos waiting for teacher to approve AI run (feature-gated) */}
-      {!isHomeschoolParent(session) && isEnabled('review_before_process') && (
-        <PendingReviewPanel childId={childId} compact onProcessed={() => fetchAssignments()} />
       )}
 
       {/* Tell Guru onboarding — shown when child has no mental profile (feature-gated) */}

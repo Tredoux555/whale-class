@@ -424,12 +424,10 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
 
     // Background photo identification — fire-and-forget the new "take and tag" pipeline.
     // SKIP if teacher already tagged the work (work_id set means manual selection).
-    // SKIP if upload route returned ai_deferred=true (review_before_process feature
-    // flag enabled — teacher will batch-process from the Review tab to control AI cost).
     // The /process route runs two-pass Haiku → Sonnet draft fallback, writes results
     // to montree_media (identification_status, work_id or sonnet_draft). Photo Audit
     // surfaces the outcomes. `keepalive: true` so the request survives page navigation.
-    if (result.media?.id && !entry.work_id && !result.ai_deferred) {
+    if (result.media?.id && !entry.work_id) {
       const locale = typeof localStorage !== 'undefined'
         ? (localStorage.getItem('montree_lang') === 'zh' ? 'zh' : 'en')
         : 'en';

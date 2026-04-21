@@ -38,6 +38,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 const PASS1_TIMEOUT_MS = 15_000;
 const PASS2_TIMEOUT_MS = 15_000;
+const PASS2B_TIMEOUT_MS = 15_000;
+const PASS2B_CONFIDENCE_THRESHOLD = 0.85;
+const PASS2B_NO_VM_THRESHOLD = 0.75;
 
 // ----- Tool definition for Pass 2 (kept here so the lib is self-contained) -----
 
@@ -157,7 +160,11 @@ export interface TwoPassResult {
    * visual memory for that work and Haiku may be guessing from the guide alone.
    */
   hasVisualMemoryForMatch: boolean;
-  /** Model identifier used for both passes */
+  /** True if Pass 2b (image re-examination) ran */
+  pass2bFired: boolean;
+  /** True if Pass 2b produced a higher-confidence result and was used */
+  pass2bImproved: boolean;
+  /** Model identifier used for all passes */
   modelUsed: string;
   /** Non-fatal errors collected during the run (for diagnostics / logging) */
   errors: string[];
@@ -165,10 +172,89 @@ export interface TwoPassResult {
   context: IdentificationContext;
 }
 
+// ----- Pass 2b helper: Image re-examination with top candidates -----
+
+/**
+ * Build candidate list for Pass 2b re-examination.
+ * Prioritizes: Haiku's Pass 2 guess (if has VM) → top VM entries sorted by relevance
+ * Returns up to 5 candidates with visual descriptions.
+ */
+function buildPass2bCandidates(
+  pass2Result: {
+    identification: { workName: string; area: string | null } | null;
+  },
+  context: IdentificationContext,
+): Array<{ name: string; area: string | null; looksLike: string }> {
+  const candidates: Array<{ name: string; area: string | null; looksLike: string }> = [];
+  const seen = new Set<string>();
+
+  // Priority 1: Haiku's Pass 2 guess (if it has visual memory)
+  if (pass2Result.identification && context.visualMemoryWorkNames.has(pass2Result.identification.workName)) {
+    const vmEntry = extractVisualMemoryEntry(context, pass2Result.identification.workName);
+    if (vmEntry) {
+      candidates.push({
+        name: pass2Result.identification.workName,
+        area: pass2Result.identification.area,
+        looksLike: vmEntry,
+      });
+      seen.add(pass2Result.identification.workName.toLowerCase());
+    }
+  }
+
+  // Priority 2: Top visual memory entries from context text.
+  // Format from context-loader.ts line 156:
+  //   - "WorkName" (area):
+  //     LOOKS LIKE: description
+  //     KEY MATERIALS: ...
+  //     DISTINGUISH FROM: ...
+  const vmLines = context.visualMemoryContext.split('\n');
+  let currentWork: { name: string; area: string | null; looksLike: string } | null = null;
+
+  for (const line of vmLines) {
+    // Match the header line: - "WorkName" (area):
+    const headerMatch = line.match(/^- "([^"]+)" \(([^)]+)\):/);
+    if (headerMatch) {
+      // Save previous work if any
+      if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase())) {
+        candidates.push(currentWork);
+        seen.add(currentWork.name.toLowerCase());
+        if (candidates.length >= 5) break;
+      }
+      currentWork = { name: headerMatch[1], area: headerMatch[2] || null, looksLike: '' };
+      continue;
+    }
+    // Capture the LOOKS LIKE description for the current work
+    const looksLikeMatch = line.match(/^\s+LOOKS LIKE:\s*(.+)/);
+    if (looksLikeMatch && currentWork && !currentWork.looksLike) {
+      currentWork.looksLike = looksLikeMatch[1].trim();
+    }
+  }
+  // Don't forget the last entry
+  if (currentWork && currentWork.looksLike && !seen.has(currentWork.name.toLowerCase()) && candidates.length < 5) {
+    candidates.push(currentWork);
+  }
+
+  return candidates.slice(0, 5);
+}
+
+/**
+ * Extract a visual memory entry's LOOKS LIKE description from context.
+ */
+function extractVisualMemoryEntry(context: IdentificationContext, workName: string): string {
+  // Format from context-loader.ts: - "WorkName" (area):\n  LOOKS LIKE: description
+  const escaped = workName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pattern = new RegExp(`- "${escaped}"[^]*?LOOKS LIKE:\\s*([^\\n]+)`, 'i');
+  const match = context.visualMemoryContext.match(pattern);
+  if (match) {
+    return match[1].trim();
+  }
+  return '';
+}
+
 // ----- Main entry point -----
 
 /**
- * Runs the two-pass Haiku photo identification pipeline.
+ * Runs the two-pass (and optional Pass 2b) Haiku photo identification pipeline.
  *
  * Returns ALWAYS — never throws on identification failure. A "failed" run is
  * communicated via `success: false` and an `errors` array. Callers are expected
@@ -359,11 +445,113 @@ Match this description to the correct Montessori work. Use the visual identifica
     }
   }
 
+  // ----- PASS 2B: Image re-examination (optional, triggered by low confidence or no visual memory) -----
+  let pass2bFired = false;
+  let pass2bImproved = false;
+
+  if (identification && (identification.confidence < PASS2B_CONFIDENCE_THRESHOLD || !hasVisualMemoryForMatch)) {
+    const pass2bCandidates = buildPass2bCandidates({ identification }, context);
+
+    if (pass2bCandidates.length >= 2) {
+      const passAbort = new AbortController();
+      const onParentAbort = () => passAbort.abort();
+      if (input.abortSignal) input.abortSignal.addEventListener('abort', onParentAbort, { once: true });
+      const timer = setTimeout(() => passAbort.abort(), PASS2B_TIMEOUT_MS);
+
+      try {
+        pass2bFired = true;
+
+        // Build candidate blocks for the prompt
+        const candidateBlocks = pass2bCandidates
+          .map((cand, idx) => {
+            const letter = String.fromCharCode(65 + idx); // A, B, C, ...
+            return `[${letter}] "${cand.name}" (${cand.area || 'unknown'}):
+  LOOKS LIKE: ${cand.looksLike}`;
+          })
+          .join('\n\n');
+
+        const pass2bMsg = await anthropic.messages.create({
+          model: HAIKU_MODEL,
+          max_tokens: 500,
+          system: `You are observing a classroom photo. A preliminary analysis was made, but you now have a chance to re-examine the IMAGE alongside the top candidates.
+
+${input.locale === 'zh' ? 'Write your reasoning in Simplified Chinese.' : 'Write your reasoning in English.'}
+
+CRITICAL RULES:
+1. Look at the PHOTO carefully. Compare the materials, colors, layout, and the child's hands to each candidate.
+2. The candidates are listed with their classroom-specific visual descriptions.
+3. Pick the MOST LIKELY candidate based on visual evidence, or suggest "none of these" with a new name and LOW confidence.
+4. Use the tag_photo tool with your final choice.`,
+          tools: [TAG_PHOTO_TOOL],
+          tool_choice: { type: 'tool', name: 'tag_photo' },
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'url', url: input.photoUrl } },
+              {
+                type: 'text',
+                text: `Look at this photo and compare it to these classroom candidates:
+
+${candidateBlocks}
+
+Which work is most likely based on the visual evidence? If none match well, you may suggest a different work with LOW confidence.`,
+              },
+            ],
+          }],
+        }, { signal: passAbort.signal });
+
+        const toolBlock = pass2bMsg.content.find(b => b.type === 'tool_use');
+        if (toolBlock && toolBlock.type === 'tool_use') {
+          const validated = validateToolOutput(toolBlock.input as Record<string, unknown>);
+          const matchResult = matchToCurriculumV2(
+            validated.work_name,
+            validated.area !== 'unknown' ? validated.area : null,
+            input.curriculum,
+            context.correctionsMap,
+            validated.observation,
+          );
+
+          // Use Pass 2b result only if it's HIGHER confidence than Pass 2
+          if (validated.confidence > identification.confidence) {
+            const newWorkName = matchResult.bestMatch?.name || validated.work_name;
+            const newArea = matchResult.bestMatch?.area_key || (validated.area !== 'unknown' ? validated.area : null);
+            const newWorkKey = matchResult.bestMatch?.work_key || null;
+
+            identification = {
+              workName: newWorkName,
+              haikuWorkName: validated.work_name,
+              area: newArea,
+              workKey: newWorkKey,
+              confidence: validated.confidence,
+              matchScore: matchResult.bestScore,
+              masteryEvidence: validated.mastery_evidence,
+              observation: validated.observation,
+              suggestedCrop: validated.suggested_crop,
+            };
+
+            hasVisualMemoryForMatch = hasVisualMemoryFor(context, newWorkName);
+            pass2bImproved = true;
+
+            console.log(`[PhotoIdentification] Pass 2b improved: "${identification.haikuWorkName}" (${identification.confidence.toFixed(2)}) → "${newWorkName}" (${validated.confidence.toFixed(2)})`);
+          }
+        }
+      } catch (err) {
+        const isAbort = err instanceof Error && (err.name === 'AbortError' || err.message?.includes('abort'));
+        errors.push(`Pass 2b ${isAbort ? 'timed out' : 'failed'}: ${err instanceof Error ? err.message : String(err)}`);
+      } finally {
+        clearTimeout(timer);
+        if (input.abortSignal) input.abortSignal.removeEventListener('abort', onParentAbort);
+      }
+    }
+  }
+
   return {
     success: identification !== null,
     visualDescription,
     identification,
     hasVisualMemoryForMatch,
+    pass2bFired,
+    pass2bImproved,
     modelUsed,
     errors,
     context,

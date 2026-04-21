@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { isFeatureEnabled } from '@/lib/montree/features/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 
 export async function POST(request: NextRequest) {
@@ -124,23 +123,8 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    // Review-before-process gate: when this feature is enabled for the school,
-    // photos land with identification_status='pending_review' and the client
-    // skips firing the AI pipeline. Teachers batch-process later in the Review
-    // tab. Saves API costs on duplicate/blurry shots.
-    // Skipped when the teacher already manually tagged a work (work_id set) —
-    // there's nothing for the AI to identify in that case.
-    let aiDeferred = false;
-    if (!work_id && (classroom_id || auth.classroomId)) {
-      try {
-        aiDeferred = await isFeatureEnabled(supabase, effectiveSchoolId, 'review_before_process');
-      } catch (err) {
-        console.error('[Upload] review_before_process flag check failed (defaulting to AI auto-fire):', err);
-        aiDeferred = false;
-      }
-    }
-
     // Create database record
+    // Photos now go straight into the AI identification pipeline — no manual review gate
     const mediaRecord = {
       school_id: effectiveSchoolId,
       classroom_id: classroom_id || auth.classroomId || null,
@@ -159,7 +143,6 @@ export async function POST(request: NextRequest) {
       tags: tags || [],
       sync_status: 'synced',
       processing_status: 'complete',
-      ...(aiDeferred ? { identification_status: 'pending_review' } : {}),
     };
 
     const { data: media, error: dbError } = await supabase
@@ -254,7 +237,6 @@ export async function POST(request: NextRequest) {
       success: true,
       media,
       url,
-      ai_deferred: aiDeferred,
     });
 
   } catch (error) {

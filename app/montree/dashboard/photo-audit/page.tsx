@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
-import PendingReviewPanel from '@/components/montree/photo-audit/PendingReviewPanel';
 import { useFeaturesContext } from '@/lib/montree/features';
 import type { Resolution as ThisIsResolution, ThisIsSheetPhoto } from '@/components/montree/photo-audit/ThisIsSheet';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
@@ -71,7 +70,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'pending_review' | 'discussion';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'discussion';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -461,17 +460,14 @@ export default function PhotoAuditPage() {
   // Replaces the old standalone 'today_all' tab (Session 33 IA cleanup).
   const [todayFilter, setTodayFilter] = useState(false);
   const { isEnabled } = useFeaturesContext();
-  const reviewBeforeProcess = isEnabled('review_before_process');
 
-  // When review-before-process is on, default to the Photo Bucket tab.
-  // Only flips on initial load (when still at the hardcoded 'all' default).
+  // Backward-compat: if a deep link / old bookmark lands on one of the
+  // pre-Session-33 zone values ('works_review', 'parent_reports', 'today_all'),
+  // remap to the new unified zone. Accept 'any' cast since Zone type no longer
+  // includes these values but they may still arrive from URL/localStorage.
   const didInitZoneRef = useRef(false);
   useEffect(() => {
     if (didInitZoneRef.current) return;
-    // Backward-compat: if a deep link / old bookmark lands on one of the
-    // pre-Session-33 zone values ('works_review', 'parent_reports', 'today_all'),
-    // remap to the new unified zone. Accept 'any' cast since Zone type no longer
-    // includes these values but they may still arrive from URL/localStorage.
     const zoneAny = zone as unknown as string;
     if (zoneAny === 'works_review' || zoneAny === 'parent_reports') {
       setZone('weekly_wrap');
@@ -484,13 +480,16 @@ export default function PhotoAuditPage() {
       didInitZoneRef.current = true;
       return;
     }
-    if (reviewBeforeProcess && zone === 'all') {
-      setZone('pending_review');
+    // Remap pending_review (Photo Bucket, now removed)
+    if (zoneAny === 'pending_review') {
+      setZone('all');
       didInitZoneRef.current = true;
-    } else if (reviewBeforeProcess !== undefined) {
+      return;
+    }
+    if (zone !== undefined) {
       didInitZoneRef.current = true;
     }
-  }, [reviewBeforeProcess, zone]);
+  }, [zone]);
   const [page, setPage] = useState(0);
   const [curriculum, setCurriculum] = useState<Record<string, any[]>>({});
 
@@ -1926,7 +1925,7 @@ export default function PhotoAuditPage() {
   // Today filter chip on the Confirm tab shows every photo in last 24h
   // regardless of teacher_confirmed (include_confirmed=1 at fetch time).
   const filteredPhotos = useMemo(() => {
-    if (zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'pending_review') return []; // Non-photo tabs handled separately
+    if (zone === 'weekly_wrap' || zone === 'weekly_admin') return []; // Non-photo tabs handled separately
     if (zone === 'discussion') return photos.filter(p => p.discussion_flag);
     if (zone === 'all' && todayFilter) return photos; // Today — every photo in last 24h incl. confirmed
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
@@ -1952,13 +1951,10 @@ export default function PhotoAuditPage() {
 
   const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'discussion';
 
-  // 4-tab layout (Session 33 IA cleanup): Photo Bucket (pre-AI triage, feature-gated)
-  // + Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
+  // 3-tab layout: Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
   // sub-views — the unified source of both teacher review and parent reports) +
-  // Weekly Admin (standalone DOCX generator). Old standalone tabs Today (All),
-  // Works Review, and Parent Reports were folded into these four.
+  // Weekly Admin (standalone DOCX generator). Photos now go straight to AI (no Photo Bucket).
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
-    ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
     { key: 'discussion', label: locale === 'zh' ? '💬 讨论' : '💬 Discussion', color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
     { key: 'weekly_wrap', label: locale === 'zh' ? '周总结' : 'Weekly Wrap', color: 'bg-violet-100 text-violet-800', count: null },
@@ -2095,23 +2091,6 @@ export default function PhotoAuditPage() {
           </div>
         )}
       </div>
-
-      {/* ─── Photo Bucket (review-before-process workflow) ─── */}
-      {zone === 'pending_review' && (
-        <div className="p-3 sm:p-4">
-          <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <h2 className="text-sm font-semibold text-amber-900 mb-1">
-              {locale === 'zh' ? '选择要保留的照片' : 'Select the photos you want to keep'}
-            </h2>
-            <p className="text-xs text-amber-700 leading-relaxed">
-              {locale === 'zh'
-                ? '照片按拍摄顺序排列,尚未经过 AI 分析。选择您想保留的照片,然后点击"分析并分类"让 AI 为您识别。不需要的照片可以选中后删除。'
-                : 'Photos are listed in the order they were taken — no AI has run on them yet. Select the ones you want to keep, then tap "Process selected" to run the AI. Delete the rest.'}
-            </p>
-          </div>
-          <PendingReviewPanel />
-        </div>
-      )}
 
       {/* ─── Weekly Wrap (unified — Teacher + Parent sub-views toggled inside the tab) ─── */}
       {zone === 'weekly_wrap' && classroomIdState && (
@@ -2727,6 +2706,83 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Haiku draft — Gate A failed; Haiku result available for optional Sonnet enrichment.
+          Teacher can click "Ask Sonnet" to enrich with full analysis, or "This is..." to resolve. */}
+      {photo.identification_status === 'haiku_drafted' && photo.identification_confidence !== null && (
+        <div className="p-2 bg-cyan-50 border-t-2 border-cyan-300">
+          <div className="flex items-center gap-1 mb-1">
+            <span className="text-[9px] font-bold text-cyan-700 uppercase tracking-wide">🧠 Haiku Draft</span>
+            {typeof photo.identification_confidence === 'number' && (
+              <span className="text-[9px] text-cyan-600">· {Math.round(photo.identification_confidence * 100)}%</span>
+            )}
+          </div>
+          {photo.work_name && (
+            <p className="text-[11px] font-bold text-cyan-900 leading-tight">{photo.work_name}</p>
+          )}
+          <p className="text-[9px] text-cyan-700 mt-0.5 italic">Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
+          {unifiedTagger ? (
+            <button
+              onClick={onAcceptDraft}
+              disabled={processing}
+              className="w-full text-[11px] py-2 mt-1.5 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
+              title="Identify this work"
+            >
+              {processing ? '...' : '🏷️ This is…'}
+            </button>
+          ) : (
+            <div className="flex gap-1 mt-1.5">
+              <button
+                onClick={onAcceptDraft}
+                disabled={processing}
+                className="flex-1 text-[11px] py-1.5 rounded bg-cyan-600 text-white font-bold disabled:opacity-50"
+                title="Resolve with Haiku's suggestion"
+              >
+                {processing ? '...' : '✅ Use this'}
+              </button>
+              <button
+                onClick={onCorrect}
+                disabled={processing}
+                className="flex-1 text-[11px] py-1.5 rounded bg-white border border-cyan-400 text-cyan-700 font-bold disabled:opacity-50"
+                title="Pick a different work"
+              >
+                ✏️ Fix
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => {
+              // Call Ask Sonnet endpoint — teacher-triggered enrichment
+              toast.promise(
+                (async () => {
+                  const response = await fetch('/api/montree/photo-identification/sonnet-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ media_id: photo.id }),
+                    credentials: 'include',
+                  });
+                  if (!response.ok) throw new Error('Sonnet enrichment failed');
+                  const result = await response.json();
+                  if (!result.success) throw new Error(result.errors?.join(', ') || 'Unknown error');
+                  // Refetch photos to pick up the new sonnet_draft and updated identification_status
+                  fetchPhotos();
+                  return result;
+                })(),
+                {
+                  loading: 'Asking Sonnet for deeper analysis...',
+                  success: 'Sonnet analysis ready',
+                  error: (err) => err.message,
+                }
+              );
+            }}
+            disabled={processing}
+            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-cyan-200 text-cyan-600 font-medium disabled:opacity-50 hover:bg-cyan-50 transition-colors"
+            title="Call Sonnet for richer analysis"
+          >
+            🧠 Ask Sonnet
+          </button>
         </div>
       )}
 
