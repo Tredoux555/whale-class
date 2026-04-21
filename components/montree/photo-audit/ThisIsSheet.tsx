@@ -448,37 +448,60 @@ export default function ThisIsSheet({
                 </button>
               )}
 
-              {/* Search bar */}
-              <div style={{ position: 'relative', marginBottom: 10 }}>
-                <input
-                  ref={inputRef}
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Search or type a new work name…"
+              {/* Search bar + New work button side by side */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <input
+                    ref={inputRef}
+                    value={query}
+                    onChange={e => setQuery(e.target.value)}
+                    placeholder="Search works…"
+                    disabled={submitting}
+                    style={{
+                      width: '100%',
+                      padding: '12px 14px 12px 38px',
+                      fontSize: 16,
+                      border: '1.5px solid #ddd',
+                      borderRadius: 12,
+                      outline: 'none',
+                      background: '#fafafa',
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: 12,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      fontSize: 16,
+                      color: '#888',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    🔍
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setAddMode(true);
+                    setNewWorkName(query.trim() || photo?.sonnet_draft?.proposed_name?.trim() || '');
+                  }}
                   disabled={submitting}
                   style={{
-                    width: '100%',
-                    padding: '12px 14px 12px 38px',
-                    fontSize: 16,
-                    border: '1.5px solid #ddd',
+                    padding: '0 16px',
+                    background: '#f5f3ff',
+                    border: '1.5px solid #8b5cf6',
                     borderRadius: 12,
-                    outline: 'none',
-                    background: '#fafafa',
-                  }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: 12,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    fontSize: 16,
-                    color: '#888',
-                    pointerEvents: 'none',
+                    cursor: 'pointer',
+                    color: '#8b5cf6',
+                    fontWeight: 700,
+                    fontSize: 14,
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
                   }}
                 >
-                  🔍
-                </div>
+                  ＋ New
+                </button>
               </div>
 
               {/* Results list */}
@@ -551,17 +574,11 @@ export default function ThisIsSheet({
                 </div>
               )}
 
-              {/* “Add as new work” row — one-tap create. Uses the current
-                  search bar text (pre-seeded from Sonnet's proposed_name
-                  but fully editable) and the area pre-seeded from the
-                  draft's suggested_area. The resolve route stamps the
-                  cached Sonnet description onto the new curriculum row. */}
+              {/* Quick-create from search bar — shows when query has text
+                  and doesn't exactly match an existing work. */}
               {query.trim() && !exactMatch && !worksLoading && (
                 <div>
-                  {/* Fuzzy duplicate guardrail: if a close match exists,
-                      show the existing work as the preferred option ABOVE
-                      the create button so the teacher picks it instead of
-                      accidentally creating a near-duplicate. */}
+                  {/* Fuzzy duplicate guardrail */}
                   {fuzzyNearMatch && (
                     <button
                       onClick={() => handlePickExisting(fuzzyNearMatch)}
@@ -604,44 +621,34 @@ export default function ThisIsSheet({
                       alignItems: 'center',
                       gap: 10,
                       width: '100%',
-                      padding: fuzzyNearMatch ? '10px 14px' : '14px',
+                      padding: '14px',
                       background: fuzzyNearMatch ? '#fafafa' : '#f5f3ff',
-                      border: fuzzyNearMatch ? '1px dashed #ccc' : '1.5px dashed #8b5cf6',
+                      border: fuzzyNearMatch ? '1px dashed #ccc' : '1.5px solid #8b5cf6',
                       borderRadius: 12,
                       cursor: submitting ? 'wait' : 'pointer',
                       textAlign: 'left',
                       opacity: fuzzyNearMatch ? 0.7 : 1,
                     }}
                   >
-                    <div style={{ fontSize: fuzzyNearMatch ? 16 : 22 }}>➕</div>
+                    <div style={{ fontSize: 22 }}>➕</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, color: fuzzyNearMatch ? '#888' : '#8b5cf6', fontWeight: 600 }}>
-                        {submitting ? 'Creating…' : fuzzyNearMatch ? 'No, create a new work instead' : 'Add as new work (with AI description)'}
+                      <div style={{ fontSize: 13, color: fuzzyNearMatch ? '#888' : '#8b5cf6', fontWeight: 600 }}>
+                        {submitting ? 'Creating…' : fuzzyNearMatch ? 'Create new work instead' : 'Add as new work'}
                       </div>
-                      <div style={{ fontSize: fuzzyNearMatch ? 13 : 15, color: '#222', fontWeight: 600 }}>
+                      <div style={{ fontSize: 15, color: '#222', fontWeight: 600 }}>
                         “{query.trim()}”
                       </div>
-                      <div style={{ fontSize: 11, color: fuzzyNearMatch ? '#999' : '#8b5cf6', marginTop: 2 }}>
-                        Area:{' '}
+                      <div style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>
                         {getAreaLabel(newWorkArea, locale)}
+                        {' · '}
+                        <span
+                          onClick={(e) => { e.stopPropagation(); handleEnterAddMode(); }}
+                          style={{ textDecoration: 'underline', cursor: 'pointer' }}
+                        >
+                          change area
+                        </span>
                       </div>
                     </div>
-                  </button>
-                  <button
-                    onClick={handleEnterAddMode}
-                    disabled={submitting}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#8b5cf6',
-                      fontSize: 12,
-                      padding: '6px 4px',
-                      marginTop: 4,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                    }}
-                  >
-                    Change area…
                   </button>
                 </div>
               )}
@@ -650,13 +657,25 @@ export default function ThisIsSheet({
 
           {addMode && (
             <div>
-              <div style={{ fontSize: 13, color: '#666', marginBottom: 6 }}>
-                New work name
+              <div style={{
+                padding: '10px 14px',
+                background: '#f5f3ff',
+                borderRadius: 12,
+                marginBottom: 14,
+                fontSize: 13,
+                color: '#6b21a8',
+              }}>
+                ➕ Add a new work to your classroom curriculum
+              </div>
+              <div style={{ fontSize: 13, color: '#666', marginBottom: 6, fontWeight: 600 }}>
+                What is the work called?
               </div>
               <input
                 value={newWorkName}
                 onChange={e => setNewWorkName(e.target.value)}
                 disabled={submitting}
+                autoFocus
+                placeholder="e.g. Baric Tablets, Farm Animal Matching…"
                 style={{
                   width: '100%',
                   padding: '12px 14px',
@@ -668,7 +687,7 @@ export default function ThisIsSheet({
                 }}
               />
 
-              <div style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>
+              <div style={{ fontSize: 13, color: '#666', marginBottom: 8, fontWeight: 600 }}>
                 Which area?
               </div>
               <div
