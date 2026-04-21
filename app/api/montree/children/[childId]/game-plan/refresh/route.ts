@@ -8,6 +8,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
+import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 
 export const maxDuration = 60;
 
@@ -15,27 +16,34 @@ interface RouteContext {
   params: Promise<{ childId: string }>;
 }
 
+// Bilingual game plan tool — Haiku generates English works (canonical
+// for DB matching) + bilingual nudge. Chinese works and direction are
+// derived post-generation from DB lookups and area-label maps.
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
-  description: 'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next.',
+  description: 'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in BOTH English and Chinese.',
   input_schema: {
     type: 'object' as const,
     properties: {
-      nudge: {
+      nudge_en: {
         type: 'string' as const,
-        description: 'One warm sentence telling the teacher what to focus on next. Max 25 words. Acknowledges progress if any.',
+        description: 'One warm sentence in ENGLISH telling the teacher what to focus on next. Max 25 words.',
+      },
+      nudge_zh: {
+        type: 'string' as const,
+        description: 'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
       },
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
-        description: '3-5 specific works to present next. Use EXACT names from the classroom curriculum.',
+        description: '3-5 specific works to present next. Use EXACT ENGLISH names from the classroom curriculum.',
       },
       direction: {
         type: 'string' as const,
-        description: 'The area progression in arrow format, using area names matching the locale.',
+        description: 'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
   },
 };
 
@@ -107,21 +115,19 @@ export async function POST(
     const previousNudge = (existingPlan as Record<string, unknown>)?.nudge || (existingPlan as Record<string, unknown>)?.headline || '';
     const previousWorks = (existingPlan as Record<string, unknown>)?.works || [];
 
-    // Check locale from request body or URL
-    let locale = 'en';
+    // Locale is no longer needed for generation — we always produce both
+    // languages. Kept for logging/debugging purposes.
+    let _locale = 'en';
     try {
       const url = new URL(request.url);
-      locale = url.searchParams.get('locale') || 'en';
-      if (locale === 'en') {
-        const b = await request.json().catch(() => ({}));
-        locale = b.locale || 'en';
-      }
-    } catch { /* no body or no locale */ }
-    const isZh = locale === 'zh';
+      _locale = url.searchParams.get('locale') || 'en';
+    } catch { /* no locale param */ }
+    void _locale; // used only for debug logging
 
     // ── Load curriculum constraint list (mirrors replan-child.ts Stage 2.5) ──
     const classroomId = access.classroomId;
     let availableWorksList = '';
+    const enToZhWorkName: Record<string, string> = {};
     if (classroomId) {
       const [areasRes, worksRes] = await Promise.all([
         supabase
@@ -138,33 +144,49 @@ export async function POST(
       for (const a of (areasRes.data || []) as Array<{ id: string; area_key: string }>) {
         promptAreaIdToKey[a.id] = a.area_key;
       }
+      // Always feed ENGLISH names to Haiku — canonical for DB matching.
+      // Chinese names are resolved post-generation from the DB.
       const worksByArea: Record<string, string[]> = {};
       for (const w of (worksRes.data || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
         const areaKey = promptAreaIdToKey[w.area_id];
         if (!areaKey) continue;
         if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
-        worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
+        worksByArea[areaKey].push(w.name);
+        if (w.name_chinese) {
+          enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
+        }
       }
       availableWorksList = Object.entries(worksByArea)
         .map(([area, works]) => `[${area}] ${works.join(', ')}`)
         .join('\n');
     }
 
+    // Extract previous nudge/works from potentially bilingual format
+    const prevNudgeStr = typeof previousNudge === 'object' && previousNudge !== null
+      ? (previousNudge as Record<string, string>).en || ''
+      : (previousNudge as string) || '';
+    const prevWorksArr = Array.isArray(previousWorks)
+      ? previousWorks
+      : typeof previousWorks === 'object' && previousWorks !== null
+        ? (previousWorks as Record<string, string[]>).en || []
+        : [];
+
     const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
-${isZh ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
-- Write the nudge in Chinese.
-- Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
-- Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
-- Direction example: "日常 → 感官 → 语言"\n` : ''}
+
+IMPORTANT — BILINGUAL OUTPUT:
+- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+- Pick works using their ENGLISH names from the AVAILABLE WORKS list.
+- Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
+
 CHILD: ${child.name}
-PREVIOUS NUDGE: "${previousNudge}"
-PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
+PREVIOUS NUDGE: "${prevNudgeStr}"
+PREVIOUS WORKS: ${JSON.stringify(prevWorksArr)}
 
 ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
-${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT names:\n${availableWorksList}\n` : ''}
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.${isZh ? ' Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化).' : ''}`;
+${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT ENGLISH names:\n${availableWorksList}\n` : ''}
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
 
     console.log(`[GamePlan] Refreshing plan for ${child.name} (Haiku)`);
 
@@ -181,9 +203,29 @@ What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new
       return NextResponse.json({ success: false, error: 'AI generation failed' }, { status: 500 });
     }
 
-    const plan = toolBlock.input as Record<string, unknown>;
+    const rawPlan = toolBlock.input as {
+      nudge_en?: string; nudge_zh?: string;
+      nudge?: string; // backward compat
+      works?: string[]; direction?: string;
+    };
+    const planWorks = (rawPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
+
+    // ── Build bilingual JSONB structure ─────────────────────────────
+    const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
+
+    const directionEn = rawPlan.direction || '';
+    let directionZh = directionEn;
+    for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
+      directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+    }
+
+    const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
+    const nudgeZh = rawPlan.nudge_zh || nudgeEn;
+
     const updatedPlan = {
-      ...plan,
+      nudge: { en: nudgeEn, zh: nudgeZh },
+      works: { en: planWorks, zh: worksZh },
+      direction: { en: directionEn, zh: directionZh },
       generated_at: existingPlan?.generated_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       child_name: child.name,
@@ -191,7 +233,7 @@ What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new
     };
 
     await updateChildSettings(childId, { game_plan: updatedPlan });
-    console.log(`[GamePlan] Refreshed plan saved for ${child.name}`);
+    console.log(`[GamePlan] Refreshed bilingual plan saved for ${child.name}`);
 
     return NextResponse.json({ success: true, game_plan: updatedPlan });
   } catch (error) {

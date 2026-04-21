@@ -20,32 +20,42 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { logApiUsage } from '@/lib/montree/api-usage';
+import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 
+// ── Bilingual Game Plan Tool ─────────────────────────────────────────
+// Haiku generates English works (canonical for DB matching) + bilingual
+// nudge. Direction and works_zh are derived post-generation from DB
+// lookups and area-label maps — no AI needed for those.
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
   description:
-    'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next.',
+    'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next. Provide the nudge in BOTH English and Chinese.',
   input_schema: {
     type: 'object' as const,
     properties: {
-      nudge: {
+      nudge_en: {
         type: 'string' as const,
         description:
-          'One warm sentence telling the teacher what to focus on next. Max 25 words. Acknowledges progress if any.',
+          'One warm sentence in ENGLISH telling the teacher what to focus on next. Max 25 words.',
+      },
+      nudge_zh: {
+        type: 'string' as const,
+        description:
+          'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
       },
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
         description:
-          'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy names EXACTLY from the AVAILABLE WORKS list.',
+          'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy ENGLISH names EXACTLY from the AVAILABLE WORKS list.',
       },
       direction: {
         type: 'string' as const,
         description:
-          'The area progression in arrow format, using area names matching the locale.',
+          'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
   },
 };
 
@@ -177,15 +187,19 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
     const promptAreaIdToKey: Record<string, string> = {};
     for (const a of promptAreas) promptAreaIdToKey[a.id] = a.area_key;
 
-    const isZh = locale === 'zh';
-
+    // Always feed ENGLISH names to Haiku — canonical for DB matching.
+    // Chinese names are resolved post-generation from the DB.
     const worksByArea: Record<string, string[]> = {};
+    // Build English→Chinese lookup for post-generation resolution
+    const enToZhWorkName: Record<string, string> = {};
     for (const w of (promptWorksRes.data || []) as Array<{ name: string; name_chinese: string | null; area_id: string }>) {
       const areaKey = promptAreaIdToKey[w.area_id];
       if (!areaKey) continue;
       if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
-      // When locale is zh, feed Chinese names to Haiku so it outputs Chinese
-      worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
+      worksByArea[areaKey].push(w.name);
+      if (w.name_chinese) {
+        enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
+      }
     }
 
     const availableWorksList = Object.entries(worksByArea)
@@ -193,24 +207,27 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
       .join('\n');
 
     const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
-${
-  isZh
-    ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
-- Write the nudge in Chinese.
-- Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
-- Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
-- Direction example: "日常 → 感官 → 语言"\n`
-    : ''
-}
+
+IMPORTANT — BILINGUAL OUTPUT:
+- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+- Pick works using their ENGLISH names from the AVAILABLE WORKS list.
+- Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
+
 CHILD: ${childName}
-PREVIOUS NUDGE: "${previousNudge}"
-PREVIOUS WORKS (last week's shelf — DO NOT REPEAT): ${JSON.stringify(previousWorks)}
+PREVIOUS NUDGE: "${typeof previousNudge === 'object' ? (previousNudge as Record<string, string>).en || '' : previousNudge}"
+PREVIOUS WORKS (last week's shelf — DO NOT REPEAT): ${JSON.stringify(
+      Array.isArray(previousWorks)
+        ? previousWorks
+        : typeof previousWorks === 'object' && previousWorks !== null
+          ? (previousWorks as Record<string, string[]>).en || []
+          : []
+    )}
 
 ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT names as written:
+AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT ENGLISH names as written:
 ${availableWorksList}
 
 RULES:
@@ -218,7 +235,8 @@ RULES:
 2. DO NOT pick any work from PREVIOUS WORKS.
 3. Copy each name EXACTLY as written in the AVAILABLE WORKS list — do not paraphrase, shorten, or rename.
 4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".${isZh ? '\n6. Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化), NOT English.' : ''}
+5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
+6. Direction arrow must use English area names (Practical Life, Sensorial, Mathematics, Language, Cultural).
 
 What's the teacher's next move?`;
 
@@ -247,11 +265,32 @@ What's the teacher's next move?`;
       return { replanned: false, works: [], error: 'plan: no tool_use block' };
     }
 
-    const newPlan = toolBlock.input as { nudge?: string; works?: string[]; direction?: string };
-    const planWorks = (newPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
+    const rawPlan = toolBlock.input as {
+      nudge_en?: string; nudge_zh?: string;
+      nudge?: string; // backward compat if model ignores new schema
+      works?: string[]; direction?: string;
+    };
+    const planWorks = (rawPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
+
+    // ── Build bilingual JSONB structure ─────────────────────────────
+    // Works: always English from Haiku, Chinese resolved from DB
+    const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
+
+    // Direction: English from Haiku, Chinese derived from area labels
+    const directionEn = rawPlan.direction || '';
+    let directionZh = directionEn;
+    for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
+      directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+    }
+
+    // Nudge: both from Haiku tool output
+    const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
+    const nudgeZh = rawPlan.nudge_zh || nudgeEn;
 
     const updatedPlan = {
-      ...newPlan,
+      nudge: { en: nudgeEn, zh: nudgeZh },
+      works: { en: planWorks, zh: worksZh },
+      direction: { en: directionEn, zh: directionZh },
       generated_at: (existingPlan.generated_at as string | undefined) || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       child_name: childName,
@@ -442,8 +481,13 @@ What's the teacher's next move?`;
     const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
 
     if (missingAreas.length > 0) {
+      const prevWorksFlat = Array.isArray(previousWorks)
+        ? previousWorks as string[]
+        : typeof previousWorks === 'object' && previousWorks !== null
+          ? ((previousWorks as Record<string, string[]>).en || [])
+          : [];
       const prevWorkNames = new Set(
-        (previousWorks || []).map((w: string) => w.toLowerCase()),
+        prevWorksFlat.map((w: string) => w.toLowerCase()),
       );
 
       for (const missingArea of missingAreas) {
