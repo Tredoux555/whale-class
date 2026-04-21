@@ -740,14 +740,19 @@ export default function PhotoAuditPage() {
     // every photo from the last 24h regardless of teacher_confirmed status
     // (end-of-day sanity-check view for catching wrong auto-confirms).
     const isTodayAll = todayFilter && zone === 'all';
+    // Discussion tab: fetch ALL photos (any zone, any status) so client-side
+    // discussion_flag filter sees the full set. Without this, the API's zone
+    // filtering excludes untagged or confirmed photos that were flagged.
+    const isDiscussion = zone === 'discussion';
     const dateFrom = isTodayAll
       ? new Date(Date.now() - 86400000).toISOString()
+      : isDiscussion ? new Date(Date.now() - 90 * 86400000).toISOString()
       : dateRange === '24h' ? new Date(Date.now() - 86400000).toISOString()
       : dateRange === '7d' ? new Date(Date.now() - 7 * 86400000).toISOString()
       : dateRange === '30d' ? new Date(Date.now() - 30 * 86400000).toISOString()
       : '2020-01-01T00:00:00Z';
-    const effectiveZone = zone;
-    const includeConfirmedParam = isTodayAll ? '&include_confirmed=1' : '';
+    const effectiveZone = isDiscussion ? 'all' : zone;
+    const includeConfirmedParam = (isTodayAll || isDiscussion) ? '&include_confirmed=1' : '';
     const limitParam = isTodayAll ? 500 : 200;
 
     try {
