@@ -103,15 +103,14 @@ export default function ThisIsSheet({
       setNewWorkArea('practical_life');
       setSubmitting(false);
     } else {
-      // Pre-seed the search bar with Sonnet's proposed_name (editable).
-      // This gives the teacher a one-tap path: either accept the AI's
-      // name as-is, or tweak a couple of characters and hit "Add as new
-      // work". Path B on the server then seeds the new curriculum row
-      // with the Sonnet-written parent_description / why_it_matters /
-      // materials from the cached draft, so the created work already
-      // carries the exact description shown on this card.
+      // Pre-seed the search bar with Sonnet's proposed_name (editable),
+      // BUT only when confidence is reasonable (>= 0.4). Low-confidence
+      // suggestions mislead the teacher into one-tap creating a wrong
+      // work name — better to start with an empty search bar so they
+      // type the correct name from scratch.
       const proposed = photo?.sonnet_draft?.proposed_name?.trim() || '';
-      if (proposed) setQuery(proposed);
+      const confidence = photo?.sonnet_draft?.confidence ?? 0;
+      if (proposed && confidence >= 0.4) setQuery(proposed);
       // Autofocus and select-all so a quick edit is one keypress away.
       requestAnimationFrame(() => {
         inputRef.current?.focus();
@@ -204,6 +203,38 @@ export default function ThisIsSheet({
     if (!q) return false;
     return works.some(w => w.name.toLowerCase() === q);
   }, [query, works]);
+
+  // Fuzzy duplicate guardrail: find the best near-match to the current
+  // query so we can warn the teacher before they create a near-duplicate
+  // custom work. Uses token overlap scoring — if most words in the query
+  // already appear in an existing work name, it's likely a duplicate.
+  const fuzzyNearMatch = useMemo<ClassroomWork | null>(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || q.length < 3 || exactMatch) return null;
+    const qTokens = q.split(/[\s\-_]+/).filter(t => t.length >= 2);
+    if (qTokens.length === 0) return null;
+
+    let bestWork: ClassroomWork | null = null;
+    let bestScore = 0;
+    for (const w of works) {
+      const wLower = w.name.toLowerCase();
+      // Skip exact matches (already handled by results list)
+      if (wLower === q) continue;
+      const wTokens = wLower.split(/[\s\-_]+/).filter(t => t.length >= 2);
+      if (wTokens.length === 0) continue;
+      // Count how many query tokens appear in the work name
+      let hits = 0;
+      for (const qt of qTokens) {
+        if (wTokens.some(wt => wt.includes(qt) || qt.includes(wt))) hits++;
+      }
+      const score = hits / Math.max(qTokens.length, 1);
+      if (score > bestScore && score >= 0.6) {
+        bestScore = score;
+        bestWork = w;
+      }
+    }
+    return bestWork;
+  }, [query, works, exactMatch]);
 
   // --- handlers ---
   const handlePickExisting = async (work: ClassroomWork) => {
@@ -520,13 +551,51 @@ export default function ThisIsSheet({
                 </div>
               )}
 
-              {/* "Add as new work" row — one-tap create. Uses the current
+              {/* “Add as new work” row — one-tap create. Uses the current
                   search bar text (pre-seeded from Sonnet's proposed_name
                   but fully editable) and the area pre-seeded from the
                   draft's suggested_area. The resolve route stamps the
                   cached Sonnet description onto the new curriculum row. */}
               {query.trim() && !exactMatch && !worksLoading && (
                 <div>
+                  {/* Fuzzy duplicate guardrail: if a close match exists,
+                      show the existing work as the preferred option ABOVE
+                      the create button so the teacher picks it instead of
+                      accidentally creating a near-duplicate. */}
+                  {fuzzyNearMatch && (
+                    <button
+                      onClick={() => handlePickExisting(fuzzyNearMatch)}
+                      disabled={submitting}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        width: '100%',
+                        padding: '12px 14px',
+                        marginBottom: 8,
+                        background: '#fef3c7',
+                        border: '1.5px solid #f59e0b',
+                        borderRadius: 12,
+                        cursor: submitting ? 'wait' : 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ fontSize: 18 }}>⚠️</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11, color: '#92400e', fontWeight: 600 }}>
+                          Did you mean this existing work?
+                        </div>
+                        <div style={{ fontSize: 14, color: '#222', fontWeight: 600, marginTop: 2 }}>
+                          {locale === 'zh' && fuzzyNearMatch.name_chinese
+                            ? fuzzyNearMatch.name_chinese
+                            : fuzzyNearMatch.name}
+                        </div>
+                        <div style={{ fontSize: 10, color: '#92400e', marginTop: 2 }}>
+                          {fuzzyNearMatch.area_name} — tap to use this instead
+                        </div>
+                      </div>
+                    </button>
+                  )}
                   <button
                     onClick={handleQuickCreateFromQuery}
                     disabled={submitting}
@@ -535,23 +604,24 @@ export default function ThisIsSheet({
                       alignItems: 'center',
                       gap: 10,
                       width: '100%',
-                      padding: '14px',
-                      background: '#f5f3ff',
-                      border: '1.5px dashed #8b5cf6',
+                      padding: fuzzyNearMatch ? '10px 14px' : '14px',
+                      background: fuzzyNearMatch ? '#fafafa' : '#f5f3ff',
+                      border: fuzzyNearMatch ? '1px dashed #ccc' : '1.5px dashed #8b5cf6',
                       borderRadius: 12,
                       cursor: submitting ? 'wait' : 'pointer',
                       textAlign: 'left',
+                      opacity: fuzzyNearMatch ? 0.7 : 1,
                     }}
                   >
-                    <div style={{ fontSize: 22 }}>➕</div>
+                    <div style={{ fontSize: fuzzyNearMatch ? 16 : 22 }}>➕</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 12, color: '#8b5cf6', fontWeight: 600 }}>
-                        {submitting ? 'Creating…' : 'Add as new work (with AI description)'}
+                      <div style={{ fontSize: 12, color: fuzzyNearMatch ? '#888' : '#8b5cf6', fontWeight: 600 }}>
+                        {submitting ? 'Creating…' : fuzzyNearMatch ? 'No, create a new work instead' : 'Add as new work (with AI description)'}
                       </div>
-                      <div style={{ fontSize: 15, color: '#222', fontWeight: 600 }}>
+                      <div style={{ fontSize: fuzzyNearMatch ? 13 : 15, color: '#222', fontWeight: 600 }}>
                         “{query.trim()}”
                       </div>
-                      <div style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: fuzzyNearMatch ? '#999' : '#8b5cf6', marginTop: 2 }}>
                         Area:{' '}
                         {getAreaLabel(newWorkArea, locale)}
                       </div>
