@@ -205,7 +205,7 @@ export async function PATCH(request: NextRequest) {
     const supabase = getSupabase();
     const body = await request.json();
 
-    const { id, caption, child_id, work_id, event_id, tags, parent_visible } = body;
+    const { id, caption, child_id, work_id, event_id, tags, parent_visible, discussion_flag } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Media ID required' }, { status: 400 });
@@ -221,6 +221,7 @@ export async function PATCH(request: NextRequest) {
     if (event_id !== undefined) updateData.event_id = event_id;
     if (tags !== undefined) updateData.tags = tags;
     if (typeof parent_visible === 'boolean') updateData.parent_visible = parent_visible;
+    if (typeof discussion_flag === 'boolean') updateData.discussion_flag = discussion_flag;
 
     // Scope to authenticated user's school to prevent cross-school updates
     const schoolId = typeof auth === 'object' && 'schoolId' in auth ? auth.schoolId : null;

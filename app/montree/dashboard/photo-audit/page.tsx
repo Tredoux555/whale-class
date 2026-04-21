@@ -56,6 +56,7 @@ interface AuditPhoto {
   identification_status?: string | null;
   identification_confidence?: number | null;
   teacher_confirmed?: boolean;
+  discussion_flag?: boolean;
   sonnet_draft?: {
     visual_description?: string;
     proposed_name?: string;
@@ -70,7 +71,7 @@ interface AuditPhoto {
   } | null;
 }
 
-type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'pending_review';
+type Zone = 'all' | 'green' | 'amber' | 'red' | 'untagged' | 'weekly_admin' | 'weekly_wrap' | 'pending_review' | 'discussion';
 type DateRange = '24h' | '7d' | '30d' | 'all';
 
 // Area picker with cross-area work search + inline add custom work form
@@ -1025,6 +1026,32 @@ export default function PhotoAuditPage() {
     }
   };
 
+  // Flag/unflag a photo for team discussion. Removes it from the Confirm queue
+  // and moves it to the Discussion tab.
+  const handleToggleDiscussion = async (photo: AuditPhoto) => {
+    const newFlag = !photo.discussion_flag;
+    setProcessingId(photo.id);
+    try {
+      const res = await montreeApi('/api/montree/media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: photo.id, discussion_flag: newFlag }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      // Update local state
+      setPhotos(prev => prev.map(p =>
+        p.id === photo.id ? { ...p, discussion_flag: newFlag } : p
+      ));
+      toast.success(newFlag
+        ? (locale === 'zh' ? '💬 已标记为讨论' : '💬 Flagged for discussion')
+        : (locale === 'zh' ? '💬 已取消讨论标记' : '💬 Discussion flag removed'));
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   // Find a work by name across the loaded curriculum (case-insensitive, prefers
   // exact match then substring match within the suggested area).
   const findWorkByName = useCallback((rawName: string, preferredArea?: string): { work: any; areaKey: string } | null => {
@@ -1900,9 +1927,12 @@ export default function PhotoAuditPage() {
   // regardless of teacher_confirmed (include_confirmed=1 at fetch time).
   const filteredPhotos = useMemo(() => {
     if (zone === 'weekly_wrap' || zone === 'weekly_admin' || zone === 'pending_review') return []; // Non-photo tabs handled separately
+    if (zone === 'discussion') return photos.filter(p => p.discussion_flag);
     if (zone === 'all' && todayFilter) return photos; // Today — every photo in last 24h incl. confirmed
     if (zone === 'green') return photos.filter(p => p.zone === 'green');
-    const nonGreen = photos.filter(p => p.zone !== 'green');
+    // Exclude discussion-flagged photos from all non-discussion photo tabs
+    const nonDiscussion = photos.filter(p => !p.discussion_flag);
+    const nonGreen = nonDiscussion.filter(p => p.zone !== 'green');
     if (zone === 'all') return nonGreen;
     return nonGreen.filter(p => p.zone === zone);
   }, [photos, zone, todayFilter]);
@@ -1920,7 +1950,7 @@ export default function PhotoAuditPage() {
     setPage(0);
   }, [zone]);
 
-  const isPhotoZone = zone === 'all' || zone === 'green';
+  const isPhotoZone = zone === 'all' || zone === 'green' || zone === 'discussion';
 
   // 4-tab layout (Session 33 IA cleanup): Photo Bucket (pre-AI triage, feature-gated)
   // + Confirm (needs review, with Today filter chip) + Weekly Wrap (Teacher + Parent
@@ -1930,6 +1960,7 @@ export default function PhotoAuditPage() {
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
     ...(reviewBeforeProcess ? [{ key: 'pending_review' as Zone, label: locale === 'zh' ? '照片桶' : 'Photo Bucket', color: 'bg-amber-100 text-amber-800', count: null }] : []),
     { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
+    { key: 'discussion', label: locale === 'zh' ? '💬 讨论' : '💬 Discussion', color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
     { key: 'weekly_wrap', label: locale === 'zh' ? '周总结' : 'Weekly Wrap', color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
   ];
@@ -2126,6 +2157,7 @@ export default function PhotoAuditPage() {
               onTagChildren={() => handleOpenChildTagger(photo)}
               onDelete={() => handleDeletePhoto(photo)}
               onMarkAsPaperwork={() => handleMarkAsPaperwork(photo)}
+              onToggleDiscussion={() => handleToggleDiscussion(photo)}
               rerunResult={rerunResults[photo.id] || null}
               onAcceptResult={() => handleAcceptResult(photo)}
               onAcceptDraft={() => openThisIsSheet(photo)}
@@ -2521,7 +2553,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, onToggleDiscussion, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2531,6 +2563,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   onTagChildren: () => void;
   onDelete: () => void;
   onMarkAsPaperwork: () => void;
+  onToggleDiscussion: () => void;
   rerunResult: { work_name: string | null; work_id: string | null; area: string | null; confidence: number | null; scenario: string | null; visual_description: string | null; model_used: string | null; loading: boolean; error: string | null } | null;
   onAcceptResult: () => void;
   onAcceptDraft: () => void;
@@ -2866,6 +2899,18 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}
         <div className="flex gap-1 mt-1 justify-end">
+          <button
+            onClick={onToggleDiscussion}
+            disabled={processing}
+            className={`text-[10px] py-1 px-1.5 rounded font-medium disabled:opacity-50 ${
+              photo.discussion_flag
+                ? 'bg-blue-200 text-blue-800 ring-1 ring-blue-400'
+                : 'bg-blue-50 text-blue-600'
+            }`}
+            title={photo.discussion_flag ? 'Remove from discussion' : 'Flag for team discussion'}
+          >
+            💬
+          </button>
           <button
             onClick={onMarkAsPaperwork}
             disabled={processing}
