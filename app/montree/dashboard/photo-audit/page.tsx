@@ -2135,6 +2135,7 @@ export default function PhotoAuditPage() {
               processing={processingId === photo.id}
               workStatus={workStatuses[`${photo.child_id}:${photo.work_name}`] || null}
               onSetStatus={(status) => handleSetStatus(photo, status)}
+              unifiedTagger={isEnabled('unified_photo_tagger')}
               t={t}
             />
           ))}
@@ -2268,11 +2269,13 @@ export default function PhotoAuditPage() {
           photo={{
             id: thisIsPhoto.id,
             url: thisIsPhoto.url,
+            child_name: thisIsPhoto.child_name || thisIsPhoto.child_names?.[0] || '',
+            captured_at: thisIsPhoto.captured_at || '',
             current_work_id: thisIsPhoto.work_id || null,
             current_work_name: thisIsPhoto.work_name || null,
             current_area: thisIsPhoto.area || null,
             sonnet_draft: thisIsPhoto.sonnet_draft || null,
-          } as ThisIsSheetPhoto}
+          }}
           classroomId={classroomIdState || null}
           submitting={processingId === thisIsPhoto.id}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
@@ -2518,7 +2521,7 @@ export default function PhotoAuditPage() {
 }
 
 // ─── AuditPhotoCard ───
-function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, t }: {
+function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUseAsReference, onTagChildren, onDelete, onMarkAsPaperwork, rerunResult, onAcceptResult, onAcceptDraft, onTellAI, onPhotoTap, onSaveNote, processing, workStatus, onSetStatus, unifiedTagger, t }: {
   photo: AuditPhoto;
   selected: boolean;
   onToggle: () => void;
@@ -2537,6 +2540,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
   processing: boolean;
   workStatus: string | null;
   onSetStatus: (status: 'presented' | 'practicing' | 'mastered') => void;
+  unifiedTagger: boolean;
   t: (key: string) => string;
 }) {
   const [noteText, setNoteText] = useState(photo.caption || '');
@@ -2651,32 +2655,45 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               )}
             </p>
           )}
-          <div className="flex gap-1 mt-1.5">
+          {unifiedTagger ? (
             <button
               onClick={onAcceptDraft}
               disabled={processing}
-              className="flex-1 text-[11px] py-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
-              title="Review, edit, and add this draft to your curriculum"
+              className="w-full text-[11px] py-2 mt-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
+              title="Identify this work"
             >
-              {processing ? '...' : '✅ Accept'}
+              {processing ? '...' : '🏷️ This is…'}
             </button>
-            <button
-              onClick={onCorrect}
-              disabled={processing}
-              className="flex-1 text-[11px] py-1.5 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
-              title="Pick a different work from your curriculum"
-            >
-              ✏️ Fix
-            </button>
-          </div>
-          <button
-            onClick={onTellAI}
-            disabled={processing}
-            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-violet-200 text-violet-600 font-medium disabled:opacity-50 hover:bg-violet-50 transition-colors"
-            title="Describe this work in your own words"
-          >
-            🗣️ Tell AI what it is
-          </button>
+          ) : (
+            <>
+              <div className="flex gap-1 mt-1.5">
+                <button
+                  onClick={onAcceptDraft}
+                  disabled={processing}
+                  className="flex-1 text-[11px] py-1.5 rounded bg-violet-600 text-white font-bold disabled:opacity-50"
+                  title="Review, edit, and add this draft to your curriculum"
+                >
+                  {processing ? '...' : '✅ Accept'}
+                </button>
+                <button
+                  onClick={onCorrect}
+                  disabled={processing}
+                  className="flex-1 text-[11px] py-1.5 rounded bg-white border border-violet-400 text-violet-700 font-bold disabled:opacity-50"
+                  title="Pick a different work from your curriculum"
+                >
+                  ✏️ Fix
+                </button>
+              </div>
+              <button
+                onClick={onTellAI}
+                disabled={processing}
+                className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-violet-200 text-violet-600 font-medium disabled:opacity-50 hover:bg-violet-50 transition-colors"
+                title="Describe this work in your own words"
+              >
+                🗣️ Tell AI what it is
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -2693,32 +2710,45 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
           </div>
           <p className="text-[11px] font-bold text-amber-900 leading-tight">{photo.work_name}</p>
           <p className="text-[9px] text-amber-700 mt-0.5 italic">Auto-tagged by AI — please verify before confirming.</p>
-          <div className="flex gap-1 mt-1.5">
+          {unifiedTagger ? (
             <button
-              onClick={onConfirm}
+              onClick={onAcceptDraft}
               disabled={processing}
-              className="flex-1 text-[11px] py-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
-              title="Confirm this auto-match is correct"
+              className="w-full text-[11px] py-2 mt-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
+              title="Identify this work"
             >
-              {processing ? '...' : '✅ Confirm'}
+              {processing ? '...' : '🏷️ This is…'}
             </button>
-            <button
-              onClick={onCorrect}
-              disabled={processing}
-              className="flex-1 text-[11px] py-1.5 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
-              title="Pick the correct work"
-            >
-              ✏️ Fix
-            </button>
-          </div>
-          <button
-            onClick={onTellAI}
-            disabled={processing}
-            className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-amber-200 text-amber-600 font-medium disabled:opacity-50 hover:bg-amber-50 transition-colors"
-            title="Describe this work in your own words"
-          >
-            🗣️ Tell AI what it is
-          </button>
+          ) : (
+            <>
+              <div className="flex gap-1 mt-1.5">
+                <button
+                  onClick={onConfirm}
+                  disabled={processing}
+                  className="flex-1 text-[11px] py-1.5 rounded bg-amber-600 text-white font-bold disabled:opacity-50"
+                  title="Confirm this auto-match is correct"
+                >
+                  {processing ? '...' : '✅ Confirm'}
+                </button>
+                <button
+                  onClick={onCorrect}
+                  disabled={processing}
+                  className="flex-1 text-[11px] py-1.5 rounded bg-white border border-amber-400 text-amber-700 font-bold disabled:opacity-50"
+                  title="Pick the correct work"
+                >
+                  ✏️ Fix
+                </button>
+              </div>
+              <button
+                onClick={onTellAI}
+                disabled={processing}
+                className="w-full text-[10px] py-1.5 mt-1 rounded bg-white border border-amber-200 text-amber-600 font-medium disabled:opacity-50 hover:bg-amber-50 transition-colors"
+                title="Describe this work in your own words"
+              >
+                🗣️ Tell AI what it is
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -2803,24 +2833,35 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
         )}
         {/* Work status: P/Pr/M buttons hidden — status auto-set to "practicing" on confirm.
             Kept in code for reinstatement if needed. See handleSetStatus + progressMap. */}
-        {/* For plain cards (no AI section): show Fix + Tell AI as full-width row */}
+        {/* For plain cards (no AI section): show unified button or Fix + Tell AI */}
         {!photo.sonnet_draft && photo.identification_status !== 'haiku_matched' && (
-          <div className="flex gap-1 mt-1.5">
+          unifiedTagger ? (
             <button
-              onClick={onCorrect}
+              onClick={onAcceptDraft}
               disabled={processing}
-              className="flex-1 text-[10px] py-1.5 rounded bg-gray-200 text-gray-600 font-medium disabled:opacity-50"
+              className="w-full text-[10px] py-2 mt-1.5 rounded bg-gray-700 text-white font-bold disabled:opacity-50"
+              title="Identify this work"
             >
-              ✏️ {t('audit.fix')}
+              {processing ? '...' : '🏷️ This is…'}
             </button>
-            <button
-              onClick={onTellAI}
-              disabled={processing}
-              className="flex-1 text-[10px] py-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
-            >
-              🗣️ Tell AI what it is
-            </button>
-          </div>
+          ) : (
+            <div className="flex gap-1 mt-1.5">
+              <button
+                onClick={onCorrect}
+                disabled={processing}
+                className="flex-1 text-[10px] py-1.5 rounded bg-gray-200 text-gray-600 font-medium disabled:opacity-50"
+              >
+                ✏️ {t('audit.fix')}
+              </button>
+              <button
+                onClick={onTellAI}
+                disabled={processing}
+                className="flex-1 text-[10px] py-1.5 rounded bg-violet-50 text-violet-600 font-medium disabled:opacity-50"
+              >
+                🗣️ Tell AI what it is
+              </button>
+            </div>
+          )
         )}
         {/* Utility actions — Confirm and Teach hidden (auto-handled on resolve/fix).
             Kept in code for reinstatement. Only delete remains visible. */}

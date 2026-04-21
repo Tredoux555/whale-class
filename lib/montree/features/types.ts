@@ -43,7 +43,9 @@ export type FeatureKey =
   | 'weekly_activity_summary'
   // Weekly report AI tier (free = no AI, haiku = cheap, sonnet = premium)
   | 'ai_tier_haiku'
-  | 'ai_tier_sonnet';
+  | 'ai_tier_sonnet'
+  // Photo audit UX
+  | 'unified_photo_tagger';
 
 export interface MontreeFeature {
   feature_key: FeatureKey;
