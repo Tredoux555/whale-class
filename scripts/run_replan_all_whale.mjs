@@ -35,30 +35,50 @@ const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY });
 const WHALE_CLASSROOM = '51e7adb6-cd18-4e03-b707-eceb0a1d2e69';
 const MODEL = 'claude-haiku-4-5';
 
+// ── Area label maps for bilingual direction translation ──
+const AREA_LABELS_EN = {
+  practical_life: 'Practical Life',
+  sensorial: 'Sensorial',
+  mathematics: 'Mathematics',
+  language: 'Language',
+  cultural: 'Cultural',
+};
+const AREA_LABELS_ZH = {
+  practical_life: '日常',
+  sensorial: '感官',
+  mathematics: '数学',
+  language: '语言',
+  cultural: '文化',
+};
+
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan',
   description:
-    "Create a brief, tired-teacher-friendly game plan. One sentence nudge, 3-5 NEW works (not from last week), direction as area progression.",
+    'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in BOTH English and Chinese.',
   input_schema: {
     type: 'object',
     properties: {
-      nudge: {
+      nudge_en: {
         type: 'string',
-        description: 'One warm sentence a tired teacher reads in 2 seconds. Describe FORWARD movement.',
+        description: 'One warm sentence in ENGLISH telling the teacher what to focus on next. Max 25 words.',
+      },
+      nudge_zh: {
+        type: 'string',
+        description: 'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
       },
       works: {
         type: 'array',
         items: { type: 'string' },
         minItems: 3,
         maxItems: 5,
-        description: 'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy names EXACTLY from the AVAILABLE WORKS list.',
+        description: 'Exactly 5 works — one from EACH area. Use EXACT ENGLISH names from the AVAILABLE WORKS list.',
       },
       direction: {
         type: 'string',
-        description: 'Area progression in arrow format, e.g. "Practical Life → Sensorial → Language"',
+        description: 'Area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
   },
 };
 
@@ -99,8 +119,17 @@ async function replanChild(childId, childName) {
 
   const settings = child?.settings || {};
   const existingPlan = settings.game_plan || {};
-  const previousNudge = existingPlan.nudge || existingPlan.headline || '';
-  const previousWorks = existingPlan.works || [];
+
+  // Extract previous nudge/works from potentially bilingual format
+  const rawNudge = existingPlan.nudge || existingPlan.headline || '';
+  const previousNudge = typeof rawNudge === 'object' && rawNudge !== null
+    ? (rawNudge.en || '') : (rawNudge || '');
+  const rawWorks = existingPlan.works || [];
+  const previousWorks = Array.isArray(rawWorks)
+    ? rawWorks
+    : typeof rawWorks === 'object' && rawWorks !== null
+      ? (rawWorks.en || [])
+      : [];
 
   // Profile
   const { data: profile } = await supabase
@@ -132,12 +161,17 @@ async function replanChild(childId, childName) {
     .eq('classroom_id', WHALE_CLASSROOM);
   const areaIdToKey = new Map((curriculumAreas || []).map((a) => [a.id, a.area_key]));
 
+  // Build EN→ZH work name lookup + area-grouped list for prompt
+  const enToZhWorkName = {};
   const worksByArea = {};
   for (const w of (curriculumWorks || [])) {
     const areaKey = areaIdToKey.get(w.area_id);
     if (!areaKey) continue;
     if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
     worksByArea[areaKey].push(w.name);
+    if (w.name_chinese) {
+      enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
+    }
   }
 
   const availableWorksList = Object.entries(worksByArea)
@@ -145,6 +179,11 @@ async function replanChild(childId, childName) {
     .join('\n');
 
   const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
+
+IMPORTANT — BILINGUAL OUTPUT:
+- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+- Pick works using their ENGLISH names from the AVAILABLE WORKS list.
+- Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
 
 CHILD: ${childName}
 PREVIOUS NUDGE: "${previousNudge}"
@@ -154,7 +193,7 @@ ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 
-AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT names as written:
+AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT ENGLISH names as written:
 ${availableWorksList}
 
 RULES:
@@ -176,11 +215,25 @@ What's the teacher's next move?`;
 
   const toolBlock = response.content.find((b) => b.type === 'tool_use');
   if (!toolBlock) throw new Error('no tool_use');
-  const newPlan = toolBlock.input;
-  const planWorks = (newPlan.works || []).filter((w) => typeof w === 'string' && w.trim().length > 0);
+  const rawPlan = toolBlock.input;
+  const planWorks = (rawPlan.works || []).filter((w) => typeof w === 'string' && w.trim().length > 0);
+
+  // ── Build bilingual JSONB structure ─────────────────────────────
+  const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
+
+  const directionEn = rawPlan.direction || '';
+  let directionZh = directionEn;
+  for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
+    directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+  }
+
+  const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
+  const nudgeZh = rawPlan.nudge_zh || nudgeEn;
 
   const updatedPlan = {
-    ...newPlan,
+    nudge: { en: nudgeEn, zh: nudgeZh },
+    works: { en: planWorks, zh: worksZh },
+    direction: { en: directionEn, zh: directionZh },
     generated_at: existingPlan.generated_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
     child_name: childName,
@@ -279,8 +332,9 @@ What's the teacher's next move?`;
   const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
 
   if (missingAreas.length > 0) {
+    // previousWorks already extracted as flat EN array above
     const prevWorkNames = new Set(
-      (existingPlan.works || []).map((w) => w.toLowerCase()),
+      previousWorks.map((w) => w.toLowerCase()),
     );
 
     for (const missingArea of missingAreas) {
@@ -322,7 +376,7 @@ What's the teacher's next move?`;
     }
   }
 
-  return { nudge: updatedPlan.nudge, works: planWorks, filled };
+  return { nudge: nudgeEn, works: planWorks, filled };
 }
 
 async function main() {

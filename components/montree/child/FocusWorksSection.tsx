@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AreaConfig } from '@/components/montree/curriculum/types';
 import AreaBadge from '@/components/montree/shared/AreaBadge';
 import GuruWorkGuide from '@/components/montree/guru/GuruWorkGuide';
@@ -10,7 +10,7 @@ import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
-import { GamePlan } from '@/components/montree/child/GamePlanCard';
+import { GamePlan, resolveLocalized, resolveLocalizedArray } from '@/components/montree/child/GamePlanCard';
 
 export interface Assignment {
   work_name: string;
@@ -123,58 +123,29 @@ export default function FocusWorksSection({
   const planDaysSinceUpdate = gamePlan ? Math.floor(
     (Date.now() - new Date(gamePlan.updated_at || gamePlan.generated_at).getTime()) / 86400000
   ) : 0;
-  const planNudge = gamePlan?.nudge || gamePlan?.headline || '';
-  const planWorks = gamePlan?.works || gamePlan?.phases?.[0]?.works || [];
-  const planDirection = gamePlan?.direction || gamePlan?.priority_areas?.join(' → ') || '';
+  // Resolve bilingual fields — resolveLocalized handles both new { en, zh }
+  // objects and legacy plain strings seamlessly
+  const planNudge = resolveLocalized(gamePlan?.nudge, locale) || gamePlan?.headline || '';
+  const planWorks = resolveLocalizedArray(gamePlan?.works, locale) || gamePlan?.phases?.[0]?.works || [];
+  // For fill-shelf, always use English works (canonical for DB matching)
+  const planWorksEn = resolveLocalizedArray(gamePlan?.works, 'en') || gamePlan?.phases?.[0]?.works || [];
+  const planDirection = resolveLocalized(gamePlan?.direction, locale) || gamePlan?.priority_areas?.join(' → ') || '';
 
-  // Build English→Chinese work name lookup from available shelf data for render-time resolution
-  const workNameZhMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const w of [...focusWorks, ...extraWorks]) {
-      if (w.chineseName && w.work_name) {
-        map.set(w.work_name.toLowerCase(), w.chineseName);
-      }
-    }
-    return map;
-  }, [focusWorks, extraWorks]);
-
-  // Resolve a game plan work name to Chinese if locale is zh
-  const resolveWorkName = useCallback((work: string): string => {
-    if (locale !== 'zh') return work;
-    // If the work name is already Chinese (contains CJK), keep it
-    if (/[\u4e00-\u9fff]/.test(work)) return work;
-    // Try to resolve from shelf data
-    const zhName = workNameZhMap.get(work.toLowerCase());
-    return zhName || work;
-  }, [locale, workNameZhMap]);
-
-  // Localize the direction arrow (replace English area names with Chinese)
-  const localizedDirection = useMemo(() => {
-    if (locale !== 'zh' || !planDirection) return planDirection;
-    // If already contains Chinese, keep as-is
-    if (/[\u4e00-\u9fff]/.test(planDirection)) return planDirection;
-    let d = planDirection;
-    const replacements: [string, string][] = [
-      ['Practical Life', '日常'], ['Sensorial', '感官'],
-      ['Mathematics', '数学'], ['Language', '语言'], ['Cultural', '文化'],
-    ];
-    for (const [en, zh] of replacements) {
-      d = d.replace(new RegExp(en, 'gi'), zh);
-    }
-    return d;
-  }, [locale, planDirection]);
+  // No longer needed — locale resolution is handled by resolveLocalized/resolveLocalizedArray
+  // at the point where planNudge, planWorks, planDirection are computed above.
 
   // Check if there are empty area slots that plan works could fill
   const hasEmptySlots = gamePlan && planWorks.length > 0 &&
     AREAS.some(area => !focusWorks.find(w => normalizeArea(w.area) === area));
 
   const handleFillShelf = useCallback(async () => {
-    if (!planWorks.length) return;
+    if (!planWorksEn.length) return;
     setFillingShelf(true);
     try {
+      // Always send English canonical names for DB matching
       const res = await montreeApi(`/api/montree/children/${childId}/fill-shelf`, {
         method: 'POST',
-        body: JSON.stringify({ works: planWorks }),
+        body: JSON.stringify({ works: planWorksEn }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -188,7 +159,7 @@ export default function FocusWorksSection({
     } finally {
       setFillingShelf(false);
     }
-  }, [childId, planWorks, onShelfFilled]);
+  }, [childId, planWorksEn, onShelfFilled]);
 
   const handleRefreshPlan = useCallback(async () => {
     if (!onRefreshGamePlan) return;
@@ -298,8 +269,8 @@ export default function FocusWorksSection({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold uppercase tracking-wide text-amber-600">{locale === 'zh' ? '游戏计划' : 'Game Plan'}</p>
               <p className="text-sm text-gray-700 leading-relaxed">{planNudge}</p>
-              {localizedDirection && (
-                <p className="text-[11px] text-amber-600 font-medium mt-1">{localizedDirection}</p>
+              {planDirection && (
+                <p className="text-[11px] text-amber-600 font-medium mt-1">{planDirection}</p>
               )}
             </div>
           </div>
@@ -312,7 +283,7 @@ export default function FocusWorksSection({
                   key={wi}
                   className="px-2.5 py-1 text-xs bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 font-medium"
                 >
-                  {resolveWorkName(work)}
+                  {work}
                 </span>
               ))}
               {/* Fill shelf button — only when empty slots exist */}
