@@ -30,7 +30,7 @@ if (!SUPABASE_URL || !SUPABASE_KEY || !ANTHROPIC_KEY) {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY });
+const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY, timeout: 120000 });
 
 const WHALE_CLASSROOM = '51e7adb6-cd18-4e03-b707-eceb0a1d2e69';
 const MODEL = 'claude-haiku-4-5';
@@ -390,6 +390,18 @@ async function main() {
   console.log(`Found ${children?.length || 0} active children`);
 
   for (const child of children || []) {
+    // Skip children that already have bilingual plans
+    const { data: childData } = await supabase
+      .from('montree_children')
+      .select('settings')
+      .eq('id', child.id)
+      .maybeSingle();
+    const gp = childData?.settings?.game_plan;
+    if (gp?.nudge && typeof gp.nudge === 'object' && gp.nudge.en && gp.nudge.zh) {
+      console.log(`⏭ ${child.name}: already bilingual — skipping`);
+      continue;
+    }
+
     try {
       const result = await replanChild(child.id, child.name);
       console.log(`✓ ${child.name}: ${result.filled} works filled — "${result.nudge}"`);
