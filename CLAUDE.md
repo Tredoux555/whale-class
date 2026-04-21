@@ -3520,6 +3520,17 @@ Standard development methodology for complex tasks:
 
 Each phase runs 3 rounds of its activity. Parallel agents used where possible. Every build phase includes inline auditing. Final audit catches remaining bugs before push.
 
+### 🚨 MANDATORY POST-TASK AUDIT (Standing Instruction)
+
+**After completing EVERY task** (code change, bug fix, feature, refactor — anything that touches code), Claude MUST:
+
+1. **Audit the work** — re-read the changed files, trace the data flow end-to-end, verify edge cases
+2. **Fix any issues found** — if the audit catches bugs, fix them immediately
+3. **Re-audit until clean** — repeat the audit-fix cycle until you get a CLEAN audit with zero issues
+4. **Only THEN report completion** to the user
+
+This is not optional. Do not skip this step. Do not report a task as done before auditing. A "clean audit" means every changed code path was traced, every edge case was considered, and no bugs were found. If in doubt, audit again.
+
 ---
 
 ### ⚡ PRIORITY: Full Chinese Localization + Teacher Report JSON Repair
