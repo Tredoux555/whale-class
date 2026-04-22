@@ -15,6 +15,7 @@ export interface ClassroomWork {
   id: string;
   name: string;
   name_chinese?: string;
+  area_id: string;
   area_key: string;
   area_name: string;
   area_name_zh?: string;
@@ -71,6 +72,7 @@ export function useClassroomWorks(
             id: w.id,
             name: w.name,
             name_chinese: w.name_chinese,
+            area_id: w.area_id || w.area?.id || '',
             area_key: areaKey,
             area_name: areaName,
             area_name_zh: areaNameZh,
