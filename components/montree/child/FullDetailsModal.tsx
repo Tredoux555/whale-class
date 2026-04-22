@@ -64,9 +64,9 @@ export default function FullDetailsModal({
                 {/* Step-by-Step Presentation Section */}
                 <div>
                   <h3 className="text-lg font-semibold text-emerald-400 mb-4">{t('details.stepByStep')}</h3>
-                  {guideData.presentation_steps && guideData.presentation_steps.length > 0 ? (
+                  {guideData.presentation_steps && guideData.presentation_steps.filter(s => s.title || s.description).length > 0 ? (
                     <div className="space-y-4">
-                      {guideData.presentation_steps.map((step) => (
+                      {guideData.presentation_steps.filter(s => s.title || s.description).map((step) => (
                         <div
                           key={step.step}
                           className="bg-slate-800 border border-slate-700 rounded-2xl p-4"
@@ -78,12 +78,14 @@ export default function FullDetailsModal({
                               </span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-white mb-2">{step.title}</h4>
-                              <p className="text-gray-300 text-sm mb-3">{step.description}</p>
-                              <div className="bg-slate-700/50 rounded-lg p-3 border-l-2 border-amber-400">
-                                <p className="text-xs text-amber-300 font-medium mb-1">{t('details.teacherTip')}:</p>
-                                <p className="text-gray-200 text-sm">{step.tip}</p>
-                              </div>
+                              {step.title && <h4 className="font-semibold text-white mb-2">{step.title}</h4>}
+                              {step.description && <p className="text-gray-300 text-sm mb-3">{step.description}</p>}
+                              {step.tip && (
+                                <div className="bg-slate-700/50 rounded-lg p-3 border-l-2 border-amber-400">
+                                  <p className="text-xs text-amber-300 font-medium mb-1">{t('details.teacherTip')}:</p>
+                                  <p className="text-gray-200 text-sm">{step.tip}</p>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
