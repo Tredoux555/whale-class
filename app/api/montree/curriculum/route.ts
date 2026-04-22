@@ -423,7 +423,7 @@ export async function PATCH(request: NextRequest) {
       'why_it_matters', 'age_range', 'direct_aims', 'indirect_aims',
       'materials', 'prerequisites', 'teacher_notes', 'is_active', 'sequence',
       'photo_url', 'quick_guide', 'presentation_steps', 'reference_photo_url',
-      'source', 'prompt_used',
+      'source', 'prompt_used', 'area_id',
     ];
 
     for (const field of allowedFields) {

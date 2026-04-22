@@ -19,7 +19,7 @@
 
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useClassroomWorks, ClassroomWork } from '@/lib/montree/hooks/useClassroomWorks';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
@@ -78,6 +78,15 @@ export default function ThisIsSheet({
   const [newWorkArea, setNewWorkArea] = useState<string>('practical_life');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // --- Merge mode state ---
+  const [mergeMode, setMergeMode] = useState(false);
+  const [mergeSelected, setMergeSelected] = useState<Set<string>>(new Set());
+  const [mergeStep, setMergeStep] = useState<'select' | 'confirm'>('select');
+  const [mergeWinnerId, setMergeWinnerId] = useState<string | null>(null);
+  const [mergeWinnerArea, setMergeWinnerArea] = useState<string>('practical_life');
+  const [merging, setMerging] = useState(false);
+  const [mergeResult, setMergeResult] = useState<{ success: boolean; message: string } | null>(null);
+
   // Lazy-load the classroom's full works list on first open of the sheet.
   const { works, loading: worksLoading, reload: reloadWorks } = useClassroomWorks(
     classroomId,
@@ -102,6 +111,12 @@ export default function ThisIsSheet({
       setNewWorkName('');
       setNewWorkArea('practical_life');
       setSubmitting(false);
+      setMergeMode(false);
+      setMergeSelected(new Set());
+      setMergeStep('select');
+      setMergeWinnerId(null);
+      setMerging(false);
+      setMergeResult(null);
     } else {
       // Pre-seed the search bar with Sonnet's proposed_name (editable),
       // BUT only when confidence is reasonable (>= 0.4). Low-confidence
@@ -311,6 +326,107 @@ export default function ThisIsSheet({
       setSubmitting(false);
     }
   };
+
+  // --- Merge handlers ---
+  const toggleMergeSelect = useCallback((workId: string) => {
+    setMergeSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(workId)) next.delete(workId); else next.add(workId);
+      return next;
+    });
+  }, []);
+
+  const mergeSelectedWorks = useMemo(() => {
+    return works.filter(w => mergeSelected.has(w.id));
+  }, [works, mergeSelected]);
+
+  const enterMergeConfirm = useCallback(() => {
+    if (mergeSelected.size < 2) return;
+    // Default winner = first selected work (teacher can change)
+    const first = mergeSelectedWorks[0];
+    if (first) {
+      setMergeWinnerId(first.id);
+      setMergeWinnerArea(first.area_key);
+    }
+    setMergeStep('confirm');
+  }, [mergeSelected, mergeSelectedWorks]);
+
+  const handleMerge = useCallback(async () => {
+    if (!mergeWinnerId || mergeSelected.size < 2 || merging) return;
+    const loserIds = [...mergeSelected].filter(id => id !== mergeWinnerId);
+    if (loserIds.length === 0) return;
+
+    setMerging(true);
+    setMergeResult(null);
+    try {
+      // If the winner's area needs to change, update it first
+      const winner = works.find(w => w.id === mergeWinnerId);
+      if (winner && mergeWinnerArea !== winner.area_key) {
+        // Find the correct area_id for the target area from any work in that area
+        const areaWork = works.find(w => w.area_key === mergeWinnerArea && w.area_id);
+        if (areaWork) {
+          const areaRes = await fetch('/api/montree/curriculum', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              work_id: mergeWinnerId,
+              area_id: areaWork.area_id,
+            }),
+          });
+          if (!areaRes.ok) {
+            setMergeResult({ success: false, message: 'Failed to update area — try again' });
+            return;
+          }
+        }
+      }
+
+      // Now merge: POST to duplicates consolidation endpoint
+      const res = await fetch('/api/montree/curriculum/duplicates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          winner_id: mergeWinnerId,
+          loser_ids: loserIds,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setMergeResult({ success: false, message: data.error || 'Merge failed' });
+        return;
+      }
+      setMergeResult({
+        success: true,
+        message: `Merged ${data.stats?.deleted || loserIds.length} duplicate${loserIds.length > 1 ? 's' : ''}. ${data.stats?.media || 0} photos moved.`,
+      });
+      // Reload works list so merged works disappear
+      reloadWorks();
+      // After a short delay, exit merge mode so teacher can continue tagging
+      setTimeout(() => {
+        setMergeMode(false);
+        setMergeSelected(new Set());
+        setMergeStep('select');
+        setMergeWinnerId(null);
+        setMerging(false);
+        setMergeResult(null);
+      }, 2000);
+    } catch (err) {
+      console.error('[ThisIsSheet] merge failed:', err);
+      setMergeResult({ success: false, message: 'Network error — try again' });
+    } finally {
+      setMerging(false);
+    }
+  }, [mergeWinnerId, mergeSelected, mergeWinnerArea, merging, works, reloadWorks]);
+
+  const exitMergeMode = useCallback(() => {
+    setMergeMode(false);
+    setMergeSelected(new Set());
+    setMergeStep('select');
+    setMergeWinnerId(null);
+    setMerging(false);
+    setMergeResult(null);
+  }, []);
 
   if (!isOpen || !photo) return null;
 
@@ -526,6 +642,215 @@ export default function ThisIsSheet({
                 </div>
               )}
 
+              {/* Merge toggle — show when 2+ search results */}
+              {!worksLoading && results.length >= 2 && !mergeMode && (
+                <button
+                  onClick={() => setMergeMode(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    marginBottom: 8,
+                    background: 'none',
+                    border: '1px solid #ddd',
+                    borderRadius: 8,
+                    fontSize: 12,
+                    color: '#888',
+                    cursor: 'pointer',
+                  }}
+                >
+                  🔀 Merge duplicates
+                </button>
+              )}
+
+              {/* Merge mode banner */}
+              {mergeMode && mergeStep === 'select' && (
+                <div style={{
+                  padding: '10px 14px',
+                  background: '#fef3c7',
+                  borderRadius: 12,
+                  marginBottom: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#92400e' }}>
+                      🔀 Select works to merge
+                    </div>
+                    <div style={{ fontSize: 11, color: '#b45309', marginTop: 2 }}>
+                      Tap the works that are duplicates ({mergeSelected.size} selected)
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {mergeSelected.size >= 2 && (
+                      <button
+                        onClick={enterMergeConfirm}
+                        style={{
+                          padding: '6px 14px',
+                          background: '#f59e0b',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Next →
+                      </button>
+                    )}
+                    <button
+                      onClick={exitMergeMode}
+                      style={{
+                        padding: '6px 10px',
+                        background: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: 8,
+                        fontSize: 12,
+                        color: '#666',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Merge confirm step */}
+              {mergeMode && mergeStep === 'confirm' && (
+                <div style={{
+                  padding: 14,
+                  background: '#fef3c7',
+                  borderRadius: 12,
+                  marginBottom: 10,
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#92400e', marginBottom: 10 }}>
+                    🔀 Which name should we keep?
+                  </div>
+                  {mergeSelectedWorks.map(w => (
+                    <button
+                      key={w.id}
+                      onClick={() => { setMergeWinnerId(w.id); setMergeWinnerArea(w.area_key); }}
+                      disabled={merging}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                        width: '100%',
+                        padding: '10px 12px',
+                        marginBottom: 6,
+                        background: mergeWinnerId === w.id ? '#dcfce7' : '#fff',
+                        border: mergeWinnerId === w.id ? '2px solid #22c55e' : '1px solid #e5e7eb',
+                        borderRadius: 10,
+                        cursor: merging ? 'wait' : 'pointer',
+                        textAlign: 'left',
+                      }}
+                    >
+                      {mergeWinnerId === w.id && (
+                        <span style={{ fontSize: 16 }}>✅</span>
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#222' }}>
+                          {locale === 'zh' && w.name_chinese ? w.name_chinese : w.name}
+                        </div>
+                        <div style={{ fontSize: 11, color: '#888' }}>
+                          {locale === 'zh' && w.area_name_zh ? w.area_name_zh : w.area_name}
+                          {mergeWinnerId === w.id ? ' — keeper' : ' — will be absorbed'}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+
+                  {/* Area correction — show when winner selected */}
+                  {mergeWinnerId && (
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: '#92400e', marginBottom: 6 }}>
+                        Correct area for the merged work:
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {AREA_KEYS.map(key => {
+                          const active = mergeWinnerArea === key;
+                          const color = AREA_COLORS[key] || '#888';
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => setMergeWinnerArea(key)}
+                              disabled={merging}
+                              style={{
+                                padding: '5px 12px',
+                                borderRadius: 999,
+                                border: active ? `2px solid ${color}` : '1px solid #ddd',
+                                background: active ? color + '22' : '#fff',
+                                color: active ? color : '#888',
+                                fontWeight: active ? 700 : 400,
+                                fontSize: 12,
+                                cursor: 'pointer',
+                              }}
+                            >
+                              {getAreaLabel(key, locale)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Merge result message */}
+                  {mergeResult && (
+                    <div style={{
+                      marginTop: 10,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: mergeResult.success ? '#dcfce7' : '#fee2e2',
+                      color: mergeResult.success ? '#166534' : '#991b1b',
+                      fontSize: 13,
+                    }}>
+                      {mergeResult.success ? '✓ ' : '✕ '}{mergeResult.message}
+                    </div>
+                  )}
+
+                  {/* Action buttons */}
+                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                    <button
+                      onClick={() => setMergeStep('select')}
+                      disabled={merging}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: '#fff',
+                        border: '1px solid #ddd',
+                        borderRadius: 10,
+                        fontSize: 13,
+                        cursor: 'pointer',
+                        color: '#555',
+                      }}
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      onClick={handleMerge}
+                      disabled={merging || !mergeWinnerId}
+                      style={{
+                        flex: 2,
+                        padding: '10px',
+                        background: merging || !mergeWinnerId ? '#ccc' : '#f59e0b',
+                        border: 'none',
+                        borderRadius: 10,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: '#fff',
+                        cursor: merging || !mergeWinnerId ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {merging ? 'Merging…' : `Merge ${mergeSelected.size} works into one`}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {!worksLoading && results.length > 0 && (
                 <div
                   style={{
@@ -538,21 +863,43 @@ export default function ThisIsSheet({
                   {results.map(w => (
                     <button
                       key={w.id}
-                      onClick={() => handlePickExisting(w)}
-                      disabled={submitting}
+                      onClick={() => mergeMode && mergeStep === 'select'
+                        ? toggleMergeSelect(w.id)
+                        : handlePickExisting(w)
+                      }
+                      disabled={submitting || (mergeMode && mergeStep === 'confirm')}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 10,
                         width: '100%',
                         padding: '12px 14px',
-                        background: '#fff',
+                        background: mergeSelected.has(w.id) ? '#fef9c3' : '#fff',
                         border: 'none',
                         borderBottom: '1px solid #f0f0f0',
                         cursor: submitting ? 'wait' : 'pointer',
                         textAlign: 'left',
                       }}
                     >
+                      {/* Merge checkbox */}
+                      {mergeMode && mergeStep === 'select' && (
+                        <div style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 6,
+                          border: mergeSelected.has(w.id) ? '2px solid #f59e0b' : '2px solid #ccc',
+                          background: mergeSelected.has(w.id) ? '#fbbf24' : '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          fontSize: 13,
+                          color: '#fff',
+                          fontWeight: 700,
+                        }}>
+                          {mergeSelected.has(w.id) ? '✓' : ''}
+                        </div>
+                      )}
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 15, color: '#222' }}>{locale === 'zh' && w.name_chinese ? w.name_chinese : w.name}</div>
                       </div>
