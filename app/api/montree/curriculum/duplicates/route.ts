@@ -162,9 +162,11 @@ export async function POST(request: NextRequest) {
       .eq('classroom_id', classroomId)
       .in('id', loser_ids);
 
-    if (!losers || losers.length !== loser_ids.length) {
-      return NextResponse.json({ error: 'Some loser works not found' }, { status: 404 });
+    if (!losers || losers.length === 0) {
+      return NextResponse.json({ error: 'No loser works found in this classroom' }, { status: 404 });
     }
+    // Lenient: proceed with whatever losers exist (some may already be deleted from a prior merge)
+    const foundLoserIds = losers.map(l => l.id);
 
     // Deduplicate loser names (two losers may have the same name)
     const loserNames = [...new Set(losers.map(l => l.name))];
@@ -174,7 +176,7 @@ export async function POST(request: NextRequest) {
     const { data: movedMedia } = await supabase
       .from('montree_media')
       .update({ work_id: winner_id })
-      .in('work_id', loser_ids)
+      .in('work_id', foundLoserIds)
       .select('id');
     stats.media = movedMedia?.length || 0;
 
@@ -348,13 +350,13 @@ export async function POST(request: NextRequest) {
     const { error: deleteErr } = await supabase
       .from('montree_classroom_curriculum_works')
       .delete()
-      .in('id', loser_ids);
+      .in('id', foundLoserIds);
 
     if (deleteErr) {
       console.error('[Duplicates] Delete losers error:', deleteErr);
       return NextResponse.json({ error: 'Failed to delete duplicate works' }, { status: 500 });
     }
-    stats.deleted = loser_ids.length;
+    stats.deleted = foundLoserIds.length;
 
     console.log(`[Duplicates] Consolidated "${winner.name}": merged ${stats.media} photos, ${stats.progress} progress, ${stats.visual_memory} VM entries, deleted ${stats.deleted} duplicates`);
 
