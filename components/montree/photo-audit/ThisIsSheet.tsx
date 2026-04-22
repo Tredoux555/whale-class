@@ -59,6 +59,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onResolve: (resolution: Resolution) => Promise<void>;
+  onDiscussionFlag?: (photoId: string) => void;
   photo: ThisIsSheetPhoto | null;
   classroomId: string;
 }
@@ -67,6 +68,7 @@ export default function ThisIsSheet({
   isOpen,
   onClose,
   onResolve,
+  onDiscussionFlag,
   photo,
   classroomId,
 }: Props) {
@@ -258,36 +260,35 @@ export default function ThisIsSheet({
   }, [query, works, exactMatch]);
 
   // --- handlers ---
-  const handlePickExisting = async (work: ClassroomWork) => {
-    if (submitting) return;
-    setSubmitting(true);
-    try {
-      await onResolve({
-        type: 'existing',
-        work_id: work.id,
-        work_name: work.name,
-        area_key: work.area_key,
-      });
-    } catch (err) {
-      console.error('[ThisIsSheet] pick existing failed:', err);
-      setSubmitting(false);
-    }
+  // All resolve handlers close the sheet INSTANTLY and fire the server
+  // call in the background. The parent (photo-audit/page.tsx) handles
+  // success/error toasts via handleResolvePhoto. This makes the UI feel
+  // instant for the teacher — no "Creating…" spinner.
+  const fireAndClose = (resolution: Resolution) => {
+    onClose();
+    onResolve(resolution).catch(err => {
+      console.error('[ThisIsSheet] background resolve failed:', err);
+    });
   };
 
-  const handleConfirmAI = async () => {
+  const handlePickExisting = (work: ClassroomWork) => {
+    if (submitting) return;
+    fireAndClose({
+      type: 'existing',
+      work_id: work.id,
+      work_name: work.name,
+      area_key: work.area_key,
+    });
+  };
+
+  const handleConfirmAI = () => {
     if (submitting || !aiGuess) return;
-    setSubmitting(true);
-    try {
-      await onResolve({
-        type: 'confirm_ai',
-        work_id: aiGuess.work_id,
-        work_name: aiGuess.work_name,
-        area_key: aiGuess.area_key,
-      });
-    } catch (err) {
-      console.error('[ThisIsSheet] confirm AI failed:', err);
-      setSubmitting(false);
-    }
+    fireAndClose({
+      type: 'confirm_ai',
+      work_id: aiGuess.work_id,
+      work_name: aiGuess.work_name,
+      area_key: aiGuess.area_key,
+    });
   };
 
   const handleEnterAddMode = () => {
@@ -301,36 +302,30 @@ export default function ThisIsSheet({
   // why_it_matters, and key_materials onto the new curriculum row, so
   // the created work carries exactly the description the teacher sees
   // on this card.
-  const handleQuickCreateFromQuery = async () => {
+  const handleQuickCreateFromQuery = () => {
     const name = query.trim();
     if (submitting || !name) return;
-    setSubmitting(true);
-    try {
-      await onResolve({
-        type: 'new_custom',
-        name,
-        area_key: newWorkArea,
-      });
-    } catch (err) {
-      console.error('[ThisIsSheet] quick create failed:', err);
-      setSubmitting(false);
-    }
+    fireAndClose({
+      type: 'new_custom',
+      name,
+      area_key: newWorkArea,
+    });
   };
 
-  const handleCreateNew = async () => {
+  const handleCreateNew = () => {
     const name = newWorkName.trim();
     if (submitting || !name) return;
-    setSubmitting(true);
-    try {
-      await onResolve({
-        type: 'new_custom',
-        name,
-        area_key: newWorkArea,
-      });
-    } catch (err) {
-      console.error('[ThisIsSheet] create new failed:', err);
-      setSubmitting(false);
-    }
+    fireAndClose({
+      type: 'new_custom',
+      name,
+      area_key: newWorkArea,
+    });
+  };
+
+  const handleDiscussionFlag = () => {
+    if (!photo || !onDiscussionFlag) return;
+    onDiscussionFlag(photo.id);
+    onClose();
   };
 
   // --- Merge handlers ---
@@ -491,6 +486,23 @@ export default function ThisIsSheet({
             This is…
           </div>
           <div style={{ flex: 1 }} />
+          {onDiscussionFlag && (
+            <button
+              onClick={handleDiscussionFlag}
+              title={locale === 'zh' ? '标记为讨论' : 'Flag for discussion'}
+              style={{
+                background: 'none',
+                border: '1px solid #ddd',
+                borderRadius: 8,
+                padding: '6px 10px',
+                cursor: 'pointer',
+                fontSize: 16,
+                color: '#3b82f6',
+              }}
+            >
+              💬
+            </button>
+          )}
           {photo.url && (
             <img
               src={photo.url}

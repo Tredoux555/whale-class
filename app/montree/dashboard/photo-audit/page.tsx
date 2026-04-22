@@ -2295,6 +2295,10 @@ export default function PhotoAuditPage() {
           classroomId={classroomIdState || null}
           submitting={processingId === thisIsPhoto.id}
           onResolve={(resolution) => handleResolvePhoto(thisIsPhoto, resolution)}
+          onDiscussionFlag={(photoId) => {
+            const p = photos.find(ph => ph.id === photoId);
+            if (p) handleToggleDiscussion(p);
+          }}
         />
       )}
 
