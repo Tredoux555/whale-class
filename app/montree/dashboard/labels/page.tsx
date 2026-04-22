@@ -2,7 +2,7 @@
 // Printable student labels — locker tags, name tags, cubby/bed labels
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
 import { getSession } from '@/lib/montree/auth';
@@ -35,6 +35,18 @@ export default function LabelsPage() {
   const [template, setTemplate] = useState<Template>('locker');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [schoolName, setSchoolName] = useState('');
+  const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
+  const [logoDragging, setLogoDragging] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoDataUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -129,6 +141,57 @@ export default function LabelsPage() {
             </div>
           </section>
 
+          {/* Class Logo Upload */}
+          <section>
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">{t('labels.class_logo') || 'Class Logo'}</h2>
+            {logoDataUrl ? (
+              <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-200">
+                <img src={logoDataUrl} alt="Class logo" className="w-16 h-16 object-contain rounded-lg" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-slate-700 font-medium">{t('labels.logo_applied') || 'Logo will appear on all labels'}</p>
+                </div>
+                <button
+                  onClick={() => setLogoDataUrl(null)}
+                  className="text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded hover:bg-red-50 flex-shrink-0"
+                >
+                  {t('labels.remove') || 'Remove'}
+                </button>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setLogoDragging(true); }}
+                onDragLeave={() => setLogoDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setLogoDragging(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file) handleLogoFile(file);
+                }}
+                onClick={() => logoInputRef.current?.click()}
+                className={`p-6 rounded-xl border-2 border-dashed text-center cursor-pointer transition-all ${
+                  logoDragging
+                    ? 'border-blue-400 bg-blue-50'
+                    : 'border-slate-300 bg-white hover:border-blue-300 hover:bg-blue-50/50'
+                }`}
+              >
+                <div className="text-3xl mb-2">🖼️</div>
+                <p className="text-sm text-slate-600 font-medium">{t('labels.drop_logo') || 'Drop an image here or click to browse'}</p>
+                <p className="text-xs text-slate-400 mt-1">{t('labels.logo_formats') || 'JPEG, PNG — appears on every label'}</p>
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleLogoFile(file);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+            )}
+          </section>
+
           {/* Student Selector */}
           <section>
             <div className="flex items-center justify-between mb-3">
@@ -187,6 +250,7 @@ export default function LabelsPage() {
                       template={template}
                       colorIdx={students.indexOf(student)}
                       schoolName={schoolName}
+                      logoUrl={logoDataUrl}
                     />
                   ))}
                 </div>
@@ -220,6 +284,7 @@ export default function LabelsPage() {
               template={template}
               colorIdx={students.indexOf(student)}
               schoolName={schoolName}
+              logoUrl={logoDataUrl}
               print
             />
           ))}
@@ -251,28 +316,41 @@ function LabelCard({
   template,
   colorIdx,
   schoolName,
+  logoUrl,
   print = false,
 }: {
   student: Student;
   template: Template;
   colorIdx: number;
   schoolName: string;
+  logoUrl?: string | null;
   print?: boolean;
 }) {
   const color = COLORS[colorIdx % COLORS.length];
 
   // Size configs per template
   const config = {
-    locker: { photoSize: 'w-24 h-24', nameSize: 'text-xl', padding: 'p-6', border: 'border-2' },
-    nametag: { photoSize: 'w-16 h-16', nameSize: 'text-base', padding: 'p-4', border: 'border' },
-    cubby: { photoSize: 'w-12 h-12', nameSize: 'text-sm', padding: 'p-3', border: 'border' },
+    locker: { photoSize: 'w-24 h-24', nameSize: 'text-xl', padding: 'p-6', border: 'border-2', logoSize: 'w-14 h-14' },
+    nametag: { photoSize: 'w-16 h-16', nameSize: 'text-base', padding: 'p-4', border: 'border', logoSize: 'w-10 h-10' },
+    cubby: { photoSize: 'w-12 h-12', nameSize: 'text-sm', padding: 'p-3', border: 'border', logoSize: 'w-8 h-8' },
   }[template];
 
   return (
     <div
-      className={`rounded-2xl ${config.border} border-slate-300 ${config.padding} flex flex-col items-center text-center bg-white`}
+      className={`rounded-2xl ${config.border} border-slate-300 ${config.padding} flex flex-col items-center text-center bg-white relative`}
       style={{ breakInside: 'avoid' }}
     >
+      {/* Class logo — top-right corner */}
+      {logoUrl && (
+        <div className="absolute top-2 right-2">
+          <img
+            src={logoUrl}
+            alt=""
+            className={`${config.logoSize} object-contain`}
+          />
+        </div>
+      )}
+
       {/* Photo / Letter circle */}
       <div
         className={`${config.photoSize} rounded-full flex items-center justify-center overflow-hidden mb-2 flex-shrink-0`}
