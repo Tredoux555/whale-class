@@ -1,10 +1,60 @@
-// POST /api/montree/media/children — Manage child tags on a photo
-// Supports add/remove/set operations on the montree_media_children junction table
+// GET/POST /api/montree/media/children — Manage child tags on a photo
+// GET: Returns child_ids tagged on a photo
+// POST: Supports add/remove/set operations on the montree_media_children junction table
 // Also updates montree_media.child_id (primary child) when needed
 
 import { NextRequest, NextResponse } from 'next/server';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getSupabase } from '@/lib/supabase-client';
+
+export async function GET(request: NextRequest) {
+  try {
+    const auth = await verifySchoolRequest(request);
+    if (auth instanceof NextResponse) return auth;
+
+    const mediaId = request.nextUrl.searchParams.get('media_id');
+    if (!mediaId) {
+      return NextResponse.json({ success: false, error: 'media_id required' }, { status: 400 });
+    }
+
+    const supabase = getSupabase();
+
+    // Verify the media belongs to the same school
+    const { data: media } = await supabase
+      .from('montree_media')
+      .select('id, child_id, school_id')
+      .eq('id', mediaId)
+      .eq('school_id', auth.schoolId)
+      .maybeSingle();
+
+    if (!media) {
+      return NextResponse.json({ success: false, error: 'Photo not found' }, { status: 404 });
+    }
+
+    // Get all tagged children from junction table
+    const { data: links, error } = await supabase
+      .from('montree_media_children')
+      .select('child_id')
+      .eq('media_id', mediaId);
+
+    if (error) {
+      console.error('[Media Children] GET error:', error);
+      return NextResponse.json({ success: false, error: 'Failed to fetch children' }, { status: 500 });
+    }
+
+    const childIds = (links || []).map((l: { child_id: string }) => l.child_id);
+
+    // If there's a primary child_id not in junction table, include it
+    if (media.child_id && !childIds.includes(media.child_id)) {
+      childIds.push(media.child_id);
+    }
+
+    return NextResponse.json({ success: true, child_ids: childIds, primary_child_id: media.child_id });
+  } catch (error) {
+    console.error('[Media Children] GET Error:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {

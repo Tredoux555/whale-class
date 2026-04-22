@@ -192,6 +192,13 @@ export default function GalleryPage() {
   // Event attendance
   const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
+  // Child tag editing state
+  const [childTagPhotoId, setChildTagPhotoId] = useState<string | null>(null);
+  const [classroomChildren, setClassroomChildren] = useState<Array<{ id: string; name: string }>>([]);
+  const [taggedChildIds, setTaggedChildIds] = useState<Set<string>>(new Set());
+  const [savingChildTags, setSavingChildTags] = useState(false);
+  const [loadingChildTags, setLoadingChildTags] = useState(false);
+
   // Crop URL overrides — only populated when a photo is cropped in this session.
   // Default URLs are computed inline via getProxyUrl(storage_path) (Session 25 pattern).
   const [cropUrlOverrides, setCropUrlOverrides] = useState<Record<string, string>>({});
@@ -784,6 +791,71 @@ export default function GalleryPage() {
     return allReportPhotos.filter(p => !ids.has(p.id));
   }, [currentReportPhotos, allReportPhotos]);
 
+  // ── Child Tag Editing ──
+  const openChildTagEditor = useCallback(async (photoId: string) => {
+    setChildTagPhotoId(photoId);
+    setLoadingChildTags(true);
+
+    try {
+      // Fetch classroom children list (if not already loaded)
+      if (classroomChildren.length === 0) {
+        const childrenRes = await fetch('/api/montree/children', { credentials: 'include' });
+        if (childrenRes.ok) {
+          const childrenData = await childrenRes.json();
+          setClassroomChildren((childrenData.children || []).map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })));
+        }
+      }
+
+      // Fetch currently tagged children for this photo
+      const tagRes = await fetch(`/api/montree/media/children?media_id=${photoId}`, { credentials: 'include' });
+      if (tagRes.ok) {
+        const tagData = await tagRes.json();
+        setTaggedChildIds(new Set(tagData.child_ids || []));
+      }
+    } catch (err) {
+      console.error('[ChildTagEditor] Failed to load:', err);
+      toast.error('Failed to load child tags');
+    }
+    setLoadingChildTags(false);
+  }, [classroomChildren.length]);
+
+  const toggleChildTag = useCallback((cid: string) => {
+    setTaggedChildIds(prev => {
+      const next = new Set(prev);
+      if (next.has(cid)) next.delete(cid);
+      else next.add(cid);
+      return next;
+    });
+  }, []);
+
+  const saveChildTags = useCallback(async () => {
+    if (!childTagPhotoId) return;
+    setSavingChildTags(true);
+    try {
+      const newIds = Array.from(taggedChildIds);
+      const res = await fetch('/api/montree/media/children', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ media_id: childTagPhotoId, action: 'set', child_ids: newIds }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+
+      // If the current gallery child was removed, remove this photo from the local list
+      if (!taggedChildIds.has(childId)) {
+        setPhotos(prev => prev.filter(p => p.id !== childTagPhotoId));
+        toast.success(locale === 'zh' ? '照片已从此相册移除' : 'Photo removed from this gallery');
+      } else {
+        toast.success(locale === 'zh' ? '已更新标记的儿童' : 'Tagged children updated');
+      }
+      setChildTagPhotoId(null);
+    } catch (err) {
+      console.error('[ChildTagEditor] Save failed:', err);
+      toast.error('Failed to save child tags');
+    }
+    setSavingChildTags(false);
+  }, [childTagPhotoId, taggedChildIds, childId, locale]);
+
   // ── Render: Photo Card ──
   const renderPhotoCard = (photo: GalleryItem) => {
     const isExpanded = expandedPhoto === photo.id;
@@ -890,6 +962,13 @@ export default function GalleryPage() {
                 aria-label={t('gallery.downloadPhoto') || 'Download photo'}
               >
                 💾
+              </button>
+              <button
+                onClick={() => openChildTagEditor(photo.id)}
+                className="w-8 h-8 bg-black/40 hover:bg-violet-500 text-white rounded-full flex items-center justify-center sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-sm"
+                aria-label={locale === 'zh' ? '编辑标记的儿童' : 'Edit tagged children'}
+              >
+                👤
               </button>
               <button
                 onClick={() => setCropPhoto({ id: photo.id, url: getPhotoUrl(photo) })}
@@ -1970,6 +2049,88 @@ export default function GalleryPage() {
           onClose={() => setCropPhoto(null)}
           onSave={handleCropSave}
         />
+      )}
+
+      {/* Child Tag Editor Modal */}
+      {childTagPhotoId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setChildTagPhotoId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[70vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800">
+                {locale === 'zh' ? '👤 编辑标记的儿童' : '👤 Edit Tagged Children'}
+              </h3>
+              <button
+                onClick={() => setChildTagPhotoId(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-3">
+              {loadingChildTags ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-gray-300 border-t-violet-500 rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {classroomChildren.map(child => {
+                    const isTagged = taggedChildIds.has(child.id);
+                    const isCurrent = child.id === childId;
+                    return (
+                      <button
+                        key={child.id}
+                        onClick={() => toggleChildTag(child.id)}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+                          isTagged
+                            ? 'bg-violet-50 border border-violet-200'
+                            : 'hover:bg-gray-50 border border-transparent'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-colors ${
+                          isTagged ? 'bg-violet-500 border-violet-500 text-white' : 'border-gray-300'
+                        }`}>
+                          {isTagged && <span className="text-xs">✓</span>}
+                        </div>
+                        <span className={`text-sm font-medium ${isTagged ? 'text-violet-700' : 'text-gray-700'}`}>
+                          {child.name}
+                        </span>
+                        {isCurrent && (
+                          <span className="ml-auto text-xs text-gray-400">
+                            {locale === 'zh' ? '当前' : 'current'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+              <button
+                onClick={() => setChildTagPhotoId(null)}
+                className="flex-1 px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                {locale === 'zh' ? '取消' : 'Cancel'}
+              </button>
+              <button
+                onClick={saveChildTags}
+                disabled={savingChildTags}
+                className="flex-1 px-4 py-2 text-sm text-white bg-violet-500 rounded-xl hover:bg-violet-600 disabled:opacity-50 transition-colors"
+              >
+                {savingChildTags ? '...' : locale === 'zh' ? '保存' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
