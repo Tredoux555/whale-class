@@ -86,6 +86,7 @@ export default function ThisIsSheet({
   const [mergeWinnerArea, setMergeWinnerArea] = useState<string>('practical_life');
   const [merging, setMerging] = useState(false);
   const [mergeResult, setMergeResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [mergedLoserIds, setMergedLoserIds] = useState<Set<string>>(new Set());
 
   // Lazy-load the classroom's full works list on first open of the sheet.
   const { works, loading: worksLoading, reload: reloadWorks } = useClassroomWorks(
@@ -117,6 +118,7 @@ export default function ThisIsSheet({
       setMergeWinnerId(null);
       setMerging(false);
       setMergeResult(null);
+      setMergedLoserIds(new Set());
     } else {
       // Pre-seed the search bar with Sonnet's proposed_name (editable),
       // BUT only when confidence is reasonable (>= 0.4). Low-confidence
@@ -196,12 +198,16 @@ export default function ThisIsSheet({
 
   // --- derive filtered search results ---
   const results = useMemo(() => {
+    // Filter out any works that were just merged away (losers)
+    const available = mergedLoserIds.size > 0
+      ? works.filter(w => !mergedLoserIds.has(w.id))
+      : works;
     const q = query.trim().toLowerCase();
     if (!q) {
       // No query: show up to 10 works, prefer alphabetical
-      return works.slice().sort((a, b) => a.name.localeCompare(b.name)).slice(0, 10);
+      return available.slice().sort((a, b) => a.name.localeCompare(b.name)).slice(0, 10);
     }
-    const matches = works.filter(w => w.name.toLowerCase().includes(q));
+    const matches = available.filter(w => w.name.toLowerCase().includes(q));
     // Rank: startsWith first, then includes
     matches.sort((a, b) => {
       const aStarts = a.name.toLowerCase().startsWith(q) ? 0 : 1;
@@ -210,7 +216,7 @@ export default function ThisIsSheet({
       return a.name.localeCompare(b.name);
     });
     return matches.slice(0, 20);
-  }, [query, works]);
+  }, [query, works, mergedLoserIds]);
 
   // Did the query exactly match an existing work name?
   const exactMatch = useMemo(() => {
@@ -396,21 +402,19 @@ export default function ThisIsSheet({
         setMergeResult({ success: false, message: data.error || 'Merge failed' });
         return;
       }
-      setMergeResult({
-        success: true,
-        message: `Merged ${data.stats?.deleted || loserIds.length} duplicate${loserIds.length > 1 ? 's' : ''}. ${data.stats?.media || 0} photos moved.`,
-      });
-      // Reload works list so merged works disappear
+      // Immediately hide losers from search results and exit merge mode
+      setMergedLoserIds(new Set(loserIds));
+      setMergeMode(false);
+      setMergeSelected(new Set());
+      setMergeStep('select');
+      setMergeWinnerId(null);
+      setMerging(false);
+      setMergeResult(null);
+      // Pre-fill search with winner name so teacher can tap to tag the photo
+      const winnerName = data.winner?.name || winner?.name || '';
+      if (winnerName) setQuery(winnerName);
+      // Background reload to sync works list from DB (mergedLoserIds filters until complete)
       reloadWorks();
-      // After a short delay, exit merge mode so teacher can continue tagging
-      setTimeout(() => {
-        setMergeMode(false);
-        setMergeSelected(new Set());
-        setMergeStep('select');
-        setMergeWinnerId(null);
-        setMerging(false);
-        setMergeResult(null);
-      }, 2000);
     } catch (err) {
       console.error('[ThisIsSheet] merge failed:', err);
       setMergeResult({ success: false, message: 'Network error — try again' });
