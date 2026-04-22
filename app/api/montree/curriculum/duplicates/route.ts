@@ -143,9 +143,10 @@ export async function POST(request: NextRequest) {
     const supabase = getSupabase();
 
     // 1. Verify winner exists and belongs to this classroom
+    const descFields = 'id, name, area_id, parent_description, why_it_matters, parent_description_zh, why_it_matters_zh, quick_guide, guide_content_zh';
     const { data: winner } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('id, name, area_id, parent_description, why_it_matters')
+      .select(descFields)
       .eq('id', winner_id)
       .eq('classroom_id', classroomId)
       .maybeSingle();
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
     // 2. Verify all losers exist and belong to this classroom
     const { data: losers } = await supabase
       .from('montree_classroom_curriculum_works')
-      .select('id, name, parent_description, why_it_matters')
+      .select(descFields)
       .eq('classroom_id', classroomId)
       .in('id', loser_ids);
 
@@ -299,20 +300,47 @@ export async function POST(request: NextRequest) {
       stats.visual_memory++;
     }
 
-    // 6. If winner is missing parent_description, steal from richest loser
-    if (!winner.parent_description) {
-      const richestLoser = losers
-        .filter(l => l.parent_description)
-        .sort((a, b) => (b.parent_description?.length || 0) - (a.parent_description?.length || 0))[0];
-      if (richestLoser) {
-        const updates: Record<string, unknown> = { parent_description: richestLoser.parent_description };
-        if (richestLoser.why_it_matters && !winner.why_it_matters) {
-          updates.why_it_matters = richestLoser.why_it_matters;
+    // 6. Keep the RICHEST descriptions across winner + all losers (never lose Sonnet content)
+    {
+      const allWorks = [winner, ...losers];
+      const pickRichest = (field: string): string | null => {
+        let best: string | null = null;
+        for (const w of allWorks) {
+          const val = (w as Record<string, unknown>)[field] as string | null;
+          if (val && (!best || val.length > best.length)) best = val;
         }
+        return best;
+      };
+      // For JSONB fields, pick the one that exists (winner first, then losers)
+      const pickJsonb = (field: string): unknown | null => {
+        for (const w of allWorks) {
+          const val = (w as Record<string, unknown>)[field];
+          if (val) return val;
+        }
+        return null;
+      };
+
+      const updates: Record<string, unknown> = {};
+      const textFields = ['parent_description', 'why_it_matters', 'parent_description_zh', 'why_it_matters_zh', 'quick_guide'];
+      for (const f of textFields) {
+        const richest = pickRichest(f);
+        const current = (winner as Record<string, unknown>)[f] as string | null;
+        if (richest && (!current || richest.length > current.length)) {
+          updates[f] = richest;
+        }
+      }
+      // guide_content_zh is JSONB — keep whichever exists (winner preference)
+      if (!winner.guide_content_zh) {
+        const loserGuide = pickJsonb('guide_content_zh');
+        if (loserGuide) updates.guide_content_zh = loserGuide;
+      }
+
+      if (Object.keys(updates).length > 0) {
         await supabase
           .from('montree_classroom_curriculum_works')
           .update(updates)
           .eq('id', winner_id);
+        console.log(`[Duplicates] Enriched winner "${winner.name}" with richer descriptions:`, Object.keys(updates).join(', '));
       }
     }
 
