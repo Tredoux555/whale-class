@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase, verifyUserToken, getCurrentWeekStart } from '@/lib/story-db';
 import { decryptMessage } from '@/lib/message-encryption';
+import { effectiveMessageType } from '@/lib/story/document-detect';
 
 export async function GET(req: NextRequest) {
   try {
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
 
         return {
           id: row.id,
-          type: row.message_type,
+          type: effectiveMessageType(row.message_type, row.media_filename),
           url: row.media_url,
           filename: row.media_filename,
           caption,
