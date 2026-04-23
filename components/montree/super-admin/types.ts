@@ -21,6 +21,7 @@ export interface School {
   ai_budget_action?: string;
   api_spent_this_month?: number;
   api_calls_this_month?: number;
+  ai_tier?: 'free' | 'core' | 'premium';
   signup_country?: string | null;
   signup_country_code?: string | null;
   signup_city?: string | null;

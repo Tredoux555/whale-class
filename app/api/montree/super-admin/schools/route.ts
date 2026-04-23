@@ -87,6 +87,22 @@ export async function GET(request: NextRequest) {
     const childToSchool: Record<string, string> = {};
     (allChildren || []).forEach(c => { childToSchool[c.id] = c.school_id; });
 
+    // 3a. Fetch AI tier flags (ai_tier_haiku / ai_tier_sonnet) per school
+    const { data: tierFlagsRaw } = await supabase
+      .from('montree_school_features')
+      .select('school_id, feature_key, enabled')
+      .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
+
+    const aiTierMap: Record<string, 'free' | 'core' | 'premium'> = {};
+    for (const row of (tierFlagsRaw || []) as Array<{ school_id: string; feature_key: string; enabled: boolean }>) {
+      if (!row.enabled) continue;
+      if (row.feature_key === 'ai_tier_sonnet') {
+        aiTierMap[row.school_id] = 'premium'; // sonnet takes precedence
+      } else if (row.feature_key === 'ai_tier_haiku' && aiTierMap[row.school_id] !== 'premium') {
+        aiTierMap[row.school_id] = 'core';
+      }
+    }
+
     // 3b. Fetch actual API usage from montree_api_usage (this month)
     const monthStart = new Date();
     monthStart.setDate(1);
@@ -173,6 +189,7 @@ export async function GET(request: NextRequest) {
         ai_budget_action: school.ai_budget_action ?? 'hard_limit',
         api_spent_this_month: Math.round((apiSpentMap[school.id] || 0) * 10000) / 10000,
         api_calls_this_month: apiCallsMap[school.id] || 0,
+        ai_tier: aiTierMap[school.id] || 'free',
         login_codes: loginCodeMap[school.id] || [],
       };
     });
@@ -197,10 +214,53 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { schoolId, subscription_tier, subscription_status, monthly_ai_budget_usd, ai_budget_action } = body;
+    const { schoolId, subscription_tier, subscription_status, monthly_ai_budget_usd, ai_budget_action, ai_tier } = body;
 
     if (!schoolId) {
       return NextResponse.json({ error: 'schoolId required' }, { status: 400 });
+    }
+
+    // ── AI tier change: toggle feature flags + set budget ──────────
+    if (ai_tier !== undefined) {
+      const VALID_AI_TIERS = ['free', 'core', 'premium'];
+      if (!VALID_AI_TIERS.includes(ai_tier)) {
+        return NextResponse.json({ error: 'ai_tier must be free, core, or premium' }, { status: 400 });
+      }
+
+      const haikuEnabled = ai_tier === 'core' || ai_tier === 'premium';
+      const sonnetEnabled = ai_tier === 'premium';
+
+      // Upsert both feature flags atomically
+      for (const [key, enabled] of [['ai_tier_haiku', haikuEnabled], ['ai_tier_sonnet', sonnetEnabled]] as const) {
+        const { error: flagErr } = await supabase
+          .from('montree_school_features')
+          .upsert(
+            { school_id: schoolId, feature_key: key, enabled, enabled_by: 'super_admin_tier_change' },
+            { onConflict: 'school_id,feature_key' }
+          );
+        if (flagErr) {
+          console.error(`Failed to set ${key} for ${schoolId}:`, flagErr);
+          return NextResponse.json({ error: `Failed to set feature flag ${key}` }, { status: 500 });
+        }
+      }
+
+      // Also set budget: free=$0/hard_limit, core/premium=$9999/warn
+      const tierBudget = ai_tier === 'free' ? 0 : 9999;
+      const tierAction = ai_tier === 'free' ? 'hard_limit' : 'warn';
+      const { error: budgetErr } = await supabase
+        .from('montree_schools')
+        .update({ monthly_ai_budget_usd: tierBudget, ai_budget_action: tierAction })
+        .eq('id', schoolId);
+      if (budgetErr) {
+        console.error(`Failed to set budget for ${schoolId}:`, budgetErr);
+      }
+
+      clearBudgetCache(schoolId);
+
+      // If only ai_tier was sent, return early with the updated tier
+      if (!subscription_tier && !subscription_status && monthly_ai_budget_usd === undefined && ai_budget_action === undefined) {
+        return NextResponse.json({ success: true, ai_tier, schoolId });
+      }
     }
 
     // Tier validation
