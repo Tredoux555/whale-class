@@ -446,8 +446,10 @@ export async function POST(request: NextRequest) {
             }
 
             // ─── Generate Parent Report ───
+            // PARENT-REPORTS-OFF ADDON — remove `SKIP_PARENT_REPORTS` guard to re-enable parent narrative generation
+            const SKIP_PARENT_REPORTS = true;
             let parentNarrative = '';
-            if (!existingParentReports.has(child.id)) {
+            if (!SKIP_PARENT_REPORTS && !existingParentReports.has(child.id)) {
               const narrativeResult = await generateWeeklyNarrative({
                 child: {
                   name: child.name,
