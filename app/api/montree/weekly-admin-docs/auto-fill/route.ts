@@ -517,42 +517,42 @@ export async function GET(request: NextRequest) {
 
       // --- Summary (English only, Language only — custom addon, easy to revert to all areas) ---
       // Format: work name + status (P/Pr/M) → teacher key_insight → next week Language focus
-      const STATUS_LABELS: Record<string, string> = {
-        presented: 'Presented',
-        practicing: 'Practicing',
-        mastered: 'Mastered',
-      };
       let summaryEnglish = '';
       let summaryChinese = ''; // kept for backward compat but mirrors English
       if (childWorks && childWorks.size > 0) {
         const enLines: string[] = [];
         const childProgress = childProgressMap.get(child.id);
 
-        // Section 1: Language works done this week with status
+        // Section 1: Language works done this week — compact paragraph format
+        // e.g. "Paper Work (P); Bingo Phonics Review (Pr); Ocean Animals Matching (P)"
+        const STATUS_SHORT: Record<string, string> = {
+          presented: 'P',
+          practicing: 'Pr',
+          mastered: 'M',
+        };
         const langWorks = childWorks.get('language');
         if (langWorks && langWorks.length > 0) {
-          for (const w of langWorks) {
+          const workParts = langWorks.map(w => {
             const status = childProgress?.get(w.toLowerCase()) || 'presented';
-            const statusLabel = STATUS_LABELS[status] || status;
-            enLines.push(`${w} — ${statusLabel}`);
-          }
+            const shortLabel = STATUS_SHORT[status] || status;
+            return `${w} (${shortLabel})`;
+          });
+          enLines.push(workParts.join('; '));
         }
 
         // Section 2: Short summary from teacher report key_insight
         const keyInsight = teacherKeyInsights.get(child.id);
         if (keyInsight) {
-          enLines.push('');
           enLines.push(keyInsight);
         }
 
-        // Section 3: Next week plan (Language only — matching summary scope)
+        // Section 3: Next week plan (Language only)
         const langFocus = childFocus?.get('language');
         if (langFocus) {
-          enLines.push('');
           enLines.push(`Next week: ${langFocus}`);
         }
 
-        summaryEnglish = enLines.length > 0 ? enLines.join('\n') : 'No recorded activities this week.';
+        summaryEnglish = enLines.length > 0 ? enLines.join('. ') : 'No recorded activities this week.';
         summaryChinese = summaryEnglish; // English only per user request
       } else {
         summaryEnglish = 'No recorded activities this week.';
