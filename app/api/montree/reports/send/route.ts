@@ -6,6 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName, getIntlLocale } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { child_id, locale: requestLocale, excluded_works } = body;
-    const locale = (requestLocale as 'en' | 'zh') || getLocaleFromRequest(request.url);
+    const locale: Locale = isValidLocale(requestLocale) ? requestLocale : (isValidLocale(getLocaleFromRequest(request.url)) ? getLocaleFromRequest(request.url) as Locale : 'en');
     // excluded_works: string[] of work names the teacher chose to hide from the report
     const excludedSet = new Set<string>(Array.isArray(excluded_works) ? excluded_works : []);
     const t = getTranslator(locale);

@@ -90,23 +90,21 @@ These files were fully converted in prior build rounds:
 
 ## 4. What's REMAINING — By Layer
 
-### Layer 4 — AI Pipeline (9 untouched files)
+### Layer 4 — AI Pipeline — Mostly COMPLETE
 
-These files have `=== 'zh'` patterns or `'en' | 'zh'` type annotations that need conversion:
+**✅ Done:**
+- `lib/montree/auto-translate.ts` — Generalized to N-language with `autoTranslateWork(input, targetLocale)`
+- `app/api/montree/curriculum/batch-translate/route.ts` — Accepts `target_locale` parameter
+- `lib/montree/reports/replan-child.ts` — Type widened to `Locale`
+- `app/api/montree/photo-identification/process/route.ts` — Type widened + imports
+- `app/api/montree/photo-identification/sonnet-review/route.ts` — Type widened + imports
+- `lib/montree/photo-identification/two-pass.ts` — Type widened
+- `lib/montree/photo-identification/sonnet-draft.ts` — Type widened
 
-| File | `=== 'zh'` | `'en'\|'zh'` | Complexity |
-|------|-----------|-------------|------------|
-| `lib/montree/auto-translate.ts` | 0 | 0 | HIGH — generalize `autoTranslateToChinese()` → `autoTranslateWork(input, targetLocale)` |
-| `app/api/montree/curriculum/batch-translate/route.ts` | 0 | 0 | MEDIUM — accept `targetLocale` param |
-| `lib/montree/reports/replan-child.ts` | 0 | 1 | LOW — widen type annotation |
-| `app/api/montree/children/[childId]/game-plan/refresh/route.ts` | 0 | 0 | LOW — uses locale from body |
-| `scripts/run_replan_all_whale.mjs` | 0 | 0 | LOW — inline locale references |
-| `app/api/montree/photo-identification/process/route.ts` | 1 | 2 | LOW — widen type, use locale-config |
-| `app/api/montree/photo-identification/sonnet-review/route.ts` | 1 | 2 | LOW — widen type, use locale-config |
-| `lib/montree/photo-identification/two-pass.ts` | 0 | 1 | LOW — widen type annotation |
-| `lib/montree/photo-identification/sonnet-draft.ts` | 0 | 1 | LOW — widen type annotation |
-
-**`auto-translate.ts` is the most complex.** Currently `autoTranslateToChinese()` is called fire-and-forget from 5+ locations. Needs to become `autoTranslateWork(work, targetLocale)` using `LOCALE_AI_CONFIG` for system prompts and `LOCALE_COLUMN_SUFFIX` for DB column writes. The batch-translate route similarly needs a `targetLocale` parameter.
+**⏳ Remaining (low complexity, mostly have `=== 'zh'` ternaries in AI prompt sections):**
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — Has zh-specific prompt text
+- `scripts/run_replan_all_whale.mjs` — Has inline zh references
+- `app/api/montree/children/[childId]/activity-summary/route.ts` — Has zh-specific prompt + area labels
 
 ### Layer 2-3 — Ternary Sweep (~89 source files, ~563 occurrences)
 
@@ -149,28 +147,13 @@ locale === 'zh' && work.name_chinese ? work.name_chinese : work.name
 getLocalizedWorkName(work, locale)
 ```
 
-### Layer 5 — Type Widening (16 files, 28 occurrences)
+### Layer 5 — Type Widening — ✅ COMPLETE (all 16 files done)
 
-Replace `locale: 'en' | 'zh'` with `locale: Locale` (importing from `locales.ts`):
+All 16 files converted. Every `'en' | 'zh'` type annotation replaced with `Locale` from `locales.ts`. Every hardcoded validation replaced with `isValidLocale()`. Only 5 comment-only hits remain (acceptable — no code impact).
 
-| File | Count |
-|------|-------|
-| `app/api/montree/reports/weekly-wrap/send/route.ts` | 3 |
-| `app/api/montree/reports/route.ts` | 3 |
-| `app/api/montree/reports/generate/route.ts` | 3 |
-| `app/api/montree/reports/weekly-wrap/route.ts` | 2 |
-| `app/api/montree/reports/batch-narratives/route.ts` | 2 |
-| `app/api/montree/weekly-review/[childId]/route.ts` | 2 |
-| `app/api/montree/children/[childId]/onboard/route.ts` | 2 |
-| `app/api/montree/photo-identification/process/route.ts` | 2 |
-| `app/api/montree/photo-identification/sonnet-review/route.ts` | 2 |
-| `lib/montree/reports/replan-child.ts` | 1 |
-| `lib/montree/photo-identification/two-pass.ts` | 1 |
-| `lib/montree/photo-identification/sonnet-draft.ts` | 1 |
-| `app/api/montree/reports/send/route.ts` | 1 |
-| `app/api/montree/children/[childId]/activity-summary/route.ts` | 1 |
-| `app/api/montree/weekly-review/[childId]/send/route.ts` | 1 |
-| `app/api/montree/guru/route.ts` | 1 |
+**Also completed as part of Layer 4:**
+- `lib/montree/auto-translate.ts` — Generalized to N-language: `autoTranslateWork(input, targetLocale)` + deprecated `autoTranslateToChinese` wrapper
+- `app/api/montree/curriculum/batch-translate/route.ts` — Accepts `target_locale` parameter
 
 ---
 

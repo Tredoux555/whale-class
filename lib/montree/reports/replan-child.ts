@@ -18,6 +18,7 @@
 //   - Plan refresh: app/api/montree/children/[childId]/game-plan/refresh/route.ts
 
 import type Anthropic from '@anthropic-ai/sdk';
+import type { Locale } from '@/lib/montree/i18n/locales';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { logApiUsage } from '@/lib/montree/api-usage';
 import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
@@ -65,7 +66,7 @@ export interface ReplanInput {
   classroomId: string;
   /** School ID for API usage logging. */
   schoolId: string;
-  locale: 'en' | 'zh';
+  locale: Locale;
   /** Anthropic SDK client (must be initialized — caller checks). */
   anthropic: Anthropic;
   /** Anthropic model string from resolveReportModel(). NEVER hardcoded. */

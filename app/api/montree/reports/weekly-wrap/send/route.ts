@@ -4,7 +4,7 @@
 // Body: {
 //   classroom_id: string,
 //   week_start: string,    // YYYY-MM-DD Monday
-//   locale?: 'en' | 'zh'
+//   locale?: Locale
 // }
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,6 +12,8 @@ import { getSupabase } from '@/lib/supabase-client';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { getLocaleFromRequest, getIntlLocale } from '@/lib/montree/i18n/server';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 120; // sending emails to 19 parents
 
@@ -25,7 +27,7 @@ export async function POST(request: NextRequest) {
     const { classroom_id, week_start, locale: requestLocale, child_ids } = body as {
       classroom_id: string;
       week_start: string;
-      locale?: 'en' | 'zh';
+      locale?: Locale;
       child_ids?: string[];  // Optional: send only for specific children
     };
 
@@ -36,7 +38,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const locale = (requestLocale as 'en' | 'zh') || getLocaleFromRequest(request.url);
+    const locale = (isValidLocale(requestLocale) ? requestLocale : 'en') || getLocaleFromRequest(request.url);
 
     // Verify classroom belongs to this school (cross-pollination guard)
     const { data: classroomOwnership } = await supabase

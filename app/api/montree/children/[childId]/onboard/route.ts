@@ -10,6 +10,8 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_MODEL, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 120; // 120s — profile extraction + game plan generation
 
@@ -108,7 +110,7 @@ export async function POST(
     const body = await request.json();
     const { transcript, classroom_id, locale: bodyLocale } = body;
     const rawLocale = bodyLocale || getLocaleFromRequest(request.url);
-    const locale: 'en' | 'zh' = rawLocale === 'zh' ? 'zh' : 'en';
+    const locale: Locale = isValidLocale(rawLocale) ? rawLocale : 'en';
 
     if (!childId || !transcript) {
       return NextResponse.json(
@@ -441,7 +443,7 @@ async function generateGamePlan(
   extractedProfile: Record<string, unknown>,
   classroomId: string | undefined,
   ageNote: string,
-  locale: 'en' | 'zh' = 'en',
+  locale: Locale = 'en',
 ): Promise<Record<string, unknown> | null> {
   if (!anthropic) return null;
 

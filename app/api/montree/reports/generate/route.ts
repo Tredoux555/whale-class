@@ -9,6 +9,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 // ============================================
 // TYPES
@@ -99,7 +101,7 @@ interface AIAnalysisReport {
 // AREA HELPERS
 // ============================================
 
-function getAreaDisplay(area: string, locale: 'en' | 'zh'): { name: string; emoji: string; description: string } {
+function getAreaDisplay(area: string, locale: Locale): { name: string; emoji: string; description: string } {
   const t = getTranslator(locale);
   const emojis: Record<string, string> = {
     practical_life: '🧹', sensorial: '👁️', mathematics: '🔢',
@@ -126,7 +128,7 @@ function getAreaDisplay(area: string, locale: 'en' | 'zh'): { name: string; emoj
 
 function generateTeacherReport(
   analysis: WeeklyAnalysisResult,
-  locale: 'en' | 'zh',
+  locale: Locale,
   dbChineseMap: Map<string, string>
 ): TeacherReport {
   const areaBreakdown = Object.entries(analysis.area_distribution).map(([area, pct]) => {
@@ -174,7 +176,7 @@ function generateTeacherReport(
 function generateParentReport(
   analysis: WeeklyAnalysisResult,
   worksByArea: Record<string, string[]>,
-  locale: 'en' | 'zh',
+  locale: Locale,
   dbChineseMap: Map<string, string>
 ): ParentReport {
   const t = getTranslator(locale);

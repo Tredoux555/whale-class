@@ -38,6 +38,8 @@ import {
 import {
   loadIdentificationContext,
 } from '@/lib/montree/photo-identification/context-loader';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 // Railway serverless timeout — Haiku two-pass needs 30-45s minimum
 // (Pass 1: 15s + Pass 2: 15s + Pass 2b: 15s). Without this, Railway
@@ -98,7 +100,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { media_id?: string; locale?: 'en' | 'zh'; force?: boolean };
+  let body: { media_id?: string; locale?: string; force?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest) {
   }
 
   const mediaId = body.media_id;
-  const locale: 'en' | 'zh' = body.locale === 'zh' ? 'zh' : 'en';
+  const locale: Locale = isValidLocale(body.locale) ? body.locale : 'en';
   if (!mediaId || typeof mediaId !== 'string') {
     return NextResponse.json({ error: 'media_id is required' }, { status: 400 });
   }

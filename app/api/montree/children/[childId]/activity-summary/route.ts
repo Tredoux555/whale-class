@@ -10,6 +10,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +63,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // Accept locale from query — defaults to 'en'. Cache EN and ZH separately.
     const url = new URL(request.url);
     const localeParam = url.searchParams.get('locale');
-    const locale: 'en' | 'zh' = localeParam === 'zh' ? 'zh' : 'en';
+    const locale: Locale = isValidLocale(localeParam) ? localeParam : 'en';
     const AREA_DISPLAY = locale === 'zh' ? AREA_DISPLAY_ZH : AREA_DISPLAY_EN;
 
     const access = await verifyChildBelongsToSchool(childId, auth.schoolId);
