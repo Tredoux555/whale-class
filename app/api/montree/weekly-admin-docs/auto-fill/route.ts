@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Step 2: Fetch all data sources in parallel
-    const [reportsRes, focusWorksRes, mediaRes, existingNotesRes, allWorksRes] = await Promise.all([
+    const [reportsRes, focusWorksRes, mediaRes, existingNotesRes, allWorksRes, progressRes] = await Promise.all([
       // Weekly Wrap reports — parent (preferred, has works array) + teacher (fallback)
       supabase
         .from('montree_weekly_reports')
@@ -176,6 +176,12 @@ export async function GET(request: NextRequest) {
         .from('montree_classroom_curriculum_works')
         .select('name, area_id')
         .eq('classroom_id', classroomId),
+
+      // Child progress (P/Pr/M status per work)
+      supabase
+        .from('montree_child_progress')
+        .select('child_id, work_name, status')
+        .in('child_id', childIds),
     ]);
 
     if (reportsRes.error) {
@@ -193,6 +199,9 @@ export async function GET(request: NextRequest) {
     if (existingNotesRes.error) {
       console.error('auto-fill: existingNotes error:', existingNotesRes.error.message);
     }
+    if (progressRes.error) {
+      console.error('auto-fill: progress error:', progressRes.error.message);
+    }
 
     // Build work name → area lookup from curriculum (for flat-text parsing fallback)
     const workNameToArea = new Map<string, string>();
@@ -203,6 +212,13 @@ export async function GET(request: NextRequest) {
       // Also store without " - suffix" variants
       const base = w.name.replace(/\s*-\s*.+$/, '').trim();
       if (base !== w.name) workNameToArea.set(base.toLowerCase(), areaKey);
+    }
+
+    // Build child progress map: child_id → work_name(lower) → status
+    const childProgressMap = new Map<string, Map<string, string>>();
+    for (const row of (progressRes.data || []) as Array<{ child_id: string; work_name: string; status: string }>) {
+      if (!childProgressMap.has(row.child_id)) childProgressMap.set(row.child_id, new Map());
+      childProgressMap.get(row.child_id)!.set(row.work_name.toLowerCase(), row.status);
     }
 
     // Build existing saved notes by child (flat-text fallback source)
@@ -301,14 +317,22 @@ export async function GET(request: NextRequest) {
     interface ReportWork { name: string; area: string; status?: string }
     interface AreaAnalysis { area: string; works_count?: number; narrative?: string; works?: string[] }
     const wrapWorksByChild = new Map<string, Map<string, string[]>>();
+    // Extract teacher report key_insight for short summary
+    const teacherKeyInsights = new Map<string, string>();
     const allReports = (reportsRes.data || []) as Array<{
       child_id: string;
       report_type: string;
-      content: { works?: ReportWork[]; area_analyses?: AreaAnalysis[] };
+      content: { works?: ReportWork[]; area_analyses?: AreaAnalysis[]; key_insight?: string };
     }>;
     // Sort so parent reports are processed first (overwrite teacher data)
     const parentReports = allReports.filter(r => r.report_type === 'parent');
     const teacherReports = allReports.filter(r => r.report_type === 'teacher');
+    // Extract key_insight from teacher reports
+    for (const tr of teacherReports) {
+      if (tr.content?.key_insight) {
+        teacherKeyInsights.set(tr.child_id, tr.content.key_insight);
+      }
+    }
     // Process teacher reports first, then parent overwrites
     for (const report of [...teacherReports, ...parentReports]) {
       // Parent reports have content.works; teacher reports have content.area_analyses
@@ -431,6 +455,19 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Build photo count per child per work this week (for "X sessions" context)
+    const photoCountByChildWork = new Map<string, Map<string, number>>();
+    for (const photo of mediaRows) {
+      const work = workIdToName.get(photo.work_id);
+      if (!work) continue;
+      const childIdsForPhoto = mediaChildMap.get(photo.id) || new Set();
+      for (const cid of childIdsForPhoto) {
+        if (!photoCountByChildWork.has(cid)) photoCountByChildWork.set(cid, new Map());
+        const counts = photoCountByChildWork.get(cid)!;
+        counts.set(work.name, (counts.get(work.name) || 0) + 1);
+      }
+    }
+
     // Build focus works lookup
     const focusMap = new Map<string, Map<string, string>>();
     for (const fw of (focusWorks || []) as FocusWorkRow[]) {
@@ -478,41 +515,58 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // --- Summary (area-by-area, both languages) ---
+      // --- Summary (English only — user requested English for weekly summary) ---
+      // Format: works with status → short summary → next week plan
+      const STATUS_LABELS: Record<string, string> = {
+        presented: 'Presented',
+        practicing: 'Practicing',
+        mastered: 'Mastered',
+      };
       let summaryEnglish = '';
-      let summaryChinese = '';
+      let summaryChinese = ''; // kept for backward compat but mirrors English
       if (childWorks && childWorks.size > 0) {
         const enLines: string[] = [];
-        const zhLines: string[] = [];
+        const childProgress = childProgressMap.get(child.id);
+        const childPhotoCounts = photoCountByChildWork.get(child.id);
+
+        // Section 1: Works done this week with status + session count
         for (const area of AREAS) {
           const works = childWorks.get(area);
           if (works && works.length > 0) {
-            enLines.push(`${AREA_LABELS[area].en}: ${works.join(', ')}`);
-            const zhWorks = works.map(w => getZhWorkName(w));
-            zhLines.push(`${AREA_LABELS[area].zh}：${zhWorks.join('、')}`);
+            const workDetails = works.map(w => {
+              const status = childProgress?.get(w.toLowerCase()) || 'presented';
+              const statusLabel = STATUS_LABELS[status] || status;
+              const sessions = childPhotoCounts?.get(w) || 0;
+              const sessionStr = sessions > 0 ? `, ${sessions} session${sessions > 1 ? 's' : ''}` : '';
+              return `${w} (${statusLabel}${sessionStr})`;
+            });
+            enLines.push(`${AREA_LABELS[area].en}: ${workDetails.join(', ')}`);
           }
         }
-        // Include unmatched works under "Other" (from flat-text parsing where area couldn't be determined)
+        // Include unmatched works under "Other"
         const otherWorks = childWorks.get('other');
         if (otherWorks && otherWorks.length > 0) {
           enLines.push(`Other: ${otherWorks.join(', ')}`);
-          const zhOther = otherWorks.map(w => getZhWorkName(w));
-          zhLines.push(`其他：${zhOther.join('、')}`);
         }
-        // Append "Next week" line if there are focus works
+
+        // Section 2: Short summary from teacher report key_insight
+        const keyInsight = teacherKeyInsights.get(child.id);
+        if (keyInsight) {
+          enLines.push('');
+          enLines.push(keyInsight);
+        }
+
+        // Section 3: Next week plan
         if (nextWeekEn.length > 0) {
           enLines.push('');
           enLines.push(`Next week: ${nextWeekEn.join(', ')}`);
         }
-        if (nextWeekZh.length > 0) {
-          zhLines.push('');
-          zhLines.push(`下周计划：${nextWeekZh.join('、')}`);
-        }
+
         summaryEnglish = enLines.length > 0 ? enLines.join('\n') : 'No recorded activities this week.';
-        summaryChinese = zhLines.length > 0 ? zhLines.join('\n') : '本周没有记录到活动。';
+        summaryChinese = summaryEnglish; // English only per user request
       } else {
         summaryEnglish = 'No recorded activities this week.';
-        summaryChinese = '本周没有记录到活动。';
+        summaryChinese = summaryEnglish;
       }
 
       return {
