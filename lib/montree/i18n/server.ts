@@ -4,15 +4,21 @@
 
 import { en, type TranslationKey } from './en';
 import { zh } from './zh';
+import { es } from './es';
+import { type Locale, isValidLocale, getIntlLocale } from './locales';
 
-export type Locale = 'en' | 'zh';
+// Re-export for backward compat (some files import Locale from server.ts)
+export type { Locale };
+export { getIntlLocale };
+
+const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es };
 
 /**
  * Create a translator function for server-side use.
  * Fallback chain: requested locale → English → key name
  */
-export function getTranslator(locale: Locale) {
-  const messages: Record<string, string> = locale === 'zh' ? zh : en;
+export function getTranslator(locale: Locale | string) {
+  const messages: Record<string, string> = LOCALE_TO_MESSAGES[locale] || en;
 
   return (key: TranslationKey, fallback?: string): string => {
     const value = messages[key];
@@ -30,7 +36,7 @@ export function getTranslator(locale: Locale) {
 export function getLocaleFromRequest(url: URL | string): Locale {
   const u = typeof url === 'string' ? new URL(url) : url;
   const locale = u.searchParams.get('locale');
-  if (locale === 'zh' || locale === 'en') return locale;
+  if (isValidLocale(locale)) return locale;
   return 'en';
 }
 

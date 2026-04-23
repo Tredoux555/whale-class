@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { verifyParentSession } from '@/lib/montree/verify-parent-request';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
-import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator, getTranslatedAreaName, getIntlLocale } from '@/lib/montree/i18n/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
       .sort(([a], [b]) => b.localeCompare(a))
       .map(([month, items]) => ({
         month,
-        label: new Date(month + '-01').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' }),
+        label: new Date(month + '-01').toLocaleDateString(getIntlLocale(locale), { month: 'long', year: 'numeric' }),
         items
       }));
 

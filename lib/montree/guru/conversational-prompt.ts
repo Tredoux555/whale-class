@@ -12,6 +12,7 @@ import { AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
 import { classifyQuestion, hasLanguageKeywords } from './question-classifier';
 import { formatLanguageProgressionForPrompt } from './knowledge/ami-language-progression';
 import { getESLAwarenessForPrompt } from './knowledge/esl-chinese-learners';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 const CONVERSATIONAL_SYSTEM_PROMPT = `You are a warm, knowledgeable Montessori guide AND emotional support system for homeschool parents. You're like a wise friend who has 30 years of Montessori experience AND deep empathy for the emotional reality of parenting. You're chatting through a messaging app.
 
@@ -887,10 +888,8 @@ export function buildConversationalPrompt(
   }
 
   // First message gets a special greeting instruction
-  // Add Chinese language instruction if locale is zh
-  if (locale === 'zh') {
-    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal. This includes all greetings, advice, observations, tool call descriptions, and closing remarks. The parent speaks Chinese.';
-  }
+  // Add locale-specific language instruction (empty for English, full instruction for zh/es/etc.)
+  systemPrompt += getAILanguageInstruction(locale || 'en');
 
   let userPrompt: string;
   if (isFirstMessage) {
@@ -957,10 +956,8 @@ export function buildGreetingPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent just finished setting up their concerns (${concernNames || 'none specified'}). Write a SHORT, warm opening greeting (2-3 sentences max) that:\n1. Welcomes them by referencing ${childName} by name\n2. Acknowledges their concerns naturally (don't list them — weave them in)\n3. Invites them to ask anything\n\nKeep it brief and warm — this is just a greeting, not a full response. Like a friend saying "Hey! I'm here for you."`;
   }
 
-  // Add Chinese language instruction if locale is zh
-  if (locale === 'zh') {
-    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
-  }
+  // Add locale-specific language instruction
+  systemPrompt += getAILanguageInstruction(locale || 'en');
 
   // Determine the mode for this greeting (mirrors buildConversationalPrompt logic)
   let mode: GuruMode;
@@ -1012,10 +1009,8 @@ export function buildFollowUpPrompt(
     userPrompt = `CHILD PROFILE:\n${formattedContext}\n\nThe parent is back after ${daysSinceLastChat} days. Their last question was: "${lastQuestion}"\n\nWrite a SHORT follow-up greeting (2 sentences max) for ${childName}'s parent:\n1. Welcome them back warmly\n2. Ask about how things went since last time (reference their last question naturally)\n\nKeep it brief — just a friendly check-in, not a full response.`;
   }
 
-  // Add Chinese language instruction if locale is zh
-  if (locale === 'zh') {
-    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
-  }
+  // Add locale-specific language instruction
+  systemPrompt += getAILanguageInstruction(locale || 'en');
 
   // Determine mode for follow-up greeting
   const mode: GuruMode = daysSinceLastChat >= 5 ? 'REFLECTION' : 'NORMAL';
@@ -1095,9 +1090,7 @@ ${formattedClassroom}
 MONTESSORI KNOWLEDGE:
 ${formattedKnowledge}`;
 
-  if (locale === 'zh') {
-    systemPrompt += '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal.';
-  }
+  systemPrompt += getAILanguageInstruction(locale || 'en');
 
   const userPrompt = question;
 

@@ -6,7 +6,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 interface Child {
   id: string;
@@ -138,7 +138,7 @@ function ParentWeeklyReviewContent() {
   const formatWeekRange = (start: string, end: string) => {
     const startDate = new Date(start);
     const endDate = new Date(end);
-    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const dateLocale = getIntlLocale(locale);
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
     return `${startDate.toLocaleDateString(dateLocale, options)} - ${endDate.toLocaleDateString(dateLocale, options)}`;
   };
@@ -433,7 +433,7 @@ function ParentWeeklyReviewContent() {
         {/* Footer */}
         <div className="text-center py-4">
           <p className="text-sm text-gray-400">
-            {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+            {t('parentWeeklyReview.reportGenerated')} {new Date(analysis.created_at).toLocaleDateString(getIntlLocale(locale), {
               month: 'long',
               day: 'numeric',
               year: 'numeric'

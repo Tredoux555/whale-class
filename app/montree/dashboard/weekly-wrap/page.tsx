@@ -8,6 +8,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/montree/i18n';
 import { AREA_LABELS_ZH, AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
 import ChildVoiceNote from '@/components/montree/voice-notes/ChildVoiceNote';
@@ -313,7 +314,7 @@ export default function WeeklyWrapPage() {
   // Format week display
   const weekDisplay = weekStart
     ? (() => {
-        const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+        const dateLocale = getIntlLocale(locale);
         const start = new Date(weekStart);
         const end = weekEnd ? new Date(weekEnd) : start;
         const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });

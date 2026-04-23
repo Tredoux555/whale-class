@@ -2,6 +2,8 @@
 // TypeScript types and configuration for PDF report generation
 // Phase 4A - Session 55
 
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
+
 // ============================================
 // PDF CONTENT TYPES
 // ============================================
@@ -122,7 +124,7 @@ export function getAreaColor(areaKey: string): string {
 export function formatDateRange(startDate: string, endDate: string, locale: string = 'en'): string {
   const start = new Date(startDate);
   const end = new Date(endDate);
-  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+  const dateLocale = getIntlLocale(locale);
 
   const options: Intl.DateTimeFormatOptions = {
     month: 'long',

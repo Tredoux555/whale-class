@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
-import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getIntlLocale } from '@/lib/montree/i18n/server';
 
 export const maxDuration = 120; // sending emails to 19 parents
 
@@ -157,8 +157,8 @@ export async function POST(request: NextRequest) {
           // Format week display
           const weekStartStr = draft.week_start || '';
           const weekEndStr = draft.week_end || '';
-          const startFmt = weekStartStr ? new Date(weekStartStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }) : '';
-          const endFmt = weekEndStr ? new Date(weekEndStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' }) : '';
+          const startFmt = weekStartStr ? new Date(weekStartStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' }) : '';
+          const endFmt = weekEndStr ? new Date(weekEndStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' }) : '';
           const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : week_start;
 
           const html = narrative

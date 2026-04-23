@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
-import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName } from '@/lib/montree/i18n/server';
+import { getLocaleFromRequest, getTranslator, getTranslatedStatus, getTranslatedAreaName, getIntlLocale } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
@@ -340,8 +340,8 @@ export async function POST(request: NextRequest) {
 
     // Week display helper for email
     const formatWeekDisplay = () => {
-      const startFmt = new Date(weekStartStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
-      const endFmt = new Date(weekEndStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
+      const startFmt = new Date(weekStartStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
+      const endFmt = new Date(weekEndStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
       return `${startFmt} – ${endFmt}`;
     };
 

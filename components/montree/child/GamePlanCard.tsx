@@ -17,26 +17,9 @@ interface GamePlanPhase {
   strategies: string[];
 }
 
-/**
- * Localized string — can be a plain string (legacy) or { en, zh, ... } object.
- * Use resolveLocalized(value, locale) to read.
- */
-export type LocalizedString = string | Record<string, string>;
-export type LocalizedStringArray = string[] | Record<string, string[]>;
-
-/** Resolve a potentially-localized value to a string for the given locale. */
-export function resolveLocalized(val: LocalizedString | undefined, locale: string): string {
-  if (!val) return '';
-  if (typeof val === 'string') return val;
-  return val[locale] || val.en || Object.values(val)[0] || '';
-}
-
-/** Resolve a potentially-localized array to string[] for the given locale. */
-export function resolveLocalizedArray(val: LocalizedStringArray | undefined, locale: string): string[] {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  return val[locale] || val.en || Object.values(val)[0] || [];
-}
+// Localized types + resolvers — canonical definitions live in lib/montree/i18n/localized-types.ts
+// Re-exported here for backward compat (FocusWorksSection imports from this file)
+export { type LocalizedString, type LocalizedStringArray, resolveLocalized, resolveLocalizedArray } from '@/lib/montree/i18n/localized-types';
 
 export interface GamePlan {
   // Bilingual compact format (Haiku) — nudge/works/direction can be

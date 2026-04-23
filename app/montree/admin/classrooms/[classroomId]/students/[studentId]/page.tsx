@@ -5,7 +5,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 interface AreaProgress {
   area: string;
@@ -401,9 +401,9 @@ export default function StudentDetailPage({ params }: { params: Promise<{ classr
           ) : (
             <div className="space-y-2">
               {reports.map(report => {
-                const weekStart = new Date(report.week_start).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
-                const weekEnd = new Date(report.week_end).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
-                const sentDate = report.sent_at ? new Date(report.sent_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
+                const weekStart = new Date(report.week_start).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
+                const weekEnd = new Date(report.week_end).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
+                const sentDate = report.sent_at ? new Date(report.sent_at).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric', year: 'numeric' }) : null;
                 const isExpanded = expandedReport === report.id;
                 const content = report.content as Record<string, unknown>;
                 const works = (content?.works as Array<{ name: string; area: string; status: number }>) || [];

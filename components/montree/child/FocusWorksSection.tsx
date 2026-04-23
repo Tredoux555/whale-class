@@ -10,7 +10,8 @@ import EvidenceStrengthBadge from '@/components/montree/EvidenceStrengthBadge';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
-import { GamePlan, resolveLocalized, resolveLocalizedArray } from '@/components/montree/child/GamePlanCard';
+import { GamePlan } from '@/components/montree/child/GamePlanCard';
+import { resolveLocalized, resolveLocalizedArray } from '@/lib/montree/i18n/localized-types';
 
 export interface Assignment {
   work_name: string;

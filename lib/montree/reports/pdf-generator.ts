@@ -6,6 +6,8 @@ import PDFDocument from 'pdfkit';
 import type { PDFReportData, PDFHighlight } from './pdf-types';
 import { PDF_CONFIG, getAreaColor, formatDateRange } from './pdf-types';
 import { getTranslator, type Locale } from '@/lib/montree/i18n/server';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
+import { getLocalizedWorkName } from '@/lib/montree/i18n/db-helpers';
 
 // ============================================
 // MAIN GENERATOR FUNCTION
@@ -166,8 +168,8 @@ function drawHighlightCard(
   const contentWidth = pageWidth - (cardPadding * 2);
   
   // Estimate height needed
-  // Use Chinese name when locale is zh and available
-  const displayName = locale === 'zh' && highlight.chineseName ? highlight.chineseName : highlight.workName;
+  // Use localized name when available (Chinese, Spanish, etc.)
+  const displayName = (locale !== 'en' && highlight.chineseName) ? highlight.chineseName : highlight.workName;
 
   doc.fontSize(fontSize.subheading).font(fonts.bold);
   const titleHeight = doc.heightOfString(displayName, { width: contentWidth });
@@ -358,7 +360,7 @@ function drawFooter(doc: PDFKit.PDFDocument, data: PDFReportData, locale: Locale
     .stroke();
 
   // Footer text
-  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+  const dateLocale = getIntlLocale(locale);
   const generatedDate = new Date(data.generatedAt).toLocaleDateString(dateLocale, {
     year: 'numeric',
     month: 'long',

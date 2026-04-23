@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useParams, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
 import { AREA_CONFIG, AREA_ORDER } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
@@ -352,14 +352,14 @@ export default function GalleryPage() {
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return date.toLocaleDateString(getIntlLocale(locale), {
       weekday: 'short', month: 'short', day: 'numeric',
     });
   };
 
   const formatDateTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return date.toLocaleDateString(getIntlLocale(locale), {
       weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
   };
@@ -1319,7 +1319,7 @@ export default function GalleryPage() {
                 <div className="flex items-center gap-3 mb-3 px-1">
                   <div className="w-2 h-2 rounded-full bg-emerald-500" />
                   <h3 className="font-bold text-gray-800 text-sm">
-                    {new Date(dateKey + 'T12:00:00').toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+                    {new Date(dateKey + 'T12:00:00').toLocaleDateString(getIntlLocale(locale), {
                       weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                     })}
                   </h3>
@@ -1832,7 +1832,7 @@ export default function GalleryPage() {
                       >
                         <img src={photo.url} alt={photo.caption || t('reports.learningMoment')} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                         <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 rounded-lg text-white text-[10px] font-medium backdrop-blur-sm">
-                          {new Date(photo.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                          {new Date(photo.created_at).toLocaleDateString(getIntlLocale(locale), { weekday: 'short', month: 'short', day: 'numeric' })}
                         </div>
                       </button>
                     ))}
@@ -1872,7 +1872,7 @@ export default function GalleryPage() {
               </div>
 
               <div className="text-center text-xs text-gray-400 py-2">
-                {new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {new Date().toLocaleDateString(getIntlLocale(locale), { month: 'long', day: 'numeric', year: 'numeric' })}
                 {' · Montree'}
               </div>
 

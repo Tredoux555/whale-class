@@ -5,6 +5,8 @@
 
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
+import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import type { Locale } from '@/lib/montree/i18n/locales';
 
 // ── Types ──
 
@@ -16,7 +18,7 @@ export interface NarrativeInput {
   };
   weekStart: string; // YYYY-MM-DD
   weekEnd: string;
-  locale: 'en' | 'zh';
+  locale: Locale;
 
   // From weekly-analyzer.ts
   analysis: WeeklyAnalysisResult;
@@ -57,7 +59,7 @@ export interface NarrativeOutput {
 function buildNarrativePrompt(input: NarrativeInput): string {
   const { child, analysis, photos, locale, previousNarrative } = input;
   const firstName = child.name.split(' ')[0];
-  const lang = locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+  const lang = getLanguageName(locale);
 
   // Gather key data points for the narrative
   const masteredWorks = photos.filter(p => p.status === 'mastered');
@@ -132,7 +134,7 @@ VOICE & TONE RULES:
 - This should read like a letter from someone who knows and cares about this specific child, not a generated report
 
 Return ONLY the narrative text, nothing else. No subject line, no greeting like "Dear Parent", no sign-off — just the body paragraphs.
-${locale === 'zh' ? '\n⚠️ 关键要求：你必须完全用中文（普通话）书写。不要使用任何英文。用温暖自然的中文语气写信，像一位真正关心孩子的老师在和家长聊天。避免翻译腔，用地道的中文表达。' : ''}`;
+${getAILanguageInstruction(locale)}`;
 }
 
 // ── Fallback (template-based, no API needed) ──
@@ -148,41 +150,54 @@ function generateTemplateFallback(input: NarrativeInput): string {
   // Pick a highlighted work to feature
   const featured = input.photos.find(p => p.parent_description) || input.photos[0];
 
-  if (input.locale === 'zh') {
-    const parts: string[] = [];
-    parts.push(`${firstName}这周在教室里度过了充实而有意义的一周。`);
-    if (photoCount > 0) {
-      parts.push(`我们记录了${photoCount}个专注学习的瞬间。`);
-    }
-    if (featured?.parent_description) {
-      parts.push(`\n\n其中特别值得一提的是${featured.work_name}——${featured.parent_description}`);
-      if (featured.why_it_matters) {
-        parts.push(featured.why_it_matters);
-      }
-    }
-    if (masteredCount > 0) {
-      parts.push(`\n\n${firstName}这周掌握了${masteredCount}项新技能，这代表着真正的成长和进步。`);
-    }
-    if (practicingCount > 0) {
-      parts.push(`还有${practicingCount}项活动正在反复练习中——这种重复不是无聊，而是深度学习的标志。`);
-    }
-    if (areas.length >= 2) {
-      parts.push(`${firstName}在${areas.length}个不同领域都有探索，展现了旺盛的求知欲和学习热情。`);
-    }
-    parts.push('\n\n请浏览下面的照片，感受这些珍贵的学习时刻。');
-    return parts.join('');
-  }
+  // Locale-keyed template builders — each returns the full narrative string
+  const locale = input.locale;
+  const featuredName = featured?.work_name || '';
+  const featuredDesc = featured?.parent_description || '';
+  const featuredWhy = featured?.why_it_matters || '';
 
+  const TEMPLATES: Record<string, () => string> = {
+    zh: () => {
+      const p: string[] = [];
+      p.push(`${firstName}这周在教室里度过了充实而有意义的一周。`);
+      if (photoCount > 0) p.push(`我们记录了${photoCount}个专注学习的瞬间。`);
+      if (featuredDesc) {
+        p.push(`\n\n其中特别值得一提的是${featuredName}——${featuredDesc}`);
+        if (featuredWhy) p.push(featuredWhy);
+      }
+      if (masteredCount > 0) p.push(`\n\n${firstName}这周掌握了${masteredCount}项新技能，这代表着真正的成长和进步。`);
+      if (practicingCount > 0) p.push(`还有${practicingCount}项活动正在反复练习中——这种重复不是无聊，而是深度学习的标志。`);
+      if (areas.length >= 2) p.push(`${firstName}在${areas.length}个不同领域都有探索，展现了旺盛的求知欲和学习热情。`);
+      p.push('\n\n请浏览下面的照片，感受这些珍贵的学习时刻。');
+      return p.join('');
+    },
+    es: () => {
+      const p: string[] = [];
+      p.push(`${firstName} tuvo una semana significativa en el salón.`);
+      if (photoCount > 0) p.push(`Capturamos ${photoCount} momentos de trabajo concentrado y con propósito.`);
+      if (featuredDesc) {
+        p.push(`\n\nUn momento destacado fue ${featuredName} — ${featuredDesc}`);
+        if (featuredWhy) p.push(featuredWhy);
+      }
+      if (masteredCount > 0) p.push(`\n\n${firstName} dominó ${masteredCount} ${masteredCount === 1 ? 'habilidad nueva' : 'habilidades nuevas'} esta semana, lo que representa un verdadero crecimiento.`);
+      if (practicingCount > 0) p.push(`También está practicando ${practicingCount} ${practicingCount === 1 ? 'otra actividad' : 'otras actividades'} — este tipo de repetición es señal de un aprendizaje genuino.`);
+      if (areas.length >= 2) p.push(`A través de ${areas.length} áreas diferentes del salón, ${firstName} mostró una curiosidad saludable y disposición para explorar.`);
+      p.push('\n\nDesplácese por las fotos a continuación para ver estos momentos.');
+      return p.join(' ');
+    },
+  };
+
+  if (TEMPLATES[locale]) return TEMPLATES[locale]();
+
+  // English default
   const parts: string[] = [];
   parts.push(`${firstName} had a meaningful week in the classroom.`);
   if (photoCount > 0) {
     parts.push(`We captured ${photoCount} moments of focused, purposeful work.`);
   }
-  if (featured?.parent_description) {
-    parts.push(`\n\nOne highlight was ${featured.work_name} — ${featured.parent_description}`);
-    if (featured.why_it_matters) {
-      parts.push(featured.why_it_matters);
-    }
+  if (featuredDesc) {
+    parts.push(`\n\nOne highlight was ${featuredName} — ${featuredDesc}`);
+    if (featuredWhy) parts.push(featuredWhy);
   }
   if (masteredCount > 0) {
     parts.push(`\n\n${firstName} mastered ${masteredCount} new ${masteredCount === 1 ? 'skill' : 'skills'} this week, which represents real growth and accomplishment.`);
@@ -206,9 +221,14 @@ export async function generateWeeklyNarrative(
   if (input.photos.length === 0) {
     return {
       success: true,
-      narrative: input.locale === 'zh'
-        ? `${input.child.name.split(' ')[0]}本周没有拍摄到照片记录。`
-        : `We didn't capture any photo moments for ${input.child.name.split(' ')[0]} this week.`,
+      narrative: (() => {
+        const fn = input.child.name.split(' ')[0];
+        const NO_PHOTOS: Record<string, string> = {
+          zh: `${fn}本周没有拍摄到照片记录。`,
+          es: `No capturamos momentos fotográficos de ${fn} esta semana.`,
+        };
+        return NO_PHOTOS[input.locale] || `We didn't capture any photo moments for ${fn} this week.`;
+      })(),
       generatedAt: new Date().toISOString(),
     };
   }
@@ -226,9 +246,9 @@ export async function generateWeeklyNarrative(
     const prompt = buildNarrativePrompt(input);
     const resolvedModel = input.model || HAIKU_MODEL;
 
-    const systemMessage = input.locale === 'zh'
-      ? '你是一位温暖的蒙台梭利幼儿园老师，正在给家长写每周更新。你必须完全用中文（普通话）书写。不要使用任何英文。'
-      : 'You are a warm Montessori teacher writing a weekly update for parents.';
+    const baseSystem = 'You are a warm Montessori teacher writing a weekly update for parents.';
+    const langInstruction = getAILanguageInstruction(input.locale);
+    const systemMessage = langInstruction ? `${baseSystem} ${langInstruction}` : baseSystem;
 
     const response = await anthropic.messages.create({
       model: resolvedModel,

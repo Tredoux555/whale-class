@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast, Toaster } from 'sonner';
-import { useI18n } from '@/lib/montree/i18n/context';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
@@ -246,7 +246,7 @@ export default function ParentDashboardPage() {
   };
 
   const formatWeekRange = (report: WeeklyReport | FullReport) => {
-    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const dateLocale = getIntlLocale(locale);
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
@@ -263,7 +263,7 @@ export default function ParentDashboardPage() {
   };
 
   const formatWeekShort = (report: WeeklyReport) => {
-    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const dateLocale = getIntlLocale(locale);
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;

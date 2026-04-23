@@ -7,6 +7,8 @@ import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import type { WeeklyAnalysisResult } from '@/lib/montree/ai/weekly-analyzer';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getAreaLabel as getCentralAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { getLanguageName, getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import type { Locale } from '@/lib/montree/i18n/locales';
 
 // ── Types ──
 
@@ -20,7 +22,7 @@ export interface TeacherReportInput {
   };
   weekStart: string; // YYYY-MM-DD
   weekEnd: string;
-  locale: 'en' | 'zh';
+  locale: Locale;
 
   // From weekly-analyzer.ts
   analysis: WeeklyAnalysisResult;
@@ -98,7 +100,7 @@ export interface TeacherReportContent {
 
 // ── Area Labels (centralized) ──
 
-function getAreaLabel(area: string, locale: 'en' | 'zh'): string {
+function getAreaLabel(area: string, locale: Locale): string {
   return getCentralAreaLabel(area, locale);
 }
 
@@ -109,7 +111,7 @@ function buildTeacherReportPrompt(input: TeacherReportInput): string {
   const firstName = child.name.split(' ')[0];
   const ageYears = Math.floor(child.age);
   const ageMonths = Math.round((child.age - ageYears) * 12);
-  const lang = locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+  const lang = getLanguageName(locale);
 
   // Build area breakdown
   const areaWorks: Record<string, typeof photos> = {};
@@ -265,10 +267,7 @@ Write a comprehensive internal teacher report. Return a JSON object with these e
 - In recommendations[].area, use ONLY the canonical area_key: practical_life, sensorial, mathematics, language, or cultural. Do NOT use UUIDs or capitalized names.
 - The key_insight must mention specific works and specific areas — no generics
 - Return ONLY valid JSON, no other text — no markdown code fences, no explanation before or after
-${locale === 'zh' ? `
-⚠️ LANGUAGE REQUIREMENT: All JSON string VALUES must be written in Chinese (Mandarin/普通话). JSON keys MUST stay in English exactly as shown above.
-⚠️ JSON FORMATTING: You MUST produce valid JSON. Use standard ASCII double quotes (") for JSON strings, standard commas (,) between items, standard colons (:) after keys. Do NOT use Chinese fullwidth punctuation (：，) in JSON structure. Chinese punctuation is only allowed INSIDE string values.
-⚠️ ESCAPING: If your Chinese text contains double quotes, escape them as \\". Newlines inside strings must be \\n.` : ''}`;
+${getAILanguageInstruction(locale)}`;
 }
 
 // ── Fallback Template (no API) ──
@@ -290,40 +289,79 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
   const activePeriods = analysis.detected_sensitive_periods
     .filter(p => p.status === 'active' || p.status === 'emerging');
 
+  const SNAPSHOT: Record<string, string> = {
+    zh: `${firstName}今年${ageYears}岁${ageMonths}个月，处于吸收性心智的有意识阶段（3-6岁）。本周共记录了${photos.length}项活动。`,
+    es: `${firstName} tiene ${ageYears} años y ${ageMonths} meses, en la fase consciente de la mente absorbente (3-6 años). Se documentaron ${photos.length} actividades esta semana.`,
+  };
+  const IMPLICATION: Record<string, string> = {
+    zh: '建议继续提供相关材料以支持这一敏感期。',
+    es: 'Continúe ofreciendo materiales que apoyen este período sensible.',
+  };
+  const CONC_GOOD: Record<string, string> = { zh: '表现良好', es: 'sólido' };
+  const CONC_DEV: Record<string, string> = { zh: '正在发展中', es: 'en desarrollo' };
+  const NORM_GOOD: Record<string, string> = { zh: '专注力发展良好。', es: 'La concentración se está desarrollando bien.' };
+  const NORM_BUILD: Record<string, string> = { zh: '专注力正在建立中。', es: 'La concentración aún se está construyendo — esto es normal.' };
+  const AGE_YOUNG: Record<string, string> = {
+    zh: '集中在日常生活和感官领域是正常的发展模式',
+    es: 'el enfoque en vida práctica y sensorial es típico del desarrollo',
+  };
+  const AGE_OLDER: Record<string, string> = {
+    zh: '建议适当引导探索其他领域',
+    es: 'considere guiar suavemente la exploración de áreas subrepresentadas',
+  };
+
   return {
-    developmental_snapshot: locale === 'zh'
-      ? `${firstName}今年${ageYears}岁${ageMonths}个月，处于吸收性心智的有意识阶段（3-6岁）。本周共记录了${photos.length}项活动。`
-      : `${firstName} is ${ageYears} years and ${ageMonths} months old, in the conscious absorbent mind phase of the First Plane of Development. ${photos.length} activities were documented this week.`,
+    developmental_snapshot: SNAPSHOT[locale]
+      || `${firstName} is ${ageYears} years and ${ageMonths} months old, in the conscious absorbent mind phase of the First Plane of Development. ${photos.length} activities were documented this week.`,
 
     sensitive_periods: activePeriods.map(p => ({
       period: p.period_name,
       status: p.status,
       evidence: p.evidence.join('; '),
-      implication: locale === 'zh'
-        ? '建议继续提供相关材料以支持这一敏感期。'
-        : 'Continue offering materials that support this sensitive period.',
+      implication: IMPLICATION[locale] || 'Continue offering materials that support this sensitive period.',
     })),
 
     area_analyses: Object.entries(areaWorks).map(([area, works]) => ({
       area,
       area_label: getAreaLabel(area, locale),
       works_count: works.length,
-      narrative: locale === 'zh'
-        ? `${firstName}本周在${getAreaLabel(area, locale)}领域进行了${works.length}项活动：${works.map(w => getChineseNameForWork(w.work_name) || w.work_name).join('、')}。`
-        : `${firstName} engaged with ${works.length} ${getAreaLabel(area, locale)} works this week: ${works.map(w => w.work_name).join(', ')}.`,
+      narrative: (() => {
+        const areaLabel = getAreaLabel(area, locale);
+        const workNames = works.map(w => locale !== 'en' ? (getChineseNameForWork(w.work_name) || w.work_name) : w.work_name);
+        const separator = locale === 'zh' ? '、' : ', ';
+        const AREA_NARRATIVE: Record<string, string> = {
+          zh: `${firstName}本周在${areaLabel}领域进行了${works.length}项活动：${workNames.join(separator)}。`,
+          es: `${firstName} participó en ${works.length} actividades de ${areaLabel} esta semana: ${workNames.join(separator)}.`,
+        };
+        return AREA_NARRATIVE[locale] || `${firstName} engaged with ${works.length} ${areaLabel} works this week: ${workNames.join(separator)}.`;
+      })(),
     })),
 
     concentration: {
       score: analysis.concentration_score,
       assessment: analysis.concentration_assessment,
-      narrative: locale === 'zh'
-        ? `专注力评分为${analysis.concentration_score}/100（${analysis.concentration_assessment}），对于${ageYears}岁的孩子来说${analysis.concentration_score >= 60 ? '表现良好' : '正在发展中'}。`
-        : `Concentration score of ${analysis.concentration_score}/100 (${analysis.concentration_assessment}), which is ${analysis.concentration_score >= 60 ? 'solid' : 'developing'} for a ${ageYears}-year-old.`,
+      narrative: (() => {
+        const good = CONC_GOOD[locale] || 'solid';
+        const dev = CONC_DEV[locale] || 'developing';
+        const level = analysis.concentration_score >= 60 ? good : dev;
+        const CONC_NAR: Record<string, string> = {
+          zh: `专注力评分为${analysis.concentration_score}/100（${analysis.concentration_assessment}），对于${ageYears}岁的孩子来说${level}。`,
+          es: `Puntuación de concentración de ${analysis.concentration_score}/100 (${analysis.concentration_assessment}), que es ${level} para un niño de ${ageYears} años.`,
+        };
+        return CONC_NAR[locale] || `Concentration score of ${analysis.concentration_score}/100 (${analysis.concentration_assessment}), which is ${level} for a ${ageYears}-year-old.`;
+      })(),
     },
 
-    normalization_narrative: locale === 'zh'
-      ? `${firstName}正在正常化进程中。${analysis.concentration_score >= 60 ? '专注力发展良好。' : '专注力正在建立中。'}`
-      : `${firstName} is progressing in the normalization process. ${analysis.concentration_score >= 60 ? 'Concentration is developing well.' : 'Concentration is still building — this is normal.'}`,
+    normalization_narrative: (() => {
+      const normDetail = analysis.concentration_score >= 60
+        ? (NORM_GOOD[locale] || 'Concentration is developing well.')
+        : (NORM_BUILD[locale] || 'Concentration is still building — this is normal.');
+      const NORM_NAR: Record<string, string> = {
+        zh: `${firstName}正在正常化进程中。${normDetail}`,
+        es: `${firstName} está progresando en el proceso de normalización. ${normDetail}`,
+      };
+      return NORM_NAR[locale] || `${firstName} is progressing in the normalization process. ${normDetail}`;
+    })(),
 
     flags: [
       ...analysis.red_flags.map(f => ({
@@ -344,13 +382,25 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
       area: w.area,
       area_label: getAreaLabel(w.area, locale),
       work: w.work_name,
-      work_zh: locale === 'zh' ? (getChineseNameForWork(w.work_name) || w.work_name) : undefined,
+      work_localized: locale !== 'en' ? (getChineseNameForWork(w.work_name) || w.work_name) : undefined,
       reasoning: w.reasons.join('; '),
     })),
 
-    key_insight: locale === 'zh'
-      ? `${firstName}本周参与了${photos.length}项活动。${analysis.recommended_works.length > 0 ? `建议下周关注${analysis.recommended_works.slice(0, 3).map(w => `${getAreaLabel(w.area, locale)}的${getChineseNameForWork(w.work_name) || w.work_name}`).join('、')}。` : ''}`
-      : `${firstName} engaged with ${photos.length} activities this week. ${analysis.recommended_works.length > 0 ? `I recommend focusing on ${analysis.recommended_works.slice(0, 3).map(w => `${w.work_name} in ${getAreaLabel(w.area, locale)}`).join(', ')} in the coming week.` : ''}`,
+    key_insight: (() => {
+      const top3 = analysis.recommended_works.slice(0, 3);
+      const separator = locale === 'zh' ? '、' : ', ';
+      const workList = top3.map(w => {
+        const wn = locale !== 'en' ? (getChineseNameForWork(w.work_name) || w.work_name) : w.work_name;
+        const al = getAreaLabel(w.area, locale);
+        return locale === 'zh' ? `${al}的${wn}` : `${wn} en ${al}`;
+      }).join(separator);
+      const KEY_INSIGHT: Record<string, string> = {
+        zh: `${firstName}本周参与了${photos.length}项活动。${top3.length > 0 ? `建议下周关注${workList}。` : ''}`,
+        es: `${firstName} participó en ${photos.length} actividades esta semana. ${top3.length > 0 ? `Recomiendo enfocarse en ${workList} la próxima semana.` : ''}`,
+      };
+      const enWorkList = top3.map(w => `${w.work_name} in ${getAreaLabel(w.area, locale)}`).join(', ');
+      return KEY_INSIGHT[locale] || `${firstName} engaged with ${photos.length} activities this week. ${top3.length > 0 ? `I recommend focusing on ${enWorkList} in the coming week.` : ''}`;
+    })(),
 
     teacher_guidance: (() => {
       const activeAreas = Object.keys(areaWorks).map(a => getAreaLabel(a, locale)).join(', ');
@@ -361,10 +411,14 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
       const missingStr = missingAreas.length > 0 ? missingAreas.join(', ') : '';
       const ageYrs = Math.floor(child.age);
       const ageMos = Math.round((child.age - ageYrs) * 12);
-      if (locale === 'zh') {
-        return `${firstName}本周主要在${activeAreas}方面活跃。${missingStr ? `${missingStr}领域缺少参与。` : ''}对于${ageYrs}岁${ageMos}个月的孩子来说，${ageYrs <= 3 ? '集中在日常生活和感官领域是正常的发展模式' : '建议适当引导探索其他领域'}。`;
-      }
-      return `${firstName} was mostly active in ${activeAreas} this week.${missingStr ? ` No engagement in ${missingStr}.` : ''} At ${ageYrs}y${ageMos}m, ${ageYrs <= 3 ? 'focus on practical life and sensorial is developmentally typical' : 'consider gently guiding exploration into underrepresented areas'}.`;
+      const ageAppropriate = ageYrs <= 3
+        ? (AGE_YOUNG[locale] || 'focus on practical life and sensorial is developmentally typical')
+        : (AGE_OLDER[locale] || 'consider gently guiding exploration into underrepresented areas');
+      const GUIDANCE: Record<string, string> = {
+        zh: `${firstName}本周主要在${activeAreas}方面活跃。${missingStr ? `${missingStr}领域缺少参与。` : ''}对于${ageYrs}岁${ageMos}个月的孩子来说，${ageAppropriate}。`,
+        es: `${firstName} estuvo activo principalmente en ${activeAreas} esta semana.${missingStr ? ` Sin participación en ${missingStr}.` : ''} A los ${ageYrs}a${ageMos}m, ${ageAppropriate}.`,
+      };
+      return GUIDANCE[locale] || `${firstName} was mostly active in ${activeAreas} this week.${missingStr ? ` No engagement in ${missingStr}.` : ''} At ${ageYrs}y${ageMos}m, ${ageAppropriate}.`;
     })(),
   };
 }
@@ -481,21 +535,40 @@ export async function generateTeacherReport(
   // If no photos, minimal report
   if (input.photos.length === 0) {
     const firstName = input.child.name.split(' ')[0];
-    const isZh = input.locale === 'zh';
+    const locale = input.locale;
+    const SNAPSHOT_NONE: Record<string, string> = {
+      zh: `${firstName}本周没有拍摄到活动照片。`,
+      es: `No se documentaron actividades para ${firstName} esta semana.`,
+    };
+    const CONC_NONE: Record<string, string> = {
+      zh: '本周无数据。',
+      es: 'Sin datos esta semana.',
+    };
+    const NORM_NONE: Record<string, string> = {
+      zh: '本周无足够数据进行评估。',
+      es: 'Datos insuficientes para evaluar esta semana.',
+    };
+    const INSIGHT_NONE: Record<string, string> = {
+      zh: `${firstName}本周没有记录到活动。建议关注出勤情况。`,
+      es: `${firstName} no tuvo actividades documentadas esta semana. Considere revisar la asistencia y participación.`,
+    };
+    const GUIDANCE_NONE: Record<string, string> = {
+      zh: `${firstName}本周没有记录到任何活动。需要关注出勤和参与情况。`,
+      es: `No se documentaron actividades para ${firstName} esta semana. Revise la asistencia y considere si el niño necesita más apoyo para interactuar con los materiales del aula.`,
+    };
     return {
       success: true,
       report: {
-        developmental_snapshot: isZh
-          ? `${firstName}本周没有拍摄到活动照片。`
-          : `No documented activities for ${firstName} this week.`,
+        developmental_snapshot: SNAPSHOT_NONE[locale]
+          || `No documented activities for ${firstName} this week.`,
         sensitive_periods: [],
         area_analyses: [],
         concentration: {
           score: 0,
           assessment: 'unknown',
-          narrative: isZh ? '本周无数据。' : 'No data this week.',
+          narrative: CONC_NONE[locale] || 'No data this week.',
         },
-        normalization_narrative: isZh ? '本周无足够数据进行评估。' : 'Insufficient data for assessment this week.',
+        normalization_narrative: NORM_NONE[locale] || 'Insufficient data for assessment this week.',
         flags: [],
         recommendations: input.analysis.recommended_works.slice(0, 3).map(w => ({
           area: w.area,
@@ -503,12 +576,10 @@ export async function generateTeacherReport(
           work: w.work_name,
           reasoning: w.reasons.join('; '),
         })),
-        key_insight: isZh
-          ? `${firstName}本周没有记录到活动。建议关注出勤情况。`
-          : `${firstName} had no documented activities this week. Consider reviewing attendance and engagement.`,
-        teacher_guidance: isZh
-          ? `${firstName}本周没有记录到任何活动。需要关注出勤和参与情况。`
-          : `No documented activities for ${firstName} this week. Review attendance and consider whether the child needs more support engaging with the classroom materials.`,
+        key_insight: INSIGHT_NONE[locale]
+          || `${firstName} had no documented activities this week. Consider reviewing attendance and engagement.`,
+        teacher_guidance: GUIDANCE_NONE[locale]
+          || `No documented activities for ${firstName} this week. Review attendance and consider whether the child needs more support engaging with the classroom materials.`,
       },
       generatedAt: new Date().toISOString(),
     };
@@ -525,12 +596,12 @@ export async function generateTeacherReport(
 
   try {
     const prompt = buildTeacherReportPrompt(input);
-    const lang = input.locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+    const lang = getLanguageName(input.locale);
     const resolvedModel = input.model || HAIKU_MODEL;
 
-    const systemMessage = input.locale === 'zh'
-      ? 'You are a senior Montessori consultant with 30 years of AMI training experience. Write all responses in Chinese (Mandarin). Use Chinese for all descriptive text fields.'
-      : 'You are a senior Montessori consultant with 30 years of AMI training experience.';
+    const baseSystemMessage = 'You are a senior Montessori consultant with 30 years of AMI training experience.';
+    const langInstruction = getAILanguageInstruction(input.locale);
+    const systemMessage = langInstruction ? `${baseSystemMessage} ${langInstruction}` : baseSystemMessage;
 
     // Use tool_use for structured output — the API handles JSON serialization,
     // so the model never has to produce raw JSON. This completely eliminates the
