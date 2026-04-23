@@ -183,6 +183,102 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 23, 2026)
 
+### ⚡ Session 57 — Three-Tier AI System (Free/Core/Premium) + Language-Only Revert (Apr 23, 2026)
+
+**Two commits pushed to main: `4671049e`, `3ecd5fb4`.**
+
+**A. Three-Tier AI System — commit `4671049e`:**
+
+Built a monetizable tier system replacing the binary AI on/off toggle. Schools now get one of three tiers controlling what AI features they access:
+
+**Tier definitions:**
+- **Free** (`ai_tier_haiku=false`, `ai_tier_sonnet=false`) — No AI. Weekly Wrap returns HTTP 402. Photo identification still works (Haiku two-pass is hardcoded, not tier-gated).
+- **Core** (`ai_tier_haiku=true`, `ai_tier_sonnet=false`) — Haiku-powered: photo identification + replan/shelf/game plan generation + Weekly Wrap structure. NO teacher reports, NO parent narratives ($0 Sonnet cost).
+- **Premium** (`ai_tier_sonnet=true`) — Everything: Core + Sonnet teacher reports + Sonnet parent narratives + rich AI content.
+
+**`resolveReportModel()` rewrite** (`lib/montree/reports/resolve-model.ts`):
+- Now returns `{ tier: 'free' | 'haiku' | 'sonnet', model: string | null }`
+- `tier='free'` when neither flag enabled → `model=null`
+- `tier='haiku'` when only `ai_tier_haiku` → `model='claude-haiku-4-5-20251001'`
+- `tier='sonnet'` when `ai_tier_sonnet` → `model='claude-sonnet-4-6'`
+
+**Weekly Wrap tier gates** (`app/api/montree/reports/weekly-wrap/route.ts`):
+- `tier === 'free'` → HTTP 402 "AI reports require an active AI tier"
+- `skipTeacherReports = aiTier.tier !== 'sonnet'` — Core tier skips teacher report generation
+- `skipParentReports = aiTier.tier !== 'sonnet'` — Core tier skips parent narrative generation
+- `replanChildInProcess()` runs for ALL non-free tiers (Core + Premium) — shelf/game plan always refreshes
+- Cost calculation uses tier-appropriate pricing (Haiku $0.80/$4 vs Sonnet $3/$15 per MTok)
+
+**Super-admin UI** (`components/montree/super-admin/SchoolsTab.tsx`):
+- Replaced binary on/off toggle with Free/Core/Pro pill selector per school
+- Color-coded: grey=Free, blue=Core, purple=Pro
+- One-click tier change via PATCH to schools API
+- Spend display unchanged (actual `montree_api_usage` costs)
+
+**API changes** (`app/api/montree/super-admin/schools/route.ts`):
+- GET returns `ai_tier: 'free' | 'core' | 'premium'` derived from feature flags
+- PATCH accepts `ai_tier` and sets appropriate `ai_tier_haiku`/`ai_tier_sonnet` flags
+- Budget auto-set: Free=$0/hard_limit, Core=$50/soft_limit, Premium=$200/soft_limit
+
+**Type changes** (`components/montree/super-admin/types.ts`):
+- Added `ai_tier?: 'free' | 'core' | 'premium'` to School interface
+
+**B. Language-Only Revert — commit `3ecd5fb4`:**
+
+User realized the Language-only replan constraint (from earlier in this session, committed as `70098ec3` but squashed into `4671049e`) was too classroom-specific for a monetizable product. Montree should fit straight into any Montessori classroom without customization.
+
+**14 edits across 3 files — reverted all Language-only constraints back to all 5 curriculum areas:**
+
+1. **`lib/montree/reports/replan-child.ts`** (5 edits):
+   - `works` tool description: "3-5 Language area works" → "Exactly 5 works — one from EACH area"
+   - `direction` tool description: Language progression → English area names arrow format
+   - `availableWorksList`: removed `.filter(([area]) => area === 'language')` — all areas included
+   - Prompt RULES: "Pick 3-5 from LANGUAGE area only" → "Pick exactly 5 works — ONE from EACH area" (6 rules)
+   - `CORE_AREAS`: `['language']` → `['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']`
+
+2. **`app/api/montree/children/[childId]/game-plan/refresh/route.ts`** (4 edits):
+   - `works` + `direction` tool descriptions reverted to all-area
+   - `availableWorksList`: removed Language-only filter
+   - Prompt: "What should the teacher focus on NEXT in Language?" → "...NEXT? Pick 3-5 works that build on what's been done, spread across different curriculum areas."
+
+3. **`scripts/run_replan_all_whale.mjs`** (5 edits):
+   - Same pattern as replan-child.ts: tool descriptions, availableWorksList filter, prompt RULES, CORE_AREAS
+
+**Two consecutive clean audit passes run:**
+- Pass 1: All 14 change points verified by re-reading edited sections. Grep confirmed zero `LANGUAGE-ONLY` markers remaining.
+- Pass 2: Cross-file consistency — grepped for Language-only phrases (0 hits), grepped for `CORE_AREAS` (all 5 locations have full 5-area array).
+
+**🚨 Architectural notes for future sessions:**
+- **Tier system is the monetization backbone.** Free = no AI reports. Core = Haiku shelf/game plan only. Premium = full Sonnet reports. This maps to pricing: Free/$0, Core/~$2-4/student/mo, Premium/~$5-8/student/mo.
+- **`resolveReportModel()` is the canonical tier resolver.** Every AI-powered route should call this and respect the tier. Currently only Weekly Wrap is fully tier-gated. The 6 Sonnet-hardcoded routes from Session 33 still need gating.
+- **Replan runs for ALL non-free tiers.** Teachers on Core still get fresh shelves and game plans every week — they just don't get the rich Sonnet teacher/parent report prose.
+- **Super-admin pill selector** replaces the old binary toggle. Budget auto-adjusts per tier.
+- **Replan is all-5-areas, not Language-only.** The Language-only experiment was too Whale-Class-specific. Any future per-classroom area customization should be a school setting, not hardcoded.
+
+**Files changed (7 files, 2 commits):**
+- `lib/montree/reports/resolve-model.ts` — tier resolver rewrite
+- `app/api/montree/reports/weekly-wrap/route.ts` — tier gates for teacher/parent reports
+- `components/montree/super-admin/SchoolsTab.tsx` — Free/Core/Pro pill selector
+- `app/api/montree/super-admin/schools/route.ts` — tier in GET/PATCH
+- `components/montree/super-admin/types.ts` — `ai_tier` on School interface
+- `lib/montree/reports/replan-child.ts` — Language-only revert to all 5 areas
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — Language-only revert
+- `scripts/run_replan_all_whale.mjs` — Language-only revert
+
+**Next session priorities:**
+1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request). These are immediate conversion opportunities.
+2. **Follow up on FAMM Argentina** after Apr 28 if no response.
+3. **Follow up on Cambridge Montessori Global** after Apr 28.
+4. **Follow up on Otari School NZ** on Apr 28 (auto-reply expired).
+5. **Bounce recovery research** — Start with 4 multiplier bounces (highest value).
+6. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+7. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()` — now that tier system exists, these should respect it.
+8. **Test Weekly Wrap on Core tier** — set Whale Class to Core, generate, verify: replan fires (shelves update), teacher/parent reports skipped, no Sonnet costs.
+9. **Phase 3 UI hiding by tier** — Free-tier schools shouldn't see Generate/Send buttons.
+10. **Verify Pass 2b + Ask Sonnet on production** — capture a photo, verify pipeline.
+
+---
+
 ### ⚡ Session 56 — Photo Pipeline maxDuration Fix + Story Document Rendering Fix + Health Check (Apr 23, 2026)
 
 **Two commits pushed to main: `56b9489b`, `555ae84d`.**
