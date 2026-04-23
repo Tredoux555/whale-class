@@ -7,7 +7,7 @@
 //   week_start: string,     // YYYY-MM-DD
 //   week_end: string,       // YYYY-MM-DD
 //   child_ids?: string[],   // optional subset
-//   locale?: 'en' | 'zh',
+//   locale?: Locale,
 //   force_regenerate?: boolean
 // }
 
@@ -26,6 +26,8 @@ import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 300; // 5 minutes — full classroom run
 
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const locale = (['en', 'zh'].includes(requestLocale) ? requestLocale : getLocaleFromRequest(request.url)) as 'en' | 'zh';
+    const locale: Locale = isValidLocale(requestLocale) ? requestLocale : 'en';
 
     // Verify classroom belongs to school
     const { data: classroomRaw } = await supabase

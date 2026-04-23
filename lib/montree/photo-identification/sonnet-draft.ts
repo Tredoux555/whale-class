@@ -28,6 +28,7 @@
 // Side-effect-free: writes nothing to the database. The caller (the new
 // background route) takes the returned draft and persists it.
 
+import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, AI_MODEL } from '@/lib/ai/anthropic';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { VISUAL_ID_GUIDE } from './visual-id-guide';
@@ -52,7 +53,7 @@ export interface SonnetDraftInput {
   haikuGuess: { workName: string; confidence: number } | null;
   /** Same loaded context as the two-pass run — passed in to avoid re-querying */
   context: IdentificationContext;
-  locale: 'en' | 'zh';
+  locale: Locale;
   abortSignal?: AbortSignal;
 }
 

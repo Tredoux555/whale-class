@@ -8,6 +8,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { getLocaleFromRequest, getTranslator, getTranslatedAreaName, getTranslatedStatus } from '@/lib/montree/i18n/server';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 // Enrich stored report content with descriptions from database
 async function enrichReportContent(
@@ -159,9 +161,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Locale resolution (body override > URL query > default 'en') — matches /reports/batch pattern
-    const validLocales = ['en', 'zh'] as const;
     const rawLocale = bodyLocale || getLocaleFromRequest(request.url);
-    const locale: 'en' | 'zh' = (validLocales as readonly string[]).includes(rawLocale) ? rawLocale : 'en';
+    const locale: Locale = isValidLocale(rawLocale) ? rawLocale : 'en';
 
     const access = await verifyChildBelongsToSchool(child_id, auth.schoolId);
     if (!access.allowed) {
@@ -363,7 +364,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getStatusLabel(status: number | string, locale: 'en' | 'zh' = 'en'): string {
+function getStatusLabel(status: number | string, locale: Locale = 'en'): string {
   const t = getTranslator(locale);
   if (status === 1 || status === 'presented') return t('progress.presented' as any, 'Presented');
   if (status === 2 || status === 'practicing') return t('progress.practicing' as any, 'Practicing');
@@ -378,6 +379,6 @@ function getAreaIcon(area: string): string {
   return icons[area?.toLowerCase()] || '📋';
 }
 
-function getAreaName(area: string, locale: 'en' | 'zh' = 'en'): string {
+function getAreaName(area: string, locale: Locale = 'en'): string {
   return getTranslatedAreaName(area, locale);
 }

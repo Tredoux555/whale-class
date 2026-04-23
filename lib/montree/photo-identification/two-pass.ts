@@ -23,6 +23,7 @@
 // description and the curriculum matching separate dramatically reduced the rate
 // at which Haiku "saw what it expected to see" based on shelf bias.
 
+import type { Locale } from '@/lib/montree/i18n/locales';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { matchToCurriculumV2 } from '@/lib/montree/work-matching';
 import type { CurriculumWork } from '@/lib/montree/curriculum-loader';
@@ -119,8 +120,8 @@ export interface TwoPassInput {
   classroomId: string | null;
   /** Curriculum works (loaded once by caller and passed in for efficiency) */
   curriculum: CurriculumWork[];
-  /** 'en' or 'zh' — controls observation language */
-  locale: 'en' | 'zh';
+  /** Controls observation language */
+  locale: Locale;
   /** Pre-loaded identification context (corrections + visual memory). If omitted, will be loaded. */
   context?: IdentificationContext;
   /** Supabase client (only required if `context` is not provided) */

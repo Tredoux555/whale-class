@@ -24,6 +24,8 @@ import {
 import {
   loadIdentificationContext,
 } from '@/lib/montree/photo-identification/context-loader';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 60;
 
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { media_id?: string; locale?: 'en' | 'zh' };
+  let body: { media_id?: string; locale?: string };
   try {
     body = await request.json();
   } catch {
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   const mediaId = body.media_id;
-  const locale: 'en' | 'zh' = body.locale === 'zh' ? 'zh' : 'en';
+  const locale: Locale = isValidLocale(body.locale) ? body.locale : 'en';
   if (!mediaId || typeof mediaId !== 'string') {
     return NextResponse.json({ error: 'media_id is required' }, { status: 400 });
   }

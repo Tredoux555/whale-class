@@ -20,6 +20,8 @@ import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import { getChineseDescriptionsMap } from '@/lib/curriculum/comprehensive-guides/parent-descriptions-zh';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import type { Locale } from '@/lib/montree/i18n/locales';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
 
 // Max concurrent Sonnet calls to avoid rate limiting
 const MAX_CONCURRENT = 5;
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const locale = (['en', 'zh'].includes(requestLocale) ? requestLocale : getLocaleFromRequest(request.url)) as 'en' | 'zh';
+    const locale: Locale = isValidLocale(requestLocale) ? requestLocale : (isValidLocale(getLocaleFromRequest(request.url)) ? getLocaleFromRequest(request.url) as Locale : 'en');
 
     // Verify classroom belongs to school
     const { data: classroomRaw } = await supabase
