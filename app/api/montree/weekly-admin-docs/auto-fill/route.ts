@@ -515,8 +515,8 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // --- Summary (English only — user requested English for weekly summary) ---
-      // Format: works with status → short summary → next week plan
+      // --- Summary (English only, Language only — custom addon, easy to revert to all areas) ---
+      // Format: work name + status (P/Pr/M) → teacher key_insight → next week Language focus
       const STATUS_LABELS: Record<string, string> = {
         presented: 'Presented',
         practicing: 'Practicing',
@@ -527,19 +527,15 @@ export async function GET(request: NextRequest) {
       if (childWorks && childWorks.size > 0) {
         const enLines: string[] = [];
         const childProgress = childProgressMap.get(child.id);
-        const childPhotoCounts = photoCountByChildWork.get(child.id);
 
-        // Section 1: Language works done this week with status + session count
+        // Section 1: Language works done this week with status
         const langWorks = childWorks.get('language');
         if (langWorks && langWorks.length > 0) {
-          const workDetails = langWorks.map(w => {
+          for (const w of langWorks) {
             const status = childProgress?.get(w.toLowerCase()) || 'presented';
             const statusLabel = STATUS_LABELS[status] || status;
-            const sessions = childPhotoCounts?.get(w) || 0;
-            const sessionStr = sessions > 0 ? `, ${sessions} session${sessions > 1 ? 's' : ''}` : '';
-            return `${w} (${statusLabel}${sessionStr})`;
-          });
-          enLines.push(`Language: ${workDetails.join(', ')}`);
+            enLines.push(`${w} — ${statusLabel}`);
+          }
         }
 
         // Section 2: Short summary from teacher report key_insight
@@ -549,10 +545,11 @@ export async function GET(request: NextRequest) {
           enLines.push(keyInsight);
         }
 
-        // Section 3: Next week plan
-        if (nextWeekEn.length > 0) {
+        // Section 3: Next week plan (Language only — matching summary scope)
+        const langFocus = childFocus?.get('language');
+        if (langFocus) {
           enLines.push('');
-          enLines.push(`Next week: ${nextWeekEn.join(', ')}`);
+          enLines.push(`Next week: ${langFocus}`);
         }
 
         summaryEnglish = enLines.length > 0 ? enLines.join('\n') : 'No recorded activities this week.';
