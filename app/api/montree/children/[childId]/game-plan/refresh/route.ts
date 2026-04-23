@@ -36,11 +36,13 @@ const GAME_PLAN_TOOL = {
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
-        description: '3-5 specific works to present next. Use EXACT ENGLISH names from the classroom curriculum.',
+        // LANGUAGE-ONLY ADDON — revert to: '3-5 specific works to present next. Use EXACT ENGLISH names from the classroom curriculum.'
+        description: '3-5 Language area works to present next. Use EXACT ENGLISH names from the classroom curriculum.',
       },
       direction: {
         type: 'string' as const,
-        description: 'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
+        // LANGUAGE-ONLY ADDON — revert to: 'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"'
+        description: 'A brief Language progression direction. Example: "Phonics → Reading → Writing"',
       },
     },
     required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
@@ -156,7 +158,9 @@ export async function POST(
           enToZhWorkName[w.name.toLowerCase()] = w.name_chinese;
         }
       }
+      // LANGUAGE-ONLY ADDON — revert to: Object.entries(worksByArea) (all areas)
       availableWorksList = Object.entries(worksByArea)
+        .filter(([area]) => area === 'language')
         .map(([area, works]) => `[${area}] ${works.join(', ')}`)
         .join('\n');
     }
@@ -186,7 +190,7 @@ ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 ${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT ENGLISH names:\n${availableWorksList}\n` : ''}
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.`;
+What should the teacher focus on NEXT in Language? Pick 3-5 Language works that build on what's been done. Focus exclusively on Language progression.`;
 
     console.log(`[GamePlan] Refreshing plan for ${child.name} (Haiku)`);
 

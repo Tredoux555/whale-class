@@ -46,13 +46,15 @@ const GAME_PLAN_TOOL = {
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
+        // LANGUAGE-ONLY ADDON — revert to: 'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy ENGLISH names EXACTLY from the AVAILABLE WORKS list.'
         description:
-          'Exactly 5 works — one from EACH area (practical_life, sensorial, mathematics, language, cultural). Copy ENGLISH names EXACTLY from the AVAILABLE WORKS list.',
+          '3-5 Language area works to present next. Copy ENGLISH names EXACTLY from the AVAILABLE WORKS list.',
       },
       direction: {
         type: 'string' as const,
+        // LANGUAGE-ONLY ADDON — revert to: 'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"'
         description:
-          'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
+          'A brief Language progression direction. Example: "Phonics → Reading → Writing"',
       },
     },
     required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
@@ -202,7 +204,9 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
       }
     }
 
+    // LANGUAGE-ONLY ADDON — revert to: Object.entries(worksByArea) (all areas)
     const availableWorksList = Object.entries(worksByArea)
+      .filter(([area]) => area === 'language')
       .map(([area, works]) => `[${area}] ${works.join(', ')}`)
       .join('\n');
 
@@ -231,12 +235,12 @@ AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT E
 ${availableWorksList}
 
 RULES:
-1. Pick EXACTLY 5 works — ONE from EACH area (practical_life, sensorial, mathematics, language, cultural). Every area must be covered.
+1. Pick 3-5 works from the LANGUAGE area only. Focus exclusively on Language progression.
 2. DO NOT pick any work from PREVIOUS WORKS.
 3. Copy each name EXACTLY as written in the AVAILABLE WORKS list — do not paraphrase, shorten, or rename.
-4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
-5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
-6. Direction arrow must use English area names (Practical Life, Sensorial, Mathematics, Language, Cultural).
+4. Natural progression: if they mastered sandpaper letters, move to the moveable alphabet, not back to sandpaper letters.
+5. The nudge describes FORWARD movement in Language: "Ready for X", "Move her into Y" — never "continue with".
+6. Direction should describe Language sub-skill progression (e.g. "Phonics → Reading → Writing").
 
 What's the teacher's next move?`;
 
@@ -477,7 +481,8 @@ What's the teacher's next move?`;
     // "one per area". When that happens, one core area is left empty.
     // Fill each gap with the first available curriculum work from that
     // area that wasn't in the previous week's plan (no AI, deterministic).
-    const CORE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
+    // LANGUAGE-ONLY ADDON — revert to: ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
+    const CORE_AREAS = ['language'];
     const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
 
     if (missingAreas.length > 0) {
