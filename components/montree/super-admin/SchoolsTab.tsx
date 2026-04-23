@@ -83,20 +83,16 @@ export default function SchoolsTab({
   const [confirmText, setConfirmText] = useState('');
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
-  const [aiOverrides, setAiOverrides] = useState<Record<string, { budget: number; action: string }>>({});
+  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'core' | 'premium'>>({});
 
-  // AI on/off toggle handler
-  const handleAiToggle = useCallback(async (school: School) => {
+  // AI tier change handler (free / core / premium)
+  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'core' | 'premium') => {
     if (!sessionToken) return;
-    const override = aiOverrides[school.id];
-    const curBudget = override ? override.budget : (school.monthly_ai_budget_usd ?? 0);
-    const curAction = override ? override.action : (school.ai_budget_action ?? 'hard_limit');
-    const isCurrentlyOn = curBudget > 0 && curAction !== 'hard_limit';
-    const newBudget = isCurrentlyOn ? 0 : 9999;
-    const newAction = isCurrentlyOn ? 'hard_limit' : 'warn';
+    const currentTier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
+    if (newTier === currentTier) return;
 
     // Optimistic update
-    setAiOverrides(prev => ({ ...prev, [school.id]: { budget: newBudget, action: newAction } }));
+    setTierOverrides(prev => ({ ...prev, [school.id]: newTier }));
     setTogglingAi(prev => new Set([...prev, school.id]));
     try {
       const res = await fetch('/api/montree/super-admin/schools', {
@@ -105,23 +101,19 @@ export default function SchoolsTab({
           'Content-Type': 'application/json',
           'x-super-admin-token': sessionToken,
         },
-        body: JSON.stringify({
-          schoolId: school.id,
-          monthly_ai_budget_usd: newBudget,
-          ai_budget_action: newAction,
-        }),
+        body: JSON.stringify({ schoolId: school.id, ai_tier: newTier }),
       });
       if (!res.ok) {
         // Revert on failure
-        setAiOverrides(prev => { const next = { ...prev }; delete next[school.id]; return next; });
+        setTierOverrides(prev => { const next = { ...prev }; delete next[school.id]; return next; });
         throw new Error('Failed');
       }
     } catch (err) {
-      console.error('AI toggle failed:', err);
+      console.error('AI tier change failed:', err);
     } finally {
       setTogglingAi(prev => { const next = new Set(prev); next.delete(school.id); return next; });
     }
-  }, [sessionToken, aiOverrides]);
+  }, [sessionToken, tierOverrides]);
 
   // Filter + sort
   const filteredSchools = useMemo(() => {
@@ -499,22 +491,28 @@ export default function SchoolsTab({
                       </td>
                       <td className="p-3">
                         {(() => {
-                          const ov = aiOverrides[school.id];
-                          const budgetVal = ov ? ov.budget : (school.monthly_ai_budget_usd ?? 0);
-                          const actionVal = ov ? ov.action : (school.ai_budget_action ?? 'hard_limit');
-                          const aiOn = budgetVal > 0 && actionVal !== 'hard_limit';
+                          const tier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
                           const spent = school.api_spent_this_month || 0;
                           const calls = school.api_calls_this_month || 0;
                           const toggling = togglingAi.has(school.id);
+                          const tiers: Array<{ key: 'free' | 'core' | 'premium'; label: string; color: string; activeColor: string }> = [
+                            { key: 'free', label: 'Free', color: 'text-slate-500', activeColor: 'bg-slate-600 text-white' },
+                            { key: 'core', label: 'Core', color: 'text-emerald-400', activeColor: 'bg-emerald-600 text-white' },
+                            { key: 'premium', label: 'Pro', color: 'text-violet-400', activeColor: 'bg-violet-600 text-white' },
+                          ];
                           return (
                             <div className="flex flex-col items-center gap-1">
-                              <button
-                                onClick={() => handleAiToggle(school)}
-                                disabled={toggling}
-                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 ${toggling ? 'opacity-50' : ''} ${aiOn ? 'bg-emerald-500' : 'bg-slate-600'}`}
-                              >
-                                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${aiOn ? 'translate-x-4.5' : 'translate-x-0.5'}`} />
-                              </button>
+                              <div className={`inline-flex rounded-full border border-slate-700 overflow-hidden ${toggling ? 'opacity-50 pointer-events-none' : ''}`}>
+                                {tiers.map(t => (
+                                  <button
+                                    key={t.key}
+                                    onClick={() => handleTierChange(school, t.key)}
+                                    className={`px-2 py-0.5 text-[10px] font-semibold transition-colors ${tier === t.key ? t.activeColor : `${t.color} hover:bg-slate-700/50`}`}
+                                  >
+                                    {t.label}
+                                  </button>
+                                ))}
+                              </div>
                               {spent > 0 && (
                                 <span className={`text-xs font-mono ${spent > 5 ? 'text-red-400' : spent > 1 ? 'text-amber-400' : 'text-slate-400'}`}>
                                   ${spent < 0.01 ? spent.toFixed(4) : spent.toFixed(2)}

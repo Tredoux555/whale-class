@@ -89,6 +89,12 @@ export async function POST(request: NextRequest) {
     }
     console.log(`[WeeklyWrap] School ${classroom.school_id} — tier=${aiTier.tier} model=${aiTier.model}`);
 
+    // ── Tier-driven feature gates ──────────────────────────────────
+    // core  (haiku)  → replan only (shelf + game plan). No reports.
+    // premium (sonnet) → replan + teacher report + parent narrative.
+    const skipTeacherReports = aiTier.tier !== 'sonnet';   // TIER-GATE — only premium generates teacher reports
+    const skipParentReports  = aiTier.tier !== 'sonnet';   // TIER-GATE — only premium generates parent narratives
+
     // Budget enforcement — block if hard_limit exceeded
     const budget = await checkAiBudget(classroom.school_id);
     if (budget.blocked) {
@@ -250,16 +256,9 @@ export async function POST(request: NextRequest) {
     // ─── Helper: process a single child ───
     async function processChild(child: typeof children[0]) {
           try {
-            // Skip if both reports already exist
-            if (existingTeacherReports.has(child.id) && existingParentReports.has(child.id)) {
-              return {
-                child_id: child.id,
-                child_name: child.name,
-                success: true,
-                skipped: true,
-                photo_count: 0,
-              };
-            }
+            // NOTE: No early-return skip here. Replan (Stage 6) must always run.
+            // Report generation is individually gated by skipTeacherReports / skipParentReports
+            // and the existingXxxReports maps.
 
             // Fetch progress + photos for the week
             const fourWeeksAgo = new Date(week_start);
@@ -385,8 +384,9 @@ export async function POST(request: NextRequest) {
             const upsertFailures: string[] = [];
 
             // ─── Generate Teacher Report ───
+            // TIER-GATE: core tier skips teacher reports entirely (only replan runs)
             let teacherReportContent: Record<string, unknown> | null = null;
-            if (!existingTeacherReports.has(child.id)) {
+            if (!skipTeacherReports && !existingTeacherReports.has(child.id)) {
               const teacherResult = await generateTeacherReport({
                 child: {
                   name: child.name,
@@ -446,10 +446,9 @@ export async function POST(request: NextRequest) {
             }
 
             // ─── Generate Parent Report ───
-            // PARENT-REPORTS-OFF ADDON — remove `SKIP_PARENT_REPORTS` guard to re-enable parent narrative generation
-            const SKIP_PARENT_REPORTS = true;
+            // TIER-GATE: only premium tier generates parent narratives (Sonnet quality)
             let parentNarrative = '';
-            if (!SKIP_PARENT_REPORTS && !existingParentReports.has(child.id)) {
+            if (!skipParentReports && !existingParentReports.has(child.id)) {
               const narrativeResult = await generateWeeklyNarrative({
                 child: {
                   name: child.name,
