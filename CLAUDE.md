@@ -144,37 +144,283 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 **🚨 NEVER automate email sending.** Claude creates drafts only. Tredoux reviews and sends every email manually. This prevents another blank-email disaster.
 
-### Active Reply Threads (as of Apr 21, 2026 — updated Session 50)
+### Active Reply Threads (as of Apr 23, 2026 — updated Session 55)
 
 **🔥 HOT — Multiplier Partners:**
-- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied Apr 18 with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead.
-- **Cambridge Montessori Global (info@jalsaventures.com)** — Replied "Let us know more about it please!" Draft reply created with full Montree overview + tier breakdown + demo call request. AWAITING TREDOUX SEND + RESPONSE.
+- **FAMM Argentina (Marisa Canova de Sioli, marisa@fundacionmontessori.org)** — AMI Foundation + Training Center. Asked for CV, pricing, AMI compatibility. Tredoux replied Apr 18 with full pricing breakdown + partnership offer (revenue share). AWAITING RESPONSE. This is the #1 lead. **Follow up if no response by Apr 28.**
+- **Cambridge Montessori Global (info@jalsaventures.com)** — Replied "Let us know more about it please!" Draft reply created with full Montree overview + tier breakdown + demo call request. AWAITING TREDOUX SEND + RESPONSE. NOT IN DB (GMass recipient).
 
-**🔥 HOT — School Leads (asked for resume/CV):**
+**🔥 HOT — School Leads (asked for resume/CV or showed interest):**
 - **The Ardee School, India (Sunpritt Dang, phone 9718902010)** — Gave phone number. Tredoux already contacted on WhatsApp (Session 47).
 - **I Cube Montessori, India (reachus@icubemontessori.com)** — "Warm Greetings... send your detailed resume." Tredoux sent resume + Montree pitch.
 - **Ace Montessori, India (acemontessorijngr@gmail.com)** — Gave phone number +91 9663373111. Direct contact.
 - **Meraki Montessori, India (management@merakimontessori.in)** — Asked for resume. Tredoux sent.
-- **Cape Town Montessori, SA (natalie@ctms.org.za, Natalie Sahli, Head of School)** — Asked for CV + working permit. Tredoux replied with resume, mentioned SA citizenship.
 - **Village Montessori, SC (info@villagemontessori.com)** — RESURRECTED (Session 47). Previously said "not interested" but came back and asked for resume. Tredoux sent.
+- **Paint Pots Montessori, UK (paintpotsmontessori@outlook.com)** — 🔥 "Can you give me any more details or a demo?" IMMEDIATE demo request. **Draft reply needed with demo offer.**
+- **Ardtona House Montessori, UK (info@ardtonahouse.co.uk)** — 🔥 "Do you offer a free trial?" IMMEDIATE trial interest. **Draft reply needed with 60-day Bloom trial offer.**
+- **Montessori Copenhagen (info@montessori-cph.dk)** — 🔥 "Can you provide more details about the system?" Details request. **Draft reply needed with full Montree overview.**
 
 **⚠️ PIVOTED — Declined teaching, Tredoux pivoted to Montree pitch (awaiting reply):**
-- **Wā Ora NZ (joanne@waora.school.nz)** — Polite decline on teaching. Tredoux pivoted: "how about a Smart Classroom Operating System?"
 - **Remuera NZ (info@remueramontessori.co.nz)** — Fully staffed. Tredoux pivoted to Montree.
 - **Prerana Montessori, India (preranamontessori2002@gmail.com)** — No vacancy. Tredoux pivoted to Montree.
 
+**⏸ AUTO-REPLY / FOLLOW-UP LATER:**
+- **Otari School NZ (principal@otari.school.nz)** — Principal on sabbatical. Forwarded to Acting Principal. Follow up May 1.
+- **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6. NOT IN DB (GMass recipient).
+- **Montessori CH (kurs@montessori-ch.ch)** — Multiplier training center. In follow_up status. Needs Montree partnership pitch.
+
 **💡 COMPETITIVE INTEL:**
-- **Jakarta Montessori School (info@jakartamontessori.com)** — Replied Session 50: already using **Montessori Compass** (competitor). Useful data point — Montessori Compass is active in SE Asia market. No further follow-up needed.
+- **Jakarta Montessori School (admission@jakartamontessori.com)** — Uses **Montessori Compass** (competitor). Active in SE Asia. No further follow-up.
 
-**❌ DEAD:**
-- **Montessori Aotearoa NZ (Cathy Wilson, ce@montessori.org.nz)** — Session 50: Replied that the Board discussed but "it is not something we wish to explore." Marked dead.
-
-**⏸ AUTO-REPLY:**
-- **Montessori Norge (nina.johansen@montessorinorge.no)** — Out of office until May 5. Follow up after May 6.
+**❌ DEAD (7 total):**
+- **Montessori Aotearoa NZ (ce@montessori.org.nz)** — Board declined. "Not something we wish to explore."
+- **Melville Montessori (jacqui@melvillemontessori.co.za)** — No longer owns school or lives in SA.
+- **Kakuozan Montessori (information@kakuozan-preschool.com)** — "Not Montessori."
+- **Sonnberg Austria (sabine@am-sonnberg.com)** — Position filled. Graceful close. NOT IN DB.
+- **Al Qamar Academy, BestStart Montessori, CHOW Montessori** — No response / dead leads.
 
 ---
 
-## RECENT STATUS (Apr 22, 2026)
+## RECENT STATUS (Apr 23, 2026)
+
+### ⚡ Session 56 — Photo Pipeline maxDuration Fix + Story Document Rendering Fix + Health Check (Apr 23, 2026)
+
+**Two commits pushed to main: `56b9489b`, `555ae84d`.**
+
+**A. Photo Identification Pipeline Fix — commit `56b9489b`:**
+
+Photo identification background process route (`app/api/montree/photo-identification/process/route.ts`) was missing `export const maxDuration = 120`. Railway's default 15s serverless timeout was killing the two-pass Haiku pipeline mid-flight. 12 photos stuck as unprocessed. Added the export — Railway now allows up to 120s for the identification pipeline.
+
+**B. Weekly Wrap Readiness Health Check:**
+
+Full audit of photo identification status across Whale Class for the current week:
+- 26 photos promoted from `identification_status='pending'` to `teacher_confirmed=true` (stuck in limbo from before the review_before_process removal in Session 53)
+- Final state: 84 confirmed photos, 19 of 20 children have confirmed photos this week
+- System ready for Weekly Wrap generation
+
+**C. Story Document Rendering Fix — commit `555ae84d`:**
+
+**Bug:** Documents sent from Story admin dashboard rendered as broken `<img>` tags on the user-facing Story page.
+
+**Root cause:** `/api/story/current-media/route.ts` returned raw `row.message_type` from the DB. Due to the CHECK constraint on `story_message_history.message_type` not including 'document', documents are stored with `message_type='image'` as a fallback (Session 19 pattern). The admin message-history route already used `effectiveMessageType()` to resolve the true type from filename extension, but `current-media` did not.
+
+**Fix:** Added `import { effectiveMessageType } from '@/lib/story/document-detect'` and changed `type: row.message_type` to `type: effectiveMessageType(row.message_type, row.media_filename)`. Now documents stored as 'image' in the DB are correctly detected by filename extension and returned as `type: 'document'` to the Story page, which renders them as download links.
+
+**D. Two-Round Audit — CLEAN:**
+
+Audited all Story routes that read from `story_message_history` and return message types to clients:
+- `current-media/route.ts` — PASS (fix applied)
+- `recent-messages/route.ts` — PASS (already had `effectiveMessageType`)
+- `admin/message-history/route.ts` — PASS (already had `effectiveMessageType`)
+- Write-only routes (`admin/send`, `upload-media`, `message`) — not affected (don't return types)
+- Client-side `story/[session]/page.tsx` — PASS (renders all 4 media types correctly)
+- Second audit pass verified: upload flow (useAdminMessage.ts), MessageComposer UI, MessagesTab display, document-detect module, TypeScript import resolution — all PASS
+
+**Files changed (2 commits):**
+- `app/api/montree/photo-identification/process/route.ts` — Added `export const maxDuration = 120`
+- `app/api/story/current-media/route.ts` — Added `effectiveMessageType` import + usage
+
+**Next session priorities:**
+1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request). These are immediate conversion opportunities.
+2. **Follow up on FAMM Argentina** after Apr 28 if no response.
+3. **Follow up on Cambridge Montessori Global** after Apr 28.
+4. **Follow up on Otari School NZ** on Apr 28 (auto-reply expired).
+5. **Bounce recovery research** — Start with 4 multiplier bounces (highest value).
+6. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+7. **Verify Pass 2b + Ask Sonnet on production** — capture a photo, verify pipeline.
+8. **Verify Discussion tab + child tag editor on production**.
+9. **12 pending photos** — should auto-process after Railway deploys `56b9489b`.
+10. **Identify the 1 missing child** — 19 of 20 have confirmed photos; find which child needs attention.
+
+---
+
+### ⚡ Session 55 — Full Outreach Campaign Reconciliation + Audit + Game Plan (Apr 23, 2026)
+
+**No code commits.** Pure campaign reconciliation — full Gmail↔DB audit, bounce logging, reply triage, status promotion, and forward game plan.
+
+**A. Bounce Scan & DB Update — 22 New Bounces Marked:**
+
+Scanned all Gmail bounces (`from:mailer-daemon`) across 4 pages (~180 unique bounced addresses total). Cross-referenced against `montree_outreach_contacts`. Found 22 addresses in the DB not yet marked as bounced. All 22 updated to `status='bounced'` via Supabase REST API batch updates. Most were from Wave 1 (Apr 22 Montree pitch sends) and earlier Wave 2/3 sends.
+
+**B. Reply Thread Audit — 12 Contacts Updated:**
+
+Scanned Gmail for all reply threads (`subject:Montree OR subject:"Montessori Teacher" newer_than:14d -from:me`). Identified and categorized every reply:
+
+**New HOT leads discovered this session:**
+- **Paint Pots Montessori, UK (paintpotsmontessori@outlook.com)** — "Hi, Thank you for your email. Can you give me any more details or a demo?" Immediate demo request. Draft reply needed.
+- **Ardtona House Montessori, UK (info@ardtonahouse.co.uk)** — "Hi, Thank you for your email, it sounds very interesting. Do you offer a free trial?" Free trial interest. Draft reply with 60-day Bloom trial offer needed.
+- **Montessori Copenhagen (info@montessori-cph.dk)** — "Thank you for your email! Can you provide more details about the system?" Details request. Draft reply needed.
+
+**Existing leads with status updates:**
+- FAMM Argentina — still awaiting response to Apr 18 pricing breakdown
+- Cambridge Montessori Global — still awaiting response to tier breakdown
+- Jakarta Montessori — already using Montessori Compass (competitive intel, no follow-up)
+- Montessori Aotearoa NZ — Board declined ("not something we wish to explore")
+- Melville Montessori, Australia — politely declined (no change to existing systems)
+- Sonnberg Montessori, Austria — position filled (NOT IN DB — GMass contact)
+
+All 12 contacts updated in DB with appropriate `status` and `reply_summary`.
+
+**C. Drafted→Sent Promotion — 158 Contacts Updated:**
+
+User had sent all remaining Gmail drafts (from Wave 1 Montree pitch + earlier batches). Verified zero drafts remain in Gmail via `list_drafts`. Promoted all 158 contacts with `status='drafted'` to `status='sent'` in batch via Supabase REST API. All promotions logged to `montree_outreach_log` with `action='status_promoted'`.
+
+**D. New Bounce Verification — Apr 22 Wave 1:**
+
+Checked 18 bounced addresses from Apr 22 Wave 1 sends against DB. Result: 3 already marked bounced (from step A), 15 not in DB (GMass Campaign C/D recipients never seeded into `montree_outreach_contacts`). Zero new updates needed.
+
+**E. Final Reconciled DB State:**
+
+| Status | Count |
+|--------|-------|
+| sent | 415 |
+| bounced | 99 |
+| replied | 10 |
+| dead | 6 |
+| follow_up | 4 |
+| new | 2 |
+| **Total** | **536** |
+
+**F. Outreach Game Plan — Forward Strategy:**
+
+**🔥 PRIORITY 1 — Draft replies to 3 new hot leads (IMMEDIATE):**
+1. **Paint Pots UK** — Demo request. Draft: "Delighted you're interested. Here's what Montree does [brief], I'd love to show you live. Would [date] work for a 20-minute demo call?"
+2. **Ardtona House UK** — Free trial request. Draft: "Yes! 60-day free Bloom trial, no credit card. Here's how to get started: [montree.xyz signup link]. I'll personally help set up your classroom."
+3. **Montessori Copenhagen** — Details request. Draft: Full Montree overview + tier breakdown + demo offer.
+
+**🔥 PRIORITY 2 — Follow up on existing hot leads:**
+- **FAMM Argentina** — #1 multiplier lead. Sent pricing Apr 18, no response. Follow up Apr 28 if still no reply.
+- **Cambridge Montessori Global** — Sent tier breakdown, awaiting response. Follow up Apr 28.
+
+**📅 PRIORITY 3 — Automated follow-up schedule (already configured):**
+| Date | Task | Wave | Follow-up # |
+|------|------|------|------------|
+| Apr 25 | wave2-followup1 | Wave 2 (multiplier_apr19) | 1 |
+| Apr 26 | wave3-followup1 | Wave 3 (Expansion batches) | 1 |
+| Apr 27 | wave1-montree-followup1 | Wave 1 (Campaign D schools) | 1 |
+| Apr 30 | wave2-followup2 | Wave 2 | 2 (final) |
+| May 1 | wave3-followup2 | Wave 3 | 2 (final) |
+| May 2 | wave1-montree-followup2 | Wave 1 | 2 (final) |
+
+**⏸ PRIORITY 4 — Time-gated follow-ups:**
+- **Montessori Norge** — Out of office until May 5. Follow up May 6.
+- **Otari School NZ** — Out of office (returned Apr 22). Follow up Apr 28.
+
+**🔄 PRIORITY 5 — Bounce recovery (99 contacts):**
+- 93 individual schools, 4 multiplier_association, 1 multiplier_franchise, 1 multiplier_training
+- Research correct emails via web search for highest-value bounced contacts (multipliers first)
+- Re-draft viable ones after email correction
+
+**📬 PRIORITY 6 — Last 2 new contacts:**
+- Nairobi Montessori (karen@elmc.co.ke) — Draft Montree pitch
+- Redwood Montessori Qatar (info.qatar@theredwoodnursery.com) — Draft Montree pitch
+
+**G. Active Reply Threads Updated in CLAUDE.md:**
+
+Comprehensive update to the Active Reply Threads section reflecting all Session 55 discoveries:
+- 3 new HOT leads added (Paint Pots, Ardtona, Copenhagen)
+- Dead list expanded to 7 with summaries
+- Auto-reply section updated (Otari NZ added, Norge timeline noted)
+- NOT-IN-DB annotations added for GMass-only contacts
+- Follow-up timelines added for pending leads
+
+**Campaign health summary:**
+- **Initial outreach 100% complete** — all 536 contacts contacted (only 2 remain as 'new')
+- **Reply rate: 1.9%** (10 replied out of 536) — industry average for cold outreach is 1-5%
+- **Bounce rate: 18.5%** (99 out of 536) — high, but includes GMass Campaign C blank-email damage
+- **3 active demo/trial requests** — Paint Pots, Ardtona, Copenhagen are ready to convert
+- **1 multiplier lead** (FAMM Argentina) worth 10-50x a single school
+- **Follow-up waves automated** — Apr 25 through May 2, should generate 5-15 additional replies
+
+**Next session priorities:**
+1. **Draft replies to Paint Pots, Ardtona House, and Montessori Copenhagen** — these are hot leads asking for demos/trials/details. Immediate action.
+2. **Follow up on FAMM Argentina** after Apr 28 if no response.
+3. **Follow up on Cambridge Montessori Global** after Apr 28.
+4. **Follow up on Otari School NZ** on Apr 28 (auto-reply expired Apr 22).
+5. **Bounce recovery research** — Start with 4 multiplier bounces (highest value), then top individual schools.
+6. **Draft the last 2 new contacts** (Nairobi + Qatar).
+7. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+8. **Verify Pass 2b + Ask Sonnet on production** — capture a photo, verify pipeline.
+9. **Verify Discussion tab + child tag editor on production**.
+
+---
+
+### ⚡ Session 54 — Gallery Child Tag Editor + ThisIsSheet Fire-and-Close + Discussion Flag in Sheet + FullDetailsModal Empty Tip Fix (Apr 22, 2026)
+
+**Three commits pushed to main: `89ebeffb`, `6c002c80`, `21b1a38b`.**
+
+**A. Gallery Child Tag Editor — commit `89ebeffb`:**
+
+User reported: "If I mistakenly tag the incorrect child and I'm going through their work in the gallery I want the ability to edit the tag."
+
+Built an inline child tag editor in the gallery view (`app/montree/dashboard/[childId]/gallery/page.tsx`):
+- 👥 button on every photo card opens a tag editor overlay
+- Loads all classroom children + currently tagged children via `GET /api/montree/media/children?media_id=X`
+- Toggle children on/off with checkmark pills, save via `POST /api/montree/media/children` with `action: 'set'`
+- If the current gallery child is REMOVED from the photo's tags, the photo is removed from the local gallery list with toast "Photo removed from this gallery"
+- Bilingual labels (EN/ZH)
+
+**State added to gallery page:**
+- `childTagPhotoId`, `taggedChildIds` (Set), `classroomChildren` (lazy-loaded once), `loadingChildTags`, `savingChildTags`
+- `openChildTagEditor(photoId)` — fetches children list + current tags
+- `toggleChildTag(cid)` — toggles in local Set
+- `saveChildTags()` — POSTs `action: 'set'` with full child_ids array
+
+**B. ThisIsSheet: Discussion Flag + Instant Fire-and-Close — commit `6c002c80`:**
+
+Two improvements to ThisIsSheet, both user-requested:
+
+**1. Discussion flag button in sheet header:**
+User said: "when I'm going through works here I want to be able to add the photo to the 'discuss' section."
+
+- Added `onDiscussionFlag?: (photoId: string) => void` to ThisIsSheet Props
+- 💬 button rendered in the sheet header (next to close button) when prop is provided
+- Clicking it calls `onDiscussionFlag(photo.id)` then `onClose()` — flags the photo and dismisses the sheet
+- Parent (`photo-audit/page.tsx`) wires it to existing `handleToggleDiscussion` handler
+
+**2. Instant fire-and-close pattern:**
+User said: "it takes a few seconds to save the work. I want this process to be in the background. It should feel instant for the teacher."
+
+- Added `fireAndClose(resolution)` helper that calls `onClose()` first (instant UI dismiss), then fires `onResolve(resolution)` as a background promise with `.catch()` error logging
+- All 4 resolve handlers refactored to use `fireAndClose`: `handlePickExisting`, `handleConfirmAI`, `handleCreateNew`, and the quick-create button
+- **Closure safety**: `onResolve` arrow function captures `thisIsPhoto` at render time — safe to call even after sheet closes and parent sets `thisIsPhoto` to null, because React batches state updates
+
+**C. FullDetailsModal: Hide Empty Presentation Steps and Teacher Tips — commit `21b1a38b`:**
+
+User showed screenshot of empty green circles with "Teacher Tip:" labels but no content.
+
+**Root cause:** `guideData.presentation_steps` rendered every step unconditionally, including steps with no title, no description, and no tip. The tip `<div>` rendered whenever `step.tip` existed, but `step.tip` could be an empty string.
+
+**Fix in `components/montree/child/FullDetailsModal.tsx`:**
+- Filter step array: `.filter(s => s.title || s.description)` — only render steps that have actual content
+- Show "Coming soon" placeholder when ALL steps are empty (filtered length === 0)
+- Each field conditionally rendered: `{step.title && <h4>...}`, `{step.description && <p>...}`, `{step.tip && <div>...}`
+- Empty string tips no longer render the amber "Teacher Tip:" box
+
+**Two consecutive clean audit passes run before each commit. Final comprehensive audit across all 3 commits returned PASS.**
+
+**Files changed (3 files, 3 commits):**
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — Child tag editor (5 state hooks, 3 handlers, tag editor UI overlay)
+- `components/montree/photo-audit/ThisIsSheet.tsx` — `onDiscussionFlag` prop + 💬 button + `fireAndClose` pattern on all 4 resolve handlers
+- `app/montree/dashboard/photo-audit/page.tsx` — Wired `onDiscussionFlag` to `handleToggleDiscussion`
+- `components/montree/child/FullDetailsModal.tsx` — Filter empty steps + conditional field rendering
+
+**🚨 Architectural notes for future sessions:**
+- **Fire-and-close is the canonical pattern for ThisIsSheet resolves.** `onClose()` fires first for instant UI feedback, `onResolve()` runs in background with `.catch()`. The parent's `handleResolvePhoto` closure captures the photo reference — safe even after `setThisIsPhoto(null)`.
+- **Child tag editor uses `action: 'set'`** — sends the FULL list of child_ids, not add/remove deltas. The API replaces all tags atomically. This is simpler and avoids race conditions on concurrent edits.
+- **Discussion flag from ThisIsSheet** reuses the existing `handleToggleDiscussion` handler in photo-audit page — no new API endpoint needed. The `PATCH /api/montree/media` route already accepts `discussion_flag` (Session 48).
+
+**Next session priorities:**
+1. **Bounce recovery research** — Research correct emails for 77 bounced contacts, re-draft viable ones.
+2. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+3. **Health Check Section B** — 3 mechanical sweeps.
+4. **Campaign: Monitor replies** — FAMM Argentina (#1 lead), Cambridge Montessori Global.
+5. **Campaign: Follow up on Montessori Norge** after May 6.
+6. **Verify Pass 2b + Ask Sonnet on production** — capture a photo, verify it lands as `haiku_drafted`, click "Ask Sonnet", verify Sonnet enrichment works.
+7. **Verify Discussion tab on production** — flag a photo for discussion, switch to Discussion tab, confirm it appears.
+8. **Verify child tag editor on production** — open a child's gallery, tap 👥 on a photo, verify tag editor loads, toggle a child, save, verify changes persist.
+
+---
 
 ### ⚡ Session 53 — Photo Bucket Removal + Pass 2b Pipeline + Teacher-Triggered Sonnet + Discussion Tab Fix (Apr 22, 2026)
 
