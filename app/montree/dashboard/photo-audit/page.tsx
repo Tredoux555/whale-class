@@ -1960,7 +1960,12 @@ export default function PhotoAuditPage() {
   // sub-views — the unified source of both teacher review and parent reports) +
   // Weekly Admin (standalone DOCX generator). Photos now go straight to AI (no Photo Bucket).
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
-    { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: nonGreenCount > 0 ? nonGreenCount : null },
+    { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: (() => {
+      // Subtract discussion-flagged photos — they appear in the Discussion tab, not here.
+      const discussionCount = photos.filter(p => p.discussion_flag && p.zone !== 'green').length;
+      const confirmCount = nonGreenCount - discussionCount;
+      return confirmCount > 0 ? confirmCount : null;
+    })() },
     { key: 'discussion', label: locale === 'zh' ? '💬 讨论' : '💬 Discussion', color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
     { key: 'weekly_wrap', label: locale === 'zh' ? '周总结' : 'Weekly Wrap', color: 'bg-violet-100 text-violet-800', count: null },
     { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
@@ -2728,8 +2733,11 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
               <span className="text-[9px] text-cyan-600">· {Math.round(photo.identification_confidence * 100)}%</span>
             )}
           </div>
-          {photo.work_name && (
-            <p className="text-[11px] font-bold text-cyan-900 leading-tight">{photo.work_name}</p>
+          {(photo.work_name || photo.sonnet_draft?.proposed_name) && (
+            <p className="text-[11px] font-bold text-cyan-900 leading-tight">{photo.work_name || photo.sonnet_draft?.proposed_name}</p>
+          )}
+          {photo.sonnet_draft?.suggested_area && (
+            <p className="text-[9px] text-cyan-600 capitalize">{photo.sonnet_draft.suggested_area.replace(/_/g, ' ')}</p>
           )}
           <p className="text-[9px] text-cyan-700 mt-0.5 italic">Haiku identified this, but has low confidence — ask Sonnet for deeper analysis.</p>
           {unifiedTagger ? (
@@ -2852,7 +2860,7 @@ function AuditPhotoCard({ photo, selected, onToggle, onConfirm, onCorrect, onUse
 
       {/* Info + actions */}
       <div className="p-2 bg-white">
-        <p className="text-xs font-medium truncate">{photo.work_name || t('audit.untaggedWork')}</p>
+        <p className="text-xs font-medium truncate">{photo.work_name || photo.sonnet_draft?.proposed_name || t('audit.untaggedWork')}</p>
         {/* Multi-child display with tag button */}
         <button
           onClick={onTagChildren}
