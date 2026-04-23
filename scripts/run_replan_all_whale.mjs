@@ -71,13 +71,11 @@ const GAME_PLAN_TOOL = {
         items: { type: 'string' },
         minItems: 3,
         maxItems: 5,
-        // LANGUAGE-ONLY ADDON — revert to: 'Exactly 5 works — one from EACH area. Use EXACT ENGLISH names from the AVAILABLE WORKS list.'
-        description: '3-5 Language area works to present next. Use EXACT ENGLISH names from the AVAILABLE WORKS list.',
+        description: 'Exactly 5 works — one from EACH area. Use EXACT ENGLISH names from the AVAILABLE WORKS list.',
       },
       direction: {
         type: 'string',
-        // LANGUAGE-ONLY ADDON — revert to: 'Area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"'
-        description: 'A brief Language progression direction. Example: "Phonics → Reading → Writing"',
+        description: 'Area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
     required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
@@ -176,9 +174,7 @@ async function replanChild(childId, childName) {
     }
   }
 
-  // LANGUAGE-ONLY ADDON — revert to: Object.entries(worksByArea) (all areas)
   const availableWorksList = Object.entries(worksByArea)
-    .filter(([area]) => area === 'language')
     .map(([area, works]) => `[${area}] ${works.join(', ')}`)
     .join('\n');
 
@@ -201,11 +197,12 @@ AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT E
 ${availableWorksList}
 
 RULES:
-1. Pick 3-5 works from the LANGUAGE area only. Focus exclusively on Language progression.
+1. Pick exactly 5 works — ONE from EACH area (practical_life, sensorial, mathematics, language, cultural).
 2. DO NOT pick any work from PREVIOUS WORKS.
 3. Copy each name EXACTLY as written in the AVAILABLE WORKS list — do not paraphrase, shorten, or rename.
-4. Natural progression: if they mastered sandpaper letters, move to the moveable alphabet, not back to sandpaper letters.
-5. The nudge describes FORWARD movement in Language: "Ready for X", "Move her into Y" — never "continue with".
+4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
+5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
+6. Spread works across all 5 curriculum areas.
 
 What's the teacher's next move?`;
 
@@ -332,8 +329,7 @@ What's the teacher's next move?`;
   }
 
   // ── Deterministic gap-fill for missing areas ──────────────────────
-  // LANGUAGE-ONLY ADDON — revert to: ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural']
-  const CORE_AREAS = ['language'];
+  const CORE_AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
   const missingAreas = CORE_AREAS.filter((a) => !filledAreas.has(a));
 
   if (missingAreas.length > 0) {
