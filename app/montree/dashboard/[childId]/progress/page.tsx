@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { getSession, isHomeschoolParent } from '@/lib/montree/auth';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { ProgressSkeleton } from '@/components/montree/Skeletons';
 import GuruContextBubble from '@/components/montree/guru/GuruContextBubble';
@@ -208,7 +208,7 @@ export default function ProgressPage() {
     const monthMap = new Map<string, TimelineEvent[]>();
     for (const event of filtered) {
       const d = new Date(event.date);
-      const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
+      const label = d.toLocaleDateString(getIntlLocale(locale), { month: 'long', year: 'numeric' });
       if (!monthMap.has(label)) monthMap.set(label, []);
       monthMap.get(label)!.push(event);
     }
@@ -219,7 +219,7 @@ export default function ProgressPage() {
   // Format date
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
   };
 
   // Loading state

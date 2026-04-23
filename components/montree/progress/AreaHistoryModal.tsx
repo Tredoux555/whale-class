@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 
 // Area display config — name resolved at render time via getAreaLabel()
@@ -165,7 +165,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
         const monthMap = new Map<string, WorkEntry[]>();
         for (const entry of workEntries) {
           const d = new Date(entry.date);
-          const label = d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' });
+          const label = d.toLocaleDateString(getIntlLocale(locale), { month: 'long', year: 'numeric' });
           if (!monthMap.has(label)) monthMap.set(label, []);
           monthMap.get(label)!.push(entry);
         }
@@ -187,7 +187,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
 
   const fmtDate = (iso: string) => {
     const d = new Date(iso);
-    return d.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', day: 'numeric' });
+    return d.toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' });
   };
 
   return (

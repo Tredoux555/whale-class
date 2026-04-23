@@ -6,7 +6,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 import LanguageToggle from '@/components/montree/LanguageToggle';
 import PhotoLightbox from '@/components/montree/media/PhotoLightbox';
 
@@ -158,7 +158,7 @@ export default function ParentReportPage() {
 
   const formatWeekDisplay = () => {
     if (!report) return '';
-    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const dateLocale = getIntlLocale(locale);
     if (report.week_start) {
       const start = new Date(report.week_start);
       const end = report.week_end ? new Date(report.week_end) : start;
@@ -472,7 +472,7 @@ export default function ParentReportPage() {
 
         {/* ═══ Footer ═══ */}
         <div className="text-center text-xs text-gray-300 py-8 border-t border-gray-50">
-          {new Date(report.created_at).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+          {new Date(report.created_at).toLocaleDateString(getIntlLocale(locale), {
             month: 'long', day: 'numeric', year: 'numeric',
           })}
           {' · Montree'}

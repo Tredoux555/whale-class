@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast, Toaster } from 'sonner';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import AreaBadge, { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 interface Milestone {
   id: string;
@@ -84,7 +84,7 @@ function ParentMilestonesContent() {
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return new Date(dateStr).toLocaleDateString(getIntlLocale(locale), {
       month: 'short',
       day: 'numeric'
     });

@@ -181,6 +181,165 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 24, 2026)
+
+### ⚡ Session 59 — Multilingual Build Phase 4: Layer 0-1 Infrastructure + Layer 4 AI Pipeline (Apr 24, 2026)
+
+**No commits yet — 38 files changed locally, ready to commit.** Phase 4 (3x BUILD) of the 3x3x3x3x3 development cycle. Built the entire multilingual infrastructure foundation (Layer 0-1) and converted the two most complex AI pipeline files (Layer 4 core).
+
+**Development Cycle Status:**
+1. 3x RESEARCH — ✅ COMPLETE
+2. 3x PLAN — ✅ COMPLETE
+3. 3x INVESTIGATE — ✅ COMPLETE
+4. 3x BUILD — **IN PROGRESS** (Layer 0-1 done, Layer 4 core done, 9 Layer 4 files + Layer 3 sweep + Layer 5 type widening remaining)
+5. 3x AUDIT — pending
+
+**A. Layer 0-1 — Foundation Infrastructure (10 files created/modified):**
+
+Created the entire multilingual foundation that every other layer builds on:
+
+- **`lib/montree/i18n/locales.ts`** (NEW) — Canonical `Locale` type (`'en' | 'zh' | 'es'`), `SUPPORTED_LOCALES` array, `isValidLocale()`, `LOCALE_TO_INTL` date format map, `getIntlLocale()`, display names/short labels
+- **`lib/montree/i18n/locale-config.ts`** (NEW) — `LOCALE_AI_CONFIG` per-locale AI prompt config, `getAILanguageInstruction(locale)` (empty for English, full directive for others), `getLanguageName(locale)`
+- **`lib/montree/i18n/db-helpers.ts`** (NEW) — `getLocalizedWorkName(work, locale)` handling Chinese dual-column legacy, `getLocalizedField(obj, field, locale)`, `getLocalizedColumn(field, locale)`
+- **`lib/montree/i18n/localized-types.ts`** (NEW) — Extracted `resolveLocalized()`, `resolveLocalizedArray()` JSONB resolvers from GamePlanCard
+- **`lib/montree/i18n/es.ts`** (NEW) — Spanish translation file (stub with all 1,490+ keys)
+- **`lib/montree/i18n/area-labels.ts`** (UPDATED) — Map-of-maps `AREA_LABELS`, Spanish labels added, `getAreaArrowExample(locale)`
+- **`lib/montree/i18n/context.tsx`** (UPDATED) — `Locale` imported from `locales.ts`, `'es'` support added
+- **`lib/montree/i18n/server.ts`** (UPDATED) — Re-exports from new modules
+- **`lib/montree/i18n/index.ts`** (UPDATED) — Barrel re-exports all new modules (173 importing files get new exports automatically)
+- **`components/montree/LanguageToggle.tsx`** (UPDATED) — Cycle-through-all pattern for 3+ locales
+
+**B. Layer 4 — AI Pipeline Core (2 files, fully converted):**
+
+- **`lib/montree/reports/teacher-report-generator.ts`** — 15 edits. All `=== 'zh'` ternaries in `generateTeacherFallback()` converted to locale-keyed `Record<string, string>` maps with IIFE pattern. `work_zh` → `work_localized`. Only 3 intentional TYPE H separator checks remain (`'、'` vs `', '`).
+- **`lib/montree/reports/narrative-generator.ts`** — 7 edits. Zero `=== 'zh'` remaining. `generateTemplateFallback()` refactored to `TEMPLATES` map with zh/es/en. No-photos and system message both use locale-config helpers.
+
+**C. Other Layer 3/4 files converted (from earlier build rounds):**
+
+- **`lib/montree/guru/conversational-prompt.ts`** — All zh blocks replaced with locale-keyed patterns
+- **`lib/montree/reports/ai-generator.ts`** — Fully rewritten for N-language
+- **`lib/montree/reports/pdf-generator.ts`** — TYPE B + TYPE D fixed
+- **22 files** with TYPE D date format replacements — all now use `getIntlLocale(locale)` from `locales.ts`
+- Multiple parent/progress/gallery pages — TYPE D date ternaries replaced
+
+**D. Handoff document maintained:**
+
+`docs/MULTILINGUAL_BUILD_HANDOFF.md` — Comprehensive handoff document with exact remaining work, file-by-file instructions, pattern examples, and verification steps. Updated after every major completion.
+
+**Remaining work (documented in handoff):**
+
+| Layer | Scope | Status |
+|-------|-------|--------|
+| Layer 4 remaining | 9 AI pipeline files (auto-translate generalization, replan, photo-identification) | Pending |
+| Layer 5 | 16 files with `'en' \| 'zh'` type annotations → `Locale` | Pending |
+| Layer 3 | ~89 files with ~563 `=== 'zh'` ternaries (mechanical conversion) | Pending |
+| Phase 5 | 3x AUDIT — fix cycle until 3 consecutive clean audits | Pending |
+
+**38 files changed locally, not yet committed.** Ready for commit + push.
+
+**Next session priorities:**
+1. **Commit + push the 38-file multilingual infrastructure change.**
+2. **Continue Layer 4 build** — `auto-translate.ts` (generalize `autoTranslateToChinese()` → `autoTranslateWork(input, targetLocale)`), `replan-child.ts`, `batch-translate/route.ts`.
+3. **Layer 5 type widening** — 16 files, 28 annotations, mechanical.
+4. **Layer 3 ternary sweep** — 89 files, 563 occurrences, mechanical but high volume.
+5. **Phase 5: 3x AUDIT** — fix cycle until 3 consecutive clean audits.
+6. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request).
+7. **Follow up on FAMM Argentina** if no response by Apr 28.
+8. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
+## RECENT STATUS (Apr 24, 2026)
+
+### ⚡ Session 58 — Multilingual Architecture: 3x RESEARCH + 3x PLAN Complete (Apr 23-24, 2026)
+
+**No code commits.** Pure architecture research and planning — Phase 1 (3x RESEARCH) and Phase 2 (3x PLAN) of the 3x3x3x3x3 development cycle for making Montree fully multilingual (any language, not just Chinese/English).
+
+**The Goal:** Any language can be "dropped in" by adding a translation file and running a script — zero code changes, zero migrations per new language. Triggered by FAMM Argentina hot lead where Spanish support would be a competitive advantage.
+
+**A. Phase 1: 3x RESEARCH — Codebase Audit (COMPLETED):**
+
+Comprehensive audit of every i18n-related pattern in the codebase:
+
+- **646 hardcoded `=== 'zh'` ternaries across 98 files** — classified into 5 types:
+  - TYPE A (346): Inline label ternaries → convert to `t()` keys
+  - TYPE B (42): DB column reads (`name_zh`, `parent_description_zh`) → `getLocalizedWorkName()` helper
+  - TYPE C (5): Area label ternaries → `AREA_LABELS` map-of-maps
+  - TYPE D (42): Date format ternaries → `LOCALE_TO_INTL` map
+  - TYPE E+F (211): AI prompts + conditional logic → `LOCALE_CONFIG` pattern
+
+- **462 Chinese-specific DB column references across 86 files:** `name_zh` (373), `parent_description_zh`/`why_it_matters_zh` (69), `guide_content_zh` (20)
+
+- **Zero `switch(locale)` patterns** — all branching uses ternaries, making mechanical conversion feasible with no exhaustiveness check breaks
+
+- **Confirmed barrel `lib/montree/i18n/index.ts` EXISTS** (prior session's Glob missed it) — re-exports `Locale`, `TranslationKey`, all server functions. 173 files import via barrel.
+
+- **681 existing `t()` call sites across 127 files** — already fully locale-agnostic, no changes needed
+
+- **Dual `Locale` type** defined in both `context.tsx:17` and `server.ts:8` — plan unifies via new `locales.ts`
+
+- **`resolveLocalized()` in `GamePlanCard.tsx`** — GOLD STANDARD pattern, already takes `locale: string`, fully multilingual. JSONB `{ en: "...", zh: "...", es: "..." }` pattern proven.
+
+**B. Phase 2: 3x PLAN — Architecture Design (COMPLETED):**
+
+Created `docs/MULTILINGUAL_PLAN.md` (comprehensive handoff document) with:
+
+**5 Execution Layers:**
+- **Layer 0 — Foundation (6 files):** Create `locales.ts` (canonical `Locale` type + `SUPPORTED_LOCALES` + `isValidLocale()`), expand `area-labels.ts` to map-of-maps, create `es.ts` translation file, create `db-helpers.ts` (`getLocalizedWorkName()` + `resolveLocalizedDB()`), create `LanguageSelector.tsx` dropdown, update barrel `index.ts`
+- **Layer 1 — Type Unification (2 files):** Replace `Locale` in `context.tsx` and `server.ts` with import from `locales.ts`
+- **Layer 2 — DB Schema (87 files):** Replace 462 `_zh` column reads with `getLocalizedWorkName(work, locale)` helper that reads JSONB `_localized` columns with fallback to legacy `_zh`
+- **Layer 3 — Ternary Sweep (98 files):** Convert 646 hardcoded ternaries to locale-agnostic patterns (`t()`, `LOCALE_CONFIG`, `LOCALE_TO_INTL`)
+- **Layer 4 — AI Pipeline (8 files):** Generalize `autoTranslateToChinese()` → `autoTranslateWork(input, targetLocale)` with `LOCALE_CONFIG` for system prompts, tool schemas, language names
+- **Layer 5 — Type Widening (20 files):** Widen `locale: 'en' | 'zh'` annotations to `Locale` across route handlers and component props
+
+**"Drop a Language In" Workflow (9 steps, zero code changes in components):**
+1. Create `lib/montree/i18n/{lang}.ts` (copy en.ts, translate)
+2. Add to `SUPPORTED_LOCALES` in `locales.ts`
+3. Add area labels to `AREA_LABELS` map
+4. Add `LOCALE_CONFIG` entry (language name, system prompt suffix, glossary)
+5. Add `LOCALE_TO_INTL` date format entry
+6. Run `autoTranslateWork()` batch for curriculum
+7. Generate AI content (game plans, reports) — bilingual JSONB auto-extends
+8. Test with locale toggle
+9. Ship
+
+**Risk Matrix:** Layer 0-1 LOW, Layer 2 MEDIUM (volume), Layer 3 HIGH volume but LOW per-item, Layer 4 MEDIUM, Layer 5 LOW.
+
+**Effort Estimate:** ~120 unique files, ~1,770 lines changed, ~7 hours build + 2 hours audit.
+
+**What NOT to touch:** `TranslationKey` type, 681 existing `t()` calls, `resolveLocalized()`, photo identification pipeline, Story system, Whale Class admin tools.
+
+**C. 3x3x3x3x3 Development System — Burned into Memory:**
+
+User's explicit methodology for complex tasks:
+1. **3x RESEARCH** — Audit codebase, count patterns, classify types ✅
+2. **3x PLAN** — Design architecture, write handoff doc, assess risks ✅
+3. **3x INVESTIGATE** — Deep-read every target file, verify plan fits, map exact line numbers ⏳
+4. **3x BUILD** — Implement with audit cycles (build → audit → build → audit)
+5. **3x AUDIT** — Fix cycle until 3 consecutive clean audits
+
+Each phase runs 3 rounds. CLAUDE.md updated after every phase completion to preserve state on crash.
+
+**Files created (1 file):**
+- `docs/MULTILINGUAL_PLAN.md` — comprehensive architecture plan + execution layers + risk matrix
+
+**🚨 Architectural notes for future sessions:**
+- **`resolveLocalized()` is the proven JSONB pattern** — `GamePlanCard.tsx` lines 22-39. Use for ALL new multilingual content storage.
+- **DB migration is ADDITIVE** — new `_localized` JSONB columns coexist with legacy `_zh` columns. `resolveLocalizedDB()` reads JSONB first, falls back to `_zh`. No data loss, no breaking changes.
+- **`LOCALE_CONFIG` pattern for AI pipelines** — keyed by locale, contains: `languageName`, `systemPromptSuffix`, `glossary`, `toolFieldSuffix`. Replaces all hardcoded Chinese system prompts.
+- **The barrel `lib/montree/i18n/index.ts` is the single import point** — 173 files use it. All new exports go through here.
+- **Zero `switch(locale)` in codebase** — TypeScript exhaustiveness checks won't break when `Locale` widens.
+
+**Next session priorities:**
+1. **Phase 3: 3x INVESTIGATE** — Deep-read every file in each layer, verify plan fits perfectly, map exact line numbers. Checklist in `MULTILINGUAL_PLAN.md` section 9.
+2. **Phase 4: 3x BUILD** — Implement Layer 0 (foundation) first, then layers 1-5 sequentially.
+3. **Phase 5: 3x AUDIT** — Fix cycle until 3 consecutive clean audits.
+4. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request).
+5. **Follow up on FAMM Argentina** if no response by Apr 28.
+6. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ## RECENT STATUS (Apr 23, 2026)
 
 ### ⚡ Session 57 — Three-Tier AI System (Free/Core/Premium) + Language-Only Revert (Apr 23, 2026)

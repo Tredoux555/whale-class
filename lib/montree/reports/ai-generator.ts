@@ -6,11 +6,13 @@
 // warm, observational Montessori parent reports
 
 import Anthropic from '@anthropic-ai/sdk';
-import type { 
-  ReportContent, 
+import type {
+  ReportContent,
   ReportHighlight,
-  CurriculumArea 
+  CurriculumArea
 } from './types';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 // ============================================
 // TYPES
@@ -197,10 +199,19 @@ export async function enhanceReportWithAI(input: EnhanceInput): Promise<EnhanceR
 // ============================================
 
 function buildSystemPrompt(locale?: string): string {
-  const isZh = locale === 'zh';
+  const langInstruction = getAILanguageInstruction(locale || 'en');
+  const isNonEnglish = locale && locale !== 'en';
 
-  const languageInstruction = isZh
-    ? `\n- Write your ENTIRE response in Simplified Chinese (中文). Use warm, natural Chinese — not robotic or overly formal. All field values in the JSON must be in Chinese.`
+  // Locale-keyed JSON schema descriptions
+  const schemaDescriptions: Record<string, { summary: string; observation: string; developmental_note: string; home_extension: string; parent_message: string; milestones: string }> = {
+    zh: { summary: '2-3句温馨的本周概述', observation: '用温暖的观察性语言描述孩子做了什么', developmental_note: '这在发展方面为什么重要', home_extension: '家长可以在家尝试的简单活动', parent_message: '温暖的致谢家长的结束语', milestones: '本周观察到的显著里程碑' },
+    es: { summary: 'Un resumen cálido de 2-3 oraciones de la semana del niño', observation: 'Lo que hizo el niño, en un lenguaje observacional cálido', developmental_note: 'Por qué esto importa en el desarrollo', home_extension: 'Una actividad sencilla que los padres pueden probar en casa', parent_message: 'Un mensaje cálido de cierre agradeciendo a los padres', milestones: 'Hitos notables observados esta semana' },
+  };
+  const defaultDesc = { summary: "A 2-3 sentence warm overview of the child's week", observation: 'What the child did, in warm observational language', developmental_note: 'Why this matters developmentally', home_extension: 'A simple activity parents can try at home', parent_message: 'A warm closing message thanking parents', milestones: 'Any notable milestones observed this week' };
+  const desc = schemaDescriptions[locale || 'en'] || defaultDesc;
+
+  const styleLanguageLine = isNonEnglish
+    ? `\n- Write your ENTIRE response in the target language. All field values in the JSON must be in the target language.`
     : '';
 
   return `You are a warm, observant Montessori teacher writing a weekly report for parents.
@@ -210,7 +221,7 @@ Your writing style is:
 - Observational, describing what you actually SAW the child do
 - Positive but authentic (not generic praise)
 - Educational but accessible (no jargon)
-- Encouraging for parents to extend learning at home${languageInstruction}
+- Encouraging for parents to extend learning at home${styleLanguageLine}
 
 IMPORTANT GUIDELINES:
 1. Focus on OBSERVABLE actions ("carefully placed", "showed concentration", "chose to work with")
@@ -223,23 +234,24 @@ IMPORTANT GUIDELINES:
 OUTPUT FORMAT:
 You must respond with valid JSON only, no additional text or markdown formatting. Use this exact structure:
 {
-  "summary": "${isZh ? '2-3句温馨的本周概述' : 'A 2-3 sentence warm overview of the child\'s week'}",
+  "summary": "${desc.summary}",
   "highlights": [
     {
       "media_id": "COPY THE EXACT media_id from the input",
-      "observation": "${isZh ? '用温暖的观察性语言描述孩子做了什么' : 'What the child did, in warm observational language'}",
-      "developmental_note": "${isZh ? '这在发展方面为什么重要' : 'Why this matters developmentally'}",
-      "home_extension": "${isZh ? '家长可以在家尝试的简单活动' : 'A simple activity parents can try at home'}"
+      "observation": "${desc.observation}",
+      "developmental_note": "${desc.developmental_note}",
+      "home_extension": "${desc.home_extension}"
     }
   ],
-  "parent_message": "${isZh ? '温暖的致谢家长的结束语' : 'A warm closing message thanking parents'}",
-  "milestones": ["${isZh ? '本周观察到的显著里程碑' : 'Any notable milestones observed this week'}"]
+  "parent_message": "${desc.parent_message}",
+  "milestones": ["${desc.milestones}"]
 }
 
 CRITICAL:
 - Return ONLY the JSON object, no markdown code blocks
 - Include ALL activities from the input in your highlights array
-- Copy media_id values EXACTLY as provided${isZh ? '\n- ALL text content MUST be in Simplified Chinese (中文)' : ''}`;
+- Copy media_id values EXACTLY as provided${langInstruction ? '\n- ALL text content MUST be in the target language' : ''}`
+  + langInstruction;
 }
 
 function buildUserPrompt(input: EnhanceInput): string {
@@ -254,7 +266,7 @@ function buildUserPrompt(input: EnhanceInput): string {
   const p = pronouns[child.gender];
 
   // Format week dates nicely
-  const dateLoc = input.locale === 'zh' ? 'zh-CN' : 'en-US';
+  const dateLoc = getIntlLocale(input.locale || 'en');
   const weekStart = new Date(week_start).toLocaleDateString(dateLoc, {
     month: 'long', day: 'numeric'
   });
@@ -413,19 +425,26 @@ function mergeWithOriginal(
 
 function generateSummaryOnlyReport(input: EnhanceInput): EnhanceResult {
   const { child, locale } = input;
-  const isZh = locale === 'zh';
   const p = child.gender === 'they' ? 'their' : child.gender === 'he' ? 'his' : 'her';
+
+  // Locale-keyed fallback content
+  const fallbackSummary: Record<string, string> = {
+    zh: `这一周，${child.name}在教室里继续探索各种活动，充满好奇心和专注力。`,
+    es: `Esta semana, ${child.name} continuó su viaje de aprendizaje en el aula, explorando diversas actividades con curiosidad y concentración.`,
+  };
+  const fallbackMessage: Record<string, string> = {
+    zh: `感谢您参与${child.name}的蒙特梭利学习之旅。我们期待下周与您分享更多进步！`,
+    es: `Gracias por ser parte de la experiencia Montessori de ${child.name}. ¡Esperamos compartir más de su progreso la próxima semana!`,
+  };
 
   return {
     success: true,
     content: {
       ...input.report,
-      summary: isZh
-        ? `这一周，${child.name}在教室里继续探索各种活动，充满好奇心和专注力。`
-        : `This week, ${child.name} continued ${p} learning journey in the classroom, exploring various activities with curiosity and focus.`,
-      parent_message: isZh
-        ? `感谢您参与${child.name}的蒙特梭利学习之旅。我们期待下周与您分享更多进步！`
-        : `Thank you for being part of ${child.name}'s Montessori experience. We look forward to sharing more of ${p} progress next week!`,
+      summary: (locale && fallbackSummary[locale])
+        || `This week, ${child.name} continued ${p} learning journey in the classroom, exploring various activities with curiosity and focus.`,
+      parent_message: (locale && fallbackMessage[locale])
+        || `Thank you for being part of ${child.name}'s Montessori experience. We look forward to sharing more of ${p} progress next week!`,
       generated_with_ai: true,
       ai_model: 'fallback-no-highlights',
       generation_timestamp: new Date().toISOString(),

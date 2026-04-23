@@ -10,16 +10,15 @@ import {
 } from 'react';
 import { en, type TranslationKey } from './en';
 import { zh } from './zh';
+import { es } from './es';
+import { type Locale, DEFAULT_LOCALE, SUPPORTED_LOCALES, isValidLocale } from './locales';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-export type Locale = 'en' | 'zh';
+// Re-export Locale for backward compat (173 files import from barrel → context)
+export type { Locale };
 
 const STORAGE_KEY = 'montree_lang';
-const DEFAULT_LOCALE: Locale = 'en';
 
-const messages: Record<Locale, Record<string, string>> = { en, zh };
+const messages: Record<string, Record<string, string>> = { en, zh, es };
 
 // Pre-compiled regex cache for interpolation params (avoids creating new RegExp per t() call)
 const regexCache = new Map<string, RegExp>();
@@ -53,8 +52,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // Read persisted language on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Locale | null;
-      if (stored === 'en' || stored === 'zh') {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (isValidLocale(stored)) {
         setLocaleState(stored);
       }
     } catch {
@@ -73,7 +72,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>): string => {
-      let text = messages[locale][key] ?? messages[DEFAULT_LOCALE][key] ?? key;
+      let text = (messages[locale]?.[key]) ?? messages[DEFAULT_LOCALE][key] ?? key;
       if (params) {
         for (const [k, v] of Object.entries(params)) {
           text = text.replace(getParamRegex(k), String(v));

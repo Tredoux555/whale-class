@@ -9,7 +9,7 @@ import { getSession, isHomeschoolParent, type MontreeSession } from '@/lib/montr
 import { montreeApi } from '@/lib/montree/api';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { normalizeArea } from '@/components/montree/shared/AreaBadge';
-import { useI18n } from '@/lib/montree/i18n';
+import { useI18n, getIntlLocale } from '@/lib/montree/i18n';
 
 interface FocusWork {
   name: string;
@@ -164,7 +164,7 @@ export default function ClassroomOverviewPage() {
     return AREA_CONFIG[normalized] || { name: area, icon: '?', color: '#888' };
   };
 
-  const today = new Date().toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+  const today = new Date().toLocaleDateString(getIntlLocale(locale), {
     weekday: 'short', month: 'short', day: 'numeric',
   });
 
@@ -175,7 +175,7 @@ export default function ClassroomOverviewPage() {
     const end = new Date(d);
     end.setDate(d.getDate() + 4);
     const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    const loc = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const loc = getIntlLocale(locale);
     return `${d.toLocaleDateString(loc, opts)} – ${end.toLocaleDateString(loc, opts)}`;
   };
 
