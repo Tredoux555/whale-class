@@ -344,7 +344,7 @@ export default function WeeklyAdminTab({ classroomId }: WeeklyAdminTabProps) {
 
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${classroomId}&week_start=${requestedWeek}&locale=${locale}`
       );
 
       // Bail if unmounted or user navigated to a different week

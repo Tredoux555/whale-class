@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const classroomId = searchParams.get('classroom_id') || auth.classroomId;
     const weekStart = searchParams.get('week_start');
+    const locale = searchParams.get('locale') || 'en';
 
     if (!classroomId) {
       return NextResponse.json({ error: 'classroom_id required' }, { status: 400 });
@@ -515,48 +516,55 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      // --- Summary (English only, Language only — custom addon, easy to revert to all areas) ---
-      // Format: work name + status (P/Pr/M) → teacher key_insight → next week Language focus
+      // --- Summary (Language only, locale-aware — custom addon, easy to revert to all areas) ---
+      // Compact paragraph: "Work (P); Work (Pr). key_insight. Next week: X"
+      const STATUS_SHORT_EN: Record<string, string> = { presented: 'P', practicing: 'Pr', mastered: 'M' };
+      const STATUS_SHORT_ZH: Record<string, string> = { presented: '呈现', practicing: '练习', mastered: '掌握' };
+      const isZh = locale === 'zh';
+
       let summaryEnglish = '';
-      let summaryChinese = ''; // kept for backward compat but mirrors English
+      let summaryChinese = '';
       if (childWorks && childWorks.size > 0) {
         const enLines: string[] = [];
+        const zhLines: string[] = [];
         const childProgress = childProgressMap.get(child.id);
 
-        // Section 1: Language works done this week — compact paragraph format
-        // e.g. "Paper Work (P); Bingo Phonics Review (Pr); Ocean Animals Matching (P)"
-        const STATUS_SHORT: Record<string, string> = {
-          presented: 'P',
-          practicing: 'Pr',
-          mastered: 'M',
-        };
+        // Section 1: Language works done this week
         const langWorks = childWorks.get('language');
         if (langWorks && langWorks.length > 0) {
-          const workParts = langWorks.map(w => {
+          const enParts = langWorks.map(w => {
             const status = childProgress?.get(w.toLowerCase()) || 'presented';
-            const shortLabel = STATUS_SHORT[status] || status;
-            return `${w} (${shortLabel})`;
+            return `${w} (${STATUS_SHORT_EN[status] || status})`;
           });
-          enLines.push(workParts.join('; '));
+          enLines.push(enParts.join('; '));
+
+          const zhParts = langWorks.map(w => {
+            const status = childProgress?.get(w.toLowerCase()) || 'presented';
+            const zhName = getZhWorkName(w);
+            return `${zhName} (${STATUS_SHORT_ZH[status] || status})`;
+          });
+          zhLines.push(zhParts.join('；'));
         }
 
         // Section 2: Short summary from teacher report key_insight
         const keyInsight = teacherKeyInsights.get(child.id);
         if (keyInsight) {
           enLines.push(keyInsight);
+          zhLines.push(keyInsight); // key_insight is already in the locale it was generated in
         }
 
         // Section 3: Next week plan (Language only)
         const langFocus = childFocus?.get('language');
         if (langFocus) {
           enLines.push(`Next week: ${langFocus}`);
+          zhLines.push(`下周: ${getZhWorkName(langFocus)}`);
         }
 
         summaryEnglish = enLines.length > 0 ? enLines.join('. ') : 'No recorded activities this week.';
-        summaryChinese = summaryEnglish; // English only per user request
+        summaryChinese = zhLines.length > 0 ? zhLines.join('。') : '本周无记录活动。';
       } else {
         summaryEnglish = 'No recorded activities this week.';
-        summaryChinese = summaryEnglish;
+        summaryChinese = '本周无记录活动。';
       }
 
       return {
