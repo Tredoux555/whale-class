@@ -375,7 +375,7 @@ export default function WeeklyAdminDocsPage() {
 
     try {
       const res = await montreeApi(
-        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroom?.id}&week_start=${requestedWeek}`
+        `/api/montree/weekly-admin-docs/auto-fill?classroom_id=${session.classroom?.id}&week_start=${requestedWeek}&locale=${locale}`
       );
 
       if (!mountedRef.current || weekRef.current !== requestedWeek) return;
