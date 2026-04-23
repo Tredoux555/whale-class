@@ -63,6 +63,8 @@ export interface ReplanInput {
   childId: string;
   childName: string;
   classroomId: string;
+  /** School ID for API usage logging. */
+  schoolId: string;
   locale: 'en' | 'zh';
   /** Anthropic SDK client (must be initialized — caller checks). */
   anthropic: Anthropic;
@@ -85,7 +87,7 @@ export interface ReplanResult {
  * Returns { replanned: false, error } on any failure — never throws.
  */
 export async function replanChildInProcess(input: ReplanInput): Promise<ReplanResult> {
-  const { childId, childName, classroomId, locale, anthropic, model, supabase } = input;
+  const { childId, childName, classroomId, schoolId, locale, anthropic, model, supabase } = input;
 
   try {
     // ── Stage 1: Load child + profile + progress + recent notes ────────
@@ -230,6 +232,14 @@ ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 AVAILABLE WORKS IN THIS CLASSROOM — you MUST pick from this list using EXACT ENGLISH names as written:
 ${availableWorksList}
 
+LANGUAGE PREREQUISITE CHAIN (MANDATORY — do NOT skip steps):
+- Sound Games → Sandpaper Letters → Moveable Alphabet → CVC word building
+- Pink Series (CVC words, Pink CVC Words, Pink Readers) REQUIRE mastery of Sandpaper Letters AND Sound Games
+- Blue Series REQUIRES mastery of Pink Series
+- Green Series (Phonograms) REQUIRES mastery of Blue Series
+- If the child has NOT mastered the prerequisite, pick the prerequisite instead — never jump ahead
+- Check the PROGRESS section above: if Sandpaper Letters is NOT listed under "mastered", do NOT pick Pink CVC Words or any Pink Series work
+
 RULES:
 1. Pick exactly 5 works — ONE from EACH area (practical_life, sensorial, mathematics, language, cultural).
 2. DO NOT pick any work from PREVIOUS WORKS.
@@ -237,6 +247,7 @@ RULES:
 4. Natural progression: if they mastered the pink tower, move to the brown stair, not back to the pink tower.
 5. The nudge describes FORWARD movement: "Ready for X", "Move her into Y" — never "continue with".
 6. Spread works across all 5 curriculum areas.
+7. RESPECT PREREQUISITES: Never suggest a work if its prerequisite chain is not satisfied (see LANGUAGE PREREQUISITE CHAIN above).
 
 What's the teacher's next move?`;
 
@@ -249,9 +260,10 @@ What's the teacher's next move?`;
       messages: [{ role: 'user', content: prompt }],
     });
 
-    // Log API usage (fire-and-forget, no schoolId available in library function)
+    // Log API usage (fire-and-forget)
     if (response.usage) {
       logApiUsage({
+        schoolId,
         classroomId,
         endpoint: '/lib/montree/reports/replan-child',
         model,
