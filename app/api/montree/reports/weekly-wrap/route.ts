@@ -573,6 +573,7 @@ export async function POST(request: NextRequest) {
                   childId: child.id,
                   childName: child.name,
                   classroomId: classroom_id,
+                  schoolId: classroom.school_id,
                   locale,
                   anthropic,
                   model: aiTier.model,

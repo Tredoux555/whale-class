@@ -81,8 +81,10 @@ export default function WeekPage() {
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [loadingCurriculum, setLoadingCurriculum] = useState(false);
 
-  // "Tell Guru" onboarding — show card when no mental profile exists
+  // "Tell Guru" onboarding — show card when system doesn't know child well
+  // Condition: no mental profile AND fewer than 5 confirmed photos (i.e. limited data)
   const [hasProfile, setHasProfile] = useState<boolean | null>(null); // null = loading
+  const [childDataRich, setChildDataRich] = useState(false); // true if enough photos exist to skip onboarding
   const [onboardingChildName, setOnboardingChildName] = useState<string>('');
   // Game plan — stored in child.settings.game_plan
   const [gamePlan, setGamePlan] = useState<GamePlan | null>(null);
@@ -282,11 +284,16 @@ export default function WeekPage() {
 
     if (isEnabled('tell_guru_onboarding')) {
       setHasProfile(null); // reset while loading
+      setChildDataRich(false);
     }
 
     Promise.all([fetchProfile, fetchChild]).then(([profileData, childData]) => {
       if (isEnabled('tell_guru_onboarding')) {
         setHasProfile(!!profileData?.profile);
+        // Child is "data rich" if they have 5+ confirmed photos — system knows them well enough
+        // The child API already returns a photos array (confirmed only, pending_review excluded)
+        const photoCount = childData?.photos?.length ?? 0;
+        setChildDataRich(photoCount >= 5);
       }
       if (childData?.child?.name) setOnboardingChildName(childData.child.name);
       else if (childData?.name) setOnboardingChildName(childData.name);
@@ -680,8 +687,9 @@ export default function WeekPage() {
         </div>
       )}
 
-      {/* Tell Guru onboarding — shown when child has no mental profile (feature-gated) */}
-      {isEnabled('tell_guru_onboarding') && hasProfile === false && (
+      {/* Tell Guru onboarding — shown when system doesn't know the child well enough:
+          no mental profile AND fewer than 5 confirmed photos */}
+      {isEnabled('tell_guru_onboarding') && hasProfile === false && !childDataRich && (
         <TellGuruCard
           childId={childId}
           childName={onboardingChildName || 'this child'}
@@ -698,8 +706,9 @@ export default function WeekPage() {
         <WeeklyActivitySummary childId={childId} />
       )}
 
-      {/* BIG MIC — primary voice control for this child. Swipe down for the shelf. */}
-      {!isHomeschoolParent(session) && hasProfile !== false && (
+      {/* BIG MIC — primary voice control for this child. Show when system knows the child
+          (has profile OR has enough photos). Hide while profile is loading (null). */}
+      {!isHomeschoolParent(session) && (hasProfile === true || childDataRich) && (
         <BigMicPanel
           childId={childId}
           childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'this child'}

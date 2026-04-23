@@ -37,6 +37,16 @@ export default function DashboardHeader() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
+  // ── Quick Voice Note state ──
+  const [isRecording, setIsRecording] = useState(false);
+  const [showChildPicker, setShowChildPicker] = useState(false);
+  const [recordingBlob, setRecordingBlob] = useState<Blob | null>(null);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const childPickerRef = useRef<HTMLDivElement>(null);
+
   // Teacher selector state
   const [teachers, setTeachers] = useState<TeacherOption[]>([]);
   const [showTeacherMenu, setShowTeacherMenu] = useState(false);
@@ -149,6 +159,97 @@ export default function DashboardHeader() {
     const q = searchQuery.toLowerCase();
     return students.filter(s => s.name.toLowerCase().includes(q));
   }, [searchQuery, students]);
+
+  // ── Quick Voice Note handlers ──
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4' });
+      chunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        setRecordingBlob(blob);
+        setShowChildPicker(true);
+        setIsRecording(false);
+        if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
+    } catch {
+      toast.error(locale === 'zh' ? '无法访问麦克风' : 'Microphone access denied');
+    }
+  }, [locale]);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+  }, []);
+
+  const saveVoiceNote = useCallback(async (childId: string | null) => {
+    setShowChildPicker(false);
+    const blob = recordingBlob;
+    setRecordingBlob(null);
+    setRecordingSeconds(0);
+    if (!blob || !session?.classroom?.id) return;
+
+    toast.success(locale === 'zh' ? '正在保存...' : 'Saving note...', { duration: 1500 });
+
+    // Fire-and-forget: transcribe + save in background
+    (async () => {
+      try {
+        // Step 1: Whisper transcription
+        const formData = new FormData();
+        formData.append('audio', blob, 'voice-note.webm');
+        const transcribeRes = await montreeApi('/api/montree/guru/transcribe', {
+          method: 'POST',
+          body: formData,
+        });
+        if (!transcribeRes.ok) {
+          throw new Error(`Transcription API failed: ${transcribeRes.status}`);
+        }
+        const transcribeData = await transcribeRes.json();
+        const text = transcribeData.text || transcribeData.transcription || '';
+        if (!text.trim()) {
+          console.warn('[VoiceNote] Empty transcription — skipping save');
+          return;
+        }
+
+        // Step 2: Save to teacher notes
+        await montreeApi('/api/montree/teacher-notes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            classroom_id: session.classroom?.id,
+            content: text.trim(),
+            transcription: text.trim(),
+            child_id: childId,
+          }),
+        });
+        toast.success(locale === 'zh' ? '笔记已保存' : 'Note saved', { duration: 2000 });
+      } catch (err) {
+        console.error('[VoiceNote] Background save failed:', err);
+        toast.error(locale === 'zh' ? '保存失败' : 'Failed to save note');
+      }
+    })();
+  }, [recordingBlob, session?.classroom?.id, locale]);
+
+  // Close child picker on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (childPickerRef.current && !childPickerRef.current.contains(e.target as Node)) {
+        // Save without child tag
+        if (showChildPicker && recordingBlob) saveVoiceNote(null);
+      }
+    };
+    if (showChildPicker) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showChildPicker, recordingBlob, saveVoiceNote]);
 
   const handleAddTeacher = useCallback(async () => {
     if (!newTeacherName.trim() || !session?.classroom?.id || addingTeacher) return;
@@ -314,12 +415,18 @@ export default function DashboardHeader() {
             📸
           </Link>
 
-          {/* Inbox — keep visible for notification badge */}
-          <InboxButton
-            conversationId={session.teacher.id}
-            userName={session.teacher.name || 'Teacher'}
-            data-tutorial="inbox-button"
-          />
+          {/* 🎙 Quick Voice Note — daily driver */}
+          {!isHome && (
+            <button
+              onClick={isRecording ? stopRecording : startRecording}
+              className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
+                isRecording ? 'bg-red-500 ring-2 ring-red-300 animate-pulse' : 'bg-white/20 hover:bg-white/30'
+              }`}
+              title={isRecording ? (locale === 'zh' ? '停止录音' : 'Stop recording') : (locale === 'zh' ? '快速语音笔记' : 'Quick voice note')}
+            >
+              {isRecording ? '⏹' : '🎙'}
+            </button>
+          )}
 
           {/* === MORE MENU — everything else === */}
           {!isHome && (
@@ -336,6 +443,15 @@ export default function DashboardHeader() {
 
               {showMoreMenu && (
                 <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-y-auto z-[60] min-w-[200px] py-1 max-h-[calc(100vh-80px)]">
+                  {/* Inbox (moved from daily-driver bar) */}
+                  <div className="px-4 py-2" onClick={() => setShowMoreMenu(false)}>
+                    <InboxButton
+                      conversationId={session.teacher.id}
+                      userName={session.teacher.name || 'Teacher'}
+                      data-tutorial="inbox-button"
+                    />
+                  </div>
+                  <div className="border-t border-gray-100 my-1" />
                   <Link
                     href="/montree/dashboard/notes"
                     data-guide="nav-notes"
@@ -512,6 +628,41 @@ export default function DashboardHeader() {
           )}
         </div>
       </div>
+
+      {/* Recording indicator bar — shows when mic is active */}
+      {isRecording && (
+        <div className="bg-red-500/90 text-white text-center py-1.5 text-sm font-medium flex items-center justify-center gap-2">
+          <span className="inline-block w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
+          <span>{locale === 'zh' ? '录音中' : 'Recording'} {recordingSeconds}s</span>
+          <button onClick={stopRecording} className="ml-3 px-2 py-0.5 bg-white/25 rounded text-xs hover:bg-white/40">
+            {locale === 'zh' ? '完成' : 'Done'}
+          </button>
+        </div>
+      )}
+
+      {/* Child picker — appears after recording stops */}
+      {showChildPicker && recordingBlob && (
+        <div ref={childPickerRef} className="bg-white shadow-lg border-t border-gray-100 px-4 py-3">
+          <p className="text-sm text-gray-600 mb-2 font-medium">{locale === 'zh' ? '标记学生（可选）：' : 'Tag a child (optional):'}</p>
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {students.map(s => (
+              <button
+                key={s.id}
+                onClick={() => saveVoiceNote(s.id)}
+                className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium hover:bg-emerald-100 transition-colors"
+              >
+                {s.name}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => saveVoiceNote(null)}
+            className="text-xs text-gray-400 hover:text-gray-600"
+          >
+            {locale === 'zh' ? '跳过，不标记' : 'Skip — save without tag'}
+          </button>
+        </div>
+      )}
 
       {/* Student search bar — below icons, teachers only */}
       {showStudentSearch && (
