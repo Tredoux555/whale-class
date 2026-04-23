@@ -39,6 +39,13 @@ import {
   loadIdentificationContext,
 } from '@/lib/montree/photo-identification/context-loader';
 
+// Railway serverless timeout — Haiku two-pass needs 30-45s minimum
+// (Pass 1: 15s + Pass 2: 15s + Pass 2b: 15s). Without this, Railway
+// kills the route at its default ~10-15s timeout, leaving photos stuck
+// at 'pending' forever. This was the root cause of ALL photos failing
+// identification from Apr 22 onward.
+export const maxDuration = 120;
+
 // ----- Constants -----
 
 // Raised 0.75 → 0.85 on Apr 9 2026 after Sandpaper Letters was auto-tagged as
@@ -171,151 +178,179 @@ export async function POST(request: NextRequest) {
     .update({ identification_attempted_at: attemptedAtIso })
     .eq('id', mediaId);
 
-  // ----- Load curriculum + identification context (corrections + visual memory) -----
-  const curriculum = loadAllCurriculumWorks();
-  const context = await loadIdentificationContext(supabase, { classroomId: media.classroom_id });
+  // ----- Load curriculum + run identification (wrapped in try-catch) -----
+  // Without this try-catch, any unhandled throw (timeout, API error, etc.)
+  // leaves the photo stuck at 'pending' forever because the 'failed' status
+  // write at the bottom only runs on controlled failures, not crashes.
+  try {
+    const curriculum = loadAllCurriculumWorks();
+    const context = await loadIdentificationContext(supabase, { classroomId: media.classroom_id });
 
-  // ----- Step 1: Two-pass Haiku identification -----
-  const twoPassResult = await runTwoPassIdentification({
-    photoUrl,
-    childName,
-    childAge,
-    classroomId: media.classroom_id,
-    curriculum,
-    locale,
-    context,
-  });
+    // ----- Step 1: Two-pass Haiku identification -----
+    const twoPassResult = await runTwoPassIdentification({
+      photoUrl,
+      childName,
+      childAge,
+      classroomId: media.classroom_id,
+      curriculum,
+      locale,
+      context,
+    });
 
-  console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved}`);
+    console.log(`[PhotoIdentification] media=${mediaId} pass1="${twoPassResult.visualDescription.slice(0, 80)}" pass2.success=${twoPassResult.success} confidence=${twoPassResult.identification?.confidence ?? 'n/a'} hasVM=${twoPassResult.hasVisualMemoryForMatch} pass2b.fired=${twoPassResult.pass2bFired} pass2b.improved=${twoPassResult.pass2bImproved}`);
 
-  // ----- Routing decision -----
+    // ----- Routing decision -----
 
-  // Trust Haiku ONLY if:
-  //   1. Pass 2 succeeded
-  //   2. Confidence ≥ 0.75
-  //   3. The matched work has classroom visual memory
-  //   4. The matched work resolves to a row in montree_classroom_curriculum_works
-  const ident = twoPassResult.identification;
-  const haikuTrusted =
-    twoPassResult.success &&
-    ident !== null &&
-    ident.confidence >= HAIKU_TRUST_CONFIDENCE &&
-    twoPassResult.hasVisualMemoryForMatch;
+    // Trust Haiku ONLY if:
+    //   1. Pass 2 succeeded
+    //   2. Confidence ≥ 0.85
+    //   3. The matched work has classroom visual memory
+    //   4. The matched work resolves to a row in montree_classroom_curriculum_works
+    const ident = twoPassResult.identification;
+    const haikuTrusted =
+      twoPassResult.success &&
+      ident !== null &&
+      ident.confidence >= HAIKU_TRUST_CONFIDENCE &&
+      twoPassResult.hasVisualMemoryForMatch;
 
-  // Phase 1 telemetry (Apr 8) — log every Gate A decision so we can tune
-  // HAIKU_TRUST_CONFIDENCE and the visual memory filter from real data
-  // instead of guessing. Grep Railway logs for '[PhotoIdentification] GateA'.
-  console.log('[PhotoIdentification] GateA ' + JSON.stringify({
-    mediaId,
-    haikuSuccess: twoPassResult.success,
-    haikuConf: ident?.confidence ?? null,
-    haikuWork: ident?.workName ?? null,
-    hasVM: twoPassResult.hasVisualMemoryForMatch,
-    pass2bFired: twoPassResult.pass2bFired,
-    pass2bImproved: twoPassResult.pass2bImproved,
-    vmSetSize: context.visualMemoryWorkNames.size,
-    vmInjected: context.visualMemoryInjectedCount,
-    threshold: HAIKU_TRUST_CONFIDENCE,
-    outcome: haikuTrusted ? 'trusted' : 'sonnet_fallback',
-  }));
+    // Phase 1 telemetry (Apr 8) — log every Gate A decision so we can tune
+    // HAIKU_TRUST_CONFIDENCE and the visual memory filter from real data
+    // instead of guessing. Grep Railway logs for '[PhotoIdentification] GateA'.
+    console.log('[PhotoIdentification] GateA ' + JSON.stringify({
+      mediaId,
+      haikuSuccess: twoPassResult.success,
+      haikuConf: ident?.confidence ?? null,
+      haikuWork: ident?.workName ?? null,
+      hasVM: twoPassResult.hasVisualMemoryForMatch,
+      pass2bFired: twoPassResult.pass2bFired,
+      pass2bImproved: twoPassResult.pass2bImproved,
+      vmSetSize: context.visualMemoryWorkNames.size,
+      vmInjected: context.visualMemoryInjectedCount,
+      threshold: HAIKU_TRUST_CONFIDENCE,
+      outcome: haikuTrusted ? 'trusted' : 'sonnet_fallback',
+    }));
 
-  if (haikuTrusted && ident && media.classroom_id) {
-    const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
-    if (workId) {
-      const { error: updateErr } = await supabase
-        .from('montree_media')
-        .update({
+    if (haikuTrusted && ident && media.classroom_id) {
+      const workId = await resolveClassroomWorkId(supabase, media.classroom_id, ident.workName);
+      if (workId) {
+        const { error: updateErr } = await supabase
+          .from('montree_media')
+          .update({
+            work_id: workId,
+            identification_status: 'haiku_matched',
+            identification_confidence: ident.confidence,
+          })
+          .eq('id', mediaId);
+
+        if (updateErr) {
+          console.error('[PhotoIdentification] Failed to write haiku_matched:', updateErr);
+          return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+        }
+
+        // Fire-and-forget: bump visual memory usage counter for the matched work
+        supabase
+          .rpc('increment_visual_memory_used', {
+            p_classroom_id: media.classroom_id,
+            p_work_names: [ident.workName],
+          })
+          .then(({ error }) => {
+            if (error) console.error('[PhotoIdentification] increment_visual_memory_used failed (non-fatal):', error);
+          });
+
+        return NextResponse.json({
+          success: true,
+          outcome: 'haiku_matched',
+          media_id: mediaId,
           work_id: workId,
-          identification_status: 'haiku_matched',
-          identification_confidence: ident.confidence,
-        })
+          work_name: ident.workName,
+          confidence: ident.confidence,
+          visual_description: twoPassResult.visualDescription,
+        });
+      }
+      // If we couldn't resolve the classroom work row, fall through to Haiku draft
+      console.log(`[PhotoIdentification] Haiku trusted but work "${ident.workName}" not in classroom curriculum — falling through to haiku_drafted`);
+    }
+
+    // ----- Step 2: Store Haiku draft for teacher review -----
+    // Gate A failed — store the Haiku Pass 2 result as a draft for teacher
+    // to optionally enrich via "Ask Sonnet" button in Photo Audit.
+    // This replaces automatic Sonnet generation, making it teacher-triggered.
+
+    if (twoPassResult.success && ident) {
+      // Store the Haiku Pass 2 result as haiku_drafted.
+      // Also persist the Pass 1 visual description in sonnet_draft JSONB
+      // (as a partial draft) so the teacher-triggered Sonnet endpoint can
+      // read it back without re-running Pass 1.
+      const haikuDraftData: Record<string, unknown> = {
+        identification_status: 'haiku_drafted',
+        identification_confidence: ident.confidence,
+        sonnet_draft: {
+          _source: 'haiku_pass2',
+          visual_description: twoPassResult.visualDescription,
+          proposed_name: ident.workName,
+          haiku_work_name: ident.haikuWorkName,
+          confidence: ident.confidence,
+          area: ident.area,
+        },
+      };
+      const { error: haikuDraftErr } = await supabase
+        .from('montree_media')
+        .update(haikuDraftData)
         .eq('id', mediaId);
 
-      if (updateErr) {
-        console.error('[PhotoIdentification] Failed to write haiku_matched:', updateErr);
+      if (haikuDraftErr) {
+        console.error('[PhotoIdentification] Failed to write haiku_drafted:', haikuDraftErr);
         return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
       }
 
-      // Fire-and-forget: bump visual memory usage counter for the matched work
-      supabase
-        .rpc('increment_visual_memory_used', {
-          p_classroom_id: media.classroom_id,
-          p_work_names: [ident.workName],
-        })
-        .then(({ error }) => {
-          if (error) console.error('[PhotoIdentification] increment_visual_memory_used failed (non-fatal):', error);
-        });
-
       return NextResponse.json({
         success: true,
-        outcome: 'haiku_matched',
+        outcome: 'haiku_drafted',
         media_id: mediaId,
-        work_id: workId,
         work_name: ident.workName,
         confidence: ident.confidence,
         visual_description: twoPassResult.visualDescription,
       });
     }
-    // If we couldn't resolve the classroom work row, fall through to Sonnet draft
-    console.log(`[PhotoIdentification] Haiku trusted but work "${ident.workName}" not in classroom curriculum — falling through to Sonnet`);
-  }
 
-  // ----- Step 2: Store Haiku draft for teacher review -----
-  // Gate A failed — store the Haiku Pass 2 result as a draft for teacher
-  // to optionally enrich via "Ask Sonnet" button in Photo Audit.
-  // This replaces automatic Sonnet generation, making it teacher-triggered.
-
-  if (twoPassResult.success && ident) {
-    // Store the Haiku Pass 2 result as haiku_drafted.
-    // Also persist the Pass 1 visual description in sonnet_draft JSONB
-    // (as a partial draft) so the teacher-triggered Sonnet endpoint can
-    // read it back without re-running Pass 1.
-    const haikuDraftData: Record<string, unknown> = {
-      identification_status: 'haiku_drafted',
-      identification_confidence: ident.confidence,
-      sonnet_draft: {
-        _source: 'haiku_pass2',
-        visual_description: twoPassResult.visualDescription,
-        proposed_name: ident.workName,
-        haiku_work_name: ident.haikuWorkName,
-        confidence: ident.confidence,
-        area: ident.area,
-      },
-    };
-    const { error: haikuDraftErr } = await supabase
+    // If Pass 2 failed entirely, mark as failed
+    const { error: failedWriteErr } = await supabase
       .from('montree_media')
-      .update(haikuDraftData)
+      .update({ identification_status: 'failed' })
       .eq('id', mediaId);
 
-    if (haikuDraftErr) {
-      console.error('[PhotoIdentification] Failed to write haiku_drafted:', haikuDraftErr);
-      return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+    if (failedWriteErr) {
+      console.error('[PhotoIdentification] Failed to write failed status:', failedWriteErr);
     }
 
     return NextResponse.json({
-      success: true,
-      outcome: 'haiku_drafted',
+      success: false,
+      outcome: 'identification_failed',
       media_id: mediaId,
-      work_name: ident.workName,
-      confidence: ident.confidence,
-      visual_description: twoPassResult.visualDescription,
-    });
+      errors: ['Pass 2 identification failed'],
+    }, { status: 500 });
+
+  } catch (pipelineError) {
+    // Safety net: if ANYTHING throws (API timeout, network error, malformed
+    // response, etc.), write 'failed' status so the photo doesn't stay stuck
+    // at 'pending' forever. The sweep route will NOT retry 'failed' photos —
+    // they surface in Photo Audit for manual handling.
+    console.error(`[PhotoIdentification] Pipeline crashed for media=${mediaId}:`, pipelineError);
+
+    try {
+      await supabase
+        .from('montree_media')
+        .update({ identification_status: 'failed' })
+        .eq('id', mediaId);
+    } catch (writeErr) {
+      console.error('[PhotoIdentification] Failed to write crash-failed status:', writeErr);
+    }
+
+    return NextResponse.json({
+      success: false,
+      outcome: 'pipeline_crashed',
+      media_id: mediaId,
+      errors: [pipelineError instanceof Error ? pipelineError.message : 'Unknown pipeline error'],
+    }, { status: 500 });
   }
-
-  // If Pass 2 failed entirely, mark as failed
-  const { error: failedWriteErr } = await supabase
-    .from('montree_media')
-    .update({ identification_status: 'failed' })
-    .eq('id', mediaId);
-
-  if (failedWriteErr) {
-    console.error('[PhotoIdentification] Failed to write failed status:', failedWriteErr);
-  }
-
-  return NextResponse.json({
-    success: false,
-    outcome: 'identification_failed',
-    media_id: mediaId,
-    errors: ['Pass 2 identification failed'],
-  }, { status: 500 });
 }
