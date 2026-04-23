@@ -529,24 +529,17 @@ export async function GET(request: NextRequest) {
         const childProgress = childProgressMap.get(child.id);
         const childPhotoCounts = photoCountByChildWork.get(child.id);
 
-        // Section 1: Works done this week with status + session count
-        for (const area of AREAS) {
-          const works = childWorks.get(area);
-          if (works && works.length > 0) {
-            const workDetails = works.map(w => {
-              const status = childProgress?.get(w.toLowerCase()) || 'presented';
-              const statusLabel = STATUS_LABELS[status] || status;
-              const sessions = childPhotoCounts?.get(w) || 0;
-              const sessionStr = sessions > 0 ? `, ${sessions} session${sessions > 1 ? 's' : ''}` : '';
-              return `${w} (${statusLabel}${sessionStr})`;
-            });
-            enLines.push(`${AREA_LABELS[area].en}: ${workDetails.join(', ')}`);
-          }
-        }
-        // Include unmatched works under "Other"
-        const otherWorks = childWorks.get('other');
-        if (otherWorks && otherWorks.length > 0) {
-          enLines.push(`Other: ${otherWorks.join(', ')}`);
+        // Section 1: Language works done this week with status + session count
+        const langWorks = childWorks.get('language');
+        if (langWorks && langWorks.length > 0) {
+          const workDetails = langWorks.map(w => {
+            const status = childProgress?.get(w.toLowerCase()) || 'presented';
+            const statusLabel = STATUS_LABELS[status] || status;
+            const sessions = childPhotoCounts?.get(w) || 0;
+            const sessionStr = sessions > 0 ? `, ${sessions} session${sessions > 1 ? 's' : ''}` : '';
+            return `${w} (${statusLabel}${sessionStr})`;
+          });
+          enLines.push(`Language: ${workDetails.join(', ')}`);
         }
 
         // Section 2: Short summary from teacher report key_insight
