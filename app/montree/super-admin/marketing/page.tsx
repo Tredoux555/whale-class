@@ -17,6 +17,7 @@ const SECTIONS = [
   {
     title: '📝 CONTENT & CREATIVE',
     tools: [
+      { name: 'AI Content Studio', desc: 'Master guide — AI image/music generation, material types, prompt library, 12-week rollout', href: '/tools/ai-content-studio.html', icon: '🤖', featured: true },
       { name: 'Platform Warroom', desc: 'TikTok scripts, IG carousels, FB groups, bios, hashtags', href: '/montree/super-admin/marketing/warroom', icon: '📱' },
       { name: 'Content Factory', desc: 'Social cards, WeChat article, captions', href: '/montree/super-admin/marketing/content', icon: '🏭' },
       { name: 'Creative Studio', desc: 'Voiceover scripts, Canva specs', href: '/montree/super-admin/marketing/studio', icon: '🎨' },

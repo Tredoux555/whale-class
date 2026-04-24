@@ -428,9 +428,10 @@ async function uploadEntry(entry: PhotoQueueEntry): Promise<void> {
     // to montree_media (identification_status, work_id or sonnet_draft). Photo Audit
     // surfaces the outcomes. `keepalive: true` so the request survives page navigation.
     if (result.media?.id && !entry.work_id) {
-      const locale = typeof localStorage !== 'undefined'
-        ? (localStorage.getItem('montree_lang') === 'zh' ? 'zh' : 'en')
+      const stored = typeof localStorage !== 'undefined'
+        ? localStorage.getItem('montree_lang') || 'en'
         : 'en';
+      const locale = ['en', 'zh', 'es'].includes(stored) ? stored : 'en';
       try {
         fetch('/api/montree/photo-identification/process', {
           method: 'POST',

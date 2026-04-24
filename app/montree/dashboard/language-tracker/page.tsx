@@ -80,6 +80,10 @@ export default function LanguageTrackerPage() {
   const [currentTab, setCurrentTab] = useState<'overview' | 'bingo' | 'paperwork'>('overview');
 
   const isZh = locale === 'zh';
+  const L = (en: string, zh: string) => {
+    const map: Record<string, string> = { en, zh };
+    return map[locale || 'en'] || en;
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -150,12 +154,12 @@ export default function LanguageTrackerPage() {
           <div className="flex items-center gap-3 mb-1">
             <button onClick={() => router.back()} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
             <h1 className="text-xl font-bold text-gray-900">
-              🇬🇧 {isZh ? '英语角' : 'English Corner'}
+              🇬🇧 {L('English Corner', '英语角')}
             </h1>
           </div>
           {(currentTab === 'overview' && data) && (
             <p className="text-sm text-gray-500 ml-8">
-              {isZh ? '本周' : 'This week'} ({weekLabel}) · {data.visitedCount}/{data.totalChildren} {isZh ? '已到访' : 'visited'}
+              {L('This week', '本周')} ({weekLabel}) · {data.visitedCount}/{data.totalChildren} {L('visited', '已到访')}
             </p>
           )}
         </div>
@@ -170,7 +174,7 @@ export default function LanguageTrackerPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {isZh ? '概览' : 'Overview'}
+            {L('Overview', '概览')}
           </button>
           <button
             onClick={() => handleTabChange('bingo')}
@@ -180,7 +184,7 @@ export default function LanguageTrackerPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {isZh ? 'Bingo 拼音' : 'Bingo Phonics'}
+            {L('Bingo Phonics', 'Bingo 拼音')}
           </button>
           <button
             onClick={() => handleTabChange('paperwork')}
@@ -190,7 +194,7 @@ export default function LanguageTrackerPage() {
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {isZh ? '作业' : 'Paperwork'}
+            {L('Paperwork', '作业')}
           </button>
         </div>
 
@@ -207,7 +211,7 @@ export default function LanguageTrackerPage() {
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
                 <p className="text-red-600 text-sm">{error}</p>
                 <button onClick={fetchData} className="mt-2 text-sm text-red-500 underline">
-                  {isZh ? '重试' : 'Retry'}
+                  {L('Retry', '重试')}
                 </button>
               </div>
             )}
@@ -229,7 +233,7 @@ export default function LanguageTrackerPage() {
               <div className="mb-8">
                 <h2 className="text-sm font-semibold text-red-600 uppercase tracking-wide mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-red-400" />
-                  {isZh ? `还未到访 (${data.notYet.length})` : `Not Yet (${data.notYet.length})`}
+                  {L(`Not Yet (${data.notYet.length})`, `还未到访 (${data.notYet.length})`)}
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {data.notYet.map(child => (
@@ -251,7 +255,7 @@ export default function LanguageTrackerPage() {
               <div>
                 <h2 className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-3 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  {isZh ? `已到访 (${data.visited.length})` : `Visited (${data.visited.length})`}
+                  {L(`Visited (${data.visited.length})`, `已到访 (${data.visited.length})`)}
                 </h2>
                 <div className="space-y-2">
                   {data.visited.map(child => (
@@ -265,7 +269,7 @@ export default function LanguageTrackerPage() {
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-semibold text-gray-900">{child.name}</span>
                           <span className="ml-2 text-xs text-emerald-600">
-                            {child.works.length} {isZh ? '项作业' : child.works.length === 1 ? 'work' : 'works'}
+                            {child.works.length} {L(child.works.length === 1 ? 'work' : 'works', '项作业')}
                           </span>
                         </div>
                         <span className="text-emerald-500 text-lg">✓</span>
@@ -292,7 +296,7 @@ export default function LanguageTrackerPage() {
               <div className="text-center py-8">
                 <p className="text-4xl mb-2">🎉</p>
                 <p className="text-lg font-semibold text-emerald-600">
-                  {isZh ? '所有学生本周都来过了！' : 'Everyone visited this week!'}
+                  {L('Everyone visited this week!', '所有学生本周都来过了！')}
                 </p>
               </div>
             )}
@@ -301,7 +305,7 @@ export default function LanguageTrackerPage() {
             {data.visited.length === 0 && data.notYet.length === 0 && (
               <div className="text-center py-12 text-gray-400">
                 <p className="text-3xl mb-2">📚</p>
-                <p>{isZh ? '没有学生数据' : 'No students found'}</p>
+                <p>{L('No students found', '没有学生数据')}</p>
               </div>
             )}
 
@@ -311,7 +315,7 @@ export default function LanguageTrackerPage() {
                 onClick={fetchData}
                 className="text-sm text-gray-400 hover:text-emerald-500 transition-colors"
               >
-                ↻ {isZh ? '刷新' : 'Refresh'}
+                ↻ {L('Refresh', '刷新')}
               </button>
             </div>
             </>
@@ -344,7 +348,7 @@ export default function LanguageTrackerPage() {
                   <div className="mb-8">
                     <h2 className="text-sm font-semibold text-red-600 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-red-400" />
-                      {isZh ? `还未到访 (${bingoData.notYet.length})` : `Not Yet (${bingoData.notYet.length})`}
+                      {L(`Not Yet (${bingoData.notYet.length})`, `还未到访 (${bingoData.notYet.length})`)}
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {bingoData.notYet.map(child => (
@@ -366,7 +370,7 @@ export default function LanguageTrackerPage() {
                   <div>
                     <h2 className="text-sm font-semibold text-emerald-600 uppercase tracking-wide mb-3 flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      {isZh ? `已到访 (${bingoData.visited.length})` : `Visited (${bingoData.visited.length})`}
+                      {L(`Visited (${bingoData.visited.length})`, `已到访 (${bingoData.visited.length})`)}
                     </h2>
                     <div className="space-y-2">
                       {bingoData.visited.map(child => (
@@ -380,7 +384,7 @@ export default function LanguageTrackerPage() {
                             <div className="flex-1 min-w-0">
                               <span className="text-sm font-semibold text-gray-900">{child.name}</span>
                               <span className="ml-2 text-xs text-emerald-600">
-                                {child.works.length} {isZh ? '项作业' : child.works.length === 1 ? 'session' : 'sessions'}
+                                {child.works.length} {L(child.works.length === 1 ? 'session' : 'sessions', '项作业')}
                               </span>
                             </div>
                             <span className="text-emerald-500 text-lg">✓</span>
@@ -406,7 +410,7 @@ export default function LanguageTrackerPage() {
                   <div className="text-center py-8">
                     <p className="text-4xl mb-2">🎉</p>
                     <p className="text-lg font-semibold text-emerald-600">
-                      {isZh ? '所有学生本周都来过了！' : 'Everyone visited this week!'}
+                      {L('Everyone visited this week!', '所有学生本周都来过了！')}
                     </p>
                   </div>
                 )}
@@ -415,7 +419,7 @@ export default function LanguageTrackerPage() {
                 {bingoData.visited.length === 0 && bingoData.notYet.length === 0 && (
                   <div className="text-center py-12 text-gray-400">
                     <p className="text-3xl mb-2">📚</p>
-                    <p>{isZh ? '没有学生数据' : 'No students found'}</p>
+                    <p>{L('No students found', '没有学生数据')}</p>
                   </div>
                 )}
 
@@ -424,7 +428,7 @@ export default function LanguageTrackerPage() {
                     onClick={fetchBingoData}
                     className="text-sm text-gray-400 hover:text-emerald-500 transition-colors"
                   >
-                    ↻ {isZh ? '刷新' : 'Refresh'}
+                    ↻ {L('Refresh', '刷新')}
                   </button>
                 </div>
               </>

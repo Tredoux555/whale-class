@@ -9,6 +9,7 @@ import { getSupabase, getPublicUrl } from '@/lib/supabase-client';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { anthropic, HAIKU_MODEL, AI_MODEL } from '@/lib/ai/anthropic';
 import { getGlossaryPromptSection } from '@/lib/montree/classifier/montessori-glossary-zh';
+import { autoTranslateWork } from '@/lib/montree/auto-translate';
 import { randomUUID } from 'crypto';
 
 // Escape special SQL wildcard characters for safe ILIKE usage
@@ -339,6 +340,16 @@ export async function POST(request: NextRequest) {
         }
       }).catch((err) => {
         console.error('[AddCustomWork] Chinese translation failed (non-fatal):', err);
+      });
+
+      // 3c: Spanish translation — fire-and-forget via autoTranslateWork (Argentine voseo)
+      autoTranslateWork({
+        classroomId,
+        workName: trimmedName,
+        parentDescription: description.trim(),
+        whyItMatters: why_it_matters || '',
+      }, 'es').catch(err => {
+        console.error('[AddCustomWork] Spanish translation failed (non-fatal):', err instanceof Error ? err.message : err);
       });
     }
 

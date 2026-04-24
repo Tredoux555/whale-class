@@ -246,9 +246,14 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
-    const systemWithLocale = locale === 'zh'
-      ? system + '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE plan in Simplified Chinese (中文). Use warm, natural Chinese. All headers, instructions, and content must be in Chinese.'
-      : system;
+    const systemWithLocale = (() => {
+      const L: Record<string, string> = {
+        zh: '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE plan in Simplified Chinese (中文). Use warm, natural Chinese. All headers, instructions, and content must be in Chinese.',
+        es: '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE plan in Spanish (Español). Use warm, natural Spanish. All headers, instructions, and content must be in Spanish.',
+      };
+      const suffix = L[locale || 'en'] || '';
+      return suffix ? system + suffix : system;
+    })();
 
     const message = await anthropic.messages.create({
       model: HAIKU_MODEL,
