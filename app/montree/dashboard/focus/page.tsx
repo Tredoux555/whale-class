@@ -201,26 +201,24 @@ export default function FocusPage() {
   };
 
   const LABELS = {
-    title: locale === 'zh' ? '关注列表' : 'Focus List',
-    subtitle: locale === 'zh'
-      ? '最需要关注的孩子排在最前'
-      : 'Children who need attention most come first',
-    tabMaster: locale === 'zh' ? '总览' : 'Master',
-    tabPaperwork: locale === 'zh' ? '作业' : 'Paperwork',
-    tabBingo: locale === 'zh' ? '英语角' : 'Bingo',
-    daysSincePhoto: locale === 'zh' ? '天未拍照' : 'd since photo',
-    daysSinceProgress: locale === 'zh' ? '天未更新' : 'd since progress',
-    paperworkBehind: locale === 'zh' ? '周落后' : 'wk behind',
-    noLanguage: locale === 'zh' ? '本周无英语' : 'no language this week',
-    addToFocus: locale === 'zh' ? '加入今日' : 'Add to today',
-    onFocus: locale === 'zh' ? '已加入' : 'On list',
-    confirmed: locale === 'zh' ? '✓ 已确认' : '✓ Confirmed',
-    todaysFocus: locale === 'zh' ? '今日关注' : "Today's Focus",
-    noFocus: locale === 'zh' ? '今天还没有选择孩子' : 'No children selected yet today',
-    pickTop10: locale === 'zh' ? '选前10位' : 'Pick top 10',
-    loading: locale === 'zh' ? '加载中...' : 'Loading...',
-    bingoTitle: locale === 'zh' ? '本周还未做英语的孩子' : 'Children who still need Language this week',
-    allDone: locale === 'zh' ? '🎉 全班本周都做过英语了' : '🎉 Everyone has done Language this week',
+    title: t('focus.title'),
+    subtitle: t('focus.subtitle'),
+    tabMaster: t('focus.tabMaster'),
+    tabPaperwork: t('focus.tabPaperwork'),
+    tabBingo: t('focus.tabBingo'),
+    daysSincePhoto: t('focus.daysSincePhoto'),
+    daysSinceProgress: t('focus.daysSinceProgress'),
+    paperworkBehind: t('focus.paperworkBehind'),
+    noLanguage: t('focus.noLanguage'),
+    addToFocus: t('focus.addToFocus'),
+    onFocus: t('focus.onFocus'),
+    confirmed: t('focus.confirmed'),
+    todaysFocus: t('focus.todaysFocus'),
+    noFocus: t('focus.noFocus'),
+    pickTop10: t('focus.pickTop10'),
+    loading: t('common.loading'),
+    bingoTitle: t('focus.bingoTitle'),
+    allDone: t('focus.allDone'),
   };
 
   return (
@@ -438,7 +436,7 @@ export default function FocusPage() {
                   href="/montree/dashboard/language-tracker"
                   className="block mt-4 text-center text-sm text-indigo-600 hover:text-indigo-800"
                 >
-                  {locale === 'zh' ? '查看完整英语角 →' : 'Open full English Corner →'}
+                  {t('focus.openEnglishCorner')}
                 </Link>
               </div>
             )}

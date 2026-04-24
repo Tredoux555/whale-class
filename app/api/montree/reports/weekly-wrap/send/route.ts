@@ -15,6 +15,28 @@ import { getLocaleFromRequest, getIntlLocale } from '@/lib/montree/i18n/server';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
 
+// TYPE A: Inline email label strings (locale-keyed)
+const EMAIL_LABELS: Record<Locale, Record<string, string>> = {
+  en: {
+    title: "'s Weekly Update",
+    titleNoNarrative: "'s Weekly Update",
+    photosCount: 'photos to explore',
+    viewReport: 'View Full Report',
+  },
+  zh: {
+    title: '的每周学习报告',
+    titleNoNarrative: '的学习报告',
+    photosCount: '张照片等您查看',
+    viewReport: '查看完整报告',
+  },
+  es: {
+    title: "'s Weekly Update",
+    titleNoNarrative: "'s Weekly Update",
+    photosCount: 'photos to explore',
+    viewReport: 'View Full Report',
+  },
+};
+
 export const maxDuration = 120; // sending emails to 19 parents
 
 export async function POST(request: NextRequest) {
@@ -163,18 +185,19 @@ export async function POST(request: NextRequest) {
           const endFmt = weekEndStr ? new Date(weekEndStr).toLocaleDateString(getIntlLocale(locale), { month: 'short', day: 'numeric' }) : '';
           const weekDisplay = startFmt && endFmt ? `${startFmt} – ${endFmt}` : week_start;
 
+          const labels = EMAIL_LABELS[locale] || EMAIL_LABELS.en;
           const html = narrative
             ? `
             <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #059669;">🌳 ${firstName}${locale === 'zh' ? '的每周学习报告' : "'s Weekly Update"}</h2>
+              <h2 style="color: #059669;">🌳 ${firstName}${labels.title}</h2>
               <p style="color: #666; font-size: 13px;">${classroomName} · ${weekDisplay}</p>
               <div style="background: #f0fdf4; border-left: 4px solid #059669; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0;">
                 <p style="color: #333; line-height: 1.7; font-size: 15px; margin: 0;">${narrative}</p>
               </div>
-              ${photosCount > 0 ? `<p style="color: #666; font-size: 14px;">📸 ${photosCount} ${locale === 'zh' ? '张照片等您查看' : 'photos to explore'}</p>` : ''}
+              ${photosCount > 0 ? `<p style="color: #666; font-size: 14px;">📸 ${photosCount} ${labels.photosCount}</p>` : ''}
               <div style="text-align: center; margin: 24px 0;">
                 <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                  ${locale === 'zh' ? '查看完整报告' : 'View Full Report'} →
+                  ${labels.viewReport} →
                 </a>
               </div>
               <p style="color: #999; font-size: 12px; text-align: center;">Montree · ${classroomName}</p>
@@ -182,11 +205,11 @@ export async function POST(request: NextRequest) {
             `
             : `
             <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #059669;">🌳 ${locale === 'zh' ? `${firstName}的学习报告` : `${firstName}'s Weekly Update`}</h2>
+              <h2 style="color: #059669;">🌳 ${firstName}${labels.titleNoNarrative}</h2>
               <p style="color: #666;">${classroomName} · ${weekDisplay}</p>
               <div style="text-align: center; margin: 24px 0;">
                 <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-                  ${locale === 'zh' ? '查看完整报告' : 'View Full Report'} →
+                  ${labels.viewReport} →
                 </a>
               </div>
               <p style="color: #999; font-size: 12px; text-align: center;">Montree · ${classroomName}</p>
@@ -198,7 +221,7 @@ export async function POST(request: NextRequest) {
               await resend.emails.send({
                 from: 'Montree <noreply@montree.xyz>',
                 to: email,
-                subject: `🌳 ${locale === 'zh' ? `${firstName}的每周学习报告` : `${firstName}'s Weekly Update`}`,
+                subject: `🌳 ${firstName}${labels.title}`,
                 html,
               });
               emailsSent++;

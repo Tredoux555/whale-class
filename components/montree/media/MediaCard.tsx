@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import type { MontreeMedia } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { getThumbnailUrl, getThumbnailSrcSet } from '@/lib/montree/media/proxy-url';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface MediaCardProps {
   media: MontreeMedia;
@@ -63,7 +64,7 @@ export default function MediaCard({
     if (diffHours < 24) return t('media.hoursAgo').replace('{h}', diffHours.toString());
     if (diffDays < 7) return t('media.daysAgo').replace('{d}', diffDays.toString());
 
-    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return date.toLocaleDateString(getIntlLocale(locale), {
       month: 'short',
       day: 'numeric'
     });

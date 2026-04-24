@@ -38,7 +38,7 @@ interface PendingReviewPanelProps {
 }
 
 export default function PendingReviewPanel({ childId, onProcessed, compact = false }: PendingReviewPanelProps) {
-  const { locale } = useI18n();
+  const { t } = useI18n();
   const [photos, setPhotos] = useState<PendingPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -46,23 +46,6 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
   const [error, setError] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
-
-  const t = useMemo(() => ({
-    title: locale === 'zh' ? '待处理照片' : 'Pending Review',
-    subtitle: locale === 'zh' ? '在 AI 处理之前先剔除模糊或重复的照片' : 'Cull blurry or duplicate shots before AI processing runs',
-    none: locale === 'zh' ? '没有待处理的照片' : 'No photos waiting for review',
-    selectAll: locale === 'zh' ? '全选' : 'Select all',
-    deselect: locale === 'zh' ? '取消全选' : 'Deselect',
-    processSel: locale === 'zh' ? '处理选中' : 'Process selected',
-    deleteSel: locale === 'zh' ? '删除选中' : 'Delete selected',
-    confirmDel: locale === 'zh' ? '永久删除选中的照片?' : 'Permanently delete the selected photos?',
-    processing: locale === 'zh' ? '处理中…' : 'Processing…',
-    deleting: locale === 'zh' ? '删除中…' : 'Deleting…',
-    waiting: (n: number) => locale === 'zh' ? `${n} 张照片待处理` : `${n} photo${n === 1 ? '' : 's'} waiting`,
-    show: locale === 'zh' ? '展开' : 'Show',
-    hide: locale === 'zh' ? '收起' : 'Hide',
-    failed: locale === 'zh' ? '失败' : 'failed',
-  }), [locale]);
 
   const loadPhotos = useCallback(async () => {
     setLoading(true);
@@ -122,7 +105,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
 
   const runBatch = async (mode: 'process' | 'delete') => {
     if (selected.size === 0) return;
-    if (mode === 'delete' && !confirm(t.confirmDel)) return;
+    if (mode === 'delete' && !confirm(t('pendingReview.confirmDelete'))) return;
     const ids = Array.from(selected);
     setBusy(mode);
     setError(null);
@@ -131,7 +114,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
       const method = mode === 'process' ? 'POST' : 'DELETE';
       const res = await montreeApi('/api/montree/photo-identification/batch', {
         method,
-        body: JSON.stringify({ media_ids: ids, locale }),
+        body: JSON.stringify({ media_ids: ids }),
         timeout: 300_000,
       });
       const data: any = await res.json().catch(() => ({}));
@@ -139,7 +122,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
       const failed = mode === 'process' ? (data?.failed || 0) : 0;
       const succeeded = mode === 'process' ? (data?.succeeded || 0) : (data?.deleted || 0);
       if (failed > 0) {
-        setError(`${failed} ${t.failed}`);
+        setError(`${failed} ${t('pendingReview.failed')}`);
       }
       setSelected(new Set());
       await loadPhotos();
@@ -156,7 +139,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
   if (loading && photos.length === 0) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-        {locale === 'zh' ? '加载中…' : 'Loading…'}
+        {t('pendingReview.loading')}
       </div>
     );
   }
@@ -166,7 +149,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
     if (compact) return null;
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500">
-        {t.none}
+        {t('pendingReview.emptyState')}
       </div>
     );
   }
@@ -180,10 +163,10 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
           <span className="text-2xl flex-shrink-0">🧐</span>
           <div className="min-w-0">
             <div className={`font-semibold text-amber-900 ${compact ? 'text-sm' : 'text-base'}`}>
-              {t.title} <span className="text-amber-700 font-normal">· {t.waiting(photos.length)}</span>
+              {t('pendingReview.title')} <span className="text-amber-700 font-normal">· {t('pendingReview.photosWaiting', { count: photos.length })}</span>
             </div>
             {!compact && (
-              <div className="text-xs text-amber-700 mt-0.5">{t.subtitle}</div>
+              <div className="text-xs text-amber-700 mt-0.5">{t('pendingReview.subtitle')}</div>
             )}
           </div>
         </div>
@@ -191,7 +174,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
           onClick={() => setCollapsed(c => !c)}
           className="text-xs px-2 py-1 rounded text-amber-800 hover:bg-amber-100 flex-shrink-0"
         >
-          {collapsed ? t.show : t.hide}
+          {collapsed ? t('pendingReview.show') : t('pendingReview.hide')}
         </button>
       </div>
 
@@ -202,7 +185,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
               onClick={toggleAll}
               className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-white border border-amber-300 text-amber-900 hover:bg-amber-50"
             >
-              {allSelected ? t.deselect : t.selectAll} ({selected.size}/{photos.length})
+              {allSelected ? t('pendingReview.deselect') : t('pendingReview.selectAll')} ({selected.size}/{photos.length})
             </button>
             <div className="flex gap-2">
               <button
@@ -210,14 +193,14 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
                 disabled={selected.size === 0 || busy !== null}
                 className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {busy === 'delete' ? t.deleting : `🗑 ${t.deleteSel}`}
+                {busy === 'delete' ? t('pendingReview.deleting') : `🗑 ${t('pendingReview.deleteSelected')}`}
               </button>
               <button
                 onClick={() => runBatch('process')}
                 disabled={selected.size === 0 || busy !== null}
                 className="text-xs sm:text-sm px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
               >
-                {busy === 'process' ? t.processing : `✨ ${t.processSel}`}
+                {busy === 'process' ? t('pendingReview.processing') : `✨ ${t('pendingReview.processSelected')}`}
               </button>
             </div>
           </div>
@@ -230,7 +213,7 @@ export default function PendingReviewPanel({ childId, onProcessed, compact = fal
 
           {progress && busy === 'process' && (
             <div className="px-3 py-2 text-xs text-amber-800 bg-amber-100 border-b border-amber-200">
-              {t.processing} {progress.done}/{progress.total}
+              {t('pendingReview.processing')} {progress.done}/{progress.total}
             </div>
           )}
 

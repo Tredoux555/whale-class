@@ -181,7 +181,7 @@ export default function DashboardHeader() {
       setRecordingSeconds(0);
       timerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000);
     } catch {
-      toast.error(locale === 'zh' ? '无法访问麦克风' : 'Microphone access denied');
+      toast.error(t('dashboard.micAccessError'));
     }
   }, [locale]);
 
@@ -198,7 +198,7 @@ export default function DashboardHeader() {
     setRecordingSeconds(0);
     if (!blob || !session?.classroom?.id) return;
 
-    toast.success(locale === 'zh' ? '正在保存...' : 'Saving note...', { duration: 1500 });
+    toast.success(t('dashboard.savingMessage'), { duration: 1500 });
 
     // Fire-and-forget: transcribe + save in background
     (async () => {
@@ -231,10 +231,10 @@ export default function DashboardHeader() {
             child_id: childId,
           }),
         });
-        toast.success(locale === 'zh' ? '笔记已保存' : 'Note saved', { duration: 2000 });
+        toast.success(t('dashboard.noteSaved'), { duration: 2000 });
       } catch (err) {
         console.error('[VoiceNote] Background save failed:', err);
-        toast.error(locale === 'zh' ? '保存失败' : 'Failed to save note');
+        toast.error(t('dashboard.saveFailed'));
       }
     })();
   }, [recordingBlob, session?.classroom?.id, locale]);
@@ -422,7 +422,7 @@ export default function DashboardHeader() {
               className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-colors font-medium flex-shrink-0 ${
                 isRecording ? 'bg-red-500 ring-2 ring-red-300 animate-pulse' : 'bg-white/20 hover:bg-white/30'
               }`}
-              title={isRecording ? (locale === 'zh' ? '停止录音' : 'Stop recording') : (locale === 'zh' ? '快速语音笔记' : 'Quick voice note')}
+              title={isRecording ? t('dashboard.stopRecording') : t('dashboard.quickVoiceNote')}
             >
               {isRecording ? '⏹' : '🎙'}
             </button>
@@ -471,7 +471,7 @@ export default function DashboardHeader() {
                     }`}
                   >
                     <span className="text-base">🎯</span>
-                    <span>{locale === 'zh' ? '关注列表' : 'Focus List'}</span>
+                    <span>{t('dashboard.focusList')}</span>
                   </Link>
                   <Link
                     href="/montree/dashboard/photo-audit"
@@ -527,7 +527,7 @@ export default function DashboardHeader() {
                       }`}
                     >
                       <span className="text-base">📄</span>
-                      <span>{locale === 'zh' ? '周计划与总结' : 'Weekly Plan & Summary'}</span>
+                      <span>{t('dashboard.weeklyPlan')}</span>
                     </Link>
                   )}
                   <Link
@@ -572,7 +572,7 @@ export default function DashboardHeader() {
                       }`}
                     >
                       <span className="text-base">🇬🇧</span>
-                      <span>{locale === 'zh' ? '英语角' : 'English Corner'}</span>
+                      <span>{t('dashboard.englishCorner')}</span>
                     </Link>
                   )}
 
@@ -584,7 +584,7 @@ export default function DashboardHeader() {
                     }`}
                   >
                     <span className="text-base">📄</span>
-                    <span>{locale === 'zh' ? '语言学期报告' : 'Language Semester Report'}</span>
+                    <span>{t('dashboard.languageSemester')}</span>
                   </Link>
 
                   {isEnabled('paperwork_tracker') && (
@@ -594,7 +594,7 @@ export default function DashboardHeader() {
                       className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors text-gray-700 hover:bg-gray-50`}
                     >
                       <span className="text-base">📋</span>
-                      <span>{locale === 'zh' ? '作业追踪器' : 'Paperwork Tracker'}</span>
+                      <span>{t('dashboard.paperworkTracker')}</span>
                     </Link>
                   )}
 
@@ -633,9 +633,9 @@ export default function DashboardHeader() {
       {isRecording && (
         <div className="bg-red-500/90 text-white text-center py-1.5 text-sm font-medium flex items-center justify-center gap-2">
           <span className="inline-block w-2.5 h-2.5 bg-white rounded-full animate-pulse" />
-          <span>{locale === 'zh' ? '录音中' : 'Recording'} {recordingSeconds}s</span>
+          <span>{t('dashboard.recording')} {recordingSeconds}s</span>
           <button onClick={stopRecording} className="ml-3 px-2 py-0.5 bg-white/25 rounded text-xs hover:bg-white/40">
-            {locale === 'zh' ? '完成' : 'Done'}
+            {t('dashboard.done')}
           </button>
         </div>
       )}
@@ -643,7 +643,7 @@ export default function DashboardHeader() {
       {/* Child picker — appears after recording stops */}
       {showChildPicker && recordingBlob && (
         <div ref={childPickerRef} className="bg-white shadow-lg border-t border-gray-100 px-4 py-3">
-          <p className="text-sm text-gray-600 mb-2 font-medium">{locale === 'zh' ? '标记学生（可选）：' : 'Tag a child (optional):'}</p>
+          <p className="text-sm text-gray-600 mb-2 font-medium">{t('dashboard.tagChild')}</p>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {students.map(s => (
               <button
@@ -659,7 +659,7 @@ export default function DashboardHeader() {
             onClick={() => saveVoiceNote(null)}
             className="text-xs text-gray-400 hover:text-gray-600"
           >
-            {locale === 'zh' ? '跳过，不标记' : 'Skip — save without tag'}
+            {t('dashboard.skipTag')}
           </button>
         </div>
       )}

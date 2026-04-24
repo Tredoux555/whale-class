@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useI18n } from '@/lib/montree/i18n';
-import { AREA_LABELS_ZH, AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
+import { AREA_LABELS_ZH, AREA_LABELS_EN, getAreaLabel as getAreaLabelI18n } from '@/lib/montree/i18n/area-labels';
 import { getIntlLocale } from '@/lib/montree/i18n/locales';
 import { getSession } from '@/lib/montree/auth';
 import { montreeApi } from '@/lib/montree/api';
@@ -205,7 +205,7 @@ export default function WeeklyWrapPage() {
   const handleGenerate = async (forceRegenerate = false, childIds?: string[]) => {
     if (!session || generating) return;
     setGenerating(true);
-    setGenProgress(locale === 'zh' ? '正在准备...' : 'Preparing...');
+    setGenProgress(t('weeklyWrap.preparing'));
     setGenDone(0);
     setGenTotal(0);
 
@@ -253,7 +253,7 @@ export default function WeeklyWrapPage() {
               const event = JSON.parse(line);
               if (event.type === 'start') {
                 setGenTotal(event.total);
-                setGenProgress(locale === 'zh' ? '正在生成...' : 'Generating...');
+                setGenProgress(t('common.generating'));
               } else if (event.type === 'child_start') {
                 const firstName = event.child_name?.split(' ')[0] || '';
                 setGenProgress(`${firstName}... (${event.index}/${event.total})`);
@@ -397,9 +397,9 @@ export default function WeeklyWrapPage() {
   const STATUS_FLOW = ['not_started', 'presented', 'practicing', 'mastered'] as const;
   const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string }> = {
     not_started: { label: '○', bg: 'bg-gray-200', text: 'text-gray-600' },
-    presented: { label: locale === 'zh' ? '已展示' : 'Presented', bg: 'bg-amber-300', text: 'text-amber-800' },
-    practicing: { label: locale === 'zh' ? '练习中' : 'Practicing', bg: 'bg-blue-400', text: 'text-blue-800' },
-    mastered: { label: locale === 'zh' ? '已掌握' : 'Mastered', bg: 'bg-emerald-400', text: 'text-emerald-800' },
+    presented: { label: t('status.presented'), bg: 'bg-amber-300', text: 'text-amber-800' },
+    practicing: { label: t('status.practicing'), bg: 'bg-blue-400', text: 'text-blue-800' },
+    mastered: { label: t('status.mastered'), bg: 'bg-emerald-400', text: 'text-emerald-800' },
   };
 
   // Aggressively normalize area strings to canonical keys
@@ -659,10 +659,7 @@ export default function WeeklyWrapPage() {
   // Send all to parents
   const handleSendAll = async () => {
     if (!session || sending) return;
-    if (!confirm(locale === 'zh'
-      ? `确定要向所有家长发送 ${readyToSend} 份报告吗？`
-      : `Send ${readyToSend} reports to all parents?`
-    )) return;
+    if (!confirm(t('weeklyWrap.confirmSendAll', { count: String(readyToSend) }))) return;
 
     setSending(true);
     try {
@@ -681,10 +678,11 @@ export default function WeeklyWrapPage() {
       }
       const data = await res.json();
       setSent(true);
-      alert(locale === 'zh'
-        ? `已发送 ${data.published} 份报告，${data.emails_sent} 封邮件`
-        : `Published ${data.published} reports, sent ${data.emails_sent} emails`
-      );
+      const sentMsg: Record<string, string> = {
+        zh: `已发送 ${data.published} 份报告，${data.emails_sent} 封邮件`,
+        es: `Publicados ${data.published} informes, ${data.emails_sent} correos enviados`,
+      };
+      alert(sentMsg[locale] || `Published ${data.published} reports, sent ${data.emails_sent} emails`);
     } catch (err: any) {
       alert(err?.message || 'Failed to send reports');
     } finally {
@@ -724,8 +722,7 @@ export default function WeeklyWrapPage() {
     const shelf = getShelfForChild(r);
 
     // Collapsed preview
-    const getAreaLabel = (area: string) =>
-      locale === 'zh' ? (AREA_LABELS_ZH[area] || area) : (AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
+    const getAreaLabel = (area: string) => getAreaLabelI18n(area, locale);
 
     const previewText = areaEntries
       .map(([area, works]) => {
@@ -740,17 +737,19 @@ export default function WeeklyWrapPage() {
       const a = toCanonicalArea(rec.area);
       if (!a) continue;
       if (!recAreas[a]) recAreas[a] = [];
-      const workDisplay = (locale === 'zh' && rec.work_zh) ? rec.work_zh : rec.work;
+      const workDisplay = rec.work_zh && locale === 'zh' ? rec.work_zh : rec.work;
       recAreas[a].push(workDisplay);
     }
     const recSentenceParts: string[] = [];
     for (const [area, works] of Object.entries(recAreas)) {
       const areaLabel = getAreaLabel(area);
-      if (locale === 'zh') {
-        recSentenceParts.push(`${areaLabel}的${works.join('和')}`);
-      } else {
-        recSentenceParts.push(`${areaLabel} works such as ${works.join(' and ')}`);
-      }
+      const joinSep: Record<string, string> = { zh: '和', es: ' y ' };
+      const joined = works.join(joinSep[locale] || ' and ');
+      const tmpl: Record<string, string> = {
+        zh: `${areaLabel}的${joined}`,
+        es: `trabajos de ${areaLabel} como ${joined}`,
+      };
+      recSentenceParts.push(tmpl[locale] || `${areaLabel} works such as ${joined}`);
     }
 
     return (
@@ -793,13 +792,13 @@ export default function WeeklyWrapPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="font-semibold text-gray-900 text-sm">{r.child_name}</p>
-              <span className="text-[10px] text-gray-400">{totalWorks} {locale === 'zh' ? '项活动' : 'works'}</span>
+              <span className="text-[10px] text-gray-400">{totalWorks} {t('weeklyWrap.worksCount')}</span>
               {isApproved && (
                 <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">✓</span>
               )}
               {r.flags_count > 0 && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                  {r.flags_count} {locale === 'zh' ? '个标记' : (r.flags_count === 1 ? 'flag' : 'flags')}
+                  {r.flags_count === 1 ? t('weeklyWrap.flagsCountOne', { count: String(r.flags_count) }) : t('weeklyWrap.flagsCount', { count: String(r.flags_count) })}
                 </span>
               )}
             </div>
@@ -818,16 +817,12 @@ export default function WeeklyWrapPage() {
             {/* ── This Week Summary ── */}
             <div className="mt-3">
               <p className="text-sm font-semibold text-gray-800 mb-2">
-                {locale === 'zh'
-                  ? `本周 ${firstName} 的活动：`
-                  : `This week ${firstName} did:`}
+                {t('weeklyWrap.thisWeekDid', { name: firstName })}
               </p>
               {areaEntries.length > 0 ? (
                 <div className="space-y-2 pl-1">
                   {areaEntries.map(([area, works]) => {
-                    const label = locale === 'zh'
-                      ? (r.area_analyses.find(a => a.area === area)?.area_label_zh || AREA_LABELS_ZH[area] || area)
-                      : (r.area_analyses.find(a => a.area === area)?.area_label || AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
+                    const label = getAreaLabelI18n(area, locale);
                     return (
                       <div key={area}>
                         <div className="flex items-center gap-2 mb-1">
@@ -847,7 +842,7 @@ export default function WeeklyWrapPage() {
                                   handleRemoveWork(r.child_id, w.name, w.area);
                                 }}
                                 className="w-4 h-4 rounded-full flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors ml-0.5"
-                                title={locale === 'zh' ? '移除' : 'Remove'}
+                                title={t('common.delete')}
                               >
                                 ×
                               </button>
@@ -860,7 +855,7 @@ export default function WeeklyWrapPage() {
                 </div>
               ) : (
                 <p className="text-sm text-gray-400 italic pl-1">
-                  {locale === 'zh' ? '本周无记录活动' : 'No recorded activities this week'}
+                  {t('weeklyWrap.noRecordedActivities')}
                 </p>
               )}
             </div>
@@ -880,16 +875,14 @@ export default function WeeklyWrapPage() {
             {/* ── Recommendation Sentence ── */}
             {recSentenceParts.length > 0 && (
               <p className="text-sm text-gray-600 italic leading-relaxed">
-                {locale === 'zh'
-                  ? `下周建议 ${firstName} 多做 ${recSentenceParts.join('、')}`
-                  : `Next week I recommend ${firstName} focuses more on ${recSentenceParts.join(' and ')}`}
+                {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join(locale === 'zh' ? '、' : ', ') })}
               </p>
             )}
 
             {/* ── Next Week's Focus (mirrors child week view exactly) ── */}
             <div className="bg-white rounded-2xl p-4 shadow-sm">
               <h2 className="font-bold text-gray-800 mb-3">
-                {locale === 'zh' ? '下周重点' : "Next Week's Focus"}
+                {t('weeklyWrap.nextWeeksFocus')}
               </h2>
               <div className="space-y-2">
                 {shelf.map((item, idx) => {
@@ -916,7 +909,7 @@ export default function WeeklyWrapPage() {
                           </p>
                         ) : (
                           <p className="font-medium text-gray-400 text-sm italic">
-                            {locale === 'zh' ? '点击选择' : 'Tap to select'}
+                            {t('weeklyWrap.tapToSelect')}
                           </p>
                         )}
                       </button>
@@ -942,7 +935,7 @@ export default function WeeklyWrapPage() {
             <div className="pt-2 border-t border-gray-100">
               <div className="flex items-center gap-2 mb-1.5">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {locale === 'zh' ? '教师备注' : 'Teacher Notes'}
+                  {t('weeklyWrap.teacherNotes')}
                 </p>
                 <ChildVoiceNote
                   childId={r.child_id}
@@ -956,7 +949,7 @@ export default function WeeklyWrapPage() {
               <textarea
                 value={teacherNotes[r.child_id] || ''}
                 onChange={(e) => setTeacherNotes(prev => ({ ...prev, [r.child_id]: e.target.value }))}
-                placeholder={locale === 'zh' ? '录音或输入备注...' : 'Record or type notes...'}
+                placeholder={t('weeklyWrap.recordOrType')}
                 className="w-full border border-gray-200 rounded-lg p-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 min-h-[60px] resize-y placeholder:text-gray-300"
                 rows={2}
               />
@@ -966,7 +959,7 @@ export default function WeeklyWrapPage() {
             {r.teacher_report && (
               <details className="text-xs">
                 <summary className="text-emerald-600 cursor-pointer hover:underline font-medium py-1">
-                  {locale === 'zh' ? '查看 AI 分析' : 'View AI Analysis'}
+                  {t('weeklyWrap.viewAiAnalysis')}
                 </summary>
                 <div className="mt-2">
                   <TeacherReportView report={r.teacher_report as any} childName={r.child_name} />
@@ -982,11 +975,11 @@ export default function WeeklyWrapPage() {
                   disabled={approvingId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                 >
-                  {approvingId === r.child_id ? (locale === 'zh' ? '审批中...' : 'Approving...') : (locale === 'zh' ? '同意' : 'Agree ✓')}
+                  {approvingId === r.child_id ? t('weeklyWrap.approving') : t('weeklyWrap.agree')}
                 </button>
               ) : (
                 <div className="flex-1 py-2 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-semibold text-center">
-                  ✓ {locale === 'zh' ? '已同意' : 'Approved'}
+                  ✓ {t('weeklyWrap.approved')}
                 </div>
               )}
 
@@ -996,13 +989,13 @@ export default function WeeklyWrapPage() {
                   disabled={shelfUpdatingId === r.child_id}
                   className="px-4 py-2 rounded-lg border-2 border-emerald-200 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 transition-colors"
                 >
-                  {shelfUpdatingId === r.child_id ? '...' : (locale === 'zh' ? '更新书架' : 'Update Shelf')}
+                  {shelfUpdatingId === r.child_id ? '...' : t('weeklyWrap.updateShelf')}
                 </button>
               )}
 
               {isShelfUpdated && (
                 <div className="px-4 py-2 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-medium text-center">
-                  ✓ {locale === 'zh' ? '书架已更新' : 'Shelf Updated'}
+                  ✓ {t('weeklyWrap.shelfUpdated')}
                 </div>
               )}
             </div>
@@ -1060,12 +1053,12 @@ export default function WeeklyWrapPage() {
               <span className="text-xs text-gray-400">📸 {photos.length}</span>
               {isSent && (
                 <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">
-                  {locale === 'zh' ? '已发送' : 'Sent'}
+                  {t('weeklyWrap.sentDone')}
                 </span>
               )}
               {edited && (
                 <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
-                  {locale === 'zh' ? '已编辑' : 'Edited'}
+                  {t('weeklyWrap.edited')}
                 </span>
               )}
             </div>
@@ -1084,7 +1077,7 @@ export default function WeeklyWrapPage() {
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  {locale === 'zh' ? '家长叙述' : 'Parent Narrative'}
+                  {t('weeklyWrap.parentNarrative')}
                 </p>
                 {!isEditing ? (
                   <button
@@ -1096,14 +1089,14 @@ export default function WeeklyWrapPage() {
                     }}
                     className="text-xs text-emerald-600 font-medium hover:underline"
                   >
-                    {locale === 'zh' ? '编辑' : 'Edit'}
+                    {t('common.edit')}
                   </button>
                 ) : (
                   <button
                     onClick={() => setEditingNarrative(null)}
                     className="text-xs text-gray-500 font-medium hover:underline"
                   >
-                    {locale === 'zh' ? '完成' : 'Done'}
+                    {t('common.done')}
                   </button>
                 )}
               </div>
@@ -1127,7 +1120,7 @@ export default function WeeklyWrapPage() {
             {photos.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-                  {locale === 'zh' ? '照片' : 'Photos'} ({photos.length})
+                  {t('weeklyWrap.photos')} ({photos.length})
                 </p>
                 <div className="space-y-4">
                   {photos.map((photo, idx) => {
@@ -1149,7 +1142,7 @@ export default function WeeklyWrapPage() {
                         <div className="relative group">
                           <img
                             src={photo.url}
-                            alt={photo.work_name || (locale === 'zh' ? '活动照片' : 'Activity photo')}
+                            alt={photo.work_name || t('weeklyWrap.activityPhoto')}
                             className="w-full object-contain max-h-[400px] bg-gray-50"
                             loading="lazy"
                           />
@@ -1158,26 +1151,26 @@ export default function WeeklyWrapPage() {
                             <button
                               onClick={(e) => { e.stopPropagation(); setCroppingPhoto({ childId: r.child_id, photo }); }}
                               className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
-                              title={locale === 'zh' ? '裁剪' : 'Crop'}
+                              title={t('weeklyWrap.crop')}
                             >✂️</button>
                             {idx > 0 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'up'); }}
                                 className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
-                                title={locale === 'zh' ? '上移' : 'Move up'}
+                                title={t('weeklyWrap.moveUp')}
                               >↑</button>
                             )}
                             {idx < photos.length - 1 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleMovePhoto(r.child_id, photo.id, 'down'); }}
                                 className="w-7 h-7 bg-white/90 rounded-full flex items-center justify-center text-sm shadow-md hover:bg-white"
-                                title={locale === 'zh' ? '下移' : 'Move down'}
+                                title={t('weeklyWrap.moveDown')}
                               >↓</button>
                             )}
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRemovePhoto(r.child_id, photo.id); }}
                               className="w-7 h-7 bg-red-500/90 rounded-full flex items-center justify-center text-white text-sm shadow-md hover:bg-red-600"
-                              title={locale === 'zh' ? '删除' : 'Remove'}
+                              title={t('common.delete')}
                             >✕</button>
                           </div>
                         </div>
@@ -1193,7 +1186,7 @@ export default function WeeklyWrapPage() {
                             )}
                             {matchedWork && (
                               <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${areaStyle.bg} ${areaStyle.text}`}>
-                                {areaStyle.emoji} {locale === 'zh' ? (AREA_LABELS_ZH[matchedWork.area] || matchedWork.area.replace('_', ' ')) : matchedWork.area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                {areaStyle.emoji} {getAreaLabelI18n(matchedWork.area, locale) || matchedWork.area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
                               </span>
                             )}
                           </div>
@@ -1234,7 +1227,7 @@ export default function WeeklyWrapPage() {
                 rel="noopener noreferrer"
                 className="inline-block text-xs text-emerald-600 font-medium hover:underline"
               >
-                {locale === 'zh' ? '打开完整家长报告 →' : 'Open full parent report →'}
+                {t('weeklyWrap.openFullReport')}
               </a>
             )}
 
@@ -1246,7 +1239,7 @@ export default function WeeklyWrapPage() {
                   disabled={savingId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-amber-500 text-white text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors"
                 >
-                  {savingId === r.child_id ? (locale === 'zh' ? '保存中...' : 'Saving...') : (locale === 'zh' ? '保存修改' : 'Save Changes')}
+                  {savingId === r.child_id ? t('common.saving') : t('weeklyWrap.saveChanges')}
                 </button>
               )}
               {!isSent && !edited && r.report_id && (
@@ -1276,12 +1269,12 @@ export default function WeeklyWrapPage() {
                   disabled={sendingChildId === r.child_id}
                   className="flex-1 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                 >
-                  {sendingChildId === r.child_id ? (locale === 'zh' ? '发送中...' : 'Sending...') : (locale === 'zh' ? '发送给家长' : 'Send to Parent')}
+                  {sendingChildId === r.child_id ? t('weeklyWrap.sending') : t('weeklyWrap.sendToParent')}
                 </button>
               )}
               {isSent && (
                 <div className="flex-1 py-2 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-semibold text-center">
-                  ✓ {locale === 'zh' ? '已发送' : 'Sent'}
+                  ✓ {t('weeklyWrap.sentDone')}
                 </div>
               )}
             </div>
@@ -1322,11 +1315,11 @@ export default function WeeklyWrapPage() {
                 href="/montree/dashboard"
                 className="text-emerald-600 text-sm font-medium hover:underline"
               >
-                ← {locale === 'zh' ? '返回' : 'Back'}
+                ← {t('common.back')}
               </Link>
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
-                  {locale === 'zh' ? '周报总结' : 'Weekly Wrap'}
+                  {t('weeklyWrap.weeklyWrap')}
                 </h1>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -1335,7 +1328,7 @@ export default function WeeklyWrapPage() {
                   >
                     ◀
                   </button>
-                  <p className="text-xs text-gray-400">{weekDisplay} · {reports.length} {locale === 'zh' ? '学生' : 'children'}</p>
+                  <p className="text-xs text-gray-400">{weekDisplay} · {reports.length} {t('weeklyWrap.children')}</p>
                   <button
                     onClick={() => navigateWeek(1)}
                     className="px-1.5 py-0.5 text-gray-400 hover:bg-gray-100 rounded text-xs"
@@ -1368,8 +1361,8 @@ export default function WeeklyWrapPage() {
                   }`}
                 >
                   {selectionMode
-                    ? (locale === 'zh' ? '取消选择' : 'Cancel')
-                    : (locale === 'zh' ? '选择' : 'Select')}
+                    ? t('weeklyWrap.cancelSelect')
+                    : t('weeklyWrap.tapToSelect')}
                 </button>
               )}
 
@@ -1383,12 +1376,10 @@ export default function WeeklyWrapPage() {
                   {generating ? (
                     <>
                       <span className="animate-spin text-[10px]">⏳</span>
-                      <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
+                      <span>{genProgress || t('common.generating')}</span>
                     </>
                   ) : (
-                    locale === 'zh'
-                      ? `🔄 重新生成 (${selectedChildIds.size})`
-                      : `🔄 Regenerate (${selectedChildIds.size})`
+                    t('weeklyWrap.regenerateSelected', { count: String(selectedChildIds.size) })
                   )}
                 </button>
               )}
@@ -1403,12 +1394,12 @@ export default function WeeklyWrapPage() {
                   {generating ? (
                     <>
                       <span className="animate-spin text-[10px]">⏳</span>
-                      <span>{genProgress || (locale === 'zh' ? '生成中...' : 'Generating...')}</span>
+                      <span>{genProgress || t('common.generating')}</span>
                     </>
                   ) : reports.length > 0 ? (
-                    locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate All'
+                    t('weeklyWrap.regenerateAll')
                   ) : (
-                    locale === 'zh' ? '✨ 生成' : '✨ Generate'
+                    t('weeklyWrap.generate')
                   )}
                 </button>
               )}
@@ -1435,7 +1426,7 @@ export default function WeeklyWrapPage() {
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
-              {locale === 'zh' ? '教师总结' : 'Teacher Summary'}
+              {t('weeklyWrap.teacherSummary')}
             </button>
             <button
               onClick={() => setActiveTab('parents')}
@@ -1445,7 +1436,7 @@ export default function WeeklyWrapPage() {
                   : 'border-transparent text-gray-400 hover:text-gray-600'
               }`}
             >
-              {locale === 'zh' ? '家长报告' : 'Parent Reports'}
+              {t('weeklyWrap.parentReports')}
               {readyToSend > 0 && (
                 <span className="ml-1.5 bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full">
                   {readyToSend}
@@ -1467,7 +1458,7 @@ export default function WeeklyWrapPage() {
           <div className="text-center py-12">
             <p className="text-4xl mb-3">📋</p>
             <p className="text-gray-400">
-              {locale === 'zh' ? '没有找到报告' : 'No reports found for this week'}
+              {t('weeklyWrap.noReportsFound')}
             </p>
           </div>
         )}
@@ -1480,8 +1471,8 @@ export default function WeeklyWrapPage() {
               <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
                 <span className="text-xs text-blue-700 font-medium">
                   {selectedChildIds.size > 0
-                    ? (locale === 'zh' ? `已选择 ${selectedChildIds.size} 名学生` : `${selectedChildIds.size} selected`)
-                    : (locale === 'zh' ? '点击选择要生成的学生' : 'Tap children to select')}
+                    ? t('weeklyWrap.selected', { count: String(selectedChildIds.size) })
+                    : t('weeklyWrap.tapToSelectChildren')}
                 </span>
                 <button
                   onClick={() => {
@@ -1494,8 +1485,8 @@ export default function WeeklyWrapPage() {
                   className="text-xs text-blue-600 font-semibold hover:text-blue-800"
                 >
                   {selectedChildIds.size === reports.length
-                    ? (locale === 'zh' ? '取消全选' : 'Deselect All')
-                    : (locale === 'zh' ? '全选' : 'Select All')}
+                    ? t('weeklyWrap.deselectAll')
+                    : t('weeklyWrap.selectAll')}
                 </button>
               </div>
             )}
@@ -1504,7 +1495,7 @@ export default function WeeklyWrapPage() {
             {sortedReports.filter(r => r.flags_count > 0).length > 0 && (
               <div className="space-y-2">
                 <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
-                  {locale === 'zh' ? '需要关注' : 'Needs Attention'}
+                  {t('weeklyWrap.needsAttention')}
                 </p>
                 {sortedReports.filter(r => r.flags_count > 0).map(renderTeacherCard)}
               </div>
@@ -1514,7 +1505,7 @@ export default function WeeklyWrapPage() {
             <div className="space-y-2">
               {sortedReports.filter(r => r.flags_count > 0).length > 0 && (
                 <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider mt-4">
-                  {locale === 'zh' ? '正常发展' : 'On Track'}
+                  {t('weeklyWrap.onTrack')}
                 </p>
               )}
               {sortedReports.filter(r => r.flags_count === 0).map(renderTeacherCard)}
@@ -1551,8 +1542,8 @@ export default function WeeklyWrapPage() {
                   className="w-full py-3 rounded-lg border-2 border-emerald-200 text-emerald-700 text-sm font-semibold hover:bg-emerald-50 disabled:opacity-50 transition-colors"
                 >
                   {approvingId
-                    ? (locale === 'zh' ? '正在审批...' : 'Approving...')
-                    : (locale === 'zh' ? `全部同意 (${reports.length - approvedCount} 剩余)` : `Approve All (${reports.length - approvedCount} remaining)`)}
+                    ? t('weeklyWrap.approvingAll')
+                    : t('weeklyWrap.approveAll', { count: String(reports.length - approvedCount) })}
                 </button>
               </div>
             )}
@@ -1566,8 +1557,8 @@ export default function WeeklyWrapPage() {
               <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
                 <span className="text-xs text-blue-700 font-medium">
                   {selectedChildIds.size > 0
-                    ? (locale === 'zh' ? `已选择 ${selectedChildIds.size} 名学生` : `${selectedChildIds.size} selected`)
-                    : (locale === 'zh' ? '点击选择要生成的学生' : 'Tap children to select')}
+                    ? t('weeklyWrap.selected', { count: String(selectedChildIds.size) })
+                    : t('weeklyWrap.tapToSelectChildren')}
                 </span>
                 <button
                   onClick={() => {
@@ -1580,8 +1571,8 @@ export default function WeeklyWrapPage() {
                   className="text-xs text-blue-600 font-semibold hover:text-blue-800"
                 >
                   {selectedChildIds.size === reports.length
-                    ? (locale === 'zh' ? '取消全选' : 'Deselect All')
-                    : (locale === 'zh' ? '全选' : 'Select All')}
+                    ? t('weeklyWrap.deselectAll')
+                    : t('weeklyWrap.selectAll')}
                 </button>
               </div>
             )}
@@ -1595,16 +1586,14 @@ export default function WeeklyWrapPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-20">
           <div className="max-w-3xl mx-auto flex items-center justify-between">
             <p className="text-sm text-gray-500">
-              {locale === 'zh'
-                ? `${readyToSend} 份家长报告准备就绪`
-                : `${readyToSend} parent reports ready to send`}
+              {t('weeklyWrap.reportsReadyToSend', { count: String(readyToSend) })}
             </p>
             <div className="flex items-center gap-3">
               <Link
                 href="/montree/dashboard/students"
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
               >
-                ✉️ {locale === 'zh' ? '邀请家长' : 'Invite Parents'}
+                ✉️ {t('weeklyWrap.inviteParents')}
               </Link>
               <button
                 onClick={handleSendAll}
@@ -1612,8 +1601,8 @@ export default function WeeklyWrapPage() {
                 className="bg-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
               >
                 {sending
-                  ? (locale === 'zh' ? '发送中...' : 'Sending...')
-                  : (locale === 'zh' ? '发送给所有家长' : 'Send All to Parents')}
+                  ? t('weeklyWrap.sending')
+                  : t('weeklyWrap.sendAllToParents')}
               </button>
             </div>
           </div>
@@ -1624,13 +1613,13 @@ export default function WeeklyWrapPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-emerald-600 p-4 z-20">
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-white font-semibold">
-              ✅ {locale === 'zh' ? '所有报告已发送！' : 'All reports sent to parents!'}
+              ✅ {t('weeklyWrap.allReportsSent')}
             </p>
             <Link
               href="/montree/dashboard"
               className="text-emerald-100 text-sm underline mt-1 inline-block"
             >
-              {locale === 'zh' ? '返回仪表板' : 'Back to Dashboard'}
+              {t('weeklyWrap.backToDashboard')}
             </Link>
           </div>
         </div>

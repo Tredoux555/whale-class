@@ -48,7 +48,7 @@ interface Props {
 }
 
 export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [expanded, setExpanded] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [activePhase, setActivePhase] = useState(0);
@@ -87,7 +87,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-bold text-gray-800">
-              {locale === 'zh' ? '学习计划' : 'Game Plan'}
+              {t('gamePlan.title')}
             </h3>
             <div className="flex gap-1">
               {gamePlan.priority_areas?.slice(0, 3).map((area) => (
@@ -119,7 +119,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           {gamePlan.parent_goals && (
             <div className="bg-white/60 rounded-xl px-4 py-3 border border-amber-100">
               <p className="text-xs text-gray-500 font-medium mb-1">
-                {locale === 'zh' ? '家长目标' : 'Parent Goals'}
+                {t('gamePlan.parentGoals')}
               </p>
               <p className="text-sm text-gray-700">{gamePlan.parent_goals}</p>
             </div>
@@ -129,7 +129,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           {gamePlan.language_note && (
             <div className="bg-blue-50/70 rounded-xl px-4 py-3 border border-blue-100">
               <p className="text-xs text-blue-600 font-medium mb-1">
-                {locale === 'zh' ? '语言策略' : '🌍 Language Strategy'}
+                {t('gamePlan.languageStrategy')}
               </p>
               <p className="text-sm text-gray-700">{gamePlan.language_note}</p>
             </div>
@@ -167,7 +167,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
               {/* Works */}
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
-                  {locale === 'zh' ? '课程' : 'Works to Present'}
+                  {t('gamePlan.worksToPresent')}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {gamePlan.phases[activePhase].works.map((work, wi) => (
@@ -184,7 +184,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
               {/* Strategies */}
               <div>
                 <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">
-                  {locale === 'zh' ? '策略' : 'Strategies'}
+                  {t('gamePlan.strategies')}
                 </p>
                 <div className="space-y-1.5">
                   {gamePlan.phases[activePhase].strategies.map((strategy, si) => (
@@ -202,7 +202,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           {gamePlan.weekly_check_questions?.length > 0 && (
             <div>
               <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-2">
-                {locale === 'zh' ? '每周检查' : 'Weekly Pulse Check'}
+                {t('gamePlan.weeklyPulseCheck')}
               </p>
               <div className="space-y-1.5">
                 {gamePlan.weekly_check_questions.map((q, qi) => (
@@ -218,10 +218,10 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
           {/* Footer — last updated + refresh */}
           <div className="flex items-center justify-between pt-2 border-t border-amber-100">
             <p className="text-[10px] text-gray-400">
-              {locale === 'zh' ? '更新于' : 'Updated'}{' '}
+              {t('gamePlan.updated')}{' '}
               {daysSinceUpdate === 0
-                ? (locale === 'zh' ? '今天' : 'today')
-                : `${daysSinceUpdate}${locale === 'zh' ? '天前' : 'd ago'}`
+                ? t('gamePlan.today')
+                : `${daysSinceUpdate}${t('gamePlan.daysAgo')}`
               }
             </p>
             <button
@@ -236,7 +236,7 @@ export default function GamePlanCard({ childId, gamePlan, onRefresh }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
               )}
-              {locale === 'zh' ? '刷新计划' : 'Refresh Plan'}
+              {t('gamePlan.refreshPlan')}
             </button>
           </div>
         </div>

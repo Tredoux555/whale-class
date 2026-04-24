@@ -11,6 +11,7 @@ import { getLocaleFromRequest, getTranslator, getTranslatedAreaName } from '@/li
 import { getChineseNameForWork } from '@/lib/montree/curriculum-loader';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { getLanguageName } from '@/lib/montree/i18n/locale-config';
 
 // ============================================
 // TYPES
@@ -98,6 +99,100 @@ interface AIAnalysisReport {
 }
 
 // ============================================
+// LOCALE-AGNOSTIC HELPERS
+// ============================================
+
+// TYPE A: Date separator (locale-keyed Record)
+const DATE_SEPARATORS: Record<string, string> = {
+  zh: '至',
+  es: 'al',
+};
+const getDateSeparator = (locale: Locale): string => DATE_SEPARATORS[locale] || 'to';
+
+// TYPE A: Sensitive period name translations (map for non-English locales)
+const SENSITIVE_PERIOD_NAMES_ZH: Record<string, string> = {
+  order: '秩序',
+  language: '语言',
+  movement: '运动',
+  sensory: '感官',
+  small_objects: '细小物品',
+  grace_courtesy: '礼仪与优雅',
+  writing: '书写',
+  reading: '阅读',
+};
+const SENSITIVE_PERIOD_NAMES: Record<Locale, Record<string, string>> = {
+  en: {
+    order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory', small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading',
+  },
+  zh: SENSITIVE_PERIOD_NAMES_ZH,
+};
+const translateSensitivePeriodName = (name: string, locale: Locale): string => {
+  const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
+  const lookupKey = name.toLowerCase();
+  return SENSITIVE_PERIOD_NAMES[normalizedLocale][lookupKey] || SENSITIVE_PERIOD_NAMES[normalizedLocale][lookupKey.replace(/\s+/g, '_')] || name;
+};
+
+// TYPE A: Sensitive period status translations (map for non-English locales)
+const SENSITIVE_PERIOD_STATUS_ZH: Record<string, string> = {
+  active: '活跃',
+  emerging: '显现',
+  inactive: '不活跃',
+};
+const SENSITIVE_PERIOD_STATUS: Record<Locale, Record<string, string>> = {
+  en: {
+    active: 'Active', emerging: 'Emerging', inactive: 'Inactive',
+  },
+  zh: SENSITIVE_PERIOD_STATUS_ZH,
+};
+const translateSensitivePeriodStatus = (status: string, locale: Locale): string => {
+  const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
+  return SENSITIVE_PERIOD_STATUS[normalizedLocale][status] || status;
+};
+
+// TYPE E: AI analysis phrases - locale-aware text for AI reports
+const AI_ANALYSIS_PHRASES: Record<string, Record<string, string>> = {
+  zh: {
+    developmentaryTrajectoryOpening: '的发展与其年龄（{age}岁）相符。',
+    activeSensitivePeriodPrefix: '目前处于',
+    activeSensitivePeriodSuffix: '敏感期，需要提供适当的教具支持。',
+    activeJoiner: '和',
+    concentrationNeedsSupport: '专注力发展需要支持——建议增加日常生活练习。',
+    confidenceSuffix: '置信度',
+    presentWork: '展示{work}（{area}）',
+    inviteToArea: '邀请到{area}区域',
+    observationQuestion1: '{name}在活动之间的过渡中有什么反应？',
+    observationQuestion2: '一天中哪个时间段专注力最强？',
+    observationQuestion3: '{name}自然地倾向于和哪些同伴互动？',
+    parentPoint1: '{name}目前的兴趣以及如何在家中支持',
+    parentPoint2: '与其年龄相符的发展里程碑',
+    parentPointExtra: '我们正在提供额外支持的领域',
+    insufficientData: '敏感期分析数据不足。',
+  },
+  en: {
+    developmentaryTrajectoryOpening: ' is developing appropriately for their age ({age} years). ',
+    activeSensitivePeriodPrefix: 'Currently in ',
+    activeSensitivePeriodSuffix: ' sensitive period(s), which should be supported with appropriate materials. ',
+    activeJoiner: ' and ',
+    concentrationNeedsSupport: 'Concentration development needs support - recommend more practical life work. ',
+    confidenceSuffix: ' confidence',
+    presentWork: 'Present {work} ({area})',
+    inviteToArea: 'Invite to {area} area',
+    observationQuestion1: 'How does {name} respond to transitions between activities?',
+    observationQuestion2: 'What time of day shows the strongest concentration?',
+    observationQuestion3: 'Which peers does {name} naturally gravitate toward?',
+    parentPoint1: '{name}\'s current interests and how to support them at home',
+    parentPoint2: 'Developmental milestones appropriate for their age',
+    parentPointExtra: 'Areas where we are providing extra support',
+    insufficientData: 'Insufficient data for sensitive period analysis.',
+  },
+};
+
+const getAIPhrase = (locale: Locale, key: string, defaultValue: string = ''): string => {
+  const localeKey = (locale === 'zh') ? 'zh' : 'en';
+  return AI_ANALYSIS_PHRASES[localeKey]?.[key] || AI_ANALYSIS_PHRASES['en']?.[key] || defaultValue;
+};
+
+// ============================================
 // AREA HELPERS
 // ============================================
 
@@ -151,7 +246,7 @@ function generateTeacherReport(
     type: 'teacher',
     child_name: analysis.child_name,
     child_age: analysis.child_age,
-    week_range: `${analysis.week_start} ${locale === 'zh' ? '至' : 'to'} ${analysis.week_end}`,
+    week_range: `${analysis.week_start} ${getDateSeparator(locale)} ${analysis.week_end}`,
     summary: analysis.teacher_summary,
     metrics: {
       total_works: analysis.total_works,
@@ -164,12 +259,18 @@ function generateTeacherReport(
     sensitive_periods: analysis.detected_sensitive_periods,
     flags: [...analysis.red_flags, ...analysis.yellow_flags],
     recommendations: analysis.recommended_works,
-    work_patterns: locale === 'zh'
-      ? analysis.repetition_highlights.map(h => ({
-          ...h,
-          work: getChineseNameForWork(h.work) || dbChineseMap.get(h.work.toLowerCase().trim()) || h.work,
-        }))
-      : analysis.repetition_highlights,
+    work_patterns: analysis.repetition_highlights.map(h => {
+      const getDisplayWorkName = (workName: string): string => {
+        if (locale === 'zh') {
+          return getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || workName;
+        }
+        return workName;
+      };
+      return {
+        ...h,
+        work: getDisplayWorkName(h.work),
+      };
+    }),
   };
 }
 
@@ -194,9 +295,13 @@ function generateParentReport(
   const highlights: string[] = [];
   if (analysis.repetition_highlights.length > 0) {
     const rawWorkName = analysis.repetition_highlights[0].work;
-    const displayWorkName = locale === 'zh'
-      ? (getChineseNameForWork(rawWorkName) || dbChineseMap.get(rawWorkName.toLowerCase().trim()) || rawWorkName)
-      : rawWorkName;
+    // TYPE A: Locale-aware work name display
+    const WORK_NAME_BY_LOCALE: Record<Locale, string> = {
+      zh: getChineseNameForWork(rawWorkName) || dbChineseMap.get(rawWorkName.toLowerCase().trim()) || rawWorkName,
+      en: rawWorkName,
+    };
+    const normalizedLocale2 = (locale === 'zh' ? 'zh' : 'en') as Locale;
+    const displayWorkName = WORK_NAME_BY_LOCALE[normalizedLocale2];
     const worksText = `${displayWorkName} (${analysis.repetition_highlights[0].count}x)`;
     highlights.push(
       t('report.generate.deepConcentration' as any, `${firstName} showed deep concentration with {works}.`)
@@ -212,12 +317,18 @@ function generateParentReport(
   }
   const activePeriods = analysis.detected_sensitive_periods.filter(p => p.status === 'active');
   if (activePeriods.length > 0) {
+    // TYPE A: Locale-aware sensitive period name
+    const PERIOD_NAMES_BY_LOCALE: Record<Locale, Record<string, string>> = {
+      en: { order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory', small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading' },
+      zh: { order: '秩序', language: '语言', movement: '运动', sensory: '感官', small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读' },
+    };
+    const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
+    const periodNameKey = activePeriods[0].period_name.toLowerCase();
+    const areaDisplay = PERIOD_NAMES_BY_LOCALE[normalizedLocale][periodNameKey] || periodNameKey;
     highlights.push(
       t('report.generate.specialInterest' as any, `${firstName} is showing special interest in the {area} area.`)
         .replace('{name}', firstName)
-        .replace('{area}', locale === 'zh'
-          ? ({ order: '秩序', language: '语言', movement: '运动', sensory: '感官', small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读' }[activePeriods[0].period_name.toLowerCase()] || activePeriods[0].period_name.toLowerCase())
-          : activePeriods[0].period_name.toLowerCase())
+        .replace('{area}', areaDisplay)
     );
   }
 
@@ -262,84 +373,100 @@ function generateAIAnalysisReport(
   dbChineseMap: Map<string, string>
 ): AIAnalysisReport {
   const firstName = analysis.child_name.split(' ')[0];
-  const isZh = locale === 'zh';
+  const normalizedLocale = (locale === 'zh' ? 'zh' : 'en') as Locale;
 
-  // Sensitive period name translations for Chinese
-  const periodNameZh: Record<string, string> = {
+  // TYPE A: Sensitive period name translations - locale-aware
+  const PERIOD_NAMES_EN: Record<string, string> = {
+    order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory',
+    small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading',
+  };
+  const PERIOD_NAMES_ZH: Record<string, string> = {
     order: '秩序', language: '语言', movement: '运动', sensory: '感官',
     small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读',
   };
-  const translatePeriodName = (name: string) =>
-    isZh ? (periodNameZh[name.toLowerCase()] || periodNameZh[name.toLowerCase().replace(/\s+/g, '_')] || name) : name;
+  const PERIOD_NAMES_BY_LOCALE: Record<Locale, Record<string, string>> = {
+    en: PERIOD_NAMES_EN,
+    zh: PERIOD_NAMES_ZH,
+  };
+  const translatePeriodName = (name: string): string => {
+    const lookupKey = name.toLowerCase();
+    const periodMap = PERIOD_NAMES_BY_LOCALE[normalizedLocale];
+    return periodMap[lookupKey] || periodMap[lookupKey.replace(/\s+/g, '_')] || name;
+  };
 
   // Developmental trajectory
-  let trajectory = isZh
-    ? `${firstName}的发展与其年龄（${analysis.child_age}岁）相符。`
-    : `${firstName} is developing appropriately for their age (${analysis.child_age} years). `;
+  let trajectory = getAIPhrase(normalizedLocale, 'developmentaryTrajectoryOpening', '')
+    .replace('{age}', analysis.child_age.toString());
+  trajectory = `${firstName}${trajectory}`;
+
   if (analysis.detected_sensitive_periods.length > 0) {
     const active = analysis.detected_sensitive_periods.filter(p => p.status === 'active');
     if (active.length > 0) {
-      trajectory += isZh
-        ? `目前处于${active.map(p => translatePeriodName(p.period_name)).join('和')}敏感期，需要提供适当的教具支持。`
-        : `Currently in ${active.map(p => p.period_name).join(' and ')} sensitive period(s), which should be supported with appropriate materials. `;
+      const activePeriodNames = active.map(p => translatePeriodName(p.period_name));
+      const prefix = getAIPhrase(normalizedLocale, 'activeSensitivePeriodPrefix', '');
+      const joiner = getAIPhrase(normalizedLocale, 'activeJoiner', ' and ');
+      const suffix = getAIPhrase(normalizedLocale, 'activeSensitivePeriodSuffix', '');
+      trajectory += `${prefix}${activePeriodNames.join(joiner)}${suffix}`;
     }
   }
   if (analysis.concentration_assessment === 'weak') {
-    trajectory += isZh
-      ? `专注力发展需要支持——建议增加日常生活练习。`
-      : `Concentration development needs support - recommend more practical life work. `;
+    trajectory += getAIPhrase(normalizedLocale, 'concentrationNeedsSupport', '');
   }
 
   // Sensitive periods analysis
-  const statusZh: Record<string, string> = { active: '活跃', emerging: '显现', inactive: '不活跃' };
+  const STATUS_BY_LOCALE: Record<Locale, Record<string, string>> = {
+    en: { active: 'active', emerging: 'emerging', inactive: 'inactive' },
+    zh: { active: '活跃', emerging: '显现', inactive: '不活跃' },
+  };
+  const getStatusDisplay = (status: string): string => STATUS_BY_LOCALE[normalizedLocale]?.[status] || status;
   let spAnalysis = '';
   for (const sp of analysis.detected_sensitive_periods.slice(0, 3)) {
-    const statusDisplay = isZh ? (statusZh[sp.status] || sp.status) : sp.status;
-    spAnalysis += `${translatePeriodName(sp.period_name)} (${statusDisplay}, ${sp.confidence}%${isZh ? '置信度' : ' confidence'}): ${sp.evidence.join('; ')}. `;
+    const statusDisplay = getStatusDisplay(sp.status);
+    const confidenceSuffix = getAIPhrase(normalizedLocale, 'confidenceSuffix', 'confidence');
+    spAnalysis += `${translatePeriodName(sp.period_name)} (${statusDisplay}, ${sp.confidence}% ${confidenceSuffix}): ${sp.evidence.join('; ')}. `;
   }
 
   // Two week plan (translate work names and areas for Chinese)
+  const getWorkDisplayName = (workName: string): string => {
+    if (normalizedLocale === 'zh') {
+      return getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || workName;
+    }
+    return workName;
+  };
+  const getAreaDisplayName = (area: string): string => {
+    return getTranslatedAreaName(area, normalizedLocale);
+  };
   const twoWeekPlan = [
     ...analysis.recommended_works.slice(0, 3).map(r => {
-      const workDisplay = isZh ? (getChineseNameForWork(r.work_name) || dbChineseMap.get(r.work_name.toLowerCase().trim()) || r.work_name) : r.work_name;
-      const areaDisplay = isZh ? getTranslatedAreaName(r.area, 'zh') : r.area;
-      return isZh
-        ? `展示${workDisplay}（${areaDisplay}）`
-        : `Present ${r.work_name} (${r.area})`;
+      const workDisplay = getWorkDisplayName(r.work_name);
+      const areaDisplay = getAreaDisplayName(r.area);
+      const presentPhrase = getAIPhrase(normalizedLocale, 'presentWork', 'Present {work} ({area})')
+        .replace('{work}', workDisplay)
+        .replace('{area}', areaDisplay);
+      return presentPhrase;
     }),
     ...analysis.areas_needing_attention.slice(0, 2).map(a => {
-      const areaDisplay = isZh ? getTranslatedAreaName(a.area, 'zh') : a.area;
-      return isZh
-        ? `邀请到${areaDisplay}区域`
-        : `Invite to ${a.area} area`;
+      const areaDisplay = getAreaDisplayName(a.area);
+      const invitePhrase = getAIPhrase(normalizedLocale, 'inviteToArea', 'Invite to {area} area')
+        .replace('{area}', areaDisplay);
+      return invitePhrase;
     }),
   ];
 
   // Observation questions
-  const observationQuestions = isZh
-    ? [
-        `${firstName}在活动之间的过渡中有什么反应？`,
-        `一天中哪个时间段专注力最强？`,
-        `${firstName}自然地倾向于和哪些同伴互动？`,
-      ]
-    : [
-        `How does ${firstName} respond to transitions between activities?`,
-        `What time of day shows the strongest concentration?`,
-        `Which peers does ${firstName} naturally gravitate toward?`,
-      ];
+  const observationQuestions = [
+    getAIPhrase(normalizedLocale, 'observationQuestion1', '').replace('{name}', firstName),
+    getAIPhrase(normalizedLocale, 'observationQuestion2', ''),
+    getAIPhrase(normalizedLocale, 'observationQuestion3', '').replace('{name}', firstName),
+  ];
 
   // Parent communication points
-  const parentPoints = isZh
-    ? [
-        `${firstName}目前的兴趣以及如何在家中支持`,
-        `与其年龄相符的发展里程碑`,
-      ]
-    : [
-        `${firstName}'s current interests and how to support them at home`,
-        `Developmental milestones appropriate for their age`,
-      ];
+  const parentPoints = [
+    getAIPhrase(normalizedLocale, 'parentPoint1', '').replace('{name}', firstName),
+    getAIPhrase(normalizedLocale, 'parentPoint2', ''),
+  ];
   if (analysis.red_flags.length > 0) {
-    parentPoints.push(isZh ? '我们正在提供额外支持的领域' : 'Areas where we are providing extra support');
+    parentPoints.push(getAIPhrase(normalizedLocale, 'parentPointExtra', ''));
   }
 
   return {
@@ -351,7 +478,7 @@ function generateAIAnalysisReport(
       emotional: analysis.emotional_state,
       social: analysis.social_development,
     },
-    sensitive_periods_analysis: spAnalysis || (isZh ? '敏感期分析数据不足。' : 'Insufficient data for sensitive period analysis.'),
+    sensitive_periods_analysis: spAnalysis || getAIPhrase(normalizedLocale, 'insufficientData', ''),
     developmental_trajectory: trajectory,
     concerns: [...analysis.red_flags, ...analysis.yellow_flags].map(f => ({
       severity: f.type,
@@ -480,11 +607,17 @@ export async function POST(request: NextRequest) {
 
     // Group works by area for parent report (translate names for Chinese locale)
     const worksByArea: Record<string, string[]> = {};
+    const getWorkDisplayName = (workName: string): string => {
+      const WORK_NAME_MAP: Record<Locale, string> = {
+        zh: getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || workName,
+        en: workName,
+      };
+      const normalizedLocale3 = (locale === 'zh' ? 'zh' : 'en') as Locale;
+      return WORK_NAME_MAP[normalizedLocale3];
+    };
     for (const p of progress || []) {
       if (!worksByArea[p.area]) worksByArea[p.area] = [];
-      const displayName = locale === 'zh'
-        ? (getChineseNameForWork(p.work_name) || dbChineseMap.get(p.work_name.toLowerCase().trim()) || p.work_name)
-        : p.work_name;
+      const displayName = getWorkDisplayName(p.work_name);
       if (!worksByArea[p.area].includes(displayName)) {
         worksByArea[p.area].push(displayName);
       }

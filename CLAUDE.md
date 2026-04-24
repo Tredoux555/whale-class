@@ -183,6 +183,53 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 24, 2026)
 
+### ⚡ Session 61 — Multilingual Build: Layer 3 Ternary Sweep — 8 Files Converted (Apr 24, 2026)
+
+**No new commits. 40+ files changed locally — ready to commit.** Continued Phase 4 (3x BUILD) Layer 3 ternary sweep. Converted 8 files to locale-agnostic patterns, adding ~186 translation keys across en.ts/zh.ts/es.ts.
+
+**Development Cycle Status:**
+1. 3x RESEARCH — ✅ COMPLETE
+2. 3x PLAN — ✅ COMPLETE
+3. 3x INVESTIGATE — ✅ COMPLETE
+4. 3x BUILD — **IN PROGRESS** (Layer 0-1 ✅, Layer 4 ✅, Layer 5 ✅, Layer 3 ~35% done)
+5. 3x AUDIT — pending
+
+**Layer 3 progress — Files FULLY CONVERTED this session:**
+- `app/montree/dashboard/focus/page.tsx` — ✅ (19 → 0)
+- `app/montree/dashboard/photo-audit/page.tsx` — ✅ (20 → 0)
+- `app/montree/parent/dashboard/page.tsx` — ✅ (18 → 3 TYPE B preserves)
+- `components/montree/onboarding/TellGuruCard.tsx` — ✅ (20 → 0)
+- `app/montree/dashboard/classroom-overview/page.tsx` — ✅ (20 → 1 TYPE B preserve)
+- `app/montree/dashboard/language-semester/page.tsx` — ✅ (17 → 0)
+- `components/montree/curriculum/CurriculumWorkList.tsx` — ✅ ALL TYPE B, no changes needed
+- `components/montree/reports/WeeklyWrapTab.tsx` — ✅ (prior sessions)
+
+**Files with edits IDENTIFIED but NOT YET APPLIED:**
+- `components/montree/photo-audit/ThisIsSheet.tsx` — 2 TYPE A edits (lines 492, 974)
+- `app/montree/dashboard/weekly-admin-docs/page.tsx` — 8 TYPE A edits (includes 2 `displayField` specials)
+
+**Files NOT YET STARTED (highest priority):**
+- `weekly-wrap/page.tsx` (76 ternaries, fully catalogued in handoff Section 10)
+- `gallery/page.tsx` (31), `parent/report/[reportId]/page.tsx` (16), `PendingReviewPanel.tsx` (15), `DashboardHeader.tsx` (14), `BatchNarrativesCard.tsx` (14), `BigMicPanel.tsx` (14), `ChildGuruChat.tsx` (13)
+- ~45 smaller files with <13 occurrences each
+
+**Translation keys added this session:** ~186 keys across 8 namespaces: `focus.*`, `photoAudit.*`, `parentDashboard.*`, `tellGuru.*`, `classroomOverview.*`, `languageSemester.*`, `parentReport.*` (12), `pendingReview.*` (15), `batchNarratives.*` (14), `dashboard.*` (15), `childGuru.*` (13)
+
+**Handoff document updated:** `docs/MULTILINGUAL_BUILD_HANDOFF.md` — Section headers updated with converted/remaining file lists. Section 10 (weekly-wrap catalog) unchanged. Section 11 rewritten with done/pending/not-investigated breakdown.
+
+**Next session priorities:**
+1. **Apply 2 TYPE A edits to ThisIsSheet.tsx** + add keys to all 3 translation files.
+2. **Apply 8 TYPE A edits to weekly-admin-docs/page.tsx** + add keys.
+3. **Execute weekly-wrap/page.tsx ternary sweep** — the biggest file (76 ternaries, plan in handoff Section 10).
+4. **Continue Layer 3** with gallery/page.tsx (31), then remaining MED-priority files.
+5. **Commit + push** all multilingual changes (40+ files).
+6. **Phase 5: 3x AUDIT** — fix cycle until 3 consecutive clean audits.
+5. **Draft replies to 3 hot leads** — Paint Pots UK, Ardtona House UK, Montessori Copenhagen.
+6. **Follow up on FAMM Argentina** if no response by Apr 28.
+7. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ### ⚡ Session 59 — Multilingual Build Phase 4: Layer 0-1 Infrastructure + Layer 4 AI Pipeline (Apr 24, 2026)
 
 **No commits yet — 38 files changed locally, ready to commit.** Phase 4 (3x BUILD) of the 3x3x3x3x3 development cycle. Built the entire multilingual infrastructure foundation (Layer 0-1) and converted the two most complex AI pipeline files (Layer 4 core).

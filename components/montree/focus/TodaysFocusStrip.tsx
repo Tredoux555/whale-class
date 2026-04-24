@@ -59,7 +59,7 @@ function Avatar({ name, photoUrl, size = 40 }: { name: string; photoUrl: string 
 }
 
 export default function TodaysFocusStrip({ compact = false }: { compact?: boolean }) {
-  const { locale } = useI18n();
+  const { t, locale } = useI18n();
   const [data, setData] = useState<FocusData | null>(null);
   const mountedRef = useRef(true);
 
@@ -90,8 +90,8 @@ export default function TodaysFocusStrip({ compact = false }: { compact?: boolea
   // Hide when no data or empty list — nothing useful to show
   if (!data || data.children.length === 0) return null;
 
-  const title = locale === 'zh' ? '今日关注' : "Today's Focus";
-  const manage = locale === 'zh' ? '管理 →' : 'Manage →';
+  const title = t('todaysFocus.title');
+  const manage = t('todaysFocus.manageButton');
 
   return (
     <Link

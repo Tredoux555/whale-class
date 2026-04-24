@@ -104,7 +104,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           if (!res.ok) throw new Error('Transcription failed');
           const data = await res.json();
           if (!data.transcript || data.transcript.length < 5) {
-            setErrorMsg(locale === 'zh' ? '没有检测到语音，请再试一次' : 'No speech detected. Please try again.');
+            setErrorMsg(t('tellGuru.noSpeechDetected'));
             setStage('error');
             return;
           }
@@ -114,7 +114,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           await processTranscript(data.transcript);
         } catch (err) {
           console.error('[TellGuru] Transcription error:', err);
-          setErrorMsg(locale === 'zh' ? '转录失败，请再试一次' : 'Transcription failed. Please try again.');
+          setErrorMsg(t('tellGuru.transcriptionFailed'));
           setStage('error');
         }
       };
@@ -124,10 +124,10 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       setRecordingTime(0);
       timerRef.current = setInterval(() => setRecordingTime(t => t + 1), 1000);
     } catch {
-      setErrorMsg(locale === 'zh' ? '无法访问麦克风' : 'Could not access microphone. Please check permissions.');
+      setErrorMsg(t('tellGuru.microphoneError'));
       setStage('error');
     }
-  }, [locale]);
+  }, [t]);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -162,7 +162,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       setTimeout(() => onComplete(data.game_plan ? (data.game_plan as GamePlan) : undefined), 3000);
     } catch (err) {
       console.error('[TellGuru] Processing error:', err);
-      setErrorMsg(locale === 'zh' ? '处理失败，请再试一次' : 'Processing failed. Please try again.');
+      setErrorMsg(t('tellGuru.processingFailed'));
       setStage('error');
     }
   };
@@ -194,13 +194,10 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-800">
-              {locale === 'zh' ? `告诉我关于${firstName}的情况` : `Tell me about ${firstName}`}
+              {t('tellGuru.tellMeAbout', { name: firstName })}
             </h3>
             <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto">
-              {locale === 'zh'
-                ? '按住录音按钮，告诉我这个孩子的情况——他们的经验、优势、个性，任何对我有帮助的信息。'
-                : `Tap the mic and tell me about ${firstName} — their experience, strengths, personality, anything that helps me understand them.`
-              }
+              {t('tellGuru.tellMeDescription', { name: firstName })}
             </p>
           </div>
           <button
@@ -215,7 +212,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             </svg>
           </button>
           <p className="text-xs text-gray-400">
-            {locale === 'zh' ? '点击开始录音' : 'Tap to start recording'}
+            {t('tellGuru.tapToStart')}
           </p>
 
           {/* Also allow typing */}
@@ -223,7 +220,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             onClick={() => { setIsEditing(true); setStage('prompt'); }}
             className="text-xs text-emerald-600 underline"
           >
-            {locale === 'zh' ? '或者打字输入' : 'or type instead'}
+            {t('tellGuru.orTypeInstead')}
           </button>
 
           {/* Inline text input */}
@@ -232,10 +229,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
               <textarea
                 value={editedTranscript}
                 onChange={e => setEditedTranscript(e.target.value)}
-                placeholder={locale === 'zh'
-                  ? `告诉我关于${firstName}的蒙特梭利经验、性格、优势...`
-                  : `Tell me about ${firstName}'s Montessori experience, personality, strengths...`
-                }
+                placeholder={t('tellGuru.textPlaceholder', { name: firstName })}
                 className="w-full h-32 p-3 text-sm border border-emerald-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300"
                 autoFocus
               />
@@ -244,7 +238,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
                 disabled={!editedTranscript.trim()}
                 className="w-full py-2.5 bg-emerald-500 text-white rounded-xl font-medium disabled:opacity-40 active:scale-[0.98] transition-all"
               >
-                {locale === 'zh' ? '提交' : 'Submit'}
+                {t('tellGuru.submit')}
               </button>
             </div>
           )}
@@ -255,7 +249,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
       {stage === 'recording' && (
         <div className="text-center space-y-4">
           <div className="text-sm text-gray-500">
-            {locale === 'zh' ? '正在录音...' : 'Recording...'}
+            {t('tellGuru.recording')}
           </div>
           <div className="text-4xl font-light text-emerald-600 tabular-nums">
             {formatTime(recordingTime)}
@@ -268,14 +262,14 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             <div className="w-8 h-8 bg-white rounded-sm" />
           </button>
           <p className="text-xs text-gray-400">
-            {locale === 'zh' ? '点击停止' : 'Tap to stop'}
+            {t('tellGuru.tapToStop')}
           </p>
           <p className="text-xs text-emerald-600 italic">
             {recordingTime < 10
-              ? (locale === 'zh' ? '尽量详细地描述...' : 'Take your time, the more detail the better...')
+              ? t('tellGuru.encourageStart')
               : recordingTime < 30
-                ? (locale === 'zh' ? '很好，继续说...' : 'Great, keep going...')
-                : (locale === 'zh' ? '非常详细！随时可以停止。' : 'Wonderful detail! Stop whenever you\'re ready.')
+                ? t('tellGuru.encourageKeepGoing')
+                : t('tellGuru.encourageWonderful')
             }
           </p>
         </div>
@@ -286,7 +280,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
         <div className="text-center space-y-4 py-4">
           <div className="w-10 h-10 mx-auto border-3 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
           <p className="text-sm text-gray-600">
-            {locale === 'zh' ? '正在转录...' : 'Transcribing your voice...'}
+            {t('tellGuru.transcribing')}
           </p>
         </div>
       )}
@@ -296,7 +290,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
         <div className="text-center space-y-4 py-4">
           <div className="w-10 h-10 mx-auto border-3 border-emerald-200 border-t-emerald-500 rounded-full animate-spin" />
           <p className="text-sm text-gray-600">
-            {locale === 'zh' ? `正在了解${firstName}...` : `Getting to know ${firstName}...`}
+            {t('tellGuru.gettingToKnow', { name: firstName })}
           </p>
           {transcript && (
             <p className="text-xs text-gray-400 max-w-sm mx-auto line-clamp-3 italic">
@@ -313,7 +307,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             <span className="text-2xl">✓</span>
           </div>
           <h3 className="text-base font-bold text-gray-800">
-            {locale === 'zh' ? `我已经了解${firstName}了！` : `I know ${firstName} now!`}
+            {t('tellGuru.knowChildNow', { name: firstName })}
           </h3>
           {extractedSummary && (
             <p className="text-sm text-gray-500 max-w-sm mx-auto">
@@ -323,7 +317,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
           {gamePlan && (
             <div className="mt-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100">
               <p className="text-xs text-amber-700 font-medium">
-                🗺️ {locale === 'zh' ? '学习计划已生成' : 'Game plan ready'}
+                🗺️ {t('tellGuru.gamePlanReady')}
               </p>
               <p className="text-xs text-gray-500 mt-0.5">
                 {gamePlan.headline}
@@ -341,7 +335,7 @@ export default function TellGuruCard({ childId, childName, classroomId, onComple
             onClick={handleRetry}
             className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-sm font-medium active:scale-95 transition-all"
           >
-            {locale === 'zh' ? '再试一次' : 'Try again'}
+            {t('tellGuru.tryAgain')}
           </button>
         </div>
       )}

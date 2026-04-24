@@ -1,10 +1,51 @@
-# Multilingual Build Handoff — Session 59 (Apr 24, 2026)
+# Multilingual Build Handoff — Session 61 (Apr 24, 2026)
 
 **Purpose:** Comprehensive handoff so a fresh session can continue the multilingual build without context loss.
 
 **Goal:** Make Montree translatable into ANY language by adding a translation file — zero code changes, zero migrations per new language. Triggered by FAMM Argentina hot lead (Spanish competitive advantage).
 
 **Development cycle:** 3x3x3x3x3 — RESEARCH ✅ → PLAN ✅ → INVESTIGATE ✅ → BUILD (IN PROGRESS) → AUDIT (pending)
+
+**Current status (Session 61):** Layer 0-1 ✅, Layer 4 ✅, Layer 5 ✅, Layer 3 IN PROGRESS.
+
+### Layer 3 progress — Files FULLY CONVERTED (no `=== 'zh'` or only TYPE B preserves):
+- `components/montree/reports/WeeklyWrapTab.tsx` — ✅ COMPLETE (38 edits, prior sessions)
+- `app/montree/dashboard/focus/page.tsx` — ✅ COMPLETE (19 → 0)
+- `app/montree/dashboard/photo-audit/page.tsx` — ✅ COMPLETE (20 → 0)
+- `app/montree/parent/dashboard/page.tsx` — ✅ COMPLETE (18 → 3 TYPE B preserves only)
+- `components/montree/onboarding/TellGuruCard.tsx` — ✅ COMPLETE (20 → 0)
+- `app/montree/dashboard/classroom-overview/page.tsx` — ✅ COMPLETE (20 → 1 TYPE B preserve only)
+- `app/montree/dashboard/language-semester/page.tsx` — ✅ COMPLETE (17 → 0)
+- `components/montree/curriculum/CurriculumWorkList.tsx` — ✅ NO CHANGES NEEDED (all 13 are TYPE B)
+
+### Layer 3 — Files with edits IDENTIFIED but NOT YET APPLIED:
+- `components/montree/photo-audit/ThisIsSheet.tsx` — 2 TYPE A edits needed (lines 492, 974)
+  - Keys: `thisIsSheet.flagForDiscussion` ('标记为讨论'/'Flag for discussion'), `thisIsSheet.tapToUseInstead` ('点击使用'/'tap to use this instead')
+  - 6 remaining are TYPE B (DB column reads) — leave as-is
+- `app/montree/dashboard/weekly-admin-docs/page.tsx` — 8 TYPE A edits needed
+  - 2 of 8 are `displayField` ternaries selecting `'chinese_text'` vs `'english_text'` — need locale-keyed map, not t() key
+  - Keys needed: `weeklyAdmin.thisWeekActivities`, `weeklyAdmin.summaryPlaceholder`, `weeklyAdmin.developmentalNote`, `weeklyAdmin.weeklyFocusPlaceholder`, `weeklyAdmin.notes`, `weeklyAdmin.notesPlaceholder`
+  - 2 remaining are TYPE B (area label DB reads) — leave as-is
+
+### Layer 3 — Files NOT YET INVESTIGATED:
+- `app/montree/dashboard/weekly-wrap/page.tsx` — 76 ternaries catalogued in Section 10, 0 edits applied
+- `app/montree/dashboard/[childId]/gallery/page.tsx` — 31 occurrences
+- `app/montree/parent/report/[reportId]/page.tsx` — 16
+- `components/montree/photo-audit/PendingReviewPanel.tsx` — 15
+- `components/montree/DashboardHeader.tsx` — 14
+- `components/montree/reports/BatchNarrativesCard.tsx` — 14
+- `components/montree/child/BigMicPanel.tsx` — 14
+- `components/montree/child/ChildGuruChat.tsx` — 13
+- 4 small components not yet accessed: PhotoDetailView.tsx (1), MediaCard.tsx (1), MediaDetailModal.tsx (1), TodaysFocusStrip.tsx (2)
+- ~40+ other files with <13 occurrences each (many are API routes, likely TYPE B/E/F)
+
+### Translation keys added across Sessions 60-61:
+- **Batch 1 (Session 60, WeeklyWrapTab):** 38 edits, keys in `weeklyWrap.*` namespace
+- **Batch 2 (Session 61, before compaction):** 72 keys across `parentReport.*` (12), `pendingReview.*` (15), `batchNarratives.*` (14), `dashboard.*` (15), `childGuru.*` (13)
+- **Batch 3 (Session 61, before compaction):** ~97 keys for `focus.*`, `photoAudit.*`, `parentDashboard.*`, `tellGuru.*`, `classroomOverview.*`
+- **Batch 4 (Session 61, after compaction):** 17 keys in `languageSemester.*` namespace
+
+### 40+ files changed locally — NOT YET COMMITTED. Ready for commit + push.
 
 ---
 
@@ -311,3 +352,181 @@ After all layers are complete, adding a new language (e.g., French) requires:
 - **Infrastructure files:** All in `lib/montree/i18n/` — `locales.ts`, `locale-config.ts`, `db-helpers.ts`, `area-labels.ts`, `localized-types.ts`, `index.ts`
 - **Gold standard component:** `components/montree/child/FocusWorksSection.tsx` — ZERO `=== 'zh'` checks despite being locale-aware. Uses `resolveLocalized()`, `getAreaLabel()`, locale-keyed patterns throughout.
 - **Session 58 CLAUDE.md section** — has the original research findings and pattern classification
+
+---
+
+## 10. `weekly-wrap/page.tsx` Ternary Catalog (76 occurrences, 0 applied)
+
+File: `app/montree/dashboard/weekly-wrap/page.tsx` (~1647 lines)
+
+**Existing infrastructure already in file:**
+- Lines 8-10: Already imports `useI18n`, `AREA_LABELS_ZH`, `AREA_LABELS_EN`, `getIntlLocale`
+- Line 108: Already destructures `const { t, locale } = useI18n()`
+- Line 317: Already uses `getIntlLocale(locale)` for date formatting
+
+**Step 1 — Add import for `getAreaLabel`:**
+```typescript
+import { getAreaLabel as getAreaLabelI18n } from '@/lib/montree/i18n/area-labels';
+```
+
+**Step 2 — Replace local `getAreaLabel` function (lines 727-728):**
+```typescript
+// REMOVE:
+const getAreaLabel = (area: string) =>
+  locale === 'zh' ? (AREA_LABELS_ZH[area] || area) : (AREA_LABELS_EN[area] || area.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()));
+// REPLACE WITH:
+const getAreaLabel = (area: string) => getAreaLabelI18n(area, locale);
+```
+
+**Step 3 — Convert STATUS_CONFIG (lines 398-403):**
+```typescript
+// BEFORE:
+presented: { label: locale === 'zh' ? '已展示' : 'Presented', ... },
+practicing: { label: locale === 'zh' ? '练习中' : 'Practicing', ... },
+mastered: { label: locale === 'zh' ? '已掌握' : 'Mastered', ... },
+// AFTER: use t('status.presented'), t('status.practicing'), t('status.mastered')
+```
+
+### 10.1 TYPE B — DB column reads (LEAVE AS-IS, 3 total)
+
+These read localized DB columns, not UI labels. Do NOT convert:
+- **Line 743:** `(locale === 'zh' && rec.work_zh) ? rec.work_zh : rec.work`
+- **Line 915:** `(locale === 'zh' && item.work_zh) ? item.work_zh : item.work`
+- **Line 1191:** `(locale === 'zh' && matchedWork?.name_zh) ? matchedWork.name_zh : photo.work_name`
+
+### 10.2 TYPE C — Area labels (3 total, replace with `getAreaLabelI18n`)
+
+- **Lines 727-728:** Local `getAreaLabel` function definition → replace per Step 2 above
+- **Lines 828-830:** Complex area label with `area_analyses` fallback → use `getAreaLabel(area)` (the local wrapper)
+- **Line 1196:** Area label in photo description badge → use `getAreaLabel(area)`
+
+### 10.3 TYPE G — Complex dynamic content (3 total, locale-keyed Record maps)
+
+- **Lines 749-752:** Recommendation sentence:
+  ```typescript
+  // zh: `${areaLabel}的${works.join('和')}`
+  // en: `${areaLabel} works such as ${works.join(' and ')}`
+  // → Record map with locale keys + English default
+  ```
+- **Lines 821-823:** `本周 ${firstName} 的活动：` vs `This week ${firstName} did:`
+- **Lines 883-885:** `下周建议 ${firstName} 多做 ${recSentenceParts.join('、')}` vs `Next week I recommend ${firstName} focuses more on ${recSentenceParts.join(' and ')}`
+
+### 10.4 TYPE A — Simple label ternaries (~67 total, replace with `t()`)
+
+**New keys to add to `en.ts` / `zh.ts` / `es.ts`:**
+
+| Key | English | Chinese | Context |
+|-----|---------|---------|---------|
+| `weeklyWrap.flagsCount` | `{count} flag` / `{count} flags` | `{count}个标记` | Line 802 |
+| `weeklyWrap.noRecordedActivities` | `No recorded activities this week` | `本周无记录活动` | Line 863 |
+| `weeklyWrap.teacherNotes` | `Teacher Notes` | `教师备注` | Line 945 |
+| `weeklyWrap.recordOrType` | `Record or type notes...` | `录音或输入备注...` | Line 959 |
+| `weeklyWrap.viewAiAnalysis` | `View AI Analysis` | `查看 AI 分析` | Line 969 |
+| `weeklyWrap.approving` | `Approving...` | `审批中...` | Line 985 |
+| `weeklyWrap.agree` | `Agree ✓` | `同意` | Line 985 |
+| `weeklyWrap.approved` | `Approved` | `已同意` | Line 989 |
+| `weeklyWrap.updateShelf` | `Update Shelf` | `更新书架` | Line 999 |
+| `weeklyWrap.shelfUpdated` | `Shelf Updated` | `书架已更新` | Line 1005 |
+| `weeklyWrap.edited` | `Edited` | `已编辑` | Line 1068 |
+| `weeklyWrap.parentNarrative` | `Parent Narrative` | `家长叙述` | Line 1087 |
+| `weeklyWrap.photos` | `Photos` | `照片` | Line 1130 |
+| `weeklyWrap.activityPhoto` | `Activity photo` | `活动照片` | Line 1152 |
+| `weeklyWrap.crop` | `Crop` | `裁剪` | Line 1161 |
+| `weeklyWrap.moveUp` | `Move up` | `上移` | Line 1167 |
+| `weeklyWrap.moveDown` | `Move down` | `下移` | Line 1173 |
+| `weeklyWrap.openFullReport` | `Open full parent report →` | `打开完整家长报告 →` | Line 1237 |
+| `weeklyWrap.saveChanges` | `Save Changes` | `保存修改` | Line 1249 |
+| `weeklyWrap.sendToParent` | `Send to Parent` | `发送给家长` | Line 1279 |
+| `weeklyWrap.weeklyWrap` | `Weekly Wrap` | `周报总结` | Line 1329 |
+| `weeklyWrap.children` | `children` | `学生` | Line 1338 |
+| `weeklyWrap.cancelSelect` | `Cancel` | `取消选择` | Line 1370 |
+| `weeklyWrap.regenerateSelected` | `🔄 Regenerate ({count})` | `🔄 重新生成 ({count})` | Line 1389 |
+| `weeklyWrap.generate` | `✨ Generate` | `✨ 生成` | Line 1411 |
+| `weeklyWrap.teacherSummary` | `Teacher Summary` | `教师总结` | Line 1438 |
+| `weeklyWrap.selected` | `{count} selected` | `已选择 {count} 名学生` | Line 1483 |
+| `weeklyWrap.tapToSelectChildren` | `Tap children to select` | `点击选择要生成的学生` | Line 1484 |
+| `weeklyWrap.needsAttention` | `Needs Attention` | `需要关注` | Line 1507 |
+| `weeklyWrap.onTrack` | `On Track` | `正常发展` | Line 1517 |
+| `weeklyWrap.approveAll` | `Approve All ({count} remaining)` | `全部同意 ({count} 剩余)` | Line 1555 |
+| `weeklyWrap.approvingAll` | `Approving...` | `正在审批...` | Line 1553 |
+| `weeklyWrap.reportsReadyToSend` | `{count} parent reports ready to send` | `{count} 份家长报告准备就绪` | Line 1598 |
+
+**Existing keys to reuse:**
+- `status.presented` / `status.practicing` / `status.mastered` — Lines 399-402
+- `common.remove` — Lines 850, 1180
+- `common.edit` — Line 1099
+- `common.done` — Line 1106
+- `common.back` — Line 1325
+- `common.select` — Line 1372
+- `common.saving` — Line 1249
+- `common.generating` — Lines 1386, 1406
+- `common.backToDashboard` — Line 1633
+- `weeklyWrap.worksCount` — Line 796
+- `weeklyWrap.nextWeekFocus` — Line 892
+- `weeklyWrap.tapToSelect` — Line 919
+- `weeklyWrap.sent` / `weeklyWrap.sentCheck` — Lines 1063, 1284
+- `weeklyWrap.regenerateAll` — Line 1409
+- `weeklyWrap.parentReports` — Line 1448
+- `weeklyWrap.noReports` — Line 1470
+- `weeklyWrap.deselectAll` — Line 1496
+- `weeklyWrap.selectAll` — Line 1498
+- `weeklyWrap.inviteParent` — Line 1607
+- `weeklyWrap.sending` — Lines 1279, 1614
+- `weeklyWrap.sendAll` — Line 1616
+- `weeklyWrap.sentDone` — Line 1627
+
+### 10.5 Execution Plan
+
+1. Batch-add ~33 new keys to `en.ts`, `zh.ts`, `es.ts`
+2. Add `getAreaLabelI18n` import
+3. Replace local `getAreaLabel` with wrapper calling `getAreaLabelI18n`
+4. Convert STATUS_CONFIG (3 ternaries → `t()`)
+5. Convert all TYPE A ternaries (~67 occurrences)
+6. Convert TYPE C ternaries (3 occurrences → `getAreaLabel()`)
+7. Convert TYPE G ternaries (3 occurrences → locale-keyed Record maps)
+8. Leave TYPE B ternaries as-is (3 occurrences)
+9. Grep verify: only TYPE B ternaries should remain
+
+---
+
+## 11. Full Layer 3 Remaining File List (updated Session 61)
+
+**✅ DONE (converted or confirmed no changes needed):**
+
+| File | Original Count | Status |
+|------|---------------|--------|
+| `components/montree/reports/WeeklyWrapTab.tsx` | 49 | ✅ COMPLETE (Session 60) |
+| `components/montree/onboarding/TellGuruCard.tsx` | 20 | ✅ COMPLETE (Session 61) |
+| `app/montree/dashboard/photo-audit/page.tsx` | 20 | ✅ COMPLETE (Session 61) |
+| `app/montree/dashboard/classroom-overview/page.tsx` | 20 | ✅ COMPLETE (1 TYPE B preserve) |
+| `app/montree/dashboard/focus/page.tsx` | 19 | ✅ COMPLETE (Session 61) |
+| `app/montree/parent/dashboard/page.tsx` | 18 | ✅ COMPLETE (3 TYPE B preserves) |
+| `app/montree/dashboard/language-semester/page.tsx` | 17 | ✅ COMPLETE (Session 61) |
+| `components/montree/curriculum/CurriculumWorkList.tsx` | 13 | ✅ ALL TYPE B — no changes |
+
+**⏳ EDITS IDENTIFIED, NOT YET APPLIED:**
+
+| File | Count | TYPE A Edits Needed |
+|------|-------|---------------------|
+| `components/montree/photo-audit/ThisIsSheet.tsx` | 8 | 2 (lines 492, 974) |
+| `app/montree/dashboard/weekly-admin-docs/page.tsx` | 10 | 8 (includes 2 `displayField` specials) |
+
+**📋 NOT YET INVESTIGATED:**
+
+| Priority | File | Count |
+|----------|------|-------|
+| HIGH | `app/montree/dashboard/weekly-wrap/page.tsx` | 76 (catalogued in Section 10) |
+| HIGH | `app/montree/dashboard/[childId]/gallery/page.tsx` | 31 |
+| MED | `app/montree/parent/report/[reportId]/page.tsx` | 16 |
+| MED | `components/montree/photo-audit/PendingReviewPanel.tsx` | 15 |
+| MED | `components/montree/DashboardHeader.tsx` | 14 |
+| MED | `components/montree/reports/BatchNarrativesCard.tsx` | 14 |
+| MED | `components/montree/child/BigMicPanel.tsx` | 14 |
+| MED | `components/montree/child/ChildGuruChat.tsx` | 13 |
+| LOW | `components/montree/media/PhotoDetailView.tsx` | 1 |
+| LOW | `components/montree/media/MediaCard.tsx` | 1 |
+| LOW | `components/montree/media/MediaDetailModal.tsx` | 1 |
+| LOW | `components/montree/focus/TodaysFocusStrip.tsx` | 2 |
+| LOW | ~40+ other files with <13 occurrences each | ~200+ |
+
+All follow the same TYPE A/B/C/D/G/H patterns documented in Section 5.

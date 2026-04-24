@@ -7,6 +7,7 @@ import type { MontreeMedia } from '@/lib/montree/media/types';
 import { AREA_CONFIG } from '@/lib/montree/types';
 import { useI18n } from '@/lib/montree/i18n';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface PhotoDetailViewProps {
   media: MontreeMedia | null;
@@ -35,7 +36,7 @@ export default function PhotoDetailView({
   const imageUrl = getProxyUrl(media.storage_path);
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return new Date(dateStr).toLocaleDateString(getIntlLocale(locale), {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
