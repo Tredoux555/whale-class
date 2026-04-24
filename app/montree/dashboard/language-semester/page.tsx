@@ -23,7 +23,7 @@ const DEFAULT_GRADUATING = new Set([
 
 export default function LanguageSemesterPage() {
   const router = useRouter();
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [session, setSession] = useState<MontreeSession | null>(null);
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,11 +101,7 @@ export default function LanguageSemesterPage() {
     if (selected.size === 0) return;
     setGenerating(true);
     setError(null);
-    setProgress(
-      locale === 'zh'
-        ? `正在为 ${selected.size} 名儿童生成报告...`
-        : `Generating reports for ${selected.size} children...`
-    );
+    setProgress(t('languageSemester.generatingProgress', { count: selected.size }));
     try {
       const res = await fetch('/api/montree/reports/language-semester/generate', {
         method: 'POST',
@@ -145,12 +141,8 @@ export default function LanguageSemesterPage() {
       const errCount = parseInt(res.headers.get('X-Report-Errors') || '0', 10);
       setProgress(
         errCount > 0
-          ? locale === 'zh'
-            ? `完成 (${errCount} 个失败 — 请查看 _errors.txt)`
-            : `Done (${errCount} failed — see _errors.txt in zip)`
-          : locale === 'zh'
-          ? '✅ 下载完成'
-          : '✅ Download complete'
+          ? t('languageSemester.completeWithErrors', { count: errCount })
+          : t('languageSemester.completeSuccess')
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -170,12 +162,10 @@ export default function LanguageSemesterPage() {
       <main className="max-w-3xl mx-auto px-4 py-6 pt-20">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            {locale === 'zh' ? '📄 语言学期报告' : '📄 Language Semester Report'}
+            {t('languageSemester.pageTitle')}
           </h1>
           <p className="text-sm text-gray-600">
-            {locale === 'zh'
-              ? '为选定的儿童生成官方学校格式的学期语言报告(.pptx)。AI 会根据每个孩子的语言进度撰写报告。'
-              : "Generate the official school PPTX semester report for selected children. Sonnet writes each report based on the child's Language progress."}
+            {t('languageSemester.pageDescription')}
           </p>
         </div>
 
@@ -187,24 +177,16 @@ export default function LanguageSemesterPage() {
             <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 px-4 py-3 mb-1">
               <span className="text-sm text-gray-700">
                 {selected.size > 0
-                  ? locale === 'zh'
-                    ? `已选 ${selected.size} / ${children.length}`
-                    : `${selected.size} of ${children.length} selected`
-                  : locale === 'zh'
-                  ? '选择儿童'
-                  : 'Select children'}
+                  ? t('languageSemester.selectionCount', { selected: selected.size, total: children.length })
+                  : t('languageSemester.selectChildren')}
               </span>
               <button
                 onClick={toggleAll}
                 className="text-xs font-semibold text-emerald-700 hover:text-emerald-800"
               >
                 {selected.size === children.length
-                  ? locale === 'zh'
-                    ? '取消全选'
-                    : 'Deselect All'
-                  : locale === 'zh'
-                  ? '全选'
-                  : 'Select All'}
+                  ? t('languageSemester.deselectAll')
+                  : t('languageSemester.selectAll')}
               </button>
             </div>
 
@@ -212,14 +194,14 @@ export default function LanguageSemesterPage() {
             <div className="flex items-center gap-4 px-4 py-2 mb-3 text-xs text-gray-500">
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" />
-                {locale === 'zh' ? `升K班 (${gradCount})` : `Graduating to K (${gradCount})`}
+                {t('languageSemester.graduatingLabel', { count: gradCount })}
               </span>
               <span className="flex items-center gap-1">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-400" />
-                {locale === 'zh' ? `留校 (${retCount})` : `Returning (${retCount})`}
+                {t('languageSemester.returningLabel', { count: retCount })}
               </span>
               <span className="text-gray-400 ml-auto">
-                {locale === 'zh' ? '点击标签切换' : 'tap badge to toggle'}
+                {t('languageSemester.toggleHint')}
               </span>
             </div>
 
@@ -271,8 +253,8 @@ export default function LanguageSemesterPage() {
                       }`}
                     >
                       {isGrad
-                        ? locale === 'zh' ? '升K班' : 'K class'
-                        : locale === 'zh' ? '留校' : 'Returning'}
+                        ? t('languageSemester.graduatingBadge')
+                        : t('languageSemester.returningBadge')}
                     </span>
                   </button>
                 );
@@ -297,18 +279,12 @@ export default function LanguageSemesterPage() {
               className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {generating
-                ? locale === 'zh'
-                  ? '生成中...请稍候'
-                  : 'Generating… please wait'
-                : locale === 'zh'
-                ? `✨ 生成并下载 (${selected.size})`
-                : `✨ Generate & Download (${selected.size})`}
+                ? t('languageSemester.generatingWait')
+                : t('languageSemester.generateDownload', { count: selected.size })}
             </button>
 
             <p className="text-xs text-gray-500 text-center mt-4">
-              {locale === 'zh'
-                ? '每个孩子约需 15-30 秒。全班 20 人约 5-10 分钟。'
-                : 'Each report takes 15-30s. A full class of 20 takes 5-10 minutes.'}
+              {t('languageSemester.timeEstimate')}
             </p>
           </>
         )}
