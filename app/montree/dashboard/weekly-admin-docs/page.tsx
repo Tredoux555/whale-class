@@ -649,17 +649,25 @@ function SummaryCard({
   const { t, locale } = useI18n();
 
   // Show the locale-appropriate content in one box
-  const displayField = locale === 'zh' ? 'chinese_text' : 'english_text';
+  const DISPLAY_FIELD_MAP: Record<string, 'english_text' | 'chinese_text'> = {
+    en: 'english_text',
+    zh: 'chinese_text',
+    es: 'english_text',
+  };
+  const displayField = DISPLAY_FIELD_MAP[locale] || 'english_text';
   const displayValue = notes[displayField] || '';
-  const placeholder = locale === 'zh'
-    ? '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...'
-    : 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...';
+  const PLACEHOLDER_MAP: Record<string, string> = {
+    en: 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...',
+    zh: '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...',
+    es: 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...',
+  };
+  const placeholder = PLACEHOLDER_MAP[locale] || PLACEHOLDER_MAP.en;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <label className="text-xs text-gray-500 font-medium">
-          {locale === 'zh' ? '本周活动' : 'This Week\'s Activities'}
+          {t('weeklyAdmin.thisWeekActivities')}
         </label>
         <VoiceDictate
           size="sm"
@@ -693,26 +701,28 @@ function PlanCard({
   const chineseNote = notes['_chinese'] || { english_text: '', chinese_text: '' };
   const notesEntry = notes['_notes'] || { english_text: '', chinese_text: '' };
 
-  // Show Chinese work names when locale is zh, English otherwise
-  const displayField = locale === 'zh' ? 'chinese_text' : 'english_text';
+  // Show localized work names based on current locale
+  const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
+  const displayField = LOCALE_FIELD[locale] || 'english_text';
 
   return (
     <div className="space-y-3">
-      {/* Per-area work names (English or Chinese based on locale) */}
+      {/* Per-area work names (localized based on current locale) */}
       <div className="grid grid-cols-5 gap-2">
         {AREAS.map((area) => {
           const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
           const displayValue = areaNote[displayField] || areaNote.english_text || '';
+          const areaLabel = getAreaLabel(area.key, locale);
           return (
             <div key={area.key}>
               <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
-                {locale === 'zh' ? area.zh : area.label}
+                {areaLabel}
               </div>
               <input
                 type="text"
                 value={displayValue}
                 onChange={(e) => onUpdate(childId, area.key, displayField, e.target.value)}
-                placeholder={locale === 'zh' ? area.zh : area.label}
+                placeholder={areaLabel}
                 className="w-full px-2 py-1.5 border rounded text-xs"
               />
             </div>
@@ -725,7 +735,7 @@ function PlanCard({
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-gray-500 font-medium">
-              {locale === 'zh' ? '中文备注' : 'Developmental Note'}
+              {t('weeklyAdmin.developmentalNote')}
             </label>
             <VoiceDictate
               size="sm"
@@ -736,7 +746,7 @@ function PlanCard({
           <textarea
             value={chineseNote.chinese_text}
             onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
-            placeholder={locale === 'zh' ? '本周重点...' : 'Weekly focus...'}
+            placeholder={t('weeklyAdmin.developmentalNotePlaceholder')}
             className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
           />
@@ -744,7 +754,7 @@ function PlanCard({
         <div>
           <div className="flex items-center justify-between mb-1">
             <label className="text-xs text-gray-500 font-medium">
-              {locale === 'zh' ? '备注' : 'Notes'}
+              {t('weeklyAdmin.notes')}
             </label>
             <VoiceDictate
               size="sm"
@@ -755,7 +765,7 @@ function PlanCard({
           <textarea
             value={notesEntry.english_text}
             onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}
-            placeholder={locale === 'zh' ? '如：上周因为写数字卷，计划未变' : 'e.g. No change from last week'}
+            placeholder={t('weeklyAdmin.notesPlaceholder')}
             className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
           />

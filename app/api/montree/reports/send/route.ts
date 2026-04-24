@@ -234,6 +234,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Override with Chinese descriptions when locale is zh
+    // TYPE B PRESERVE: only Chinese static descriptions exist currently
     if (locale === 'zh') {
       const zhDescriptions = getChineseDescriptionsMap();
       for (const [name, zh] of zhDescriptions) {
@@ -633,18 +634,18 @@ export async function POST(request: NextRequest) {
       const html = narrativeSummary && reportLink
         ? `
         <div style="font-family: -apple-system, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #059669;">🌳 ${firstName}${locale === 'zh' ? '的每周学习报告' : "'s Weekly Update"}</h2>
+          <h2 style="color: #059669;">🌳 ${firstName}${(() => { const L: Record<string, string> = { zh: '的每周学习报告', es: ' — Actualización Semanal' }; return L[locale] || "'s Weekly Update"; })()}</h2>
           <p style="color: #666; font-size: 13px;">${classroom?.name || 'Class'} · ${formatWeekDisplay()}</p>
 
           <div style="background: #f0fdf4; border-left: 4px solid #059669; padding: 16px; margin: 20px 0; border-radius: 0 8px 8px 0;">
             <p style="color: #333; line-height: 1.7; font-size: 15px; margin: 0;">${narrativeSummary}</p>
           </div>
 
-          ${photos.length > 0 ? `<p style="color: #666; font-size: 14px;">📸 ${photos.length} ${locale === 'zh' ? '张照片等您查看' : 'photos to explore'}</p>` : ''}
+          ${photos.length > 0 ? `<p style="color: #666; font-size: 14px;">📸 ${photos.length} ${(() => { const L: Record<string, string> = { zh: '张照片等您查看', es: 'fotos para explorar' }; return L[locale] || 'photos to explore'; })()}</p>` : ''}
 
           <div style="text-align: center; margin: 24px 0;">
             <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">
-              ${locale === 'zh' ? '查看完整报告' : 'View Full Report'} →
+              ${(() => { const L: Record<string, string> = { zh: '查看完整报告', es: 'Ver Informe Completo' }; return L[locale] || 'View Full Report'; })()} →
             </a>
           </div>
 
@@ -664,7 +665,7 @@ export async function POST(request: NextRequest) {
           ${reportLink ? `
           <div style="text-align: center; margin: 20px 0;">
             <a href="${reportLink}" style="display: inline-block; background: #059669; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-              ${locale === 'zh' ? '查看完整报告' : 'View Full Report'} →
+              ${(() => { const L: Record<string, string> = { zh: '查看完整报告', es: 'Ver Informe Completo' }; return L[locale] || 'View Full Report'; })()} →
             </a>
           </div>
           ` : ''}

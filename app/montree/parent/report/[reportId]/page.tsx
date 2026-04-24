@@ -166,9 +166,7 @@ export default function ParentReportPage() {
       return `${fmt(start)} – ${fmt(end)}`;
     }
     if (report.week_number && report.report_year) {
-      return locale === 'zh'
-        ? `${report.report_year}年 第${report.week_number}周`
-        : `Week ${report.week_number}, ${report.report_year}`;
+      return t('parentReport.weekDisplay', { year: report.report_year, week: report.week_number });
     }
     return '';
   };
@@ -240,7 +238,7 @@ export default function ParentReportPage() {
       <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/montree/parent/dashboard" className="text-emerald-600 text-sm flex items-center gap-1 font-medium">
-            ← {locale === 'zh' ? '返回' : 'Back'}
+            ← {t('parentReport.back')}
           </Link>
           <LanguageToggle />
         </div>
@@ -257,7 +255,7 @@ export default function ParentReportPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {locale === 'zh' ? `${firstName}的一周` : `${firstName}'s Week`}
+                {t('parentReport.childWeekTitle', { name: firstName })}
               </h1>
               <p className="text-gray-500 text-sm mt-0.5">{formatWeekDisplay()}</p>
             </div>
@@ -268,17 +266,17 @@ export default function ParentReportPage() {
             <div className="flex gap-3 mb-6">
               {masteredCount > 0 && (
                 <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                  <span>⭐</span> {masteredCount} {locale === 'zh' ? '掌握' : 'mastered'}
+                  <span>⭐</span> {masteredCount} {t('parentReport.statsMastered')}
                 </div>
               )}
               {practicingCount > 0 && (
                 <div className="flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                  <span>🔄</span> {practicingCount} {locale === 'zh' ? '练习' : 'practicing'}
+                  <span>🔄</span> {practicingCount} {t('parentReport.statsPracticing')}
                 </div>
               )}
               {presentedCount > 0 && (
                 <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                  <span>🌱</span> {presentedCount} {locale === 'zh' ? '新展示' : 'new'}
+                  <span>🌱</span> {presentedCount} {t('parentReport.statsNew')}
                 </div>
               )}
             </div>
@@ -304,9 +302,7 @@ export default function ParentReportPage() {
         {photoWorks.length > 0 && (
           <div className="px-5 pb-3">
             <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-              {locale === 'zh'
-                ? `本周照片记录 · ${photoWorks.length}项`
-                : `This Week's Moments · ${photoWorks.length} activities`}
+              {t('parentReport.photoSectionHeader', { count: photoWorks.length })}
             </p>
           </div>
         )}
@@ -368,7 +364,7 @@ export default function ParentReportPage() {
                   {work.why_it_matters && (
                     <div className="bg-gray-50 rounded-xl px-4 py-3">
                       <p className="text-xs font-semibold text-gray-500 mb-1">
-                        {locale === 'zh' ? '为什么重要' : 'Why this matters'}
+                        {t('parentReport.whyItMatters')}
                       </p>
                       <p className="text-gray-700 text-sm leading-relaxed">
                         {work.why_it_matters}
@@ -380,7 +376,7 @@ export default function ParentReportPage() {
                   {work.photo_caption && (
                     <div className="bg-blue-50 rounded-xl px-4 py-3">
                       <p className="text-xs font-semibold text-blue-600 mb-1">
-                        {locale === 'zh' ? '老师的观察' : "Teacher's Note"}
+                        {t('parentReport.teachersNote')}
                       </p>
                       <p className="text-blue-800 text-sm leading-relaxed">
                         {work.photo_caption}
@@ -391,9 +387,7 @@ export default function ParentReportPage() {
                   {/* Fallback if no descriptions at all */}
                   {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
                     <p className="text-gray-400 text-sm">
-                      {locale === 'zh'
-                        ? `${firstName}在${getAreaLabel(work.area)}方面进行了学习。`
-                        : `${firstName} explored this ${getAreaLabel(work.area).toLowerCase()} activity.`}
+                      {t('parentReport.fallbackDescription', { name: firstName, area: getAreaLabel(work.area).toLowerCase() })}
                     </p>
                   )}
                 </div>
@@ -410,7 +404,7 @@ export default function ParentReportPage() {
           return (
             <div className="px-5 py-6 border-t border-gray-100">
               <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
-                {locale === 'zh' ? '更多瞬间' : 'More Moments'}
+                {t('parentReport.moreMoments')}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {extraPhotos.map((photo, i) => (
@@ -440,7 +434,7 @@ export default function ParentReportPage() {
         {report.recommendations && report.recommendations.length > 0 && (
           <div className="px-5 py-6 border-t border-gray-100">
             <h2 className="font-bold text-gray-800 text-sm mb-3">
-              {locale === 'zh' ? '💡 在家可以这样做' : '💡 Try This at Home'}
+              {t('parentReport.tryThisAtHome')}
             </h2>
             <div className="space-y-2">
               {report.recommendations.map((item, i) => (
@@ -465,7 +459,7 @@ export default function ParentReportPage() {
           <div className="px-5 py-16 text-center">
             <p className="text-4xl mb-3">📋</p>
             <p className="text-gray-400">
-              {locale === 'zh' ? '本周暂无活动记录' : 'No activities recorded this week'}
+              {t('parentReport.noActivities')}
             </p>
           </div>
         )}

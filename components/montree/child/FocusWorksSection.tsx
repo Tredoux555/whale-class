@@ -268,7 +268,7 @@ export default function FocusWorksSection({
           <div className="flex items-start gap-2.5">
             <span className="text-lg mt-0.5">🧭</span>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wide text-amber-600">{locale === 'zh' ? '游戏计划' : 'Game Plan'}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-amber-600">{t('focusWorks.gamePlan')}</p>
               <p className="text-sm text-gray-700 leading-relaxed">{planNudge}</p>
               {planDirection && (
                 <p className="text-[11px] text-amber-600 font-medium mt-1">{planDirection}</p>
@@ -299,11 +299,11 @@ export default function FocusWorksSection({
                   ) : (
                     '↓'
                   )}
-                  {locale === 'zh' ? '填充书架' : 'Fill shelf'}
+                  {t('focusWorks.fillShelf')}
                 </button>
               )}
               {shelfFilled && (
-                <span className="px-2.5 py-1 text-xs text-emerald-600 font-medium">✓ {locale === 'zh' ? '已填充' : 'Done'}</span>
+                <span className="px-2.5 py-1 text-xs text-emerald-600 font-medium">✓ {t('focusWorks.done')}</span>
               )}
             </div>
           )}
@@ -515,8 +515,8 @@ export default function FocusWorksSection({
         <div className="mt-3 flex items-center justify-between pt-2 border-t border-amber-100">
           <p className="text-[10px] text-gray-400">
             {planDaysSinceUpdate === 0
-              ? (locale === 'zh' ? '今天更新' : 'Updated today')
-              : `${planDaysSinceUpdate}${locale === 'zh' ? '天前更新' : 'd ago'}`
+              ? t('focusWorks.updatedToday')
+              : t('focusWorks.daysAgo', { count: planDaysSinceUpdate })
             }
           </p>
           <button
@@ -531,7 +531,7 @@ export default function FocusWorksSection({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             )}
-            {locale === 'zh' ? '刷新' : 'Refresh'}
+            {t('focusWorks.refresh')}
           </button>
         </div>
       )}

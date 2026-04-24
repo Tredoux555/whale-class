@@ -5,6 +5,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface Child {
   id: string;
@@ -55,9 +56,9 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
   const { week_start, week_end } = getWeekDates();
 
   // Format dates for display
-  const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
-  const startFmt = new Date(week_start).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
-  const endFmt = new Date(week_end).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
+  const intlLocale = getIntlLocale(locale);
+  const startFmt = new Date(week_start).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
+  const endFmt = new Date(week_end).toLocaleDateString(intlLocale, { month: 'short', day: 'numeric' });
 
   const handleGenerate = useCallback(async (forceRegenerate = false) => {
     if (generating) return;
@@ -66,7 +67,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
     setResult(null);
     setChildrenDone(0);
     setChildrenTotal(0);
-    setProgress(locale === 'zh' ? '正在准备...' : 'Preparing...');
+    setProgress(t('weeklyWrap.preparing'));
 
     try {
       // Use raw fetch (not montreeApi) — streaming bypasses timeout issues
@@ -115,12 +116,11 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
               const event = JSON.parse(line);
               if (event.type === 'start') {
                 setChildrenTotal(event.total);
-                setProgress(locale === 'zh' ? '正在生成报告...' : 'Generating reports...');
+                setProgress(t('weeklyWrap.generatingReports'));
               } else if (event.type === 'child_start') {
                 const firstName = event.child_name?.split(' ')[0] || '';
-                setProgress(locale === 'zh'
-                  ? `正在处理 ${firstName}... (${event.index}/${event.total})`
-                  : `${firstName}... (${event.index}/${event.total})`);
+                const label = t('weeklyWrap.processingChild');
+                setProgress(`${label} ${firstName}... (${event.index}/${event.total})`);
               } else if (event.type === 'child_done') {
                 setChildrenDone(d => d + 1);
               } else if (event.type === 'complete') {
@@ -186,10 +186,10 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
           <span className="text-xl">📋</span>
           <div>
             <h3 className="font-bold text-gray-900 text-sm">
-              {locale === 'zh' ? '周报总结' : 'Weekly Wrap'}
+              {t('weeklyWrap.title')}
             </h3>
             <p className="text-xs text-gray-400">
-              {startFmt} – {endFmt} · {children.length} {locale === 'zh' ? '学生' : 'children'}
+              {startFmt} – {endFmt} · {children.length} {t('weeklyWrap.childrenLabel')}
             </p>
           </div>
         </div>
@@ -197,9 +197,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
 
       {/* Description */}
       <p className="text-xs text-gray-500 leading-relaxed">
-        {locale === 'zh'
-          ? '为每个孩子生成教师报告（蒙特梭利专家分析）和家长报告（AI 叙述 + 照片），然后一键发送给家长。'
-          : 'Generates teacher reports (Montessori expert analysis) and parent reports (AI narrative + photos) for every child, then review before sending to parents.'}
+        {t('weeklyWrap.description')}
       </p>
 
       {/* Generate button */}
@@ -216,7 +214,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
                 {progress}
               </span>
             ) : (
-              locale === 'zh' ? '生成周报' : '✨ Generate Weekly Wrap'
+              t('weeklyWrap.generateButton')
             )}
           </button>
 
@@ -230,7 +228,7 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
                 />
               </div>
               <p className="text-[10px] text-gray-400 text-center">
-                {childrenDone}/{childrenTotal} {locale === 'zh' ? '已完成' : 'done'}
+                {childrenDone}/{childrenTotal} {t('weeklyWrap.done')}
               </p>
             </div>
           )}
@@ -283,12 +281,12 @@ export default function WeeklyWrapCard({ classroomId, children }: Props) {
               onClick={handleReview}
               className="flex-1 py-2.5 rounded-lg bg-emerald-600 text-white font-semibold text-sm hover:bg-emerald-700 transition-colors"
             >
-              {locale === 'zh' ? '查看报告并发送' : 'Review & Send →'}
+              {t('weeklyWrap.reviewButton')}
             </button>
             <button
               onClick={() => { setResult(null); handleGenerate(true); }}
               className="px-3 py-2.5 rounded-lg border border-gray-200 text-gray-500 text-sm hover:bg-gray-50 transition-colors"
-              title={locale === 'zh' ? '重新生成' : 'Regenerate all'}
+              title={t('weeklyWrap.regenerateTitle')}
             >
               🔄
             </button>

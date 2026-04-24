@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { useFeatures } from '@/hooks/useFeatures';
 import { sortChildrenByCustomOrder } from '@/lib/montree/weekly-admin/child-order';
 
@@ -612,21 +613,19 @@ function SummaryCard({
   onUpdate: (childId: string, field: 'english_text' | 'chinese_text', value: string) => void;
 }) {
   const { locale } = useI18n();
-  const displayField = locale === 'zh' ? 'chinese_text' : 'english_text';
+  const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
+  const displayField = LOCALE_FIELD[locale] || 'english_text';
   const displayValue = notes[displayField] || '';
-  const placeholder = locale === 'zh'
-    ? '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...'
-    : 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...';
 
   return (
     <div>
       <label className="text-xs text-gray-500 font-medium block mb-1">
-        {locale === 'zh' ? '本周活动' : "This Week's Activities"}
+        {t('weeklyAdmin.thisWeekActivities')}
       </label>
       <textarea
         value={displayValue}
         onChange={(e) => onUpdate(childId, displayField, e.target.value)}
-        placeholder={placeholder}
+        placeholder={t('weeklyAdmin.summaryPlaceholder')}
         className="w-full px-3 py-2 border rounded-lg text-xs resize-none"
         rows={5}
       />
@@ -649,8 +648,9 @@ function PlanCard({
   const chineseNote = notes['_chinese'] || { english_text: '', chinese_text: '' };
   const notesEntry = notes['_notes'] || { english_text: '', chinese_text: '' };
 
-  // Show Chinese work names when locale is zh, English otherwise
-  const displayField = locale === 'zh' ? 'chinese_text' : 'english_text';
+  // Show localized work names based on current locale
+  const LOCALE_FIELD: Record<string, 'chinese_text' | 'english_text'> = { zh: 'chinese_text' };
+  const displayField = LOCALE_FIELD[locale] || 'english_text';
 
   return (
     <div className="space-y-3">
@@ -658,16 +658,17 @@ function PlanCard({
         {AREAS.map((area) => {
           const areaNote = notes[area.key] || { english_text: '', chinese_text: '' };
           const displayValue = areaNote[displayField] || areaNote.english_text || '';
+          const areaLabel = getAreaLabel(area.key, locale);
           return (
             <div key={area.key}>
               <div className="text-[10px] font-semibold text-gray-500 mb-1 text-center">
-                {locale === 'zh' ? area.zh : area.label}
+                {areaLabel}
               </div>
               <input
                 type="text"
                 value={displayValue}
                 onChange={(e) => onUpdate(childId, area.key, displayField, e.target.value)}
-                placeholder={locale === 'zh' ? area.zh : area.label}
+                placeholder={areaLabel}
                 className="w-full px-2 py-1.5 border rounded text-xs"
               />
             </div>
@@ -678,24 +679,24 @@ function PlanCard({
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="text-xs text-gray-500 font-medium block mb-1">
-            {locale === 'zh' ? '中文备注' : 'Developmental Note'}
+            {t('weeklyAdmin.chineseNote')}
           </label>
           <textarea
             value={chineseNote.chinese_text}
             onChange={(e) => onUpdate(childId, '_chinese', 'chinese_text', e.target.value)}
-            placeholder={locale === 'zh' ? '本周重点...' : 'Weekly focus...'}
+            placeholder={t('weeklyAdmin.chineseNotePlaceholder')}
             className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
           />
         </div>
         <div>
           <label className="text-xs text-gray-500 font-medium block mb-1">
-            {locale === 'zh' ? '备注' : 'Notes'}
+            {t('weeklyAdmin.additionalNotes')}
           </label>
           <textarea
             value={notesEntry.english_text}
             onChange={(e) => onUpdate(childId, '_notes', 'english_text', e.target.value)}
-            placeholder={locale === 'zh' ? '如：上周因为写数字卷，计划未变' : 'e.g. No change from last week'}
+            placeholder={t('weeklyAdmin.notesPlaceholder')}
             className="w-full px-2 py-1.5 border rounded text-xs resize-none"
             rows={3}
           />

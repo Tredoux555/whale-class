@@ -254,9 +254,7 @@ export default function ParentDashboardPage() {
       return `${fmt(start)} – ${fmt(end)}`;
     }
     if (report.week_number && report.report_year) {
-      return locale === 'zh'
-        ? `${report.report_year}年 第${report.week_number}周`
-        : `Week ${report.week_number}, ${report.report_year}`;
+      return t('parentDashboard.weekLabel', { week: report.week_number, year: report.report_year });
     }
     const created = new Date(report.created_at);
     return created.toLocaleDateString(dateLocale, { month: 'long', day: 'numeric' });
@@ -271,9 +269,7 @@ export default function ParentDashboardPage() {
       return `${fmt(start)} – ${fmt(end)}`;
     }
     if (report.week_number && report.report_year) {
-      return locale === 'zh'
-        ? `第${report.week_number}周`
-        : `Week ${report.week_number}`;
+      return t('parentDashboard.weekOnly', { week: report.week_number });
     }
     return new Date(report.created_at).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
   };
@@ -382,17 +378,17 @@ export default function ParentDashboardPage() {
                     <div className="flex gap-2 flex-wrap">
                       {masteredCount > 0 && (
                         <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                          ⭐ {masteredCount} {locale === 'zh' ? '掌握' : 'mastered'}
+                          ⭐ {masteredCount} {t('parentDashboard.mastered')}
                         </span>
                       )}
                       {practicingCount > 0 && (
                         <span className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                          🔄 {practicingCount} {locale === 'zh' ? '练习' : 'practicing'}
+                          🔄 {practicingCount} {t('parentDashboard.practicing')}
                         </span>
                       )}
                       {presentedCount > 0 && (
                         <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1.5 rounded-full text-sm font-medium">
-                          🌱 {presentedCount} {locale === 'zh' ? '新展示' : 'new'}
+                          🌱 {presentedCount} {t('parentDashboard.new')}
                         </span>
                       )}
                     </div>
@@ -414,9 +410,7 @@ export default function ParentDashboardPage() {
                 {photoWorks.length > 0 && (
                   <div className="px-5 pb-3">
                     <p className="text-gray-400 text-xs font-medium uppercase tracking-wider">
-                      {locale === 'zh'
-                        ? `本周照片记录 · ${photoWorks.length}项`
-                        : `This Week's Moments · ${photoWorks.length} activities`}
+                      {t('parentDashboard.thisWeekMoments', { count: photoWorks.length })}
                     </p>
                   </div>
                 )}
@@ -466,7 +460,7 @@ export default function ParentDashboardPage() {
                           {work.why_it_matters && (
                             <div className="bg-gray-50 rounded-xl px-4 py-3">
                               <p className="text-xs font-semibold text-gray-500 mb-1">
-                                {locale === 'zh' ? '为什么重要' : 'Why this matters'}
+                                {t('parentDashboard.whyItMatters')}
                               </p>
                               <p className="text-gray-700 text-sm leading-relaxed">{work.why_it_matters}</p>
                             </div>
@@ -474,16 +468,14 @@ export default function ParentDashboardPage() {
                           {work.photo_caption && (
                             <div className="bg-blue-50 rounded-xl px-4 py-3">
                               <p className="text-xs font-semibold text-blue-600 mb-1">
-                                {locale === 'zh' ? '老师的观察' : "Teacher's Note"}
+                                {t('parentDashboard.teachersNote')}
                               </p>
                               <p className="text-blue-800 text-sm leading-relaxed">{work.photo_caption}</p>
                             </div>
                           )}
                           {!work.parent_description && !work.why_it_matters && !work.photo_caption && (
                             <p className="text-gray-400 text-sm">
-                              {locale === 'zh'
-                                ? `${firstName}在${getAreaLabel(work.area)}方面进行了学习。`
-                                : `${firstName} explored this ${getAreaLabel(work.area).toLowerCase()} activity.`}
+                              {t('parentDashboard.exploredActivity', { name: firstName, area: getAreaLabel(work.area).toLowerCase() })}
                             </p>
                           )}
                         </div>
@@ -500,7 +492,7 @@ export default function ParentDashboardPage() {
                   return (
                     <div className="px-5 py-6 border-t border-gray-100">
                       <p className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-3">
-                        {locale === 'zh' ? '更多瞬间' : 'More Moments'}
+                        {t('parentDashboard.moreMoments')}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {extraPhotos.map((photo, i) => (
@@ -521,7 +513,7 @@ export default function ParentDashboardPage() {
                 {latestReport.recommendations && latestReport.recommendations.length > 0 && (
                   <div className="px-5 py-6 border-t border-gray-100">
                     <h2 className="font-bold text-gray-800 text-sm mb-3">
-                      {locale === 'zh' ? '💡 在家可以这样做' : '💡 Try This at Home'}
+                      {t('parentDashboard.tryThisAtHome')}
                     </h2>
                     <div className="space-y-2">
                       {latestReport.recommendations.map((item, i) => (
@@ -546,7 +538,7 @@ export default function ParentDashboardPage() {
                   <div className="px-5 py-16 text-center">
                     <p className="text-4xl mb-3">📋</p>
                     <p className="text-gray-400">
-                      {locale === 'zh' ? '本周暂无活动记录' : 'No activities recorded this week'}
+                      {t('parentDashboard.noActivitiesThisWeek')}
                     </p>
                   </div>
                 )}
@@ -558,10 +550,10 @@ export default function ParentDashboardPage() {
                   <span className="text-2xl">🌱</span>
                 </div>
                 <p className="text-gray-500 font-medium">
-                  {locale === 'zh' ? '老师正在准备第一份周报' : "Your child's first report is on its way"}
+                  {t('parentDashboard.firstReportOnWay')}
                 </p>
                 <p className="text-gray-400 text-sm mt-2">
-                  {locale === 'zh' ? '请稍后再来查看' : "Check back soon"}
+                  {t('parentDashboard.checkBackSoon')}
                 </p>
               </div>
             ) : null}
@@ -574,9 +566,7 @@ export default function ParentDashboardPage() {
                   className="w-full flex items-center justify-between py-2 group"
                 >
                   <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-700 transition-colors">
-                    {locale === 'zh'
-                      ? `以往周报 (${pastReports.length})`
-                      : `Past Reports (${pastReports.length})`}
+                    {t('parentDashboard.pastReports', { count: pastReports.length })}
                   </span>
                   <svg
                     className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${pastReportsOpen ? 'rotate-180' : ''}`}

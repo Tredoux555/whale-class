@@ -560,41 +560,33 @@ export default function PhotoAuditPage() {
     try {
       const result = await drainStuckQueue();
       if (result.needs_auth) {
-        toast.error(locale === 'zh' ? '请重新登录' : 'Please log in again');
+        toast.error(t('photoAudit.loginRequired'));
         return;
       }
       if (result.skipped && result.reason === 'offline') {
-        toast.error(locale === 'zh' ? '离线 — 请检查网络' : 'Offline — check your connection');
+        toast.error(t('photoAudit.offlineSaved'));
         return;
       }
       if (result.reset === 0 && result.uploaded === 0) {
-        toast.success(locale === 'zh' ? '队列为空 — 没有要同步的照片' : 'Queue empty — no photos to sync');
+        toast.success(t('photoAudit.queueEmpty'));
         return;
       }
       if (result.uploaded > 0) {
-        toast.success(
-          locale === 'zh'
-            ? `已上传 ${result.uploaded} 张照片` + (result.failed > 0 ? ` (${result.failed} 失败)` : '')
-            : `Uploaded ${result.uploaded} photo${result.uploaded === 1 ? '' : 's'}` + (result.failed > 0 ? ` (${result.failed} failed)` : '')
-        );
+        const failedPart = result.failed > 0 ? ` (${t('photoAudit.failed', { count: result.failed })})` : '';
+        const msg = t('photoAudit.uploadedPhotos', { count: result.uploaded }) + failedPart;
+        toast.success(msg);
         // Refresh the audit grid so the freshly-synced photos appear
         setTimeout(() => fetchPhotos(), 800);
       } else if (result.failed > 0) {
-        toast.error(
-          locale === 'zh'
-            ? `同步失败 — ${result.failed} 张照片无法上传`
-            : `Sync failed — ${result.failed} photo${result.failed === 1 ? '' : 's'} could not upload`
-        );
+        const msg = t('photoAudit.syncFailedWithCount', { count: result.failed });
+        toast.error(msg);
       } else if (result.reset > 0) {
-        toast.success(
-          locale === 'zh'
-            ? `已重置 ${result.reset} 张照片,正在同步...`
-            : `Reset ${result.reset} photo${result.reset === 1 ? '' : 's'}, syncing...`
-        );
+        const msg = t('photoAudit.resetPhotos', { count: result.reset });
+        toast.success(msg);
       }
     } catch (err) {
       console.error('[PhotoAudit] Sync queue error:', err);
-      toast.error(locale === 'zh' ? '同步错误' : 'Sync error');
+      toast.error(t('photoAudit.syncError'));
     } finally {
       setSyncingQueue(false);
     }
@@ -877,11 +869,11 @@ export default function PhotoAuditPage() {
     // Photos in the "Today (All)" tab can include untagged/unidentified rows that
     // would 400 with `child_id is required` or `Missing original identification`.
     if (!photo.child_id) {
-      toast.error(locale === 'zh' ? '请先为此照片标记孩子' : 'Tag a child before confirming');
+      toast.error(t('photoAudit.tagChildFirst'));
       return;
     }
     if (!photo.work_id && !photo.work_name) {
-      toast.error(locale === 'zh' ? '请先为此照片标记作品' : 'Tag a work before confirming');
+      toast.error(t('photoAudit.tagWorkFirst'));
       return;
     }
     setProcessingId(photo.id);
@@ -1047,8 +1039,8 @@ export default function PhotoAuditPage() {
         p.id === photo.id ? { ...p, discussion_flag: newFlag } : p
       ));
       toast.success(newFlag
-        ? (locale === 'zh' ? '💬 已标记为讨论' : '💬 Flagged for discussion')
-        : (locale === 'zh' ? '💬 已取消讨论标记' : '💬 Discussion flag removed'));
+        ? t('photoAudit.flaggedForDiscussion')
+        : t('photoAudit.discussionFlagRemoved'));
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update');
     } finally {
@@ -1960,15 +1952,15 @@ export default function PhotoAuditPage() {
   // sub-views — the unified source of both teacher review and parent reports) +
   // Weekly Admin (standalone DOCX generator). Photos now go straight to AI (no Photo Bucket).
   const ZONE_TABS: { key: Zone; label: string; color: string; count: number | null }[] = [
-    { key: 'all', label: locale === 'zh' ? '确认' : 'Confirm', color: 'bg-amber-100 text-amber-700', count: (() => {
+    { key: 'all', label: t('photoAudit.confirmTab'), color: 'bg-amber-100 text-amber-700', count: (() => {
       // Subtract discussion-flagged photos — they appear in the Discussion tab, not here.
       const discussionCount = photos.filter(p => p.discussion_flag && p.zone !== 'green').length;
       const confirmCount = nonGreenCount - discussionCount;
       return confirmCount > 0 ? confirmCount : null;
     })() },
-    { key: 'discussion', label: locale === 'zh' ? '💬 讨论' : '💬 Discussion', color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
-    { key: 'weekly_wrap', label: locale === 'zh' ? '周总结' : 'Weekly Wrap', color: 'bg-violet-100 text-violet-800', count: null },
-    { key: 'weekly_admin', label: locale === 'zh' ? '周报文档' : 'Weekly Admin', color: 'bg-indigo-100 text-indigo-800', count: null },
+    { key: 'discussion', label: t('photoAudit.discussionTab'), color: 'bg-blue-100 text-blue-800', count: photos.filter(p => p.discussion_flag).length || null },
+    { key: 'weekly_wrap', label: t('photoAudit.weeklyWrapTab'), color: 'bg-violet-100 text-violet-800', count: null },
+    { key: 'weekly_admin', label: t('photoAudit.weeklyAdminTab'), color: 'bg-indigo-100 text-indigo-800', count: null },
   ];
 
   // ─── JSX ───
@@ -1977,15 +1969,13 @@ export default function PhotoAuditPage() {
       {/* Header */}
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
-          <h1 className="text-lg font-semibold">{locale === 'zh' ? '收尾整理' : 'Wrap Up'}</h1>
+          <h1 className="text-lg font-semibold">{t('photoAudit.wrapUpHeader')}</h1>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleSyncQueue}
               disabled={syncingQueue}
-              title={locale === 'zh'
-                ? '同步今天的照片(如果本地队列中有未上传的照片,点击此处推送到服务器)'
-                : "Sync today's photos (push any photos stuck in the local queue up to the server)"}
+              title={t('photoAudit.syncButtonTitle')}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
                 syncingQueue
                   ? 'bg-amber-50 border-amber-200 text-amber-700 cursor-wait'
@@ -2005,22 +1995,20 @@ export default function PhotoAuditPage() {
                   d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.65-3.65L20 7M20 15a9 9 0 01-14.65 3.65L4 17"
                 />
               </svg>
-              <span>{syncingQueue ? (locale === 'zh' ? '同步中...' : 'Syncing...') : (locale === 'zh' ? '同步' : 'Sync')}</span>
+              <span>{syncingQueue ? t('photoAudit.syncing') : t('photoAudit.sync')}</span>
             </button>
             {zone === 'all' && (
               <button
                 type="button"
                 onClick={() => setTodayFilter(v => !v)}
-                title={locale === 'zh'
-                  ? '只显示过去 24 小时内的所有照片(包括已确认的)'
-                  : 'Show every photo captured in the last 24h, including teacher-confirmed ones'}
+                title={t('photoAudit.todayFilterTitle')}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-sm font-medium border transition-all ${
                   todayFilter
                     ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
                     : 'bg-white border-gray-300 text-gray-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-700'
                 }`}
               >
-                {locale === 'zh' ? '今日' : 'Today'}
+                {t('photoAudit.today')}
               </button>
             )}
             {isPhotoZone && !todayFilter && (

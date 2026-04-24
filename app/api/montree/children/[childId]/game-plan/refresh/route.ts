@@ -8,7 +8,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
-import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
+import { AREA_LABELS_EN, getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { SUPPORTED_LOCALES } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 60;
 
@@ -214,18 +215,26 @@ What should the teacher focus on NEXT? Pick 3-5 works that build on what's been 
     const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
 
     const directionEn = rawPlan.direction || '';
-    let directionZh = directionEn;
-    for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
-      directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+    const direction: Record<string, string> = { en: directionEn };
+    for (const loc of SUPPORTED_LOCALES) {
+      if (loc === 'en') continue;
+      let locDir = directionEn;
+      for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
+        const locLabel = getAreaLabel(key, loc);
+        if (locLabel) locDir = locDir.replace(new RegExp(enLabel, 'gi'), locLabel);
+      }
+      direction[loc] = locDir;
     }
 
     const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
     const nudgeZh = rawPlan.nudge_zh || nudgeEn;
 
+    const works: Record<string, string[]> = { en: planWorks, zh: worksZh };
+
     const updatedPlan = {
       nudge: { en: nudgeEn, zh: nudgeZh },
-      works: { en: planWorks, zh: worksZh },
-      direction: { en: directionEn, zh: directionZh },
+      works,
+      direction,
       generated_at: existingPlan?.generated_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       child_name: child.name,

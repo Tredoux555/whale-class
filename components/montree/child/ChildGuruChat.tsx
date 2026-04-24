@@ -291,14 +291,14 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
   // --- Tool name display ---
   const toolLabel = (name: string): string => {
     const labels: Record<string, string> = {
-      set_focus_work: locale === 'zh' ? '更新书架' : 'Shelf updated',
-      clear_focus_work: locale === 'zh' ? '已清除' : 'Shelf cleared',
-      update_progress: locale === 'zh' ? '进度已更新' : 'Progress updated',
-      save_observation: locale === 'zh' ? '已记录' : 'Observation saved',
-      browse_curriculum: locale === 'zh' ? '浏览课程' : 'Browsing curriculum',
-      search_curriculum: locale === 'zh' ? '搜索课程' : 'Searching curriculum',
-      get_prioritized_recommendations: locale === 'zh' ? '分析中' : 'Analyzing',
-      get_child_recent_activity: locale === 'zh' ? '查看活动' : 'Checking activity',
+      set_focus_work: t('childGuru.shelfUpdated'),
+      clear_focus_work: t('childGuru.shelfCleared'),
+      update_progress: t('childGuru.progressUpdated'),
+      save_observation: t('childGuru.observationSaved'),
+      browse_curriculum: t('childGuru.browsingCurriculum'),
+      search_curriculum: t('childGuru.searchingCurriculum'),
+      get_prioritized_recommendations: t('childGuru.analyzing'),
+      get_child_recent_activity: t('childGuru.checkingActivity'),
     };
     return labels[name] || name;
   };
@@ -309,7 +309,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-500 text-white rounded-full shadow-lg hover:bg-emerald-600 active:scale-90 transition-all flex items-center justify-center z-50"
-        title={locale === 'zh' ? 'AI 助手' : 'AI Assistant'}
+        title={t('childGuru.aiAssistant')}
       >
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -341,9 +341,9 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
         {messages.length === 0 && (
           <div className="text-center text-gray-400 text-sm py-8">
             <p className="text-2xl mb-2">🧠</p>
-            <p>{locale === 'zh' ? `问我关于${childName}的任何问题` : `Ask me anything about ${childName}`}</p>
+            <p>{t('childGuru.askAboutChild', { name: childName })}</p>
             <p className="text-xs mt-1 text-gray-300">
-              {locale === 'zh' ? '语音或文字均可' : 'Voice or text'}
+              {t('childGuru.voiceOrText')}
             </p>
           </div>
         )}
@@ -383,7 +383,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   <span className="text-xs text-gray-400">
-                    {locale === 'zh' ? '思考中...' : 'Thinking...'}
+                    {t('childGuru.thinking')}
                   </span>
                 </div>
               )}
@@ -422,7 +422,7 @@ export default function ChildGuruChat({ childId, childName, onAction }: Props) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={locale === 'zh' ? '输入或说话...' : 'Type or speak...'}
+            placeholder={t('childGuru.typeOrSpeak')}
             disabled={isLoading || isRecording}
             rows={1}
             className="flex-1 px-3 py-2 text-sm bg-white border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-emerald-400 focus:outline-none disabled:opacity-50 max-h-20"

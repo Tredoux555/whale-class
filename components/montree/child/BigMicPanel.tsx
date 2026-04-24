@@ -20,7 +20,7 @@ interface Props {
 type Stage = 'idle' | 'recording' | 'transcribing' | 'thinking' | 'done' | 'error';
 
 export default function BigMicPanel({ childId, childName, onAction }: Props) {
-  const { locale } = useI18n();
+  const { locale, t } = useI18n();
   const [stage, setStage] = useState<Stage>('idle');
   const [recordingTime, setRecordingTime] = useState(0);
   const [response, setResponse] = useState('');
@@ -123,7 +123,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') return;
       console.error('[BigMicPanel] Send error:', err);
-      setError(locale === 'zh' ? '连接错误' : 'Connection error');
+      setError(t('bigMic.connectionError'));
       setStage('error');
     }
   }, [childId, locale, onAction]);
@@ -139,7 +139,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
     setResponse('');
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setError(locale === 'zh' ? '麦克风不可用' : 'Microphone not available');
+        setError(t('bigMic.micNotAvailable'));
         setStage('error');
         return;
       }
@@ -195,12 +195,12 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
               setStage('idle');
             }
           } else {
-            setError(locale === 'zh' ? '转录失败' : 'Transcription failed');
+            setError(t('bigMic.transcriptionFailed'));
             setStage('error');
           }
         } catch (err) {
           console.error('[BigMicPanel] Transcription error:', err);
-          setError(locale === 'zh' ? '转录失败' : 'Transcription failed');
+          setError(t('bigMic.transcriptionFailed'));
           setStage('error');
         }
       };
@@ -213,7 +213,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
       }, 1000);
     } catch (err) {
       console.error('[BigMicPanel] Mic error:', err);
-      setError(locale === 'zh' ? '无法访问麦克风' : 'Microphone access denied');
+      setError(t('bigMic.micAccessDenied'));
       setStage('error');
     }
   }, [locale, sendToGuru]);
@@ -240,21 +240,17 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
   // --- Status text ---
   const statusText = (() => {
     switch (stage) {
-      case 'recording': return `${locale === 'zh' ? '正在录音' : 'Listening'}... ${formatTime(recordingTime)}`;
-      case 'transcribing': return locale === 'zh' ? '转录中...' : 'Transcribing...';
-      case 'thinking': return locale === 'zh' ? '思考中...' : 'Thinking...';
+      case 'recording': return `${t('bigMic.listening')}... ${formatTime(recordingTime)}`;
+      case 'transcribing': return t('bigMic.transcribing');
+      case 'thinking': return t('bigMic.thinking');
       case 'error': return error;
-      default: return locale === 'zh' ? '点击开始' : 'Tap to start';
+      default: return t('bigMic.tapToStart');
     }
   })();
 
-  const title = locale === 'zh'
-    ? `告诉我 ${childName} 的情况`
-    : `Talk to me about ${childName}`;
+  const title = t('bigMic.title', { name: childName });
 
-  const subtitle = locale === 'zh'
-    ? '记录观察、更换书架、更新进度 — 说就好了。'
-    : 'Record an observation, change the shelf, update progress — just say it.';
+  const subtitle = t('bigMic.subtitle');
 
   const micBusy = stage === 'transcribing' || stage === 'thinking';
   const micActive = stage === 'recording';
@@ -327,7 +323,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
             onClick={() => setShowTyping(true)}
             className="text-sm text-emerald-600 hover:text-emerald-700 underline mt-2"
           >
-            {locale === 'zh' ? '或输入文字' : 'or type instead'}
+            {t('bigMic.orTypeInstead')}
           </button>
         )}
 
@@ -338,7 +334,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
               value={typedText}
               onChange={(e) => setTypedText(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleTypedSubmit(); }}
-              placeholder={locale === 'zh' ? '输入消息...' : 'Type a message...'}
+              placeholder={t('bigMic.typeMessage')}
               autoFocus
               className="flex-1 px-3 py-2 text-sm rounded-lg border border-emerald-200 focus:outline-none focus:border-emerald-400"
             />
@@ -347,7 +343,7 @@ export default function BigMicPanel({ childId, childName, onAction }: Props) {
               disabled={!typedText.trim()}
               className="px-4 py-2 text-sm rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 disabled:opacity-50"
             >
-              {locale === 'zh' ? '发送' : 'Send'}
+              {t('bigMic.send')}
             </button>
           </div>
         )}

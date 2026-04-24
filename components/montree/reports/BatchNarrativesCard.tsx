@@ -8,6 +8,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface Child {
   id: string;
@@ -136,7 +137,7 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
   const weekLabel = (() => {
     const start = new Date(week_start);
     const end = new Date(week_end);
-    const dateLocale = locale === 'zh' ? 'zh-CN' : 'en-US';
+    const dateLocale = getIntlLocale(locale);
     const fmt = (d: Date) => d.toLocaleDateString(dateLocale, { month: 'short', day: 'numeric' });
     return `${fmt(start)} – ${fmt(end)}`;
   })();
@@ -149,10 +150,10 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
           <span className="text-xl">✨</span>
           <div>
             <h3 className="font-semibold text-gray-800 text-sm">
-              {locale === 'zh' ? '家长每周更新' : 'Weekly Parent Updates'}
+              {t('batchNarratives.title')}
             </h3>
             <p className="text-xs text-gray-500">
-              {weekLabel} · {children.length} {locale === 'zh' ? '名学生' : 'children'}
+              {weekLabel} · {children.length} {t('batchNarratives.childrenLabel')}
             </p>
           </div>
         </div>
@@ -162,14 +163,14 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
             onClick={() => handleGenerate(false)}
             className="px-3 py-1.5 rounded-lg text-sm font-medium bg-emerald-500 text-white hover:bg-emerald-600 active:scale-95 transition-all"
           >
-            {locale === 'zh' ? '生成更新' : 'Generate Updates'}
+            {t('batchNarratives.generateButton')}
           </button>
         ) : (
           <button
             onClick={handleCancel}
             className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 text-red-600 hover:bg-red-200 transition-all"
           >
-            {locale === 'zh' ? '取消' : 'Cancel'}
+            {t('batchNarratives.cancelButton')}
           </button>
         )}
       </div>
@@ -179,7 +180,7 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
         <div className="mb-3">
           <div className="flex items-center gap-2 text-xs text-emerald-600 mb-2">
             <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-            <span>{locale === 'zh' ? '正在用AI为每个孩子撰写个性化报告...' : 'Writing personalized updates with AI...'}</span>
+            <span>{t('batchNarratives.generatingMessage')}</span>
           </div>
           <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
             <div className="h-full bg-emerald-500 rounded-full animate-pulse w-2/3" />
@@ -194,20 +195,20 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
           <div className="text-sm bg-emerald-50 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <span className="text-emerald-700 font-medium">
-                ✅ {stats.generated} {locale === 'zh' ? '份报告已生成' : 'updates generated'}
+                ✅ {t('batchNarratives.generatedCount', { count: stats.generated })}
                 {stats.skipped > 0 && (
-                  <span className="text-gray-500 font-normal"> · {stats.skipped} {locale === 'zh' ? '已跳过' : 'already done'}</span>
+                  <span className="text-gray-500 font-normal"> · {stats.skipped} {t('batchNarratives.skippedLabel')}</span>
                 )}
               </span>
               <button
                 onClick={() => setExpanded(!expanded)}
                 className="text-xs text-emerald-600 hover:text-emerald-800"
               >
-                {expanded ? (locale === 'zh' ? '收起' : 'Hide') : (locale === 'zh' ? '详情' : 'Details')}
+                {expanded ? t('batchNarratives.hideButton') : t('batchNarratives.detailsButton')}
               </button>
             </div>
             <div className="mt-1 text-xs text-emerald-600">
-              📸 {totalPhotos} {locale === 'zh' ? '张照片' : 'photos'}
+              📸 {t('batchNarratives.photoCount', { count: totalPhotos })}
               {stats.cost_usd > 0 && (
                 <span className="ml-2">· ${stats.cost_usd.toFixed(3)} AI cost</span>
               )}
@@ -241,7 +242,7 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
 
               {skippedResults.length > 0 && (
                 <div className="text-xs text-gray-400 px-3 py-1">
-                  {locale === 'zh' ? '已跳过（已有报告）' : 'Skipped (already generated)'}: {skippedResults.map(r => r.child_name).join(', ')}
+                  {t('batchNarratives.skippedSection')}: {skippedResults.map(r => r.child_name).join(', ')}
                 </div>
               )}
             </div>
@@ -250,23 +251,21 @@ export default function BatchNarrativesCard({ classroomId, children }: Props) {
           {/* Failed */}
           {failedResults.length > 0 && (
             <div className="text-sm text-red-600 bg-red-50 rounded-lg p-2">
-              {locale === 'zh' ? '失败' : 'Failed'}: {failedResults.map(r => r.child_name).join(', ')}
+              {t('batchNarratives.failedLabel')}: {failedResults.map(r => r.child_name).join(', ')}
             </div>
           )}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-1">
             <p className="text-xs text-gray-400">
-              {locale === 'zh'
-                ? '报告已保存为草稿。从每个孩子的页面发送。'
-                : 'Saved as drafts. Send from each child\'s report page.'}
+              {t('batchNarratives.helpText')}
             </p>
             {stats.generated > 0 && (
               <button
                 onClick={() => handleGenerate(true)}
                 className="text-xs text-emerald-600 hover:text-emerald-800 underline"
               >
-                {locale === 'zh' ? '重新生成' : 'Regenerate all'}
+                {t('batchNarratives.regenerateButton')}
               </button>
             )}
           </div>

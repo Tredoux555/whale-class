@@ -35,7 +35,8 @@ const anthropic = new Anthropic({ apiKey: ANTHROPIC_KEY, timeout: 120000 });
 const WHALE_CLASSROOM = '51e7adb6-cd18-4e03-b707-eceb0a1d2e69';
 const MODEL = 'claude-haiku-4-5';
 
-// ── Area label maps for bilingual direction translation ──
+// ── Area label maps for N-language direction translation ──
+const SUPPORTED_LOCALES = ['en', 'zh', 'es'];
 const AREA_LABELS_EN = {
   practical_life: 'Practical Life',
   sensorial: 'Sensorial',
@@ -43,13 +44,16 @@ const AREA_LABELS_EN = {
   language: 'Language',
   cultural: 'Cultural',
 };
-const AREA_LABELS_ZH = {
-  practical_life: '日常',
-  sensorial: '感官',
-  mathematics: '数学',
-  language: '语言',
-  cultural: '文化',
+const AREA_LABELS = {
+  practical_life: { en: 'Practical Life', zh: '日常', es: 'Vida Práctica' },
+  sensorial:      { en: 'Sensorial',      zh: '感官', es: 'Sensorial' },
+  mathematics:    { en: 'Mathematics',     zh: '数学', es: 'Matemáticas' },
+  language:       { en: 'Language',        zh: '语言', es: 'Lenguaje' },
+  cultural:       { en: 'Cultural',        zh: '文化', es: 'Cultural' },
 };
+function getAreaLabel(areaKey, locale) {
+  return AREA_LABELS[areaKey]?.[locale] || AREA_LABELS[areaKey]?.en || areaKey;
+}
 
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan',
@@ -223,18 +227,26 @@ What's the teacher's next move?`;
   const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
 
   const directionEn = rawPlan.direction || '';
-  let directionZh = directionEn;
-  for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
-    directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+  const direction = { en: directionEn };
+  for (const loc of SUPPORTED_LOCALES) {
+    if (loc === 'en') continue;
+    let locDir = directionEn;
+    for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
+      const locLabel = getAreaLabel(key, loc);
+      if (locLabel) locDir = locDir.replace(new RegExp(enLabel, 'gi'), locLabel);
+    }
+    direction[loc] = locDir;
   }
 
   const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
   const nudgeZh = rawPlan.nudge_zh || nudgeEn;
 
+  const works = { en: planWorks, zh: worksZh };
+
   const updatedPlan = {
     nudge: { en: nudgeEn, zh: nudgeZh },
-    works: { en: planWorks, zh: worksZh },
-    direction: { en: directionEn, zh: directionZh },
+    works,
+    direction,
     generated_at: existingPlan.generated_at || new Date().toISOString(),
     updated_at: new Date().toISOString(),
     child_name: childName,

@@ -32,6 +32,28 @@ const AREA_COLORS: Record<string, string> = {
   cultural: '#8b5cf6',
 };
 
+// TYPE A: Locale-keyed labels
+const SHEET_LABELS: Record<string, Record<string, string>> = {
+  en: {
+    aiThinks: 'AI thinks',
+    createNewInstead: 'Create new work instead',
+    addAsNew: 'Add as new work',
+    changeArea: 'change area',
+  },
+  zh: {
+    aiThinks: '人工智能认为',
+    createNewInstead: '改为创建新工作',
+    addAsNew: '添加为新工作',
+    changeArea: '更改区域',
+  },
+  es: {
+    aiThinks: 'IA piensa',
+    createNewInstead: 'Crear nuevo trabajo',
+    addAsNew: 'Agregar como nuevo trabajo',
+    changeArea: 'cambiar área',
+  },
+};
+
 export type Resolution =
   | { type: 'existing'; work_id: string; work_name: string; area_key: string }
   | { type: 'new_custom'; name: string; area_key: string }
@@ -489,7 +511,7 @@ export default function ThisIsSheet({
           {onDiscussionFlag && (
             <button
               onClick={handleDiscussionFlag}
-              title={locale === 'zh' ? '标记为讨论' : 'Flag for discussion'}
+              title={t('thisIsSheet.flagForDiscussion')}
               style={{
                 background: 'none',
                 border: '1px solid #ddd',
@@ -559,7 +581,7 @@ export default function ThisIsSheet({
                   <div style={{ fontSize: 22 }}>🤖</div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 600 }}>
-                      AI thinks
+                      {SHEET_LABELS[locale]?.aiThinks || SHEET_LABELS.en.aiThinks}
                     </div>
                     <div style={{ fontSize: 16, fontWeight: 600, color: '#222' }}>
                       {locale === 'zh' && aiGuess.work_name_chinese ? aiGuess.work_name_chinese : aiGuess.work_name}
@@ -971,7 +993,7 @@ export default function ThisIsSheet({
                             : fuzzyNearMatch.name}
                         </div>
                         <div style={{ fontSize: 10, color: '#92400e', marginTop: 2 }}>
-                          {locale === 'zh' && fuzzyNearMatch.area_name_zh ? fuzzyNearMatch.area_name_zh : fuzzyNearMatch.area_name} — {locale === 'zh' ? '点击使用' : 'tap to use this instead'}
+                          {locale === 'zh' && fuzzyNearMatch.area_name_zh ? fuzzyNearMatch.area_name_zh : fuzzyNearMatch.area_name} — {t('thisIsSheet.tapToUseInstead')}
                         </div>
                       </div>
                     </button>
@@ -996,7 +1018,7 @@ export default function ThisIsSheet({
                     <div style={{ fontSize: 22 }}>➕</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, color: fuzzyNearMatch ? '#888' : '#8b5cf6', fontWeight: 600 }}>
-                        {submitting ? 'Creating…' : fuzzyNearMatch ? 'Create new work instead' : 'Add as new work'}
+                        {submitting ? 'Creating…' : fuzzyNearMatch ? (SHEET_LABELS[locale]?.createNewInstead || SHEET_LABELS.en.createNewInstead) : (SHEET_LABELS[locale]?.addAsNew || SHEET_LABELS.en.addAsNew)}
                       </div>
                       <div style={{ fontSize: 15, color: '#222', fontWeight: 600 }}>
                         “{query.trim()}”
@@ -1008,7 +1030,7 @@ export default function ThisIsSheet({
                           onClick={(e) => { e.stopPropagation(); handleEnterAddMode(); }}
                           style={{ textDecoration: 'underline', cursor: 'pointer' }}
                         >
-                          change area
+                          {SHEET_LABELS[locale]?.changeArea || SHEET_LABELS.en.changeArea}
                         </span>
                       </div>
                     </div>

@@ -89,6 +89,49 @@ const STATUS_LABELS: Record<string, Record<string, string>> = {
   },
 };
 
+const NO_FOCUS_LABEL: Record<string, string> = {
+  en: 'No focus work assigned this area.',
+  zh: '该区域未分配重点工作',
+};
+
+const PREREQ_LABEL: Record<string, string> = {
+  en: 'Prerequisites',
+  zh: '先决条件',
+};
+
+const PREREQ_STATUS_LABELS: Record<string, Record<string, string>> = {
+  en: {
+    mastered: '✅ mastered',
+    practicing: '🔄 practicing',
+    notYet: '⬜ not yet',
+  },
+  zh: {
+    mastered: '✅ 已掌握',
+    practicing: '🔄 练习中',
+    notYet: '⬜ 未开始',
+  },
+};
+
+const NEXT_IN_SEQUENCE_LABEL: Record<string, string> = {
+  en: 'Next in sequence',
+  zh: '序列中的下一个',
+};
+
+const SAME_CATEGORY_LABEL: Record<string, string> = {
+  en: 'same category',
+  zh: '同类别',
+};
+
+const ACTIVITY_LABEL: Record<string, string> = {
+  en: "This week's activity",
+  zh: '本周活动',
+};
+
+const OUTPUT_LANGUAGE_MAP: Record<string, string> = {
+  en: 'English',
+  zh: 'Chinese (Mandarin)',
+};
+
 // ── Curriculum Intelligence ──
 
 function buildCurriculumContext(
@@ -119,12 +162,13 @@ function buildCurriculumContext(
     const focusWork = focusWorks.find(fw => fw.area === area);
 
     if (!focusWork) {
-      const noFocus = locale === 'zh' ? '该区域未分配重点工作' : 'No focus work assigned this area.';
+      const noFocus = NO_FOCUS_LABEL[locale] || NO_FOCUS_LABEL.en;
       sections.push(`## ${areaLabel}\n${noFocus}`);
       continue;
     }
 
     const currWork = curriculumMap.get(focusWork.work_name.toLowerCase());
+    // TYPE B: Preserve DB column reads — chineseName comes from curriculum enrichment
     const displayName = (locale === 'zh' && focusWork.chineseName) ? focusWork.chineseName : focusWork.work_name;
     const lines: string[] = [`## ${areaLabel}: ${displayName}`];
     lines.push(`Status: ${STATUS_LABELS[locale]?.[focusWork.status] || focusWork.status}`);
@@ -140,10 +184,8 @@ function buildCurriculumContext(
 
       // Prerequisites and their status
       if (currWork.prerequisites && currWork.prerequisites.length > 0) {
-        const prereqLabel = locale === 'zh' ? '先决条件' : 'Prerequisites';
-        const statusLabels = locale === 'zh'
-          ? { mastered: '✅ 已掌握', practicing: '🔄 练习中', notYet: '⬜ 未开始' }
-          : { mastered: '✅ mastered', practicing: '🔄 practicing', notYet: '⬜ not yet' };
+        const prereqLabel = PREREQ_LABEL[locale] || PREREQ_LABEL.en;
+        const statusLabels = PREREQ_STATUS_LABELS[locale] || PREREQ_STATUS_LABELS.en;
         const prereqLines = currWork.prerequisites.map(p => {
           const pLower = p.toLowerCase();
           const status = masteredSet.has(pLower) ? statusLabels.mastered :
@@ -158,8 +200,8 @@ function buildCurriculumContext(
       const currentIdx = areaWorks.findIndex(w => w.name.toLowerCase() === focusWork.work_name.toLowerCase());
       if (currentIdx >= 0 && currentIdx < areaWorks.length - 1) {
         const nextWork = areaWorks[currentIdx + 1];
-        const nextLabel = locale === 'zh' ? '序列中的下一个' : 'Next in sequence';
-        const catLabel = locale === 'zh' ? '同类别' : 'same category';
+        const nextLabel = NEXT_IN_SEQUENCE_LABEL[locale] || NEXT_IN_SEQUENCE_LABEL.en;
+        const catLabel = SAME_CATEGORY_LABEL[locale] || SAME_CATEGORY_LABEL.en;
         lines.push(`${nextLabel}: ${nextWork.name} (${nextWork.category_name || catLabel})`);
       }
 
@@ -172,7 +214,7 @@ function buildCurriculumContext(
     // This week's progress for this area
     const areaProgress = weekProgress.filter(p => p.area === area);
     if (areaProgress.length > 0) {
-      const activityLabel = locale === 'zh' ? '本周活动' : "This week's activity";
+      const activityLabel = ACTIVITY_LABEL[locale] || ACTIVITY_LABEL.en;
       const progressLines = areaProgress.map(p =>
         `  - ${p.work_name}: ${STATUS_LABELS[locale]?.[p.status] || p.status}${p.notes ? ` (${p.notes})` : ''}`
       );
@@ -192,7 +234,7 @@ function buildTeacherPrompt(
   curriculumContext: string,
   locale: string
 ): string {
-  const lang = locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+  const lang = OUTPUT_LANGUAGE_MAP[locale] || OUTPUT_LANGUAGE_MAP.en;
   return `You are an expert AMI Montessori guide writing an internal weekly review for a teacher's group discussion.
 
 CHILD: ${childName}
@@ -231,7 +273,7 @@ function buildParentPrompt(
   curriculumContext: string,
   locale: string
 ): string {
-  const lang = locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+  const lang = OUTPUT_LANGUAGE_MAP[locale] || OUTPUT_LANGUAGE_MAP.en;
   return `You are writing a warm, professional weekly update for a parent about their child's Montessori education.
 
 CHILD: ${childName}
@@ -265,7 +307,7 @@ function buildRefinementPrompt(
   feedback: string,
   locale: string
 ): string {
-  const lang = locale === 'zh' ? 'Chinese (Mandarin)' : 'English';
+  const lang = OUTPUT_LANGUAGE_MAP[locale] || OUTPUT_LANGUAGE_MAP.en;
   const audience = type === 'teacher'
     ? 'This is an internal teacher review for group discussion.'
     : 'This is a parent-facing weekly update.';
@@ -412,8 +454,8 @@ export async function POST(
       return NextResponse.json({ error: 'Child not found' }, { status: 404 });
     }
 
-    // Enrich with Chinese names if locale is zh
-    const enrichedFocus = locale === 'zh'
+    // TYPE A: Enrich with Chinese names for zh locale
+    const enrichedFocus = (locale === 'zh')
       ? enrichWithChineseNames(data.focusWorks.map(fw => ({ ...fw })))
       : data.focusWorks;
 

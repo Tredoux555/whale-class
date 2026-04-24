@@ -255,7 +255,7 @@ export default function ClassroomOverviewPage() {
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
-            📋 {locale === 'zh' ? '书架总览' : 'Shelf Overview'}
+            📋 {t('classroomOverview.shelfTab')}
           </button>
           <button
             onClick={() => setTab('english')}
@@ -265,7 +265,7 @@ export default function ClassroomOverviewPage() {
                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
-            🇬🇧 {locale === 'zh' ? '英语日程' : 'English Schedule'}
+            🇬🇧 {t('classroomOverview.englishTab')}
           </button>
         </div>
       </div>
@@ -285,7 +285,7 @@ export default function ClassroomOverviewPage() {
                     {session?.classroom?.name || t('print.classOverview')}
                   </span>
                   <span style={{ fontSize: '10px', color: '#9ca3af' }}>
-                    {today} — {session?.teacher?.name} — {locale === 'zh' ? '页' : 'p'}{pageIdx + 1}/{pages.length}
+                    {today} — {session?.teacher?.name} — {t('classroomOverview.pageLabel')}{pageIdx + 1}/{pages.length}
                   </span>
                 </div>
 
@@ -349,17 +349,17 @@ export default function ClassroomOverviewPage() {
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
                 <div className="animate-spin w-8 h-8 border-3 border-pink-500 border-t-transparent rounded-full mx-auto mb-2" />
-                <p className="text-gray-500 text-sm">{locale === 'zh' ? '加载英语日程...' : 'Loading English schedule...'}</p>
+                <p className="text-gray-500 text-sm">{t('classroomOverview.loadingSchedule')}</p>
               </div>
             </div>
           ) : scheduleError ? (
             <div className="text-center py-20">
-              <p className="text-red-500 mb-3">{locale === 'zh' ? '加载失败' : 'Failed to load schedule'}</p>
+              <p className="text-red-500 mb-3">{t('classroomOverview.loadFailed')}</p>
               <button
                 onClick={() => loadSchedule(true)}
                 className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-medium hover:bg-pink-600"
               >
-                {locale === 'zh' ? '生成新日程' : 'Generate Schedule'}
+                {t('classroomOverview.generateSchedule')}
               </button>
             </div>
           ) : schedule ? (
@@ -373,7 +373,7 @@ export default function ClassroomOverviewPage() {
               }}>
                 <div>
                   <div style={{ fontWeight: 800, fontSize: '16px', color: '#9d174d' }}>
-                    🇬🇧 {locale === 'zh' ? '英语日程 — 每天6人' : 'English Schedule — 6 per day'}
+                    🇬🇧 {t('classroomOverview.scheduleTitle')}
                   </div>
                   <div style={{ fontSize: '12px', color: '#be185d', fontWeight: 500 }}>
                     {formatWeekLabel(scheduleWeek)} · {session?.classroom?.name}
@@ -386,8 +386,8 @@ export default function ClassroomOverviewPage() {
                     className="px-3 py-1.5 bg-pink-600 text-white rounded-lg text-xs font-bold hover:bg-pink-700 disabled:opacity-50"
                   >
                     {regenerating
-                      ? (locale === 'zh' ? '生成中...' : 'Generating...')
-                      : (locale === 'zh' ? '🔄 重新生成' : '🔄 Regenerate')}
+                      ? t('classroomOverview.generating')
+                      : t('classroomOverview.regenerate')}
                   </button>
                 </div>
               </div>
@@ -396,14 +396,14 @@ export default function ClassroomOverviewPage() {
               <div className="no-print" style={{ padding: '6px 16px', fontSize: '11px', color: '#6b7280', display: 'flex', gap: '16px', borderBottom: '1px solid #f3e8ff' }}>
                 <span>
                   <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#8b5cf6', marginRight: '4px', verticalAlign: 'middle' }} />
-                  {locale === 'zh' ? 'K班升班生（优先）' : 'Moving up to K (priority)'}
+                  {t('classroomOverview.movingUpPriority')}
                 </span>
                 <span>
                   <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#d1d5db', marginRight: '4px', verticalAlign: 'middle' }} />
-                  {locale === 'zh' ? '其他学生' : 'Other children'}
+                  {t('classroomOverview.otherChildren')}
                 </span>
                 <span style={{ marginLeft: 'auto', fontStyle: 'italic' }}>
-                  {locale === 'zh' ? '英语活动最少的孩子排在前面' : 'Least English activity → scheduled first'}
+                  {t('classroomOverview.leastActivityFirst')}
                 </span>
               </div>
 
@@ -417,7 +417,7 @@ export default function ClassroomOverviewPage() {
               }}>
                 {DAY_ORDER.map(day => {
                   const dayChildren = schedule.days[day] || [];
-                  const dayLabel = locale === 'zh' ? DAY_LABELS_ZH[day] : DAY_LABELS_EN[day];
+                  const dayLabel = t(`classroomOverview.day.${day}`);
                   const dayShort = DAY_LABELS_SHORT[day];
 
                   return (
@@ -436,7 +436,7 @@ export default function ClassroomOverviewPage() {
                           {dayLabel}
                         </div>
                         <div style={{ fontSize: '10px', color: '#be185d' }}>
-                          {dayChildren.length} {locale === 'zh' ? '人' : dayChildren.length === 1 ? 'child' : 'children'}
+                          {t('classroomOverview.childrenCount', { count: dayChildren.length })}
                         </div>
                       </div>
 
@@ -480,12 +480,10 @@ export default function ClassroomOverviewPage() {
                               {/* Days since last English — small hint */}
                               <div style={{ fontSize: '9px', color: '#9ca3af', marginTop: '1px' }}>
                                 {child.days_since_last_visit === null
-                                  ? (locale === 'zh' ? '从未记录' : 'No record')
+                                  ? t('classroomOverview.daysSince.noRecord')
                                   : child.days_since_last_visit === 0
-                                    ? (locale === 'zh' ? '今天' : 'Today')
-                                    : locale === 'zh'
-                                      ? `${child.days_since_last_visit}天前`
-                                      : `${child.days_since_last_visit}d ago`}
+                                    ? t('classroomOverview.daysSince.today')
+                                    : t('classroomOverview.daysSince.daysAgo', { days: child.days_since_last_visit })}
                               </div>
                             </div>
 
@@ -512,12 +510,12 @@ export default function ClassroomOverviewPage() {
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-gray-400 mb-3">{locale === 'zh' ? '尚无英语日程' : 'No English schedule yet'}</p>
+              <p className="text-gray-400 mb-3">{t('classroomOverview.noScheduleYet')}</p>
               <button
                 onClick={() => loadSchedule(true)}
                 className="px-4 py-2 bg-pink-500 text-white rounded-lg text-sm font-medium hover:bg-pink-600"
               >
-                {locale === 'zh' ? '生成本周日程' : 'Generate This Week\'s Schedule'}
+                {t('classroomOverview.generateSchedule')}
               </button>
             </div>
           )}
