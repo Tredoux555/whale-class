@@ -103,6 +103,30 @@ function buildPerChildPrompt(
     return L[locale || 'en'] || 'Practical | Sensorial | Math | Language | Culture';
   })();
 
+  const areaPrefixList = (() => {
+    const L: Record<string, string> = {
+      zh: '日常：, 感官：, 数学：, 语言：, 科学文化：',
+      es: 'Vida Práctica:, Sensorial:, Matemáticas:, Lenguaje:, Ciencia y Cultura:',
+    };
+    return L[locale || 'en'] || 'Practical Life:, Sensorial:, Mathematics:, Language:, Science & Culture:';
+  })();
+
+  const wordCountGuidance = (() => {
+    const L: Record<string, string> = {
+      zh: '50-100 Chinese characters',
+      es: '30-60 palabras',
+    };
+    return L[locale || 'en'] || '30-60 words';
+  })();
+
+  const areaPrefixExample = (() => {
+    const L: Record<string, string> = {
+      zh: '日常：',
+      es: 'Vida Práctica:',
+    };
+    return L[locale || 'en'] || 'Practical Life:';
+  })();
+
   return `You are a senior Montessori educator writing weekly administrative documents for one child.
 
 CHILD: ${childName}
@@ -136,7 +160,7 @@ For each of the 5 areas, write:
 - "next_week": What to focus on next week (1-2 sentences). Do NOT prefix with the area name.
 
 TASK 3 — FULL SUMMARY
-Write a complete narrative summary for this child covering ALL 5 areas. Each area paragraph MUST start with the area prefix (${isZh ? '日常：, 感官：, 数学：, 语言：, 科学文化：' : 'Practical Life:, Sensorial:, Mathematics:, Language:, Science & Culture:'}). This is for the Chinese government weekly summary document. Each area section should be 2-4 sentences (${isZh ? '50-100 Chinese characters' : '30-60 words'} per area).
+Write a complete narrative summary for this child covering ALL 5 areas. Each area paragraph MUST start with the area prefix (${areaPrefixList}). This is for the Chinese government weekly summary document. Each area section should be 2-4 sentences (${wordCountGuidance} per area).
 
 TASK 4 — QUICK ITEMS
 - "this_week": 1-2 sentences summarizing what the child worked on across all areas
@@ -171,7 +195,7 @@ OUTPUT FORMAT (respond in JSON only):
 IMPORTANT:
 - Be specific — use actual Montessori work names from the curriculum
 - The plan_row works should match the area_details works
-- full_summary MUST include area prefixes (${isZh ? '日常：' : 'Practical Life:'} etc.)
+- full_summary MUST include area prefixes (${areaPrefixExample} etc.)
 - area_details values must NOT include area prefixes (redundant with key)
 - Keep advice practical and actionable
 JSON:`;

@@ -89,18 +89,26 @@ export async function POST(request: NextRequest) {
 
         if (existing && existing.length > 0) {
           const names = existing.map(w => w.name).join(', ');
-          duplicateWarning = locale === 'zh'
-            ? `教室中已有类似的工作: ${names}`
-            : `Similar works already exist in your classroom: ${names}`;
+          duplicateWarning = (() => {
+            const L: Record<string, string> = {
+              zh: `教室中已有类似的工作: ${names}`,
+              es: `Ya existen trabajos similares en tu aula: ${names}`,
+            };
+            return L[locale || 'en'] || `Similar works already exist in your classroom: ${names}`;
+          })();
         }
       } catch {
         // Non-fatal
       }
     }
 
-    const langInstruction = locale === 'zh'
-      ? 'Write ALL content in Simplified Chinese.'
-      : 'Write ALL content in English.';
+    const langInstruction = (() => {
+      const L: Record<string, string> = {
+        zh: 'Write ALL content in Simplified Chinese.',
+        es: 'Write ALL content in Spanish.',
+      };
+      return L[locale || 'en'] || 'Write ALL content in English.';
+    })();
 
     const teacherContext = teacher_prompt && typeof teacher_prompt === 'string'
       ? `\n\nTeacher's notes about this work: "${teacher_prompt.slice(0, 500)}"`

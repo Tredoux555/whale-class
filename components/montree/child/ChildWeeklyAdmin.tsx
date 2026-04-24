@@ -8,6 +8,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { montreeApi } from '@/lib/montree/api';
 import { useI18n } from '@/lib/montree/i18n';
+import { getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 // ---- Types ----
 
@@ -95,7 +97,10 @@ export default function ChildWeeklyAdmin({
   onGenerated,
 }: Props) {
   const { t, locale } = useI18n();
-  const isZh = locale === 'zh';
+  const L = (en: string, zh: string) => {
+    const map: Record<string, string> = { en, zh };
+    return map[locale || 'en'] || en;
+  };
 
   // Local state (overrides props on generate)
   const [planRow, setPlanRow] = useState(initialPlanRow);
@@ -186,11 +191,11 @@ export default function ChildWeeklyAdmin({
       const diffMins = Math.floor(diffMs / 60000);
       const diffHours = Math.floor(diffMs / 3600000);
       const diffDays = Math.floor(diffMs / 86400000);
-      if (diffMins < 1) return isZh ? '刚刚' : 'Just now';
-      if (diffMins < 60) return isZh ? `${diffMins}分钟前` : `${diffMins}m ago`;
-      if (diffHours < 24) return isZh ? `${diffHours}小时前` : `${diffHours}h ago`;
-      if (diffDays < 7) return isZh ? `${diffDays}天前` : `${diffDays}d ago`;
-      return date.toLocaleDateString(isZh ? 'zh-CN' : 'en-US');
+      if (diffMins < 1) return L('Just now', '刚刚');
+      if (diffMins < 60) return L(`${diffMins}m ago`, `${diffMins}分钟前`);
+      if (diffHours < 24) return L(`${diffHours}h ago`, `${diffHours}小时前`);
+      if (diffDays < 7) return L(`${diffDays}d ago`, `${diffDays}天前`);
+      return date.toLocaleDateString(getIntlLocale(locale));
     } catch { return ''; }
   };
 
@@ -256,7 +261,7 @@ export default function ChildWeeklyAdmin({
                   style={{ borderColor: cfg.color + '40' }}
                 >
                   <div className="text-xs font-medium" style={{ color: cfg.color }}>
-                    {isZh ? cfg.labelZh : cfg.label}
+                    {getAreaLabel(area, locale)}
                   </div>
                   <div className="text-xs text-gray-700 mt-0.5 line-clamp-2">
                     {work}

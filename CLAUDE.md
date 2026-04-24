@@ -222,10 +222,11 @@ Prior session replaced the `isZh` declaration in `buildSystemPrompt()` with loca
 6. Zero code changes in components or API routes
 
 **Next session priorities:**
-1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request).
-2. **Follow up on FAMM Argentina** if no response by Apr 28.
-3. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
-4. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+1. **🇪🇸 SHIP SPANISH FOR FAMM ARGENTINA** — Full handoff at `docs/MULTILINGUAL_AUDIT_HANDOFF.md` (Priority 1 section). Infrastructure is done, zero code changes needed. Remaining work: translate `es.ts` (1,490+ stub keys → real Argentine Spanish), add `name_es` column + batch translate curriculum, review AI prompt config for voseo/AMI terms, extend game plan JSONB. ~9-10h full, ~2-3h demo-ready shortcut. **Start here when user says "see handoff".**
+2. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request).
+3. **Follow up on FAMM Argentina** if no response by Apr 28.
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+5. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
 
 ---
 

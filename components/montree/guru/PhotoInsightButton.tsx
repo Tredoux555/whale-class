@@ -34,10 +34,10 @@ interface PhotoInsightButtonProps {
   onAddToShelf?: (data: { workName: string; area: string; classroomWorkId: string | null }) => void;
 }
 
-const STATUS_LABELS: Record<string, { en: string; zh: string; emoji: string }> = {
-  mastered: { en: 'Mastered', zh: '已掌握', emoji: '⭐' },
-  practicing: { en: 'Practicing', zh: '练习中', emoji: '🔄' },
-  presented: { en: 'Presented', zh: '已展示', emoji: '📋' },
+const STATUS_LABELS: Record<string, { labels: Record<string, string>; emoji: string }> = {
+  mastered: { labels: { en: 'Mastered', zh: '已掌握', es: 'Dominado' }, emoji: '⭐' },
+  practicing: { labels: { en: 'Practicing', zh: '练习中', es: 'Practicando' }, emoji: '🔄' },
+  presented: { labels: { en: 'Presented', zh: '已展示', es: 'Presentado' }, emoji: '📋' },
 };
 
 export default function PhotoInsightButton({
@@ -444,7 +444,7 @@ export default function PhotoInsightButton({
                 </span>
               )}
               <span className="text-sm font-semibold text-gray-800">
-                {locale === 'zh' ? (getChineseNameForWork(result.work_name) || result.work_name) : result.work_name}
+                {locale !== 'en' ? (getChineseNameForWork(result.work_name) || result.work_name) : result.work_name}
               </span>
               {statusInfo && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
@@ -454,7 +454,7 @@ export default function PhotoInsightButton({
                     ? 'bg-amber-100 text-amber-700'
                     : 'bg-blue-100 text-blue-700'
                 }`}>
-                  {statusInfo.emoji} {locale === 'zh' ? statusInfo.zh : statusInfo.en}
+                  {statusInfo.emoji} {statusInfo.labels[locale || 'en'] || statusInfo.labels.en}
                 </span>
               )}
             </div>

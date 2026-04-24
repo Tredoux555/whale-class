@@ -112,6 +112,7 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
         name: work.name,
         name_chinese: work.chineseName || null,
         name_zh: work.chineseName || null,
+        name_es: null,
         description: work.description || null,
         age_range: work.age_range || '3-6',
         sequence: work.sequence, // CORRECT global sequence

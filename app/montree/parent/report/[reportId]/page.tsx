@@ -176,23 +176,30 @@ export default function ParentReportPage() {
 
   const getAreaLabel = (area: string) => {
     const conf = getAreaConfig(area);
-    return locale === 'zh' ? conf.labelZh : conf.label;
+    const labels: Record<string, string> = { en: conf.label, zh: conf.labelZh };
+    return labels[locale || 'en'] || conf.label;
   };
 
   // Status display
+  const STATUS_LABELS: Record<string, Record<string, string>> = {
+    mastered: { en: 'Mastered', zh: '已掌握', es: 'Dominado' },
+    completed: { en: 'Mastered', zh: '已掌握', es: 'Dominado' },
+    practicing: { en: 'Practicing', zh: '练习中', es: 'Practicando' },
+    presented: { en: 'Introduced', zh: '已展示', es: 'Presentado' },
+    default: { en: 'Documented', zh: '已记录', es: 'Documentado' },
+  };
+  const STATUS_META: Record<string, { icon: string; color: string; bg: string }> = {
+    mastered: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
+    completed: { icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' },
+    practicing: { icon: '🔄', color: 'text-blue-700', bg: 'bg-blue-50' },
+    presented: { icon: '🌱', color: 'text-amber-700', bg: 'bg-amber-50' },
+    default: { icon: '📸', color: 'text-purple-700', bg: 'bg-purple-50' },
+  };
   const getStatusInfo = (status: string) => {
-    const isZh = locale === 'zh';
-    switch (status) {
-      case 'mastered':
-      case 'completed':
-        return { label: isZh ? '已掌握' : 'Mastered', icon: '⭐', color: 'text-emerald-700', bg: 'bg-emerald-50' };
-      case 'practicing':
-        return { label: isZh ? '练习中' : 'Practicing', icon: '🔄', color: 'text-blue-700', bg: 'bg-blue-50' };
-      case 'presented':
-        return { label: isZh ? '已展示' : 'Introduced', icon: '🌱', color: 'text-amber-700', bg: 'bg-amber-50' };
-      default:
-        return { label: isZh ? '已记录' : 'Documented', icon: '📸', color: 'text-purple-700', bg: 'bg-purple-50' };
-    }
+    const key = STATUS_LABELS[status] ? status : 'default';
+    const label = STATUS_LABELS[key][locale || 'en'] || STATUS_LABELS[key]['en'];
+    const meta = STATUS_META[key] || STATUS_META['default'];
+    return { label, ...meta };
   };
 
   // --- Loading ---

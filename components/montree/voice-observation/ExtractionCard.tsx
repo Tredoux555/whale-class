@@ -31,12 +31,12 @@ interface Props {
   onAction: (id: string, action: string, extra?: any) => void;
 }
 
-const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; label: string; labelZh: string }> = {
-  mastery: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: '⭐ Mastery', labelZh: '⭐ 掌握' },
-  presentation: { bg: 'bg-blue-100', text: 'text-blue-700', label: '📋 Presentation', labelZh: '📋 展示' },
-  practice: { bg: 'bg-amber-100', text: 'text-amber-700', label: '🔄 Practice', labelZh: '🔄 练习' },
-  behavioral: { bg: 'bg-purple-100', text: 'text-purple-700', label: '👁 Behavioral', labelZh: '👁 行为' },
-  other: { bg: 'bg-gray-100', text: 'text-gray-600', label: 'Other', labelZh: '其他' },
+const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; labels: Record<string, string> }> = {
+  mastery: { bg: 'bg-emerald-100', text: 'text-emerald-700', labels: { en: '⭐ Mastery', zh: '⭐ 掌握', es: '⭐ Dominio' } },
+  presentation: { bg: 'bg-blue-100', text: 'text-blue-700', labels: { en: '📋 Presentation', zh: '📋 展示', es: '📋 Presentación' } },
+  practice: { bg: 'bg-amber-100', text: 'text-amber-700', labels: { en: '🔄 Practice', zh: '🔄 练习', es: '🔄 Práctica' } },
+  behavioral: { bg: 'bg-purple-100', text: 'text-purple-700', labels: { en: '👁 Behavioral', zh: '👁 行为', es: '👁 Conductual' } },
+  other: { bg: 'bg-gray-100', text: 'text-gray-600', labels: { en: 'Other', zh: '其他', es: 'Otro' } },
 };
 
 const AREA_COLORS: Record<string, string> = {
@@ -108,7 +108,7 @@ export default function ExtractionCard({ extraction, childName, onAction }: Prop
             </span>
           )}
           <span className={`text-xs px-2 py-0.5 rounded-full ${eventStyle.bg} ${eventStyle.text}`}>
-            {locale === 'zh' ? eventStyle.labelZh : eventStyle.label}
+            {eventStyle.labels[locale || 'en'] || eventStyle.labels.en}
           </span>
         </div>
       </div>

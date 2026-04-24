@@ -44,12 +44,15 @@ export const LOCALE_AI_CONFIG: Record<Locale, LocaleAIConfig> = {
     dateFormatHint: 'YYYY年M月D日',
   },
   es: {
-    languageName: 'Spanish (Español)',
+    languageName: 'Argentine Spanish (Español rioplatense)',
     aiLanguageInstruction:
-      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Spanish (Español). ' +
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Argentine Spanish (Español rioplatense). ' +
       'Every word of your response must be in Spanish. Do not use any English except for ' +
-      'proper nouns (like Montessori work names). Use "su hijo/a" for "your child".',
-    aiShortDirective: 'en español',
+      'proper nouns (like Montessori work names). Use VOSEO: "vos tenés" (not "tú tienes"), ' +
+      '"vos podés" (not "tú puedes"). Use "ustedes" for plural (not "vosotros"). ' +
+      'Use "su hijo/a" for "your child" in formal contexts. ' +
+      'Use AMI-standard Montessori terminology: Vida Práctica, Sensorial, Matemáticas, Lenguaje, Áreas Culturales.',
+    aiShortDirective: 'en español argentino',
     yourChild: 'su hijo/a',
     dateFormatHint: 'D de mes de YYYY',
   },

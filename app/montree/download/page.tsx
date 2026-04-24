@@ -8,7 +8,10 @@ import { useI18n } from '@/lib/montree/i18n';
 export default function DownloadPage() {
   const { t, locale } = useI18n();
 
-  const isZh = locale === 'zh';
+  const L = (en: string, zh: string) => {
+    const m: Record<string, string> = { en, zh };
+    return m[locale || 'en'] || en;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0D3330] to-[#1a4a46] flex flex-col items-center justify-center p-6">
@@ -19,7 +22,7 @@ export default function DownloadPage() {
           <div className="text-6xl mb-4">🌿</div>
           <h1 className="text-3xl font-bold text-white">Montree</h1>
           <p className="text-white/60 mt-2">
-            {isZh ? 'Montessori 课堂智能工具' : 'Montessori Classroom Intelligence'}
+            {L('Montessori Classroom Intelligence', 'Montessori 课堂智能工具')}
           </p>
         </div>
 
@@ -35,16 +38,16 @@ export default function DownloadPage() {
             download="montree.apk"
             className="block w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl text-lg transition-colors active:scale-95"
           >
-            {isZh ? '下载 APK 安装包' : 'Download APK'}
+            {L('Download APK', '下载 APK 安装包')}
           </a>
 
           <div className="text-white/50 text-sm space-y-1">
-            <p>{isZh ? '安装步骤：' : 'How to install:'}</p>
+            <p>{L('How to install:', '安装步骤：')}</p>
             <ol className="text-left space-y-1 pl-4">
-              <li>1. {isZh ? '点击上方按钮下载' : 'Tap download above'}</li>
-              <li>2. {isZh ? '打开下载的文件' : 'Open the downloaded file'}</li>
-              <li>3. {isZh ? '允许"安装未知来源应用"' : 'Allow "Install from unknown sources"'}</li>
-              <li>4. {isZh ? '点击安装' : 'Tap Install'}</li>
+              <li>1. {L('Tap download above', '点击上方按钮下载')}</li>
+              <li>2. {L('Open the downloaded file', '打开下载的文件')}</li>
+              <li>3. {L('Allow "Install from unknown sources"', '允许"安装未知来源应用"')}</li>
+              <li>4. {L('Tap Install', '点击安装')}</li>
             </ol>
           </div>
         </div>
@@ -57,20 +60,20 @@ export default function DownloadPage() {
           </div>
 
           <div className="py-4 px-6 bg-white/10 text-white/70 rounded-xl text-sm">
-            {isZh
-              ? 'iOS 版本即将上线。目前请使用 Safari 浏览器访问 montree.xyz'
-              : 'Coming soon to TestFlight. For now, use Safari to visit montree.xyz'
-            }
+            {L(
+              'Coming soon to TestFlight. For now, use Safari to visit montree.xyz',
+              'iOS 版本即将上线。目前请使用 Safari 浏览器访问 montree.xyz'
+            )}
           </div>
         </div>
 
         {/* Web fallback */}
         <div className="text-white/40 text-sm">
           <p>
-            {isZh
-              ? '没有安装应用？直接在浏览器访问'
-              : "Don't want to install? Use your browser:"
-            }
+            {L(
+              "Don't want to install? Use your browser:",
+              '没有安装应用？直接在浏览器访问'
+            )}
           </p>
           <a href="/montree" className="text-emerald-400 underline">
             montree.xyz

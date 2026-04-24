@@ -51,7 +51,11 @@ export default function LanguagePresentationPage() {
   const [presentIdx, setPresentIdx] = useState(0);
 
   const t = useCallback(
-    (en: string, zh: string) => (locale === 'zh' ? zh : en),
+    (en: string, zh: string, es?: string) => {
+      const L: Record<string, string> = { en, zh };
+      if (es) L.es = es;
+      return L[locale || 'en'] || en;
+    },
     [locale]
   );
 

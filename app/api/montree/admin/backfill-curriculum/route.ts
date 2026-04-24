@@ -21,6 +21,7 @@ function buildCurriculumRecords(classroomId: string) {
           name: work.name,
           name_chinese: work.chineseName || null,
           name_zh: work.chineseName || null,
+          name_es: null,
           description: work.description || null,
           age_range: work.ageRange || '3-6',
           sequence: globalSequence,
