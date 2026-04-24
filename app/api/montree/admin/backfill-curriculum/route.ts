@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { CURRICULUM } from '@/lib/montree/curriculum-data';
+import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // Build curriculum records for a classroom
@@ -19,9 +20,7 @@ function buildCurriculumRecords(classroomId: string) {
           area_id: area.id,
           work_key: work.id,
           name: work.name,
-          name_chinese: work.chineseName || null,
-          name_zh: work.chineseName || null,
-          name_es: null,
+          ...buildLocaleInsertFields(work.chineseName),
           description: work.description || null,
           age_range: work.ageRange || '3-6',
           sequence: globalSequence,

@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/supabase-client';
 import { loadAllCurriculumWorks, loadCurriculumAreas } from '@/lib/montree/curriculum-loader';
+import { buildLocaleInsertFields } from '@/lib/montree/locales-config';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 
 // GET version for easy browser access
@@ -110,9 +111,7 @@ async function handleReseed(classroomId: string | null, schoolId: string) {
         area_id: areaUuid,
         work_key: work.work_key,
         name: work.name,
-        name_chinese: work.chineseName || null,
-        name_zh: work.chineseName || null,
-        name_es: null,
+        ...buildLocaleInsertFields(work.chineseName),
         description: work.description || null,
         age_range: work.age_range || '3-6',
         sequence: work.sequence, // CORRECT global sequence
