@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface Message {
   id: string;
@@ -54,7 +55,7 @@ export function MessageCard({
     if (diffHours < 24) return t('messaging.hoursAgo').replace('{h}', diffHours.toString());
     if (diffDays < 7) return t('messaging.daysAgo').replace('{d}', diffDays.toString());
 
-    return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return date.toLocaleDateString(getIntlLocale(locale), {
       month: 'short',
       day: 'numeric',
     });

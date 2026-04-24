@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import type { MontreeMedia, MontreeChild } from '@/lib/montree/media/types';
 import { useI18n } from '@/lib/montree/i18n';
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
 
 interface MediaDetailModalProps {
   media: MontreeMedia | null;
@@ -126,7 +127,7 @@ export default function MediaDetailModal({
   };
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+    return new Date(dateStr).toLocaleDateString(getIntlLocale(locale), {
       weekday: 'short',
       month: 'short',
       day: 'numeric',

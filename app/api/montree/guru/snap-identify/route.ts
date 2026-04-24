@@ -9,6 +9,8 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, AI_MODEL } from '@/lib/ai/anthropic';
 import { AREA_LABELS_EN } from '@/lib/montree/i18n/area-labels';
+import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { getActiveSensitivePeriods } from '@/lib/montree/guru/knowledge/sensitive-periods';
 import { checkRateLimit } from '@/lib/rate-limiter';
@@ -310,7 +312,8 @@ export async function POST(request: NextRequest) {
           .eq('id', auth.schoolId)
           .maybeSingle();
         const schoolSettings = (school?.settings as Record<string, unknown>) || {};
-        if (schoolSettings.locale === 'zh') locale = 'zh';
+        const schoolLocale = schoolSettings.locale as string;
+        if (schoolLocale && isValidLocale(schoolLocale)) locale = schoolLocale;
       }
     } catch (err) { console.error('[snap-identify] School locale fetch error:', err); }
 
@@ -411,7 +414,7 @@ RULES:
 - Use an EXACT work name from the catalog. Do not invent names.
 - If identification is uncertain, use closest match and set confidence to "low".
 - Base status on observation: "mastered" only if child shows fluent, confident, accurate performance.
-- The weekly narrative should be 3-4 sentences, formal but warm, suitable for a government school report.${locale === 'zh' ? '\n- Also provide weekly_narrative_zh in Chinese.' : ''}`;
+- The weekly narrative should be 3-4 sentences, formal but warm, suitable for a government school report.${locale !== 'en' ? `\n- Also provide weekly_narrative_localized in ${(() => { const L: Record<string, string> = { zh: 'Chinese', es: 'Spanish' }; return L[locale] || locale; })()}.` : ''}`;
 
     const toolSchema = {
       name: 'snap_identify_analysis',
@@ -491,7 +494,7 @@ RULES:
           },
 
           weekly_narrative: { type: 'string', description: 'Copy-paste paragraph for weekly admin report (3-4 sentences, formal/warm)' },
-          ...(locale === 'zh' ? { weekly_narrative_zh: { type: 'string', description: 'Chinese version of weekly narrative' } } : {}),
+          ...(locale !== 'en' ? { weekly_narrative_localized: { type: 'string', description: `${(() => { const L: Record<string, string> = { zh: 'Chinese', es: 'Spanish' }; return L[locale] || locale; })()} version of weekly narrative` } } : {}),
         },
         required: ['work_name', 'area', 'status', 'confidence', 'observation', 'sensitive_period_alignment', 'analysis', 'cross_area', 'next_steps', 'weekly_narrative'],
       },

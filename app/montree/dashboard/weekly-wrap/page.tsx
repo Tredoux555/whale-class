@@ -875,7 +875,7 @@ export default function WeeklyWrapPage() {
             {/* ── Recommendation Sentence ── */}
             {recSentenceParts.length > 0 && (
               <p className="text-sm text-gray-600 italic leading-relaxed">
-                {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join(locale === 'zh' ? '、' : ', ') })}
+                {t('weeklyWrap.recommendNextWeek', { name: firstName, areas: recSentenceParts.join({ zh: '、', es: ', ' }[locale] || ', ') })}
               </p>
             )}
 

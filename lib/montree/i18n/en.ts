@@ -2772,6 +2772,14 @@ export const en = {
   'weeklyAdmin.summaryPlaceholder': 'Practical Life: ...\nSensorial: ...\nMathematics: ...\nLanguage: ...\nCultural: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Weekly focus...',
 
+  // Weekly Admin Card (dashboard)
+  'weeklyAdminCard.title': 'Weekly Plan & Summary',
+  'weeklyAdminCard.childrenLabel': 'children',
+  'weeklyAdminCard.subtitle': 'Auto-fills from photos · Download DOCX',
+
+  // Area History Modal
+  'areaHistory.journey': "{name}'s Journey",
+
   // Shelf Autopilot
   'shelfAutopilot.title': 'Shelf Autopilot',
   'shelfAutopilot.description': 'AI analyzes each child\'s progress and suggests next works for their shelf.',

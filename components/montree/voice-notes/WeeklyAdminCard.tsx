@@ -32,10 +32,10 @@ export default function WeeklyAdminCard({ classroomId, children }: Props) {
           <span className="text-xl">📋</span>
           <div>
             <h3 className="font-semibold text-gray-800 text-sm">
-              {locale === 'zh' ? '周计划 & 总结' : 'Weekly Plan & Summary'}
+              {t('weeklyAdminCard.title')}
             </h3>
             <p className="text-xs text-gray-500">
-              {children.length} {locale === 'zh' ? '个学生' : 'children'} · {locale === 'zh' ? '自动填充 + 下载 DOCX' : 'Auto-fills from photos · Download DOCX'}
+              {children.length} {t('weeklyAdminCard.childrenLabel')} · {t('weeklyAdminCard.subtitle')}
             </p>
           </div>
         </div>

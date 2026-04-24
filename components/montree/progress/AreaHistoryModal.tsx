@@ -204,7 +204,7 @@ export default function AreaHistoryModal({ isOpen, onClose, area, childId, child
           <div className="text-center">
             <span className="text-3xl">{config.emoji}</span>
             <h2 className="font-bold text-lg">{areaDisplayName}</h2>
-            <p className="text-white/70 text-sm">{childName}{locale === 'zh' ? '的学习旅程' : "'s Journey"}</p>
+            <p className="text-white/70 text-sm">{t('areaHistory.journey', { name: childName })}</p>
           </div>
           <div className="w-10" />
         </div>
