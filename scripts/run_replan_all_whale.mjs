@@ -58,7 +58,7 @@ function getAreaLabel(areaKey, locale) {
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan',
   description:
-    'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in BOTH English and Chinese.',
+    'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in English, Chinese, and Argentine Spanish.',
   input_schema: {
     type: 'object',
     properties: {
@@ -69,6 +69,10 @@ const GAME_PLAN_TOOL = {
       nudge_zh: {
         type: 'string',
         description: 'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
+      },
+      nudge_es: {
+        type: 'string',
+        description: 'The SAME nudge translated to Argentine Spanish (voseo: vos tenés). Max 25 words equivalent.',
       },
       works: {
         type: 'array',
@@ -82,7 +86,7 @@ const GAME_PLAN_TOOL = {
         description: 'Area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'nudge_es', 'works', 'direction'],
   },
 };
 
@@ -184,8 +188,9 @@ async function replanChild(childId, childName) {
 
   const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 
-IMPORTANT — BILINGUAL OUTPUT:
-- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+IMPORTANT — TRILINGUAL OUTPUT:
+- Write nudge_en in English, nudge_zh in Chinese (中文), and nudge_es in Argentine Spanish (voseo: vos tenés).
+- All three nudges say the same thing in different languages.
 - Pick works using their ENGLISH names from the AVAILABLE WORKS list.
 - Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
 
@@ -240,11 +245,17 @@ What's the teacher's next move?`;
 
   const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
   const nudgeZh = rawPlan.nudge_zh || nudgeEn;
+  const nudgeEs = rawPlan.nudge_es || nudgeEn;
 
-  const works = { en: planWorks, zh: worksZh };
+  // Spanish works: use name_es column when available, else English
+  const enToEsWorkName = {};
+  // TODO: populate from name_es column when it exists
+  const worksEs = planWorks.map(w => enToEsWorkName[w.toLowerCase()] || w);
+
+  const works = { en: planWorks, zh: worksZh, es: worksEs };
 
   const updatedPlan = {
-    nudge: { en: nudgeEn, zh: nudgeZh },
+    nudge: { en: nudgeEn, zh: nudgeZh, es: nudgeEs },
     works,
     direction,
     generated_at: existingPlan.generated_at || new Date().toISOString(),

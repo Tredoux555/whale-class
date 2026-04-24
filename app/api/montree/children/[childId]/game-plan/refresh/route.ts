@@ -8,7 +8,7 @@ import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
-import { AREA_LABELS_EN, getAreaLabel } from '@/lib/montree/i18n/area-labels';
+import { AREA_LABELS_EN, AREA_LABELS_ES, getAreaLabel } from '@/lib/montree/i18n/area-labels';
 import { SUPPORTED_LOCALES } from '@/lib/montree/i18n/locales';
 
 export const maxDuration = 60;
@@ -22,7 +22,7 @@ interface RouteContext {
 // derived post-generation from DB lookups and area-label maps.
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
-  description: 'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in BOTH English and Chinese.',
+  description: 'Create a brief, warm game plan nudge for a tired teacher. Provide the nudge in English, Chinese, and Argentine Spanish.',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -34,6 +34,10 @@ const GAME_PLAN_TOOL = {
         type: 'string' as const,
         description: 'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
       },
+      nudge_es: {
+        type: 'string' as const,
+        description: 'The SAME nudge translated to Argentine Spanish (Spanish with voseo: vos tenés). Max 25 words equivalent.',
+      },
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
@@ -44,7 +48,7 @@ const GAME_PLAN_TOOL = {
         description: 'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'nudge_es', 'works', 'direction'],
   },
 };
 
@@ -174,8 +178,9 @@ export async function POST(
 
     const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
 
-IMPORTANT — BILINGUAL OUTPUT:
-- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+IMPORTANT — TRILINGUAL OUTPUT:
+- Write nudge_en in English, nudge_zh in Chinese (中文), and nudge_es in Argentine Spanish (voseo: vos tenés).
+- All three nudges say the same thing in different languages.
 - Pick works using their ENGLISH names from the AVAILABLE WORKS list.
 - Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
 
@@ -205,7 +210,7 @@ What should the teacher focus on NEXT? Pick 3-5 works that build on what's been 
     }
 
     const rawPlan = toolBlock.input as {
-      nudge_en?: string; nudge_zh?: string;
+      nudge_en?: string; nudge_zh?: string; nudge_es?: string;
       nudge?: string; // backward compat
       works?: string[]; direction?: string;
     };
@@ -228,11 +233,17 @@ What should the teacher focus on NEXT? Pick 3-5 works that build on what's been 
 
     const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
     const nudgeZh = rawPlan.nudge_zh || nudgeEn;
+    const nudgeEs = rawPlan.nudge_es || nudgeEn;
 
-    const works: Record<string, string[]> = { en: planWorks, zh: worksZh };
+    // Spanish works: use name_es column when available (not yet populated), else English
+    const enToEsWorkName: Record<string, string> = {};
+    // TODO: populate from name_es column when it exists
+    const worksEs = planWorks.map(w => enToEsWorkName[w.toLowerCase()] || w);
+
+    const works: Record<string, string[]> = { en: planWorks, zh: worksZh, es: worksEs };
 
     const updatedPlan = {
-      nudge: { en: nudgeEn, zh: nudgeZh },
+      nudge: { en: nudgeEn, zh: nudgeZh, es: nudgeEs },
       works,
       direction,
       generated_at: existingPlan?.generated_at || new Date().toISOString(),
