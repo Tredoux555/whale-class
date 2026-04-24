@@ -20,7 +20,7 @@ import { DEFAULT_LOCALE } from './locales';
  */
 const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = {
   zh: '_zh',
-  // es: '_es',  // Uncomment when Spanish DB columns exist
+  es: '_es',
 };
 
 // ---------------------------------------------------------------------------

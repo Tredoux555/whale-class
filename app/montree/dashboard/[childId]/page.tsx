@@ -46,12 +46,14 @@ interface Assignment {
   is_focus?: boolean;
   is_extra?: boolean;
   chineseName?: string;
+  spanishName?: string;
 }
 
 interface CurriculumWork {
   id: string;
   name: string;
   name_chinese?: string;
+  name_es?: string;
   area_id?: string;
 }
 
@@ -154,11 +156,16 @@ export default function WeekPage() {
     }
   }, []);
 
-  // Fetch quick guide for a work (accepts optional chineseName for display)
-  const openQuickGuide = async (workName: string, chineseName?: string) => {
+  // Fetch quick guide for a work (accepts optional chineseName/spanishName for display)
+  const openQuickGuide = async (workName: string, chineseName?: string, spanishName?: string) => {
     setQuickGuideWork(workName);
-    // Display Chinese name when locale is zh and chineseName is available
-    setQuickGuideDisplayName(locale === 'zh' && chineseName ? chineseName : workName);
+    // Display localized name when available
+    const displayName = locale === 'zh' && chineseName
+      ? chineseName
+      : locale === 'es' && spanishName
+        ? spanishName
+        : workName;
+    setQuickGuideDisplayName(displayName);
     setQuickGuideOpen(true);
     setQuickGuideLoading(true);
     setQuickGuideData(null);
@@ -168,9 +175,9 @@ export default function WeekPage() {
       let url = classroomId
         ? `/api/montree/works/guide?name=${encodeURIComponent(workName)}&classroom_id=${classroomId}`
         : `/api/montree/works/guide?name=${encodeURIComponent(workName)}`;
-      // Pass locale for Chinese translation of guide content
-      if (locale === 'zh') {
-        url += '&locale=zh';
+      // Pass locale for translated guide content
+      if (locale === 'zh' || locale === 'es') {
+        url += `&locale=${locale}`;
       }
       const res = await montreeApi(url);
       if (!res.ok) {
@@ -367,6 +374,7 @@ export default function WeekPage() {
           id: String(w.id),
           name: String(w.name),
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+          name_es: w.spanish_name ? String(w.spanish_name) : undefined,
           status: 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
           dbSequence: typeof w.sequence === 'number' ? w.sequence : byArea[areaKey].length + 1,
@@ -432,6 +440,7 @@ export default function WeekPage() {
           id: String(w.id),
           name: String(w.name),
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+          name_es: w.spanish_name ? String(w.spanish_name) : undefined,
           status: progress?.status || 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
           dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
@@ -478,6 +487,7 @@ export default function WeekPage() {
           id: String(w.id),
           name: String(w.name),
           name_chinese: w.chinese_name ? String(w.chinese_name) : undefined,
+          name_es: w.spanish_name ? String(w.spanish_name) : undefined,
           status: progress?.status || 'not_started',
           sequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
           dbSequence: typeof w.sequence === 'number' ? w.sequence : idx + 1,
@@ -819,7 +829,7 @@ export default function WeekPage() {
           }}
           onOpenQuickGuide={() => {
             if (focusWorks.length > 0) {
-              openQuickGuide(focusWorks[0].work_name, focusWorks[0].chineseName);
+              openQuickGuide(focusWorks[0].work_name, focusWorks[0].chineseName, focusWorks[0].spanishName);
             }
           }}
           onCloseQuickGuide={() => {
