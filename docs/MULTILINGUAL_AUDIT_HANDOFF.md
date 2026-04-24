@@ -59,6 +59,15 @@ The bilingual game plan JSONB pattern (Session 49) currently stores `{ en: "..."
 
 **Step 5 — Test end-to-end (~1 hour)**
 
+Programmatic audit COMPLETE (Session 65, Apr 25, 2026):
+- ✅ 418/418 Whale Class works have `name_es` — zero missing
+- ✅ `name_es` present in all 5 INSERT write paths
+- ✅ `batchTranslateWorksInBackground()` runs Spanish pass in both setup routes
+- ✅ `add-custom-work` fires `autoTranslateWork(input, 'es')` fire-and-forget
+- ✅ 3,713 es.ts keys — zero English stubs remaining
+- ✅ Zero new TypeScript errors introduced
+
+Manual UI verification PENDING — requires running app with Spanish locale:
 1. Switch locale to Spanish in the app
 2. Verify all UI strings render in Spanish (not English fallback)
 3. Generate a Weekly Wrap report — verify parent narrative is in Spanish
