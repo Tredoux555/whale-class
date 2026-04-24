@@ -212,7 +212,7 @@ Five write paths now import from these modules instead of duplicating locale log
 
 Note: `add-custom-work` zh translation now uses Haiku tool_use (same as all other locales) instead of the previous Sonnet raw-JSON path — this is intentional, making zh consistent with the system-wide pattern.
 
-Committed: `<commit-hash>` (Session 66)
+Committed: `cc47fe9c` (Session 66, Apr 25, 2026)
 
 ## Known Items NOT in Scope
 
