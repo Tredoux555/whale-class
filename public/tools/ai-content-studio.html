@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree AI Content Studio — Master Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700;900&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #1a3a2a;
+    --leaf: #2d6a4f;
+    --mint: #52b788;
+    --glow: #b7e4c7;
+    --cream: #faf9f6;
+    --sand: #f0ebe3;
+    --bark: #3d2c2c;
+    --ember: #e76f51;
+    --gold: #e9c46a;
+    --sky: #457b9d;
+    --white: #ffffff;
+    --shadow: rgba(26, 58, 42, 0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--bark);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--forest) 0%, var(--leaf) 50%, var(--mint) 100%);
+    color: var(--white);
+    padding: 80px 40px 60px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.05) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(30px, -30px) rotate(5deg); }
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 3.2em;
+    letter-spacing: -1px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero .subtitle {
+    font-size: 1.2em;
+    opacity: 0.9;
+    max-width: 700px;
+    margin: 0 auto 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 6px 18px;
+    border-radius: 30px;
+    font-size: 0.85em;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* CONTAINER */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 30px;
+  }
+
+  /* TABLE OF CONTENTS */
+  .toc {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 40px;
+    margin: -30px auto 50px;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 8px 40px var(--shadow);
+    max-width: 900px;
+  }
+
+  .toc h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.4em;
+    color: var(--forest);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--glow);
+  }
+
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .toc a {
+    color: var(--leaf);
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toc a:hover {
+    background: var(--glow);
+    color: var(--forest);
+  }
+
+  .toc .num {
+    background: var(--leaf);
+    color: var(--white);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* SECTIONS */
+  section {
+    margin-bottom: 60px;
+  }
+
+  section h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.8em;
+    color: var(--forest);
+    margin-bottom: 8px;
+    padding-top: 20px;
+  }
+
+  section h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.3em;
+    color: var(--leaf);
+    margin: 30px 0 12px;
+  }
+
+  section h4 {
+    font-weight: 700;
+    font-size: 1.05em;
+    color: var(--bark);
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 14px; }
+
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 28px;
+    margin: 20px 0;
+    box-shadow: 0 4px 20px var(--shadow);
+    border-left: 4px solid var(--mint);
+  }
+
+  .card.warning {
+    border-left-color: var(--ember);
+    background: #fff8f5;
+  }
+
+  .card.gold {
+    border-left-color: var(--gold);
+    background: #fffcf0;
+  }
+
+  .card.sky {
+    border-left-color: var(--sky);
+    background: #f5f9fc;
+  }
+
+  .card-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+    color: var(--leaf);
+  }
+
+  .card.warning .card-label { color: var(--ember); }
+  .card.gold .card-label { color: #b8860b; }
+  .card.sky .card-label { color: var(--sky); }
+
+  /* STEPS */
+  .step {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    background: linear-gradient(135deg, var(--leaf), var(--mint));
+    color: var(--white);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1em;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-content {
+    flex: 1;
+  }
+
+  .step-content strong {
+    color: var(--forest);
+  }
+
+  /* CODE BLOCKS */
+  .prompt-box {
+    background: var(--forest);
+    color: var(--glow);
+    padding: 20px 24px;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    line-height: 1.6;
+    margin: 14px 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    position: relative;
+  }
+
+  .prompt-box .label {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 0.7em;
+    color: var(--mint);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95em;
+  }
+
+  th {
+    background: var(--leaf);
+    color: var(--white);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  th:first-child { border-radius: 8px 0 0 0; }
+  th:last-child { border-radius: 0 8px 0 0; }
+
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--sand);
+  }
+
+  tr:nth-child(even) { background: var(--sand); }
+
+  /* TIMELINE */
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+    margin: 20px 0;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--mint), var(--leaf));
+    border-radius: 3px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding-left: 20px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -24px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--mint);
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--mint);
+  }
+
+  .timeline-item .week-label {
+    font-weight: 700;
+    color: var(--forest);
+    font-size: 0.9em;
+  }
+
+  /* CHECKLIST */
+  .checklist {
+    list-style: none;
+    padding: 0;
+  }
+
+  .checklist li {
+    padding: 8px 0 8px 32px;
+    position: relative;
+  }
+
+  .checklist li::before {
+    content: '\2610';
+    position: absolute;
+    left: 4px;
+    top: 8px;
+    font-size: 1.1em;
+    color: var(--leaf);
+  }
+
+  /* GRID LAYOUT */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin: 16px 0;
+  }
+
+  .mini-card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 2px 12px var(--shadow);
+    text-align: center;
+  }
+
+  .mini-card .emoji {
+    font-size: 2em;
+    margin-bottom: 8px;
+  }
+
+  .mini-card .label {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--forest);
+  }
+
+  /* DIVIDER */
+  .divider {
+    height: 3px;
+    background: linear-gradient(90deg, transparent, var(--mint), transparent);
+    margin: 50px 0;
+    border: none;
+  }
+
+  /* FOOTER */
+  .footer {
+    background: var(--forest);
+    color: var(--glow);
+    text-align: center;
+    padding: 40px;
+    margin-top: 60px;
+    font-size: 0.9em;
+  }
+
+  .footer strong {
+    color: var(--white);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3em;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 2.2em; }
+    .toc-grid { grid-template-columns: 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .hero { padding: 50px 20px 40px; }
+    .container { padding: 0 16px; }
+    .toc { margin: -20px 16px 40px; padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">Montree Super Admin — Content Studio</div>
+  <h1>AI Content Studio</h1>
+  <p class="subtitle">A step-by-step guide to producing AMI-standard Montessori materials using AI — free, shareable, and curriculum-aligned.</p>
+</div>
+
+<div class="toc container" style="max-width: 900px; margin-left: auto; margin-right: auto; padding-left: 40px; padding-right: 40px;">
+  <h2>What's Inside</h2>
+  <div class="toc-grid">
+    <a href="#vision"><span class="num">1</span> The Vision</a>
+    <a href="#tools"><span class="num">2</span> Tool Setup</a>
+    <a href="#image-workflow"><span class="num">3</span> Image Generation Workflow</a>
+    <a href="#music-workflow"><span class="num">4</span> Music Generation Workflow</a>
+    <a href="#material-types"><span class="num">5</span> Montessori Material Types</a>
+    <a href="#curriculum-map"><span class="num">6</span> Curriculum Alignment Map</a>
+    <a href="#prompt-library"><span class="num">7</span> Master Prompt Library</a>
+    <a href="#weekly-workflow"><span class="num">8</span> Weekly Production Workflow</a>
+    <a href="#rollout"><span class="num">9</span> 12-Week Rollout Plan</a>
+    <a href="#montree-integration"><span class="num">10</span> Montree Integration</a>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- SECTION 1: VISION -->
+<section id="vision">
+  <h2>1. The Vision</h2>
+  <p>Build a complete, free, shareable library of AMI-standard Montessori English materials — generated using AI, aligned to the Whale Class curriculum, and distributed through Montree to attract schools worldwide.</p>
+
+  <div class="card gold">
+    <div class="card-label">Strategic Value</div>
+    <p><strong>For the Whale Class:</strong> Custom materials tailored to Chinese ESL learners aged 2–6, with Chinese labels and culturally relevant imagery.</p>
+    <p><strong>For Montree:</strong> Free downloadable content creates a funnel. Teachers discover the materials, explore the platform, and schools convert to paid subscribers. If the content is good, the app must be good.</p>
+    <p><strong>For the Montessori community:</strong> AMI-standard materials are expensive. A free, comprehensive, high-quality set shared openly positions Montree as the teacher's best friend.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-label">What We're Building</div>
+    <p>A complete English Language curriculum material set covering:</p>
+    <p><strong>Pink Series</strong> — CVC words (cat, dog, map, pen, etc.) across all 5 vowel families. Three-part cards, object-to-picture matching, moveable alphabet word lists, booklets.</p>
+    <p><strong>Blue Series</strong> — Blends and digraphs (sh, ch, th, wh, ck, ng, bl, cr, st, etc.). Same material types plus phonogram cards.</p>
+    <p><strong>Green Series</strong> — Long vowels, silent-e, vowel teams (ai, ee, oa, ou, etc.). Advanced reading materials.</p>
+    <p><strong>Cultural Vocabulary</strong> — Classified cards for every weekly theme (animals, geography, energy, space, weather, etc.).</p>
+    <p><strong>Songs</strong> — AI-generated educational songs for phonics, themes, and classroom routines.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 2: TOOLS -->
+<section id="tools">
+  <h2>2. Tool Setup</h2>
+  <p>Three tools, three jobs. Each one does something the others can't.</p>
+
+  <div class="grid-3">
+    <div class="mini-card">
+      <div class="emoji">🎨</div>
+      <div class="label">ChatGPT Plus</div>
+      <p style="font-size: 0.85em; margin-top: 6px;">Image generation<br>Content writing</p>
+    </div>
+    <div class="mini-card">
+      <div class="emoji">✨</div>
+      <div class="label">Canva</div>
+      <p style="font-size: 0.85em; margin-top: 6px;">Layout & design<br>Print-ready PDFs</p>
+    </div>
+    <div class="mini-card">
+      <div class="emoji">🎵</div>
+      <div class="label">Suno</div>
+      <p style="font-size: 0.85em; margin-top: 6px;">Educational songs<br>Backing tracks</p>
+    </div>
+  </div>
+
+  <h3>Setting Up ChatGPT Plus</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Go to</strong> chat.openai.com</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Sign up</strong> with Google or email</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Upgrade to Plus</strong> — $20/month. Click your profile icon → "Upgrade to Plus." This gives you DALL-E image generation (unlimited), GPT-4o, and file uploads.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Test it:</strong> Type "Generate a cute cartoon image of a red cat sitting on a mat, simple illustration, white background, for a children's flashcard" — if you get an image, you're good to go.</div>
+  </div>
+
+  <h3>Setting Up Canva</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Go to</strong> canva.com and log in to your existing account</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Check your plan:</strong> Free works but Canva Pro ($12.99/month) gives you background remover, brand kit, and resize — all very useful for flashcards. Consider it later.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Create a Brand Kit</strong> (if Pro): Set Montree green (#2d6a4f) as primary, cream (#faf9f6) as background. Upload the Montree logo. This keeps every material consistent.</div>
+  </div>
+
+  <h3>Setting Up Suno</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Go to</strong> suno.com — you already have a Pro account (tredoux555)</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Always use Advanced mode</strong> for song creation — this gives you the Lyrics box, Styles box, and audio upload options.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Keep the Pro plan active</strong> while building the song library. Cancel when the full curriculum set is done. Budget: $10/month for approximately 2–3 months.</div>
+  </div>
+
+  <div class="card warning">
+    <div class="card-label">Budget Summary</div>
+    <table>
+      <tr><th>Tool</th><th>Cost</th><th>Duration</th><th>Total</th></tr>
+      <tr><td>ChatGPT Plus</td><td>$20/month</td><td>Ongoing (worth it)</td><td>$20/month</td></tr>
+      <tr><td>Canva Free</td><td>$0</td><td>Ongoing</td><td>$0</td></tr>
+      <tr><td>Suno Pro</td><td>$10/month</td><td>2–3 months</td><td>$20–30 total</td></tr>
+    </table>
+    <p><strong>Total investment: ~$50–80 to build an entire curriculum worth of materials that would cost $2,000+ to buy commercially.</strong></p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 3: IMAGE WORKFLOW -->
+<section id="image-workflow">
+  <h2>3. Image Generation Workflow</h2>
+  <p>This is your production line for generating consistent, high-quality illustrations for all Montessori materials.</p>
+
+  <h3>The Master Prompt (paste this first in every new ChatGPT session)</h3>
+  <div class="prompt-box"><span class="label">ChatGPT</span>I am a Montessori teacher creating educational materials for 4-year-old ESL learners. I need you to generate images with these consistent rules for EVERY image:
+
+- Simple cartoon illustration style
+- Bold, bright, saturated colours
+- Pure white background (#FFFFFF)
+- No text, no letters, no words anywhere on the image
+- No shadows or 3D effects
+- Clean black outlines
+- Cute and friendly style appropriate for young children
+- Each object shown in isolation (not part of a scene)
+- Realistic proportions (a cup should look like a cup, not abstract)
+- Consistent art style across all images in this session
+
+Please confirm you understand, then I will request images one at a time.</div>
+
+  <h3>Generating a Complete Set</h3>
+  <p>Once ChatGPT confirms, request each image individually. Be specific about what you need:</p>
+
+  <div class="prompt-box"><span class="label">Example Prompts</span>Generate a cartoon image of a red fish for a children's flashcard
+
+Generate a cartoon image of a wooden ship sailing on blue water for a children's flashcard
+
+Generate a cartoon image of a bright yellow sun with rays of light and a friendly smile for a children's flashcard
+
+Generate a cartoon image of a modern white wind turbine with three blades on a green hill for a children's flashcard</div>
+
+  <h3>Quality Control Checklist</h3>
+  <ul class="checklist">
+    <li>White background — no gradients, no colour bleed</li>
+    <li>No text anywhere on the image</li>
+    <li>Object is centred and fills most of the frame</li>
+    <li>Style matches the rest of the set</li>
+    <li>Object is clearly identifiable — a 4-year-old could name it</li>
+    <li>Colours are bright and saturated, not pastel or muted</li>
+  </ul>
+
+  <div class="card">
+    <div class="card-label">Pro Tip</div>
+    <p>If an image comes out slightly different in style, say: <em>"Regenerate this in the exact same style as the previous images — same line weight, same colour saturation, same level of detail."</em> ChatGPT will adjust.</p>
+  </div>
+
+  <h3>From Image to Flashcard (Canva Workflow)</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Save all images</strong> from ChatGPT to a folder on your computer called "Montree Materials"</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Open Canva</strong> → Create a design → Custom size → 4 x 6 inches (standard flashcard)</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Upload your image</strong> → drag it to fill the top two-thirds of the card</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Add text below:</strong> English word in large bold font (e.g. "shell"), Chinese word underneath in smaller font (e.g. "贝壳")</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content"><strong>Add a coloured border:</strong> Green for the current series, pink for Pink Series, blue for Blue Series</div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content"><strong>Duplicate the page</strong> for each new card — just swap the image and text. Keeps everything consistent.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-content"><strong>Download as PDF (Print)</strong> → high quality → ready to laminate</div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 4: MUSIC WORKFLOW -->
+<section id="music-workflow">
+  <h2>4. Music Generation Workflow</h2>
+  <p>Educational songs for phonics, cultural themes, and classroom routines — all generated in Suno.</p>
+
+  <h3>The Formula for Catchy Children's Songs</h3>
+  <div class="card">
+    <div class="card-label">The Science</div>
+    <p>Research shows hit children's songs share these elements: upbeat mood, simple catchy melodies, heavy repetition, call-and-response sections, physical actions tied to words, and the ABABCB structure (verse, chorus, verse, chorus, bridge, chorus).</p>
+  </div>
+
+  <h3>Song Types to Create</h3>
+  <table>
+    <tr><th>Type</th><th>Purpose</th><th>Example</th></tr>
+    <tr><td>Phonics Song</td><td>Drill a specific sound</td><td>The Sh-Sh-Sh Song</td></tr>
+    <tr><td>Theme Song</td><td>Introduce weekly vocabulary</td><td>We Are Green Champions</td></tr>
+    <tr><td>Action Song</td><td>Movement + learning</td><td>Wind and Water Power</td></tr>
+    <tr><td>Review Song</td><td>Consolidate the week</td><td>Friday wrap-up medley</td></tr>
+  </table>
+
+  <h3>Suno Step-by-Step</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Open Suno</strong> → Create → Advanced mode</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Paste lyrics</strong> into the Lyrics box. Use section tags: [Verse 1], [Chorus], [Bridge], [Call and Response], [Outro]</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Paste style</strong> into the Styles box. Default children's style:
+      <div class="prompt-box"><span class="label">Default Style</span>Sung in English. Fun upbeat children's song, bouncy ukulele, hand claps, cheerful bright female vocal, very simple singalong melody, preschool educational, call and response, playful and energetic, easy tempo for young learners, nursery rhyme feel</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Hit Create</strong> — Suno generates two versions. Listen to both, pick the best.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content"><strong>Not happy?</strong> Adjust the style description. Add words like "slower," "more gentle," "bigger chorus," "more drums." Generate again.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content"><strong>Download as MP3</strong> → click the three dots next to the song → Download → MP3 Audio</div>
+  </div>
+
+  <h3>Lyrics Template (Copy and Adapt)</h3>
+  <div class="prompt-box"><span class="label">Template</span>[Verse 1]
+[Sound/topic] [Sound/topic] what do you [see/hear/eat]?
+A [word 1] [word 1] [simple rhyme]!
+[Sound/topic] [Sound/topic] [question]?
+A [word 2] [word 2] [simple rhyme]!
+
+[Chorus]
+[Sound repeated] can you [action] with me?
+[Sound repeated] clap along one two three!
+[Word 1] and [word 2], [word 3], [word 4]
+[Sound] [sound] is everywhere!
+
+[Bridge - Call and Response]
+I say [word 1], you say [sound]!
+[Word 1]! ([Sound]!)
+I say [word 2], you say [sound]!
+[Word 2]! ([Sound]!)
+
+[Final Chorus - repeat with energy]</div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 5: MATERIAL TYPES -->
+<section id="material-types">
+  <h2>5. Montessori Material Types</h2>
+  <p>Every material type you need to produce, with specifications for AI generation.</p>
+
+  <h3>Three-Part Cards (Classified Cards)</h3>
+  <div class="card">
+    <div class="card-label">AMI Standard</div>
+    <p>Three-part cards consist of: (1) a control card with picture + label, (2) a picture card (image only), and (3) a label card (text only). The child matches the picture to the label using the control card to self-correct.</p>
+    <p><strong>Production spec:</strong> Generate the image in ChatGPT. Create three versions in Canva: image+text, image only, text only. Print on cardstock, laminate, cut. Colour-code the border by curriculum area.</p>
+  </div>
+
+  <h3>Object-to-Picture Matching Cards</h3>
+  <div class="card">
+    <div class="card-label">For Phonics</div>
+    <p>A card showing the picture that matches a physical miniature object. Used in sound games and three-period lessons. The child places the miniature on the matching picture card.</p>
+    <p><strong>Production spec:</strong> Generate images that closely match your actual 1688 miniature objects. If your miniature shell is a spiral seashell, prompt ChatGPT for "spiral seashell" not just "shell."</p>
+  </div>
+
+  <h3>Phonogram Cards</h3>
+  <div class="card">
+    <div class="card-label">For Digraphs</div>
+    <p>Cards showing the digraph letters (sh, ch, th, etc.) in Montessori pink/blue/green with 4-6 picture examples on the back or as a separate matching set.</p>
+    <p><strong>Production spec:</strong> Use Canva for the letter side (consistent Montessori font, red for consonants, blue for vowels). Use ChatGPT images for the picture side.</p>
+  </div>
+
+  <h3>Booklet Pages</h3>
+  <div class="card">
+    <div class="card-label">For Reading Practice</div>
+    <p>Simple folded booklets with one image per page and a word or simple sentence to read. The child reads the word/sentence and checks against the picture.</p>
+    <p><strong>Production spec:</strong> Generate 6-8 images per booklet. Layout in Canva as an A4 page that folds into a booklet. Include dotted lines for the child to trace the word.</p>
+  </div>
+
+  <h3>Cultural Classified Cards</h3>
+  <div class="card">
+    <div class="card-label">For Weekly Themes</div>
+    <p>Sets of cards showing vocabulary related to the week's cultural theme. Example: Green Energy week needs cards for sun, wind, water, solar panel, windmill, dam, coal, oil, gas, pollution.</p>
+    <p><strong>Production spec:</strong> Generate all images in one ChatGPT session for style consistency. Add English label + Chinese label + pinyin in Canva.</p>
+  </div>
+
+  <h3>Sorting Cards</h3>
+  <div class="card">
+    <div class="card-label">For Classification Work</div>
+    <p>Two or more category headers plus picture cards to sort. Example: "Renewable Energy" header and "Non-Renewable Energy" header, with picture cards the child sorts between them.</p>
+    <p><strong>Production spec:</strong> Generate category headers as distinct cards. Use green border for one category, red for the other. Picture cards have no border — the child decides where they go.</p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 6: CURRICULUM MAP -->
+<section id="curriculum-map">
+  <h2>6. Curriculum Alignment Map</h2>
+  <p>How the AI-generated materials map to the established Montessori English curriculum.</p>
+
+  <h3>Phonics Progression</h3>
+  <table>
+    <tr><th>Series</th><th>Focus</th><th>Materials Needed</th></tr>
+    <tr><td>Pink Series</td><td>CVC words (a, e, i, o, u families)</td><td>Three-part cards, object matching cards, word lists, booklets for each vowel</td></tr>
+    <tr><td>Blue Series — Blends</td><td>bl, br, cl, cr, dr, fl, fr, gl, gr, pl, pr, sk, sl, sm, sn, sp, st, sw, tr</td><td>Phonogram cards, picture cards, word lists, booklets</td></tr>
+    <tr><td>Blue Series — Digraphs</td><td>sh, ch, th, wh, ck, ng</td><td>Phonogram cards, object matching, bingo games, word lists, songs, booklets</td></tr>
+    <tr><td>Green Series</td><td>Long vowels, silent-e, vowel teams (ai, ee, oa, ou, ow, oo)</td><td>Phonogram cards, word lists, booklets, advanced reading cards</td></tr>
+  </table>
+
+  <h3>Digraph Material Checklist</h3>
+  <p>For each digraph (sh, ch, th, wh, ck, ng), produce:</p>
+  <ul class="checklist">
+    <li>5 miniature object photos / picture cards for three-period lessons</li>
+    <li>Phonogram card (letter combination)</li>
+    <li>Word list card (5-8 words)</li>
+    <li>Bingo game board + calling cards (from existing programme)</li>
+    <li>Sorting activity (beginning sound vs ending sound, where applicable)</li>
+    <li>Educational song (Suno)</li>
+    <li>Booklet (6 pages, trace + colour)</li>
+  </ul>
+
+  <h3>Cultural Theme Material Checklist</h3>
+  <p>For each weekly theme, produce:</p>
+  <ul class="checklist">
+    <li>8-12 classified vocabulary cards (image + English + Chinese + pinyin)</li>
+    <li>1-2 sorting activities</li>
+    <li>1 theme song (Suno)</li>
+    <li>1 booklet (6 keywords, trace + colour)</li>
+    <li>Photos/real images for circle time discussion (web search)</li>
+  </ul>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 7: PROMPT LIBRARY -->
+<section id="prompt-library">
+  <h2>7. Master Prompt Library</h2>
+  <p>Copy-paste prompts ready for ChatGPT and Suno. Organised by material type.</p>
+
+  <h3>ChatGPT Image Prompts — Pink Series CVC</h3>
+  <div class="prompt-box"><span class="label">Short A Family</span>Generate a cute cartoon image of a [cat/bat/hat/map/van/pan/bag/ram] for a children's phonics flashcard. Simple illustration, bold bright colours, pure white background, no text, clean black outlines, friendly style for 4-year-olds.</div>
+
+  <h3>ChatGPT Image Prompts — Digraphs</h3>
+  <div class="prompt-box"><span class="label">sh words</span>shell, ship, shark, shoe, sheep
+
+Generate a cute cartoon image of a [spiral seashell / wooden sailing ship / friendly blue shark / red children's shoe / fluffy white sheep] for a children's phonics flashcard. Simple illustration, bold bright colours, pure white background, no text, clean black outlines, friendly style for 4-year-olds.</div>
+
+  <div class="prompt-box"><span class="label">ch words</span>cheese, cherry, chicken, chip, chair
+
+Generate a cute cartoon image of a [wedge of yellow cheese with holes / two bright red cherries on a stem / cute brown and white chicken / golden crispy chip/french fry / small wooden children's chair] for a children's phonics flashcard. Simple illustration, bold bright colours, pure white background, no text, clean black outlines, friendly style for 4-year-olds.</div>
+
+  <div class="prompt-box"><span class="label">ng words</span>ring, king, wing, swing, song
+
+Generate a cute cartoon image of a [gold ring with a gemstone / cartoon king wearing a crown and robe / white bird wing spread open / playground swing set / musical notes floating from an open mouth] for a children's phonics flashcard. Simple illustration, bold bright colours, pure white background, no text, clean black outlines, friendly style for 4-year-olds.</div>
+
+  <h3>ChatGPT Image Prompts — Cultural Themes</h3>
+  <div class="prompt-box"><span class="label">Green Energy Week</span>Generate a cute cartoon image of a [bright sun with rays / modern wind turbine on a green hill / large dam with water flowing / solar panels on a rooftop / factory with dirty grey smoke / pile of black coal / oil barrel / blue gas flame / happy green Earth / child in green superhero cape] for a children's educational flashcard. Simple illustration, bold bright colours, pure white background, no text, clean black outlines, friendly style for 4-year-olds.</div>
+
+  <h3>Suno Song Prompts — Phonics</h3>
+  <div class="prompt-box"><span class="label">Default Phonics Song Style</span>Sung in English. Fun upbeat children's song, bouncy ukulele, hand claps, cheerful bright female vocal, very simple singalong melody, preschool educational, call and response, playful and energetic, easy tempo for young learners, nursery rhyme feel</div>
+
+  <h3>Suno Song Prompts — Theme Songs</h3>
+  <div class="prompt-box"><span class="label">Default Theme Song Style</span>Sung in English. Fun upbeat children's anthem, bright ukulele, hand claps and stomps, cheerful female vocal, simple catchy singalong melody, preschool educational, call and response, marching energy, warm and empowering, easy tempo for young learners</div>
+
+  <h3>Suno Song Prompts — Action Songs</h3>
+  <div class="prompt-box"><span class="label">Default Action Song Style</span>Sung in English. Playful breezy children's song, gentle flowing melody, light flute and acoustic guitar, cheerful female vocal, swaying rhythm, preschool educational, action song energy, easy repeating chorus for young learners</div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 8: WEEKLY WORKFLOW -->
+<section id="weekly-workflow">
+  <h2>8. Weekly Production Workflow</h2>
+  <p>How to integrate material production into your weekly planning without losing your mind.</p>
+
+  <div class="card sky">
+    <div class="card-label">The Golden Rule</div>
+    <p><strong>Don't try to build everything at once.</strong> Produce materials one week ahead. Every Sunday evening, generate next week's materials. It takes 1-2 hours once you're in the rhythm.</p>
+  </div>
+
+  <h3>Sunday Evening (1-2 hours)</h3>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Check next week's theme</strong> in the Montree weekly plan</div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Open ChatGPT</strong> — paste the master prompt — generate all flashcard images for the week (usually 8-12 images, takes ~20 minutes)</div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Open Canva</strong> — drop images into flashcard templates — add English + Chinese labels — export as PDF (takes ~20 minutes)</div>
+  </div>
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Open Suno</strong> — generate the week's theme song and/or phonics song (takes ~20 minutes including revisions)</div>
+  </div>
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-content"><strong>Ask Claude</strong> — write the song lyrics, booklet text, and any worksheet content. Claude handles the curriculum thinking; you handle the production.</div>
+  </div>
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-content"><strong>Print and laminate</strong> Monday morning before class</div>
+  </div>
+
+  <h3>Building the Phonics Library (Ongoing)</h3>
+  <p>In parallel with weekly themes, dedicate one session per week to building the permanent phonics material sets. Rotate through:</p>
+  <table>
+    <tr><th>Week Focus</th><th>What to Produce</th></tr>
+    <tr><td>Pink Series — Short A</td><td>8 CVC word cards + booklet</td></tr>
+    <tr><td>Pink Series — Short E</td><td>8 CVC word cards + booklet</td></tr>
+    <tr><td>Pink Series — Short I</td><td>8 CVC word cards + booklet</td></tr>
+    <tr><td>Pink Series — Short O</td><td>8 CVC word cards + booklet</td></tr>
+    <tr><td>Pink Series — Short U</td><td>8 CVC word cards + booklet</td></tr>
+    <tr><td>Blue Series — Digraph SH</td><td>5 picture cards + phonogram + song + booklet</td></tr>
+    <tr><td>Blue Series — Digraph CH</td><td>5 picture cards + phonogram + song + booklet</td></tr>
+    <tr><td>Continue through all digraphs and blends...</td><td></td></tr>
+  </table>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 9: ROLLOUT -->
+<section id="rollout">
+  <h2>9. 12-Week Rollout Plan</h2>
+  <p>Start now, finish by start of next academic year with a complete library.</p>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="week-label">Weeks 1–2: Foundation</div>
+      <p>Set up all accounts (ChatGPT Plus, Canva, Suno). Master the image generation workflow. Produce Week 31 Green Energy materials as your first complete set. Build your Canva flashcard template.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="week-label">Weeks 3–4: Pink Series Launch</div>
+      <p>Generate complete Short A and Short E CVC card sets. Produce matching booklets. Create the first 2 phonics songs (one per vowel family). Test with Whale Class.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="week-label">Weeks 5–6: Pink Series Complete</div>
+      <p>Generate Short I, Short O, Short U card sets and booklets. You now have a complete Pink Series. Package it as the first Montree downloadable resource.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="week-label">Weeks 7–8: Blue Series — Digraphs</div>
+      <p>Generate all 6 digraph sets (sh, ch, th, wh, ck, ng). Each set includes: 5 picture cards, phonogram card, word list, bingo board, song, booklet. This is your flagship content — the digraph programme is unique.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="week-label">Weeks 9–10: Blue Series — Blends</div>
+      <p>Generate the most common blends (bl, br, cl, cr, dr, fl, fr, gl, gr, pl, pr, sl, sm, sn, sp, st, sw, tr). Picture cards and word lists for each. Songs for the trickiest ones.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="week-label">Weeks 11–12: Green Series + Cultural Library</div>
+      <p>Generate long vowel and vowel team materials (ai, ee, oa, ou, ow, oo, silent-e). Build the cultural classified card library for at least 10 weekly themes. Package everything for Montree.</p>
+    </div>
+  </div>
+
+  <div class="card gold">
+    <div class="card-label">End Goal</div>
+    <p><strong>By the start of the new academic year, you'll have:</strong></p>
+    <p>Complete Pink Series (5 vowel families, 40+ CVC words with cards and booklets). Complete Blue Series — Digraphs (6 sets, 30+ words, 6 songs, 6 booklets). Complete Blue Series — Blends (19 blend sets, 95+ words). Green Series foundation (6 vowel team sets). Cultural card library (10+ weekly themes, 100+ vocabulary cards). Song library (15-20 original educational songs).</p>
+    <p><strong>All free. All shareable. All on Montree.</strong></p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- SECTION 10: MONTREE INTEGRATION -->
+<section id="montree-integration">
+  <h2>10. Montree Integration</h2>
+  <p>How this content feeds into the Montree platform and drives school adoption.</p>
+
+  <h3>Content Distribution Strategy</h3>
+  <div class="card">
+    <div class="card-label">The Funnel</div>
+    <p><strong>Layer 1 — Free downloads:</strong> All material sets available as free PDFs on Montree. No login required. Teachers discover them through Google, WeChat shares, Montessori Facebook groups, and word of mouth.</p>
+    <p><strong>Layer 2 — Free account:</strong> To access the full organised library, song downloads, and weekly planning integration, teachers create a free Montree account. Now you have their email.</p>
+    <p><strong>Layer 3 — School subscription:</strong> Teachers who love the materials explore the platform. They see curriculum tracking, AI parent reports, the parent portal. They tell their principal. Principal signs up for the $1,000/month school subscription.</p>
+  </div>
+
+  <h3>Where to Store in Montree Super Admin</h3>
+  <p>Create this folder structure under the Montree super admin content management area:</p>
+  <div class="prompt-box"><span class="label">Folder Structure</span>/content-library
+  /phonics
+    /pink-series
+      /short-a (cards PDF, booklet PDF, word list)
+      /short-e
+      /short-i
+      /short-o
+      /short-u
+    /blue-series-digraphs
+      /sh (cards PDF, phonogram PDF, bingo PDF, song MP3, booklet PDF)
+      /ch
+      /th
+      /wh
+      /ck
+      /ng
+    /blue-series-blends
+      /bl, /br, /cl, /cr... (cards PDF, word list)
+    /green-series
+      /ai, /ee, /oa, /ou... (cards PDF, word list, booklet PDF)
+  /cultural-themes
+    /green-energy (cards PDF, sorting activity PDF, song MP3, booklet PDF)
+    /africa
+    /space
+    /ocean-life
+    /weather
+    ... (one folder per weekly theme)
+  /songs
+    /phonics-songs (all digraph and blend songs)
+    /theme-songs (all weekly theme songs)
+    /action-songs (movement and routine songs)</div>
+
+  <h3>Weekly Wrap-Up Integration</h3>
+  <p>The weekly wrap-up system already built into Montree can reference the materials used each week. When a teacher uploads their weekly plan, the AI report generator can note which material sets were used and link parents to them. This closes the loop: parent sees "this week we used the Green Energy classified cards" → parent clicks → lands on Montree → explores the platform.</p>
+
+  <div class="card">
+    <div class="card-label">The Copyright Question</div>
+    <p><strong>Montessori curriculum is not copyrighted.</strong> The method, the progression, the material types — these are public domain, developed over 100 years ago by Maria Montessori and refined by AMI. What is copyrighted is specific commercial implementations (Nienhuis product designs, commercial card sets with specific illustrations). Since you're generating all original illustrations and writing all original text, everything you produce is yours to share freely. The songs are original compositions. The images are AI-generated originals. The curriculum structure is public domain AMI methodology. You're clear.</p>
+  </div>
+</section>
+
+</div>
+
+<div class="footer">
+  <strong>Montree AI Content Studio</strong>
+  Built for the Whale Class. Shared with the world.<br>
+  Save this guide to: Montree Super Admin → Content Studio<br><br>
+  <em>Tools: Claude (strategy + curriculum) • ChatGPT Plus (images + content) • Canva (design + layout) • Suno (songs)</em>
+</div>
+
+</body>
+</html>

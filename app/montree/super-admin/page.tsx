@@ -400,6 +400,13 @@ export default function SuperAdminPage() {
             >
               📱 Social Manager
             </Link>
+            <a
+              href="/tools/ai-content-studio.html"
+              target="_blank"
+              className="px-4 py-2 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 text-sm"
+            >
+              🤖 Content Studio
+            </a>
             <Link
               href="/montree/teacher/register"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-sm"
