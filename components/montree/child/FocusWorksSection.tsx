@@ -21,6 +21,7 @@ export interface Assignment {
   is_focus?: boolean;
   is_extra?: boolean;
   chineseName?: string;
+  spanishName?: string;
 }
 
 interface AreaDetail {
@@ -41,7 +42,7 @@ export interface FocusWorksSectionProps {
   onCycleStatus: (work: Assignment, isFocus: boolean) => void;
   onRemoveExtra: (work: Assignment) => void;
   onOpenWheelPicker: (area: string, workName?: string) => void;
-  onOpenQuickGuide: (workName: string, chineseName?: string) => void;
+  onOpenQuickGuide: (workName: string, chineseName?: string, spanishName?: string) => void;
   childId: string;
   childName?: string;
   getAreaConfig: (area: string) => AreaConfig;
@@ -365,7 +366,11 @@ export default function FocusWorksSection({
                 >
                   {focusWork ? (
                     <p className="font-medium text-gray-800 text-sm">
-                      {locale === 'zh' && focusWork.chineseName ? focusWork.chineseName : cleanWorkName(focusWork.work_name)}
+                      {locale === 'zh' && focusWork.chineseName
+                        ? focusWork.chineseName
+                        : locale === 'es' && focusWork.spanishName
+                          ? focusWork.spanishName
+                          : cleanWorkName(focusWork.work_name)}
                     </p>
                   ) : (
                     <p className="font-medium text-gray-400 text-sm italic">
@@ -407,7 +412,7 @@ export default function FocusWorksSection({
                       <div className="flex gap-2">
                         <button
                           {...(areaIdx === 0 ? { 'data-guide': 'quick-guide-btn' } : {})}
-                          onClick={() => onOpenQuickGuide(focusWork.work_name, focusWork.chineseName)}
+                          onClick={() => onOpenQuickGuide(focusWork.work_name, focusWork.chineseName, focusWork.spanishName)}
                           className="flex-1 py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-1 hover:bg-amber-600 active:scale-95"
                         >
                           📖 {t('focusWorks.quickGuide')}
@@ -485,7 +490,11 @@ export default function FocusWorksSection({
                       <div key={`extra-${extra.area}-${extra.work_name}`} className="flex items-center gap-2 p-2 rounded-lg bg-gray-50/60">
                         <span className="text-xs text-gray-400">└</span>
                         <span className="flex-1 text-sm text-gray-600">
-                          {locale === 'zh' && extra.chineseName ? extra.chineseName : cleanWorkName(extra.work_name)}
+                          {locale === 'zh' && extra.chineseName
+                            ? extra.chineseName
+                            : locale === 'es' && extra.spanishName
+                              ? extra.spanishName
+                              : cleanWorkName(extra.work_name)}
                         </span>
                         <button
                           onClick={() => onCycleStatus(extra, false)}

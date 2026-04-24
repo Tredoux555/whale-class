@@ -176,10 +176,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // --- FETCH DB CHINESE NAMES (classroom-specific, covers custom works) ---
-  // Build a name→chinese map from the classroom curriculum for works that
+  // --- FETCH DB CHINESE + SPANISH NAMES (classroom-specific, covers custom works) ---
+  // Build name→chinese and name→spanish maps from the classroom curriculum for works that
   // the static JSON doesn't cover (custom works, works added after static export).
   const dbChineseMap = new Map<string, string>();
+  const dbSpanishMap = new Map<string, string>();
   try {
     // Get child's classroom_id
     const { data: childData } = await supabase
@@ -191,14 +192,13 @@ export async function GET(request: NextRequest) {
     if (childData?.classroom_id) {
       const { data: currWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, name_chinese')
-        .eq('classroom_id', childData.classroom_id)
-        .not('name_chinese', 'is', null);
+        .select('name, name_chinese, name_es')
+        .eq('classroom_id', childData.classroom_id);
 
       for (const w of currWorks || []) {
-        if (w.name_chinese) {
-          dbChineseMap.set(w.name.toLowerCase().trim(), w.name_chinese);
-        }
+        const key = w.name.toLowerCase().trim();
+        if (w.name_chinese) dbChineseMap.set(key, w.name_chinese);
+        if (w.name_es) dbSpanishMap.set(key, w.name_es);
       }
     }
   } catch {
@@ -217,12 +217,19 @@ export async function GET(request: NextRequest) {
       return { ...p, is_focus: isFocus, is_extra: isExtra };
     })
   ).map(p => {
+    const key = p.work_name?.toLowerCase().trim() || '';
+    let updated = { ...p };
     // Second pass: DB Chinese names as fallback for works not in static JSON
-    if (!p.chineseName && p.work_name) {
-      const dbName = dbChineseMap.get(p.work_name.toLowerCase().trim());
-      if (dbName) return { ...p, chineseName: dbName };
+    if (!updated.chineseName && key) {
+      const dbName = dbChineseMap.get(key);
+      if (dbName) updated = { ...updated, chineseName: dbName };
     }
-    return p;
+    // Third pass: DB Spanish names
+    if (key) {
+      const esName = dbSpanishMap.get(key);
+      if (esName) updated = { ...updated, spanishName: esName };
+    }
+    return updated;
   });
 
   // --- GROUP BY AREA from enriched progress ---

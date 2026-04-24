@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`
-        id, work_key, name, name_chinese, description, area_id, sequence,
+        id, work_key, name, name_chinese, name_es, description, area_id, sequence,
         area:montree_classroom_curriculum_areas!area_id (
           id, area_key, name, name_chinese, icon, color
         )
@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
         work_key: w.work_key,
         name: w.name,
         chinese_name: w.name_chinese,
+        spanish_name: w.name_es || undefined,
         description: w.description,
         area: area?.area_key || 'unknown',
         area_name: area?.name || 'Unknown',
