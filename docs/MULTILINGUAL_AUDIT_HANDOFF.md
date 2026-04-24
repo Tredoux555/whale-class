@@ -173,18 +173,52 @@ All `=== 'zh'` ternaries converted to locale-agnostic patterns:
 
 ## How to Add a New Language
 
-1. Create `lib/montree/i18n/{lang}.ts` — copy `en.ts`, translate all keys
-2. Add to `SUPPORTED_LOCALES` array in `locales.ts`
-3. Add area labels to `AREA_LABELS` map in `area-labels.ts`
-4. Add `LOCALE_AI_CONFIG` entry in `locale-config.ts`
-5. Add `LOCALE_TO_INTL` date format entry in `locales.ts`
-6. **Zero code changes** in components or API routes
+Adding a language is now a config change + one script. Run:
+
+```
+node scripts/add-language.mjs <locale>
+```
+
+The script prints all required steps. Summary:
+
+1. Run `ALTER TABLE` SQL in Supabase (adds `name_{locale}`, `parent_description_{locale}`, `why_it_matters_{locale}`)
+2. Add `'<locale>'` to `ENABLED_LOCALES` in `lib/montree/locales-config.ts` (ONE LINE)
+3. Create `lib/montree/i18n/{locale}.ts` — copy `en.ts`, translate all ~3,713 keys
+4. Add area labels to `AREA_LABELS` map in `area-labels.ts`
+5. Add `LOCALE_AI_CONFIG` entry in `locale-config.ts`
+6. Add `LOCALE_TO_INTL` / display name / short label entries in `locales.ts`
+7. Run batch translate via `POST /api/montree/curriculum/batch-translate` with `target_locale`
+
+**Zero additional code changes** in components, API routes, or write paths — `ENABLED_LOCALES` drives all of them.
+
+### Locale Onboarding Architecture (Session 66, Apr 25, 2026)
+
+Two new shared modules centralize locale handling for curriculum INSERTs and background translation:
+
+| File | Purpose |
+|------|---------|
+| `lib/montree/locales-config.ts` | `ENABLED_LOCALES`, `buildLocaleInsertFields()`, `getNameColumn()` |
+| `lib/montree/insert-curriculum-work.ts` | `batchTranslateAllLocales()`, `translateAllLocales()` |
+
+Five write paths now import from these modules instead of duplicating locale logic:
+
+| Write Path | Change |
+|------------|--------|
+| `principal/setup-stream/route.ts` | `buildLocaleInsertFields()` + `batchTranslateAllLocales()` |
+| `principal/setup/route.ts` | Same |
+| `guru/photo-insight/add-custom-work/route.ts` | `translateAllLocales()` replaces inline 3b+3c blocks |
+| `admin/reseed-curriculum/route.ts` | `buildLocaleInsertFields()` |
+| `admin/backfill-curriculum/route.ts` | `buildLocaleInsertFields()` |
+
+Note: `add-custom-work` zh translation now uses Haiku tool_use (same as all other locales) instead of the previous Sonnet raw-JSON path — this is intentional, making zh consistent with the system-wide pattern.
+
+Committed: `<commit-hash>` (Session 66)
 
 ## Known Items NOT in Scope
 
 - **TYPE B preserves are intentional** — 512 occurrences of `name_chinese`, `name_zh`, etc. read actual PostgreSQL columns. These are NOT conversion targets.
 - **6 Sonnet-hardcoded routes** still need `resolveReportModel()` gating — orthogonal to i18n.
-- **DB migration for `_localized` JSONB columns** — additive, not yet needed. Current dual-column (`name` + `name_zh`) pattern works. JSONB migration planned for when a 3rd language actually ships.
+- **DB migration for `_localized` JSONB columns** — additive, not yet needed. Current dual-column (`name` + `name_zh`) pattern works. JSONB migration planned for when a 4th language ships.
 
 ## Files Reference
 
