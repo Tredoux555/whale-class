@@ -71,7 +71,7 @@ async function refreshGamePlanInProcess(
   try {
     if (!anthropic) return { success: false, message: 'AI not configured' };
 
-    const isZh = locale === 'zh';
+    const isNonEnglish = locale !== 'en';
 
     // Fetch child + existing game plan + profile + progress
     const [childResult, profileResult, progressResult, notesResult] = await Promise.all([
@@ -147,10 +147,10 @@ async function refreshGamePlanInProcess(
         const areaKey = promptAreaIdToKey[w.area_id];
         if (!areaKey) continue;
         if (!worksByArea[areaKey]) worksByArea[areaKey] = [];
-        worksByArea[areaKey].push(isZh && w.name_chinese ? w.name_chinese : w.name);
+        worksByArea[areaKey].push(isNonEnglish && w.name_chinese ? w.name_chinese : w.name);
       }
       availableWorksList = Object.entries(worksByArea)
-        .map(([area, works]) => `[${getAreaLabel(area, isZh ? 'zh' : 'en')}] ${works.join(isZh ? '、' : ', ')}`)
+        .map(([area, works]) => `[${getAreaLabel(area, locale || 'en')}] ${works.join({ zh: '、', es: ', ' }[locale || ''] || ', ')}`)
         .join('\n');
     }
 
@@ -168,12 +168,31 @@ async function refreshGamePlanInProcess(
       },
     };
 
-    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
-${isZh ? `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
+    const langInstruction = (() => {
+      if (!locale || locale === 'en') return '';
+      const L: Record<string, string> = {
+        zh: `\nIMPORTANT: Respond ENTIRELY in Chinese (中文).
 - Write the nudge in Chinese.
 - Write the direction using Chinese area names: 日常, 感官, 数学, 语言, 文化.
 - Use the EXACT Chinese work names from the AVAILABLE WORKS list below.
-- Direction example: "日常 → 感官 → 语言"\n` : ''}
+- Direction example: "日常 → 感官 → 语言"\n`,
+        es: `\nIMPORTANT: Respond ENTIRELY in Spanish (Español).
+- Write the nudge in Spanish.
+- Use the EXACT work names from the AVAILABLE WORKS list below.
+- Direction example: "Vida Práctica → Sensorial → Lenguaje"\n`,
+      };
+      return L[locale] || '';
+    })();
+    const directionSuffix = (() => {
+      if (!locale || locale === 'en') return '';
+      const L: Record<string, string> = {
+        zh: ' Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化).',
+        es: ' Direction arrow must use Spanish area names (Vida Práctica, Sensorial, Matemáticas, Lenguaje, Cultural).',
+      };
+      return L[locale] || '';
+    })();
+    const prompt = `Update a child's game plan based on their progress. Keep it brief — one sentence a tired teacher reads in 2 seconds.
+${langInstruction}
 CHILD: ${child.name}
 PREVIOUS NUDGE: "${previousNudge}"
 PREVIOUS WORKS: ${JSON.stringify(previousWorks)}
@@ -182,7 +201,7 @@ ${progressSummary ? `PROGRESS:\n${progressSummary}` : 'No progress data yet.'}
 ${recentNotes ? `RECENT NOTES:\n${recentNotes}` : ''}
 ${profile?.family_notes ? `FAMILY: ${profile.family_notes}` : ''}
 ${availableWorksList ? `\nAVAILABLE WORKS IN THIS CLASSROOM — pick from this list using EXACT names:\n${availableWorksList}\n` : ''}
-What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.${isZh ? ' Direction arrow must use Chinese area names (日常, 感官, 数学, 语言, 文化).' : ''}`;
+What should the teacher focus on NEXT? Acknowledge progress if any. Pick 3-5 new works that build on what's been done.${directionSuffix}`;
 
     const response = await anthropic.messages.create({
       model: HAIKU_MODEL,

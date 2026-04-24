@@ -120,16 +120,19 @@ const SENSITIVE_PERIOD_NAMES_ZH: Record<string, string> = {
   writing: '书写',
   reading: '阅读',
 };
-const SENSITIVE_PERIOD_NAMES: Record<Locale, Record<string, string>> = {
+const SENSITIVE_PERIOD_NAMES: Record<string, Record<string, string>> = {
   en: {
     order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory', small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading',
   },
   zh: SENSITIVE_PERIOD_NAMES_ZH,
+  es: {
+    order: 'Orden', language: 'Lenguaje', movement: 'Movimiento', sensory: 'Sensorial', small_objects: 'Objetos Pequeños', grace_courtesy: 'Gracia y Cortesía', writing: 'Escritura', reading: 'Lectura',
+  },
 };
 const translateSensitivePeriodName = (name: string, locale: Locale): string => {
-  const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
+  const names = SENSITIVE_PERIOD_NAMES[locale] || SENSITIVE_PERIOD_NAMES['en'];
   const lookupKey = name.toLowerCase();
-  return SENSITIVE_PERIOD_NAMES[normalizedLocale][lookupKey] || SENSITIVE_PERIOD_NAMES[normalizedLocale][lookupKey.replace(/\s+/g, '_')] || name;
+  return names[lookupKey] || names[lookupKey.replace(/\s+/g, '_')] || name;
 };
 
 // TYPE A: Sensitive period status translations (map for non-English locales)
@@ -138,15 +141,18 @@ const SENSITIVE_PERIOD_STATUS_ZH: Record<string, string> = {
   emerging: '显现',
   inactive: '不活跃',
 };
-const SENSITIVE_PERIOD_STATUS: Record<Locale, Record<string, string>> = {
+const SENSITIVE_PERIOD_STATUS: Record<string, Record<string, string>> = {
   en: {
     active: 'Active', emerging: 'Emerging', inactive: 'Inactive',
   },
   zh: SENSITIVE_PERIOD_STATUS_ZH,
+  es: {
+    active: 'Activo', emerging: 'Emergente', inactive: 'Inactivo',
+  },
 };
 const translateSensitivePeriodStatus = (status: string, locale: Locale): string => {
-  const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
-  return SENSITIVE_PERIOD_STATUS[normalizedLocale][status] || status;
+  const statuses = SENSITIVE_PERIOD_STATUS[locale] || SENSITIVE_PERIOD_STATUS['en'];
+  return statuses[status] || status;
 };
 
 // TYPE E: AI analysis phrases - locale-aware text for AI reports
@@ -188,8 +194,7 @@ const AI_ANALYSIS_PHRASES: Record<string, Record<string, string>> = {
 };
 
 const getAIPhrase = (locale: Locale, key: string, defaultValue: string = ''): string => {
-  const localeKey = (locale === 'zh') ? 'zh' : 'en';
-  return AI_ANALYSIS_PHRASES[localeKey]?.[key] || AI_ANALYSIS_PHRASES['en']?.[key] || defaultValue;
+  return AI_ANALYSIS_PHRASES[locale]?.[key] || AI_ANALYSIS_PHRASES['en']?.[key] || defaultValue;
 };
 
 // ============================================
@@ -300,8 +305,7 @@ function generateParentReport(
       zh: getChineseNameForWork(rawWorkName) || dbChineseMap.get(rawWorkName.toLowerCase().trim()) || rawWorkName,
       en: rawWorkName,
     };
-    const normalizedLocale2 = (locale === 'zh' ? 'zh' : 'en') as Locale;
-    const displayWorkName = WORK_NAME_BY_LOCALE[normalizedLocale2];
+    const displayWorkName = WORK_NAME_BY_LOCALE[locale] || WORK_NAME_BY_LOCALE['en'];
     const worksText = `${displayWorkName} (${analysis.repetition_highlights[0].count}x)`;
     highlights.push(
       t('report.generate.deepConcentration' as any, `${firstName} showed deep concentration with {works}.`)
@@ -318,13 +322,14 @@ function generateParentReport(
   const activePeriods = analysis.detected_sensitive_periods.filter(p => p.status === 'active');
   if (activePeriods.length > 0) {
     // TYPE A: Locale-aware sensitive period name
-    const PERIOD_NAMES_BY_LOCALE: Record<Locale, Record<string, string>> = {
+    const PERIOD_NAMES_BY_LOCALE: Record<string, Record<string, string>> = {
       en: { order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory', small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading' },
       zh: { order: '秩序', language: '语言', movement: '运动', sensory: '感官', small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读' },
+      es: { order: 'Orden', language: 'Lenguaje', movement: 'Movimiento', sensory: 'Sensorial', small_objects: 'Objetos Pequeños', grace_courtesy: 'Gracia y Cortesía', writing: 'Escritura', reading: 'Lectura' },
     };
-    const normalizedLocale = locale === 'zh' ? 'zh' : 'en';
     const periodNameKey = activePeriods[0].period_name.toLowerCase();
-    const areaDisplay = PERIOD_NAMES_BY_LOCALE[normalizedLocale][periodNameKey] || periodNameKey;
+    const periodMap = PERIOD_NAMES_BY_LOCALE[locale] || PERIOD_NAMES_BY_LOCALE['en'];
+    const areaDisplay = periodMap[periodNameKey] || periodNameKey;
     highlights.push(
       t('report.generate.specialInterest' as any, `${firstName} is showing special interest in the {area} area.`)
         .replace('{name}', firstName)
@@ -373,24 +378,15 @@ function generateAIAnalysisReport(
   dbChineseMap: Map<string, string>
 ): AIAnalysisReport {
   const firstName = analysis.child_name.split(' ')[0];
-  const normalizedLocale = (locale === 'zh' ? 'zh' : 'en') as Locale;
-
   // TYPE A: Sensitive period name translations - locale-aware
-  const PERIOD_NAMES_EN: Record<string, string> = {
-    order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory',
-    small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading',
-  };
-  const PERIOD_NAMES_ZH: Record<string, string> = {
-    order: '秩序', language: '语言', movement: '运动', sensory: '感官',
-    small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读',
-  };
-  const PERIOD_NAMES_BY_LOCALE: Record<Locale, Record<string, string>> = {
-    en: PERIOD_NAMES_EN,
-    zh: PERIOD_NAMES_ZH,
+  const PERIOD_NAMES_BY_LOCALE: Record<string, Record<string, string>> = {
+    en: { order: 'Order', language: 'Language', movement: 'Movement', sensory: 'Sensory', small_objects: 'Small Objects', grace_courtesy: 'Grace & Courtesy', writing: 'Writing', reading: 'Reading' },
+    zh: { order: '秩序', language: '语言', movement: '运动', sensory: '感官', small_objects: '细小物品', grace_courtesy: '礼仪与优雅', writing: '书写', reading: '阅读' },
+    es: { order: 'Orden', language: 'Lenguaje', movement: 'Movimiento', sensory: 'Sensorial', small_objects: 'Objetos Pequeños', grace_courtesy: 'Gracia y Cortesía', writing: 'Escritura', reading: 'Lectura' },
   };
   const translatePeriodName = (name: string): string => {
     const lookupKey = name.toLowerCase();
-    const periodMap = PERIOD_NAMES_BY_LOCALE[normalizedLocale];
+    const periodMap = PERIOD_NAMES_BY_LOCALE[locale] || PERIOD_NAMES_BY_LOCALE['en'];
     return periodMap[lookupKey] || periodMap[lookupKey.replace(/\s+/g, '_')] || name;
   };
 
@@ -608,12 +604,11 @@ export async function POST(request: NextRequest) {
     // Group works by area for parent report (translate names for Chinese locale)
     const worksByArea: Record<string, string[]> = {};
     const getWorkDisplayName = (workName: string): string => {
-      const WORK_NAME_MAP: Record<Locale, string> = {
+      const WORK_NAME_MAP: Record<string, string> = {
         zh: getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || workName,
         en: workName,
       };
-      const normalizedLocale3 = (locale === 'zh' ? 'zh' : 'en') as Locale;
-      return WORK_NAME_MAP[normalizedLocale3];
+      return WORK_NAME_MAP[locale] || WORK_NAME_MAP['en'];
     };
     for (const p of progress || []) {
       if (!worksByArea[p.area]) worksByArea[p.area] = [];

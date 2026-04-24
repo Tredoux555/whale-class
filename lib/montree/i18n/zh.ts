@@ -2773,6 +2773,14 @@ export const zh = {
   'weeklyAdmin.summaryPlaceholder': '日常生活：...\n感官：...\n数学：...\n语言：...\n文化：...',
   'weeklyAdmin.chineseNotePlaceholder': '本周重点...',
 
+  // Weekly Admin Card (dashboard)
+  'weeklyAdminCard.title': '周计划 & 总结',
+  'weeklyAdminCard.childrenLabel': '个学生',
+  'weeklyAdminCard.subtitle': '自动填充 + 下载 DOCX',
+
+  // Area History Modal
+  'areaHistory.journey': '{name}的学习旅程',
+
   // Shelf Autopilot
   'shelfAutopilot.title': '书架自动导航',
   'shelfAutopilot.description': 'AI分析每个孩子的进度，为他们的书架推荐下一步工作。',

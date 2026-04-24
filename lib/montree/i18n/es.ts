@@ -339,6 +339,14 @@ export const es: Record<string, string> = {
   'weeklyAdmin.summaryPlaceholder': 'Vida Práctica: ...\nSensorial: ...\nMatemáticas: ...\nLenguaje: ...\nCultural: ...',
   'weeklyAdmin.chineseNotePlaceholder': 'Enfoque semanal...',
 
+  // Weekly Admin Card (dashboard)
+  'weeklyAdminCard.title': 'Plan y Resumen Semanal',
+  'weeklyAdminCard.childrenLabel': 'estudiantes',
+  'weeklyAdminCard.subtitle': 'Auto-relleno desde fotos · Descargar DOCX',
+
+  // Area History Modal
+  'areaHistory.journey': 'El viaje de {name}',
+
   // Focus Works Section
   'focusWorks.gamePlan': 'Plan de Juego',
   'focusWorks.fillShelf': 'Llenar estante ↓',

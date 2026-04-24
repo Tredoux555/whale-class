@@ -96,8 +96,8 @@ export async function GET(request: NextRequest) {
           ? (getChineseNameForWork(p.work_name) || dbChineseMap.get(p.work_name.toLowerCase().trim()) || undefined)
           : undefined,
         workArea: p.area,
-        observation: p.notes || (locale === 'zh' ? `正在学习${p.work_name}` : `Working on ${p.work_name}`),
-        developmentalNote: p.status === 'mastered' ? (locale === 'zh' ? '已掌握此技能！' : 'Mastered this skill!') : undefined,
+        observation: p.notes || (() => { const L: Record<string, string> = { zh: `正在学习${p.work_name}`, es: `Trabajando en ${p.work_name}` }; return L[locale] || `Working on ${p.work_name}`; })(),
+        developmentalNote: p.status === 'mastered' ? (() => { const L: Record<string, string> = { zh: '已掌握此技能！', es: '¡Dominó esta habilidad!' }; return L[locale] || 'Mastered this skill!'; })() : undefined,
         homeExtension: getHomeExtension(p.area, t),
       }));
 
@@ -108,14 +108,10 @@ export async function GET(request: NextRequest) {
       childName: child.name,
       weekStart: startDate,
       weekEnd: endDate,
-      summary: locale === 'zh'
-        ? `${child.name}度过了充实的一周，探索了${highlights.length}个不同课程领域的活动。`
-        : `${child.name} had a productive week exploring ${highlights.length} different activities across various curriculum areas.`,
+      summary: (() => { const L: Record<string, string> = { zh: `${child.name}度过了充实的一周，探索了${highlights.length}个不同课程领域的活动。`, es: `${child.name} tuvo una semana productiva explorando ${highlights.length} actividades diferentes en varias áreas del currículo.` }; return L[locale] || `${child.name} had a productive week exploring ${highlights.length} different activities across various curriculum areas.`; })(),
       highlights,
-      parentMessage: locale === 'zh'
-        ? `感谢您参与${child.name}的学习旅程。我们看到了美好的成长！`
-        : `Thank you for being part of ${child.name}'s learning journey. We're seeing wonderful growth!`,
-      teacherName: locale === 'zh' ? '您的蒙特梭利团队' : 'Your Montessori Team',
+      parentMessage: (() => { const L: Record<string, string> = { zh: `感谢您参与${child.name}的学习旅程。我们看到了美好的成长！`, es: `Gracias por ser parte del viaje de aprendizaje de ${child.name}. ¡Estamos viendo un crecimiento maravilloso!` }; return L[locale] || `Thank you for being part of ${child.name}'s learning journey. We're seeing wonderful growth!`; })(),
+      teacherName: (() => { const L: Record<string, string> = { zh: '您的蒙特梭利团队', es: 'Su equipo Montessori' }; return L[locale] || 'Your Montessori Team'; })(),
       generatedAt: new Date().toISOString(),
     };
 
