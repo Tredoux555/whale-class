@@ -23,7 +23,9 @@ FAMM Argentina (Marisa Canova de Sioli) is the #1 multiplier lead — an AMI Fou
 
 All ~3,713 keys translated to Argentine Spanish via two-pass Haiku API batch + manual audit-fix cycle. Uses proper voseo (tocá, ingresá, guardá, querés, podés, mirá), ustedes for plural, AMI-standard Montessori terms. Three audit passes confirmed zero English stubs remaining.
 
-**Step 2 — Curriculum work names in Spanish (~2 hours)**
+**Step 2 — Curriculum work names in Spanish — ✅ COMPLETE (Session 65, Apr 25, 2026)**
+
+All 418 Whale Class works batch-translated to Argentine Spanish via Haiku tool_use pipeline. All 5 write paths updated with `name_es: null` INSERTs and Spanish pass in `batchTranslateWorksInBackground()`. `add-custom-work` now calls `autoTranslateWork(input, 'es')` fire-and-forget. Total cost: ~$0.87. Committed: `7e1c4918`.
 
 Argentine schools need Spanish curriculum work names. Two options:
 
