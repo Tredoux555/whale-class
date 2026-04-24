@@ -21,7 +21,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { logApiUsage } from '@/lib/montree/api-usage';
-import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
+import { AREA_LABELS_EN, AREA_LABELS_ZH, AREA_LABELS_ES } from '@/lib/montree/i18n/area-labels';
 
 // ── Bilingual Game Plan Tool ─────────────────────────────────────────
 // Haiku generates English works (canonical for DB matching) + bilingual
@@ -30,7 +30,7 @@ import { AREA_LABELS_EN, AREA_LABELS_ZH } from '@/lib/montree/i18n/area-labels';
 const GAME_PLAN_TOOL = {
   name: 'create_game_plan' as const,
   description:
-    'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next. Provide the nudge in BOTH English and Chinese.',
+    'Create a brief, warm game plan nudge for a tired teacher. One sentence they read in 2 seconds and know what to do next. Provide the nudge in ENGLISH, Chinese, and Argentine Spanish.',
   input_schema: {
     type: 'object' as const,
     properties: {
@@ -44,6 +44,11 @@ const GAME_PLAN_TOOL = {
         description:
           'The SAME nudge translated to Chinese (中文). Max 25 words equivalent.',
       },
+      nudge_es: {
+        type: 'string' as const,
+        description:
+          'The SAME nudge translated to Argentine Spanish (Spanish with voseo: vos tenés). Max 25 words equivalent.',
+      },
       works: {
         type: 'array' as const,
         items: { type: 'string' as const },
@@ -56,7 +61,7 @@ const GAME_PLAN_TOOL = {
           'The area progression in arrow format using ENGLISH area names. Example: "Practical Life → Sensorial → Language"',
       },
     },
-    required: ['nudge_en', 'nudge_zh', 'works', 'direction'],
+    required: ['nudge_en', 'nudge_zh', 'nudge_es', 'works', 'direction'],
   },
 };
 
@@ -211,8 +216,9 @@ export async function replanChildInProcess(input: ReplanInput): Promise<ReplanRe
 
     const prompt = `Plan NEXT WEEK for this child. Forward progression is mandatory — this is not a recap.
 
-IMPORTANT — BILINGUAL OUTPUT:
-- Write nudge_en in English and nudge_zh in Chinese (中文). Both say the same thing.
+IMPORTANT — TRILINGUAL OUTPUT:
+- Write nudge_en in English, nudge_zh in Chinese (中文), and nudge_es in Argentine Spanish (voseo: vos tenés).
+- All three nudges say the same thing.
 - Pick works using their ENGLISH names from the AVAILABLE WORKS list.
 - Write the direction using ENGLISH area names (e.g. "Practical Life → Sensorial → Language").
 
@@ -279,31 +285,35 @@ What's the teacher's next move?`;
     }
 
     const rawPlan = toolBlock.input as {
-      nudge_en?: string; nudge_zh?: string;
+      nudge_en?: string; nudge_zh?: string; nudge_es?: string;
       nudge?: string; // backward compat if model ignores new schema
       works?: string[]; direction?: string;
     };
     const planWorks = (rawPlan.works || []).filter((w): w is string => typeof w === 'string' && w.trim().length > 0);
 
-    // ── Build bilingual JSONB structure ─────────────────────────────
-    // Works: always English from Haiku, Chinese resolved from DB
+    // ── Build trilingual JSONB structure ─────────────────────────────
+    // Works: always English from Haiku, Chinese resolved from DB, Spanish falls back to English (no name_es column)
     const worksZh = planWorks.map(w => enToZhWorkName[w.toLowerCase()] || w);
+    const worksEs = planWorks; // Spanish work names fall back to English (no name_es column per design)
 
-    // Direction: English from Haiku, Chinese derived from area labels
+    // Direction: English from Haiku, Chinese and Spanish derived from area labels
     const directionEn = rawPlan.direction || '';
     let directionZh = directionEn;
+    let directionEs = directionEn;
     for (const [key, enLabel] of Object.entries(AREA_LABELS_EN)) {
       directionZh = directionZh.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ZH[key] || enLabel);
+      directionEs = directionEs.replace(new RegExp(enLabel, 'gi'), AREA_LABELS_ES[key] || enLabel);
     }
 
-    // Nudge: both from Haiku tool output
+    // Nudge: all three from Haiku tool output
     const nudgeEn = rawPlan.nudge_en || rawPlan.nudge || '';
     const nudgeZh = rawPlan.nudge_zh || nudgeEn;
+    const nudgeEs = rawPlan.nudge_es || nudgeEn;
 
     const updatedPlan = {
-      nudge: { en: nudgeEn, zh: nudgeZh },
-      works: { en: planWorks, zh: worksZh },
-      direction: { en: directionEn, zh: directionZh },
+      nudge: { en: nudgeEn, zh: nudgeZh, es: nudgeEs },
+      works: { en: planWorks, zh: worksZh, es: worksEs },
+      direction: { en: directionEn, zh: directionZh, es: directionEs },
       generated_at: (existingPlan.generated_at as string | undefined) || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       child_name: childName,

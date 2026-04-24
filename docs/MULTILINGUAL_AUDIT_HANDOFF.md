@@ -1,5 +1,99 @@
 # Multilingual Build — Final Handoff (Session 63, Apr 24, 2026)
 
+## PRIORITY 1: Ship Spanish for Argentina (FAMM Lead)
+
+FAMM Argentina (Marisa Canova de Sioli) is the #1 multiplier lead — an AMI Foundation + Training Center that collaborates with "numerous educational institutions." They asked for pricing, AMI compatibility, and a CV. Spanish support would be a competitive advantage in the demo.
+
+### What Already Exists (zero code changes needed)
+
+| Item | Status | File |
+|------|--------|------|
+| `'es'` in `SUPPORTED_LOCALES` | ✅ Done | `lib/montree/i18n/locales.ts` |
+| `es.ts` translation file (1,490+ keys) | ⚠️ **STUB** — all values copied from `en.ts`, not translated | `lib/montree/i18n/es.ts` |
+| Spanish area labels | ✅ Done | `lib/montree/i18n/area-labels.ts` |
+| `LOCALE_AI_CONFIG` Spanish entry | ✅ Done | `lib/montree/i18n/locale-config.ts` |
+| `LOCALE_TO_INTL` Spanish date format | ✅ Done | `lib/montree/i18n/locales.ts` |
+| `LanguageToggle` cycles through 3 locales | ✅ Done | `components/montree/LanguageToggle.tsx` |
+| All IIFE Records have `es` slots | ✅ Done | ~89 files converted in Layer 3 |
+| All `t()` keys resolve through `es.ts` | ✅ Done | 681 call sites across 127 files |
+
+### What Needs to Be Done
+
+**Step 1 — Translate `es.ts` — ✅ COMPLETE (Session 64, Apr 24, 2026)**
+
+All ~3,713 keys translated to Argentine Spanish via two-pass Haiku API batch + manual audit-fix cycle. Uses proper voseo (tocá, ingresá, guardá, querés, podés, mirá), ustedes for plural, AMI-standard Montessori terms. Three audit passes confirmed zero English stubs remaining.
+
+**Step 2 — Curriculum work names in Spanish (~2 hours)**
+
+Argentine schools need Spanish curriculum work names. Two options:
+
+- **Option A (fast, recommended for now):** Add `name_es` column to `montree_classroom_curriculum_works`. Batch translate via the existing `autoTranslateToChinese()` pattern — generalize to `autoTranslateWork(input, targetLocale)`. Same glossary-first + Haiku-fallback pipeline.
+- **Option B (future):** Migrate to JSONB `_localized` columns (`name_localized: { en: "...", zh: "...", es: "..." }`). Already designed in `docs/MULTILINGUAL_ARCHITECTURE.md`. More elegant but requires DB migration. Do this when a 4th language is needed.
+
+For Option A, the write paths that need updating (same 7 paths as the `name_zh`/`name_chinese` dual-column fix from Session 14):
+1. `lib/montree/auto-translate.ts` — generalize to accept target locale
+2. `app/api/montree/curriculum/batch-translate/route.ts` — accept locale param
+3. `app/api/montree/principal/setup-stream/route.ts` — seed `name_es` from static JSON (add `spanishName` to curriculum JSONs)
+4. `app/api/montree/principal/setup/route.ts` — same
+5. `app/api/montree/guru/photo-insight/add-custom-work/route.ts` — translate on custom work creation
+6. `app/api/montree/admin/reseed-curriculum/route.ts` — seed from static JSON
+7. `app/api/montree/admin/backfill-curriculum/route.ts` — seed from static JSON
+
+**Step 3 — Review AI prompt config (~1 hour)**
+
+`LOCALE_AI_CONFIG.es` in `locale-config.ts` already has a `systemPromptSuffix` and `languageName`. Review for:
+- Argentine Spanish phrasing in the system prompt suffix
+- Montessori glossary terms (add to the `glossary` field if needed)
+- Game plan generation: verify Haiku produces natural Argentine Spanish nudges/directions
+- Parent narrative generation: verify Sonnet writes warm, natural parent letters in Argentine Spanish
+
+**Step 4 — Game plan bilingual JSONB extension (~30 min)**
+
+The bilingual game plan JSONB pattern (Session 49) currently stores `{ en: "...", zh: "..." }`. Extend to `{ en: "...", zh: "...", es: "..." }`:
+- `lib/montree/reports/replan-child.ts` — add `nudge_es` to tool schema, add `es` key to post-processing
+- `app/api/montree/children/[childId]/game-plan/refresh/route.ts` — same
+- `scripts/run_replan_all_whale.mjs` — same (for batch regen)
+- `resolveLocalized()` in `GamePlanCard.tsx` already handles N languages — no render changes needed
+
+**Step 5 — Test end-to-end (~1 hour)**
+
+1. Switch locale to Spanish in the app
+2. Verify all UI strings render in Spanish (not English fallback)
+3. Generate a Weekly Wrap report — verify parent narrative is in Spanish
+4. Open a child page — verify game plan nudge/works/direction in Spanish
+5. Open Photo Audit — verify all labels, area badges, status pills in Spanish
+6. Open parent dashboard — verify full parent experience in Spanish
+
+### What Does NOT Need to Change
+
+- **Zero code changes in components or API routes** — the multilingual build already made everything locale-agnostic
+- **No new feature flags** — Spanish is just another locale value
+- **No middleware changes** — locale is stored in school settings, not URL
+- **No DB schema changes** (for Option A, just one `ALTER TABLE ADD COLUMN`)
+- **`resolveLocalized()` / `resolveLocalizedArray()`** — already handle N languages
+- **All IIFE Records** — already have `es` slots with fallback to English
+
+### Estimated Total Effort
+
+| Task | Time | Blocking? |
+|------|------|-----------|
+| Translate `es.ts` (batch + review) | 4-6h | Yes — everything depends on this |
+| Curriculum `name_es` column + batch translate | 2h | Yes — for curriculum views |
+| AI prompt review | 1h | No — English fallback works |
+| Game plan JSONB extension | 30min | No — English fallback works |
+| End-to-end test | 1h | Yes — final verification |
+| **Total** | **~9-10h** | |
+
+### Demo-Ready Shortcut (2-3 hours)
+
+If FAMM Argentina asks for a demo before full translation is done, a minimal viable Spanish experience can be shipped in 2-3 hours:
+1. Translate only the ~200 parent-facing keys in `es.ts` (parent dashboard, report view, login, narratives)
+2. Skip curriculum translation — English work names are internationally recognized in Montessori
+3. Skip game plan JSONB — falls back to English nudge, which is fine for a demo
+4. AI narratives will generate in Spanish automatically via `LOCALE_AI_CONFIG.es` — just verify the output reads naturally
+
+---
+
 ## Status: ALL 5 PHASES COMPLETE ✅
 
 The 3x3x3x3x3 development cycle for making Montree fully multilingual is **finished**.
