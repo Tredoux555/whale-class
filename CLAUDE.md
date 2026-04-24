@@ -183,6 +183,43 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 24, 2026)
 
+### ⚡ Session 62 — Multilingual Build: Layer 3 COMPLETE — Zero `=== 'zh'` Ternaries Remaining (Apr 24, 2026)
+
+**Three commits pushed to main: `99fe8f3e`, `bd7abba7`, `fb542929`.** Phase 4 (3x BUILD) Layer 3 ternary sweep is 100% complete. Zero `=== 'zh'` ternaries remain in the entire codebase. All conversion targets converted to locale-agnostic patterns (IIFE Records for server, `t()` keys for client). 512 TYPE B preserves (DB column reads) correctly untouched.
+
+**Development Cycle Status:**
+1. 3x RESEARCH — ✅ COMPLETE
+2. 3x PLAN — ✅ COMPLETE
+3. 3x INVESTIGATE — ✅ COMPLETE
+4. 3x BUILD — ✅ COMPLETE (Layer 0-1 ✅, Layer 4 ✅, Layer 5 ✅, Layer 3 ✅)
+5. 3x AUDIT — pending
+
+**Commits this session:**
+- `99fe8f3e` — Build fix: unescaped apostrophe in `en.ts` line 2768 (`'This Week's Activities'` → `"This Week's Activities"`)
+- `bd7abba7` — Layer 3: convert 17 files (153 insertions, 63 deletions). Files: `sonnet-draft.ts`, `onboard/route.ts`, `weekly-admin/route.ts`, `weekly-admin-docs/generate/route.ts`, plus 13 others including `ThisIsSheet.tsx`, `weekly-admin-docs/page.tsx`, `weekly-wrap/page.tsx`, `gallery/page.tsx`, `parent/report/[reportId]/page.tsx`, `PendingReviewPanel.tsx`, `DashboardHeader.tsx`, `BatchNarrativesCard.tsx`, `BigMicPanel.tsx`, `ChildGuruChat.tsx`
+- `fb542929` — Layer 3: convert last 2 voice-note ternaries (`lib/montree/voice-notes/extraction.ts`, `lib/montree/voice/prompts.ts`)
+
+**Final verification:**
+- `grep -r "=== 'zh'" --include="*.ts" --include="*.tsx" --include="*.mjs"` → **0 hits**
+- `grep -r "== 'zh'" --include="*.ts" --include="*.tsx" --include="*.mjs"` → **0 hits**
+- TYPE B preserves (`name_chinese`, `name_zh`, `parent_description_zh`, etc.) → **512 occurrences across 95 files** — all untouched
+
+**Multilingual system is now fully locale-agnostic.** Adding a new language requires:
+1. Create `lib/montree/i18n/{lang}.ts` (copy en.ts, translate)
+2. Add to `SUPPORTED_LOCALES` in `locales.ts`
+3. Add area labels to `AREA_LABELS` map
+4. Add `LOCALE_CONFIG` entry
+5. Add `LOCALE_TO_INTL` date format entry
+6. Zero code changes in components or API routes
+
+**Next session priorities:**
+1. **Phase 5: 3x AUDIT** — fix cycle until 3 consecutive clean audits.
+2. **Draft replies to 3 hot leads** — Paint Pots UK, Ardtona House UK, Montessori Copenhagen.
+3. **Follow up on FAMM Argentina** if no response by Apr 28.
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ### ⚡ Session 61 — Multilingual Build: Layer 3 Ternary Sweep — 8 Files Converted (Apr 24, 2026)
 
 **No new commits. 40+ files changed locally — ready to commit.** Continued Phase 4 (3x BUILD) Layer 3 ternary sweep. Converted 8 files to locale-agnostic patterns, adding ~186 translation keys across en.ts/zh.ts/es.ts.
