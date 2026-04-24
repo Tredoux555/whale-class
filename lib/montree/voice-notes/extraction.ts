@@ -109,11 +109,14 @@ function buildExtractionPrompt(
     .map(([area, works]) => `### ${area}\n${works.join(', ')}`)
     .join('\n\n');
 
-  const langNote = language === 'zh'
-    ? 'The teacher is speaking in Mandarin Chinese. Student names may be in Chinese or English.'
-    : language === 'auto'
-    ? 'The teacher may speak in English or Mandarin Chinese.'
-    : 'The teacher is speaking in English.';
+  const langNote = (() => {
+    const L: Record<string, string> = {
+      zh: 'The teacher is speaking in Mandarin Chinese. Student names may be in Chinese or English.',
+      es: 'The teacher is speaking in Spanish. Student names may be in Spanish or English.',
+      auto: 'The teacher may speak in English, Mandarin Chinese, or Spanish.',
+    };
+    return L[language || 'en'] || 'The teacher is speaking in English.';
+  })();
 
   return `You are a Montessori classroom assistant. A teacher has recorded a quick voice note about a student. Extract structured observation data.
 
