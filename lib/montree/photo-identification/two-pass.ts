@@ -18,6 +18,8 @@
 // Pass 2: Haiku TEXT call. Given the Pass 1 description (no image), match it to
 //         a curriculum work using the visual ID guide + corrections + per-classroom
 //         visual memory. Output: structured tag_photo tool_use.
+
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 //
 // The two-pass split was the key insight (March 2026): keeping the visual
 // description and the curriculum matching separate dramatically reduced the rate
@@ -361,8 +363,9 @@ Just describe the physical scene in 2-4 sentences. Lead with the PRIMARY work th
   }
 
   // ----- PASS 2: MATCH -----
-  const langInstruction = input.locale === 'zh'
-    ? 'Write the observation in Simplified Chinese.'
+  const aiLangInstruction = getAILanguageInstruction(input.locale);
+  const langInstruction = aiLangInstruction
+    ? aiLangInstruction
     : 'Write the observation in English.';
 
   const pass2System = `You are a Montessori curriculum expert. A classroom photo was described by an observer. Match the description to the correct Montessori work name using the tag_photo tool.
@@ -471,12 +474,13 @@ Match this description to the correct Montessori work. Use the visual identifica
           })
           .join('\n\n');
 
+        const aiLangInstruction2b = getAILanguageInstruction(input.locale);
         const pass2bMsg = await anthropic.messages.create({
           model: HAIKU_MODEL,
           max_tokens: 500,
           system: `You are observing a classroom photo. A preliminary analysis was made, but you now have a chance to re-examine the IMAGE alongside the top candidates.
 
-${input.locale === 'zh' ? 'Write your reasoning in Simplified Chinese.' : 'Write your reasoning in English.'}
+${aiLangInstruction2b || 'Write your reasoning in English.'}
 
 CRITICAL RULES:
 1. Look at the PHOTO carefully. Compare the materials, colors, layout, and the child's hands to each candidate.

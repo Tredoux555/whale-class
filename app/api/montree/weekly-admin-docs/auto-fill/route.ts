@@ -520,7 +520,7 @@ export async function GET(request: NextRequest) {
       // Compact paragraph: "Work (P); Work (Pr). key_insight. Next week: X"
       const STATUS_SHORT_EN: Record<string, string> = { presented: 'P', practicing: 'Pr', mastered: 'M' };
       const STATUS_SHORT_ZH: Record<string, string> = { presented: '呈现', practicing: '练习', mastered: '掌握' };
-      const isZh = locale === 'zh';
+      const STATUS_SHORT = ({ zh: STATUS_SHORT_ZH, en: STATUS_SHORT_EN } as Record<string, Record<string, string>>)[locale] || STATUS_SHORT_EN;
 
       let summaryEnglish = '';
       let summaryChinese = '';

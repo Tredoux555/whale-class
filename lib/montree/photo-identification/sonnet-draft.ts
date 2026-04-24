@@ -18,6 +18,8 @@
 //
 // This output is stored verbatim on `montree_media.sonnet_draft` (JSONB) and
 // surfaced in the Photo Audit "Needs Review" tab as a rich card with two
+
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 // action buttons: "Add as new custom work" and "Attach to existing work".
 //
 // Uses Anthropic `tool_use` for structured output — the API handles JSON
@@ -234,9 +236,13 @@ export async function generateSonnetDraft(input: SonnetDraftInput): Promise<Sonn
     return { success: false, draft: null, errors: ['Anthropic client not configured'] };
   }
 
-  const langInstruction = input.locale === 'zh'
-    ? 'Write parent_description and why_it_matters in Simplified Chinese. Keep proposed_name in English.'
-    : 'Write all text fields in English.';
+  const langInstruction = (() => {
+    const L: Record<string, string> = {
+      zh: 'Write parent_description and why_it_matters in Simplified Chinese. Keep proposed_name in English.',
+      es: 'Write parent_description and why_it_matters in Spanish. Keep proposed_name in English.',
+    };
+    return L[input.locale || 'en'] || 'Write all text fields in English.';
+  })();
 
   const haikuLine = input.haikuGuess && input.haikuGuess.workName
     ? `\n\nA fast vision model previously guessed: "${input.haikuGuess.workName}" (confidence ${input.haikuGuess.confidence.toFixed(2)}). You may agree or disagree — make your own assessment based on what you actually see.`

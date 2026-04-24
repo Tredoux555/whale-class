@@ -16,6 +16,7 @@ import { checkRateLimit } from '@/lib/rate-limiter';
 import { verifySuperAdminAuth } from '@/lib/verify-super-admin';
 import { getClassroomOnboardingStatus, invalidateOnboardingCache, invalidateClassroomEmbeddings } from '@/lib/montree/classifier';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 // ================================================================
 // IN-MEMORY RATE LIMITER FALLBACK
@@ -932,9 +933,7 @@ These are teacher-confirmed descriptions of materials in THIS classroom. When th
     // ========================================================
 
     // Locale-aware system prompt
-    const langInstruction = locale === 'zh'
-      ? 'Write the observation in Simplified Chinese.'
-      : 'Write the observation in English.';
+    const langInstruction = getAILanguageInstruction(locale) || 'Write the observation in English.';
 
     const systemPrompt = `You are a Montessori classroom expert analyzing a photo of a child working. Use the tag_photo tool to identify and tag the work.
 

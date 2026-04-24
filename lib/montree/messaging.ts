@@ -1,6 +1,8 @@
 // /lib/montree/messaging.ts
 // Messaging utilities and operations
 
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
+
 export interface Message {
   id: string;
   child_id: string;
@@ -130,19 +132,34 @@ export function formatMessageDate(dateString: string, locale?: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (locale === 'zh') {
-    if (diffMins < 1) return '刚刚';
-    if (diffMins < 60) return `${diffMins}分钟前`;
-    if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays < 7) return `${diffDays}天前`;
-  } else {
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-  }
+  const timeMessages: Record<string, Record<string, string | ((n: number) => string)>> = {
+    zh: {
+      justNow: '刚刚',
+      minutesAgo: (n: number) => `${n}分钟前`,
+      hoursAgo: (n: number) => `${n}小时前`,
+      daysAgo: (n: number) => `${n}天前`,
+    },
+    es: {
+      justNow: 'justo ahora',
+      minutesAgo: (n: number) => `hace ${n}m`,
+      hoursAgo: (n: number) => `hace ${n}h`,
+      daysAgo: (n: number) => `hace ${n}d`,
+    },
+    en: {
+      justNow: 'just now',
+      minutesAgo: (n: number) => `${n}m ago`,
+      hoursAgo: (n: number) => `${n}h ago`,
+      daysAgo: (n: number) => `${n}d ago`,
+    },
+  };
 
-  return date.toLocaleDateString(locale === 'zh' ? 'zh-CN' : 'en-US', {
+  const msgs = timeMessages[locale] || timeMessages.en;
+  if (diffMins < 1) return msgs.justNow as string;
+  if (diffMins < 60) return (msgs.minutesAgo as (n: number) => string)(diffMins);
+  if (diffHours < 24) return (msgs.hoursAgo as (n: number) => string)(diffHours);
+  if (diffDays < 7) return (msgs.daysAgo as (n: number) => string)(diffDays);
+
+  return date.toLocaleDateString(getIntlLocale(locale), {
     month: 'short',
     day: 'numeric',
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,

@@ -328,7 +328,7 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
       narrative: (() => {
         const areaLabel = getAreaLabel(area, locale);
         const workNames = works.map(w => locale !== 'en' ? (getChineseNameForWork(w.work_name) || w.work_name) : w.work_name);
-        const separator = locale === 'zh' ? '、' : ', ';
+        const separator = ({ zh: '、', es: ', ' } as Record<string, string>)[locale] || ', ';
         const AREA_NARRATIVE: Record<string, string> = {
           zh: `${firstName}本周在${areaLabel}领域进行了${works.length}项活动：${workNames.join(separator)}。`,
           es: `${firstName} participó en ${works.length} actividades de ${areaLabel} esta semana: ${workNames.join(separator)}.`,
@@ -388,11 +388,11 @@ function generateTeacherFallback(input: TeacherReportInput): TeacherReportConten
 
     key_insight: (() => {
       const top3 = analysis.recommended_works.slice(0, 3);
-      const separator = locale === 'zh' ? '、' : ', ';
+      const separator = ({ zh: '、', es: ', ' } as Record<string, string>)[locale] || ', ';
       const workList = top3.map(w => {
         const wn = locale !== 'en' ? (getChineseNameForWork(w.work_name) || w.work_name) : w.work_name;
         const al = getAreaLabel(w.area, locale);
-        return locale === 'zh' ? `${al}的${wn}` : `${wn} en ${al}`;
+        return locale !== 'en' ? `${al}的${wn}` : `${wn} en ${al}`;
       }).join(separator);
       const KEY_INSIGHT: Record<string, string> = {
         zh: `${firstName}本周参与了${photos.length}项活动。${top3.length > 0 ? `建议下周关注${workList}。` : ''}`,
