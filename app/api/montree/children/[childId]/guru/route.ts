@@ -15,6 +15,7 @@ import { GURU_TOOLS } from '@/lib/montree/guru/tool-definitions';
 import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { checkRateLimit } from '@/lib/rate-limiter';
 import { getAreaLabel, AREA_KEYS } from '@/lib/montree/i18n/area-labels';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 import { logApiUsage, checkAiBudget } from '@/lib/montree/api-usage';
 
 export const maxDuration = 60;
@@ -259,7 +260,14 @@ function buildSystemPrompt(
   locale?: string,
   recentPhoto?: RecentPhotoHint | null
 ): string {
-  const isZh = locale === 'zh';
+  const langInstruction = getAILanguageInstruction(locale || 'en');
+  const areaNameInstruction = (() => {
+    const L: Record<string, string> = {
+      zh: '\n- When mentioning area names to the teacher, use Chinese: 日常, 感官, 数学, 语言, 文化.',
+      es: '\n- When mentioning area names to the teacher, use Spanish: Vida Práctica, Sensorial, Matemáticas, Lenguaje, Cultural.',
+    };
+    return L[locale || 'en'] || '';
+  })();
   const photoBlock = recentPhoto
     ? `\nRECENT PHOTO CONTEXT:
 - The teacher captured a photo of ${childName} ${recentPhoto.seconds_ago}s ago.
@@ -269,7 +277,7 @@ ${recentPhoto.work_name ? `- AI-drafted work: ${recentPhoto.work_name}${recentPh
 `
     : '';
   return `You are the teacher's quick assistant for ${childName}. You live on the child's page — the teacher is looking at this child right now.
-${isZh ? '\nLANGUAGE: Reply in Chinese (中文). Use Montessori work names in Chinese where possible. Keep the same warm, brief tone.\n' : ''}
+${langInstruction ? `\nLANGUAGE: ${langInstruction}\n` : ''}
 PERSONALITY:
 - Brief. Warm. Practical. Like a colleague who whispers the answer.
 - Responses: 1-3 sentences max unless the teacher asks for detail.
@@ -290,7 +298,7 @@ RULES:
 - If the teacher says "what has she been doing?" — use get_child_recent_activity.
 - If the teacher asks to "update the game plan" or "refresh the plan" or "new game plan" — use refresh_game_plan.
 - For notes like "Amy chose to do pouring work" — save_observation with the note text, and if a curriculum work matches, also call update_progress.
-- Always use the area enum: practical_life, sensorial, mathematics, language, cultural.${isZh ? '\n- When mentioning area names to the teacher, use Chinese: 日常, 感官, 数学, 语言, 文化.' : ''}
+- Always use the area enum: practical_life, sensorial, mathematics, language, cultural.${areaNameInstruction}
 - Keep responses SHORT. The teacher is standing in a classroom with 20 children.`;
 }
 
