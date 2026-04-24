@@ -2765,7 +2765,7 @@ export const en = {
   'weeklyAdmin.autoFillFailed': 'Failed to auto-fill',
   'weeklyAdmin.staleBanner': 'New photos or reports since last save — Weekly Summary may be out of date.',
   'weeklyAdmin.refreshAutoFill': 'Refresh Auto-fill',
-  'weeklyAdmin.thisWeekActivities': 'This Week's Activities',
+  'weeklyAdmin.thisWeekActivities': "This Week's Activities",
   'weeklyAdmin.developmentalNote': 'Developmental Note',
   'weeklyAdmin.developmentalNotePlaceholder': 'Weekly focus and observations...',
   'weeklyAdmin.notesPlaceholder': 'e.g. No change from last week',
@@ -4133,6 +4133,22 @@ export const en = {
   'bigMic.orTypeInstead': 'or type instead',
   'bigMic.typeMessage': 'Type a message...',
   'bigMic.send': 'Send',
+
+  // --- Child Page ---
+  'childPage.gallery': 'Gallery',
+  'childPage.present': 'Present',
+
+  // --- Photo Insight Button Status ---
+  'photoInsight.presented': 'Presented',
+  'photoInsight.practicing': 'Practicing',
+  'photoInsight.mastered': 'Mastered',
+
+  // --- Extraction Card Event Types ---
+  'extractionCard.mastery': '⭐ Mastery',
+  'extractionCard.presentation': '📋 Presentation',
+  'extractionCard.practice': '🔄 Practice',
+  'extractionCard.behavioral': '👁 Behavioral',
+  'extractionCard.other': 'Other',
 } as const;
 
 export type TranslationKey = keyof typeof en;
