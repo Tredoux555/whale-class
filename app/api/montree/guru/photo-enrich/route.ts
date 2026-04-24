@@ -10,6 +10,7 @@ import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
 import { loadAllCurriculumWorks, type CurriculumWork } from '@/lib/montree/curriculum-loader';
 import { checkRateLimit } from '@/lib/rate-limiter';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 // Simplified tool schema — work is already known, just assess mastery
 const PHOTO_ENRICH_TOOL = {
@@ -186,8 +187,8 @@ export async function POST(request: NextRequest) {
     const childName = childData.name || 'the child';
     const ageYears = childData.age ? Math.floor(childData.age / 12) : 3;
 
-    const langInstruction = locale === 'zh'
-      ? '\n\nWrite the observation in Simplified Chinese (中文). Use warm, natural Chinese.'
+    const langInstruction = getAILanguageInstruction(locale)
+      ? `\n\n${getAILanguageInstruction(locale)}`
       : '';
 
     const systemPrompt = `You are observing ${childName} (age ${ageYears}) working with ${work_name} in the ${area_key.replace(/_/g, ' ')} area.

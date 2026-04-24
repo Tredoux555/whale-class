@@ -12,6 +12,7 @@ import { updateChildSettings } from '@/lib/montree/guru/settings-helper';
 import { getLocaleFromRequest } from '@/lib/montree/i18n/server';
 import type { Locale } from '@/lib/montree/i18n/locales';
 import { isValidLocale } from '@/lib/montree/i18n/locales';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 export const maxDuration = 120; // 120s — profile extraction + game plan generation
 
@@ -485,9 +486,13 @@ async function generateGamePlan(
   const expLevel = extractedProfile.experience_level || 'new';
   const profileSummary = extractedProfile.summary || '';
 
-  const languageNote = locale === 'zh'
-    ? '\n\nIMPORTANT: Write the nudge AND direction IN CHINESE (简体中文). Use the Chinese work names from CLASSROOM WORKS exactly as provided.'
-    : '';
+  const languageNote = (() => {
+    const L: Record<string, string> = {
+      zh: '\n\nIMPORTANT: Write the nudge AND direction IN CHINESE (简体中文). Use the Chinese work names from CLASSROOM WORKS exactly as provided.',
+      es: '\n\nIMPORTANT: Write the nudge AND direction IN SPANISH (español). Use the Spanish work names from CLASSROOM WORKS exactly as provided.',
+    };
+    return L[locale || 'en'] || '';
+  })();
 
   const prompt = `A teacher just described a child. Give them a compass heading — not a lesson plan.
 

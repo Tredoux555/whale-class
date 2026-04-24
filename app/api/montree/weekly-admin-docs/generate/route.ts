@@ -114,9 +114,15 @@ export async function POST(request: NextRequest) {
         const summaryNote = childNotesMap?.get(null);
 
         // Use locale-appropriate content as the primary display
-        const englishSummary = locale === 'zh'
-          ? (summaryNote?.chinese_text || summaryNote?.english_text || '本周没有记录到活动。')
-          : (summaryNote?.english_text || 'No recorded activities this week.');
+        const englishSummary = (() => {
+          const defaultTexts: Record<string, string> = {
+            zh: '本周没有记录到活动。',
+            es: 'No se registraron actividades esta semana.',
+          };
+          const defaultText = defaultTexts[locale || 'en'] || 'No recorded activities this week.';
+          if (locale === 'zh') return summaryNote?.chinese_text || summaryNote?.english_text || defaultText;
+          return summaryNote?.english_text || defaultText;
+        })();
 
         return {
           childId: child.id,
@@ -132,9 +138,10 @@ export async function POST(request: NextRequest) {
         for (const area of areas) {
           const areaNote = childNotesMap?.get(area);
           // Use Chinese work name when locale is zh and chinese_text exists
-          const workText = locale === 'zh'
-            ? (areaNote?.chinese_text || areaNote?.english_text || '')
-            : (areaNote?.english_text || '');
+          const workText = (() => {
+            if (locale === 'zh') return areaNote?.chinese_text || areaNote?.english_text || '';
+            return areaNote?.english_text || '';
+          })();
           planAreas[area] = {
             en: workText,
           };

@@ -131,7 +131,7 @@ function findBestDescription(
   // 5. Area-based generic fallback - uses the KNOWN area from progress data
   //    This is always correct because the area comes from the actual data, not guessing
   if (area) {
-    const areaDescs = locale === 'zh' ? AREA_DESCRIPTIONS_ZH : AREA_DESCRIPTIONS;
+    const areaDescs = ({ zh: AREA_DESCRIPTIONS_ZH, en: AREA_DESCRIPTIONS } as Record<string, Record<string, string>>)[locale] || AREA_DESCRIPTIONS;
     const areaDesc = areaDescs[area];
     if (areaDesc) return areaDesc;
   }
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Override with Chinese descriptions when locale is zh
-    if (locale === 'zh') {
+    if (locale !== 'en') {
       const zhDescriptions = getChineseDescriptionsMap();
       for (const [name, zh] of zhDescriptions) {
         staticDescriptions.set(name, {
@@ -247,10 +247,10 @@ export async function GET(request: NextRequest) {
       // Try DB description first, then fall back to static curriculum
       // When locale is zh, prefer DB Chinese columns (from custom work translation or manual entry)
       const staticDesc = staticDescriptions.get(work.name.toLowerCase().trim());
-      const description = (locale === 'zh' && work.parent_description_zh)
+      const description = (locale !== 'en' && work.parent_description_zh)
         ? work.parent_description_zh
         : (work.parent_description || staticDesc?.description || '');
-      const whyItMatters = (locale === 'zh' && work.why_it_matters_zh)
+      const whyItMatters = (locale !== 'en' && work.why_it_matters_zh)
         ? work.why_it_matters_zh
         : (work.why_it_matters || staticDesc?.why_it_matters || '');
 

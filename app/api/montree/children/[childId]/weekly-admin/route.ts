@@ -64,12 +64,11 @@ function buildPerChildPrompt(
   weekStart: string,
   weekEnd: string
 ): string {
-  const isZh = locale === 'zh';
   const labels = AREA_LABELS[locale] || AREA_LABELS.en;
   // Build focus works context (use Chinese names when locale is zh)
   const worksContext = focusWorks.length > 0
     ? focusWorks.map(w => {
-        const workDisplay = isZh && w.chineseName ? w.chineseName : w.work_name;
+        const workDisplay = locale === 'zh' && w.chineseName ? w.chineseName : w.work_name;
         return `• ${labels[w.area] || w.area}: ${workDisplay} (${w.status || 'assigned'})`;
       }).join('\n')
     : 'No focus works currently assigned.';
@@ -78,7 +77,7 @@ function buildPerChildPrompt(
   const enrichedProgress = enrichWithChineseNames(progressRecords);
   const progressContext = enrichedProgress.length > 0
     ? enrichedProgress.map(p => {
-        const workDisplay = isZh && p.chineseName ? p.chineseName : p.work_name;
+        const workDisplay = locale === 'zh' && p.chineseName ? p.chineseName : p.work_name;
         return `• ${labels[p.area] || p.area}: ${workDisplay} → ${p.status} (${p.updated_at.split('T')[0]})`;
       }).join('\n')
     : 'No progress changes this week.';
@@ -88,13 +87,21 @@ function buildPerChildPrompt(
     ? guruInteractions.map(g => `Q: ${g.question.slice(0, 200)}\nA: ${g.response_insight.slice(0, 400)}`).join('\n---\n')
     : 'No Guru conversations this week.';
 
-  const outputLang = isZh
-    ? 'Write ALL output in Chinese (中文). Area headers in Chinese.'
-    : 'Write ALL output in English. Area headers in English.';
+  const outputLang = (() => {
+    const L: Record<string, string> = {
+      zh: 'Write ALL output in Chinese (中文). Area headers in Chinese.',
+      es: 'Write ALL output in Spanish (español). Area headers in Spanish.',
+    };
+    return L[locale || 'en'] || 'Write ALL output in English. Area headers in English.';
+  })();
 
-  const areaHeaders = isZh
-    ? '日常 | 感官区 | 数学 | 语言 | 科学文化'
-    : 'Practical | Sensorial | Math | Language | Culture';
+  const areaHeaders = (() => {
+    const L: Record<string, string> = {
+      zh: '日常 | 感官区 | 数学 | 语言 | 科学文化',
+      es: 'Vida Práctica | Sensorial | Matemáticas | Lenguaje | Cultura',
+    };
+    return L[locale || 'en'] || 'Practical | Sensorial | Math | Language | Culture';
+  })();
 
   return `You are a senior Montessori educator writing weekly administrative documents for one child.
 

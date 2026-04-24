@@ -266,7 +266,7 @@ function generateTeacherReport(
     recommendations: analysis.recommended_works,
     work_patterns: analysis.repetition_highlights.map(h => {
       const getDisplayWorkName = (workName: string): string => {
-        if (locale === 'zh') {
+        if (locale !== 'en') {
           return getChineseNameForWork(workName) || dbChineseMap.get(workName.toLowerCase().trim()) || workName;
         }
         return workName;

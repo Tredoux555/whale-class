@@ -385,4 +385,20 @@ export const es: Record<string, string> = {
   // This Is Sheet (Batch 3 Layer 3)
   'thisIsSheet.flagForDiscussion': 'Marcar para discusión',
   'thisIsSheet.tapToUseInstead': 'Usar este trabajo en su lugar',
+
+  // --- Child Page ---
+  'childPage.gallery': 'Galería',
+  'childPage.present': 'Presentar',
+
+  // --- Photo Insight Button Status ---
+  'photoInsight.presented': 'Presentado',
+  'photoInsight.practicing': 'Practicando',
+  'photoInsight.mastered': 'Dominado',
+
+  // --- Extraction Card Event Types ---
+  'extractionCard.mastery': '⭐ Dominio',
+  'extractionCard.presentation': '📋 Presentación',
+  'extractionCard.practice': '🔄 Práctica',
+  'extractionCard.behavioral': '👁 Conductual',
+  'extractionCard.other': 'Otro',
 };

@@ -2,6 +2,8 @@
 // TypeScript types for Weekly Report Generation System
 // Phase 3 - Session 54
 
+import { getIntlLocale } from '@/lib/montree/i18n/locales';
+
 // ============================================
 // DATABASE TYPES (match Supabase schema)
 // ============================================
@@ -279,7 +281,7 @@ export function formatDateISO(date: Date): string {
 export function formatWeekRange(start: string, end: string, locale?: string): string {
   const startDate = new Date(start);
   const endDate = new Date(end);
-  const loc = locale === 'zh' ? 'zh-CN' : 'en-US';
+  const loc = getIntlLocale(locale || 'en');
 
   const startMonth = startDate.toLocaleDateString(loc, { month: 'short' });
   const endMonth = endDate.toLocaleDateString(loc, { month: 'short' });

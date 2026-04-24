@@ -8,6 +8,7 @@ import { getSupabase } from '@/lib/supabase-client';
 import { verifySchoolRequest } from '@/lib/montree/verify-request';
 import { verifyChildBelongsToSchool } from '@/lib/montree/verify-child-access';
 import { anthropic, AI_ENABLED, HAIKU_MODEL } from '@/lib/ai/anthropic';
+import { getAILanguageInstruction } from '@/lib/montree/i18n/locale-config';
 
 // Load curriculum data
 import languageData from '@/lib/curriculum/data/language.json';
@@ -161,8 +162,8 @@ Generate a complete, step-by-step presentation guide for this work. The parent i
       return NextResponse.json({ success: false, error: 'AI not configured' }, { status: 503 });
     }
 
-    const systemWithLocale = locale === 'zh'
-      ? system + '\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE guide in Simplified Chinese (中文). Use warm, natural Chinese. All headers, instructions, and content must be in Chinese.'
+    const systemWithLocale = getAILanguageInstruction(locale)
+      ? system + `\n\nLANGUAGE REQUIREMENT: You MUST write the ENTIRE guide following this instruction: ${getAILanguageInstruction(locale)}`
       : system;
 
     const message = await anthropic.messages.create({

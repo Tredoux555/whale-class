@@ -4135,4 +4135,20 @@ export const zh = {
   'bigMic.orTypeInstead': '或输入文字',
   'bigMic.typeMessage': '输入消息...',
   'bigMic.send': '发送',
+
+  // --- Child Page ---
+  'childPage.gallery': '相册',
+  'childPage.present': '展示',
+
+  // --- Photo Insight Button Status ---
+  'photoInsight.presented': '展示过',
+  'photoInsight.practicing': '练习中',
+  'photoInsight.mastered': '掌握',
+
+  // --- Extraction Card Event Types ---
+  'extractionCard.mastery': '⭐ 掌握',
+  'extractionCard.presentation': '📋 展示',
+  'extractionCard.practice': '🔄 练习',
+  'extractionCard.behavioral': '👁 行为',
+  'extractionCard.other': '其他',
 } as const;

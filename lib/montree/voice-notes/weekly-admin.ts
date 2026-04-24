@@ -62,7 +62,6 @@ function buildWeeklyAdminPrompt(
   weekStart: string,
   weekEnd: string
 ): string {
-  const isZh = locale === 'zh';
 
   // Build child notes section
   const childSections = children
@@ -96,13 +95,23 @@ function buildWeeklyAdminPrompt(
       ? `\n\nChildren with NO notes this week (still include in plan with continuation works):\n${childrenWithoutNotes.map((c) => `- ${c.name}`).join('\n')}`
       : '';
 
-  const outputLang = isZh
-    ? 'Write ALL narratives in Chinese (中文). The plan table area headers should be in Chinese.'
-    : 'Write ALL narratives in English. The plan table area headers should be in English.';
+  const localeConfig: Record<string, { outputLang: string; areaHeaders: string }> = {
+    zh: {
+      outputLang: 'Write ALL narratives in Chinese (中文). The plan table area headers should be in Chinese.',
+      areaHeaders: '日常 | 感官区 | 数学 | 语言 | 科学文化',
+    },
+    es: {
+      outputLang: 'Write ALL narratives in Spanish. The plan table area headers should be in Spanish.',
+      areaHeaders: 'Vida Práctica | Sensorial | Matemáticas | Lenguaje | Cultura',
+    },
+    en: {
+      outputLang: 'Write ALL narratives in English. The plan table area headers should be in English.',
+      areaHeaders: 'Practical | Sensorial | Math | Language | Culture',
+    },
+  };
 
-  const areaHeaders = isZh
-    ? '日常 | 感官区 | 数学 | 语言 | 科学文化'
-    : 'Practical | Sensorial | Math | Language | Culture';
+  const config = localeConfig[locale] || localeConfig.en;
+  const { outputLang, areaHeaders } = config;
 
   return `You are a senior Montessori educator writing weekly administrative documents for a classroom.
 
