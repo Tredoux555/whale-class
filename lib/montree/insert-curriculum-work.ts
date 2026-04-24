@@ -21,11 +21,14 @@ export async function batchTranslateAllLocales(classroomId: string): Promise<voi
   for (const locale of ENABLED_LOCALES) {
     const nameCol = getNameColumn(locale);
 
-    const { data: works, error } = await supabase
+    // Cast required: Supabase infers 'never' for dynamic select strings
+    type WorkRow = { name: string; parent_description: string | null; why_it_matters: string | null };
+    const { data: rawWorks, error } = await supabase
       .from('montree_classroom_curriculum_works')
       .select(`name, parent_description, why_it_matters, ${nameCol}`)
       .eq('classroom_id', classroomId)
       .is(nameCol, null);
+    const works = rawWorks as WorkRow[] | null;
 
     if (error) {
       console.error(`[BatchTranslate] Query error for ${locale}:`, error.message);
