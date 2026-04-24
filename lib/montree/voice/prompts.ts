@@ -69,11 +69,14 @@ export function buildObservationExtractionPrompt(
     })
     .join('\n\n');
 
-  const langNote = language === 'zh'
-    ? '\nThe teacher is speaking in Chinese (Mandarin). Student names may be in Chinese or English. Work names may be spoken in Chinese or English.'
-    : language === 'auto'
-    ? '\nThe teacher may speak in English or Chinese. Adapt to the language detected.'
-    : '';
+  const langNote = (() => {
+    const L: Record<string, string> = {
+      zh: '\nThe teacher is speaking in Chinese (Mandarin). Student names may be in Chinese or English. Work names may be spoken in Chinese or English.',
+      es: '\nThe teacher is speaking in Spanish. Student names may be in Spanish or English. Work names may be spoken in Spanish or English.',
+      auto: '\nThe teacher may speak in English, Chinese, or Spanish. Adapt to the language detected.',
+    };
+    return L[language || 'en'] || '';
+  })();
 
   return `You are an expert Montessori classroom observer. You are analyzing a transcript of a teacher's voice recording during a Montessori work cycle.
 
