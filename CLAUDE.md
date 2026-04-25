@@ -181,6 +181,157 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
+## RECENT STATUS (Apr 26, 2026)
+
+### ⚡ Session 67 — 6-Language UI Expansion: French, Portuguese, Dutch, Italian, Japanese, Korean (Apr 26, 2026)
+
+**One commit pushed to main: `e2baf953`.** 17 files, 23,075 insertions. Expanded Montree from 3 locales (en, zh, es) to 9 locales by adding complete UI translation files for French, Portuguese, Dutch, Italian, Japanese, and Korean.
+
+**A. New translation files — 6 files, 3,646 keys each:**
+
+- **`lib/montree/i18n/fr.ts`** — French (Français). Formal `vous` register, AMI French Montessori terminology (`Vie Pratique`, `Sensoriel`, `Mathématiques`, `Langage`, `Culture`). 3,646/3,646 keys translated.
+- **`lib/montree/i18n/pt.ts`** — Portuguese (Português). Formal `você` register, AMI Portuguese terminology (`Vida Prática`, `Sensorial`, `Matemática`, `Linguagem`, `Cultural`). 3,646/3,646 keys translated.
+- **`lib/montree/i18n/nl.ts`** — Dutch (Nederlands). Formal `u/uw` register, AMI Dutch terminology (`Praktisch Leven`, `Zintuiglijk`, `Wiskunde`, `Taal`, `Cultuur`). 3,646/3,646 keys translated.
+- **`lib/montree/i18n/it.ts`** — Italian (Italiano). Formal `Lei/Suo/Sua` register, AMI Italian terminology. 3,645/3,646 keys (1 fallback: `childGuru.typeOrSpeak`).
+- **`lib/montree/i18n/ja.ts`** — Japanese (日本語). Polite `です/ます` register, `お子さま` for "your child". 3,628/3,646 keys (18 fallbacks).
+- **`lib/montree/i18n/ko.ts`** — Korean (한국어). Formal `합쇼체/해요체` register, `자녀분` for "your child". 3,637/3,646 keys (9 fallbacks).
+
+**B. Infrastructure changes — 5 files updated:**
+
+- **`lib/montree/i18n/locales.ts`** — Added fr, pt, nl, it, ja, ko to `SUPPORTED_LOCALES` array, `Locale` union type, `LOCALE_TO_INTL` date format map, `LOCALE_DISPLAY_NAMES`, `LOCALE_SHORT_LABELS`.
+- **`lib/montree/i18n/area-labels.ts`** — Added `AREA_LABELS_FR`, `AREA_LABELS_PT`, `AREA_LABELS_NL`, `AREA_LABELS_IT`, `AREA_LABELS_JA`, `AREA_LABELS_KO` in the map-of-maps. All 6 new locales resolve correctly in `getAreaLabel(area, locale)`.
+- **`lib/montree/i18n/locale-config.ts`** — Added `LOCALE_AI_CONFIG` entries for all 6 new locales (language name, system prompt suffix for AI responses, glossary).
+- **`lib/montree/i18n/context.tsx`** — Imports and wires fr, pt, nl, it, ja, ko into the `messages` map.
+- **`lib/montree/i18n/server.ts`** — Imports and wires all 6 into the `LOCALE_TO_MESSAGES` server-side map.
+
+**C. GitHub Push Protection incident — resolved:**
+
+Initial push attempt was blocked: commit `c49c36f2` contained a hardcoded Anthropic API key (`sk-ant-api03-...`) in the one-off generation scripts (`scripts/generate-fr/pt/nl/it/ja/nl.mjs`). These scripts were created to generate the translation files using Haiku and the key was accidentally left inline.
+
+**Fix:** Replaced key with `process.env.ANTHROPIC_API_KEY` string literal in all 6 scripts via `sed -i ''` on macOS. Then ran `git commit --amend --no-edit` + `git push`. Commit `e2baf953` pushed successfully on second attempt (transient SSH disconnect on first retry).
+
+**D. Production verification — CONFIRMED:**
+
+Screenshots confirmed Korean locale (`한국어`) working end-to-end on production:
+- UI labels and status badges fully translated (`수달함` = mastered, `제시됨` = presented)
+- Quick guide modal rendering in Korean
+- Full details modal rendering in Korean
+- LanguageToggle dropdown showing all 9 locales
+
+**🚨 CRITICAL KNOWN GAP — Curriculum data layer NOT localized for 6 new languages:**
+
+The UI translation files are complete, but the **curriculum work names and guide content** in the database are NOT localized for fr, pt, nl, it, ja, ko. This mirrors the gap that existed for Chinese (fixed Sessions 13–14, 17) and Spanish (fixed Session 65).
+
+**What's missing:**
+
+| Column | DB table | Status |
+|--------|----------|--------|
+| `name_fr`, `name_pt`, `name_nl`, `name_it`, `name_ja`, `name_ko` | `montree_classroom_curriculum_works` | ❌ Columns don't exist |
+| `guide_content_fr`, `guide_content_pt`, `guide_content_nl`, `guide_content_it`, `guide_content_ja`, `guide_content_ko` | `montree_classroom_curriculum_works` | ❌ Columns don't exist |
+
+**`LOCALE_COLUMN_SUFFIX` in `lib/montree/i18n/db-helpers.ts` is also missing entries for all 6 new locales.** The map currently has `zh: '_zh'` and `es: '_es'`. Without entries for the 6 new languages, `getLocalizedWorkName()` and `getLocalizedField()` cannot resolve their DB columns.
+
+**What this means in practice:**
+- If a school switches to French/Portuguese/Dutch/Italian/Japanese/Korean, ALL work names in the curriculum view, child page shelf, game plan chips, Photo Audit sheet, and guide modals will fall back to English.
+- Quick guides and full guides will render in English regardless of locale.
+- Area labels WILL work correctly (those are code-side, not DB-dependent).
+- UI strings (buttons, labels, status badges) WILL work correctly.
+
+**Next session — Curriculum Data Layer for 6 New Languages:**
+
+**Step 1 — DB Migrations (user runs in Supabase SQL Editor):**
+```sql
+-- Work name columns
+ALTER TABLE montree_classroom_curriculum_works
+  ADD COLUMN IF NOT EXISTS name_fr TEXT,
+  ADD COLUMN IF NOT EXISTS name_pt TEXT,
+  ADD COLUMN IF NOT EXISTS name_nl TEXT,
+  ADD COLUMN IF NOT EXISTS name_it TEXT,
+  ADD COLUMN IF NOT EXISTS name_ja TEXT,
+  ADD COLUMN IF NOT EXISTS name_ko TEXT;
+
+-- Guide content columns (JSONB, same schema as guide_content_zh)
+ALTER TABLE montree_classroom_curriculum_works
+  ADD COLUMN IF NOT EXISTS guide_content_fr JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_pt JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_nl JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_it JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_ja JSONB,
+  ADD COLUMN IF NOT EXISTS guide_content_ko JSONB;
+```
+
+**Step 2 — `db-helpers.ts` update:**
+Add all 6 new locales to `LOCALE_COLUMN_SUFFIX` in `lib/montree/i18n/db-helpers.ts`:
+```typescript
+export const LOCALE_COLUMN_SUFFIX: Record<string, string> = {
+  zh: '_zh',
+  es: '_es',
+  fr: '_fr',   // ADD
+  pt: '_pt',   // ADD
+  nl: '_nl',   // ADD
+  it: '_it',   // ADD
+  ja: '_ja',   // ADD
+  ko: '_ko',   // ADD
+};
+```
+
+**Step 3 — Batch work name translation scripts (Haiku):**
+Similar to the one-off scripts used for Spanish (`scripts/generate-es.mjs` style). For each language, create a script that:
+1. Reads all `montree_classroom_curriculum_works` rows for Whale Class classroom (id: `51e7adb6-cd18-4e03-b707-eceb0a1d2e69`)
+2. Calls Haiku for each work with the English `name` and asks for a localized translation
+3. Uses `montree_glossary_{lang}` (if applicable) or Montessori AMI terminology guidelines in the prompt
+4. UPSERTs the translated name into `name_{lang}` column
+5. Runs in batches of 5, 500ms delay, handles retries
+
+**Step 4 — Batch guide content translation scripts:**
+Similar to `scripts/batch-translate-guides-es.js` (Session 65). For each language:
+1. Query all works in Whale Class with `guide_content_{lang} IS NULL`
+2. For each, translate the `quick_guide` JSONB from English using Haiku `tool_use`
+3. Store result in `guide_content_{lang}` JSONB column
+4. Estimated cost: ~$0.40 × 6 languages = ~$2.40 total (Haiku, same cost as Spanish batch)
+
+**Step 5 — `auto-translate.ts` update:**
+Update `lib/montree/auto-translate.ts` to also write all 6 new language columns when translating a newly-created curriculum work. Currently it writes `name_zh` + `name_chinese` + `name_es`. Add `name_fr`, `name_pt`, `name_nl`, `name_it`, `name_ja`, `name_ko` to the upsert payload.
+
+**Step 6 — Works API update:**
+`app/api/montree/works/route.ts` currently selects `name_es` and maps it to `spanish_name`. Add selects for all 6 new language columns and map them into the API response.
+
+**Priority:** HIGH. Until this is done, any school that switches to one of the 6 new locales will see English work names in all curriculum views. The UI strings are correct but the data layer is English-only.
+
+**Reference sessions:**
+- Session 13 (Chinese work names + auto-translate pipeline)
+- Session 14 (dual-column root cause fix — always write BOTH columns)
+- Session 17 (Chinese guide content batch translation — 384/384 works)
+- Session 65 (Spanish guide content batch — 383/383 works, `scripts/batch-translate-guides-es.js`)
+
+**Files changed (17 files, commit `e2baf953`):**
+- `lib/montree/i18n/fr.ts` — NEW
+- `lib/montree/i18n/pt.ts` — NEW
+- `lib/montree/i18n/nl.ts` — NEW
+- `lib/montree/i18n/it.ts` — NEW
+- `lib/montree/i18n/ja.ts` — NEW
+- `lib/montree/i18n/ko.ts` — NEW
+- `scripts/generate-fr.mjs` — NEW (one-off, API key scrubbed)
+- `scripts/generate-pt.mjs` — NEW (one-off, API key scrubbed)
+- `scripts/generate-nl.mjs` — NEW (one-off, API key scrubbed)
+- `scripts/generate-it.mjs` — NEW (one-off, API key scrubbed)
+- `scripts/generate-ja.mjs` — NEW (one-off, API key scrubbed)
+- `scripts/generate-ko.mjs` — NEW (one-off, API key scrubbed)
+- `lib/montree/i18n/locales.ts` — 6 new locales in `SUPPORTED_LOCALES` + `Locale` type + display maps
+- `lib/montree/i18n/area-labels.ts` — 6 new `AREA_LABELS_*` constants in map-of-maps
+- `lib/montree/i18n/locale-config.ts` — 6 new `LOCALE_AI_CONFIG` entries
+- `lib/montree/i18n/context.tsx` — imports + wires all 6
+- `lib/montree/i18n/server.ts` — imports + wires all 6
+
+**Next session priorities:**
+1. **🚨 Curriculum data layer for 6 new languages** — DB migrations (Step 1 above) + `db-helpers.ts` update (Step 2) + batch work name scripts (Step 3) + batch guide scripts (Step 4) + `auto-translate.ts` update (Step 5). This is the only remaining gap before the 6 new locales are fully functional end-to-end.
+2. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial), Montessori Copenhagen (details).
+3. **Follow up on FAMM Argentina** if no response by Apr 28.
+4. **Disable `tell_guru_onboarding` for Whale Class** — Amy's card keeps appearing: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+5. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+
+---
+
 ## RECENT STATUS (Apr 25, 2026)
 
 ### ⚡ Session 66 — Language Semester Report: Mastery Fix + Single-Block Copy (Apr 25, 2026)
