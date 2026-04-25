@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     if (classroomId) {
       const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters')
+        .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, guide_content_zh, guide_content_es')
         .eq('classroom_id', classroomId)
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
@@ -116,82 +116,95 @@ export async function GET(request: NextRequest) {
       why_it_matters: guideData.why_it_matters,
     };
 
-    // 5. Translate to Chinese if locale is zh and we have content
-    if (locale === 'zh' && (result.quick_guide || result.presentation_steps)) {
-      // 5a. Check DB cache first — guide_content_zh column on classroom curriculum
+    // 5. Translate if locale is non-English and we have content
+    if ((locale === 'zh' || locale === 'es') && (result.quick_guide || result.presentation_steps)) {
+      const cacheColumn = locale === 'zh' ? 'guide_content_zh' : 'guide_content_es';
+      const translateFn = locale === 'zh' ? translateGuideToZh : translateGuideToEs;
+      const langLabel = locale === 'zh' ? 'zh' : 'es';
+
+      // 5a. Check DB cache first
       if (classroomId) {
         try {
           const { data: cached } = await supabase
             .from('montree_classroom_curriculum_works')
-            .select('guide_content_zh')
+            .select(cacheColumn)
             .eq('classroom_id', classroomId)
             .ilike('name', `%${escapeIlike(workName)}%`)
             .limit(1)
             .maybeSingle();
 
-          if (cached?.guide_content_zh && typeof cached.guide_content_zh === 'object') {
+          const cachedData = cached?.[cacheColumn as keyof typeof cached];
+          if (cachedData && typeof cachedData === 'object') {
             // Serve from cache — instant
-            return NextResponse.json({ ...result, ...cached.guide_content_zh }, {
+            return NextResponse.json({ ...result, ...(cachedData as Record<string, unknown>) }, {
               headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
             });
           }
         } catch (err) {
-          console.error('[Guide API] Cache read failed:', err);
+          console.error(`[Guide API] ${langLabel} cache read failed:`, err);
         }
       }
 
       // 5b. No cache — translate via Sonnet and cache the result
       if (anthropic) {
         try {
-          const translated = await translateGuideToZh(result);
+          const translated = await translateFn(result);
           // Fire-and-forget: cache translation to DB
           if (classroomId) {
             supabase
               .from('montree_classroom_curriculum_works')
-              .update({ guide_content_zh: translated })
+              .update({ [cacheColumn]: translated })
               .eq('classroom_id', classroomId)
               .ilike('name', `%${escapeIlike(workName)}%`)
               .then(({ error }) => {
-                if (error) console.error('[Guide API] Cache write failed:', error.message);
-                else console.log(`[Guide API] Cached zh guide for "${workName}"`);
+                if (error) console.error(`[Guide API] ${langLabel} cache write failed:`, error.message);
+                else console.log(`[Guide API] Cached ${langLabel} guide for "${workName}"`);
               });
           }
           return NextResponse.json(translated, {
             headers: { 'Cache-Control': 'private, max-age=3600, stale-while-revalidate=7200' }
           });
         } catch (err) {
-          console.error('Translation failed, returning English:', err);
+          console.error(`[Guide API] ${langLabel} translation failed, returning English:`, err);
         }
       }
     }
 
-    // 6. Pre-generate Chinese translation in the background (fire-and-forget)
-    //    So the NEXT zh request is instant from cache, even for custom works.
+    // 6. Pre-generate translations in the background (fire-and-forget)
+    //    So the NEXT zh/es request is instant from cache, even for custom works.
     if (classroomId && anthropic && (result.quick_guide || result.presentation_steps)) {
-      // Quick check if zh cache already exists — avoid redundant translation
-      supabase
-        .from('montree_classroom_curriculum_works')
-        .select('guide_content_zh')
-        .eq('classroom_id', classroomId)
-        .ilike('name', `%${escapeIlike(workName)}%`)
-        .limit(1)
-        .maybeSingle()
-        .then(async ({ data: row }) => {
-          if (row?.guide_content_zh && typeof row.guide_content_zh === 'object') return; // already cached
-          try {
-            const translated = await translateGuideToZh(result);
-            const { error } = await supabase
-              .from('montree_classroom_curriculum_works')
-              .update({ guide_content_zh: translated })
-              .eq('classroom_id', classroomId)
-              .ilike('name', `%${escapeIlike(workName)}%`);
-            if (error) console.error('[Guide API] Background zh cache write failed:', error.message);
-            else console.log(`[Guide API] Background pre-cached zh guide for "${workName}"`);
-          } catch (err) {
-            console.error('[Guide API] Background zh translation failed:', err);
-          }
-        })
-        .catch((err: unknown) => console.error('[Guide API] Background zh check failed:', err));
+      // Pre-generate both Chinese and Spanish caches
+      const bgJobs: Array<{ column: string; fn: (g: Record<string, unknown>) => Promise<Record<string, unknown>>; label: string }> = [
+        { column: 'guide_content_zh', fn: translateGuideToZh, label: 'zh' },
+        { column: 'guide_content_es', fn: translateGuideToEs, label: 'es' },
+      ];
+
+      for (const job of bgJobs) {
+        supabase
+          .from('montree_classroom_curriculum_works')
+          .select(job.column)
+          .eq('classroom_id', classroomId)
+          .ilike('name', `%${escapeIlike(workName)}%`)
+          .limit(1)
+          .maybeSingle()
+          .then(async ({ data: row }) => {
+            const existing = row?.[job.column as keyof typeof row];
+            if (existing && typeof existing === 'object') return; // already cached
+            try {
+              const translated = await job.fn(result);
+              const { error } = await supabase
+                .from('montree_classroom_curriculum_works')
+                .update({ [job.column]: translated })
+                .eq('classroom_id', classroomId)
+                .ilike('name', `%${escapeIlike(workName)}%`);
+              if (error) console.error(`[Guide API] Background ${job.label} cache write failed:`, error.message);
+              else console.log(`[Guide API] Background pre-cached ${job.label} guide for "${workName}"`);
+            } catch (err) {
+              console.error(`[Guide API] Background ${job.label} translation failed:`, err);
+            }
+          })
+          .catch((err: unknown) => console.error(`[Guide API] Background ${job.label} check failed:`, err));
+      }
     }
 
     return NextResponse.json(result, {
@@ -201,6 +214,50 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Guide API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// Translate guide content to Spanish using Sonnet
+async function translateGuideToEs(guide: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if (!anthropic) return guide;
+
+  const toTranslate: Record<string, unknown> = {};
+  if (guide.quick_guide) toTranslate.quick_guide = guide.quick_guide;
+  if (guide.parent_description) toTranslate.parent_description = guide.parent_description;
+  if (guide.control_of_error) toTranslate.control_of_error = guide.control_of_error;
+  if (guide.why_it_matters) toTranslate.why_it_matters = guide.why_it_matters;
+  if (Array.isArray(guide.direct_aims) && guide.direct_aims.length > 0) toTranslate.direct_aims = guide.direct_aims;
+  if (Array.isArray(guide.materials) && guide.materials.length > 0) toTranslate.materials = guide.materials;
+  if (Array.isArray(guide.presentation_steps) && (guide.presentation_steps as Array<unknown>).length > 0) {
+    toTranslate.presentation_steps = guide.presentation_steps;
+  }
+
+  if (Object.keys(toTranslate).length === 0) return guide;
+
+  const response = await anthropic.messages.create({
+    model: AI_MODEL,
+    max_tokens: 2048,
+    messages: [{
+      role: 'user',
+      content: `Translate the following Montessori work guide content from English to natural Argentine Spanish / Latin American Spanish.
+Use warm, accessible language appropriate for parents and teachers in a Montessori school.
+Keep the EXACT same JSON structure. Translate all text values naturally and accurately.
+For presentation_steps, translate the "title", "description", and "tip" fields.
+For arrays like direct_aims and materials, translate each string element.
+Return ONLY valid JSON, no markdown fences, no explanation.
+
+${JSON.stringify(toTranslate)}`
+    }],
+  });
+
+  try {
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    const translated = JSON.parse(cleaned);
+    return { ...guide, ...translated };
+  } catch {
+    console.error('[Guide API] Failed to parse Spanish translation JSON');
+    return guide;
   }
 }
 
