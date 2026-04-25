@@ -12,6 +12,12 @@ import { en, type TranslationKey } from './en';
 import { zh } from './zh';
 import { es } from './es';
 import { de } from './de';
+import { fr } from './fr';
+import { pt } from './pt';
+import { nl } from './nl';
+import { it } from './it';
+import { ja } from './ja';
+import { ko } from './ko';
 import { type Locale, DEFAULT_LOCALE, SUPPORTED_LOCALES, isValidLocale } from './locales';
 
 // Re-export Locale for backward compat (173 files import from barrel → context)
@@ -19,7 +25,7 @@ export type { Locale };
 
 const STORAGE_KEY = 'montree_lang';
 
-const messages: Record<string, Record<string, string>> = { en, zh, es, de };
+const messages: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko };
 
 // Pre-compiled regex cache for interpolation params (avoids creating new RegExp per t() call)
 const regexCache = new Map<string, RegExp>();
