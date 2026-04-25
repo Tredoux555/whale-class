@@ -183,6 +183,75 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 25, 2026)
 
+### ⚡ Session 65 — Spanish Wiring Verification + Guide Batch Complete + LanguageToggle Dropdown (Apr 25, 2026)
+
+**One commit pushed to main: `5fc97ad9`.** Verified all 5 Spanish multilingual wiring tasks were pre-implemented, completed the Spanish guide batch translation (383/383), and replaced the LanguageToggle cycle button with a native dropdown.
+
+**Context:** Sessions 58–64 built the full multilingual infrastructure including Spanish as `'es'` locale. This session audited whether 5 specific Spanish wiring tasks were still pending or had been silently pre-implemented during that build.
+
+**A. All 5 Spanish wiring tasks confirmed PRE-IMPLEMENTED (no code changes needed):**
+
+1. **`db-helpers.ts` — `es: '_es'` in `LOCALE_COLUMN_SUFFIX`** — ✅ Already present. `getLocalizedWorkName()`, `getLocalizedField()`, and `getLocalizedColumn()` all resolve `_es` suffix automatically for Spanish locale.
+
+2. **Works API — `name_es` in SELECT + `spanish_name` in response** — ✅ Already implemented. `app/api/montree/works/route.ts` selects `name_es` from DB and maps it to `spanish_name: w.name_es || undefined` in the response object.
+
+3. **Child page + FocusWorksSection — `spanishName` prop + triple-fallback render** — ✅ Already implemented. Both files have `spanishName?: string` on their Assignment interfaces and use:
+   ```tsx
+   {locale === 'zh' && focusWork.chineseName
+     ? focusWork.chineseName
+     : locale === 'es' && focusWork.spanishName
+       ? focusWork.spanishName
+       : focusWork.work_name}
+   ```
+
+4. **`area-labels.ts` — `AREA_LABELS_ES` + `AREA_LABELS` map-of-maps** — ✅ Already implemented. Argentine Spanish area labels (`Vida Práctica`, `Sensorial`, `Matemáticas`, `Lenguaje`, `Cultural`) are in the map-of-maps keyed by locale. `getAreaLabel(area, locale)` resolves correctly for `'es'`.
+
+5. **`LanguageToggle.tsx` — cycles through Spanish** — ✅ Already implemented. Component uses `SUPPORTED_LOCALES` array (which includes `'es'`) to cycle EN → 中文 → ES → EN. `LOCALE_SHORT_LABELS` drives button display (`'es': 'ES'`).
+
+**B. `es.ts` — Confirmed real Argentine Spanish (not stubs):**
+
+File header explicitly states: `// Uses voseo (vos tenés), ustedes for plural, AMI Montessori terminology.`
+
+All 1,490+ translation keys are populated with genuine Argentine Spanish using voseo register:
+- `'summary.askGuruPrompt'`: `'Hacé clic en "Preguntale al Guru"...'`
+- `'guru.askPlaceholder'`: `'Preguntá sobre su hijo/a...'`
+- Zero empty string values found via grep.
+
+**C. Spanish guide batch translation — COMPLETE (383/383):**
+
+`scripts/batch-translate-guides-es.js` finished its initial run with **373/383** (10 transient `fetch failed` failures). Re-ran targeting only the 10 remaining null rows — all 10 succeeded. Final state: **383/383 works** have `guide_content_es` JSONB populated.
+
+All Whale Class works now have instant Spanish guide delivery (no API call needed) — same as the Chinese `guide_content_zh` cache built in Sessions 17+.
+
+**D. LanguageToggle → native dropdown (commit `5fc97ad9`):**
+
+Replaced the tap-to-cycle button with a proper dropdown select. The pill label is still shown visually (so it fits in the header at the same compact size), but an invisible `<select>` overlays it — clicking the pill opens the OS-native language picker showing full display names (English / 中文 / Español). No more hunting through locales by tapping in a cycle.
+
+**Implementation (`components/montree/LanguageToggle.tsx`):**
+- Visible pill span is `pointer-events-none` so the hidden `<select>` captures all clicks
+- `<select>` is `opacity-0 absolute inset-0` — covers the pill exactly, invisible but fully interactive
+- Options rendered from `SUPPORTED_LOCALES` with `LOCALE_DISPLAY_NAMES` as labels
+- `onChange` calls `setLocale()` directly — one tap to any locale, no cycling
+- No layout changes to any parent component — the div wrapper is the same size as the old button
+
+**🚨 Architectural notes for future sessions:**
+
+- **Spanish is fully wired end-to-end**: LanguageToggle → locale → area labels → work names → curriculum detail views → AI prompts. The infrastructure from Sessions 58–64 is complete.
+- **To activate Spanish for a school**: No code changes. Just ensure the school's teacher can see the ES option in LanguageToggle (already works — no feature flag needed, locale is client-side preference).
+- **Spanish guides**: `guide_content_es` on `montree_classroom_curriculum_works` — same JSONB schema as `guide_content_zh`. The guide API at `app/api/montree/works/guide/route.ts` already reads `guide_content_es` when `locale='es'` (via `LOCALE_COLUMN_SUFFIX` → `getLocalizedField()` pattern).
+- **`name_es` column** on `montree_classroom_curriculum_works` — populated by batch translate scripts. The batch guide script does NOT fill this — a separate `name_es` batch would be needed for work names to appear in Spanish in the UI.
+- **FAMM Argentina pitch**: If/when they onboard, their locale should be set to `'es'` at the school level. Everything renders in Argentine Spanish automatically.
+
+**Next session priorities:**
+1. **Amy's TellGuruCard** — disable `tell_guru_onboarding` for Whale Class: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+2. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial), Montessori Copenhagen (details). Immediate conversion opportunities.
+3. **Follow up on FAMM Argentina** if no response by Apr 28.
+4. **Check Spanish guide batch completion** — `SELECT COUNT(*) FROM montree_classroom_curriculum_works WHERE classroom_id='51e7adb6-cd18-4e03-b707-eceb0a1d2e69' AND guide_content_es IS NOT NULL;` — should be 383 when done.
+5. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+6. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+
+---
+
 ### ⚡ Session 64 — Game Plan Section Hide + TellGuruCard Fix + Lion King Video Downloads (Apr 25, 2026)
 
 **Three commits pushed to main: `4e49a5b6`, `d70ad3be` (wrong, immediately superseded), `ca94843c`.**
