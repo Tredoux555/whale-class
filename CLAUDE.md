@@ -183,6 +183,78 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 25, 2026)
 
+### ⚡ Session 66 — Language Semester Report: Mastery Fix + Single-Block Copy (Apr 25, 2026)
+
+**Two commits pushed to main: `577c3de5`, `3ad3ff0a`.**
+
+**A. Mastery status fix — commit `577c3de5`:**
+
+User flagged that Chalkboard Writing was showing as MD (Mastered) when the teacher never declared it mastered. The root cause was in `loadLanguageProgress()` in `app/api/montree/reports/language-semester/generate/route.ts`: photo count was being used as a mastery proxy (4+ photos → MD, 2-3 → Pr, 1 → P). User's exact words: *"Students can practice a work like this for 6 months without mastering it. The teacher needs to determine whats mastered and whats not. The AI cant. The AI should just assume everything is practicing until told otherwise."*
+
+**Fix:** Added a query to `montree_child_progress` for rows where `status='mastered'` for the child. MD is now **only** assigned when a teacher has explicitly marked a work as mastered in the DB. Photo count can only yield P or Pr — never MD.
+
+**Old (broken):**
+```typescript
+if (count >= 4) status = 'mastered';
+else if (count >= 2) status = 'practicing';
+else status = 'presented';
+```
+
+**New (correct):**
+```typescript
+// Step 3b: Fetch teacher-explicitly-set mastered works
+const masteredWorkNames = new Set<string>();
+const { data: progressRows } = await supabase
+  .from('montree_child_progress')
+  .select('work_name, status')
+  .eq('child_id', childId)
+  .eq('status', 'mastered');
+for (const row of progressRows || []) {
+  masteredWorkNames.add(row.work_name.toLowerCase());
+}
+
+// Status: MD only from teacher, Pr from 2+ photos, P from 1 photo
+if (masteredWorkNames.has(workName.toLowerCase())) status = 'mastered';
+else if (count >= 2) status = 'practicing';
+else status = 'presented';
+```
+
+**🚨 Architectural rule:** `montree_child_progress.status='mastered'` is the SOLE source of truth for MD on any parent-facing report. Photo count alone NEVER implies mastery. This applies to Language Semester, Weekly Wrap, and any future report type.
+
+**B. Single-block copy — commit `3ad3ff0a`:**
+
+User saw three separate Copy buttons (one each for OPENING, CIRCLE 3 POINTS, CLOSING) and asked for one combined block they could copy in a single click. Fixed `app/montree/dashboard/language-semester/page.tsx`:
+
+**Before (3 separate CopyBlock components):**
+```tsx
+<CopyBlock label="Opening" text={child.opening ?? ''} />
+<CopyBlock label="Circle (3 points)" text={child.circle ?? ''} />
+<CopyBlock label="Closing" text={child.closing ?? ''} />
+```
+
+**After (1 combined CopyBlock):**
+```tsx
+<CopyBlock
+  label="Parent Letter"
+  text={[child.opening, child.circle, child.closing].filter(Boolean).join('\n\n')}
+/>
+```
+
+One click copies the entire three-part parent letter with blank lines separating the sections.
+
+**Files changed (2 files, 2 commits):**
+- `app/api/montree/reports/language-semester/generate/route.ts` — mastery from DB only, not photo count
+- `app/montree/dashboard/language-semester/page.tsx` — single combined "Parent Letter" CopyBlock
+
+**Next session priorities:**
+1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial), Montessori Copenhagen (details). Immediate conversion opportunities.
+2. **Follow up on FAMM Argentina** if no response by Apr 28.
+3. **Disable `tell_guru_onboarding` for Whale Class** — Amy's card keeps appearing: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+5. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+
+---
+
 ### ⚡ Session 65 — Spanish Wiring Verification + Guide Batch Complete + LanguageToggle Dropdown (Apr 25, 2026)
 
 **One commit pushed to main: `5fc97ad9`.** Verified all 5 Spanish multilingual wiring tasks were pre-implemented, completed the Spanish guide batch translation (383/383), and replaced the LanguageToggle cycle button with a native dropdown.
