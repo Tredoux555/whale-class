@@ -297,10 +297,10 @@ export default function WeekPage() {
     Promise.all([fetchProfile, fetchChild]).then(([profileData, childData]) => {
       if (isEnabled('tell_guru_onboarding')) {
         setHasProfile(!!profileData?.profile);
-        // Child is "data rich" if they have 5+ confirmed photos — system knows them well enough
-        // The child API already returns a photos array (confirmed only, pending_review excluded)
+        // Child is "data rich" if they have ANY confirmed photos — even 1 means we know them.
+        // The onboarding card should only appear for brand-new children with zero history.
         const photoCount = childData?.photos?.length ?? 0;
-        setChildDataRich(photoCount >= 5);
+        setChildDataRich(photoCount >= 1);
       }
       if (childData?.child?.name) setOnboardingChildName(childData.child.name);
       else if (childData?.name) setOnboardingChildName(childData.name);
