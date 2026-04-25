@@ -3,7 +3,7 @@
 // Sonnet writes the official school PPTX report for each one.
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession, recoverSession, type MontreeSession } from '@/lib/montree/auth';
 import { getProxyUrl } from '@/lib/montree/media/proxy-url';
@@ -13,6 +13,56 @@ interface Child {
   id: string;
   name: string;
   photo_url: string | null;
+}
+
+interface WorkRow {
+  name: string;
+  status: string; // 'P' | 'Pr' | 'MD'
+}
+
+interface ChildTextResult {
+  name: string;
+  works: WorkRow[];
+  opening: string;
+  circle: string;
+  closing: string;
+}
+
+interface TextResponse {
+  children: ChildTextResult[];
+  errors: Array<{ child_id: string; name: string; error: string }>;
+}
+
+// ── CopyBlock ──────────────────────────────────────────────────────────────
+function CopyBlock({ label, text }: { label: string; text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // fallback: select all in textarea
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
+        <button
+          onClick={copy}
+          className="text-xs text-violet-600 hover:text-violet-800 font-medium transition-colors"
+        >
+          {copied ? '✓ Copied' : 'Copy'}
+        </button>
+      </div>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed font-mono">
+        {text}
+      </div>
+    </div>
+  );
 }
 
 // Default graduating names — pre-checked on page load, teacher can toggle before generating.
@@ -31,8 +81,11 @@ export default function LanguageSemesterPage() {
   // Track which children are marked as graduating — keyed by child ID
   const [graduating, setGraduating] = useState<Set<string>>(new Set());
   const [generating, setGenerating] = useState(false);
+  const [gettingText, setGettingText] = useState(false);
   const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [textResult, setTextResult] = useState<TextResponse | null>(null);
+  const textResultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -149,6 +202,44 @@ export default function LanguageSemesterPage() {
       setProgress('');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleGetText = async () => {
+    if (selected.size === 0) return;
+    setGettingText(true);
+    setError(null);
+    setTextResult(null);
+    setProgress('Generating text… this takes about 30s per child.');
+    try {
+      const res = await fetch('/api/montree/reports/language-semester/generate', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          child_ids: Array.from(selected),
+          graduating_ids: Array.from(graduating),
+          format: 'text',
+        }),
+      });
+      if (!res.ok) {
+        let msg = `Generation failed (${res.status})`;
+        try {
+          const j = await res.json();
+          if (j.error) msg = j.error;
+        } catch {}
+        throw new Error(msg);
+      }
+      const data: TextResponse = await res.json();
+      setTextResult(data);
+      setProgress('');
+      // Scroll to results
+      setTimeout(() => textResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setProgress('');
+    } finally {
+      setGettingText(false);
     }
   };
 
@@ -273,19 +364,83 @@ export default function LanguageSemesterPage() {
               </div>
             )}
 
-            <button
-              onClick={handleGenerate}
-              disabled={selected.size === 0 || generating}
-              className="w-full py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {generating
-                ? t('languageSemester.generatingWait')
-                : t('languageSemester.generateDownload', { count: selected.size })}
-            </button>
+            {/* Two action buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleGetText}
+                disabled={selected.size === 0 || generating || gettingText}
+                className="flex-1 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {gettingText ? 'Getting text…' : `Get Text (${selected.size})`}
+              </button>
+              <button
+                onClick={handleGenerate}
+                disabled={selected.size === 0 || generating || gettingText}
+                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {generating
+                  ? t('languageSemester.generatingWait')
+                  : t('languageSemester.generateDownload', { count: selected.size })}
+              </button>
+            </div>
 
             <p className="text-xs text-gray-500 text-center mt-4">
               {t('languageSemester.timeEstimate')}
             </p>
+
+            {/* Text results panel */}
+            {textResult && (
+              <div ref={textResultRef} className="mt-6 space-y-6">
+                {textResult.errors.length > 0 && (
+                  <div className="p-3 bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-lg">
+                    {textResult.errors.length} child{textResult.errors.length > 1 ? 'ren' : ''} failed:{' '}
+                    {textResult.errors.map(e => e.name).join(', ')}
+                  </div>
+                )}
+                {textResult.children.map((child) => (
+                  <div key={child.name} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    {/* Child header */}
+                    <div className="bg-violet-50 border-b border-violet-100 px-4 py-3">
+                      <h2 className="font-bold text-violet-900 text-lg">{child.name}</h2>
+                    </div>
+
+                    <div className="p-4 space-y-4">
+                      {/* Works table */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Language Works</p>
+                        <div className="rounded-lg border border-gray-100 overflow-hidden">
+                          {child.works.length === 0 ? (
+                            <p className="text-sm text-gray-400 px-3 py-2 italic">No language works recorded</p>
+                          ) : (
+                            child.works.map((w, i) => (
+                              <div key={i} className={`flex items-center justify-between px-3 py-2 text-sm ${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}>
+                                <span className="text-gray-800">{w.name}</span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                  w.status === 'MD' ? 'bg-emerald-100 text-emerald-700' :
+                                  w.status === 'Pr' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {w.status}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Opening paragraph */}
+                      <CopyBlock label="Opening" text={child.opening} />
+
+                      {/* Circle points */}
+                      <CopyBlock label="Circle (3 points)" text={child.circle} />
+
+                      {/* Closing paragraph */}
+                      <CopyBlock label="Closing" text={child.closing} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
