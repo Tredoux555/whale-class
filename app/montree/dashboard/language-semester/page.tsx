@@ -23,9 +23,12 @@ interface WorkRow {
 interface ChildTextResult {
   name: string;
   works: WorkRow[];
-  opening: string;
-  circle: string;
-  closing: string;
+  // 1M fields
+  paragraph?: string;
+  // 6M fields
+  opening?: string;
+  circle?: string;
+  closing?: string;
 }
 
 interface TextResponse {
@@ -85,7 +88,7 @@ export default function LanguageSemesterPage() {
   const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [textResult, setTextResult] = useState<TextResponse | null>(null);
-  const [months, setMonths] = useState<1 | 3 | 6 | 12>(6);
+  const [months, setMonths] = useState<1 | 6>(6);
   const textResultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -265,17 +268,21 @@ export default function LanguageSemesterPage() {
 
         {/* Time period selector */}
         <div className="flex gap-2 mb-5">
-          {([1, 3, 6, 12] as const).map((m) => (
+          {([
+            { m: 1, label: '1M', sub: 'Monthly Academic' },
+            { m: 6, label: '6M', sub: 'Parent Semester Report' },
+          ] as const).map(({ m, label, sub }) => (
             <button
               key={m}
               onClick={() => setMonths(m)}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`flex-1 py-2.5 px-3 rounded-lg text-sm font-semibold transition-colors text-left ${
                 months === m
                   ? 'bg-violet-600 text-white shadow-sm'
                   : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-700'
               }`}
             >
-              {m === 12 ? '1 Year' : `${m}M`}
+              <span className="block text-base">{label}</span>
+              <span className={`block text-xs font-normal mt-0.5 ${months === m ? 'text-violet-200' : 'text-gray-400'}`}>{sub}</span>
             </button>
           ))}
         </div>
@@ -301,20 +308,22 @@ export default function LanguageSemesterPage() {
               </button>
             </div>
 
-            {/* Graduating / Returning legend */}
-            <div className="flex items-center gap-4 px-4 py-2 mb-3 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" />
-                {t('languageSemester.graduatingLabel', { count: gradCount })}
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-400" />
-                {t('languageSemester.returningLabel', { count: retCount })}
-              </span>
-              <span className="text-gray-400 ml-auto">
-                {t('languageSemester.toggleHint')}
-              </span>
-            </div>
+            {/* Graduating / Returning legend — only shown for 6M (1M is academic, no grad distinction) */}
+            {months === 6 && (
+              <div className="flex items-center gap-4 px-4 py-2 mb-3 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  {t('languageSemester.graduatingLabel', { count: gradCount })}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="inline-block w-2.5 h-2.5 rounded-full bg-sky-400" />
+                  {t('languageSemester.returningLabel', { count: retCount })}
+                </span>
+                <span className="text-gray-400 ml-auto">
+                  {t('languageSemester.toggleHint')}
+                </span>
+              </div>
+            )}
 
             <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-100 mb-4">
               {children.map((c) => {
@@ -354,19 +363,21 @@ export default function LanguageSemesterPage() {
                     )}
                     {/* Name */}
                     <span className="text-sm font-medium text-gray-900 flex-1">{c.name}</span>
-                    {/* Graduating / Returning badge — tappable */}
-                    <span
-                      onClick={(e) => toggleGraduating(c.id, e)}
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors flex-shrink-0 ${
-                        isGrad
-                          ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                          : 'bg-sky-100 text-sky-700 hover:bg-sky-200'
-                      }`}
-                    >
-                      {isGrad
-                        ? t('languageSemester.graduatingBadge')
-                        : t('languageSemester.returningBadge')}
-                    </span>
+                    {/* Graduating / Returning badge — only relevant for 6M parent report */}
+                    {months === 6 && (
+                      <span
+                        onClick={(e) => toggleGraduating(c.id, e)}
+                        className={`px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors flex-shrink-0 ${
+                          isGrad
+                            ? 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                            : 'bg-sky-100 text-sky-700 hover:bg-sky-200'
+                        }`}
+                      >
+                        {isGrad
+                          ? t('languageSemester.graduatingBadge')
+                          : t('languageSemester.returningBadge')}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -384,24 +395,26 @@ export default function LanguageSemesterPage() {
               </div>
             )}
 
-            {/* Two action buttons */}
+            {/* Action buttons — 1M: text only; 6M: text + PPTX */}
             <div className="flex gap-3">
               <button
                 onClick={handleGetText}
                 disabled={selected.size === 0 || generating || gettingText}
-                className="flex-1 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${months === 1 ? 'flex-1' : 'flex-1'}`}
               >
                 {gettingText ? 'Getting text…' : `Get Text (${selected.size})`}
               </button>
-              <button
-                onClick={handleGenerate}
-                disabled={selected.size === 0 || generating || gettingText}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {generating
-                  ? t('languageSemester.generatingWait')
-                  : t('languageSemester.generateDownload', { count: selected.size })}
-              </button>
+              {months === 6 && (
+                <button
+                  onClick={handleGenerate}
+                  disabled={selected.size === 0 || generating || gettingText}
+                  className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {generating
+                    ? t('languageSemester.generatingWait')
+                    : t('languageSemester.generateDownload', { count: selected.size })}
+                </button>
+              )}
             </div>
 
             <p className="text-xs text-gray-500 text-center mt-4">
@@ -448,14 +461,18 @@ export default function LanguageSemesterPage() {
                         </div>
                       </div>
 
-                      {/* Opening paragraph */}
-                      <CopyBlock label="Opening" text={child.opening} />
-
-                      {/* Circle points */}
-                      <CopyBlock label="Circle (3 points)" text={child.circle} />
-
-                      {/* Closing paragraph */}
-                      <CopyBlock label="Closing" text={child.closing} />
+                      {/* Report text — branched by period */}
+                      {months === 1 ? (
+                        /* 1M: single paragraph academic report */
+                        <CopyBlock label="Monthly Academic Report" text={child.paragraph ?? ''} />
+                      ) : (
+                        /* 6M: three-part parent letter */
+                        <>
+                          <CopyBlock label="Opening" text={child.opening ?? ''} />
+                          <CopyBlock label="Circle (3 points)" text={child.circle ?? ''} />
+                          <CopyBlock label="Closing" text={child.closing ?? ''} />
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

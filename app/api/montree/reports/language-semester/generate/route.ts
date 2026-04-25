@@ -92,6 +92,100 @@ function cleanText(s: string): string {
 
 // --- Sonnet ----------------------------------------------------------------
 
+// ── 1M: Short academic report tool ──────────────────────────────────────────
+
+const ACADEMIC_REPORT_TOOL = {
+  name: 'write_academic_monthly_report',
+  description:
+    'Write a single-paragraph monthly academic report for a child. Professional, concise, school-facing (third person). Names specific works and developmental progress.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      paragraph: {
+        type: 'string',
+        description:
+          'One polished paragraph, ~40 words. Professional academic tone. Third person ("she", "he", "they"). Name 1-2 specific works from the list. Note concrete developmental progress. No bullets, no markdown, no line breaks. Ends with a period.',
+      },
+    },
+    required: ['paragraph'],
+  },
+};
+
+function buildAcademicSystemPrompt(childName: string, workNames: string[]): string {
+  const workList = workNames.length > 0
+    ? `Works completed this period (use EXACT names):\n${workNames.map(w => `  • ${w}`).join('\n')}`
+    : 'No recorded Language works this period — note early engagement and readiness.';
+
+  return `You are a Montessori teacher writing a monthly academic Language report for ${childName}'s school record.
+
+VOICE: Professional, precise, academic. This is a formal school report, not a parent letter.
+PERSON: Third person only ("${childName} has...", "she has...", "he has...").
+LENGTH: Exactly one paragraph, approximately 40 words.
+
+${workList}
+
+RULES:
+- Name 1–2 specific works by their exact names
+- Describe concrete developmental progress (e.g., "demonstrating phonemic awareness", "applying letter-sound correspondence")
+- No jargon like "sensitive periods" or "Montessori method"
+- No line breaks, no bullets, no markdown
+- End with a period
+- Precise, warm, professional — like a school report card narrative`;
+}
+
+async function generateShortAcademicReport(
+  childName: string,
+  progress: ProgressRow[],
+  schoolId?: string,
+): Promise<string> {
+  if (!AI_ENABLED || !anthropic) {
+    throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
+  }
+
+  const workNames = progress.map(p => p.work_name);
+  const workSummary = progress
+    .map((p) => `- ${p.work_name} [${statusCode(p.status)}]`)
+    .join('\n');
+
+  const systemPrompt = buildAcademicSystemPrompt(childName, workNames);
+
+  const userMessage = `Child: ${childName}
+
+Language works this period:
+${workSummary || '(no recorded works)'}
+
+Write the monthly academic report paragraph.`;
+
+  const response = await anthropic.messages.create({
+    model: AI_MODEL,
+    max_tokens: 200,
+    system: systemPrompt,
+    tools: [ACADEMIC_REPORT_TOOL],
+    tool_choice: { type: 'tool', name: 'write_academic_monthly_report' },
+    messages: [{ role: 'user', content: userMessage }],
+  });
+
+  if (schoolId && response.usage) {
+    logApiUsage({
+      schoolId,
+      endpoint: '/api/montree/reports/language-semester/generate',
+      model: AI_MODEL,
+      inputTokens: response.usage.input_tokens,
+      outputTokens: response.usage.output_tokens,
+    });
+  }
+
+  const block = response.content.find((b) => b.type === 'tool_use');
+  if (!block || block.type !== 'tool_use') {
+    throw new Error('Sonnet did not return tool_use output');
+  }
+  const raw = (block.input as { paragraph: string }).paragraph || '';
+  // Clean and trim to ~50 words max (slightly generous)
+  return cleanText(raw);
+}
+
+// ── 6M: Full semester report tool ───────────────────────────────────────────
+
 const REPORT_TOOL = {
   name: 'write_language_semester_report',
   description:
@@ -274,11 +368,24 @@ function postProcess(report: SonnetReport, childName: string, allowedWorks: stri
 
 // --- generate (simple: call Sonnet once, post-process) ---------------------
 
-async function generateReport(childName: string, progress: ProgressRow[], isGraduating: boolean, schoolId?: string): Promise<SonnetReport> {
+async function generateReport(
+  childName: string,
+  progress: ProgressRow[],
+  isGraduating: boolean,
+  schoolId?: string,
+  months: number = 6,
+): Promise<SonnetReport | { paragraph: string }> {
   if (!AI_ENABLED || !anthropic) {
     throw new Error('AI not configured (ANTHROPIC_API_KEY missing)');
   }
 
+  // 1M: short academic paragraph
+  if (months === 1) {
+    const paragraph = await generateShortAcademicReport(childName, progress, schoolId);
+    return { paragraph };
+  }
+
+  // 6M: full semester letter
   const workNames = progress.map(p => p.work_name);
   const workSummary = progress
     .map((p) => `- ${p.work_name} [${statusCode(p.status)}]`)
@@ -485,8 +592,8 @@ export async function POST(request: NextRequest) {
   // format='pptx' (default) returns the filled PPTX template
   const textMode = body.format === 'text';
 
-  // months: how far back to look for photo evidence (1, 3, 6, or 12 months). Default 6.
-  const months = typeof body.months === 'number' && [1, 3, 6, 12].includes(body.months as number)
+  // months: how far back to look for photo evidence (1 or 6 months). Default 6.
+  const months = typeof body.months === 'number' && [1, 6].includes(body.months as number)
     ? (body.months as number)
     : 6;
 
@@ -547,7 +654,12 @@ export async function POST(request: NextRequest) {
   }
 
   // Generate each child's report
-  type TextResult = { child_id: string; name: string; progress: ProgressRow[]; report: SonnetReport };
+  type TextResult = {
+    child_id: string;
+    name: string;
+    progress: ProgressRow[];
+    report: SonnetReport | { paragraph: string };
+  };
   type PptxResult = { child_id: string; name: string; buf: Buffer };
   const textResults: TextResult[] = [];
   const pptxResults: PptxResult[] = [];
@@ -557,12 +669,16 @@ export async function POST(request: NextRequest) {
     try {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id, months);
       const isGraduating = graduatingIds.has(child.id);
-      const report = await generateReport(child.name, progress, isGraduating);
+      const report = await generateReport(child.name, progress, isGraduating, auth.schoolId, months);
       if (textMode) {
         textResults.push({ child_id: child.id, name: child.name, progress, report });
-      } else {
-        const filled = await fillTemplate(templateBuf!, report, progress);
+      } else if (months === 6) {
+        // PPTX only available for 6M format
+        const filled = await fillTemplate(templateBuf!, report as SonnetReport, progress);
         pptxResults.push({ child_id: child.id, name: child.name, buf: filled });
+      } else {
+        // 1M in PPTX mode — treat as text mode for this child
+        textResults.push({ child_id: child.id, name: child.name, progress, report });
       }
     } catch (err) {
       console.error(`[LanguageSemester] Failed for ${child.name}:`, err);
@@ -571,22 +687,31 @@ export async function POST(request: NextRequest) {
   }
 
   // ── TEXT MODE ── return clean JSON for copy-paste
-  if (textMode) {
-    if (textResults.length === 0) {
+  // Also used for 1M regardless of format param (no PPTX template for monthly)
+  if (textMode || months === 1) {
+    const results = textResults;
+    if (results.length === 0) {
       return NextResponse.json({ error: 'All reports failed', errors }, { status: 500 });
     }
     return NextResponse.json({
-      children: textResults.map(r => ({
-        name: r.name,
-        works: r.progress.slice(0, 4).map(p => ({
-          name: p.work_name,
-          status: statusCode(p.status),
-        })),
-        opening: r.report.para_opening,
-        // Convert literal \n separators to real newlines for display
-        circle: r.report.para_circle.replace(/\\n/g, '\n'),
-        closing: r.report.para_english,
-      })),
+      children: results.map(r => {
+        const is1M = 'paragraph' in r.report;
+        return {
+          name: r.name,
+          works: r.progress.slice(0, 4).map(p => ({
+            name: p.work_name,
+            status: statusCode(p.status),
+          })),
+          // 1M: single paragraph field
+          ...(is1M ? { paragraph: (r.report as { paragraph: string }).paragraph } : {}),
+          // 6M: three-part letter
+          ...(!is1M ? {
+            opening: (r.report as SonnetReport).para_opening,
+            circle: (r.report as SonnetReport).para_circle.replace(/\\n/g, '\n'),
+            closing: (r.report as SonnetReport).para_english,
+          } : {}),
+        };
+      }),
       errors,
     });
   }
