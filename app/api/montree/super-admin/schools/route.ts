@@ -93,13 +93,12 @@ export async function GET(request: NextRequest) {
       .select('school_id, feature_key, enabled')
       .in('feature_key', ['ai_tier_haiku', 'ai_tier_sonnet']);
 
-    const aiTierMap: Record<string, 'free' | 'core' | 'premium'> = {};
+    const aiTierMap: Record<string, 'free' | 'premium'> = {};
     for (const row of (tierFlagsRaw || []) as Array<{ school_id: string; feature_key: string; enabled: boolean }>) {
       if (!row.enabled) continue;
-      if (row.feature_key === 'ai_tier_sonnet') {
-        aiTierMap[row.school_id] = 'premium'; // sonnet takes precedence
-      } else if (row.feature_key === 'ai_tier_haiku' && aiTierMap[row.school_id] !== 'premium') {
-        aiTierMap[row.school_id] = 'core';
+      // Both haiku-only and sonnet schools map to 'premium' in the two-tier UI
+      if (row.feature_key === 'ai_tier_sonnet' || row.feature_key === 'ai_tier_haiku') {
+        aiTierMap[row.school_id] = 'premium';
       }
     }
 
@@ -222,12 +221,13 @@ export async function PATCH(request: NextRequest) {
 
     // ── AI tier change: toggle feature flags + set budget ──────────
     if (ai_tier !== undefined) {
-      const VALID_AI_TIERS = ['free', 'core', 'premium'];
+      const VALID_AI_TIERS = ['free', 'premium'];
       if (!VALID_AI_TIERS.includes(ai_tier)) {
-        return NextResponse.json({ error: 'ai_tier must be free, core, or premium' }, { status: 400 });
+        return NextResponse.json({ error: 'ai_tier must be free or premium' }, { status: 400 });
       }
 
-      const haikuEnabled = ai_tier === 'core' || ai_tier === 'premium';
+      // Premium enables both haiku and sonnet; free disables both
+      const haikuEnabled = ai_tier === 'premium';
       const sonnetEnabled = ai_tier === 'premium';
 
       // Upsert both feature flags atomically
@@ -244,7 +244,7 @@ export async function PATCH(request: NextRequest) {
         }
       }
 
-      // Also set budget: free=$0/hard_limit, core/premium=$9999/warn
+      // Also set budget: free=$0/hard_limit, premium=$9999/warn
       const tierBudget = ai_tier === 'free' ? 0 : 9999;
       const tierAction = ai_tier === 'free' ? 'hard_limit' : 'warn';
       const { error: budgetErr } = await supabase
