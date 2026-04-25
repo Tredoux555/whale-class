@@ -67,6 +67,14 @@ function getStatusConfig(t: (key: string) => string): Record<string, { label: st
 
 const AREAS = ['practical_life', 'sensorial', 'mathematics', 'language', 'cultural'];
 
+// ─── GAME PLAN VISIBILITY ───────────────────────────────────────────────────
+// Set to true to re-enable the game plan card (nudge, work chips, direction,
+// fill-shelf button, and footer) across all locales. Currently hidden because:
+//   • Spanish nudge/chips fall back to English (no es key in JSONB yet)
+//   • The shelf alone is sufficient for day-to-day teacher use
+// To restore: flip this to true and redeploy.
+const SHOW_GAME_PLAN = false;
+
 // Normalize area keys (API sometimes uses 'math' instead of 'mathematics')
 function normalizeArea(area: string): string {
   if (area === 'math') return 'mathematics';
@@ -261,9 +269,9 @@ export default function FocusWorksSection({
   };
 
   return (
-    <div className={`rounded-2xl p-4 shadow-sm ${gamePlan ? 'bg-gradient-to-b from-amber-50 to-white border border-amber-200/60' : 'bg-white'}`}>
+    <div className={`rounded-2xl p-4 shadow-sm ${SHOW_GAME_PLAN && gamePlan ? 'bg-gradient-to-b from-amber-50 to-white border border-amber-200/60' : 'bg-white'}`}>
       {/* Game Plan integrated header — or plain title */}
-      {gamePlan ? (
+      {SHOW_GAME_PLAN && gamePlan ? (
         <div className="mb-4 space-y-2.5">
           {/* Game Plan label + nudge */}
           <div className="flex items-start gap-2.5">
@@ -520,7 +528,7 @@ export default function FocusWorksSection({
       </div>
 
       {/* Game Plan footer — refresh button */}
-      {gamePlan && (
+      {SHOW_GAME_PLAN && gamePlan && (
         <div className="mt-3 flex items-center justify-between pt-2 border-t border-amber-100">
           <p className="text-[10px] text-gray-400">
             {planDaysSinceUpdate === 0
