@@ -354,7 +354,8 @@ async function fillTemplate(
 async function loadLanguageProgress(
   supabase: ReturnType<typeof getSupabase>,
   childId: string,
-  classroomId: string
+  classroomId: string,
+  months: number
 ): Promise<ProgressRow[]> {
   // SOURCE: confirmed photos (montree_media) — NOT montree_child_progress.
   // montree_child_progress includes works seeded by the replan pipeline
@@ -388,11 +389,17 @@ async function loadLanguageProgress(
   // Step 2: Get confirmed photos for this child with Language work_ids.
   // Includes both direct photos (child_id on montree_media) and group
   // photos (via montree_media_children junction table).
+  // Only photos within the requested time window (months) are included.
+  const cutoff = new Date();
+  cutoff.setMonth(cutoff.getMonth() - months);
+  const cutoffIso = cutoff.toISOString();
+
   const { data: directPhotos } = await supabase
     .from('montree_media')
     .select('work_id, captured_at')
     .eq('child_id', childId)
     .in('work_id', langWorkIds)
+    .gte('captured_at', cutoffIso)
     .or('identification_status.is.null,identification_status.neq.pending_review')
     .not('work_id', 'is', null);
 
@@ -409,6 +416,7 @@ async function loadLanguageProgress(
       .select('work_id, captured_at')
       .in('id', mediaIds)
       .in('work_id', langWorkIds)
+      .gte('captured_at', cutoffIso)
       .or('identification_status.is.null,identification_status.neq.pending_review')
       .not('work_id', 'is', null);
     groupPhotos = (gPhotos || []) as Array<{ work_id: string; captured_at: string }>;
@@ -466,7 +474,7 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { child_ids?: unknown; graduating_ids?: unknown; format?: unknown };
+  let body: { child_ids?: unknown; graduating_ids?: unknown; format?: unknown; months?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -476,6 +484,11 @@ export async function POST(request: NextRequest) {
   // format='text' returns plain JSON (works + narrative) for copy-paste
   // format='pptx' (default) returns the filled PPTX template
   const textMode = body.format === 'text';
+
+  // months: how far back to look for photo evidence (1, 3, 6, or 12 months). Default 6.
+  const months = typeof body.months === 'number' && [1, 3, 6, 12].includes(body.months as number)
+    ? (body.months as number)
+    : 6;
 
   const childIds = Array.isArray(body.child_ids) ? (body.child_ids as unknown[]).filter((x): x is string => typeof x === 'string') : [];
   if (childIds.length === 0) {
@@ -542,7 +555,7 @@ export async function POST(request: NextRequest) {
 
   for (const child of children) {
     try {
-      const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id);
+      const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id, months);
       const isGraduating = graduatingIds.has(child.id);
       const report = await generateReport(child.name, progress, isGraduating);
       if (textMode) {

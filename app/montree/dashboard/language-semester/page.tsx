@@ -85,6 +85,7 @@ export default function LanguageSemesterPage() {
   const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [textResult, setTextResult] = useState<TextResponse | null>(null);
+  const [months, setMonths] = useState<1 | 3 | 6 | 12>(6);
   const textResultRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -163,6 +164,7 @@ export default function LanguageSemesterPage() {
         body: JSON.stringify({
           child_ids: Array.from(selected),
           graduating_ids: Array.from(graduating),
+          months,
         }),
       });
       if (!res.ok) {
@@ -220,6 +222,7 @@ export default function LanguageSemesterPage() {
           child_ids: Array.from(selected),
           graduating_ids: Array.from(graduating),
           format: 'text',
+          months,
         }),
       });
       if (!res.ok) {
@@ -258,6 +261,23 @@ export default function LanguageSemesterPage() {
           <p className="text-sm text-gray-600">
             {t('languageSemester.pageDescription')}
           </p>
+        </div>
+
+        {/* Time period selector */}
+        <div className="flex gap-2 mb-5">
+          {([1, 3, 6, 12] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMonths(m)}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                months === m
+                  ? 'bg-violet-600 text-white shadow-sm'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-300 hover:text-violet-700'
+              }`}
+            >
+              {m === 12 ? '1 Year' : `${m}M`}
+            </button>
+          ))}
         </div>
 
         {loading ? (
