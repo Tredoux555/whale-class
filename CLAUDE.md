@@ -181,7 +181,71 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ---
 
-## RECENT STATUS (Apr 24, 2026)
+## RECENT STATUS (Apr 25, 2026)
+
+### ⚡ Session 64 — Game Plan Section Hide + TellGuruCard Fix + Lion King Video Downloads (Apr 25, 2026)
+
+**Three commits pushed to main: `4e49a5b6`, `d70ad3be` (wrong, immediately superseded), `ca94843c`.**
+
+**A. SHOW_GAME_PLAN gate — completed (`4e49a5b6`):**
+
+Finished hiding the entire game plan section in `components/montree/child/FocusWorksSection.tsx`. This was the third and final edit of three to gate everything behind `SHOW_GAME_PLAN = false`:
+- Container gradient block: already gated in prior session
+- Header block (nudge + work chips + direction arrow): gated this session
+- Footer block ("Updated today / Refresh" line): gated this session
+
+All three conditions now read: `{SHOW_GAME_PLAN && gamePlan && (...)}`. **To restore the game plan section: flip `SHOW_GAME_PLAN = true` in `FocusWorksSection.tsx` and redeploy.** No DB changes, no data loss — the game plan JSONB is still being written by the replan pipeline, it just isn't shown in the UI.
+
+**B. TellGuruCard visibility fix — `d70ad3be` (WRONG) → `ca94843c` (CORRECT):**
+
+**The bug:** TellGuruCard was appearing for Amy and other students who had been in the classroom for months. The card is supposed to appear once — for brand-new students with no mental profile — and disappear permanently after the teacher submits the voice intro.
+
+**Wrong first fix (`d70ad3be`):** Changed `childDataRich` threshold from `>= 5` photos to `>= 1`, reasoning "any photo means the child is known." User immediately corrected: *"what you talking about photos? What do photos have to do with it?"* Photos have nothing to do with whether the system has been introduced to a student. Reverted in next commit.
+
+**Correct fix (`ca94843c`):** The ONLY signal for TellGuruCard visibility is `hasProfile` — whether a row exists in `montree_child_mental_profiles`. Removed `!childDataRich` from the condition entirely:
+
+**Before (wrong):**
+```tsx
+{isEnabled('tell_guru_onboarding') && hasProfile === false && !childDataRich && (
+```
+**After (correct):**
+```tsx
+{isEnabled('tell_guru_onboarding') && hasProfile === false && (
+```
+
+Also: `childDataRich` threshold reverted to `>= 5` (its original value) with a clarifying comment: *"childDataRich is no longer used for TellGuruCard visibility — profile presence is the only signal. Left here as it still gates BigMicPanel display."*
+
+Comment on the TellGuruCard block updated to: *"shown once, for brand-new students with no mental profile. Once the teacher submits the intro, hasProfile flips to true and this never shows again."*
+
+**Why Amy's card is still showing:** She genuinely has no entry in `montree_child_mental_profiles`. The teacher needs to complete her intro via the voice card — or disable `tell_guru_onboarding` for Whale Class via Supabase if the card is unwanted.
+
+**C. Lion King video downloads (local Mac, not committed):**
+
+Downloaded 3 Lion King karaoke videos from YouTube via yt-dlp + re-encoded to H.264 for QuickTime/classroom use:
+- "Circle of Life" karaoke — `Circle of Life - H264.mp4`
+- "Hakuna Matata" karaoke — `Hakuna Matata - H264.mp4`
+- "I Just Can't Wait to Be King" karaoke — `I Just Can't Wait to Be King - H264.mp4`
+
+All saved to Desktop. Pipeline: yt-dlp with `--cookies-from-browser chrome` (required to bypass YouTube bot detection) → ffmpeg H.264 re-encode (`-c:v libx264 -crf 28 -preset fast -vf "scale=-2:720" -c:a aac -movflags +faststart`).
+
+**🚨 Architectural notes for future sessions:**
+- **`SHOW_GAME_PLAN = false`** in `FocusWorksSection.tsx` — flip to `true` to restore game plan display. The replan pipeline continues writing game plans regardless of this flag.
+- **TellGuruCard is gated purely on `hasProfile === false`** — photo count, `childDataRich`, and any other derived state is irrelevant. Mental profile existence is the one signal.
+- **`childDataRich` (≥5 photos) gates BigMicPanel ONLY** — do not use it for any onboarding state logic.
+- **`hasProfile` state:** `null` = still loading, `false` = no profile in DB, `true` = profile exists. Card renders only on `=== false`.
+
+**Files changed (2 files, 3 commits):**
+- `components/montree/child/FocusWorksSection.tsx` — SHOW_GAME_PLAN gate on footer block + header block (commit `4e49a5b6`)
+- `app/montree/dashboard/[childId]/page.tsx` — removed `!childDataRich` from TellGuruCard condition, reverted `childDataRich` to `>= 5`, updated comments (commit `ca94843c`)
+
+**Next session priorities:**
+1. **Amy's TellGuruCard** — either complete her voice intro via the card, or disable `tell_guru_onboarding` for Whale Class: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+2. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial request), Montessori Copenhagen (details request). These are immediate conversion opportunities.
+3. **Follow up on FAMM Argentina** if no response by Apr 28.
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+5. **Health Check Section A** from `HEALTH_CHECK_HANDOFF.md` — 9 items needing full context.
+
+---
 
 ### ⚡ Session 63 — Multilingual Build: Phase 5 (3x AUDIT) COMPLETE — All 5 Phases Done + guru/route.ts Fix (Apr 24, 2026)
 
