@@ -32,11 +32,20 @@ export const AREA_LABELS_ES: Record<string, string> = {
   cultural: 'Cultural',
 };
 
+export const AREA_LABELS_DE: Record<string, string> = {
+  practical_life: 'Praktisches Leben',
+  sensorial: 'Sinnesmaterial',
+  mathematics: 'Mathematik',
+  language: 'Sprache',
+  cultural: 'Kulturelles',
+};
+
 /** Map of all locale → area labels. Keyed by locale string. */
 export const AREA_LABELS: Record<string, Record<string, string>> = {
   en: AREA_LABELS_EN,
   zh: AREA_LABELS_ZH,
   es: AREA_LABELS_ES,
+  de: AREA_LABELS_DE,
 };
 
 /** Ordered area keys (Montessori canonical sequence). */

@@ -26,6 +26,19 @@ export interface LocaleAIConfig {
 }
 
 export const LOCALE_AI_CONFIG: Record<Locale, LocaleAIConfig> = {
+  de: {
+    languageName: 'German (Deutsch)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in German (Deutsch). ' +
+      'Every word of your response must be in German. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal Sie register for all content. ' +
+      'Use "Ihr Kind" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori German terminology: ' +
+      'Praktisches Leben, Sinnesmaterial, Mathematik, Sprache, Kulturelles.',
+    aiShortDirective: 'auf Deutsch',
+    yourChild: 'Ihr Kind',
+    dateFormatHint: 'D. Monat YYYY',
+  },
   en: {
     languageName: 'English',
     aiLanguageInstruction: '',  // No instruction needed — English is the default
