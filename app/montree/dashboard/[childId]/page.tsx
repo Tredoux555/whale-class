@@ -297,10 +297,10 @@ export default function WeekPage() {
     Promise.all([fetchProfile, fetchChild]).then(([profileData, childData]) => {
       if (isEnabled('tell_guru_onboarding')) {
         setHasProfile(!!profileData?.profile);
-        // Child is "data rich" if they have ANY confirmed photos — even 1 means we know them.
-        // The onboarding card should only appear for brand-new children with zero history.
+        // childDataRich is no longer used for TellGuruCard visibility — profile presence is the
+        // only signal. Left here as it still gates BigMicPanel display.
         const photoCount = childData?.photos?.length ?? 0;
-        setChildDataRich(photoCount >= 1);
+        setChildDataRich(photoCount >= 5);
       }
       if (childData?.child?.name) setOnboardingChildName(childData.child.name);
       else if (childData?.name) setOnboardingChildName(childData.name);
@@ -697,9 +697,9 @@ export default function WeekPage() {
         </div>
       )}
 
-      {/* Tell Guru onboarding — shown when system doesn't know the child well enough:
-          no mental profile AND fewer than 5 confirmed photos */}
-      {isEnabled('tell_guru_onboarding') && hasProfile === false && !childDataRich && (
+      {/* Tell Guru onboarding — shown once, for brand-new students with no mental profile.
+          Once the teacher submits the intro, hasProfile flips to true and this never shows again. */}
+      {isEnabled('tell_guru_onboarding') && hasProfile === false && (
         <TellGuruCard
           childId={childId}
           childName={onboardingChildName || 'this child'}
