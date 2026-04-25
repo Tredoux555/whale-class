@@ -6,13 +6,19 @@ import { en, type TranslationKey } from './en';
 import { zh } from './zh';
 import { es } from './es';
 import { de } from './de';
+import { fr } from './fr';
+import { pt } from './pt';
+import { nl } from './nl';
+import { it } from './it';
+import { ja } from './ja';
+import { ko } from './ko';
 import { type Locale, isValidLocale, getIntlLocale } from './locales';
 
 // Re-export for backward compat (some files import Locale from server.ts)
 export type { Locale };
 export { getIntlLocale };
 
-const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es, de };
+const LOCALE_TO_MESSAGES: Record<string, Record<string, string>> = { en, zh, es, de, fr, pt, nl, it, ja, ko };
 
 /**
  * Create a translator function for server-side use.

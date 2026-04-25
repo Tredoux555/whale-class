@@ -40,12 +40,66 @@ export const AREA_LABELS_DE: Record<string, string> = {
   cultural: 'Kulturelles',
 };
 
+export const AREA_LABELS_FR: Record<string, string> = {
+  practical_life: 'Vie Pratique',
+  sensorial: 'Sensoriel',
+  mathematics: 'Mathématiques',
+  language: 'Langage',
+  cultural: 'Culture',
+};
+
+export const AREA_LABELS_PT: Record<string, string> = {
+  practical_life: 'Vida Prática',
+  sensorial: 'Sensorial',
+  mathematics: 'Matemática',
+  language: 'Linguagem',
+  cultural: 'Cultural',
+};
+
+export const AREA_LABELS_NL: Record<string, string> = {
+  practical_life: 'Praktisch Leven',
+  sensorial: 'Zintuiglijk',
+  mathematics: 'Wiskunde',
+  language: 'Taal',
+  cultural: 'Cultureel',
+};
+
+export const AREA_LABELS_IT: Record<string, string> = {
+  practical_life: 'Vita Pratica',
+  sensorial: 'Sensoriale',
+  mathematics: 'Matematica',
+  language: 'Linguaggio',
+  cultural: 'Culturale',
+};
+
+export const AREA_LABELS_JA: Record<string, string> = {
+  practical_life: '日常生活',
+  sensorial: '感覚',
+  mathematics: '算数',
+  language: '言語',
+  cultural: '文化',
+};
+
+export const AREA_LABELS_KO: Record<string, string> = {
+  practical_life: '일상생활',
+  sensorial: '감각',
+  mathematics: '수학',
+  language: '언어',
+  cultural: '문화',
+};
+
 /** Map of all locale → area labels. Keyed by locale string. */
 export const AREA_LABELS: Record<string, Record<string, string>> = {
   en: AREA_LABELS_EN,
   zh: AREA_LABELS_ZH,
   es: AREA_LABELS_ES,
   de: AREA_LABELS_DE,
+  fr: AREA_LABELS_FR,
+  pt: AREA_LABELS_PT,
+  nl: AREA_LABELS_NL,
+  it: AREA_LABELS_IT,
+  ja: AREA_LABELS_JA,
+  ko: AREA_LABELS_KO,
 };
 
 /** Ordered area keys (Montessori canonical sequence). */

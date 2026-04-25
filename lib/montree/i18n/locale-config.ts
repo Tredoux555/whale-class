@@ -69,6 +69,84 @@ export const LOCALE_AI_CONFIG: Record<Locale, LocaleAIConfig> = {
     yourChild: 'su hijo/a',
     dateFormatHint: 'D de mes de YYYY',
   },
+  fr: {
+    languageName: 'French (Français)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in French (Français). ' +
+      'Every word of your response must be in French. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal vous register for all content. ' +
+      'Use "votre enfant" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori French terminology: ' +
+      'Vie Pratique, Sensoriel, Mathématiques, Langage, Culture.',
+    aiShortDirective: 'en français',
+    yourChild: 'votre enfant',
+    dateFormatHint: 'D mois YYYY',
+  },
+  pt: {
+    languageName: 'Brazilian Portuguese (Português)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Brazilian Portuguese (Português). ' +
+      'Every word of your response must be in Portuguese. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal você register. ' +
+      'Use "seu filho/sua filha" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Portuguese terminology: ' +
+      'Vida Prática, Sensorial, Matemática, Linguagem, Cultural.',
+    aiShortDirective: 'em português',
+    yourChild: 'seu filho/sua filha',
+    dateFormatHint: 'D de mês de YYYY',
+  },
+  nl: {
+    languageName: 'Dutch (Nederlands)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Dutch (Nederlands). ' +
+      'Every word of your response must be in Dutch. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal u/uw register for all content. ' +
+      'Use "uw kind" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Dutch terminology: ' +
+      'Praktisch Leven, Zintuiglijk, Wiskunde, Taal, Cultureel.',
+    aiShortDirective: 'in het Nederlands',
+    yourChild: 'uw kind',
+    dateFormatHint: 'D maand YYYY',
+  },
+  it: {
+    languageName: 'Italian (Italiano)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Italian (Italiano). ' +
+      'Every word of your response must be in Italian. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use formal Lei register for all content. ' +
+      'Use "Suo figlio/Sua figlia" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Italian terminology: ' +
+      'Vita Pratica, Sensoriale, Matematica, Linguaggio, Culturale.',
+    aiShortDirective: 'in italiano',
+    yourChild: 'Suo figlio/Sua figlia',
+    dateFormatHint: 'D mese YYYY',
+  },
+  ja: {
+    languageName: 'Japanese (日本語)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Japanese (日本語). ' +
+      'Every word of your response must be in Japanese. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use polite desu/masu form throughout. ' +
+      'Use "お子さま" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Japanese terminology: ' +
+      '日常生活, 感覚, 算数, 言語, 文化.',
+    aiShortDirective: '日本語で',
+    yourChild: 'お子さま',
+    dateFormatHint: 'YYYY年M月D日',
+  },
+  ko: {
+    languageName: 'Korean (한국어)',
+    aiLanguageInstruction:
+      '\n\nLANGUAGE REQUIREMENT: You MUST respond ENTIRELY in Korean (한국어). ' +
+      'Every word of your response must be in Korean. Do not use any English except for ' +
+      'proper nouns (like Montessori work names). Use polite 합쇼체 (formal) or 해요체 register. ' +
+      'Use "자녀분" for "your child" in parent-facing content. ' +
+      'Use standard AMI Montessori Korean terminology: ' +
+      '일상생활, 감각, 수학, 언어, 문화.',
+    aiShortDirective: '한국어로',
+    yourChild: '자녀분',
+    dateFormatHint: 'YYYY년 M월 D일',
+  },
 };
 
 /** Get the AI language instruction for a locale. Returns empty string for English. */
