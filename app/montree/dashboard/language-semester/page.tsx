@@ -466,12 +466,11 @@ export default function LanguageSemesterPage() {
                         /* 1M: single paragraph academic report */
                         <CopyBlock label="Monthly Academic Report" text={child.paragraph ?? ''} />
                       ) : (
-                        /* 6M: three-part parent letter */
-                        <>
-                          <CopyBlock label="Opening" text={child.opening ?? ''} />
-                          <CopyBlock label="Circle (3 points)" text={child.circle ?? ''} />
-                          <CopyBlock label="Closing" text={child.closing ?? ''} />
-                        </>
+                        /* 6M: three-part parent letter — combined into one copyable block */
+                        <CopyBlock
+                          label="Parent Letter"
+                          text={[child.opening, child.circle, child.closing].filter(Boolean).join('\n\n')}
+                        />
                       )}
                     </div>
                   </div>
