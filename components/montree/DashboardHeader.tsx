@@ -587,6 +587,17 @@ export default function DashboardHeader() {
                     <span>{t('dashboard.languageSemester')}</span>
                   </Link>
 
+                  <Link
+                    href="/montree/dashboard/progress-overview"
+                    onClick={() => setShowMoreMenu(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
+                      pathname === '/montree/dashboard/progress-overview' ? 'bg-emerald-50 text-emerald-700 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className="text-base">📊</span>
+                    <span>{locale === 'zh' ? '班级进度总览' : 'Class Progress'}</span>
+                  </Link>
+
                   {isEnabled('paperwork_tracker') && (
                     <Link
                       href="/montree/dashboard/paperwork"
