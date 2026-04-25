@@ -83,10 +83,10 @@ export default function SchoolsTab({
   const [confirmText, setConfirmText] = useState('');
   const [featuresSchool, setFeaturesSchool] = useState<{ id: string; name: string } | null>(null);
   const [togglingAi, setTogglingAi] = useState<Set<string>>(new Set());
-  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'core' | 'premium'>>({});
+  const [tierOverrides, setTierOverrides] = useState<Record<string, 'free' | 'premium'>>({});
 
-  // AI tier change handler (free / core / premium)
-  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'core' | 'premium') => {
+  // AI tier change handler (free / premium)
+  const handleTierChange = useCallback(async (school: School, newTier: 'free' | 'premium') => {
     if (!sessionToken) return;
     const currentTier = tierOverrides[school.id] ?? school.ai_tier ?? 'free';
     if (newTier === currentTier) return;
@@ -495,9 +495,8 @@ export default function SchoolsTab({
                           const spent = school.api_spent_this_month || 0;
                           const calls = school.api_calls_this_month || 0;
                           const toggling = togglingAi.has(school.id);
-                          const tiers: Array<{ key: 'free' | 'core' | 'premium'; label: string; color: string; activeColor: string }> = [
+                          const tiers: Array<{ key: 'free' | 'premium'; label: string; color: string; activeColor: string }> = [
                             { key: 'free', label: 'Free', color: 'text-slate-500', activeColor: 'bg-slate-600 text-white' },
-                            { key: 'core', label: 'Core', color: 'text-emerald-400', activeColor: 'bg-emerald-600 text-white' },
                             { key: 'premium', label: 'Pro', color: 'text-violet-400', activeColor: 'bg-violet-600 text-white' },
                           ];
                           return (
