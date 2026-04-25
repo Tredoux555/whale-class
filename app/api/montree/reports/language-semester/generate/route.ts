@@ -541,14 +541,30 @@ async function loadLanguageProgress(
     workPhotoCounts.set(p.work_id, (workPhotoCounts.get(p.work_id) || 0) + 1);
   }
 
-  // Convert to ProgressRow with photo-count-based status:
-  //   1 photo = P (Presented), 2-3 = Pr (Practicing), 4+ = MD (Mastered)
+  // Step 3b: Check montree_child_progress for teacher-explicitly-set mastered status.
+  // MD can ONLY come from an explicit teacher decision — never from photo count alone.
+  // A child can practice a work for months without mastering it; the AI cannot determine mastery.
+  const masteredWorkNames = new Set<string>();
+  const { data: progressRows } = await supabase
+    .from('montree_child_progress')
+    .select('work_name, status')
+    .eq('child_id', childId)
+    .eq('status', 'mastered');
+  for (const row of (progressRows || []) as Array<{ work_name: string; status: string }>) {
+    masteredWorkNames.add(row.work_name.toLowerCase());
+  }
+
+  // Convert to ProgressRow:
+  //   MD — teacher explicitly marked 'mastered' in montree_child_progress
+  //   Pr — 2+ confirmed photos (but not teacher-marked mastered)
+  //   P  — 1 confirmed photo (first encounter)
+  // NOTE: 4+ photos no longer auto-assigns MD. Teacher decides mastery, not photo count.
   const byName = new Map<string, ProgressRow>();
   for (const [workId, count] of workPhotoCounts) {
     const workName = workIdToName.get(workId);
     if (!workName) continue;
     let status: string;
-    if (count >= 4) status = 'mastered';
+    if (masteredWorkNames.has(workName.toLowerCase())) status = 'mastered';
     else if (count >= 2) status = 'practicing';
     else status = 'presented';
     byName.set(workName, { work_name: workName, status });
