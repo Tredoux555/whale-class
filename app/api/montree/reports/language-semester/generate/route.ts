@@ -466,12 +466,16 @@ export async function POST(request: NextRequest) {
   const auth = await verifySchoolRequest(request);
   if (auth instanceof NextResponse) return auth;
 
-  let body: { child_ids?: unknown; graduating_ids?: unknown };
+  let body: { child_ids?: unknown; graduating_ids?: unknown; format?: unknown };
   try {
     body = await request.json();
   } catch {
     body = {};
   }
+
+  // format='text' returns plain JSON (works + narrative) for copy-paste
+  // format='pptx' (default) returns the filled PPTX template
+  const textMode = body.format === 'text';
 
   const childIds = Array.isArray(body.child_ids) ? (body.child_ids as unknown[]).filter((x): x is string => typeof x === 'string') : [];
   if (childIds.length === 0) {
@@ -517,18 +521,23 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Load template once
-  const templatePath = path.join(process.cwd(), 'public', 'templates', 'language-semester-report.pptx');
-  let templateBuf: Buffer;
-  try {
-    templateBuf = await readFile(templatePath);
-  } catch (err) {
-    console.error('[LanguageSemester] Template read failed:', err);
-    return NextResponse.json({ error: 'Template not found on server' }, { status: 500 });
+  // In text mode we skip template loading entirely
+  let templateBuf: Buffer | null = null;
+  if (!textMode) {
+    const templatePath = path.join(process.cwd(), 'public', 'templates', 'language-semester-report.pptx');
+    try {
+      templateBuf = await readFile(templatePath);
+    } catch (err) {
+      console.error('[LanguageSemester] Template read failed:', err);
+      return NextResponse.json({ error: 'Template not found on server' }, { status: 500 });
+    }
   }
 
-  // Generate each
-  const results: Array<{ child_id: string; name: string; buf: Buffer }> = [];
+  // Generate each child's report
+  type TextResult = { child_id: string; name: string; progress: ProgressRow[]; report: SonnetReport };
+  type PptxResult = { child_id: string; name: string; buf: Buffer };
+  const textResults: TextResult[] = [];
+  const pptxResults: PptxResult[] = [];
   const errors: Array<{ child_id: string; name: string; error: string }> = [];
 
   for (const child of children) {
@@ -536,22 +545,48 @@ export async function POST(request: NextRequest) {
       const progress = await loadLanguageProgress(supabase, child.id, child.classroom_id);
       const isGraduating = graduatingIds.has(child.id);
       const report = await generateReport(child.name, progress, isGraduating);
-      const filled = await fillTemplate(templateBuf, report, progress);
-      results.push({ child_id: child.id, name: child.name, buf: filled });
+      if (textMode) {
+        textResults.push({ child_id: child.id, name: child.name, progress, report });
+      } else {
+        const filled = await fillTemplate(templateBuf!, report, progress);
+        pptxResults.push({ child_id: child.id, name: child.name, buf: filled });
+      }
     } catch (err) {
       console.error(`[LanguageSemester] Failed for ${child.name}:`, err);
       errors.push({ child_id: child.id, name: child.name, error: err instanceof Error ? err.message : String(err) });
     }
   }
 
-  if (results.length === 0) {
+  // ── TEXT MODE ── return clean JSON for copy-paste
+  if (textMode) {
+    if (textResults.length === 0) {
+      return NextResponse.json({ error: 'All reports failed', errors }, { status: 500 });
+    }
+    return NextResponse.json({
+      children: textResults.map(r => ({
+        name: r.name,
+        works: r.progress.slice(0, 4).map(p => ({
+          name: p.work_name,
+          status: statusCode(p.status),
+        })),
+        opening: r.report.para_opening,
+        // Convert literal \n separators to real newlines for display
+        circle: r.report.para_circle.replace(/\\n/g, '\n'),
+        closing: r.report.para_english,
+      })),
+      errors,
+    });
+  }
+
+  // ── PPTX MODE ── return binary file(s)
+  if (pptxResults.length === 0) {
     return NextResponse.json({ error: 'All reports failed', errors }, { status: 500 });
   }
 
   // Single child → return the pptx directly
-  if (results.length === 1) {
-    const safeName = results[0].name.replace(/[^a-zA-Z0-9_-]/g, '_');
-    return new NextResponse(new Uint8Array(results[0].buf), {
+  if (pptxResults.length === 1) {
+    const safeName = pptxResults[0].name.replace(/[^a-zA-Z0-9_-]/g, '_');
+    return new NextResponse(new Uint8Array(pptxResults[0].buf), {
       status: 200,
       headers: {
         'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
@@ -564,7 +599,7 @@ export async function POST(request: NextRequest) {
   // Multiple → zip bundle
   const bundle = new JSZip();
   const usedNames = new Set<string>();
-  for (const r of results) {
+  for (const r of pptxResults) {
     let base = r.name.replace(/[^a-zA-Z0-9_-]/g, '_');
     let fname = `${base}_Language_Semester_Report.pptx`;
     let n = 2;
@@ -594,7 +629,7 @@ export async function POST(request: NextRequest) {
     headers: {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="Language_Semester_Reports_${stamp}.zip"`,
-      'X-Report-Count': results.length.toString(),
+      'X-Report-Count': pptxResults.length.toString(),
       'X-Report-Errors': errors.length.toString(),
     },
   });
