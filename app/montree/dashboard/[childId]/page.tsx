@@ -34,7 +34,6 @@ const WeekViewGuide = dynamic(() => import('@/components/montree/onboarding/Week
 const ChildWeeklyAdmin = dynamic(() => import('@/components/montree/child/ChildWeeklyAdmin'), { ssr: false });
 const PrintButton = dynamic(() => import('@/components/montree/child/PrintButton'), { ssr: false });
 const TellGuruCard = dynamic(() => import('@/components/montree/onboarding/TellGuruCard'), { ssr: false });
-const BigMicPanel = dynamic(() => import('@/components/montree/child/BigMicPanel'), { ssr: false });
 // ChildVoiceNote now lives inline in FocusWorksSection (next to Save button)
 
 
@@ -714,16 +713,6 @@ export default function WeekPage() {
       {/* Weekly Activity Summary — only when NO game plan (game plan replaces this) */}
       {!gamePlan && isEnabled('weekly_activity_summary') && (
         <WeeklyActivitySummary childId={childId} />
-      )}
-
-      {/* BIG MIC — primary voice control for this child. Show when system knows the child
-          (has profile OR has enough photos). Hide while profile is loading (null). */}
-      {!isHomeschoolParent(session) && (hasProfile === true || childDataRich) && (
-        <BigMicPanel
-          childId={childId}
-          childName={onboardingChildName || session?.classroom?.children?.find((c: Child) => c.id === childId)?.name || 'this child'}
-          onAction={fetchAssignments}
-        />
       )}
 
       {/* FOCUS WORKS — Unified area view, merged with Game Plan when available */}
