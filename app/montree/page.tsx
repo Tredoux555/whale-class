@@ -326,12 +326,12 @@ export default function MontreeLanding() {
         </section>
 
         {/* ── PRICING TEASER ── */}
-        <section style={{ maxWidth: 560, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
-          <h2 ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.2rem, 2.8vw, 1.6rem)', fontWeight: 500, color: '#111827', marginBottom: 14, letterSpacing: '-0.3px' }}>
-            Free to start. Transparent pricing.
+        <section style={{ maxWidth: 640, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
+          <h2 ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 500, color: '#111827', marginBottom: 16, letterSpacing: '-0.3px', lineHeight: 1.35 }}>
+            A personal assistant and a Montessori expert,<br />for every teacher, in every classroom.
           </h2>
-          <p style={{ color: '#6b7280', fontSize: '0.9rem', lineHeight: 1.75, marginBottom: 24 }}>
-            Three tiers. Same platform. Choose how much AI intelligence you want behind it.
+          <p style={{ color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.8, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
+            Not a subscription to software. An upgrade to the way a school operates. The cost is transparent — and when you measure it against 15 hours of staff time each week, it isn&rsquo;t a cost at all.
           </p>
           <a href="/pricing"
             style={{ display: 'inline-block', fontSize: '0.875rem', fontWeight: 500, color: '#059669', borderBottom: '1px solid #bbf7d0', paddingBottom: 2 }}>
