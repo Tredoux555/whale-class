@@ -367,6 +367,89 @@ export default function MontreeLanding() {
           </div>
         </section>
 
+        {/* ── FOUR STAKEHOLDERS ── */}
+        <section style={{ background: '#f9fafb', padding: '80px 24px' }}>
+          <div style={{ maxWidth: 880, margin: '0 auto' }}>
+            <div ref={addReveal} style={{ textAlign: 'center', marginBottom: 56 }}>
+              <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 500, color: '#111827', letterSpacing: '-0.3px', lineHeight: 1.4, marginBottom: 16 }}>
+                One system. Every person it touches.
+              </h2>
+              <p style={{ fontSize: '0.95rem', color: '#6b7280', maxWidth: 520, margin: '0 auto', lineHeight: 1.75 }}>
+                Montree doesn&rsquo;t just make admin easier. It upgrades the whole school — from the classroom out.
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 2 }}>
+              {[
+                {
+                  who: 'Principal',
+                  headline: 'Complete visibility. A school that fills itself.',
+                  body: 'Every classroom, every child, every week — at a glance. A school that communicates beautifully is a school that earns referrals.',
+                },
+                {
+                  who: 'Parents',
+                  headline: 'Informed. Trusting. Recommending.',
+                  body: 'They already know what their child did this week. The difficult question doesn\'t get asked. The difficult meeting doesn\'t happen. And satisfied parents tell other parents.',
+                },
+                {
+                  who: 'Teachers',
+                  headline: 'More time. More confidence. Better at the job.',
+                  body: 'The admin is gone. The guidance is better than memory. Teachers who use Montree teach better — because that\'s all they have to do.',
+                },
+                {
+                  who: 'Students',
+                  headline: 'The right work, at the right time, every time.',
+                  body: 'Progress calibrated to each child. No work left on a shelf because the teacher forgot it existed. Every child learning exactly as Montessori intended.',
+                },
+              ].map((s, i) => (
+                <div key={i} ref={addReveal} style={{ background: '#ffffff', padding: '28px 24px', borderRadius: 2 }}>
+                  <div style={{ fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#059669', marginBottom: 14 }}>{s.who}</div>
+                  <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.95rem', fontWeight: 500, color: '#111827', marginBottom: 10, lineHeight: 1.4 }}>{s.headline}</div>
+                  <div style={{ fontSize: '0.83rem', color: '#6b7280', lineHeight: 1.7 }}>{s.body}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── THREE IN ONE ── */}
+        <section style={{ maxWidth: 720, margin: '0 auto', padding: '80px 24px' }}>
+          <div ref={addReveal} style={{ marginBottom: 48 }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: 20 }}>The real return</div>
+            <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 500, color: '#111827', lineHeight: 1.4, letterSpacing: '-0.3px' }}>
+              Three budget lines.<br />One monthly cost.
+            </h2>
+          </div>
+          {[
+            {
+              label: 'Advertising',
+              text: 'A school that keeps parents beautifully informed is a school they recommend. Every report Montree writes is a reason to stay — and a reason to tell someone. That\'s a referral engine that runs every week, automatically.',
+            },
+            {
+              label: 'Teacher training',
+              text: 'Every work in the curriculum, with a step-by-step guide, available in seconds. A new teacher walks in and presents like a veteran. An experienced teacher gets reminded of works they\'ve never tried. The entire Montessori curriculum, fully accessible, for every teacher, on day one.',
+            },
+            {
+              label: 'Teacher support',
+              text: 'Observations. Progress tracking. Parent reports. Shelf planning. Everything a teacher struggles with at the end of a hard week — done automatically, and done better than any person could do it tired. That\'s not a tool. That\'s support.',
+            },
+          ].map((item, i) => (
+            <div key={i} ref={addReveal} style={{ paddingTop: 28, paddingBottom: 28, borderTop: '1px solid #f3f4f6', display: 'grid', gridTemplateColumns: '140px 1fr', gap: 24, alignItems: 'start' }}>
+              <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.88rem', fontWeight: 500, color: '#111827', paddingTop: 2 }}>{item.label}</div>
+              <div style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.75 }}>{item.text}</div>
+            </div>
+          ))}
+        </section>
+
+        {/* ── PERSONAL PROMISE ── */}
+        <section style={{ background: '#f9fafb', padding: '64px 24px' }}>
+          <div style={{ maxWidth: 600, margin: '0 auto', textAlign: 'center' }}>
+            <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.2rem, 2.8vw, 1.6rem)', fontWeight: 400, fontStyle: 'italic', color: '#111827', lineHeight: 1.65, marginBottom: 20 }}>
+              &ldquo;If there&rsquo;s something Montree can&rsquo;t do yet — just ask. It&rsquo;s a matter of time. And it will be built just for you.&rdquo;
+            </p>
+            <p style={{ fontSize: '0.8rem', color: '#9ca3af', letterSpacing: '0.04em' }}>— Tredoux, builder &amp; teacher</p>
+          </div>
+        </section>
+
         {/* ── DIVIDER ── */}
         <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px' }}>
           <hr style={{ border: 'none', borderTop: '1px solid #f3f4f6' }} />
@@ -378,7 +461,7 @@ export default function MontreeLanding() {
             A personal assistant and a Montessori expert,<br />for every teacher, in every classroom.
           </h2>
           <p style={{ color: '#6b7280', fontSize: '0.95rem', lineHeight: 1.8, marginBottom: 28, maxWidth: 480, margin: '0 auto 28px' }}>
-            Not a subscription to software. An upgrade to the way a school operates. The cost is transparent — and when you measure it against 15 hours of staff time each week, it isn&rsquo;t a cost at all.
+            Not a subscription to software. An upgrade to how a school operates — from the classroom out. Transparent pricing. And when you measure it against 15 hours of staff time each week, it isn&rsquo;t a cost at all.
           </p>
           <a href="/pricing"
             style={{ display: 'inline-block', fontSize: '0.875rem', fontWeight: 500, color: '#059669', borderBottom: '1px solid #bbf7d0', paddingBottom: 2 }}>
