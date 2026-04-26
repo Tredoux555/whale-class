@@ -147,14 +147,14 @@ export default function MontreeLanding() {
         {/* ── HERO ── */}
         <section style={{ paddingTop: 140, paddingBottom: 100, paddingLeft: 24, paddingRight: 24, maxWidth: 720, margin: '0 auto' }}>
           <div style={{ display: 'inline-block', fontSize: '0.75rem', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6b7280', marginBottom: 28, borderBottom: '1px solid #e5e7eb', paddingBottom: 8 }}>
-            Montessori classroom management
+            AI built for the Montessori classroom
           </div>
           <h1 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(2.4rem, 6vw, 3.75rem)', fontWeight: 600, lineHeight: 1.15, color: '#111827', marginBottom: 24, letterSpacing: '-1px' }}>
             A teacher takes a photo.<br />
             <em style={{ fontStyle: 'italic', color: '#059669' }}>Montree does the rest.</em>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: '#6b7280', maxWidth: 500, fontWeight: 300, lineHeight: 1.75, marginBottom: 40 }}>
-            No data entry. No spreadsheets. No templates. Just one photo — and everything appears automatically.
+          <p style={{ fontSize: '1.1rem', color: '#6b7280', maxWidth: 520, fontWeight: 300, lineHeight: 1.75, marginBottom: 40 }}>
+            Observations recorded. Progress tracked. Reports written. Parents informed. The work that used to consume evenings and weekends — done in seconds, while the teacher is still in the classroom.
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <button onClick={() => setDemoOpen(true)} className="cta-btn"
@@ -177,10 +177,10 @@ export default function MontreeLanding() {
         <section style={{ maxWidth: 1080, margin: '0 auto', padding: '80px 24px' }}>
           <div ref={addReveal} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 0 }}>
             {[
-              { n: '01', t: 'Capture', d: 'Snap a photo of a child at work. That\'s the only step required from you.' },
-              { n: '02', t: 'Recognise', d: 'The AI identifies the Montessori material — no barcodes, no dropdowns.' },
-              { n: '03', t: 'Track', d: 'Progress updates across all five curriculum areas. Automatically.' },
-              { n: '04', t: 'Report', d: 'Parents receive a personal letter with photos and developmental context.' },
+              { n: '01', t: 'Capture', d: 'One photo. That\'s the teacher\'s only job. Everything that follows is Montree\'s.' },
+              { n: '02', t: 'Recognise', d: 'The AI identifies the work instantly — Sandpaper Letters, Golden Beads, whatever the child has chosen. No input required.' },
+              { n: '03', t: 'Track', d: 'Progress builds automatically across all five curriculum areas. Every child. Every work. Every week.' },
+              { n: '04', t: 'Report', d: 'Parents receive a detailed, personal account of their child\'s week — written, evidenced, and sent without the teacher lifting a pen.' },
             ].map((s, i) => (
               <div key={i} style={{ padding: '32px 28px', borderRight: i < 3 ? '1px solid #f3f4f6' : 'none' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: 16 }}>{s.n}</div>
@@ -199,7 +199,7 @@ export default function MontreeLanding() {
         {/* ── STATEMENT ── */}
         <section style={{ maxWidth: 720, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
           <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3.5vw, 2rem)', fontWeight: 400, fontStyle: 'italic', color: '#111827', lineHeight: 1.5, letterSpacing: '-0.3px' }}>
-            &ldquo;Other systems ask the teacher to describe what happened. Montree already knows.&rdquo;
+            &ldquo;Other systems ask the teacher to describe what happened.<br />Montree already knows.&rdquo;
           </p>
         </section>
 
@@ -210,10 +210,10 @@ export default function MontreeLanding() {
               <div style={{ padding: '32px 28px', background: '#ffffff' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid #f3f4f6' }}>Traditional</div>
                 {[
-                  'Type observations manually',
-                  'Check boxes on spreadsheets',
-                  'Write reports from memory Friday night',
-                  'Guess what each child should do next',
+                  '15–20 hours of admin every week',
+                  'Reports written from memory on Friday night',
+                  'Parent meetings to explain what you hope they understand',
+                  'Guessing what each child should do next',
                 ].map((item, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
                     <span style={{ color: '#d1d5db', fontSize: 13, marginTop: 2, flexShrink: 0 }}>—</span>
@@ -224,10 +224,10 @@ export default function MontreeLanding() {
               <div style={{ padding: '32px 28px', background: '#ffffff', borderLeft: '2px solid #059669' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#059669', marginBottom: 20, paddingBottom: 16, borderBottom: '1px solid #f0fdf4' }}>Montree</div>
                 {[
-                  'One photo — AI records the observation',
-                  'Progress tracks itself from photo evidence',
-                  'Reports write themselves, with photos',
-                  'Smart Shelf tells you exactly what to present next',
+                  '15–20 hours returned to the teacher, every week',
+                  'Reports written, evidenced, and ready — automatically',
+                  'Parents already know. No meeting needed.',
+                  'Smart Shelf: the right work, for the right child, right now',
                 ].map((item, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 14 }}>
                     <span style={{ color: '#059669', fontSize: 13, marginTop: 2, flexShrink: 0 }}>✓</span>
@@ -241,8 +241,8 @@ export default function MontreeLanding() {
 
         {/* ── PULL QUOTE ── */}
         <section style={{ maxWidth: 720, margin: '0 auto', padding: '60px 24px 0' }}>
-          <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.3rem, 3vw, 1.8rem)', fontWeight: 400, fontStyle: 'italic', color: '#111827', lineHeight: 1.55, letterSpacing: '-0.3px' }}>
-            &ldquo;Montree does the work, so the teacher can just teach.&rdquo;
+          <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.3rem, 3vw, 1.8rem)', fontWeight: 400, fontStyle: 'italic', color: '#111827', lineHeight: 1.6, letterSpacing: '-0.3px' }}>
+            &ldquo;Imagine Maria Montessori as a personal assistant — present in every classroom, supporting every teacher, answering every question a parent hasn&rsquo;t thought to ask yet. That&rsquo;s what Montree does.&rdquo;
           </p>
         </section>
 
@@ -255,19 +255,19 @@ export default function MontreeLanding() {
             {[
               {
                 title: 'Visual Work Recognition',
-                desc: 'The AI sees Sandpaper Letters or Golden Beads from a photo. No barcodes. No dropdowns. It sees what the teacher sees.',
+                desc: 'The AI sees Sandpaper Letters or Golden Beads from a single photo. No barcodes. No typing. No dropdowns. What takes a teacher a second to notice, Montree records in the same second.',
               },
               {
-                title: 'A Classroom That Learns',
-                desc: '"That\'s not Cutting — that\'s Sewing." One correction and the system knows. Permanently. Your school builds its own visual memory over time.',
+                title: 'A System That Learns Your School',
+                desc: 'Every classroom is different. Every teacher notices things differently. Montree learns from corrections and builds a visual memory that belongs to your school — and grows more accurate with every use.',
               },
               {
                 title: 'The Smart Shelf',
-                desc: 'Five works, five areas, personalised per child, every week. Built on mastery, readiness, and sensitive periods — not the teacher\'s memory.',
+                desc: 'Five works. Five curriculum areas. Personalised for every child, every week. Calibrated to mastery, readiness, and sensitive periods. Not a guess — a recommendation backed by evidence.',
               },
               {
-                title: 'A Montessori Expert on Demand',
-                desc: 'A parent asks why their child keeps choosing the same work. Montree answers with developmental context specific to that child, instantly.',
+                title: 'Parent Communication. Solved.',
+                desc: 'Parents receive detailed, photo-evidenced reports on their child\'s development — written in clear, warm language that sells the school and builds trust. The difficult conversation that used to require a meeting now doesn\'t happen, because the parent already knows.',
               },
             ].map((cap, i) => (
               <div key={i} ref={addReveal} style={{ paddingTop: 28, paddingBottom: 28, borderTop: '1px solid #f3f4f6', display: 'grid', gridTemplateColumns: '200px 1fr', gap: 24, alignItems: 'start' }}>
@@ -278,11 +278,36 @@ export default function MontreeLanding() {
           </div>
         </section>
 
+        {/* ── TIME SAVED ── */}
+        <section style={{ background: '#111827', padding: '80px 24px' }}>
+          <div style={{ maxWidth: 800, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'center' }}>
+            <div ref={addReveal}>
+              <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(3rem, 8vw, 5rem)', fontWeight: 600, color: '#ffffff', lineHeight: 1, marginBottom: 12 }}>
+                15–20
+              </div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#6ee7b7', marginBottom: 20 }}>
+                Hours returned to the teacher, every week
+              </div>
+              <p style={{ fontSize: '0.9rem', color: '#9ca3af', lineHeight: 1.75 }}>
+                That&rsquo;s not a rounding error. It&rsquo;s the hours spent writing observations, compiling reports, preparing for parent meetings, tracking progress across 20 children. Montree handles all of it — so the teacher doesn&rsquo;t have to.
+              </p>
+            </div>
+            <div ref={addReveal} style={{ borderLeft: '1px solid #374151', paddingLeft: 60 }}>
+              <p style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '1.1rem', fontStyle: 'italic', color: 'rgba(255,255,255,0.75)', lineHeight: 1.75, marginBottom: 20 }}>
+                &ldquo;The question isn&rsquo;t whether your school can afford Montree. It&rsquo;s what you&rsquo;re spending 15 hours a week on instead.&rdquo;
+              </p>
+              <a href="/pricing" style={{ display: 'inline-block', fontSize: '0.875rem', fontWeight: 500, padding: '11px 22px', borderRadius: 8, background: 'transparent', color: '#6ee7b7', border: '1px solid #374151' }}>
+                See pricing →
+              </a>
+            </div>
+          </div>
+        </section>
+
         {/* ── ORIGIN ── */}
         <section style={{ background: '#f9fafb', padding: '80px 24px' }}>
           <div style={{ maxWidth: 600, margin: '0 auto' }}>
             <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.1rem, 2.5vw, 1.35rem)', fontWeight: 400, color: '#374151', lineHeight: 1.75, marginBottom: 40 }}>
-              Built in a classroom, by a teacher who got tired of choosing between paperwork and children. Used every day with 20 students — not theoretical.
+              Built by a teacher, inside a real classroom, because the tools didn&rsquo;t exist. Not a product designed around Montessori — a system built from it, tested on 20 children every day, refined through real teaching.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderTop: '1px solid #e5e7eb', paddingTop: 36 }}>
               {[
@@ -321,7 +346,7 @@ export default function MontreeLanding() {
               See what one photo can do.
             </h2>
             <p style={{ color: '#9ca3af', fontSize: '0.9rem', marginBottom: 32, lineHeight: 1.7 }}>
-              15 minutes. No installation. No training required.
+              15 minutes. No installation. No training required.<br />Just a classroom, a camera, and a different way of working.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <button onClick={() => setDemoOpen(true)}
