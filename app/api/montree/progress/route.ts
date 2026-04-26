@@ -177,10 +177,17 @@ export async function GET(request: NextRequest) {
   }
 
   // --- FETCH DB CHINESE + SPANISH NAMES (classroom-specific, covers custom works) ---
-  // Build name→chinese and name→spanish maps from the classroom curriculum for works that
+  // Build name→localized maps from the classroom curriculum for works that
   // the static JSON doesn't cover (custom works, works added after static export).
   const dbChineseMap = new Map<string, string>();
   const dbSpanishMap = new Map<string, string>();
+  const dbDeMap = new Map<string, string>();
+  const dbFrMap = new Map<string, string>();
+  const dbPtMap = new Map<string, string>();
+  const dbNlMap = new Map<string, string>();
+  const dbItMap = new Map<string, string>();
+  const dbJaMap = new Map<string, string>();
+  const dbKoMap = new Map<string, string>();
   try {
     // Get child's classroom_id
     const { data: childData } = await supabase
@@ -192,13 +199,20 @@ export async function GET(request: NextRequest) {
     if (childData?.classroom_id) {
       const { data: currWorks } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, name_chinese, name_es')
+        .select('name, name_chinese, name_es, name_de, name_fr, name_pt, name_nl, name_it, name_ja, name_ko')
         .eq('classroom_id', childData.classroom_id);
 
       for (const w of currWorks || []) {
         const key = w.name.toLowerCase().trim();
         if (w.name_chinese) dbChineseMap.set(key, w.name_chinese);
         if (w.name_es) dbSpanishMap.set(key, w.name_es);
+        if (w.name_de) dbDeMap.set(key, w.name_de);
+        if (w.name_fr) dbFrMap.set(key, w.name_fr);
+        if (w.name_pt) dbPtMap.set(key, w.name_pt);
+        if (w.name_nl) dbNlMap.set(key, w.name_nl);
+        if (w.name_it) dbItMap.set(key, w.name_it);
+        if (w.name_ja) dbJaMap.set(key, w.name_ja);
+        if (w.name_ko) dbKoMap.set(key, w.name_ko);
       }
     }
   } catch {
@@ -224,10 +238,24 @@ export async function GET(request: NextRequest) {
       const dbName = dbChineseMap.get(key);
       if (dbName) updated = { ...updated, chineseName: dbName };
     }
-    // Third pass: DB Spanish names
+    // Third pass: DB Spanish + 7 new language names
     if (key) {
       const esName = dbSpanishMap.get(key);
       if (esName) updated = { ...updated, spanishName: esName };
+      const deName = dbDeMap.get(key);
+      if (deName) updated = { ...updated, deName };
+      const frName = dbFrMap.get(key);
+      if (frName) updated = { ...updated, frName };
+      const ptName = dbPtMap.get(key);
+      if (ptName) updated = { ...updated, ptName };
+      const nlName = dbNlMap.get(key);
+      if (nlName) updated = { ...updated, nlName };
+      const itName = dbItMap.get(key);
+      if (itName) updated = { ...updated, itName };
+      const jaName = dbJaMap.get(key);
+      if (jaName) updated = { ...updated, jaName };
+      const koName = dbKoMap.get(key);
+      if (koName) updated = { ...updated, koName };
     }
     return updated;
   });
