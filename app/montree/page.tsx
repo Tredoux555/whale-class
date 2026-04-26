@@ -325,6 +325,53 @@ export default function MontreeLanding() {
           </div>
         </section>
 
+        {/* ── FOR THE TEACHER ── */}
+        <section style={{ maxWidth: 720, margin: '0 auto', padding: '80px 24px' }}>
+          <div ref={addReveal} style={{ marginBottom: 56 }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9ca3af', marginBottom: 20 }}>For the teacher</div>
+            <h2 style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 500, color: '#111827', lineHeight: 1.4, letterSpacing: '-0.3px' }}>
+              Monday morning confidence.<br />Friday afternoon back.
+            </h2>
+          </div>
+          <div>
+            {[
+              {
+                day: 'Monday',
+                title: 'The guidance is already better than you could have written it yourself.',
+                desc: 'Open the app. The shelf is ready — five works across five areas, calibrated to where each child actually is. Not a hunch. Not what you remember from last week. Evidence-based, Montessori-aligned, ready before the day starts.',
+              },
+              {
+                day: 'Anytime',
+                title: 'A work you\'ve never presented? Thirty seconds.',
+                desc: 'The Montessori curriculum is 100 years deep. Even experienced teachers haven\'t presented everything in it. When the shelf suggests something unfamiliar, the quick guide sets you straight — method, materials, what the child should discover, and why it matters at this stage of development.',
+              },
+              {
+                day: 'Always',
+                title: 'It does the work you never had time to do well.',
+                desc: 'Parent reports that are detailed, warm, and professional. Progress tracked across every child without a single spreadsheet. Difficult conversations that don\'t happen because parents already know. Montree does this better than a tired teacher on a Friday afternoon ever could — and does it automatically, while the teacher is still in the room.',
+              },
+              {
+                day: 'Friday',
+                title: 'The desk is clear. The week is done.',
+                desc: 'No reports to write. No admin backlog. No preparing for parent meetings that shouldn\'t need to happen. The hours that used to drain the end of every week are gone — and what\'s left is just the teaching.',
+              },
+            ].map((item, i) => (
+              <div key={i} ref={addReveal} style={{ paddingTop: 28, paddingBottom: 28, borderTop: '1px solid #f3f4f6', display: 'grid', gridTemplateColumns: '100px 1fr', gap: 24, alignItems: 'start' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9ca3af', paddingTop: 3 }}>{item.day}</div>
+                <div>
+                  <div style={{ fontFamily: "'Lora', Georgia, serif", fontSize: '0.95rem', fontWeight: 500, color: '#111827', marginBottom: 8, lineHeight: 1.4 }}>{item.title}</div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280', lineHeight: 1.75 }}>{item.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── DIVIDER ── */}
+        <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 24px' }}>
+          <hr style={{ border: 'none', borderTop: '1px solid #f3f4f6' }} />
+        </div>
+
         {/* ── PRICING TEASER ── */}
         <section style={{ maxWidth: 640, margin: '0 auto', padding: '80px 24px', textAlign: 'center' }}>
           <h2 ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.4rem, 3vw, 1.9rem)', fontWeight: 500, color: '#111827', marginBottom: 16, letterSpacing: '-0.3px', lineHeight: 1.35 }}>
