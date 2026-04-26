@@ -4167,6 +4167,8 @@ export const en = {
   'photoBank.clear': 'Clear',
   'photoBank.exportTo': 'Export to...',
   'photoBank.searching': 'Searching...',
+  'photoBank.searchPlaceholder': 'Search pictures... (e.g. "cat", "apple", "short a")',
+  'photoBank.searchPlaceholderBulk': 'One word per line for bulk search',
   'photoBank.photosFound': '{count} photos found',
   'photoBank.noPhotosFor': 'No photos found for "{query}"',
   'photoBank.noPhotosYet': 'No photos in the bank yet',

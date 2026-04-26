@@ -4169,6 +4169,8 @@ export const zh = {
   'photoBank.clear': '清除',
   'photoBank.exportTo': '导出到...',
   'photoBank.searching': '搜索中...',
+  'photoBank.searchPlaceholder': '搜索图片...（例如：cat、apple、short a）',
+  'photoBank.searchPlaceholderBulk': '每行一个词，支持批量搜索',
   'photoBank.photosFound': '找到 {count} 张图片',
   'photoBank.noPhotosFor': '未找到"{query}"的图片',
   'photoBank.noPhotosYet': '图片库暂无图片',

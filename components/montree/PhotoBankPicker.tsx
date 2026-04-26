@@ -51,7 +51,9 @@ export default function PhotoBankPicker({
   searchPlaceholder,
 }: PhotoBankPickerProps) {
   const { t } = useI18n();
-  const resolvedPlaceholder = searchPlaceholder ?? t('photoBank.searching');
+  const resolvedPlaceholder = searchPlaceholder
+    ? `${searchPlaceholder}\n${t('photoBank.searchPlaceholderBulk')}`
+    : `${t('photoBank.searchPlaceholder')}\n${t('photoBank.searchPlaceholderBulk')}`;
   const [photos, setPhotos] = useState<PhotoBankPhoto[]>([]);
   const [categories, setCategories] = useState<PhotoBankCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
