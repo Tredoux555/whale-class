@@ -21,6 +21,7 @@ import { DEFAULT_LOCALE } from './locales';
 const LOCALE_COLUMN_SUFFIX: Partial<Record<Locale, string>> = {
   zh: '_zh',
   es: '_es',
+  de: '_de',
   fr: '_fr',
   pt: '_pt',
   nl: '_nl',
