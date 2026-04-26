@@ -263,10 +263,12 @@ async function processLocale(locale) {
 }
 
 async function main() {
-  console.log("Batch translating guide content into 7 new locales...");
-  console.log("Classroom:", CID);
+  // Allow running a single locale via env var for parallel execution
+  const singleLocale = process.env.SINGLE_LOCALE;
+  const locales = singleLocale ? [singleLocale] : ["fr", "pt", "nl", "it", "ja", "ko", "de"];
 
-  const locales = ["fr", "pt", "nl", "it", "ja", "ko", "de"];
+  console.log(`Batch translating guide content — locales: ${locales.join(", ")}`);
+  console.log("Classroom:", CID);
 
   for (const locale of locales) {
     await processLocale(locale);

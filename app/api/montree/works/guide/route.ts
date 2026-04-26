@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     if (classroomId) {
       const { data, error: classroomError } = await supabase
         .from('montree_classroom_curriculum_works')
-        .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, guide_content_zh, guide_content_es')
+        .select('name, quick_guide, video_search_terms, parent_description, direct_aims, materials, presentation_steps, control_of_error, why_it_matters, guide_content_zh, guide_content_es, guide_content_fr, guide_content_pt, guide_content_nl, guide_content_it, guide_content_ja, guide_content_ko, guide_content_de')
         .eq('classroom_id', classroomId)
         .ilike('name', `%${escapeIlike(workName)}%`)
         .limit(1)
@@ -117,10 +117,22 @@ export async function GET(request: NextRequest) {
     };
 
     // 5. Translate if locale is non-English and we have content
-    if ((locale === 'zh' || locale === 'es') && (result.quick_guide || result.presentation_steps)) {
-      const cacheColumn = locale === 'zh' ? 'guide_content_zh' : 'guide_content_es';
-      const translateFn = locale === 'zh' ? translateGuideToZh : translateGuideToEs;
-      const langLabel = locale === 'zh' ? 'zh' : 'es';
+    const SUPPORTED_GUIDE_LOCALES: Record<string, { col: string; fn?: (r: typeof result) => Promise<Record<string, unknown>> }> = {
+      zh: { col: 'guide_content_zh', fn: translateGuideToZh },
+      es: { col: 'guide_content_es', fn: translateGuideToEs },
+      fr: { col: 'guide_content_fr' },
+      pt: { col: 'guide_content_pt' },
+      nl: { col: 'guide_content_nl' },
+      it: { col: 'guide_content_it' },
+      ja: { col: 'guide_content_ja' },
+      ko: { col: 'guide_content_ko' },
+      de: { col: 'guide_content_de' },
+    };
+    const localeConfig = SUPPORTED_GUIDE_LOCALES[locale];
+    if (localeConfig && (result.quick_guide || result.presentation_steps)) {
+      const cacheColumn = localeConfig.col;
+      const translateFn = localeConfig.fn || (locale === 'zh' ? translateGuideToZh : translateGuideToEs);
+      const langLabel = locale;
 
       // 5a. Check DB cache first
       if (classroomId) {
