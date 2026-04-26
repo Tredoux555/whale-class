@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import PhotoBankPicker from '@/components/montree/PhotoBankPicker';
 import type { PhotoBankPhoto } from '@/components/montree/PhotoBankPicker';
 import LanguageToggle from '@/components/montree/LanguageToggle';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface SelectedPhoto {
   id: string;
@@ -26,6 +27,7 @@ const EXPORT_TARGETS = [
 
 export default function PhotoBankPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [uploadMode, setUploadMode] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
@@ -192,7 +194,7 @@ export default function PhotoBankPage() {
           href="/montree/library"
           className="text-white/40 text-sm hover:text-white/70 transition-colors"
         >
-          ← Back to Library
+          {t('photoBank.backToLibrary')}
         </Link>
         <div className="flex items-center gap-3">
           <LanguageToggle />
@@ -205,7 +207,7 @@ export default function PhotoBankPage() {
             border: `1px solid ${uploadMode ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
           }}
         >
-          {uploadMode ? '✕ Close Upload' : '📤 Upload Pictures'}
+          {uploadMode ? t('photoBank.closeUpload') : t('photoBank.uploadPictures')}
         </button>
         </div>
       </nav>
@@ -214,17 +216,17 @@ export default function PhotoBankPage() {
       <div className="relative z-10 px-6 pb-6 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.08] bg-white/[0.04] mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-white/50 text-xs tracking-wide uppercase">Montree Picture Bank</span>
+          <span className="text-white/50 text-xs tracking-wide uppercase">{t('photoBank.badge')}</span>
         </div>
 
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
-          <span className="text-white/90">Picture </span>
+          <span className="text-white/90">{t('photoBank.title1')} </span>
           <span style={{ background: 'linear-gradient(135deg, #93c5fd, #60a5fa, #bfdbfe)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Library
+            {t('photoBank.title2')}
           </span>
         </h1>
         <p className="text-white/40 text-base max-w-md mx-auto">
-          Search, browse, and contribute English teaching pictures. Use them directly in any content creation tool.
+          {t('photoBank.subtitle')}
         </p>
       </div>
 
@@ -245,20 +247,20 @@ export default function PhotoBankPage() {
             {uploading ? (
               <div>
                 <div className="text-3xl mb-3">⏳</div>
-                <p className="text-white/70 text-lg font-semibold">Uploading pictures...</p>
+                <p className="text-white/70 text-lg font-semibold">{t('photoBank.uploading')}</p>
                 {uploadProgress && <p className="text-emerald-400/60 text-sm mt-1">{uploadProgress}</p>}
               </div>
             ) : (
               <div>
                 <div className="text-4xl mb-3">📤</div>
                 <p className="text-white/70 text-lg font-semibold mb-1">
-                  Drop pictures here or click to upload
+                  {t('photoBank.dropHere')}
                 </p>
                 <p className="text-white/30 text-sm">
-                  Supports PNG, JPG, WebP, GIF, AVIF — Max 10MB each
+                  {t('photoBank.uploadFormats')}
                 </p>
                 <p className="text-emerald-400/50 text-xs mt-3">
-                  Pictures are automatically categorized by filename
+                  {t('photoBank.autoCategorized')}
                 </p>
               </div>
             )}
@@ -315,8 +317,6 @@ export default function PhotoBankPage() {
               onRawSelect={handleRawSelect}
               selectedIds={selectedIds}
               maxHeight={600}
-              showCategories={true}
-              searchPlaceholder="Search pictures... (e.g. &quot;cat&quot;, &quot;apple&quot;, &quot;short a&quot;)"
             />
           </div>
         </div>
@@ -325,7 +325,7 @@ export default function PhotoBankPage() {
       {/* Footer info */}
       <div className="relative z-10 px-6 py-8 text-center">
         <p className="text-white/20 text-xs tracking-wider uppercase">
-          Contribute pictures to help teachers worldwide
+          {t('photoBank.footer')}
         </p>
       </div>
 
@@ -355,7 +355,7 @@ export default function PhotoBankPage() {
                 fontSize: '13px',
                 fontWeight: '600',
               }}>
-                {selectedPhotos.size} selected
+                {t('photoBank.selected', { count: String(selectedPhotos.size) })}
               </span>
               <button
                 onClick={handleClearSelection}
@@ -368,7 +368,7 @@ export default function PhotoBankPage() {
                   padding: '4px 8px',
                 }}
               >
-                Clear
+                {t('photoBank.clear')}
               </button>
             </div>
 
@@ -388,7 +388,7 @@ export default function PhotoBankPage() {
                   transition: 'all 0.15s',
                 }}
               >
-                Export to... ▾
+                {t('photoBank.exportTo')} ▾
               </button>
 
               {showExportMenu && (

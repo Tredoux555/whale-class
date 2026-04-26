@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree — Video Scripts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #0a0c10; color: #e5e7eb; -webkit-font-smoothing: antialiased; }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 24px 100px; }
+
+  .header { text-align: center; margin-bottom: 64px; }
+  .header .logo { font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 600; color: #fff; letter-spacing: -0.3px; margin-bottom: 8px; }
+  .header .sub { font-size: 0.8rem; color: #4b5563; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 500; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 40px; flex-wrap: wrap; }
+  .tab {
+    padding: 8px 18px; border-radius: 100px; border: 1px solid #1f2937;
+    font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    background: transparent; color: #6b7280;
+  }
+  .tab.active, .tab:hover { background: #111827; border-color: #374151; color: #fff; }
+  .tab .dur { color: #6ee7b7; margin-left: 6px; font-size: 0.72rem; }
+
+  .script { display: none; }
+  .script.visible { display: block; }
+
+  .script-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid #1f2937;
+    gap: 20px; flex-wrap: wrap;
+  }
+  .script-title { font-family: 'Lora', serif; font-size: 1.5rem; font-weight: 500; color: #fff; }
+  .script-meta { font-size: 0.78rem; color: #6b7280; line-height: 1.8; text-align: right; min-width: 140px; }
+  .script-meta span { display: block; }
+  .script-meta strong { color: #9ca3af; }
+
+  .hook-label {
+    display: inline-block; font-size: 0.67rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #6ee7b7; background: rgba(6,212,144,0.08);
+    border: 1px solid rgba(6,212,144,0.15); padding: 3px 10px; border-radius: 100px;
+    margin-bottom: 28px;
+  }
+
+  .script-body {
+    font-size: 1.05rem; line-height: 2; color: #d1d5db;
+    font-family: 'Lora', serif; font-weight: 400;
+  }
+  .script-body p { margin-bottom: 20px; }
+  .script-body .pause { color: #374151; font-size: 0.78rem; font-family: 'Inter', sans-serif; font-style: normal; display: inline-block; margin: 0 6px; vertical-align: middle; }
+  .script-body .beat { display: block; height: 28px; }
+  .script-body strong { color: #ffffff; font-weight: 500; }
+  .script-body em { font-style: italic; color: #f9fafb; }
+  .script-body .url { font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #6ee7b7; letter-spacing: 0.04em; display: block; margin-top: 28px; font-style: normal; font-weight: 500; }
+  .script-body .section-break {
+    display: block; margin: 32px 0 20px;
+    font-family: 'Inter', sans-serif; font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #374151;
+    border-top: 1px solid #1a1d24; padding-top: 20px;
+  }
+
+  .note-box {
+    background: #111827; border: 1px solid #1f2937; border-radius: 10px;
+    padding: 16px 20px; margin-top: 32px;
+    font-size: 0.8rem; color: #6b7280; line-height: 1.7;
+  }
+  .note-box strong { color: #9ca3af; display: block; margin-bottom: 4px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .word-count {
+    display: inline-block; font-size: 0.72rem; color: #4b5563;
+    font-family: 'Inter', sans-serif; margin-top: 28px;
+  }
+
+  @media (max-width: 600px) {
+    .script-meta { text-align: left; }
+    .script-header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <div class="logo">Montree</div>
+    <div class="sub">HeyGen Video Scripts</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="show(0)">30 sec <span class="dur">Hook</span></button>
+    <button class="tab" onclick="show(1)">60 sec <span class="dur">Expand</span></button>
+    <button class="tab" onclick="show(2)">3 min <span class="dur">Full pitch</span></button>
+    <button class="tab" onclick="show(3)">5 min <span class="dur">The story</span></button>
+  </div>
+
+  <!-- ═══ 30 SECONDS ═══ -->
+  <div class="script visible" id="s0">
+    <div class="script-header">
+      <div>
+        <div class="script-title">The Hook</div>
+      </div>
+      <div class="script-meta">
+        <span><strong>Duration</strong> 30 seconds</span>
+        <span><strong>Words</strong> ~75</span>
+        <span><strong>Pace</strong> Slow. Deliberate.</span>
+        <span><strong>Tone</strong> Calm. Certain.</span>
+      </div>
+    </div>
+
+    <div class="hook-label">Open on this. Nothing else.</div>
+
+    <div class="script-body">
+      <p>A teacher takes a photo.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>That's it.<br>That's the only job.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p><strong>Montree does the rest.</strong></p>
+      <p>It identifies the work. Records the observation. Updates the child's progress. And by Friday — the parent report is written, evidenced, and ready to send.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>Fifteen to twenty hours of admin every week.</p>
+      <p><em>Gone.</em></p>
+      <p><span class="pause">[pause]</span></p>
+      <p>This is Montree.<br>The only classroom management system built specifically for Montessori.</p>
+      <p class="url">montree.xyz</p>
+    </div>
+
+    <div class="note-box">
+      <strong>HeyGen direction</strong>
+      Let the pauses breathe — don't rush them. The silence after "That's the only job" is what makes the line land. Calm, unhurried. Not a sales pitch. A statement of fact.
+    </div>
+  </div>
+
+  <!-- ═══ 60 SECONDS ═══ -->
+  <div class="script" id="s1">
+    <div class="script-header">
+      <div>
+        <div class="script-title">The Expand</div>
+      </div>
+      <div class="script-meta">
+        <span><strong>Duration</strong> 60 seconds</span>
+        <span><strong>Words</strong> ~150</span>
+        <span><strong>Pace</strong> Measured. Builds.</span>
+        <span><strong>Tone</strong> Empathetic, then confident.</span>
+      </div>
+    </div>
+
+    <div class="hook-label">Opens on the Friday feeling</div>
+
+    <div class="script-body">
+      <p>Think about the end of the week.</p>
+      <p>The observations you haven't written down. The reports that still need doing. The parents who are going to have questions on Monday.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>Now imagine <em>none of that existed.</em></p>
+      <p><span class="beat"></span></p>
+      <p>One photo. Montree does the rest.</p>
+      <p>It identifies the work. Records it. Tracks the child's progress across every curriculum area. And by Friday — the parent report is written. Not a template. A genuine, detailed account of what their child is learning and why. With photos as evidence.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>And Monday morning? <strong>The shelf is already ready.</strong> Five works. Five curriculum areas. Calibrated to exactly where each child is — right now.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>Fifteen to twenty hours of admin returned to the teacher. Every week.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>This is Montree.</p>
+      <p class="url">montree.xyz</p>
+    </div>
+
+    <div class="note-box">
+      <strong>HeyGen direction</strong>
+      The "Now imagine none of that existed" is the pivot — slight pause before and after. The final "This is Montree" should feel like a quiet close, not a fanfare. No need to rush the URL — let it sit.
+    </div>
+  </div>
+
+  <!-- ═══ 3 MINUTES ═══ -->
+  <div class="script" id="s2">
+    <div class="script-header">
+      <div>
+        <div class="script-title">The Full Pitch</div>
+      </div>
+      <div class="script-meta">
+        <span><strong>Duration</strong> 3 minutes</span>
+        <span><strong>Words</strong> ~450</span>
+        <span><strong>Pace</strong> Conversational.</span>
+        <span><strong>Tone</strong> Teacher to teacher.</span>
+      </div>
+    </div>
+
+    <div class="hook-label">Opens on the problem</div>
+
+    <div class="script-body">
+      <p>Let me tell you about Friday afternoon in a Montessori classroom.</p>
+      <p>Observations you haven't captured. Reports that still need writing. Progress to update across 20 children. And Monday is coming.</p>
+      <p>This is where most Montessori teachers spend their evenings. And their weekends.</p>
+      <p>Fifteen to twenty hours a week — of work that has nothing to do with teaching.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p><strong>That's what Montree changes.</strong></p>
+
+      <span class="section-break">The photo</span>
+      <p>A teacher takes a photo. That's the only step.</p>
+      <p>Montree identifies the work — whether it's Sandpaper Letters, Golden Beads, or a practical life exercise the child picked up on their own. It records the observation. It updates the child's progress. All of it, in seconds, while the teacher is still in the room.</p>
+
+      <span class="section-break">Monday morning</span>
+      <p>You open the app. The shelf is ready.</p>
+      <p>Five works. One from each curriculum area. Selected based on where each child actually is — not what you remember, not what you meant to get to. What the evidence says they're ready for right now.</p>
+      <p>And if the shelf suggests a work you've never presented before? The guide is right there. Step by step. Materials, method, what the child should discover. A new teacher walks in and presents like a veteran.</p>
+
+      <span class="section-break">The parent reports</span>
+      <p>By Friday — the reports are already written.</p>
+      <p>Not templates. Genuine, photo-evidenced accounts of what each child worked on, what they're developing, and why it matters. Written in language that's warm, clear, and builds trust.</p>
+      <p>The parent who used to ask difficult questions at pickup already knows the answer. And that same parent recommends the school to someone else.</p>
+
+      <span class="section-break">The real return</span>
+      <p>Think of what you're actually paying for.</p>
+      <p>Your most effective advertising campaign. Your teacher training program. Your teacher support system. All three — for one monthly cost.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p><strong>Happy principal. Happy parents. Happy teachers. Excelling students.</strong></p>
+      <p><span class="pause">[pause]</span></p>
+      <p>This is Montree. Built by a teacher. Running in a real classroom, every single day.</p>
+      <p class="url">montree.xyz</p>
+    </div>
+
+    <div class="note-box">
+      <strong>HeyGen direction</strong>
+      The four-beat close — "Happy principal. Happy parents. Happy teachers. Excelling students." — should land like a list read slowly, with a tiny beat between each one. Not rushed. Let each one settle. The "Built by a teacher" close is quiet confidence — not a boast.
+    </div>
+  </div>
+
+  <!-- ═══ 5 MINUTES ═══ -->
+  <div class="script" id="s3">
+    <div class="script-header">
+      <div>
+        <div class="script-title">The Story</div>
+      </div>
+      <div class="script-meta">
+        <span><strong>Duration</strong> 5 minutes</span>
+        <span><strong>Words</strong> ~750</span>
+        <span><strong>Pace</strong> Story-pace. Personal.</span>
+        <span><strong>Tone</strong> Honest. Authoritative. Warm.</span>
+      </div>
+    </div>
+
+    <div class="hook-label">Opens with the truth</div>
+
+    <div class="script-body">
+      <p>I'm going to tell you something that took me years to realise.</p>
+      <p>Montessori teaching is extraordinary. The method works. The curriculum is a hundred years of wisdom, distilled into a system that meets children exactly where they are.</p>
+      <p>But somewhere between the classroom and the paperwork — we lose something.</p>
+
+      <span class="section-break">The problem</span>
+      <p>I'm Tredoux. I'm an AMS-certified Montessori teacher. I also built Montree — because the problem I'm about to describe was my problem. Every single week.</p>
+      <p>By Thursday, I had twenty children's observations in my head and not enough of them on paper. By Friday afternoon, I had reports to write from memory. Progress to update across five curriculum areas. Works to plan for twenty different children — at twenty different stages.</p>
+      <p>And I had to do all of it tired.</p>
+      <p>Fifteen to twenty hours a week. Not teaching. Admin.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>And I thought — <em>this shouldn't exist.</em> Not in a system as elegant as Montessori.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p><strong>So I built Montree.</strong></p>
+
+      <span class="section-break">One photo</span>
+      <p>A teacher takes a photo. That's it. That's the entire input.</p>
+      <p>Montree sees the photo and identifies the work. It knows the difference between Sandpaper Letters and Sandpaper Numbers. Between the Trinomial Cube and the Binomial Cube. And if it's wrong — one correction, and it gets smarter. Not just for that teacher. For the whole classroom. It learns.</p>
+      <p>The observation is recorded. The child's progress is updated. All of it, automatically, in the time it takes to lower the phone.</p>
+
+      <span class="section-break">Monday morning</span>
+      <p>You open the app. Each child has a shelf.</p>
+      <p>Five works. One from each curriculum area. Selected by the system based on their actual progress — not what you remember, not what you meant to get to. What the evidence says they're ready for right now.</p>
+      <p>And if the shelf suggests something you haven't presented before? The guide is right there. Method. Materials. What the child should discover. Why it matters developmentally. Thirty seconds — and you walk in confident.</p>
+      <p>A new teacher walks in and presents like someone with twenty years of experience. Because the curriculum is right there. All of it. All 384 works. Accessible in seconds.</p>
+
+      <span class="section-break">The parent reports</span>
+      <p>By the end of the week — the reports are written.</p>
+      <p>Not templates. Real, detailed, photo-evidenced accounts of what each child worked on, what they're developing, and what comes next. In language that's warm and accessible and builds trust.</p>
+      <p>The parent who might have complained on Monday already knows the answer. The meeting that was going to be difficult doesn't happen. And that same parent tells a friend about the school.</p>
+      <p>That's not a feature. <em>That's the point.</em></p>
+
+      <span class="section-break">What you're actually paying for</span>
+      <p>Think about what you're really bringing into the school when you use Montree.</p>
+      <p>You're paying for your most effective advertising — because parents who feel genuinely informed become your best ambassadors. That referral engine runs every week, automatically.</p>
+      <p>You're paying for teacher training — because every work in the Montessori curriculum is documented, guided, and available to any teacher, on day one.</p>
+      <p>And you're paying for teacher support — because the work that drains a teacher at the end of every week is done. Better than they could do it tired. Done automatically.</p>
+      <p>One monthly cost. Three things your school was already spending on — now done better than before.</p>
+
+      <span class="section-break">The close</span>
+      <p><strong>Happy principal.</strong> Complete visibility. A school with a reputation that fills classrooms.</p>
+      <p><strong>Happy parents.</strong> Informed. Trusting. Recommending.</p>
+      <p><strong>Happy teachers.</strong> Their time back. Their confidence back. Their evenings back.</p>
+      <p><strong>Excelling students.</strong> The right work, at the right time, every time — exactly as Maria Montessori intended.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>That's what Montree is.</p>
+      <p>Built by a teacher. Tested in a real classroom. Running on twenty children, every day.</p>
+      <p><span class="pause">[pause]</span></p>
+      <p>And if there's something it can't do yet — just ask. I'm the one who built it. It will get done.</p>
+      <p><em>Just for you.</em></p>
+      <p class="url">montree.xyz</p>
+    </div>
+
+    <div class="note-box">
+      <strong>HeyGen direction</strong>
+      This one is personal. The opening — "I'm going to tell you something that took me years to realise" — sets the tone: not a sales video. A teacher talking. The four-beat close should be the slowest part of the entire video. One beat per line. The "Just for you" is the final note — quiet, direct, and genuine.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function show(n) {
+    document.querySelectorAll('.script').forEach((s, i) => {
+      s.classList.toggle('visible', i === n);
+    });
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', i === n);
+    });
+  }
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useI18n } from '@/lib/montree/i18n';
 
 interface PhotoBankPhoto {
   id: string;
@@ -45,10 +46,12 @@ export default function PhotoBankPicker({
   onRawSelect,
   selectedIds,
   maxHeight = 400,
-  showCategories = true,
+  showCategories = false,
   multiSelect = false,
-  searchPlaceholder = 'Search photos... (e.g. "cat", "apple", "red")',
+  searchPlaceholder,
 }: PhotoBankPickerProps) {
+  const { t } = useI18n();
+  const resolvedPlaceholder = searchPlaceholder ?? t('photoBank.searching');
   const [photos, setPhotos] = useState<PhotoBankPhoto[]>([]);
   const [categories, setCategories] = useState<PhotoBankCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -207,7 +210,7 @@ export default function PhotoBankPicker({
           <textarea
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={searchPlaceholder + '\n(One word per line for bulk search)'}
+            placeholder={resolvedPlaceholder}
             rows={searchQuery.includes('\n') ? Math.min(searchQuery.split('\n').length + 1, 8) : 1}
             style={{
               width: '100%',
@@ -297,13 +300,17 @@ export default function PhotoBankPicker({
         justifyContent: 'space-between',
       }}>
         <span>
-          {loading ? 'Searching...' : isMultiWord
-            ? `${multiWordResults.length} words · ${total} photo${total !== 1 ? 's' : ''} found`
-            : `${total} photo${total !== 1 ? 's' : ''} found${searchQuery ? ` for "${searchQuery}"` : ''}`
+          {loading
+            ? t('photoBank.searching')
+            : isMultiWord
+              ? t('photoBank.wordsResults', { words: String(multiWordResults.length), count: String(total) })
+              : searchQuery
+                ? t('photoBank.photosFound', { count: String(total) })
+                : t('photoBank.photosFound', { count: String(total) })
           }
         </span>
         <span style={{ color: '#10b981', fontSize: '11px' }}>
-          Click to add · Drag to drop
+          {t('photoBank.clickToAdd')}
         </span>
       </div>
 
@@ -324,7 +331,9 @@ export default function PhotoBankPicker({
           }}>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>📷</div>
             <p style={{ margin: 0, fontSize: '14px' }}>
-              {searchQuery ? `No photos found for "${searchQuery.split('\n')[0]}"` : 'No photos in the bank yet'}
+              {searchQuery
+                ? t('photoBank.noPhotosFor', { query: searchQuery.split('\n')[0] })
+                : t('photoBank.noPhotosYet')}
             </p>
           </div>
         ) : isMultiWord ? (
@@ -346,7 +355,7 @@ export default function PhotoBankPicker({
                 </div>
                 {wordPhotos.length === 0 ? (
                   <div style={{ fontSize: '12px', color: '#999', padding: '4px 8px' }}>
-                    No photos found
+                    {t('photoBank.noPhotosFor', { query: word })}
                   </div>
                 ) : (
                   <div style={{
@@ -545,7 +554,7 @@ export default function PhotoBankPicker({
                     color: '#555',
                   }}
                 >
-                  {loading ? 'Loading...' : `Load more (${photos.length}/${total})`}
+                  {loading ? t('photoBank.loading') : t('photoBank.loadMore', { current: String(photos.length), total: String(total) })}
                 </button>
               </div>
             )}
