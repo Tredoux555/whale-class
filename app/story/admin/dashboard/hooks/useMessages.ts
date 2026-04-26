@@ -40,7 +40,7 @@ export const useMessages = (getSession: () => string | null) => {
         setSavedToVault(prev => new Set(prev).add(messageId));
       } else {
         const data = await res.json();
-        alert('Save failed: ' + (data.error || 'Unknown error'));
+        alert(data.error || 'Save failed');
       }
     } catch {
       alert('Save to vault failed');
