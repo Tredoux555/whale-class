@@ -239,6 +239,13 @@ export default function MontreeLanding() {
           </div>
         </section>
 
+        {/* ── PULL QUOTE ── */}
+        <section style={{ maxWidth: 720, margin: '0 auto', padding: '60px 24px 0' }}>
+          <p ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.3rem, 3vw, 1.8rem)', fontWeight: 400, fontStyle: 'italic', color: '#111827', lineHeight: 1.55, letterSpacing: '-0.3px' }}>
+            &ldquo;Montree does the work, so the teacher can just teach.&rdquo;
+          </p>
+        </section>
+
         {/* ── CAPABILITIES ── */}
         <section style={{ maxWidth: 720, margin: '0 auto', padding: '80px 24px' }}>
           <h2 ref={addReveal} style={{ fontFamily: "'Lora', Georgia, serif", fontSize: 'clamp(1.3rem, 3vw, 1.75rem)', fontWeight: 500, color: '#111827', marginBottom: 48, letterSpacing: '-0.3px' }}>
