@@ -46,6 +46,13 @@ interface Assignment {
   is_extra?: boolean;
   chineseName?: string;
   spanishName?: string;
+  deName?: string;
+  frName?: string;
+  ptName?: string;
+  nlName?: string;
+  itName?: string;
+  jaName?: string;
+  koName?: string;
 }
 
 interface CurriculumWork {
@@ -155,15 +162,10 @@ export default function WeekPage() {
     }
   }, []);
 
-  // Fetch quick guide for a work (accepts optional chineseName/spanishName for display)
-  const openQuickGuide = async (workName: string, chineseName?: string, spanishName?: string) => {
+  // Fetch quick guide for a work — resolves localized display name from all supported locales
+  const openQuickGuide = async (workName: string, localizedNames?: Record<string, string | undefined>) => {
     setQuickGuideWork(workName);
-    // Display localized name when available
-    const displayName = locale === 'zh' && chineseName
-      ? chineseName
-      : locale === 'es' && spanishName
-        ? spanishName
-        : workName;
+    const displayName = (localizedNames && localizedNames[locale]) || workName;
     setQuickGuideDisplayName(displayName);
     setQuickGuideOpen(true);
     setQuickGuideLoading(true);
@@ -818,7 +820,8 @@ export default function WeekPage() {
           }}
           onOpenQuickGuide={() => {
             if (focusWorks.length > 0) {
-              openQuickGuide(focusWorks[0].work_name, focusWorks[0].chineseName, focusWorks[0].spanishName);
+              const w = focusWorks[0];
+              openQuickGuide(w.work_name, { zh: w.chineseName, es: w.spanishName, de: w.deName, fr: w.frName, pt: w.ptName, nl: w.nlName, it: w.itName, ja: w.jaName, ko: w.koName });
             }
           }}
           onCloseQuickGuide={() => {
