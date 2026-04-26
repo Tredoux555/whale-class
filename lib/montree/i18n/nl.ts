@@ -3671,7 +3671,7 @@ export const nl: Record<string, string> = {
   'photoBank.searchPlaceholder': 'Afbeeldingen zoeken... (bijv. "kat", "appel", "short a")',
   'photoBank.searchPlaceholderBulk': 'Één woord per regel voor bulkzoekopdracht',
   'photoBank.photosFound': "{count} foto's gevonden",
-  'photoBank.noPhotosFor': 'Geen foto's gevonden voor "{query}"',
+  'photoBank.noPhotosFor': "Geen foto's gevonden voor \"{query}\"",
   'photoBank.noPhotosYet': "Nog geen foto's in de bank",
   'photoBank.clickToAdd': 'Klik om toe te voegen · Sleep om neer te zetten',
   'photoBank.loadMore': 'Meer laden ({current}/{total})',
