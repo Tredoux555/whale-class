@@ -43,6 +43,10 @@ const LOCALE_CONFIG = {
     name: "Korean",
     instruction: "Translate this Montessori work name into Korean. Use formal 합쇼체/해요체 register. Use standard Montessori terminology in Korean where applicable (일상생활, 감각, 수학, 언어, 문화). Return only the translated name in Korean, no explanation.",
   },
+  de: {
+    name: "German",
+    instruction: "Translate this Montessori work name into German. Use formal Sie register. Use standard Montessori AMI terminology in German where applicable (Übungen des täglichen Lebens, Sinnesmaterial, Mathematik, Sprache, Kosmische Erziehung). Return only the translated name, no explanation.",
+  },
 };
 
 const TRANSLATE_TOOL = {
@@ -168,10 +172,10 @@ async function processLocale(locale) {
 }
 
 async function main() {
-  console.log("Batch translating work names into 6 new locales...");
+  console.log("Batch translating work names into 7 new locales...");
   console.log("Classroom:", CID);
 
-  const locales = ["fr", "pt", "nl", "it", "ja", "ko"];
+  const locales = ["fr", "pt", "nl", "it", "ja", "ko", "de"];
 
   for (const locale of locales) {
     await processLocale(locale);

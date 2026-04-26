@@ -1,5 +1,5 @@
 /**
- * Batch translate guide content into 6 new locales: fr, pt, nl, it, ja, ko
+ * Batch translate guide content into 7 new locales: fr, pt, nl, it, ja, ko, de
  * Translates the full JSONB guide_content structure stored in guide_content_{locale}
  * Mirrors scripts/batch-translate-guides-es.js pattern
  * Run: node scripts/batch-translate-guides-new-langs.mjs
@@ -55,6 +55,12 @@ const LOCALE_CONFIG = {
     languageDirective: "한국어로",
     terminology:
       "일상생활, 감각, 수학, 언어, 문화. Use formal 합쇼체/해요체 register. Use 자녀분 for 'the child'.",
+  },
+  de: {
+    name: "German",
+    languageDirective: "auf Deutsch",
+    terminology:
+      "Übungen des täglichen Lebens, Sinnesmaterial, Mathematik, Sprache, Kosmische Erziehung. Use formal Sie register.",
   },
 };
 
@@ -137,12 +143,12 @@ async function translateGuide(work, locale) {
   const guideContent = work.quick_guide
     ? JSON.stringify({
         quick_guide: work.quick_guide,
-        presentation_steps: work.guide_content_en?.presentation_steps || [],
-        materials: work.guide_content_en?.materials || "",
-        direct_aims: work.guide_content_en?.direct_aims || "",
-        control_of_error: work.guide_content_en?.control_of_error || "",
-        why_it_matters: work.guide_content_en?.why_it_matters || "",
-        parent_description: work.guide_content_en?.parent_description || work.parent_description || "",
+        presentation_steps: work.presentation_steps || [],
+        materials: work.materials || "",
+        direct_aims: work.direct_aims || "",
+        control_of_error: work.control_of_error || "",
+        why_it_matters: work.why_it_matters || "",
+        parent_description: work.parent_description || "",
       })
     : null;
 
@@ -188,7 +194,7 @@ async function processLocale(locale) {
   // Fetch works that need guide translation (quick_guide exists but guide_content_{locale} is null)
   const { data: works, error } = await sb
     .from("montree_classroom_curriculum_works")
-    .select(`name, name_${locale}, quick_guide, parent_description, guide_content_en`)
+    .select(`name, name_${locale}, quick_guide, presentation_steps, materials, direct_aims, control_of_error, why_it_matters, parent_description`)
     .eq("classroom_id", CID)
     .is(`guide_content_${locale}`, null)
     .not("quick_guide", "is", null)
@@ -257,10 +263,10 @@ async function processLocale(locale) {
 }
 
 async function main() {
-  console.log("Batch translating guide content into 6 new locales...");
+  console.log("Batch translating guide content into 7 new locales...");
   console.log("Classroom:", CID);
 
-  const locales = ["fr", "pt", "nl", "it", "ja", "ko"];
+  const locales = ["fr", "pt", "nl", "it", "ja", "ko", "de"];
 
   for (const locale of locales) {
     await processLocale(locale);
