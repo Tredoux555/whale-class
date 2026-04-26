@@ -183,6 +183,85 @@ GMass campaigns A/C/D are historical. Campaign C sent 335 blank emails (Session 
 
 ## RECENT STATUS (Apr 26, 2026)
 
+### ⚡ Session 68 — Curriculum Data Layer Complete: All 9 Locales Fully Wired End-to-End (Apr 26, 2026)
+
+**One commit pushed to main: `683af47e`.** 3 files, 70 insertions, 24 deletions. Completed the curriculum data layer for all 6 new locales (fr, pt, nl, it, ja, ko, de) so work names and guide content now display correctly in every language.
+
+**A. Root cause of "German curriculum still in English" — fixed:**
+
+The progress API (`app/api/montree/progress/route.ts`) was only fetching `name_chinese` and `name_es` from `montree_classroom_curriculum_works`. All 6 new language name columns (`name_de`, `name_fr`, `name_pt`, `name_nl`, `name_it`, `name_ja`, `name_ko`) were never read, so enrichment Maps were never built, and progress items were always falling back to English work names.
+
+**Fix — 3 files:**
+
+1. **`app/api/montree/progress/route.ts`** — Extended SELECT to include all 9 language name columns. Added 7 new Maps (`dbDeMap`, `dbFrMap`, `dbPtMap`, `dbNlMap`, `dbItMap`, `dbJaMap`, `dbKoMap`). Enrichment pass now adds `deName`, `frName`, `ptName`, `nlName`, `itName`, `jaName`, `koName` to each progress item.
+
+2. **`app/montree/dashboard/[childId]/page.tsx`** — Extended `Assignment` interface with 7 new name props. Refactored `openQuickGuide` signature from `(workName, chineseName?, spanishName?)` to `(workName, localizedNames?: Record<string, string | undefined>)`. Updated call site to pass all 9 locale names as a dict.
+
+3. **`components/montree/child/FocusWorksSection.tsx`** — Extended `Assignment` interface with 7 new props (`deName`, `frName`, `ptName`, `nlName`, `itName`, `jaName`, `koName`). Updated `onOpenQuickGuide` prop signature to match new dict pattern. Added `getWorkDisplayName(work, locale)` helper that resolves via locale-keyed map with fallback to `cleanWorkName()`. Replaced both zh/es display ternaries (focus works + extra works) with `{getWorkDisplayName(work, locale)}`. Updated Quick Guide button call site.
+
+**B. Guide content batch translations — ALL LOCALES COMPLETE:**
+
+Ran `batch-translate-guides-new-langs.mjs` for remaining null rows across all locales:
+
+| Locale | Final count | Status |
+|--------|-------------|--------|
+| fr | 384/383 | ✅ Complete |
+| pt | 384/383 | ✅ Complete |
+| nl | 383/383 | ✅ Complete |
+| it | 384/383 | ✅ Complete (2 gaps filled this session) |
+| de | 384/383 | ✅ Complete (2 gaps filled this session) |
+| ja | 384/383 | ✅ Complete (6 gaps filled this session) |
+| ko | 384/383 | ✅ Complete (3 gaps filled this session) |
+
+The 384 vs 383 discrepancy is one extra row from a different classroom_id — not an issue.
+
+**🚨 Architectural note — `getWorkDisplayName()` is the canonical pattern:**
+
+Any component that renders a work name for a user-facing locale should use this pattern:
+```typescript
+function getWorkDisplayName(work: Assignment, locale: string): string {
+  const nameMap: Record<string, string | undefined> = {
+    zh: work.chineseName, es: work.spanishName, de: work.deName,
+    fr: work.frName, pt: work.ptName, nl: work.nlName,
+    it: work.itName, ja: work.jaName, ko: work.koName,
+  };
+  return nameMap[locale] || cleanWorkName(work.work_name);
+}
+```
+
+**C. Landing page + pitch materials (earlier this session):**
+
+Three commits pushed earlier (`3969c48f`, `2e0e20b1`, `e6e93a30`) adding:
+- "For the teacher" section to `app/montree/page.tsx` (Monday confidence → Friday back 4-beat structure)
+- "Four stakeholders" 2×2 grid section (Principal / Parents / Teachers / Students)
+- "Three budget lines" pricing reframe section
+- "Personal promise" with Tredoux attribution
+- `montree-pitch.html` — dark-themed pitch cheat sheet for demos (6 phases + objection handling + reframe)
+- `montree-video-scripts.html` — 4 HeyGen video scripts (30-sec, 60-sec, 3-min, 5-min) with tabbed UI
+
+**D. HeyGen video creation — in progress:**
+
+- Subscribed to HeyGen Creator plan (200 credits)
+- Video Agent consumed ~54 credits on storyboard generation without producing a video (billed during planning phase, not at render — lesson learned)
+- 146 credits remaining
+- "Train your personal model" option available for 60 credits — would leave 86 credits (~10 videos at 8 each)
+- The 30-sec hook video is already generated and looks good
+- Script to Video (Builder tab, not Video Agent) is the correct 8-credit path for remaining videos
+
+**Files changed (3 files, commit `683af47e`):**
+- `app/api/montree/progress/route.ts` — 9-language SELECT + 7 new Maps + enrichment
+- `app/montree/dashboard/[childId]/page.tsx` — 7 new Assignment props + openQuickGuide refactor
+- `components/montree/child/FocusWorksSection.tsx` — 7 new props + getWorkDisplayName helper + ternary replacements
+
+**Next session priorities:**
+1. **Draft replies to 3 hot leads** — Paint Pots UK (demo request), Ardtona House UK (free trial), Montessori Copenhagen (details). Immediate conversion opportunities.
+2. **Follow up on FAMM Argentina** if no response by Apr 28.
+3. **Disable `tell_guru_onboarding` for Whale Class** — Amy's card keeps appearing: `UPDATE montree_school_features SET enabled=false WHERE school_id='c6280fae-567c-45ed-ad4d-934eae79aabc' AND feature_key='tell_guru_onboarding';`
+4. **Gate the 6 Sonnet-hardcoded routes** with `resolveReportModel()`.
+5. **Finish HeyGen videos** — 3-min and 5-min scripts still to be produced via Builder → Script to Video (8 credits each).
+
+---
+
 ### ⚡ Session 67 — 6-Language UI Expansion: French, Portuguese, Dutch, Italian, Japanese, Korean (Apr 26, 2026)
 
 **One commit pushed to main: `e2baf953`.** 17 files, 23,075 insertions. Expanded Montree from 3 locales (en, zh, es) to 9 locales by adding complete UI translation files for French, Portuguese, Dutch, Italian, Japanese, and Korean.
