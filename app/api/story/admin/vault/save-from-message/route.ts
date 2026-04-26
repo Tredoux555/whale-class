@@ -33,14 +33,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No media URL provided' }, { status: 400 });
     }
 
-    const response = await fetch(mediaUrl);
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch media' }, { status: 400 });
-    }
+    let fileBuffer: Buffer;
+    let contentType: string;
 
-    const arrayBuffer = await response.arrayBuffer();
-    const fileBuffer = Buffer.from(arrayBuffer);
-    const contentType = response.headers.get('content-type') || 'application/octet-stream';
+    const PROXY_PREFIX = '/api/montree/media/proxy/';
+    if (mediaUrl.startsWith(PROXY_PREFIX)) {
+      // Relative proxy URL — fetch directly from Supabase storage to avoid
+      // the "Failed to parse URL" TypeError that occurs with relative URLs in fetch()
+      const parsed = new URL(mediaUrl, 'http://localhost');
+      const storagePath = parsed.pathname.slice(PROXY_PREFIX.length);
+      const bucket = parsed.searchParams.get('bucket') || 'montree-media';
+      const supabase = getSupabase();
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from(bucket)
+        .download(storagePath);
+      if (downloadError || !fileData) {
+        console.error('[Vault Save] Supabase download error:', downloadError);
+        return NextResponse.json({ error: 'Failed to fetch media' }, { status: 400 });
+      }
+      fileBuffer = Buffer.from(await fileData.arrayBuffer());
+      contentType = fileData.type || 'application/octet-stream';
+    } else {
+      // Absolute URL — fetch directly
+      const response = await fetch(mediaUrl);
+      if (!response.ok) {
+        return NextResponse.json({ error: 'Failed to fetch media' }, { status: 400 });
+      }
+      fileBuffer = Buffer.from(await response.arrayBuffer());
+      contentType = response.headers.get('content-type') || 'application/octet-stream';
+    }
     const finalFilename = filename || `saved-${Date.now()}${getExtension(contentType)}`;
 
     const vaultPassword = process.env.VAULT_PASSWORD;
