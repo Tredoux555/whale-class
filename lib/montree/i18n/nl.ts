@@ -3668,6 +3668,8 @@ export const nl: Record<string, string> = {
   'photoBank.clear': 'Wissen',
   'photoBank.exportTo': 'Exporteren naar...',
   'photoBank.searching': 'Zoeken...',
+  'photoBank.searchPlaceholder': 'Afbeeldingen zoeken... (bijv. "kat", "appel", "short a")',
+  'photoBank.searchPlaceholderBulk': 'Één woord per regel voor bulkzoekopdracht',
   'photoBank.photosFound': "{count} foto's gevonden",
   'photoBank.noPhotosFor': 'Geen foto's gevonden voor "{query}"',
   'photoBank.noPhotosYet': "Nog geen foto's in de bank",

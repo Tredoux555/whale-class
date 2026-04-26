@@ -3668,6 +3668,8 @@ export const ko: Record<string, string> = {
   'photoBank.clear': '지우기',
   'photoBank.exportTo': '내보내기...',
   'photoBank.searching': '검색 중...',
+  'photoBank.searchPlaceholder': '그림 검색... (예: "cat", "apple", "short a")',
+  'photoBank.searchPlaceholderBulk': '일괄 검색은 한 줄에 한 단어씩',
   'photoBank.photosFound': '사진 {count}개 발견',
   'photoBank.noPhotosFor': '"{query}"에 대한 사진을 찾을 수 없습니다',
   'photoBank.noPhotosYet': '아직 은행에 사진이 없습니다',

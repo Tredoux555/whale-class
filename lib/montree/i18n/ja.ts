@@ -3668,6 +3668,8 @@ export const ja: Record<string, string> = {
   'photoBank.clear': 'クリア',
   'photoBank.exportTo': 'エクスポート先...',
   'photoBank.searching': '検索中...',
+  'photoBank.searchPlaceholder': '画像を検索...（例：cat、apple、short a）',
+  'photoBank.searchPlaceholderBulk': '一行一語で一括検索',
   'photoBank.photosFound': '{count}枚の画像が見つかりました',
   'photoBank.noPhotosFor': '「{query}」の画像は見つかりませんでした',
   'photoBank.noPhotosYet': 'バンクにはまだ画像がありません',

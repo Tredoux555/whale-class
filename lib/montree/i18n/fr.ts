@@ -3668,6 +3668,8 @@ export const fr: Record<string, string> = {
   'photoBank.clear': 'Effacer',
   'photoBank.exportTo': 'Exporter vers...',
   'photoBank.searching': 'Recherche en cours...',
+  'photoBank.searchPlaceholder': 'Rechercher des images... (ex. "chat", "pomme", "short a")',
+  'photoBank.searchPlaceholderBulk': 'Un mot par ligne pour la recherche en masse',
   'photoBank.photosFound': '{count} photos trouvées',
   'photoBank.noPhotosFor': 'Aucune photo trouvée pour « {query} »',
   'photoBank.noPhotosYet': "Aucune photo dans la banque pour l'instant",
