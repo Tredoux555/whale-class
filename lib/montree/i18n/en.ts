@@ -4149,6 +4149,31 @@ export const en = {
   'extractionCard.practice': '🔄 Practice',
   'extractionCard.behavioral': '👁 Behavioral',
   'extractionCard.other': 'Other',
+
+  // Photo Bank (public library page)
+  'photoBank.backToLibrary': '← Back to Library',
+  'photoBank.badge': 'Montree Picture Bank',
+  'photoBank.title1': 'Picture',
+  'photoBank.title2': 'Library',
+  'photoBank.subtitle': 'Search, browse, and contribute English teaching pictures. Use them directly in any content creation tool.',
+  'photoBank.closeUpload': '✕ Close Upload',
+  'photoBank.uploadPictures': '📤 Upload Pictures',
+  'photoBank.dropHere': 'Drop pictures here or click to upload',
+  'photoBank.uploadFormats': 'Supports PNG, JPG, WebP, GIF, AVIF — Max 10MB each',
+  'photoBank.autoCategorized': 'Pictures are automatically categorized by filename',
+  'photoBank.uploading': 'Uploading pictures...',
+  'photoBank.footer': 'Contribute pictures to help teachers worldwide',
+  'photoBank.selected': '{count} selected',
+  'photoBank.clear': 'Clear',
+  'photoBank.exportTo': 'Export to...',
+  'photoBank.searching': 'Searching...',
+  'photoBank.photosFound': '{count} photos found',
+  'photoBank.noPhotosFor': 'No photos found for "{query}"',
+  'photoBank.noPhotosYet': 'No photos in the bank yet',
+  'photoBank.clickToAdd': 'Click to add · Drag to drop',
+  'photoBank.loadMore': 'Load more ({current}/{total})',
+  'photoBank.loading': 'Loading...',
+  'photoBank.wordsResults': '{words} words · {count} photos found',
 } as const;
 
 export type TranslationKey = keyof typeof en;

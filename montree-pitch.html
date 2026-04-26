@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Montree — Pitch Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0f1117;
+    color: #e5e7eb;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 48px; padding-bottom: 24px; border-bottom: 1px solid #1f2937;
+  }
+  .logo {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.4rem; font-weight: 600; color: #fff; letter-spacing: -0.3px;
+  }
+  .badge {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #6ee7b7;
+    background: rgba(6,212,144,0.08); padding: 5px 12px; border-radius: 100px;
+    border: 1px solid rgba(6,212,144,0.2);
+  }
+
+  .phase {
+    margin-bottom: 40px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #1f2937;
+  }
+  .phase-header {
+    padding: 16px 24px;
+    background: #1a1d28;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .phase-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #111827; border: 1px solid #374151;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 600; color: #9ca3af;
+    flex-shrink: 0;
+  }
+  .phase-title {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1rem; font-weight: 500; color: #fff;
+  }
+  .phase-sub {
+    font-size: 0.75rem; color: #6b7280; margin-left: auto; font-weight: 400;
+  }
+  .phase-body { padding: 20px 24px; }
+
+  .point {
+    padding: 14px 0;
+    border-bottom: 1px solid #1f2937;
+    display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start;
+  }
+  .point:last-child { border-bottom: none; padding-bottom: 0; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #059669;
+    margin-top: 8px; flex-shrink: 0;
+  }
+  .point-text { font-size: 0.9rem; color: #d1d5db; line-height: 1.65; }
+  .point-text strong { color: #fff; font-weight: 500; }
+  .point-text em { color: #6ee7b7; font-style: normal; }
+
+  .quote-block {
+    background: #111827;
+    border-left: 3px solid #059669;
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 16px 0 8px;
+  }
+  .quote-block p {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 0.95rem; font-style: italic; color: rgba(255,255,255,0.7);
+    line-height: 1.65;
+  }
+
+  .tip {
+    background: rgba(6,212,144,0.06);
+    border: 1px solid rgba(6,212,144,0.15);
+    border-radius: 8px; padding: 12px 16px; margin-top: 12px;
+    font-size: 0.8rem; color: #6ee7b7; line-height: 1.6;
+  }
+  .tip strong { font-weight: 600; }
+
+  .action-box {
+    background: #059669;
+    border-radius: 10px; padding: 20px 24px; margin-top: 40px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .action-item { font-size: 0.85rem; color: rgba(255,255,255,0.9); line-height: 1.5; }
+  .action-item strong { display: block; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+
+  .numbers {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+    background: #1f2937; border-radius: 10px; overflow: hidden;
+    margin: 20px 0 8px;
+  }
+  .num-cell {
+    background: #111827; padding: 16px 12px; text-align: center;
+  }
+  .num-val {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 1.6rem; font-weight: 600; color: #fff; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .num-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .footer-note {
+    margin-top: 48px; padding-top: 24px; border-top: 1px solid #1f2937;
+    font-size: 0.78rem; color: #4b5563; text-align: center; line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .action-box { grid-template-columns: 1fr; }
+    .numbers { grid-template-columns: repeat(2, 1fr); }
+    .phase-sub { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="logo">Montree</div>
+    <div class="badge">Demo Cheat Sheet</div>
+  </div>
+
+  <!-- PHASE 1 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <div class="phase-title">Open — Build the moment</div>
+      <div class="phase-sub">~2 min</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text">Start with the <strong>Friday feeling</strong>. "Think about the end of the week. Reports unwritten. Observations you haven't captured. Parents who are going to ask questions on Monday. What's on your desk?"</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">Let them answer. Let them feel it. <em>Then:</em> "What if none of that existed?"</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">Don't pitch yet. <strong>Ask one question first:</strong> "How many hours a week would you say your teachers spend on admin — observations, reports, tracking progress?" (The answer is almost always 10–20. Remember it.)</div></div>
+    </div>
+  </div>
+
+  <!-- PHASE 2 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <div class="phase-title">The demo — one photo</div>
+      <div class="phase-sub">~5 min, the heart of it</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>Take a photo of literally anything Montessori.</strong> A shelf, a mat, your own table if needed. The visual recognition is the product.</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">While it processes: <em>"A teacher in my classroom does this once. That's it. No dropdown. No typing. No observation form. One photo — and the rest happens automatically."</em></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">When the result appears: <strong>Show the work name recognised</strong>, the progress record, the child it's linked to.</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">Then click the <strong>quick guide</strong>. "Any work in the curriculum — whether you've presented it a hundred times or never — the guide is here. Materials. Steps. Why it matters at this stage. A new teacher can walk into a classroom and present like a veteran."</div></div>
+
+      <div class="tip"><strong>If they look skeptical about recognition accuracy:</strong> "It learns. Every correction a teacher makes teaches it the difference. Our classroom trained it over months. When a new school joins, it gets better fast."</div>
+    </div>
+  </div>
+
+  <!-- PHASE 3 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <div class="phase-title">The shelf — what Montessori actually prescribed</div>
+      <div class="phase-sub">~3 min</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text">Open a child's shelf. <em>"Every Monday morning. Five works. One from each curriculum area. Not what the teacher remembers — what the evidence says this child needs next."</em></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">The line that lands: <strong>"The Montessori curriculum is 100 years deep. Maria Montessori spent a lifetime developing this sequence. Montree makes sure none of it gets left on a shelf because a teacher is tired or hasn't encountered it before."</strong></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">This is the confidence point: <em>"You open the app on Monday and the guidance is better than what you could have produced yourself. That's a different kind of morning."</em></div></div>
+
+      <div class="quote-block">
+        <p>"It does better than I can. And I'm an AMS-certified teacher who built the system."</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHASE 4 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <div class="phase-title">Parent reports — the most underrated feature</div>
+      <div class="phase-sub">~3 min</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>Show a generated parent report.</strong> Point to the photos, the narrative, the curriculum language.</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><em>"This is what a parent receives. Not a template. Not a checkbox. A genuine account of what their child is learning and why — with the photos as evidence."</em></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">The insight that changes minds: <strong>"When parents already know, there's nothing difficult to say at pickup. The meeting that was going to be uncomfortable doesn't happen. The worried parent becomes a confident one."</strong></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">Then: <em>"Montree doesn't just support teachers. It sells the school. Every report a parent reads is a reason to stay, and a reason to tell someone."</em></div></div>
+
+      <div class="tip"><strong>If they ask about personalisation:</strong> "The AI reads the child's history before writing. It knows what they worked on, what they're ready for, and how to frame it for a parent. Every report is unique."</div>
+    </div>
+  </div>
+
+  <!-- PHASE 5 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <div class="phase-title">The cost — frame it right</div>
+      <div class="phase-sub">~2 min</div>
+    </div>
+    <div class="phase-body">
+      <div class="numbers">
+        <div class="num-cell"><div class="num-val">15–20</div><div class="num-label">Hours saved / week</div></div>
+        <div class="num-cell"><div class="num-val">20</div><div class="num-label">Children tracked</div></div>
+        <div class="num-cell"><div class="num-val">384</div><div class="num-label">Works in curriculum</div></div>
+        <div class="num-cell"><div class="num-val">0</div><div class="num-label">Hours of paperwork</div></div>
+      </div>
+
+      <div class="point" style="padding-top: 20px;"><div class="dot"></div><div class="point-text">Reference <em>their</em> answer from the opening. "You said your teachers spend about [X] hours on admin. What's that worth in salary? What could those hours be spent on instead?"</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"The question isn't whether the school can afford Montree. It's what you're spending 15 hours a week on instead."</strong></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">Tier framing: <em>"Start on the free trial. Full access, 60 days, no credit card. I'll set it up personally. If it doesn't change the way your teachers work, nothing owed."</em></div></div>
+    </div>
+  </div>
+
+  <!-- PHASE 6 -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">6</div>
+      <div class="phase-title">Close — one ask, clearly made</div>
+      <div class="phase-sub">~1 min</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>One classroom. One teacher. Two weeks.</strong> "Let me set it up in one of your classrooms. Not a commitment — just enough to see it work. I'll be there for the setup call personally."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">If hesitation: <em>"What would you need to see to feel confident? Tell me and I'll show you that specifically."</em></div></div>
+      <div class="point"><div class="dot"></div><div class="point-text">If yes: <strong>Get an email. Confirm the day. Send them montree.xyz before you leave the room.</strong></div></div>
+    </div>
+  </div>
+
+  <!-- HANDLE OBJECTIONS -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">↯</div>
+      <div class="phase-title">Objections — stay calm, stay specific</div>
+      <div class="phase-sub">as needed</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"We already have a system."</strong> → "What does it do with photos? Who writes the parent reports? How does the shelf get decided?" (They'll tell you the gaps. You don't have to.)</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"Our teachers are resistant to technology."</strong> → "The only thing teachers do in Montree is take a photo. Everything else is automatic. If they can use a camera, they can use Montree."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"Is it AMI-compatible?"</strong> → "The curriculum is based on AMI scope and sequence — all 384 works, five areas. The terminology, the sequence, the sensitive periods — it's all there."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"What if the AI gets it wrong?"</strong> → "Teachers correct it. And every correction makes it smarter — not just for them, but for the whole classroom. The more you use it, the better it gets."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>"We're a small school, I'm not sure we need this."</strong> → "Small schools feel admin pressure more than anyone. One teacher doing the work of three. That's exactly who this is for."</div></div>
+    </div>
+  </div>
+
+  <!-- REFRAME: THREE BUDGET LINES -->
+  <div class="phase">
+    <div class="phase-header">
+      <div class="phase-num">★</div>
+      <div class="phase-title">The reframe — when they ask about cost</div>
+      <div class="phase-sub">use this if they hesitate on price</div>
+    </div>
+    <div class="phase-body">
+      <div class="point"><div class="dot"></div><div class="point-text"><strong>Don't defend the price. Reframe what it is.</strong> "Most schools think of this as software. It isn't. It's three things you're already paying for — advertising, teacher training, and teacher support — collapsed into one monthly cost."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><em>Advertising:</em> "Every report Montree writes is a reason a parent stays — and a reason they tell someone. Word of mouth is your best marketing. Montree generates it automatically, every week."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><em>Teacher training:</em> "384 works. Every guide, every step, in seconds. A new teacher walks in and presents like a veteran. That's not software — that's training."</div></div>
+      <div class="point"><div class="dot"></div><div class="point-text"><em>Teacher support:</em> "The observations, the progress tracking, the parent reports — done. Better than a tired person could do it on a Friday. That's what Montree costs you. What does not having it cost?"</div></div>
+
+      <div class="quote-block">
+        <p>"It's not costing you money. It's saving you money and upgrading your school from the core out."</p>
+      </div>
+
+      <div class="point" style="padding-top: 20px;"><div class="dot"></div><div class="point-text"><strong>The four-beat close if they're still on the fence:</strong> "Happy principal — you see everything, the school fills itself. Happy parents — they already know, they're recommending you. Happy teachers — the admin is gone. Excelling students — the right work, every time. That's what you're buying."</div></div>
+
+      <div class="tip"><strong>The personal promise (use this if you feel it):</strong> "And if there's something the app can't do yet — just tell me. I'm the one who built it. It'll get done. Just for you."</div>
+    </div>
+  </div>
+
+  <!-- ACTION SUMMARY -->
+  <div class="action-box">
+    <div class="action-item"><strong>If they say yes</strong>Get their email. Book a setup call. Send them montree.xyz tonight.</div>
+    <div class="action-item"><strong>If they say maybe</strong>Send the demo video. Ask what would make them confident. Follow up in 3 days.</div>
+    <div class="action-item"><strong>If they say not now</strong>"Can I follow up in a month?" Get a yes and a date. That's a lead, not a no.</div>
+    <div class="action-item"><strong>Always leave with</strong>montree.xyz on their screen. A name. A follow-up date.</div>
+  </div>
+
+  <div class="footer-note">
+    montree.xyz &nbsp;·&nbsp; Built by a teacher, for teachers &nbsp;·&nbsp; AMS-certified &nbsp;·&nbsp; Running in a real classroom, every day
+  </div>
+
+</div>
+</body>
+</html>
