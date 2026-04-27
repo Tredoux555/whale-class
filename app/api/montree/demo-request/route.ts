@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     const resendKey = process.env.RESEND_API_KEY;
     const fromEmail = process.env.RESEND_FROM_EMAIL;
     if (resendKey && fromEmail) {
+      // Notify Tredoux
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
@@ -44,6 +45,19 @@ export async function POST(req: NextRequest) {
           to: 'tredoux555@gmail.com',
           subject: `🎯 Demo Request: ${school || email}`,
           text: `New demo request from montree.xyz!\n\nName: ${name || 'Not provided'}\nSchool: ${school || 'Not provided'}\nEmail: ${email}\n\nTime: ${new Date().toISOString()}`,
+        }),
+      }).catch(() => {});
+
+      // Confirmation to requester
+      const firstName = name ? name.split(' ')[0] : null;
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: email.trim().toLowerCase(),
+          subject: 'Montree',
+          text: `Dear ${firstName || school || 'there'},\n\nThank you for reaching out. I'll be in touch within 24 hours to arrange a time to show you what Montree can do.\n\nKind regards,\nTredoux\nmontree.xyz`,
         }),
       }).catch(() => {});
     }
