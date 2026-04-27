@@ -399,7 +399,7 @@ export default function DashboardHeader() {
         </div>
 
         {/* Right: Action icons — daily drivers always visible, rest in "More" dropdown */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Language toggle — always visible */}
           <LanguageToggle />
 
